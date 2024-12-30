@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, grid, GridModel} from '@xh/hoist/cmp/grid';
 import {frame, input, placeholder, vframe, vspacer} from '@xh/hoist/cmp/layout';
+import {mask} from '@xh/hoist/cmp/mask';
 import {
     BoxProps,
     Content,
@@ -28,7 +29,6 @@ import filesize from 'filesize';
 import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {isEmpty} from 'lodash';
-import {mask} from '../mask';
 import classNames from 'classnames';
 import {makeObservable} from '@xh/hoist/mobx';
 

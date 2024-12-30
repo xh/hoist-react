@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {Store} from '../Store';
@@ -50,5 +51,9 @@ export class FunctionFilter extends Filter {
     override equals(other: Filter) {
         if (other === this) return true;
         return other instanceof FunctionFilter && this.testFn === other.testFn;
+    }
+
+    override toJSON(): FunctionFilterSpec {
+        throw XH.exception('FunctionFilter.toJSON() not supported.');
     }
 }

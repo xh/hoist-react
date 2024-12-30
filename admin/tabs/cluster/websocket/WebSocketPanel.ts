@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {WebSocketModel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -11,7 +11,7 @@ import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';

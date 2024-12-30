@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
@@ -197,7 +197,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                   column,
                                   gridModel
                               })
-                            : values[0] ?? '[blank]',
+                            : (values[0] ?? '[blank]'),
                         // Grid col renderers will very typically return elements, but we need this to be a string.
                         // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
                         // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup

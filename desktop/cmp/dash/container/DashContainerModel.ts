@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     managed,
@@ -16,7 +16,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
+import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -540,7 +540,7 @@ export class DashContainerModel
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
-                    newIconType = icon.props.iconName;
+                    newIconType = (icon.props as ResolvedIconProps).iconName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToHtml(icon);

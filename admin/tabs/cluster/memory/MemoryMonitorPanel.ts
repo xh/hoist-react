@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/memory/MemoryMonitorModel';
@@ -11,7 +11,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {code, filler, fragment, hbox, hspacer, span, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDate} from '@xh/hoist/format';

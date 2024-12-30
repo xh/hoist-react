@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2025 Extremely Heavy Industries Inc.
+ */
 import {PlainObject} from '@xh/hoist/core';
 import {ViewManagerModel} from './ViewManagerModel';
 import {ViewInfo} from './ViewInfo';
@@ -27,6 +33,14 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.name ?? 'Default';
     }
 
+    get group(): string {
+        return this.info?.group;
+    }
+
+    get description(): string {
+        return this.info?.description;
+    }
+
     get token(): string {
         return this.info?.token ?? null;
     }
@@ -43,12 +57,24 @@ export class View<T extends PlainObject = PlainObject> {
         return this.info?.isGlobal ?? false;
     }
 
+    get isShared(): boolean {
+        return this.info?.isShared ?? false;
+    }
+
+    get isOwned(): boolean {
+        return this.info?.isOwned ?? false;
+    }
+
+    get isCurrentView(): boolean {
+        return this.token === this.model.view.token;
+    }
+
     get lastUpdated(): number {
         return this.info?.lastUpdated ?? null;
     }
 
     get typedName(): string {
-        return `${this.model.typeDisplayName} '${this.name}'`;
+        return `${this.model.typeDisplayName} "${this.name}"`;
     }
 
     static fromBlob<T>(blob: JsonBlob, model: ViewManagerModel): View<T> {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
@@ -64,12 +64,12 @@ export class ZoneMapperModel extends HoistModel {
 
     get leftFlex(): number {
         const ret = this.zoneGridModel.leftColumnSpec?.flex;
-        return isBoolean(ret) ? 1 : ret ?? 2;
+        return isBoolean(ret) ? 1 : (ret ?? 2);
     }
 
     get rightFlex(): number {
         const ret = this.zoneGridModel.rightColumnSpec?.flex;
-        return isBoolean(ret) ? 1 : ret ?? 1;
+        return isBoolean(ret) ? 1 : (ret ?? 1);
     }
 
     get limits(): Partial<Record<Zone, ZoneLimit>> {

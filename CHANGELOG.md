@@ -2,6 +2,19 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `ErrorMessage` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/error`
+  and `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/mask`
+  and `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform. Its import paths has changed from
+  `@xh/hoist/desktop/cmp/loadingindicator` and `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* The `RefreshButton` `model` prop has been renamed `target` for clarity and consistency.
+
 ### 🎁 New Features
 
 * Major Improvements to ViewManager component
@@ -9,14 +22,29 @@
   * Handle delete and update collisions more gracefully.
   * Support for `settleTime`,
   * Improved management UI Dialog.
+  * Support for "global" views.
 * New `SessionStorageService` and associated persistence provider provides support for saving
   tab local data across reloads.
+* Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
+  clients requesting access tokens, covering cases when third-party cookies are blocked.
+
+### 🐞 Bug Fixes
+
+* Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
+  positioned with `top` orientation.
+* Fixed styling of `ButtonGroup` in vertical orientations.
 
 ### ⚙️ Technical
 
 * Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
 * Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
   throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+* Improved accuracy of `PersistOptions.type` enum.
 
 ## v70.0.0 - 2024-11-15
 
@@ -6308,8 +6336,5 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2024 Extremely Heavy Industries Inc. - all rights reserved
-
-------------------------------------------
-
 📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

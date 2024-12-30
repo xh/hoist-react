@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ServerEnvModel} from '@xh/hoist/admin/tabs/cluster/environment/ServerEnvModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
@@ -10,7 +10,7 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 
 export const serverEnvPanel = hoistCmp.factory({

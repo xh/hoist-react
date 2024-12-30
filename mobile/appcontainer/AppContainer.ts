@@ -2,23 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {errorMessageImpl} from '@xh/hoist/mobile/cmp/error/impl/ErrorMessage';
+import {maskImpl} from '@xh/hoist/mobile/cmp/mask/impl/Mask';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
@@ -40,7 +41,8 @@ installMobileImpls({
     colChooser,
     ColChooserModel,
     zoneMapper,
-    errorMessage
+    errorMessageImpl,
+    maskImpl
 });
 
 /**

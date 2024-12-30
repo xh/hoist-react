@@ -2,20 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler, vframe} from '@xh/hoist/cmp/layout';
+import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {SaveAsDialogModel} from '@xh/hoist/cmp/viewmanager/';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
+import {SaveAsDialogModel} from './SaveAsDialogModel';
+import {getGroupOptions} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -34,7 +35,7 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
             isOpen: true,
             style: {width: 500},
             canOutsideClickClose: false,
-            onClose: () => model.cancel(),
+            onClose: () => model.close(),
             item: formPanel()
         });
     }
@@ -45,7 +46,9 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
         return panel({
             item: form({
                 fieldDefaults: {
-                    commitOnChange: true
+                    commitOnChange: true,
+                    inline: true,
+                    minimal: true
                 },
                 item: vframe({
                     className: 'xh-view-manager__save-dialog__form',
@@ -61,12 +64,30 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             })
                         }),
                         formField({
+                            field: 'group',
+                            item: select({
+                                enableCreate: true,
+                                enableClear: true,
+                                placeholder: 'Select optional group....',
+                                options: getGroupOptions(model.parent, 'owned')
+                            })
+                        }),
+                        formField({
                             field: 'description',
                             item: textArea({
                                 selectOnFocus: true,
-                                height: 90
+                                height: 70
                             })
-                        })
+                        }),
+                        hbox(
+                            formField({
+                                field: 'isShared',
+                                label: 'Share?',
+                                labelTextAlign: 'left',
+                                omit: !model.parent.enableSharing,
+                                item: switchInput()
+                            })
+                        )
                     ]
                 })
             }),
@@ -78,12 +99,12 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
 
 const bbar = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
-        const {typeDisplayName} = model;
+        const {typeDisplayName} = model.parent;
         return toolbar(
             filler(),
             button({
                 text: 'Cancel',
-                onClick: () => model.cancel()
+                onClick: () => model.close()
             }),
             button({
                 text: `Save as new ${startCase(typeDisplayName)}`,
