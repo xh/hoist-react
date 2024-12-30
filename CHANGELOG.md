@@ -54,6 +54,10 @@
   provided by FontAwesome.
 * Improved accuracy of `PersistOptions.type` enum.
 
+### 📚 Libraries
+
+* react-grid-layout `1.4.3 → 1.5.0`
+
 ## v70.0.0 - 2024-11-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)

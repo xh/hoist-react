@@ -49,7 +49,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
 
     render({className, model, testId}, ref) {
         const isDraggable = !model.layoutLocked,
-            isResizable = !model.layoutLocked;
+            isResizable = !model.layoutLocked,
+            [padX, padY] = model.containerPadding ?? [10, 10];
 
         ref = composeRefs(
             ref,
@@ -65,6 +66,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
+                style: {padding: `${padY}px ${padX}px`},
                 ref,
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
@@ -77,7 +79,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         compactType: model.compact ? 'vertical' : null,
                         margin: model.margin,
                         maxRows: model.maxRows,
-                        containerPadding: model.containerPadding,
+                        containerPadding: [0, 0], // Workaround for https://github.com/react-grid-layout/react-grid-layout/issues/1990
                         autoSize: true,
                         isBounded: true,
                         draggableHandle:
