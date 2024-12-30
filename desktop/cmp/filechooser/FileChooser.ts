@@ -108,7 +108,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                 });
             },
             onDrop: (accepted: File[], rejected: FileRejection[]) =>
-                model.onDrop(accepted, rejected)
+                model.onDrop(accepted, rejected),
+            onDropAccepted: (accepted: File[]) => model.onDropAccepted(accepted),
+            onDropRejected: (rejected: FileRejection[]) => model.onDropRejected(rejected)
         });
     }
 });

@@ -29,6 +29,12 @@ export interface FileChooserConf {
     /** Minimum accepted file size in bytes. Defaults to null (no limit). */
     minFileSize?: number;
 
+    /** Callback executed on drop event, invoked when files are accepted. */
+    onDropAccepted?: (accepted: File[]) => void;
+
+    /** Callback executed on drop event, invoked when files are rejected. */
+    onDropRejected?: (rejected: FileRejection[]) => void;
+
     /**
      * Content to display on file rejection within a toast.
      * Defaults to a list of rejected files with reasons for rejection.
@@ -68,6 +74,8 @@ export class FileChooserModel extends HoistModel {
     readonly maxCount: number;
     readonly maxFileSize: number;
     readonly minFileSize: number;
+    readonly onDropAccepted: (accepted: File[]) => void;
+    readonly onDropRejected: (rejected: FileRejection[]) => void;
     readonly maskOnDrag: boolean;
     readonly maskOnDisabled: boolean;
     readonly placeholderText: ReactNode;
@@ -83,10 +91,12 @@ export class FileChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
+        this.accept = this.getMimesByExt(params.accept);
         this.maxCount = params.maxCount;
         this.maxFileSize = params.maxFileSize;
         this.minFileSize = params.minFileSize;
-        this.accept = this.getMimesByExt(params.accept);
+        this.onDropAccepted = params.onDropAccepted;
+        this.onDropRejected = params.onDropRejected;
         this.rejectMessage = withDefault(params.rejectMessage, this.defaultRejectMessage);
         this.rejectToastConf = this.getRejectToastConf(params.rejectToastConf);
         this.maskOnDrag = withDefault(params.maskOnDrag, true);
