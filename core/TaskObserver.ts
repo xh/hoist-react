@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {sumBy, head} from 'lodash';
@@ -91,6 +91,11 @@ export class TaskObserver {
     linkTo(task: TaskObserver) {}
 
     /**
+     * Clear any tasks currently being observed.
+     */
+    clear() {}
+
+    /**
      * This class is abstract and should not be instantiated directly. To get an instance of this
      * class, use static methods trackFirst(), trackLast() or fromPromise().
      * @internal
@@ -155,6 +160,11 @@ class CompoundObserver extends TaskObserver {
             this._subtasks = keep;
         }
     }
+
+    @action
+    override clear() {
+        this._subtasks = [];
+    }
 }
 
 class PromiseObserver extends TaskObserver {
@@ -175,6 +185,11 @@ class PromiseObserver extends TaskObserver {
     }
     override get message() {
         return this._message;
+    }
+
+    @action
+    override clear() {
+        this._isPending = false;
     }
 
     constructor(promise, message) {

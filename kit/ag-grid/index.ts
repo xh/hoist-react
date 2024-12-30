@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
@@ -24,7 +24,6 @@ export let agGridVersion = null;
 export type {
     GridOptions,
     GridApi,
-    ColumnApi,
     SortDirection,
     ColDef,
     ColGroupDef,
@@ -49,8 +48,8 @@ export type {
     ColumnGroup as AgColumnGroup
 } from '@ag-grid-community/core';
 
-const MIN_VERSION = '30.0.0';
-const MAX_VERSION = '30.*.*';
+const MIN_VERSION = '31.2.0';
+const MAX_VERSION = '31.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

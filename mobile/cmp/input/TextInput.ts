@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -18,6 +18,14 @@ import './TextInput.scss';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
     value?: string;
+
+    /**
+     *  HTML `autocapitalize` attribute to set on underlying <input> element.
+     *
+     *  Hoist does not specify a default value, deferring to the browser, but pass 'none' to disable
+     *  for inputs where auto-capitalization is not desired or does not generally make sense.
+     */
+    autoCapitalize?: string;
 
     /**
      *  HTML `autocomplete` attribute to set on underlying <input> element.
@@ -117,6 +125,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             input({
                 value: model.renderValue || '',
 
+                autoCapitalize: props.autoCapitalize,
                 autoComplete: withDefault(
                     props.autoComplete,
                     props.type === 'password' ? 'new-password' : 'off'

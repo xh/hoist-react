@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some} from './';
+import {runInAction} from 'mobx';
+import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some, PersistableState} from './';
 import {
     throwIf,
     getOrCreate,
@@ -16,19 +17,16 @@ import {
     withInfo
 } from '@xh/hoist/utils/js';
 import {
-    cloneDeep,
     debounce as lodashDebounce,
     isFunction,
     isNil,
     isNumber,
     isPlainObject,
     isString,
-    isUndefined,
     upperFirst
 } from 'lodash';
 import {
     action,
-    runInAction,
     comparer,
     autorun as mobxAutorun,
     reaction as mobxReaction,
@@ -137,7 +135,12 @@ export abstract class HoistBase {
      * @param specs - one or more reactions to add
      * @returns disposer(s) to manually dispose of each created reaction.
      */
-    addReaction(...specs: ReactionSpec<any>[]): IReactionDisposer | IReactionDisposer[] {
+    addReaction<T>(spec: ReactionSpec<T>): IReactionDisposer;
+    addReaction<T extends any[]>(
+        ...specs: {[K in keyof T]: ReactionSpec<T[K]>}
+    ): IReactionDisposer[];
+
+    addReaction(...specs: ReactionSpec[]): IReactionDisposer | IReactionDisposer[] {
         const disposers = specs.map(s => {
             if (!s) return null;
             let {track, when, run, debounce, ...rest} = s;
@@ -253,26 +256,20 @@ export abstract class HoistBase {
      * @param options - options governing the persistence of this object. These will be applied
      *      on top of any default persistWith options defined on the instance itself.
      */
-    markPersist(property: string, options: PersistOptions = {}) {
+    markPersist(property: keyof this & string, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
-        try {
-            const persistWith = {path: property, ...this.persistWith, ...options},
-                provider = this.markManaged(PersistenceProvider.create(persistWith)),
-                providerState = provider.read();
-            if (!isUndefined(providerState)) {
-                runInAction(() => (this[property] = cloneDeep(providerState)));
+        PersistenceProvider.create({
+            persistOptions: {
+                path: property,
+                ...this.persistWith,
+                ...options
+            },
+            owner: this,
+            target: {
+                getPersistableState: () => new PersistableState(this[property]),
+                setPersistableState: state => runInAction(() => (this[property] = state.value))
             }
-            this.addReaction({
-                track: () => this[property],
-                run: data => provider.write(data)
-            });
-        } catch (e) {
-            this.logError(
-                `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                    `'persistWith' on this object or in the method call`,
-                e
-            );
-        }
+        });
     }
 
     /** @returns true if this instance has been destroyed. */

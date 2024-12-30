@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
-import {FetchResponse, PlainObject, XH} from '../';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
-
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
@@ -39,15 +39,19 @@ export class Exception {
         });
     }
 
-    /**
-     * Create an Error for when an operation (e.g. a Promise) times out.
-     */
+    /** Create an Error for when an operation (e.g. a Promise) times out. */
     static timeout(config: TimeoutExceptionConfig): TimeoutException {
         const {interval, ...rest} = config,
-            displayInterval = interval % 1000 ? `${interval}ms` : `${interval / 1000}s`;
+            // Display timeout in seconds if an even multiple (or very close to it).
+            displayInterval =
+                interval % 1000 < 5
+                    ? pluralize('second', Math.round(interval / 1000), true)
+                    : `${interval}ms`;
+
         return this.createInternal({
             name: 'Timeout Exception',
-            message: `Operation timed out after ${displayInterval}`,
+            // Note FetchService.managedFetchAsync appends to this message - review if changing.
+            message: `Timed out after ${displayInterval}`,
             isTimeout: true,
             stack: null,
             interval,
@@ -58,10 +62,15 @@ export class Exception {
     /**
      * Create an Error to throw when a fetch call returns a !ok response.
      * @param fetchOptions - original options passed to FetchService.
-     * @param fetchResponse - return value of native fetch, as enhanced by FetchService.
+     * @param response - return value of native fetch.
+     * @param responseText - optional additional details from the server.
      */
-    static fetchError(fetchOptions: FetchOptions, fetchResponse: FetchResponse): FetchException {
-        const {headers, status, statusText, responseText} = fetchResponse,
+    static fetchError(
+        fetchOptions: FetchOptions,
+        response: Response,
+        responseText: string = null
+    ): FetchException {
+        const {headers, status, statusText} = response,
             defaults = {
                 name: 'HTTP Error ' + (status || ''),
                 message: statusText,
@@ -106,7 +115,7 @@ export class Exception {
      */
     static fetchJsonParseError(fetchOptions: FetchOptions, cause: any): FetchException {
         return this.createFetchException({
-            name: 'Json Parsing Error.',
+            name: 'JSON Parsing Error',
             message:
                 'Error parsing the response body as JSON. The server may have returned an invalid ' +
                 'or empty response. Use "XH.fetch()" to process the response manually.',
@@ -168,12 +177,13 @@ export class Exception {
             origin = match
                 ? match[0]
                 : protocolPattern.test(XH.baseUrl)
-                ? XH.baseUrl
-                : window.location.origin;
+                  ? XH.baseUrl
+                  : window.location.origin;
 
         return this.createFetchException({
             name: 'Server Unavailable',
             message: `Unable to contact the server at ${origin}`,
+            isServerUnavailable: true,
             fetchOptions,
             cause
         });
@@ -183,23 +193,31 @@ export class Exception {
     // Implementation
     //-----------------------
     private static createFetchException(attributes: PlainObject) {
+        let correlationId: string = null;
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
+        }
+
         return this.createInternal({
             isFetchAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+            correlationId,
             ...attributes
         }) as FetchException;
     }
 
-    private static createInternal(attributes: PlainObject, baseError: Error = new Error()) {
+    private static createInternal(attributes: PlainObject, baseError?: Error) {
+        const {message, ...rest} = attributes;
         return Object.assign(
-            baseError,
+            baseError ?? new Error(message),
             {
                 isRoutine: false,
                 isHoistException: true
             },
-            attributes
+            rest
         ) as HoistException;
     }
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     BaseFilterFieldSpec,
@@ -62,6 +62,9 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
             this.addReaction({
                 track: () => this.source.lastUpdated,
                 run: () => this.loadValues(),
+                // Debounced primarily to minimize impact on UI responsiveness when using this model
+                // with a large number of records and/or auto-suggest enabled fields.
+                debounce: 100,
                 fireImmediately: true
             });
         }

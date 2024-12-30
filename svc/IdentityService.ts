@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -55,18 +55,12 @@ export class IdentityService extends HoistService {
     }
 
     /**
-     * For applications that support a logout operation (i.e. not SSO), logs the current user out
-     * and refreshes the application to present a login panel.
+     * Logs the current user out and reloads the application.
+     * @deprecated use XH.logoutAsync() instead.
      */
     async logoutAsync() {
-        try {
-            await XH.appModel?.logoutAsync();
-        } catch (e) {
-            this.logError('Error calling XH.appModel.logoutAsync()', e);
-        }
-        return XH.fetchJson({url: 'xh/logout'})
-            .then(() => XH.reloadApp())
-            .catchDefault();
+        apiDeprecated('logoutAsync', {v: '67', msg: 'Call XH.logoutAsync() instead.'});
+        return XH.logoutAsync();
     }
 
     //------------------------
@@ -142,6 +136,7 @@ export class IdentityService extends HoistService {
         user.hasRole = role => user.roles.includes(role);
         user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
         user.isHoistAdminReader = user.hasRole('HOIST_ADMIN_READER');
+        user.isHoistRoleManager = user.hasRole('HOIST_ROLE_MANAGER');
         user.hasGate = gate => this.hasGate(gate, user);
         return deepFreeze(user) as HoistUser;
     }
@@ -161,9 +156,6 @@ export class IdentityService extends HoistService {
     }
 
     private canUserImpersonate(user: HoistUser): boolean {
-        const hasPerm = XH.environmentService.isMinHoistCoreVersion('16.3.0')
-            ? user.hasRole(`HOIST_IMPERSONATOR`)
-            : user.isHoistAdmin;
-        return hasPerm && XH.getConf('xhEnableImpersonation');
+        return user.hasRole(`HOIST_IMPERSONATOR`) && XH.getConf('xhEnableImpersonation');
     }
 }

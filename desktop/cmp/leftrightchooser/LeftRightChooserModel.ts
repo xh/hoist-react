@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
@@ -184,6 +184,7 @@ export class LeftRightChooserModel extends HoistModel {
             emptyText: leftEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol],
+            contextMenu: false,
             xhImpl: true
         });
 
@@ -194,6 +195,7 @@ export class LeftRightChooserModel extends HoistModel {
             emptyText: rightEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol],
+            contextMenu: false,
             xhImpl: true
         });
 

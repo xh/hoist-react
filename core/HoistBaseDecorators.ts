@@ -2,12 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, isUndefined} from 'lodash';
-import {wait} from '../promise';
 import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
+import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -74,34 +72,34 @@ function createPersistDescriptor(
         return descriptor;
     }
     const codeValue = descriptor.initializer;
+    let hasInitialized = false,
+        ret;
     const initializer = function () {
-        let providerState;
+        // Initializer can be called multiple times when stacking decorators.
+        if (hasInitialized) return ret;
 
-        // Read from and attach to Provider.
-        // Fail gently -- initialization exceptions causes stack overflows for MobX.
-        try {
-            const persistWith = {path: property, ...this.persistWith, ...options},
-                provider = this.markManaged(PersistenceProvider.create(persistWith));
-            providerState = cloneDeep(provider.read());
-            wait().then(() => {
-                this.addReaction({
-                    track: () => this[property],
-                    run: data => provider.write(data)
-                });
-            });
-        } catch (e) {
-            logError(
-                [
-                    `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                        `'persistWith' on this object or annotation`,
-                    e
-                ],
-                target
-            );
-        }
+        // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
+        ret = codeValue?.call(this);
 
-        // 2) Return data from provider data *or* code, if provider not yet set or failed
-        return !isUndefined(providerState) ? providerState : codeValue?.call(this);
+        const persistOptions = {path: property, ...this.persistWith, ...options};
+        PersistenceProvider.create({
+            persistOptions,
+            owner: this,
+            target: {
+                getPersistableState: () =>
+                    new PersistableState(hasInitialized ? this[property] : ret),
+                setPersistableState: state => {
+                    if (!hasInitialized) {
+                        ret = state.value;
+                    } else {
+                        this[property] = state.value;
+                    }
+                }
+            }
+        });
+
+        hasInitialized = true;
+        return ret;
     };
     return {...descriptor, initializer};
 }

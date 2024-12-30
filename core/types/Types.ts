@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ElementFactory} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -26,6 +26,7 @@ export type VAlign = 'top' | 'bottom' | 'center';
 
 /** Convenience type for common pattern of accepting a single T, or an array of Ts. */
 export type Some<T> = T | T[];
+export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Thunkable<T> = T | (() => T);
 export type Awaitable<T> = Promise<T> | T;

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';
@@ -95,7 +95,7 @@ export class ExceptionHandler {
      * logging back to the server for stateful error tracking in the Admin Console.
      *
      * Typical application entry points to this method are the {@link XH.handleException} alias and
-     * {@link Promise.catchDefault}.
+     * {@link Promise.prototype.catchDefault}.
      *
      * This handler provides the most value with HoistExceptions created by {@link Exception.create}.
      * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
@@ -127,7 +127,7 @@ export class ExceptionHandler {
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
-                        onClick: () => exceptionDialogModel.show(e, opts)
+                        onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS
@@ -193,14 +193,19 @@ export class ExceptionHandler {
                 return false;
             }
 
-            await XH.fetchJson({
+            await XH.fetchService.postJson({
                 url: 'xh/submitError',
-                params: {
+                body: {
                     error,
                     msg: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('clientVersion'),
                     url: window.location.href,
                     userAlerted,
+                    clientUsername: username,
+                    correlationId: exception.correlationId
+                },
+                // Post clientUsername as a parameter to ensure client username matches session.
+                params: {
                     clientUsername: username
                 }
             });
@@ -237,14 +242,17 @@ export class ExceptionHandler {
             ret = this.cloneAndTrim(ret);
 
             // 3) Additional ad-hoc cleanups
+            // Remove finger pointing at Hoist
+            delete ret.isHoistException;
+
             // Remove noisy grails exception wrapper info
-            // Remove verbose loadSpec from fetchOptions
             const {serverDetails} = ret;
             if (serverDetails?.className === 'GrailsCompressingFilter') {
                 delete serverDetails.className;
                 delete serverDetails.lineNumber;
             }
 
+            // Remove verbose loadSpec from fetchOptions
             const {fetchOptions} = ret;
             if (fetchOptions?.loadSpec) {
                 fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
@@ -328,28 +336,11 @@ export class ExceptionHandler {
             ret.requireReload = true;
         }
 
-        if (this.sessionExpired(e)) {
-            ret.title = 'Authentication Error';
-            ret.message = 'Your session has expired. Please login.';
-            ret.showAsError = false;
-            ret.requireReload = true;
-        }
-
         return ret;
     }
 
     private sessionMismatch(e: HoistException): boolean {
         return e.name === 'SessionMismatchException';
-    }
-
-    // Detect an expired server session for special messaging, but only for requests back to the
-    // app's own server on a relative URL (to avoid triggering w/auth failures on remote CORS URLs).
-    private sessionExpired(e: HoistException): boolean {
-        if (XH.appSpec.isSSO) return false;
-        const {httpStatus, fetchOptions} = e,
-            relativeRequest = !fetchOptions?.url?.startsWith('http');
-
-        return relativeRequest && httpStatus === 401;
     }
 
     private cleanStack(e: HoistException) {
@@ -366,16 +357,22 @@ export class ExceptionHandler {
 
         const ret = {};
         forOwn(obj, (val, key) => {
-            if (key.startsWith('_')) return;
-            if (val && !val.toJSON) {
-                if (isObject(val)) {
-                    val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+            try {
+                if (key.startsWith('_')) return;
+                if (val && !val.toJSON) {
+                    if (isObject(val)) {
+                        val = depth > 1 ? this.cloneAndTrim(val, depth - 1) : '{...}';
+                    }
+                    if (isArray(val)) {
+                        val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
+                    }
                 }
-                if (isArray(val)) {
-                    val = depth > 1 ? val.map(it => this.cloneAndTrim(it, depth - 1)) : '[...]';
-                }
+                ret[key] = val;
+            } catch (e) {
+                // fail quietly.  Note that some properties may be inaccessible, e.g. security
+                // limitations accessing popup window references.
+                logDebug(['Failed to serialize exception property', key], this);
             }
-            ret[key] = val;
         });
 
         return ret;

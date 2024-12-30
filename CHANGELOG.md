@@ -1,14 +1,762 @@
 # Changelog
 
-## 60.0.0-SNAPSHOT
+## v71.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes
+
+* `ErrorMessage` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/error`
+  and `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/mask`
+  and `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform. Its import paths has changed from
+  `@xh/hoist/desktop/cmp/loadingindicator` and `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* The `RefreshButton` `model` prop has been renamed `target` for clarity and consistency.
+
+### 🎁 New Features
+
+* Major Improvements to ViewManager component
+  * Support for persisting pending value.
+  * Handle delete and update collisions more gracefully.
+  * Support for `settleTime`,
+  * Improved management UI Dialog.
+  * Support for "global" views.
+* New `SessionStorageService` and associated persistence provider provides support for saving
+  tab local data across reloads.
+* Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
+  clients requesting access tokens, covering cases when third-party cookies are blocked.
+
+### 🐞 Bug Fixes
+
+* Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
+  positioned with `top` orientation.
+* Fixed styling of `ButtonGroup` in vertical orientations.
+
+### ⚙️ Technical
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+* Improved accuracy of `PersistOptions.type` enum.
+* Corrected the type of `ColumnSpec.editor`.
+
+## v70.0.0 - 2024-11-15
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
+
+* Upgraded the `PersistenceProvider` API as noted in `New Features`. Could require updates in apps
+  with advanced direct usages of this API (uncommon).
+* Updated `GridModel` persistence to omit the widths of autosized columns from its persisted state.
+  This helps to keep persisted state more stable, avoiding spurious diffs due to autosize updates.
+  Note this can result in more visible column resizing for large grids without in-code default
+  widths. Please let XH know if this is a noticeable annoyance for your app.
+* Removed the following persistence-related model classes, properties, and methods:
+    * `GridPersistenceModel` and `ZoneGridPersistenceModel`
+    * `GridModel|ZoneGridModel.persistenceModel`
+    * `GridModel.autosizeState`
+    * `Column.manuallySized`
+    * `GroupingChooserModel|FilterChooserModel.persistValue`
+    * `DashModel|GroupingChooserModel|FilterChooserModel|PanelModel|TabContainerModel.provider`
+    * `PersistenceProvider.clearRaw()`
+* Renamed `ZoneGridModelPersistOptions.persistMappings`, adding the trailing `s` for consistency.
+* Changed signature of `JsonBlobService.listAsync()` to inline `loadSpec` with all other args in a
+  single options object.
+* Changed signature of `waitFor()` to take its optional `interval` and `timeout` arguments in a
+  single options object.
+
+### 🎁 New Features
+
+* Introduced a new `ViewManager` component and backing model to support user-driven management of
+  persisted component state - e.g. saved grid views.
+    * Bundled with a desktop-only menu button based component, but designed to be extensible.
+    * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
+    * Detects changes to any bound components and syncs them back to saved views, with support for
+      an autosave option or user-driven saving with a clear "dirty" indicator.
+    * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
+    * Includes a simple sharing model - if enabled for all or some users, allows those users to
+      publish saved views to everyone else in the application.
+    * Users can rename views, nest them into folders, and mark them as favorites for quick access.
+* Generally enhanced Hoist's persistence-related APIs:
+    * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
+    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
+      state on its bound `Persistable` when the provider is constructed and persisting state from
+      its bound `Persistable` when changes are detected.
+    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
+* Updated persistable components to support specifying distinct `PersistOptions` for individual
+  bits of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a
+  dashboard widget to persist its value to that particular widget's `DashViewModel` while saving the
+  user's favorites to a global preference.
+
+### ⚙️ Typescript API Adjustments
+
+* Tightened `FilterChooserFilterLike` union type to remove the generic `Filter` type, as filter
+  chooser supports only `FieldFilter` and `CompoundFilter`.
+* Improved `HoistBase.markPersist()` signature to ensure the provided property name is a known key
+  of the model.
+* Expanded the `JsonBlob` interface to include additional properties present on all blobs.
+* Corrected `DashViewSpec.title` to be optional - it can be defaulted from the `id`.
+* Corrected the return type for `SelectProps.loadingMessageFn` and `noOptionsMessageFn` to return
+  `ReactNode` vs `string`. The component supports rendering richer content via these options.
+
+## 69.1.0 - 2024-11-07
+
+### 🐞 Bug Fixes
+
+* Updated minimum required version of FontAwesome to 6.6, as required by the `fileXml()` icon added
+  in the prior Hoist release. The previous spec for FA dependencies allowed apps to upgrade to 6.6,
+  but did not enforce it, which could result in a build error due to an unresolved import.
+
+### ⚙️ Technical
+
+* Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+* Improved timeout error message thrown by `FetchService` to format the timeout interval in seconds
+  where possible.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.23 → 3.27`
+* @fortawesome/fontawesome-pro `6.2 → 6.6`
+* qs `6.12 → 6.13`
+* store2 `2.13 → 2.14`
+
+## 69.0.0 - 2024-10-17
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
+  new memory monitoring persistence.
+* Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
+
+### 🎁 New Features
+
+* Optimized activity tracking to batch its calls to the server, reducing network overhead.
+* Enhanced data posted with the built-in "Loaded App" entry to include a new `timings` block that
+  breaks down the overall initial load time into more discrete phases.
+* Added an optional refresh button to `RestGrid`s toolbar.
+* Updated the nested search input within Grid column filters to match candidate values on `any` vs
+  `startsWith`. (Note that this does not change how grid filters are applied, only how users can
+  search for values to select/deselect.)
+* Support for persisting of memory monitoring results
+
+### ⚙️ Typescript API Adjustments
+
+* Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
+  to the `run` closure that receives them.
+    * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
+      accurate typing, specifically if they are tracking an array of values, destructuring those
+      values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+
+### ✨ Styles
+
+* Reset the `--xh-popup-bg` background color to match the primary `--xh-bg` color by default.
+
+### 🐞 Bug Fixes
+
+* Fixed broken `Panel` resizing in Safari. (Other browsers were not affected.)
+
+## 68.1.0 - 2024-09-27
+
+### 🎁 New Features
+
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
+  props to the underlying `reactMarkdown` instance.
+
+### ⚙️ Technical
+
+* Misc. Improvements to Cluster Tab in Admin Panel.
+
+## 68.0.0 - 2024-09-18
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
+
+* Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
+
+### 🎁 New Features
+
+* Added expand/collapse affordance in the left column header of ZoneGrids in tree mode.
+
+### ⚙️ Technical
+
+* Updated Admin Console's Cluster tab to refresh more frequently.
+* Consolidated the polling check for Alert Banner updates into existing `EnvironmentService`
+  polling, avoiding an extra request and improving alert banner responsiveness.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected types of enhanced `Promise` methods.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.17 → 3.23`
+* mobx  `6.9.1 -> 6.13.2`,
+* mobx-react-lite  `3.4.3 -> 4.0.7`,
+
+## 67.0.0 - 2024-09-03
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
+
+* Requires `hoist-core >= 21.0`.
+
+### 🎁 New Features
+
+* Added support for Correlation IDs across fetch requests and error / activity tracking:
+    * New `FetchService` members: `autoGenCorrelationIds`, `genCorrelationId` and
+      `correlationIdHeaderKey` to support generation and inclusion of Correlation IDs on outbound
+      request headers.
+    * Correlation IDs are assigned via:
+        * `FetchOptions.correlationId` - specify an ID to be used on a particular request or `true`
+          to use a UUID generated by Hoist (see `FetchService.genCorrelationId()`).
+        * `TrackOptions.correlationId` - specify an ID for a tracked activity, if not using the
+          new `FetchOptions.track` API (see below).
+    * If set on a fetch request, Correlation IDs are passed through to downstream error reporting
+      and are available for review in the Admin Console.
+* Added `FetchOptions.track` as streamlined syntax to track a request via Hoist activity tracking.
+  Prefer this option (vs. a chained `.track()` call) to relay the request's `correlationId` and
+  `loadSpec` automatically.
+* Added `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
+  Note that `FetchService` methods suffixed with `Json` will set this property automatically.
+* Added global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
+* `GridModel` will now accept `contextMenu: false` to omit context menus.
+* Added bindable `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize the
+  load mask message shown during app initialization.
+* Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
+  when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
+* Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
+  already constructed `GroupingChooserModel`.
+
+### 🐞 Bug Fixes
+
+* Fixed Admin Console bug where a role with a dot in its name could not be deleted.
+* Fixed inline `SelectEditor` to ensure new value is flushed before grid editing stops.
+* `WebSocketService` now attempts to establish a new connection when app's server instance changes.
+
+### ✨ Styles
+
+* Added CSS variables to support customization of `Badge` component styling.
+
+### 📚 Libraries
+
+* short-unique-id `added @ 5.2`
+
+## 66.1.1 - 2024-08-01
+
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` to apply top and bottom cell borders, as expected.
+* Fix to new `mergeDeep` method.
+
+## 66.1.0 - 2024-07-31
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
+  Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
+  without lodash's surprising deep-merging of array-based properties.
+* Enhanced Roles Admin UI to support bulk category reassignment.
+* Enhanced the number formatters' `zeroPad` option to take an integer in addition to true/false, for
+  finer-grained control over padding length.
+
+### 🐞 Bug Fixes
+
+* Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
+  parent record itself. Now only the descendants are returned, as expected.
+    * ⚠️ Note that apps relying on the previous behavior will need to adjust to account for the
+      parent record no longer being included. (Tree grids with custom parent/child checkbox
+      selection are one example of a component that might be affected by this change.)
+* Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
+  too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Typescript API Adjustments
+
+* ⚠️ Please ensure you update your app to `hoist-dev-utils >= v9.0.1` - this ensures you have a
+  recent version of `type-fest` as a dev dependency, required to compile some recent Hoist
+  typescript changes.
+* The `NumberFormatOptions.precision` arg has been more strictly typed to `Precision`, a new type
+  exported from `@xh/hoist/format`. (It was previously `number`.) Apps might require minor
+  adjustments - e.g. typing shared format configs as `NumberFormatOptions` to satisfy the compiler.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
+
+## 66.0.2 - 2024-07-17
+
+### 🐞 Bug Fixes
+
+* Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
+  static page) for all iFrame-based "silent" token requests, as per MS recommendations. Intended to
+  avoid potential race conditions triggered by redirecting to the base app URL in these cases.
+* Fixed bug where `ContextMenu` items could be improperly positioned.
+    * ⚠️ Note that `MenuItems` inside a desktop `ContextMenu` are now rendered in a portal, outside
+      the normal component hierarchy, to ensures that menu items are positioned properly relative to
+      their parent. It should not affect most apps, but could impact menu style customizations that
+      rely on specific CSS selectors targeting the previous DOM structure.
+
+## 66.0.1 - 2024-07-10
+
+### 🐞 Bug Fixes
+
+* Fixed bug where inline grid edit of `NumberInput` was lost after quick navigation.
+
+## 66.0.0 - 2024-07-09
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor adjustments to client-side auth)
+
+* New `HoistAuthModel` exposes the client-side authentication lifecycle via a newly consolidated,
+  overridable API. This new API provides more easy customization of auth across all client-side
+  apps by being easily overrideable and specified via the `AppSpec` passed to `XH.renderApp()`.
+    * In most cases, upgrading should be a simple matter of moving code from `HoistAppModel` methods
+      `preAuthInitAsync()` and `logoutAsync()` (removed by this change) to new `HoistAuthModel`
+      methods `completeAuthAsync()` and `logoutAsync()`.
+
+### 🎁 New Features
+
+* Added option to `XH.reloadApp()` to reload specific app path.
+* Added `headerTooltip` prop to `ColumnGroup`.
+
+### 🐞 Bug Fixes
+
+* Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
+  an unexpected gap across the bottom of the screen. Includes fallback for secure client browsers
+  that don't support dynamic viewport units.
+* Updated mobile `TabContainer` to flex properly within flexbox containers.
+* Fixed timing issue with missing validation for records added immediately to a new `Store`.
+* Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
+
+## 65.0.0 - 2024-06-26
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
+* iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
+### ✨ Styles
+
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
+  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+  `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
+
+### ⚙️ Technical
+
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
+* Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
+  project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
+  if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Prop types for components passed to `elementFactory` and `createElement` are now inferred from the
+  component itself where possible.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `8.x → 9.x`
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
+
+## 64.0.5 - 2024-06-14
+
+### 🐞 Bug Fixes
+
+* Added a workaround for a mobile-only bug where Safari auto-zooms on orientation change if the user
+  had previously zoomed the page themselves.
+
+### ⚙️ Technical
+
+* Improved logout behavior of (beta) `MsalClient`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.14 → 3.17`
+
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Typescript API Adjustments
+
+* Improved `ref` typing in JSX.
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restored previous suppression of Blueprint animations on popovers and tooltips. These had been
+  unintentionally (re)enabled in v63 and are now turned off again.
+
+### ⚙️ Technical
+
+* Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
+
+## 64.0.2 - 2024-05-23
+
+### ⚙️ Technical
+
+* Adjusted (beta) API of `BaseOAuthClient`.
+* Improved `FetchService.addDefaultHeaders()` to support async functions.
+
+## 64.0.1 - 2024-05-19
+
+### ⚙️ Technical
+
+* Adjusted (beta) API of `BaseOAuthClient` and its approach to loading ID tokens.
+
+## 64.0.0 - 2024-05-17
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core + AG Grid updates)
+
+#### Hoist Core v20 with Multi-Instance Support
+
+Requires update to `hoist-core >= 20.0.0` with multi-instance support.
+
+* See the Hoist Core changelog for details on this major upgrade to Hoist's back-end capabilities.
+* Client-side application changes should be minimal or non-existent, but the Hoist Admin Console has
+  been updated extensively to support management of multiple instances within a cluster.
+
+#### AG Grid v31
+
+Requires update to `@ag-grid >= 31.x`, a new major AG Grid release with its own breaking changes.
+See AG's [What's New](https://blog.ag-grid.com/whats-new-in-ag-grid-31/)
+and [Upgrade Guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-31/?ref=blog.ag-grid.com)
+for more details.
+
+* AG Grid removed `ColumnApi`, consolidating most of its methods to `GridApi`. Corresponding Hoist
+  update removes `GridModel.agColumnApi` - review and migrate usages to `GridModel.agApi` as
+  appropriate.
+* Many methods on `agApi` are replaced with `agApi.updateGridOptions({property: value})`. Review
+  your app for any direct usages of the underlying AG API that might need to change.
+* All apps will need to update their `@ag-grid` dependencies within `package.json` and make a minor
+  update to their `Bootstrap` registration as per
+  this [Toolbox example](https://github.com/xh/toolbox/pull/709/files/5626e21d778e1fc72f9735d2d8f011513e1ac9c6#diff-304055320a29f66ea1255446ba8f13e0f3f1b13643bcea0c0466aa60e9288a8f).
+    * `Grid` and `AgGrid` components default to `reactiveCustomComponents: true`. If your app has
+      custom tooltips or editors, you should confirm that they still work with this setting. (It
+      will be the default in agGrid v32.)
+    * For custom editors, you will have to convert them from "imperative" to "reactive". If this is
+      not possible, you can set `reactiveCustomComponents: false` in your `GridModel` to continue
+      using the old "imperative" mode, but note that this will preclude the use of upgraded Hoist
+      editors in that same grid instance. (See the links below for AG docs on this change.)
+    * For custom tooltips, note AG-Grid's deprecation of `getReactContainerClasses`.
+    * Consult the AG Grid docs for more information:
+        * [Updated docs on Custom Components](https://ag-grid.com/react-data-grid/cell-editors/#custom-components)
+        * [Migrating from Imperative to Reactive components](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#migrating-custom-components-to-use-reactivecustomcomponents-option)
+        * [React-related deprecations](https://ag-grid.com/react-data-grid/upgrading-to-ag-grid-31-1/#react)
+
+#### Other Breaking Changes
+
+* Removed support for passing a plain object to the `model` prop of Hoist Components (previously
+  deprecated back in v58). Use the `modelConfig` prop instead.
+* Removed the `multiFieldRenderer` utility function. This has been made internal and renamed
+  to `zoneGridRenderer` for exclusive use by the `ZoneGrid` component.
+* Updated CSS variables related to the `ZoneGrid` component - vars formerly prefixed
+  by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
+  some defaults have changed.
+* Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
+  and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
+  used to more clearly indicate the desired auth behavior.
+
+### 🎁 New Features
+
+* Improved mobile viewport handling to ensure that both standard pages and full screen dialogs
+  respect "safe area" boundaries, avoiding overlap with system UI elements such as the iOS task
+  switcher at the bottom of the screen. Also set background letterboxing color (to black) when
+  in landscape mode for a more resolved-looking layout.
+* Improved the inline grid `selectEditor` to commit its value to the backing record as soon as an
+  option is selected, rather than waiting for the user to click away from the cell.
+* Improved the display of Role details in the Admin Console. The detail panel for the selected role
+  now includes a sub-tab listing all other roles inherited by the selected role, something that
+  was previously accessible only via the linked graph visualization.
+* Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
+* Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
+* Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information. Please note that
+  package is being released as a *beta* and is subject to change before final release.
+
+### ✨ Styles
+
+* Default mobile font size has been increased to 16px, both for better overall legibility and also
+  specifically for input elements to avoid triggering Safari's auto-zoom behavior on focus.
+    * Added new mobile-only CSS vars to allow for more granular control over font sizes:
+        * `--xh-mobile-input-font-size`
+        * `--xh-mobile-input-label-font-size`
+        * `--xh-mobile-input-height-px`
+    * Increased height of mobile toolbars to better accommodate larger nested inputs.
+    * Grid font sizes have not changed, but other application layouts might need to be adjusted to
+      ensure labels and other text elements fit as intended.
+* Mobile App Options dialog has been updated to use a full-screen `DialogPanel` to provide a more
+  native feel and better accommodate longer lists of app options.
+
+### 🐞 Bug Fixes
+
+* Fixed poor truncation / clipping behavior of the primary (right-side) metric in `ZoneGrid`. Values
+  that do not fit within the available width of the cell will now truncate their right edge and
+  display an ellipsis to indicate they have been clipped.
+* Improved `RestGridModel.actionWarning` behavior to suppress any warning when the provided function
+  returns a falsy value.
+* Fixed mobile `Toast` intent styling.
+
+### ⚙️ Technical
+
+* NumberEditor no longer activates on keypress of letter characters.
+* Removed initial `ping` call `FetchService` init.
+* Deprecated `FetchService.setDefaultHeaders` and replaced with new `addDefaultHeaders` method to
+  support independent additions of default headers from multiple sources in an application.
+
+### 📚 Libraries
+
+* @ag-grid `30.x → 31.x`
+* @auth0/auth0-spa-js `added @ 2.1`
+* @azure/msal-browser `added @ 3.14`
+* dompurify `3.0 → 3.1`
+* jwt-decode `added @ 4.0`
+* moment `2.29 → 2.30`
+* numbro `2.4 → 2.5`
+* qs `6.11 → 6.12`
+* semver `7.5 → 7.6`
+
+## 63.1.1 - 2024-04-26
+
+### 🐞 Bug Fixes
+
+* Fixed over-eager error handler installed on window during preflight app initialization. This can
+  catch errors thrown by browser extensions unrelated to the app itself, which should not block
+  startup. Make opt-in via special query param `catchPreflightError=true`.
+
+## 63.1.0 - 2024-04-23
+
+### 🎁 New Features
+
+* `Store` now supports multiple `summaryRecords`, displayed if so configured as multiple pinned
+  rows within a bound grid.
+
+## 63.0.3 - 2024-04-16
+
+### 🐞 Bug Fixes
+
+* Ensure all required styles imported for Blueprint datetime components.
+
+## 63.0.2 - 2024-04-16
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` items appearing in incorrect location while dragging to re-order.
+* Removed extraneous internal padding override to Blueprint menu styles. Fixes overhang of menu
+  divider borders and avoids possible triggering of horizontal scrollbars.
+
+## 63.0.1 - 2024-04-05
+
+### 🐞 Bug Fixes
+
+* Recently added fields now fully available in Admin Console Activity Tracking + Client Errors.
+
+## 63.0.0 - 2024-04-04
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - for apps with styling overrides or direct use of Blueprint components)
+
+* Requires `hoist-core >= v19.0.0` to support improvements to activity / client error tracking.
+
+#### Blueprint 4 to 5 Migration
+
+This release includes Blueprint 5, a major version update of that library with breaking changes.
+While most of these have been addressed by the Hoist integration layer, developers importing
+Blueprint components directly should review
+the [Blueprint 5 migration guide](https://github.com/palantir/blueprint/wiki/Blueprint-5.0) for
+details.
+
+There are some common breaking changes that most/many apps will need to address:
+
+* CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
+* Popovers
+    * For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
+      If using JSX, replace `target` prop with a child element. Also applies to the
+      mobile `popover`.
+    * Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
+      targeting `bp4-popover-wrapper`.
+    * All components which render popovers now depend
+      on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
+      need to be reworked.
+    * A breaking change to `Popover` in BP5 was splitting the `boundary` prop into `rootBoundary`
+      and `boundary`:
+      Popovers were frequently set up with `boundary: 'viewport'`, which is no longer valid since
+      "viewport" can be assigned to the `rootBoundary` but not to the `boundary`.
+      However, viewport is the DEFAULT value for `rootBoundary`
+      per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
+      so `boundary: 'viewport'` should be safe to remove entirely.
+        * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
+        * [see Popover2's `boundary` &
+          `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
+* Where applicable, the former `elementRef` prop has been replaced by the simpler, more
+  straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
+  becomes just `ref`. Review your app for uses of `elementRef`.
+* The static `ContextMenu.show()` method has been replaced with `showContextMenu()`, importable
+  from `@xh/hoist/kit/blueprint`. The method signature has changed slightly.
+* The exported `overlay` component now refers to Blueprint's `overlay2` component.
+* The exported `datePicker` now refers to Blueprint's `datePicker3` component, which has been
+  upgraded to use `react-day-picker` v8. If you are passing `dayPickerProps` to Hoist's `dateInput`,
+  you may need to update your code to use the
+  new [v8 `DatePickerProps`](https://react-day-picker.js.org/api/interfaces/DayPickerSingleProps).
+
+### 🎁 New Features
+
+* Upgraded Admin Console Activity and Client Error reporting modules to use server-side filtering
+  for better support of large datasets, allowing for longer-range queries on filtered categories,
+  messages, or users before bumping into configured row limits.
+* Added new `MenuItem.className` prop.
+
+### 🐞 Bug Fixes
+
+* Fixed two `ZoneGrid` issues:
+    * Internal column definitions were missing the essential `rendererIsComplex` flag and could fail
+      to render in-place updates to existing record data.
+    * Omitted columns are now properly filtered out.
+* Fixed issue where `SplitTreeMap` would not properly render errors as intended.
+
+### 📚 Libraries
+
+* @blueprintjs/core `4.20 → 5.10`
+* @blueprintjs/datetime `4.4` → @blueprintjs/datetime2 `2.3`
+
+## 62.0.1 - 2024-03-28
+
+### 🎁 New Features
+
+* New method `clear()` added to `TaskObserver` api.
+
+### 🐞 Bug Fixes
+
+* Ensure application viewport is masked throughout the entire app initialization process.
+
+## 62.0.0 - 2024-03-19
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v8.0.0` with updated chunking and code-splitting strategy
+  to create shorter bundle names.
+
+### 🎁 New Features
+
+* Added a "Reload App" option to the default mobile app menu.
+* Improved perceived responsiveness when constructing a new 'FilterChooserModel' when backing data
+  has many records and/or auto-suggest-enabled fields.
+
+### 🐞 Bug Fixes
+
+* Fixed the config differ dialog issue where long field values would cause the toolbar to get hidden
+  and/or table columns to be overly wide due to content overflow.
+
+## 61.0.0 - 2024-03-08
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v7.2.0` to inject new `xhClientApps` constant.
+
+### 🎁 New Features
+
+* Enhanced Roles Admin UI for more streamlined role editing.
+* Supports targeting alert banners to specific client apps.
+* Improved logging and error logging of `method` and `headers` in `FetchService`:  Default
+  values will now be included.
+* Enhanced `XH.reloadApp` with cache-buster.
+
+### 🐞 Bug Fixes
+
+* `FilterChooser` now correctly round-trips `Date` and `LocalDate` values. Previously it emitted
+  these as strings, with incorrect results when using the generated filter's test function directly.
+* Fixed bug where a discarded browser tab could re-init an app to an obsolete (cached) version.
+
+## 60.2.0 - 2024-02-16
+
+### 🎁 New Features
+
+* The Admin Console now indicates if a Config value is being overridden by an instance config or
+  environment variable with a corresponding name.
+    * Config overrides now available in `hoist-core >= v18.4`. See the Hoist Core release notes for
+      additional details on this new feature. The Hoist Core update is required for this feature,
+      but is not a hard requirement for this Hoist React release in general.
+* `RestGridEditor` now supports an `omit` flag to hide a field from the editor dialog.
+* `FormField.readonlyRenderer` is now passed the backing `FieldModel` as a second argument.
+
+### ⚙️ Typescript API Adjustments
+
+* `FilterChooserModel.value` and related signatures are now typed with a new `FilterChooserFilter`
+  type, a union of `CompoundFilter | FieldFilter` - the two concrete filter implementations
+  supported by this control.
+
+### 📚 Libraries
+
+* classnames `2.3 → 2.5`
+
+## 60.1.1 - 2024-01-29
+
+### ⚙️ Technical
+
+* Improved unique constraint validation of Roles and Role Members in the Admin Console.
+
+## 60.1.0 - 2024-01-18
+
+### 🐞 Bug Fixes
+
+* Fixed transparent background for popup inline editors.
+* Exceptions that occur in custom `Grid` cell tooltips will now be caught and logged to console,
+  rather than throwing the render of the entire component.
+
+### ⚙️ Technical
+
+* Improvements to exception handling during app initialization.
+
+## 60.0.1 - 2024-01-16
+
+### 🐞 Bug Fixes
+
+* Fixed regression to `ZoneGrid`.
+
+## 60.0.0 - 2024-01-12
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - depends on server-side Roles implementation)
+
+* Requires `hoist-core >= v18`. Even if not using new Hoist provided Role Management, several Admin
+  Console features have had deprecation support for older versions of Hoist Core removed.
+
+### 🎁 New Features
+
+* Introduced new Admin Console tools for enhanced Role Management available in `hoist-core >= v18`.
+    * Hoist-core now supports an out-of-the-box, database-driven system for maintaining a
+      hierarchical set of Roles associating and associating them with individual users.
+    * New system supports app and plug-in specific integrations to AD and other enterprise systems.
+    * Administration of the new system provided by a new admin UI tab provided here.
+    * Consult XH and the
+      [Hoist Core CHANGELOG](https://github.com/xh/hoist-core/blob/develop/CHANGELOG.md#1800---2024-01-12)
+      for additional details and upgrade instructions.
+* Added `labelRenderers` property to `ZoneGridModel`. This allows dynamic "data-specific" labeling
+  of fields in `ZoneGrid`.
 
 ### ✨ Styles
 
 * Added `xh-bg-intent-xxx` CSS classes, for intent-coloring the `background-color` of elements.
 
-### ⚙️ Typescript API Adjustments
+### 🐞 Bug Fixes
 
-* Corrected the type of `ColumnSpec.editor`.
+* Fixed bug where `ColumnGroup` did not properly support the `omit` flag.
+
+## 59.5.1 - 2024-01-05
+
+### 🐞 Bug Fixes
+
+* Fixed `DateEditor` calendar popover not showing for non-pinned columns.
 
 ## 59.5.0 - 2023-12-11
 
@@ -26,7 +774,7 @@
 
 ## 59.4.0 - 2023-11-28
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * The constructors for `ColumnGroup` no long accept arbitrary rest (e.g `...rest`)
   arguments for applying app-specific data to the object. Instead, use the new `appData` property.
@@ -162,7 +910,7 @@
 
 ### 📚 Libraries
 
-* numbro `2.3 -> 2.4`
+* numbro `2.3 → 2.4`
 * react-markdown `added @ 8.0`
 * remark-breaks `added @ 3.0`
 
@@ -192,8 +940,8 @@
 
 ### 📚 Libraries
 
-* react-select `5.7 -> 4.3`
-* react-windowed-select `5.1 -> 3.1`
+* react-select `5.7 → 4.3`
+* react-windowed-select `5.1 → 3.1`
 
 ## 59.0.1 - 2023-08-17
 
@@ -204,7 +952,7 @@
 
 ## 59.0.0 - 2023-08-17
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * Apps must update their `typescript` dependency to v5.1. This should be a drop-in for most
   applications, or require only minor changes. Note that Hoist has not yet adopted the updated
@@ -255,12 +1003,12 @@
 
 ### 📚 Libraries
 
-* mobx `6.8 -> 6.9`
-* semver `7.3 -> 7.5`
-* typescript `4.9 -> 5.1`
-* highcharts `10.3 -> 11.1`
-* react-select `4.3 -> 5.7`
-* react-windowed-select `3.1 -> 5.1`
+* mobx `6.8 → 6.9`
+* semver `7.3 → 7.5`
+* typescript `4.9 → 5.1`
+* highcharts `10.3 → 11.1`
+* react-select `4.3 → 5.7`
+* react-windowed-select `3.1 → 5.1`
 
 ## 58.0.1 - 2023-07-13
 
@@ -270,6 +1018,14 @@
   between tabs.
 
 ## 58.0.0 - 2023-07-07
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
+  argument. This argument was not passed consistently by Hoist when calling these functions; and was
+  specifically omitted during operations such as column sizing, tooltip generation and Grid content
+  searching. We do not expect this argument was being used in practice by applications, but
+  applications should ensure this is the case, and adjust these callbacks if necessary.
 
 ### 🎁 New Features
 
@@ -285,15 +1041,13 @@
   apps to react to changes in page visibility and focus, as well as detecting when the browser has
   frozen a tab due to inactivity or navigation.
 
-### 💥 Breaking Changes
-
-* The `Column.getValueFn` and `Column.renderer` functions will no longer be passed the `agParams`
-  argument. This argument was not passed consistently by Hoist when calling these functions; and was
-  specifically omitted during operations such as column sizing, tooltip generation and Grid content
-  searching. We do not expect this argument was being used in practice by applications, but
-  applications should ensure this is the case, and adjust these callbacks if necessary.
-
 ## 57.0.0 - 2023-06-20
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
+* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
+  instead.
 
 ### 🎁 New Features
 
@@ -309,12 +1063,6 @@
 * Hoist now supports and requires ag-Grid v30 or higher. This version includes critical
   performance improvements to scrolling without the problematic 'ResizeObserver' issues discussed
   below.
-
-### 💥 Breaking Changes
-
-* The deprecated `@settable` decorator has now been removed. Use `@bindable` instead.
-* The deprecated class `@xh/hoist/admin/App` has been removed. Use `@xh/hoist/admin/AppComponent`
-  instead.
 
 ### 🐞 Bug Fixes
 
@@ -347,7 +1095,7 @@
 
 ### 📚 Libraries
 
-* @blueprintjs/core `^4.14 -> ^4.20` (apps might have already updated to a newer minor version)
+* @blueprintjs/core `^4.14 → ^4.20` (apps might have already updated to a newer minor version)
 
 ## 56.5.0 - 2023-05-26
 
@@ -453,19 +1201,9 @@
 
 ## v56.0.0 - 2023-03-29
 
-### 🎁 New Features
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
 
-* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
-  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
-* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
-* New `FetchService.abort()` API allows manually aborting a pending fetch request.
-* Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
-  `Error.cause` property is now populated for wrapping exceptions.
-* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
-
-### 💥 Breaking Changes
-
-* Requires Hoist Core v16 or higher.
+* Requires `hoist-core => v16`.
 * Requires AG Grid v29.0.0 or higher - update your AG Grid dependency in your app's `package.json`
   file. See the [AG Grid Changelog](https://www.ag-grid.com/changelog) for details.
     * Add a dependency on `@ag-grid-community/styles` to import new dedicated styles package.
@@ -492,6 +1230,16 @@ import '@ag-grid-community/styles/ag-theme-balham.css';
 * Removed previously deprecated `Button.modifier.outline` and `Button.modifier.quiet` (mobile only).
 * Removed previously deprecated `AppMenuButton.extraItems.onClick`. Use `actionFn` instead.
 
+### 🎁 New Features
+
+* `PanelModel` now supports a `defaultSize` property specified in percentage as well as pixels
+  (e.g. `defaultSize: '20%'` as well as `defaultSize: 200`).
+* `DashCanvas` views can now be programmatically added with specified width and height dimensions.
+* New `FetchService.abort()` API allows manually aborting a pending fetch request.
+* Hoist exceptions have been enhanced and standardized, including new TypeScript types. The
+  `Error.cause` property is now populated for wrapping exceptions.
+* New `GridModel.headerMenuDisplay` config for limiting column header menu visibility to on hover.
+
 ### ⚙️ Typescript API Adjustments
 
 * New Typescript types for all Hoist exceptions.
@@ -505,8 +1253,8 @@ import '@ag-grid-community/styles/ag-theme-balham.css';
 
 ### 📚 Libraries
 
-* mobx `6.7 -> 6.8`
-* dompurify `2.4 -> 3.0`
+* mobx `6.7 → 6.8`
+* dompurify `2.4 → 3.0`
 
 ## v55.4.0 - 2023-03-23
 
@@ -636,10 +1384,10 @@ typescript has been widely adopted in production Hoist apps.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `^4.12 -> ^4.14`
-* corejs `^3.26 -> ^3.27`
-* mobx `6.6 -> 6.7`
-* onsenui `2.11 -> 2.12` (*see testing note below)
+* @blueprintjs/core `^4.12 → ^4.14`
+* corejs `^3.26 → ^3.27`
+* mobx `6.6 → 6.7`
+* onsenui `2.11 → 2.12` (*see testing note below)
 * react-onsenui `1.11 > 1.13`
 
 ### ✅ Testing Scope
@@ -731,10 +1479,10 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `4.11 -> 4.12`
-* @xh/hoist-dev-utils `6.0 -> 6.1`
+* @blueprintjs/core `4.11 → 4.12`
+* @xh/hoist-dev-utils `6.0 → 6.1`
 * typescript `added @ 4.9`
-* highcharts `9.3 -> 10.3`
+* highcharts `9.3 → 10.3`
 
 ### ✅ Testing Scope
 
@@ -859,12 +1607,12 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `4.6 -> 4.11`
-* @blueprintjs/datetime `4.3 -> 4.4`
-* @fortawesome `6.1 -> 6.2`
-* dompurify `2.3 -> 2.4`
-* react `17.0.1 -> 18.2.0`
-* react-dom `17.0.1 -> 18.2.0`
+* @blueprintjs/core `4.6 → 4.11`
+* @blueprintjs/datetime `4.3 → 4.4`
+* @fortawesome `6.1 → 6.2`
+* dompurify `2.3 → 2.4`
+* react `17.0.1 → 18.2.0`
+* react-dom `17.0.1 → 18.2.0`
 
 ## v51.0.0 - 2022-08-29
 
@@ -927,9 +1675,9 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `4.5 -> 4.6`
-* qs `6.10 -> 6.11`
-* react-popper `2.2 -> 2.3`
+* @blueprintjs/core `4.5 → 4.6`
+* qs `6.10 → 6.11`
+* react-popper `2.2 → 2.3`
 
 ## v50.0.0 - 2022-07-12
 
@@ -984,7 +1732,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs `3.54 -> 4.5`
+* @blueprintjs `3.54 → 4.5`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.2.0...v50.0.0)
 
@@ -1007,7 +1755,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* mobx `6.5 -> 6.6`
+* mobx `6.5 → 6.6`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v49.1.0...v49.2.0)
 
@@ -1079,7 +1827,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* mobx-react-lite `3.3 -> 3.4`
+* mobx-react-lite `3.3 → 3.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v48.0.1...v49.0.0)
 
@@ -1138,9 +1886,9 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @fortawesome/fontawesome-pro `5.14 -> 6.1`
-* mobx `6.3 -> 6.5`
-* mobx-react-lite `3.2 -> 3.3`
+* @fortawesome/fontawesome-pro `5.14 → 6.1`
+* mobx `6.3 → 6.5`
+* mobx-react-lite `3.2 → 3.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.1.2...v48.0.0)
 
@@ -1174,8 +1922,8 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.53 -> 3.54`
-* @blueprintjs/datetime `3.23 -> 3.24`
+* @blueprintjs/core `3.53 → 3.54`
+* @blueprintjs/datetime `3.23 → 3.24`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v47.0.1...v47.1.1)
 
@@ -1226,7 +1974,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.52 -> 3.53`
+* @blueprintjs/core `3.52 → 3.53`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v46.1.2...v47.0.0)
 
@@ -1393,12 +2141,12 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @popperjs/core `2.10 -> 2.11`
-* codemirror `5.63 -> 6.65`
-* http-status-codes `2.1 -> 2.2`
-* prop-types `15.7 -> 15.8`
-* store2 `2.12 -> 2.13`
-* ua-parser-js `0.7 -> 1.0.2` (re-enables auto-patch updates)
+* @popperjs/core `2.10 → 2.11`
+* codemirror `5.63 → 6.65`
+* http-status-codes `2.1 → 2.2`
+* prop-types `15.7 → 15.8`
+* store2 `2.12 → 2.13`
+* ua-parser-js `0.7 → 1.0.2` (re-enables auto-patch updates)
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v44.3.0...v45.0.0)
 
@@ -1411,7 +2159,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.51 -> 3.52`
+* @blueprintjs/core `3.51 → 3.52`
 
 * [Commit Log](https://github.com/xh/hoist-react/compare/v44.2.0...v44.3.0)
 
@@ -1526,7 +2274,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.50 -> 3.51`
+* @blueprintjs/core `3.50 → 3.51`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v43.0.2...v43.1.0)
 
@@ -1604,8 +2352,8 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.49 -> 3.50`
-* codemirror `5.62 -> 5.63`
+* @blueprintjs/core `3.49 → 3.50`
+* codemirror `5.62 → 5.63`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.6.0...v43.0.1)
 
@@ -1656,8 +2404,8 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.48 -> 3.49`
-* @popperjs/core `2.9 -> 2.10`
+* @blueprintjs/core `3.48 → 3.49`
+* @popperjs/core `2.9 → 2.10`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.4.0...v42.5.0)
 
@@ -1705,7 +2453,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.47 -> 3.48`
+* @blueprintjs/core `3.47 → 3.48`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v42.1.0...v42.1.1)
 
@@ -1868,7 +2616,7 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* core-js `3.15 -> 3.16`
+* core-js `3.15 → 3.16`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.1.0...v41.2.0)
 
@@ -1917,8 +2665,8 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.46 -> 3.47`
-* dompurify `2.2 -> 2.3`
+* @blueprintjs/core `3.46 → 3.47`
+* dompurify `2.2 → 2.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v41.0.0...v41.1.0)
 
@@ -2010,12 +2758,12 @@ to use TypeScript for its own app-level code.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.44 -> 3.46`
-* codemirror `5.60 -> 5.62`
-* core-js `3.10 -> 3.15`
-* filesize `6.2 -> 6.4`
-* mobx `6.1 -> 6.3`
-* react-windowed-select `3.0 -> 3.1`
+* @blueprintjs/core `3.44 → 3.46`
+* codemirror `5.60 → 5.62`
+* core-js `3.10 → 3.15`
+* filesize `6.2 → 6.4`
+* mobx `6.1 → 6.3`
+* react-windowed-select `3.0 → 3.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v40.0.0...v41.0.0)
 
@@ -2089,15 +2837,15 @@ your dev-utils dependency for your project to build.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.41 -> 3.44`
-* @blueprintjs/datetime `3.21 -> 3.23`
-* classnames `2.2 -> 2.3`
-* codemirror `5.59 -> 5.60`
-* core-js `3.9 -> 3.10`
-* filesize `6.1 -> 6.2`
-* qs `6.9 -> 6.10`
-* react-beautiful-dnd `13.0 -> 13.1`
-* react-select `4.2 -> 4.3`
+* @blueprintjs/core `3.41 → 3.44`
+* @blueprintjs/datetime `3.21 → 3.23`
+* classnames `2.2 → 2.3`
+* codemirror `5.59 → 5.60`
+* core-js `3.9 → 3.10`
+* filesize `6.1 → 6.2`
+* qs `6.9 → 6.10`
+* react-beautiful-dnd `13.0 → 13.1`
+* react-select `4.2 → 4.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v39.0.1...v40.0.0)
 
@@ -2167,11 +2915,11 @@ your dev-utils dependency for your project to build.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.39 -> 3.41`
-* @blueprintjs/datetime `3.20 -> 3.21`
-* @popperjs/core `2.8 -> 2.9`
-* core-js `3.8 -> 3.9`
-* react-select `4.1 -> 4.2`
+* @blueprintjs/core `3.39 → 3.41`
+* @blueprintjs/datetime `3.20 → 3.21`
+* @popperjs/core `2.8 → 2.9`
+* core-js `3.8 → 3.9`
+* react-select `4.1 → 4.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.3.0...v39.0.0)
 
@@ -2259,9 +3007,9 @@ resolve and bundle transitive dependencies of the upgraded `react-select` librar
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.38 -> 3.39`
-* react-select `3.1 -> 4.1`
-* react-windowed-select `2.0 -> 3.0`
+* @blueprintjs/core `3.38 → 3.39`
+* react-select `3.1 → 4.1`
+* react-windowed-select `2.0 → 3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v38.0.0...v38.1.0)
 
@@ -2328,10 +3076,10 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.36 -> 3.38`
-* codemirror `5.58 -> 5.59`
-* mobx `5.15 -> 6.1`
-* mobx-react `6.3 -> 7.1`
+* @blueprintjs/core `3.36 → 3.38`
+* codemirror `5.58 → 5.59`
+* mobx `5.15 → 6.1`
+* mobx-react `6.3 → 7.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v37.2.0...v38.0.0)
 
@@ -2446,14 +3194,14 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 ### 📚 Libraries
 
-* @xh/onsenui `~0.1.2` -> onsenui `~2.11.1`
-* @xh/react-onsenui `~0.1.2` -> react-onsenui `~1.11.3`
-* @blueprintjs/core `3.35 -> 3.36`
-* @blueprintjs/datetime `3.19 -> 3.20`
-* clipboard-copy `3.1 -> 4.0`
-* core-js `3.6 -> 3.8`
+* @xh/onsenui `~0.1.2` → onsenui `~2.11.1`
+* @xh/react-onsenui `~0.1.2` → react-onsenui `~1.11.3`
+* @blueprintjs/core `3.35 → 3.36`
+* @blueprintjs/datetime `3.19 → 3.20`
+* clipboard-copy `3.1 → 4.0`
+* core-js `3.6 → 3.8`
 * dompurify `added @ 2.2`
-* react `16.13 -> 17.0`
+* react `16.13 → 17.0`
 * semver `added @ 7.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.6.1...v37.0.0)
@@ -2497,7 +3245,7 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.33 -> 3.35`
+* @blueprintjs/core `3.33 → 3.35`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.5.0...v36.6.0)
 
@@ -2516,11 +3264,11 @@ decorators, in favor of a simpler inheritance-based approach to defining models 
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.31 -> 3.33`
-* @blueprintjs/datetime `3.18 -> 3.19`
-* @fortawesome/fontawesome-pro `5.14 -> 5.15`
-* moment `2.24 -> 2.29`
-* numbro `2.2 -> 2.3`
+* @blueprintjs/core `3.31 → 3.33`
+* @blueprintjs/datetime `3.18 → 3.19`
+* @fortawesome/fontawesome-pro `5.14 → 5.15`
+* moment `2.24 → 2.29`
+* numbro `2.2 → 2.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.4.0...v36.5.0)
 
@@ -2651,7 +3399,7 @@ Error tracking tabs described below.
 
 ### 📚 Libraries
 
-* codemirror `5.57 -> 5.58`
+* codemirror `5.57 → 5.58`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v36.0.0...v36.1.0)
 
@@ -2768,11 +3516,11 @@ below regarding related updates to `GridModel.columns` config processing.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.30 -> 3.31`
-* codemirror `5.56 -> 5.57`
-* http-status-codes `1.4 -> 2.1`
-* mobx-react `6.2 -> 6.3`
-* store2 `2.11 -> 2.12`
+* @blueprintjs/core `3.30 → 3.31`
+* codemirror `5.56 → 5.57`
+* http-status-codes `1.4 → 2.1`
+* mobx-react `6.2 → 6.3`
+* store2 `2.11 → 2.12`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.2.1...v36.0.0)
 
@@ -2810,8 +3558,8 @@ below regarding related updates to `GridModel.columns` config processing.
 
 ### 📚 Libraries
 
-* @fortawesome/fontawesome-pro `5.13 -> 5.14`
-* codemirror `5.55 -> 5.56`
+* @fortawesome/fontawesome-pro `5.13 → 5.14`
+* codemirror `5.55 → 5.56`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.1.1...v35.2.0)
 
@@ -2819,7 +3567,7 @@ below regarding related updates to `GridModel.columns` config processing.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.29 -> 3.30`
+* @blueprintjs/core `3.29 → 3.30`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v35.1.0...v35.1.1)
 
@@ -2935,17 +3683,17 @@ wide variety of enterprise software projects. For any questions regarding this c
 Note that certain licensed third-party dependencies have been removed as direct dependencies of this
 project, as per note in Breaking Changes above.
 
-* @xh/hoist-dev-utils `4.x -> 5.x` - apps should also update to the latest 5.x release of dev-utils.
+* @xh/hoist-dev-utils `4.x → 5.x` - apps should also update to the latest 5.x release of dev-utils.
   Although license and dependency changes triggered a new major version of this dev dependency, no
   application-level changes should be required.
-* @blueprintjs/core `3.28 -> 3.29`
-* codemirror `5.54 -> 5.55`
-* react-select `3.0 -> 3.1`
+* @blueprintjs/core `3.28 → 3.29`
+* codemirror `5.54 → 5.55`
+* react-select `3.0 → 3.1`
 
 ### 📚 Optional Libraries
 
 * AG Grid `23.0.2` > `23.2.0` (See Toolbox app for example on this upgrade)
-* Highcharts `8.0.4 -> 8.1.1`
+* Highcharts `8.0.4 → 8.1.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v34.0.0...v35.0.0)
 
@@ -2987,10 +3735,10 @@ project, as per note in Breaking Changes above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.26 -> 3.28`
-* @blueprintjs/datetime `3.16 -> 3.18`
-* codemirror `5.53 -> 5.54`
-* react-transition-group `4.3 -> 4.4`
+* @blueprintjs/core `3.26 → 3.28`
+* @blueprintjs/datetime `3.16 → 3.18`
+* codemirror `5.53 → 5.54`
+* react-transition-group `4.3 → 4.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.3.0...v34.0.0)
 
@@ -3036,9 +3784,9 @@ project, as per note in Breaking Changes above.
 
 ### 📚 Libraries
 
-* react `~16.8 -> ~16.13`
-* onsenui `~16.8` -> @xh/onsenui `~16.13`
-* react-onsenui `~16.8` -> @xh/react-onsenui `~16.13`
+* react `~16.8 → ~16.13`
+* onsenui `~16.8` → @xh/onsenui `~16.13`
+* react-onsenui `~16.8` → @xh/react-onsenui `~16.13`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.1.0...33.2.0)
 
@@ -3098,8 +3846,8 @@ project, as per note in Breaking Changes above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.25 -> 3.26`
-* codemirror `5.52 -> 5.53`
+* @blueprintjs/core `3.25 → 3.26`
+* codemirror `5.52 → 5.53`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v33.0.0...v33.0.1)
 
@@ -3141,9 +3889,9 @@ project, as per note in Breaking Changes above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.24 -> 3.25`
-* @blueprintjs/datetime `3.15 -> 3.16`
-* mobx-react `6.1 -> 6.2`
+* @blueprintjs/core `3.24 → 3.25`
+* @blueprintjs/datetime `3.15 → 3.16`
+* mobx-react `6.1 → 6.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v32.0.4...v33.0.0)
 
@@ -3224,12 +3972,12 @@ possible breaking changes to any direct/custom use of AG Grid APIs and props wit
 * ag-grid-community `removed @ 21.2`
 * ag-grid-enterprise `21.2` replaced with @ag-grid-enterprise/all-modules `23.0`
 * ag-grid-react `21.2` replaced with @ag-grid-community/react `23.0`
-* @fortawesome/* `5.12 -> 5.13`
-* codemirror `5.51 -> 5.52`
-* filesize `6.0 -> 6.1`
-* numbro `2.1 -> 2.2`
-* react-beautiful-dnd `12.0 -> 13.0`
-* store2 `2.10 -> 2.11`
+* @fortawesome/* `5.12 → 5.13`
+* codemirror `5.51 → 5.52`
+* filesize `6.0 → 6.1`
+* numbro `2.1 → 2.2`
+* react-beautiful-dnd `12.0 → 13.0`
+* store2 `2.10 → 2.11`
 * compose-react-refs `NEW 1.0.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v31.0.0...v32.0.2)
@@ -3284,7 +4032,7 @@ possible breaking changes to any direct/custom use of AG Grid APIs and props wit
     * The `fontAwesomeIcon()` factory function (used to render icons not already enumerated by
       Hoist)
       has been replaced by the improved `Icon.icon()` factory - e.g. `fontAwesomeIcon({icon: ['far',
-      'alicorn']}) -> Icon.icon({iconName: 'alicorn'})`.
+      'alicorn']}) → Icon.icon({iconName: 'alicorn'})`.
     * The `convertIconToSvg()` utility method has been replaced by the new `asHtml` parameter on
       icon factory functions. If you need to convert an existing icon element,
       use `convertIconToHtml()`.
@@ -3394,9 +4142,9 @@ possible breaking changes to any direct/custom use of AG Grid APIs and props wit
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.23 -> 3.24`
-* react-dates `21.7 -> 21.8`
-* react-beautiful-dnd `11.0 -> 12.2`
+* @blueprintjs/core `3.23 → 3.24`
+* react-dates `21.7 → 21.8`
+* react-beautiful-dnd `11.0 → 12.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.1.0...v30.0.0)
 
@@ -3450,9 +4198,9 @@ possible breaking changes to any direct/custom use of AG Grid APIs and props wit
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.22 -> 3.23`
-* codemirror `5.50 -> 5.51`
-* react-dates `21.5 -> 21.7`
+* @blueprintjs/core `3.22 → 3.23`
+* codemirror `5.50 → 5.51`
+* react-dates `21.5 → 21.7`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v29.0.0...v29.1.0)
 
@@ -3616,17 +4364,17 @@ Note the following more specific changes to these related classes:
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.19 -> 3.22`
-* @blueprintjs/datetime `3.14 -> 3.15`
-* @fortawesome/fontawesome-pro `5.11 -> 5.12`
-* codemirror `5.49 -> 5.50`
-* core-js `3.3 -> 3.6`
-* fast-deep-equal `2.0 -> 3.1`
-* filesize `5.0 -> 6.0`
-* highcharts 7.2 -> 8.0`
-* mobx `5.14 -> 5.15`
-* react-dates `21.3 -> 21.5`
-* react-dropzone `10.1 -> 10.2`
+* @blueprintjs/core `3.19 → 3.22`
+* @blueprintjs/datetime `3.14 → 3.15`
+* @fortawesome/fontawesome-pro `5.11 → 5.12`
+* codemirror `5.49 → 5.50`
+* core-js `3.3 → 3.6`
+* fast-deep-equal `2.0 → 3.1`
+* filesize `5.0 → 6.0`
+* highcharts 7.2 → 8.0`
+* mobx `5.14 → 5.15`
+* react-dates `21.3 → 21.5`
+* react-dropzone `10.1 → 10.2`
 * react-windowed-select `added @ 2.0.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.2.0...v29.0.0)
@@ -3700,8 +4448,8 @@ Note the following more specific changes to these related classes:
 
 ### 📚 Libraries
 
-* core-js `3.2 -> 3.3`
-* filesize `4.2 -> 5.0`
+* core-js `3.2 → 3.3`
+* filesize `4.2 → 5.0`
 * http-status-codes `added @ 1.3`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v28.0.0...v28.1.0)
@@ -3793,16 +4541,16 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.18 -> 3.19`
-* @blueprintjs/datetime `3.12 -> 3.14`
-* @fortawesome/fontawesome-pro `5.10 -> 5.11`
-* @xh/hoist-dev-utils `3.8 -> 4.3` (multiple transitive updates to build tooling)
-* ag-grid `21.1 -> 21.2`
-* highcharts `7.1 -> 7.2`
-* mobx `5.13 -> 5.14`
-* react-transition-group `4.2 -> 4.3`
+* @blueprintjs/core `3.18 → 3.19`
+* @blueprintjs/datetime `3.12 → 3.14`
+* @fortawesome/fontawesome-pro `5.10 → 5.11`
+* @xh/hoist-dev-utils `3.8 → 4.3` (multiple transitive updates to build tooling)
+* ag-grid `21.1 → 21.2`
+* highcharts `7.1 → 7.2`
+* mobx `5.13 → 5.14`
+* react-transition-group `4.2 → 4.3`
 * rsvp (removed)
-* store2 `2.9 -> 2.10`
+* store2 `2.9 → 2.10`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v27.1.0...v28.0.0)
 
@@ -3888,9 +4636,9 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @xh/hoist-dev-utils `3.7 -> 3.8`
-* qs `6.7 -> 6.8`
-* store2 `2.8 -> 2.9`
+* @xh/hoist-dev-utils `3.7 → 3.8`
+* qs `6.7 → 6.8`
+* store2 `2.8 → 2.9`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v26.0.1...v27.0.0)
 
@@ -3955,11 +4703,11 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.17 -> 3.18`
-* @blueprintjs/datetime `3.11 -> 3.12`
-* @fortawesome/fontawesome `5.9 -> 5.10`
-* ag-grid `21.0.1 -> 21.1.1`
-* store2 `2.7 -> 2.8`
+* @blueprintjs/core `3.17 → 3.18`
+* @blueprintjs/datetime `3.11 → 3.12`
+* @fortawesome/fontawesome `5.9 → 5.10`
+* ag-grid `21.0.1 → 21.1.1`
+* store2 `2.7 → 2.8`
 * The `clipboard` library has been replaced with the simpler `clipboard-copy` library.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v25.2.0...v26.0.1)
@@ -4008,7 +4756,7 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* mobx `5.11 -> 5.13`
+* mobx `5.11 → 5.13`
 * Misc. patch-level updates
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v25.0.0...v25.1.0)
@@ -4059,10 +4807,10 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.16 -> 3.17`
-* @blueprintjs/datetime `3.10 -> 3.11`
-* mobx `5.10 -> 5.11`
-* react-transition-group `2.8 -> 4.2`
+* @blueprintjs/core `3.16 → 3.17`
+* @blueprintjs/datetime `3.10 → 3.11`
+* mobx `5.10 → 5.11`
+* react-transition-group `2.8 → 4.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v24.1.1...v24.2.0)
 
@@ -4098,10 +4846,10 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.15 -> 3.16`
-* @blueprintjs/datetime `3.9 -> 3.10`
-* codemirror `5.47 -> 5.48`
-* mobx `6.0 -> 6.1`
+* @blueprintjs/core `3.15 → 3.16`
+* @blueprintjs/datetime `3.9 → 3.10`
+* codemirror `5.47 → 5.48`
+* mobx `6.0 → 6.1`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v24.0.0...v24.1.0)
 
@@ -4190,11 +4938,11 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* ag-grid `20.0 -> 21.0`
-* react-select `2.4 -> 3.0`
-* mobx-react `5.4 -> 6.0.3`
-* font-awesome `5.8 -> 5.9`
-* react-beautiful-dnd `10.1.1 -> 11.0.4`
+* ag-grid `20.0 → 21.0`
+* react-select `2.4 → 3.0`
+* mobx-react `5.4 → 6.0.3`
+* font-awesome `5.8 → 5.9`
+* react-beautiful-dnd `10.1.1 → 11.0.4`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v23.0.0...v24.0.0)
 
@@ -4362,11 +5110,11 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* AG Grid `~20.1 -> ~20.2` (fixes ag-grid sorting bug with treeMode)
-* @blueprint/core `3.14 -> 3.15`
-* @blueprint/datetime `3.7 -> 3.8`
-* react-dropzone `10.0 -> 10.1`
-* react-transition-group `2.6 -> 2.8`
+* AG Grid `~20.1 → ~20.2` (fixes ag-grid sorting bug with treeMode)
+* @blueprint/core `3.14 → 3.15`
+* @blueprint/datetime `3.7 → 3.8`
+* react-dropzone `10.0 → 10.1`
+* react-transition-group `2.6 → 2.8`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v20.2.1...v21.0.0)
 
@@ -4516,13 +5264,13 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.13 -> 3.14`
-* @xh/hoist-dev-utils `3.5 -> 3.6`
-* ag-grid `~20.0 -> ~20.1`
-* react-dropzone `~8.0 -> ~9.0`
-* react-select `~2.3 -> ~2.4`
-* router5 `~6.6 -> ~7.0`
-* react `~16.7 -> ~16.8`
+* @blueprintjs/core `3.13 → 3.14`
+* @xh/hoist-dev-utils `3.5 → 3.6`
+* ag-grid `~20.0 → ~20.1`
+* react-dropzone `~8.0 → ~9.0`
+* react-select `~2.3 → ~2.4`
+* router5 `~6.6 → ~7.0`
+* react `~16.7 → ~16.8`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v19.0.1...v20.0.0)
 
@@ -4592,8 +5340,8 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* @blueprintjs/core `3.12 -> 3.13`
-* ag-grid `~19.1.4 -> ~20.0.0`
+* @blueprintjs/core `3.12 → 3.13`
+* ag-grid `~19.1.4 → ~20.0.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v18.1.2...v19.0.0)
 
@@ -4645,13 +5393,13 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* Hoist-dev-utils `3.4.1 -> 3.5.0` - updated webpack and other build tool dependencies, as well as
+* Hoist-dev-utils `3.4.1 → 3.5.0` - updated webpack and other build tool dependencies, as well as
   an improved eslint configuration.
-* @blueprintjs/core `3.10 -> 3.12`
-* @blueprintjs/datetime `3.5 -> 3.7`
-* fontawesome `5.6 -> 5.7`
-* mobx `5.8 -> 5.9`
-* react-select `2.2 -> 2.3`
+* @blueprintjs/core `3.10 → 3.12`
+* @blueprintjs/datetime `3.5 → 3.7`
+* fontawesome `5.6 → 5.7`
+* mobx `5.8 → 5.9`
+* react-select `2.2 → 2.3`
 * Other patch updates
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v18.0.0...v18.1.0)
@@ -4697,7 +5445,7 @@ leverage the context for model support discussed above.
 
 ### 📚 Libraries
 
-* React `~16.6.0 -> ~16.7.0`
+* React `~16.6.0 → ~16.7.0`
 * Patch version updates to multiple other dependencies.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v17.0.0...v18.0.0)
@@ -4921,11 +5669,11 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* Blueprint Core `3.6.1 -> 3.7.0`
-* Blueprint Datetime `3.2.0 -> 3.3.0`
-* Fontawesome `5.3.x -> 5.4.x`
-* MobX `5.1.2 -> 5.5.0`
-* Router5 `6.5.0 -> 6.6.0`
+* Blueprint Core `3.6.1 → 3.7.0`
+* Blueprint Datetime `3.2.0 → 3.3.0`
+* Fontawesome `5.3.x → 5.4.x`
+* MobX `5.1.2 → 5.5.0`
+* Router5 `6.5.0 → 6.6.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v14.1.3...v14.2.0)
 
@@ -5028,8 +5776,8 @@ list. Note, this component is being replaced in Hoist v16 by the react-select li
 
 ### 📚 Libraries
 
-* React `16.5.1 -> 16.5.2`
-* router5 `6.4.2 -> 6.5.0`
+* React `16.5.1 → 16.5.2`
+* router5 `6.4.2 → 6.5.0`
 * CodeMirror, Highcharts, and MobX patch updates
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v13.0.0...v14.0.0)
@@ -5103,7 +5851,7 @@ Other enhancements include:
 
 ### 📚 Libraries
 
-* Rollback update of `@blueprintjs/select` package `3.1.0 -> 3.0.0` - this included breaking API
+* Rollback update of `@blueprintjs/select` package `3.1.0 → 3.0.0` - this included breaking API
   changes and will be revisited in #558.
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v12.1.0...v12.1.1)
@@ -5133,12 +5881,12 @@ Other enhancements include:
 
 ### 📚 Libraries
 
-* Blueprint `3.0.1 -> 3.4.0`
-* FontAwesome `5.2.0 -> 5.3.0`
-* CodeMirror `5.39.2 -> 5.40.0`
-* MobX `5.0.3 -> 5.1.0`
-* router5 `6.3.0 -> 6.4.2`
-* React `16.4.1 -> 16.4.2`
+* Blueprint `3.0.1 → 3.4.0`
+* FontAwesome `5.2.0 → 5.3.0`
+* CodeMirror `5.39.2 → 5.40.0`
+* MobX `5.0.3 → 5.1.0`
+* router5 `6.3.0 → 6.4.2`
+* React `16.4.1 → 16.4.2`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v12.0.0...v12.1.0)
 
@@ -5275,10 +6023,10 @@ resizing and collapsing behavior** (#534).
 
 ### 📚 Libraries
 
-* Blueprint `2.x -> 3.x`
-* FontAwesome `5.0.x -> 5.2.x`
-* CodeMirror `5.37.0 -> 5.39.2`
-* router5 `6.2.4 -> 6.3.0`
+* Blueprint `2.x → 3.x`
+* FontAwesome `5.0.x → 5.2.x`
+* CodeMirror `5.37.0 → 5.39.2`
+* router5 `6.2.4 → 6.3.0`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v10.0.1...v11.0.0)
 
@@ -5319,7 +6067,7 @@ resizing and collapsing behavior** (#534).
 
 ### 📚 Libraries
 
-* MobX `4.2.x -> 5.0.x`
+* MobX `4.2.x → 5.0.x`
 
 [Commit Log](https://github.com/xh/hoist-react/compare/v9.0.0...v10.0.0)
 
@@ -5333,7 +6081,7 @@ resizing and collapsing behavior** (#534).
       added directly to components that require the functionality they add for auto-handling of
       layout-related props and support for showing right-click menus. The corresponding options on
       `HoistComponent` that used to enable them have been removed.
-    * For consistency, we have also renamed `EventTarget -> EventSupport` and `Reactive ->
+    * For consistency, we have also renamed `EventTarget → EventSupport` and `Reactive →
       ReactiveSupport` mixins. These both continue to be auto-applied to HoistModel and HoistService
       classes, and ReactiveSupport enabled by default in HoistComponent.
 * **The Context menu API has changed.** The `ContextMenuSupport` mixin now specifies an abstract
@@ -5369,8 +6117,8 @@ and AG Grid upgrade, and more. 🚀
     * `Panel` and `Resizable` components have moved to their own packages in
       `@xh/hoist/desktop/cmp/panel` and `@xh/hoist/desktop/cmp/resizable`.
 * **Multiple changes and improvements made to tab-related APIs and components.**
-    * The `TabContainerModel` constructor API has changed, notably `children` -> `tabs`, `useRoutes`
-      ->
+    * The `TabContainerModel` constructor API has changed, notably `children` → `tabs`, `useRoutes`
+      →
       `route` (to specify a starting route as a string) and `switcherPosition` has moved from a
       model config to a prop on the `TabContainer` component.
     * `TabPane` and `TabPaneModel` have been renamed `Tab` and `TabModel`, respectively, with
@@ -5589,7 +6337,7 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2023 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2024 Extremely Heavy Industries Inc. - all rights reserved
 
 ------------------------------------------
 

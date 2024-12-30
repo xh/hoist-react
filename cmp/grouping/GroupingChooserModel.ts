@@ -2,32 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-import {
-    HoistModel,
-    managed,
-    PersistenceProvider,
-    PersistOptions,
-    PlainObject,
-    XH
-} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
-import {throwIf} from '@xh/hoist/utils/js';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    cloneDeep,
-    difference,
-    isFunction,
-    isArray,
-    isEmpty,
-    isEqual,
-    isString,
-    keys,
-    sortBy
-} from 'lodash';
+import {difference, isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /**
@@ -72,38 +55,40 @@ export interface DimensionSpec {
 }
 
 export interface GroupingChooserPersistOptions extends PersistOptions {
-    /** True (default) to save value to state. */
-    persistValue?: boolean;
+    /** True (default) to include value or provide value-specific PersistOptions. */
+    persistValue?: boolean | PersistOptions;
 
-    /** True (default) to include favorites. */
-    persistFavorites?: boolean;
+    /** True (default) to include favorites or provide favorites-specific PersistOptions. */
+    persistFavorites?: boolean | PersistOptions;
 }
 
 export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
-
     @observable.ref favorites: string[][] = [];
 
-    dimensions: Record<string, DimensionSpec>;
-    dimensionNames: string[];
     allowEmpty: boolean;
     maxDepth: number;
     commitOnChange: boolean;
-
-    @managed provider: PersistenceProvider = null;
-    persistValue: boolean = false;
     persistFavorites: boolean = false;
 
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
-
     popoverRef = createObservableRef<HTMLElement>();
+
+    // Internal state
+    @observable.ref private dimensions: Record<string, DimensionSpec>;
+    @observable.ref private dimensionNames: string[];
 
     @computed
     get availableDims(): string[] {
         return difference(this.dimensionNames, this.pendingValue);
+    }
+
+    @computed
+    get dimensionSpecs(): DimensionSpec[] {
+        return Object.values(this.dimensions);
     }
 
     @computed
@@ -132,49 +117,23 @@ export class GroupingChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.dimensions = this.normalizeDimensions(dimensions);
-        this.dimensionNames = keys(this.dimensions);
         this.allowEmpty = allowEmpty;
         this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
 
-        throwIf(isEmpty(this.dimensions), 'Must provide valid dimensions available for selection.');
+        this.setDimensions(dimensions);
 
         // Read and validate value and favorites
-        let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = isFunction(initialFavorites) ? initialFavorites() : initialFavorites;
+        let value = executeIfFunction(initialValue),
+            favorites = executeIfFunction(initialFavorites);
 
         throwIf(isEmpty(value) && !this.allowEmpty, 'Initial value cannot be empty.');
         throwIf(!this.validateValue(value), 'Initial value is invalid.');
 
-        // Read state from provider -- fail gently
-        if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({
-                    path: 'groupingChooser',
-                    ...persistWith
-                });
-                this.persistValue = persistWith.persistValue ?? true;
-                this.persistFavorites = persistWith.persistFavorites ?? true;
+        this.setValue(value);
+        this.setFavorites(favorites);
 
-                const state = cloneDeep(this.provider.read());
-                if (this.persistValue && state?.value && this.validateValue(state?.value)) {
-                    value = state.value;
-                }
-                if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites;
-                }
-
-                this.addReaction({
-                    track: () => this.persistState,
-                    run: state => this.provider.write(state)
-                });
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
-        }
+        if (persistWith) this.initPersist(persistWith);
 
         this.addReaction({
             track: () => this.pendingValue,
@@ -182,9 +141,18 @@ export class GroupingChooserModel extends HoistModel {
                 if (this.commitOnChange) this.setValue(this.pendingValue);
             }
         });
+    }
 
-        this.setValue(value);
-        this.setFavorites(favorites);
+    @action
+    setDimensions(dimensions: Array<DimensionSpec | string>) {
+        throwIf(
+            isEmpty(dimensions) && !this.allowEmpty,
+            'Must provide valid dimensions available for selection.'
+        );
+
+        this.dimensions = this.normalizeDimensions(dimensions);
+        this.dimensionNames = keys(this.dimensions);
+        this.removeUnknownDimsFromValue();
     }
 
     @action
@@ -259,37 +227,18 @@ export class GroupingChooserModel extends HoistModel {
         this.closePopover();
     }
 
-    validateValue(value) {
+    validateValue(value: string[]) {
         if (!isArray(value)) return false;
         if (isEmpty(value) && !this.allowEmpty) return false;
         return value.every(dim => this.dimensionNames.includes(dim));
     }
 
-    normalizeDimensions(dims: Array<DimensionSpec | string>): Record<string, DimensionSpec> {
-        dims = dims ?? [];
-        const ret = {};
-        dims.forEach(it => {
-            const dim = this.createDimension(it);
-            ret[dim.name] = dim;
-        });
-        return ret;
-    }
-
-    createDimension(src: DimensionSpec | string) {
-        src = isString(src) ? {name: src} : src;
-        throwIf(
-            !src.hasOwnProperty('name'),
-            "Dimensions provided as Objects must define a 'name' property."
-        );
-        return {displayName: genDisplayName(src.name), ...src};
-    }
-
-    getValueLabel(value: string[]) {
+    getValueLabel(value: string[]): string {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
     getDimDisplayName(dimName: string) {
-        return this.dimensions[dimName].displayName;
+        return this.dimensions[dimName]?.displayName ?? dimName;
     }
 
     //--------------------
@@ -331,16 +280,81 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     isFavorite(value: string[]) {
-        return this.favorites?.find(v => isEqual(v, value));
+        return this.favorites?.some(v => isEqual(v, value));
     }
 
-    //-------------------------
-    // Persistence handling
-    //-------------------------
-    get persistState() {
-        const ret: PlainObject = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
+    //------------------------
+    // Implementation
+    //------------------------
+    private initPersist({
+        persistValue = true,
+        persistFavorites = true,
+        path = 'groupingChooser',
+        ...rootPersistWith
+    }: GroupingChooserPersistOptions) {
+        if (persistValue) {
+            const persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.value`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.value),
+                    setPersistableState: ({value}) => this.setValue(value)
+                },
+                owner: this
+            });
+        }
+
+        if (persistFavorites) {
+            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+                provider = PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favorites`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () => new PersistableState(this.favorites),
+                        setPersistableState: ({value}) => this.setFavorites(value)
+                    },
+                    owner: this
+                });
+            if (provider) this.persistFavorites = true;
+        }
+    }
+
+    private normalizeDimensions(
+        dims: Array<DimensionSpec | string>
+    ): Record<string, DimensionSpec> {
+        dims = dims ?? [];
+        const ret = {};
+        dims.forEach(it => {
+            const dim = this.createDimension(it);
+            ret[dim.name] = dim;
+        });
         return ret;
+    }
+
+    private createDimension(src: DimensionSpec | string) {
+        src = isString(src) ? {name: src} : src;
+        throwIf(
+            !src.hasOwnProperty('name'),
+            "Dimensions provided as Objects must define a 'name' property."
+        );
+        return {displayName: genDisplayName(src.name), ...src};
+    }
+
+    private removeUnknownDimsFromValue() {
+        const {value, dimensionNames, allowEmpty} = this,
+            cleanValue = value?.filter(dim => dimensionNames.includes(dim));
+
+        if (isEqual(value, cleanValue)) return;
+
+        if (isEmpty(cleanValue) && !allowEmpty) {
+            cleanValue.push(dimensionNames[0]);
+        }
+
+        this.setValue(cleanValue);
     }
 }

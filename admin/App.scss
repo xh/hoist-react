@@ -2,23 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
-.xh-admin-app-frame {
+.xh-admin-app {
   .xh-tab-switcher--left,
   .xh-tab-switcher--right {
     min-width: 160px;
     background-color: var(--xh-grid-bg-odd);
     border-right: var(--xh-border-solid);
 
-    .bp4-tab {
+    .bp5-tab {
       border-radius: 0 !important;
     }
 
     .xh-tab-switcher__tab {
       line-height: 40px;
     }
+  }
+
+  &__editor-dialog {
+    height: 80vh;
+    width: 80vw;
   }
 }
 

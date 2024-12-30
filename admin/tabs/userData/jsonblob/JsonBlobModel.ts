@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -68,7 +68,6 @@ export class JsonBlobModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
-            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
             menuActions: [addAction, editAction, cloneAction, deleteAction],
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
             sortBy: ['owner', 'name'],

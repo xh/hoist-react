@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PageState} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -42,8 +42,8 @@ export class PageStateModel extends HoistModel {
         return document.visibilityState === 'hidden'
             ? 'hidden'
             : document.hasFocus()
-            ? 'active'
-            : 'passive';
+              ? 'active'
+              : 'passive';
     }
 
     private addListeners() {

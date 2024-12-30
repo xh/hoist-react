@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -134,7 +134,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     }
 });
 
-(Grid as any).MULTIFIELD_ROW_HEIGHT = 42;
+(Grid as any).ZONEGRID_ROW_HEIGHT = 42;
 
 //------------------------
 // Implementation
@@ -163,6 +163,11 @@ export class GridLocalModel extends HoistModel {
         return emptyText;
     }
 
+    constructor() {
+        super();
+        GridLocalModel.addFocusFixListener();
+    }
+
     override onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
@@ -186,12 +191,14 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
+            reactiveCustomComponents: true, // will be default in ag-grid v32
+            animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
-                suppressMenu: true,
+                suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
             popupParent: document.querySelector('body'),
@@ -252,7 +259,9 @@ export class GridLocalModel extends HoistModel {
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
             stopEditingWhenCellsLoseFocus: true,
             suppressLastEmptyLineOnPaste: true,
-            suppressClipboardApi: true
+            suppressClipboardApi: true,
+            // Override AG-Grid's default behavior of automatically unpinning columns to make the center viewport visible
+            processUnpinnedColumns: () => []
         };
 
         // Platform specific defaults
@@ -326,7 +335,7 @@ export class GridLocalModel extends HoistModel {
         const {model} = this,
             {store} = model;
         return {
-            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecord],
+            track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecords],
             run: () => {
                 if (model.isReady) this.syncData();
             }
@@ -346,9 +355,9 @@ export class GridLocalModel extends HoistModel {
     sortReaction() {
         const {model} = this;
         return {
-            track: () => [model.agColumnApi, model.sortBy],
-            run: ([colApi, sortBy]) => {
-                if (colApi && !model.externalSort) {
+            track: () => [model.agApi, model.sortBy],
+            run: ([agApi, sortBy]) => {
+                if (agApi && !model.externalSort) {
                     model.agGridModel.applySortBy(sortBy);
                 }
             }
@@ -358,9 +367,9 @@ export class GridLocalModel extends HoistModel {
     groupReaction() {
         const {model} = this;
         return {
-            track: () => [model.agColumnApi, model.groupBy],
-            run: ([colApi, groupBy]) => {
-                if (colApi) colApi.setRowGroupColumns(groupBy);
+            track: () => [model.agApi, model.groupBy],
+            run: ([agApi, groupBy]) => {
+                if (agApi) agApi.setRowGroupColumns(groupBy);
             }
         };
     }
@@ -383,9 +392,12 @@ export class GridLocalModel extends HoistModel {
         const {sizingMode, groupRowHeight} = this.model,
             {groupDisplayType} = this.agOptions,
             AgGridCmp = AgGrid as any;
-        return groupRowHeight ?? groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+        return (
+            groupRowHeight ??
+            (groupDisplayType === 'groupRows'
+                ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
+                : AgGridCmp.getRowHeightForSizingMode(sizingMode))
+        );
     }
 
     defaultGetRowHeight = ({node}) => {
@@ -425,9 +437,9 @@ export class GridLocalModel extends HoistModel {
 
     applyScrollOptimization() {
         if (!this.useScrollOptimization) return;
-        const {agApi, agColumnApi} = this.model,
+        const {agApi} = this.model,
             {getRowHeight} = this.agOptions,
-            params = {api: agApi, columnApi: agColumnApi, context: null} as any;
+            params = {api: agApi, context: null} as any;
 
         agApi.forEachNode(node => {
             params.node = node;
@@ -445,7 +457,7 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    api.setColumnDefs(this.getColumnDefs());
+                    api.updateGridOptions({columnDefs: this.getColumnDefs()});
                 });
             }
         };
@@ -454,11 +466,11 @@ export class GridLocalModel extends HoistModel {
     columnStateReaction() {
         const {model} = this;
         return {
-            track: () => [model.agApi, model.agColumnApi, model.columnState],
-            run: ([api, colApi, colState]) => {
-                if (!api || !colApi) return;
+            track: () => [model.agApi, model.columnState],
+            run: ([api, colState]) => {
+                if (!api) return;
 
-                const agColState = colApi.getColumnState();
+                const agColState = api.getColumnState();
 
                 // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
@@ -479,15 +491,15 @@ export class GridLocalModel extends HoistModel {
                             id = col.colId;
 
                         if (agCol.width !== col.width) {
-                            colApi.setColumnWidth(id, col.width);
+                            api.setColumnWidths([{key: id, newWidth: col.width}]);
                             hasChanges = true;
                         }
                         if (agCol.hide !== col.hidden) {
-                            colApi.setColumnVisible(id, !col.hidden);
+                            api.setColumnsVisible([id], !col.hidden);
                             hasChanges = true;
                         }
                         if (agCol.pinned !== col.pinned) {
-                            colApi.setColumnPinned(id, col.pinned);
+                            api.setColumnsPinned([id], col.pinned);
                             hasChanges = true;
                         }
                     });
@@ -495,7 +507,7 @@ export class GridLocalModel extends HoistModel {
                     // We need to tell agGrid to refresh its flexed column sizes due to
                     // a regression introduced in 25.1.0.  See #2341
                     if (hasChanges) {
-                        colApi.columnModel.refreshFlexedColumns({
+                        api.columnModel.refreshFlexedColumns({
                             updateBodyWidths: true,
                             fireResizedEvent: true
                         });
@@ -518,7 +530,7 @@ export class GridLocalModel extends HoistModel {
                 });
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    colApi.applyColumnState({state: colState, applyOrder: true});
+                    api.applyColumnState({state: colState, applyOrder: true});
                 });
             }
         };
@@ -580,16 +592,18 @@ export class GridLocalModel extends HoistModel {
             pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
             pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
 
-        if (showSummary && store.summaryRecord) {
+        if (showSummary && !isEmpty(store.summaryRecords)) {
             if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(store.summaryRecord);
+                pinnedBottomRowData.push(...store.summaryRecords);
             } else {
-                pinnedTopRowData.unshift(store.summaryRecord);
+                pinnedTopRowData.unshift(...store.summaryRecords);
             }
         }
 
-        agApi.setPinnedTopRowData(pinnedTopRowData);
-        agApi.setPinnedBottomRowData(pinnedBottomRowData);
+        agApi.updateGridOptions({
+            pinnedTopRowData,
+            pinnedBottomRowData
+        });
     }
 
     @logWithDebug
@@ -639,7 +653,7 @@ export class GridLocalModel extends HoistModel {
                 agApi.applyTransaction(transaction);
             }
         } else {
-            agApi.setRowData(newRs.list);
+            agApi.updateGridOptions({rowData: newRs.list});
         }
 
         if (model.externalSort) {
@@ -667,16 +681,8 @@ export class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            // If sizingMode different to autosizeState, autosize all columns...
-            if (model.autosizeState.sizingMode !== model.sizingMode) {
-                model.autosizeAsync();
-            } else {
-                // ...otherwise, only autosize columns that are not manually sized
-                const columns = model.columnState
-                    .filter(it => !it.manuallySized)
-                    .map(it => it.colId);
-                model.autosizeAsync({columns});
-            }
+            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
+            model.autosizeAsync({columns});
         }
 
         model.noteAgExpandStateChange();
@@ -723,7 +729,7 @@ export class GridLocalModel extends HoistModel {
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = ev => {
-        this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+        this.model.noteAgColumnStateChanged(ev.api.getColumnState());
     };
 
     // Catches column resizing on call to autoSize API.
@@ -731,17 +737,17 @@ export class GridLocalModel extends HoistModel {
         if (!isDisplayed(this.viewRef.current) || !ev.finished) return;
         if (ev.source === 'uiColumnResized') {
             const colId = ev.columns[0].colId,
-                width = ev.columnApi.getColumnState().find(it => it.colId === colId)?.width;
+                width = ev.api.getColumnState().find(it => it.colId === colId)?.width;
             this.model.noteColumnManuallySized(colId, width);
         } else if (ev.source === 'autosizeColumns') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
     // Catches row group changes triggered from ag-grid ui components
     onColumnRowGroupChanged = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.setGroupBy(ev.columnApi.getRowGroupColumns().map(it => it.colId));
+            this.model.setGroupBy(ev.api.getRowGroupColumns().map(it => it.colId));
         }
     };
 
@@ -752,14 +758,14 @@ export class GridLocalModel extends HoistModel {
     // Catches column pinning changes triggered from ag-grid ui components
     onColumnPinned = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
     // Catches column visibility changes triggered from ag-grid ui components
     onColumnVisible = ev => {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
-            this.model.noteAgColumnStateChanged(ev.columnApi.getColumnState());
+            this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
 
@@ -810,8 +816,8 @@ export class GridLocalModel extends HoistModel {
         if (model.highlightRowOnClick) {
             model.agApi.flashCells({
                 rowNodes: [evt.node],
-                flashDelay: 100,
-                fadeDelay: 100
+                flashDuration: 100,
+                fadeDuration: 100
             });
         }
     };
@@ -857,4 +863,25 @@ export class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
+
+    /**
+     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
+     * the context menu will lose focus, causing menu items not to highlight on hover. Prevent this
+     * by conditionally stopping the focus event from propagating.
+     */
+    private static didAddFocusFixListener = false;
+    static addFocusFixListener() {
+        if (this.didAddFocusFixListener) return;
+        document.addEventListener(
+            'focus',
+            (e: FocusEvent) => {
+                const {target} = e;
+                if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+                    e.stopImmediatePropagation();
+                }
+            },
+            true
+        );
+        this.didAddFocusFixListener = true;
+    }
 }

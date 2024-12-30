@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {BaseFieldModel} from '@xh/hoist/cmp/form';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
@@ -14,7 +15,7 @@ import {
     switchInput,
     textInput
 } from '@xh/hoist/desktop/cmp/input';
-import {assign, isNil} from 'lodash';
+import {assign, isFunction, isNil} from 'lodash';
 import {RestFormModel} from './RestFormModel';
 
 /**
@@ -29,12 +30,12 @@ export const restFormField = hoistCmp.factory({
             fieldModel = model.getFormFieldModel(field),
             fieldVal = fieldModel.value;
 
-        // Skip fields that are a) empty and b) readonly when c) adding a record. No point in
-        // showing these fields as they are not populated (nor are they expected to be), and they
-        // can't be edited. Common examples are metadata such as `dateCreated` and `lastUpdated`.
-        if (isNil(fieldVal) && fieldModel.readonly && model.isAdd) {
-            return null;
-        }
+        // Unless otherwise specified, omit fields if they are a) empty and b) readonly when c)
+        // adding a record. No point in showing as they are not populated (nor are they expected to
+        // be), and they can't be edited - e.g. `dateCreated` and `lastUpdated`.
+        const omit = editor.omit ?? (isNil(fieldVal) && fieldModel.readonly && model.isAdd);
+
+        if (omit === true || (isFunction(omit) && omit(fieldVal, model))) return null;
 
         let config = assign({field, flex: 1}, editor.formField);
 
@@ -46,7 +47,7 @@ export const restFormField = hoistCmp.factory({
     }
 });
 
-function renderDefaultInput(name, model) {
+function renderDefaultInput(name: string, model: RestFormModel) {
     const type = model.types[name],
         storeField = model.store.getField(name),
         fieldModel = model.formModel.fields[name];
@@ -80,9 +81,9 @@ function renderDefaultInput(name, model) {
     }
 }
 
-// Favor switch, when we are not in a tri-state situation w/null
+// Favor switch, when we are not in a tri-state situation w/null.
 // Otherwise, use a clearly nullable select.
-function renderBoolean(fieldModel) {
+function renderBoolean(fieldModel: BaseFieldModel) {
     const {isRequired, value, initialValue} = fieldModel,
         useSwitch = isRequired && value != null && initialValue != null;
 

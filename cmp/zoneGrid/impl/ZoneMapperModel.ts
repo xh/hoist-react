@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
@@ -64,19 +64,19 @@ export class ZoneMapperModel extends HoistModel {
 
     get leftFlex(): number {
         const ret = this.zoneGridModel.leftColumnSpec?.flex;
-        return isBoolean(ret) ? 1 : ret ?? 2;
+        return isBoolean(ret) ? 1 : (ret ?? 2);
     }
 
     get rightFlex(): number {
         const ret = this.zoneGridModel.rightColumnSpec?.flex;
-        return isBoolean(ret) ? 1 : ret ?? 1;
+        return isBoolean(ret) ? 1 : (ret ?? 1);
     }
 
     get limits(): Partial<Record<Zone, ZoneLimit>> {
         return this.zoneGridModel.limits;
     }
 
-    get delimiter(): string {
+    get delimiter(): string | false {
         return this.zoneGridModel.delimiter;
     }
 
@@ -139,8 +139,8 @@ export class ZoneMapperModel extends HoistModel {
     }
 
     getSamplesForZone(zone: Zone): ReactNode[] {
-        return this.mappings[zone].map(mapping => {
-            return this.getSampleForMapping(mapping);
+        return this.mappings[zone].map((mapping, index) => {
+            return this.getSampleForMapping(mapping, this.isZoneTopRow(zone) && index === 0);
         });
     }
 
@@ -293,10 +293,14 @@ export class ZoneMapperModel extends HoistModel {
         return this.mappings[zone].find(it => it.field === field);
     }
 
+    private isZoneTopRow(zone: Zone) {
+        return new Array<Zone>('tl', 'tr').includes(zone);
+    }
+
     //------------------------
     // Sample Display
     //------------------------
-    getSampleForMapping(mapping: ZoneMapping): ReactNode {
+    getSampleForMapping(mapping: ZoneMapping, ignoreLabel: boolean): ReactNode {
         const {fields, sampleRecord} = this,
             field = fields.find(it => it.field === mapping.field);
 
@@ -320,7 +324,7 @@ export class ZoneMapperModel extends HoistModel {
         }
 
         // Render label if requested
-        const label = mapping.showLabel ? `${field.label}: ` : null;
+        const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
         return span(label, value);
     }
 

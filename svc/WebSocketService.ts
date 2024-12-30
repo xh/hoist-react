@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -38,9 +38,9 @@ import {find, pull} from 'lodash';
 export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
-    HEARTBEAT_TOPIC = 'xhHeartbeat';
-    REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
-    FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
+    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
+    readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
+    readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
 
     /** Unique channel assigned by server upon successful connection. */
     @observable
@@ -71,7 +71,8 @@ export class WebSocketService extends HoistService {
 
     override async initAsync() {
         if (!this.enabled) return;
-        if (XH.environmentService.get('webSocketsEnabled') === false) {
+        const {environmentService} = XH;
+        if (environmentService.get('webSocketsEnabled') === false) {
             this.logError(
                 `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
             );
@@ -80,6 +81,11 @@ export class WebSocketService extends HoistService {
         }
 
         this.connect();
+
+        this.addReaction({
+            track: () => environmentService.serverInstance,
+            run: () => this.onServerInstanceChange()
+        });
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
@@ -173,6 +179,12 @@ export class WebSocketService extends HoistService {
             this.disconnect();
             this.connect();
         }
+    }
+
+    private onServerInstanceChange() {
+        this.logWarn('Server instance changed - attempting to connect to new instance.');
+        this.disconnect();
+        this.connect();
     }
 
     shutdown() {

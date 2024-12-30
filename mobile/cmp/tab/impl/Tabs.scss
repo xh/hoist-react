@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 .xh-tab {
   font-size: var(--xh-button-font-size-px);
@@ -26,6 +26,12 @@
 }
 
 .xh-tab-container {
+  // Override Onsen's tabbar height CSS var
+  --tabbar-height: var(--xh-tbar-min-size-px);
+
+  position: relative;
+  flex: auto;
+
   &--top .tabbar {
     border-bottom: var(--xh-border-solid);
   }
@@ -45,10 +51,6 @@
       height: var(--xh-tbar-min-size-px);
       line-height: var(--xh-tbar-min-size-px);
       color: var(--xh-text-color);
-    }
-
-    &__content {
-      bottom: var(--xh-tbar-min-size-px);
     }
   }
 

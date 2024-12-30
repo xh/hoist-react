@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {ICellEditorParams} from '@ag-grid-community/core';
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -15,7 +15,7 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {apiRemoved, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,
@@ -39,11 +39,13 @@ import {
     FunctionComponent,
     isValidElement,
     ReactNode,
-    useImperativeHandle
+    useImperativeHandle,
+    useLayoutEffect,
+    useRef
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -62,11 +64,9 @@ import {
     ColumnSortValueFn,
     ColumnTooltipFn
 } from '../Types';
-import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {ColumnGroup} from './ColumnGroup';
+import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
     ColDef,
-    HeaderClassParams,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams
@@ -478,7 +478,6 @@ export class Column {
     actions?: Array<RecordActionSpec | RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
-    manuallySized: boolean;
     omit: Thunkable<boolean>;
 
     gridModel: GridModel;
@@ -675,11 +674,6 @@ export class Column {
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
-            apiRemoved('tooltipElement', {
-                test: rest['tooltipElement'],
-                msg: 'Use tooltip property instead.',
-                v: '58'
-            });
             throw XH.exception(
                 `Column '${this.colId}' configured with unsupported key(s) '${keys}'. Custom config data must be nested within the 'appData' property.`
             );
@@ -757,7 +751,7 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.inputModel?.().reactSelect;
+                        reactSelect = editor?.componentInstance?.reactSelect;
                     if (reactSelect?.state.menuIsOpen) return true;
 
                     // Allow shift+enter to add newlines in certain editors
@@ -810,7 +804,8 @@ export class Column {
             ret.tooltipValueGetter = () => 'tooltip';
             ret.tooltipComponent = forwardRef((agParams: ITooltipParams, ref) => {
                 const {location, data: record} = agParams,
-                    hasRecord = record instanceof StoreRecord;
+                    hasRecord = record instanceof StoreRecord,
+                    wrapperRef = useRef<HTMLDivElement>(null);
 
                 let ret = null;
                 if (hasRecord) {
@@ -823,45 +818,66 @@ export class Column {
                             store
                         });
 
-                    ret = isFunction(tooltip)
-                        ? tooltip(val, {record, column: this, gridModel, agParams})
-                        : val;
+                    if (isFunction(tooltip)) {
+                        try {
+                            ret = tooltip(val, {record, gridModel, agParams, column: this});
+                        } catch (e) {
+                            logWarn([`Failure in tooltip for '${this.displayName}'`, e], 'Column');
+                        }
+                    } else {
+                        ret = val;
+                    }
                 }
 
                 const isElement = isValidElement(ret);
-                useImperativeHandle(
-                    ref,
-                    () => ({
-                        getReactContainerClasses() {
-                            if (location === 'header') return ['ag-tooltip'];
-                            return [
-                                'xh-grid-tooltip',
-                                isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
-                            ];
-                        }
-                    }),
-                    [location, isElement]
-                );
 
-                if (location === 'header') return div(this.headerTooltip);
+                useLayoutEffect(() => {
+                    const xhToolTipClassNames: string[] =
+                        location === 'header'
+                            ? ['ag-tooltip']
+                            : [
+                                  'xh-grid-tooltip',
+                                  isElement ? 'xh-grid-tooltip--custom' : 'xh-grid-tooltip--default'
+                              ];
+                    wrapperRef.current
+                        ?.closest('.ag-react-container')
+                        .classList.add(...xhToolTipClassNames);
+                }, [isElement, location]);
+
+                // Required by agGrid, even though empty.
+                // If not present agGrid logs this warning:
+                // "If the component is using `forwardRef` but not `useImperativeHandle`, add the following: `useImperativeHandle(ref, () => ({}));"
+                useImperativeHandle(ref, () => ({}), []);
+
+                if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
                 // Override with validation errors, if present
                 if (editor) {
                     const errors = record.errors[field];
                     if (!isEmpty(errors)) {
-                        return ul({
-                            className: classNames(
-                                'xh-grid-tooltip--validation',
-                                errors.length === 1 ? 'xh-grid-tooltip--validation--single' : null
-                            ),
-                            items: errors.map((it, idx) => li({key: idx, item: it}))
+                        return div({
+                            ref: wrapperRef,
+                            item: ul({
+                                className: classNames(
+                                    'xh-grid-tooltip--validation',
+                                    errors.length === 1
+                                        ? 'xh-grid-tooltip--validation--single'
+                                        : null
+                                ),
+                                items: errors.map((it, idx) => li({key: idx, item: it}))
+                            })
                         });
                     }
                     if (!tooltip) return null;
                 }
 
-                return (isElement ? ret : toString(ret)) as any;
+                if (isNil(ret) || ret === '') return null;
+
+                return div({
+                    ref: wrapperRef,
+                    item: (isElement ? ret : toString(ret)) as any
+                });
             });
         }
 
@@ -961,7 +977,7 @@ export class Column {
         }
 
         if (editor) {
-            ret.cellEditor = forwardRef((agParams: ICellEditorParams, ref) => {
+            ret.cellEditor = forwardRef((agParams: CustomCellEditorProps, ref) => {
                 const props = {
                     record: agParams.data as StoreRecord,
                     gridModel,
@@ -1085,37 +1101,6 @@ export class Column {
 
         return isFunction(sortValue)
             ? sortValue(v, {record, column: this, gridModel})
-            : record?.data[sortValue] ?? v;
+            : (record?.data[sortValue] ?? v);
     }
-}
-
-export function getAgHeaderClassFn(
-    column: Column | ColumnGroup
-): (params: HeaderClassParams) => string[] {
-    // Generate CSS classes for headers.
-    // Default alignment classes are mixed in with any provided custom classes.
-    const {headerClass, headerAlign, gridModel} = column;
-
-    return agParams => {
-        let r = [];
-        if (headerClass) {
-            r = castArray(
-                isFunction(headerClass) ? headerClass({column, gridModel, agParams}) : headerClass
-            );
-        }
-
-        if (headerAlign === 'center' || headerAlign === 'right') {
-            r.push('xh-column-header-align-' + headerAlign);
-        }
-
-        if (column instanceof Column && column.isTreeColumn && column.headerHasExpandCollapse) {
-            r.push('xh-column-header--with-expand-collapse');
-        }
-
-        if (gridModel.headerMenuDisplay === 'hover') {
-            r.push('xh-column-header--hoverable');
-        }
-
-        return r;
-    };
 }

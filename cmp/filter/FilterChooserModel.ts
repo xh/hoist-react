@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
     managed,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
-    PlainObject,
     TaskObserver,
+    Thunkable,
     XH
 } from '@xh/hoist/core';
 import {
@@ -26,9 +27,8 @@ import {
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {ReactNode} from 'react';
 import {
     cloneDeep,
     compact,
@@ -39,13 +39,14 @@ import {
     isArray,
     isEmpty,
     isFinite,
-    isFunction,
+    isObject,
     isString,
     partition,
     sortBy,
     uniq,
     uniqBy
 } from 'lodash';
+import {ReactNode} from 'react';
 
 import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
@@ -80,12 +81,12 @@ export interface FilterChooserConfig {
      * to produce the same. Note that FilterChooser currently can only edit and create a flat collection
      * of FieldFilters, to be 'AND'ed together.
      */
-    initialValue?: FilterChooserFilterLike | (() => FilterChooserFilterLike);
+    initialValue?: Thunkable<FilterChooserFilterLike>;
 
     /**
      * Initial favorites as an array of filter configurations, or a function to produce such an array.
      */
-    initialFavorites?: FilterChooserFilterLike[] | (() => FilterChooserFilterLike[]);
+    initialFavorites?: Thunkable<FilterChooserFilterLike[]>;
 
     /**
      * true to offer all field suggestions when the control is focused with an empty query,
@@ -119,8 +120,8 @@ export interface FilterChooserConfig {
 }
 
 export class FilterChooserModel extends HoistModel {
-    @observable.ref value: Filter = null;
-    @observable.ref favorites: Filter[] = [];
+    @observable.ref value: FilterChooserFilter = null;
+    @observable.ref favorites: FilterChooserFilter[] = [];
     bind: Store | View;
     valueSource: Store | View;
 
@@ -131,9 +132,6 @@ export class FilterChooserModel extends HoistModel {
     maxTags: number;
     maxResults: number;
     introHelpText: ReactNode;
-
-    @managed provider: PersistenceProvider;
-    persistValue: boolean = false;
     persistFavorites: boolean = false;
 
     /** Tracks execution of filtering operation on bound object.*/
@@ -174,39 +172,12 @@ export class FilterChooserModel extends HoistModel {
         this.introHelpText = withDefault(introHelpText, this.getDefaultIntroHelpText());
         this.queryEngine = new QueryEngine(this);
 
-        let value = isFunction(initialValue) ? initialValue() : initialValue,
-            favorites = (isFunction(initialFavorites) ? initialFavorites() : initialFavorites).map(
-                f => parseFilter(f)
-            );
+        this.setValueInternal(executeIfFunction(initialValue), false);
+        this.setFavorites(executeIfFunction(initialFavorites));
 
-        // Read state from provider -- fail gently
-        if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'filterChooser', ...persistWith});
-                this.persistValue = persistWith.persistValue ?? true;
-                this.persistFavorites = persistWith.persistFavorites ?? true;
+        if (persistWith) this.initPersist(persistWith);
 
-                const state = this.provider.read();
-                if (this.persistValue && state?.value) {
-                    value = state.value;
-                }
-                if (this.persistFavorites && state?.favorites) {
-                    favorites = state.favorites.map(f => parseFilter(f));
-                }
-
-                this.addReaction({
-                    track: () => this.persistState,
-                    run: state => this.provider.write(state)
-                });
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
-        }
-
-        this.setValue(value);
-        this.setFavorites(favorites);
+        this.updateSelectValueAndBind();
 
         if (bind) {
             this.addReaction({
@@ -231,73 +202,8 @@ export class FilterChooserModel extends HoistModel {
      *
      * Any other Filter is unsupported and will cause the control to show a placeholder error.
      */
-    @action
     setValue(rawValue: FilterLike) {
-        const {bind, maxTags} = this;
-        try {
-            const value = parseFilter(rawValue);
-            if (this.value?.equals(value)) return;
-
-            // 1) Ensure FilterChooser can handle the requested value.
-            const isValid = this.validateFilter(value),
-                displayFilters = isValid ? this.toDisplayFilters(value) : null;
-
-            this.unsupportedFilter = !isValid || (maxTags && displayFilters.length > maxTags);
-            if (this.unsupportedFilter) {
-                this.value = null;
-                this.selectOptions = null;
-                this.selectValue = null;
-                return;
-            }
-
-            // 2) Main path - set internal value.
-            this.logDebug('Setting value', value);
-            this.value = value;
-
-            // 3) Set props on select input needed to display
-            // Build list of options, used for displaying tags. We combine the needed
-            // options for the current filter tags with any previous ones to ensure
-            // tags are rendered correctly throughout the transition.
-            const newOptions = displayFilters.map(f => this.createFilterOption(f)),
-                previousOptions = this.selectOptions ?? [],
-                options = uniqBy([...newOptions, ...previousOptions], 'value');
-
-            this.selectOptions = !isEmpty(options) ? options : null;
-
-            // 4) Do the next steps asynchronously for UI responsiveness and to ensure the component
-            // is ready to render the tags correctly (after selectOptions set above).
-            wait()
-                .thenAction(() => {
-                    // No-op if we've already re-entered this method by the time this async routine runs.
-                    if (this.value !== value) {
-                        return;
-                    }
-
-                    this.selectValue = sortBy(
-                        displayFilters.map(f => JSON.stringify(f)),
-                        f => {
-                            const idx = this.selectValue?.indexOf(f);
-                            return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
-                        }
-                    );
-
-                    // 5) Round-trip value to bound filter
-                    if (bind) {
-                        const filter = withFilterByTypes(bind.filter, value, [
-                            'FieldFilter',
-                            'CompoundFilter'
-                        ]);
-                        bind.setFilter(filter);
-                    }
-                })
-                .linkTo(this.filterTask);
-        } catch (e) {
-            this.logError('Failed to set value', e);
-            this.value = null;
-            this.selectOptions = null;
-            this.selectValue = null;
-            this.unsupportedFilter = true;
-        }
+        this.setValueInternal(rawValue, true);
     }
 
     //---------------------------
@@ -422,37 +328,27 @@ export class FilterChooserModel extends HoistModel {
     }
 
     @action
-    setFavorites(favorites: Filter[]) {
-        this.favorites = favorites.filter(f => this.validateFilter(f));
+    setFavorites(favorites: FilterChooserFilterLike[]) {
+        this.favorites = favorites.map(parseFilter).filter(this.validateFilter.bind(this));
     }
 
     @action
-    addFavorite(filter: Filter) {
+    addFavorite(filter: FilterChooserFilter) {
         if (isEmpty(filter) || this.isFavorite(filter)) return;
         this.favorites = [...this.favorites, filter];
     }
 
     @action
-    removeFavorite(filter: Filter) {
+    removeFavorite(filter: FilterChooserFilter) {
         this.favorites = this.favorites.filter(f => !f.equals(filter));
     }
 
-    findFavorite(filter: Filter): Filter {
+    findFavorite(filter: FilterChooserFilter): Filter {
         return this.favorites?.find(f => f.equals(filter));
     }
 
-    isFavorite(filter: Filter): boolean {
+    isFavorite(filter: FilterChooserFilter): boolean {
         return !!this.findFavorite(filter);
-    }
-
-    //-------------------------
-    // Persistence handling
-    //-------------------------
-    get persistState() {
-        const ret: PlainObject = {};
-        if (this.persistValue) ret.value = this.value;
-        if (this.persistFavorites) ret.favorites = this.favorites;
-        return ret;
     }
 
     //--------------------------------
@@ -486,7 +382,7 @@ export class FilterChooserModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === fieldName);
     }
 
-    validateFilter(f: Filter): boolean {
+    validateFilter(f: Filter): f is FilterChooserFilter {
         if (f === null) return true;
         if (f instanceof FieldFilter) {
             if (!this.getFieldSpec(f.field)) {
@@ -507,21 +403,143 @@ export class FilterChooserModel extends HoistModel {
     getDefaultIntroHelpText(): string {
         return 'Select or enter a field name (below) or begin typing to match available field values.';
     }
+
+    // -------------------------------
+    // Implementation
+    // -------------------------------
+    private initPersist({
+        persistValue = true,
+        persistFavorites = true,
+        path = 'filterChooser',
+        ...rootPersistWith
+    }: FilterChooserPersistOptions) {
+        if (persistValue) {
+            const status = {initialized: false},
+                persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.value`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.value?.toJSON() ?? null),
+                    setPersistableState: ({value}) =>
+                        this.setValueInternal(value, status.initialized)
+                },
+                owner: this
+            });
+            status.initialized = true;
+        }
+
+        if (persistFavorites) {
+            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+                provider = PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favorites`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () =>
+                            new PersistableState(this.favorites.map(f => f.toJSON())),
+                        setPersistableState: ({value}) => this.setFavorites(value)
+                    },
+                    owner: this
+                });
+            if (provider) this.persistFavorites = true;
+        }
+    }
+
+    @action
+    private setValueInternal(rawValue: FilterLike, updateSelectValueAndBind: boolean) {
+        const {maxTags} = this;
+        try {
+            const value = parseFilter(rawValue);
+            if (this.value?.equals(value)) return;
+
+            // 1) Ensure FilterChooser can handle the requested value.
+            const isValid = this.validateFilter(value),
+                displayFilters = isValid ? this.toDisplayFilters(value) : null;
+
+            this.unsupportedFilter = !isValid || (maxTags && displayFilters.length > maxTags);
+            if (this.unsupportedFilter) {
+                this.value = null;
+                this.selectOptions = null;
+                this.selectValue = null;
+                return;
+            }
+
+            // 2) Main path - filter has been validated as supported, set internal value.
+            this.logDebug('Setting value', value);
+            this.value = value as FilterChooserFilter;
+
+            // 3) Set props on select input needed to display
+            // Build list of options, used for displaying tags. We combine the needed
+            // options for the current filter tags with any previous ones to ensure
+            // tags are rendered correctly throughout the transition.
+            const newOptions = displayFilters.map(f => this.createFilterOption(f)),
+                previousOptions = this.selectOptions ?? [],
+                options = uniqBy([...newOptions, ...previousOptions], 'value');
+
+            this.selectOptions = !isEmpty(options) ? options : null;
+
+            if (updateSelectValueAndBind) this.updateSelectValueAndBind(displayFilters);
+        } catch (e) {
+            this.logError('Failed to set value', e);
+            this.value = null;
+            this.selectOptions = null;
+            this.selectValue = null;
+            this.unsupportedFilter = true;
+        }
+    }
+
+    /**
+     * Update the select value and bind the filter to the bound model. Runs asynchronously after
+     * selectOptions are set to ensure the component is ready to render the tags correctly.
+     */
+    private updateSelectValueAndBind(displayFilters = this.toDisplayFilters(this.value)) {
+        const {bind, value} = this;
+        wait()
+            .thenAction(() => {
+                // No-op if we've already re-entered this method by the time this async routine runs.
+                if (this.value !== value) {
+                    return;
+                }
+
+                this.selectValue = sortBy(
+                    displayFilters.map(f => JSON.stringify(f)),
+                    f => {
+                        const idx = this.selectValue?.indexOf(f);
+                        return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
+                    }
+                );
+
+                // Round-trip value to bound filter
+                if (bind) {
+                    const filter = withFilterByTypes(bind.filter, value, [
+                        'FieldFilter',
+                        'CompoundFilter'
+                    ]);
+                    bind.setFilter(filter);
+                }
+            })
+            .linkTo(this.filterTask);
+    }
 }
 
 interface FilterChooserPersistOptions extends PersistOptions {
-    /** True (default) to save value to state. */
-    persistValue?: boolean;
+    /** True (default) to include value or provide value-specific PersistOptions. */
+    persistValue?: boolean | PersistOptions;
 
-    /** True (default) to include favorites. */
-    persistFavorites?: boolean;
+    /** True (default) to include favorites or provide favorites-specific PersistOptions. */
+    persistFavorites?: boolean | PersistOptions;
 }
 
-/**
- * A variant of FilterLike, that excludes FunctionFilters and FilterTestFn.
- */
+/** A variant of {@link Filter} that excludes FunctionFilter (unsupported by FilterChooser). */
+export type FilterChooserFilter = CompoundFilter | FieldFilter;
+export type FilterChooserFilterSpec = CompoundFilterSpec | FieldFilterSpec;
+
+/** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
-    | Filter
-    | CompoundFilterSpec
-    | FieldFilterSpec
+    | FilterChooserFilter
+    | FilterChooserFilterSpec
     | FilterChooserFilterLike[];

@@ -2,13 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
+import {badge} from '@xh/hoist/cmp/badge';
+import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import copy from 'clipboard-copy';
 
 export const appEnvironment: ColumnSpec = {
     field: {
@@ -46,8 +49,7 @@ export const category: ColumnSpec = {
 
 export const data: ColumnSpec = {
     field: {name: 'data', type: 'json'},
-    flex: true,
-    minWidth: 120,
+    width: 250,
     autosizeMaxWidth: 400
 };
 
@@ -107,14 +109,23 @@ export const entryId: ColumnSpec = {
     align: 'right'
 };
 
+export const correlationId: ColumnSpec = {
+    field: {
+        name: 'correlationId',
+        type: 'string',
+        displayName: 'Correlation ID'
+    },
+    renderer: badgeRenderer,
+    width: 100
+};
+
 export const error: ColumnSpec = {
     field: {
         name: 'error',
-        type: 'string',
-        displayName: 'Error Details'
+        type: 'string'
     },
-    flex: true,
-    minWidth: 150,
+    width: 250,
+    autosizeMaxWidth: 400,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
 };
 
@@ -126,9 +137,8 @@ export const msg: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
-    minWidth: 120,
-    autosizeMaxWidth: 400,
-    flex: true
+    width: 250,
+    autosizeMaxWidth: 400
 };
 
 export const url: ColumnSpec = {
@@ -139,6 +149,17 @@ export const url: ColumnSpec = {
     },
     width: 250,
     autosizeMaxWidth: 400
+};
+
+export const instance: ColumnSpec = {
+    field: {
+        name: 'instance',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    renderer: badgeRenderer,
+    width: 100
 };
 
 export const userAgent: ColumnSpec = {
@@ -211,4 +232,22 @@ function dayRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
         maxB = rangeB?.max;
 
     return defaultComparator(maxA, maxB);
+}
+
+function badgeRenderer(v) {
+    return v
+        ? badge({
+              item: v,
+              className: 'xh-font-family-mono',
+              style: {cursor: 'copy'},
+              title: 'Double-click to copy',
+              onDoubleClick: () => {
+                  copy(v);
+                  XH.toast({
+                      icon: Icon.copy(),
+                      message: `Copied ${v}`
+                  });
+              }
+          })
+        : '-';
 }

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Property} from 'csstype';
-import {CSSProperties, HTMLAttributes, ReactNode, Ref} from 'react';
+import {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
 
 /**
  * Props interface for Hoist Components.
@@ -43,6 +43,9 @@ export interface HoistProps<M extends HoistModel = HoistModel> {
 
     /** React children. */
     children?: ReactNode;
+
+    /** React Ref for this component. */
+    ref?: LegacyRef<any>;
 }
 
 /**

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 // @ts-ignore
@@ -35,10 +35,10 @@ export class ChangelogService extends HoistService {
 
     static instance: ChangelogService;
 
-    // Optional JSON AppConfig key to soft-configure this service - see this.config for shape.
-    SVC_CONFIG_KEY: string = 'xhChangelogConfig';
-    // Optional string Preference key to track last read log entry + enable unread notifications.
-    LAST_READ_PREF_KEY: string = 'xhLastReadChangelog';
+    // JSON AppConfig to soft-configure this service - see this.config for shape.
+    readonly SVC_CONFIG_KEY: string = 'xhChangelogConfig';
+    // String Preference to track last read log entry + enable unread notifications.
+    readonly LAST_READ_PREF_KEY: string = 'xhLastReadChangelog';
 
     /**
      * The complete changelog object, as produced by the app build or defined

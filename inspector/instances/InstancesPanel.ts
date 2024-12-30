@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
@@ -27,7 +27,7 @@ export const instancesPanel = hoistCmp.factory({
             headerItems.push(
                 popover({
                     interactionKind: 'hover',
-                    target: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                    item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
                     content: div({
                         className: 'xh-pad',
                         style: {width: '300px'},

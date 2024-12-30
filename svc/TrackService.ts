@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {stripTags, withDefault} from '@xh/hoist/utils/js';
-import {isString} from 'lodash';
+import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
+import {isEmpty, isNil, isString} from 'lodash';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
@@ -17,7 +18,12 @@ import {isString} from 'lodash';
 export class TrackService extends HoistService {
     static instance: TrackService;
 
-    private _oncePerSessionSent = new Map();
+    private oncePerSessionSent = new Map();
+    private pending: PlainObject[] = [];
+
+    override async initAsync() {
+        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+    }
 
     get conf() {
         return XH.getConf('xhActivityTrackingConfig', {
@@ -40,8 +46,12 @@ export class TrackService extends HoistService {
         // Normalize string form, msg -> message, default severity.
         if (isString(options)) options = {message: options};
         if (isOmitted(options)) return;
-        options.message = withDefault(options.message, (options as any).msg);
-        options.severity = withDefault(options.severity, 'INFO');
+        options = {
+            message: withDefault(options.message, (options as any).msg),
+            severity: withDefault(options.severity, 'INFO'),
+            timestamp: withDefault(options.timestamp, Date.now()),
+            ...options
+        };
 
         // Short-circuit if disabled...
         if (!this.enabled) {
@@ -49,65 +59,89 @@ export class TrackService extends HoistService {
             return;
         }
 
-        // ...or invalid request (with warning for developer)...
+        // ...or invalid request (with warning for developer)
         if (!options.message) {
             this.logWarn('Required message not provided - activity will not be tracked.', options);
             return;
         }
 
-        // ...or if auto-refresh...
+        // ...or if auto-refresh
         if (options.loadSpec?.isAutoRefresh) return;
 
-        // ...or if unauthenticated user...
+        // ...or if unauthenticated user
         if (!XH.getUsername()) return;
 
-        // ...or if already-sent once-per-session messages.
-        const key = options.message + '_' + (options.category ?? '');
-        if (options.oncePerSession && this._oncePerSessionSent.has(key)) return;
-
-        // Otherwise - fire off (but do not await) request.
-        this.doTrackAsync(options);
-
+        // ...or if already-sent once-per-session messages
         if (options.oncePerSession) {
-            this._oncePerSessionSent.set(key, true);
+            const sent = this.oncePerSessionSent,
+                key = options.message + '_' + (options.category ?? '');
+            if (sent.has(key)) return;
+            sent.set(key, true);
         }
+
+        // Otherwise - log and for next batch,
+        this.logMessage(options);
+
+        this.pending.push(this.toServerJson(options));
+        this.pushPendingBuffered();
     }
 
     //------------------
     // Implementation
     //------------------
-    private async doTrackAsync(options: TrackOptions) {
-        try {
-            const params: any = {
-                msg: stripTags(options.message),
-                clientUsername: XH.getUsername()
-            };
+    private async pushPendingAsync() {
+        const {pending} = this;
+        if (isEmpty(pending)) return;
 
-            if (options.category) params.category = options.category;
-            if (options.data) params.data = JSON.stringify(options.data);
-            if (options.severity) params.severity = options.severity;
-            if (options.logData !== undefined) params.logData = options.logData.toString();
-            if (options.elapsed !== undefined) params.elapsed = options.elapsed;
+        this.pending = [];
+        await XH.fetchService.postJson({
+            url: 'xh/track',
+            body: {entries: pending},
+            params: {clientUsername: XH.getUsername()}
+        });
+    }
 
-            const {maxDataLength} = this.conf;
-            if (params.data?.length > maxDataLength) {
-                this.logWarn(
-                    `Track log includes ${params.data.length} chars of JSON data`,
-                    `exceeds limit of ${maxDataLength}`,
-                    'data will not be persisted',
-                    options.data
-                );
-                params.data = null;
-            }
+    @debounced(10 * SECONDS)
+    private pushPendingBuffered() {
+        this.pushPendingAsync();
+    }
 
-            const elapsedStr = params.elapsed != null ? `${params.elapsed}ms` : null,
-                consoleMsgs = [params.category, params.msg, elapsedStr].filter(it => it != null);
+    private toServerJson(options: TrackOptions): PlainObject {
+        const ret: PlainObject = {
+            msg: stripTags(options.message),
+            clientUsername: XH.getUsername(),
+            appVersion: XH.getEnv('clientVersion'),
+            url: window.location.href,
+            timestamp: Date.now()
+        };
 
-            this.logInfo(...consoleMsgs);
+        if (options.category) ret.category = options.category;
+        if (options.correlationId) ret.correlationId = options.correlationId;
+        if (options.data) ret.data = options.data;
+        if (options.severity) ret.severity = options.severity;
+        if (options.logData !== undefined) ret.logData = options.logData;
+        if (options.elapsed !== undefined) ret.elapsed = options.elapsed;
 
-            await XH.fetchJson({url: 'xh/track', params});
-        } catch (e) {
-            this.logError('Failed to persist track log', options, e);
+        const {maxDataLength} = this.conf;
+        if (ret.data?.length > maxDataLength) {
+            this.logWarn(
+                `Track log includes ${ret.data.length} chars of JSON data`,
+                `exceeds limit of ${maxDataLength}`,
+                'data will not be persisted',
+                options.data
+            );
+            ret.data = null;
         }
+
+        return ret;
+    }
+
+    private logMessage(opts: TrackOptions) {
+        const elapsedStr = opts.elapsed != null ? `${opts.elapsed}ms` : null,
+            consoleMsgs = [opts.category, opts.message, opts.correlationId, elapsedStr].filter(
+                it => !isNil(it)
+            );
+
+        this.logInfo(...consoleMsgs);
     }
 }

@@ -2,13 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HSide, uses, XH} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    hoistCmp,
+    HoistProps,
+    HSide,
+    TestSupportProps,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -145,7 +153,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             label = defaultProp('label', props, formContext, model?.displayName),
             commitOnChange = defaultProp('commitOnChange', props, formContext, undefined),
             tooltipPosition = defaultProp('tooltipPosition', props, formContext, 'right'),
-            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'viewport'),
+            tooltipBoundary = defaultProp('tooltipBoundary', props, formContext, 'clippingParents'),
             readonlyRenderer = defaultProp(
                 'readonlyRenderer',
                 props,
@@ -163,7 +171,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        const testId = getFormFieldTestId(props, formContext, model.name);
+        const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
@@ -189,8 +197,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         if (minimal) {
             childEl = tooltip({
-                target: childEl,
-                targetClassName: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                item: childEl,
+                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
@@ -235,7 +243,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             openOnTargetFocus: false,
                             className: 'xh-form-field-error-msg',
                             item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors)
+                            content: getErrorTooltipContent(errors) as ReactElement
                         })
                     ]
                 })
@@ -244,7 +252,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
     }
 });
 
-const readonlyChild = hoistCmp.factory({
+interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
+    readonlyRenderer: (v: any, model: FieldModel) => ReactNode;
+}
+
+const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
     render({model, readonlyRenderer, testId}) {
@@ -252,7 +264,7 @@ const readonlyChild = hoistCmp.factory({
         return div({
             className: 'xh-form-field-readonly-display',
             [TEST_ID]: testId,
-            item: readonlyRenderer(value)
+            item: readonlyRenderer(value, model)
         });
     }
 });
@@ -311,6 +323,21 @@ const editableChild = hoistCmp.factory<FieldModel>({
 //--------------------------------
 // Helper Functions
 //---------------------------------
+
+export function defaultReadonlyRenderer(value: any): ReactNode {
+    if (isLocalDate(value)) return fmtDate(value);
+    if (isDate(value)) return fmtDateTime(value);
+    if (isFinite(value)) return fmtNumber(value);
+    if (isBoolean(value)) return value.toString();
+
+    // format JSON, but fail and ignore on plain text
+    try {
+        value = fmtJson(value);
+    } catch (e) {}
+
+    return span(value != null ? value.toString() : null);
+}
+
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
 
 function getValidChild(children) {
@@ -332,22 +359,16 @@ function getValidChild(children) {
     return child;
 }
 
-function defaultReadonlyRenderer(value: any): ReactNode {
-    if (isLocalDate(value)) return fmtDate(value);
-    if (isDate(value)) return fmtDateTime(value);
-    if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+function getErrorTooltipContent(errors: string[]): ReactElement | string {
+    // If no errors, something other than null must be returned.
+    // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
+    // when content changes from null <-> not null.
+    // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
+    // TextInput component to lose focus when its validation state changes, which is undesirable.
+    // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
+    // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
+    if (isEmpty(errors)) return 'Is Valid';
 
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
-
-    return span(value != null ? value.toString() : null);
-}
-
-function getErrorTooltipContent(errors: string[]): ReactNode {
-    if (isEmpty(errors)) return null;
     if (errors.length === 1) return errors[0];
     return ul({
         className: 'xh-form-field-error-tooltip',
@@ -355,12 +376,12 @@ function getErrorTooltipContent(errors: string[]): ReactNode {
     });
 }
 
-function defaultProp(
-    name: string,
+function defaultProp<N extends keyof Partial<FormFieldProps>>(
+    name: N,
     props: Partial<FormFieldProps>,
     formContext: FormContextType,
-    defaultVal: any
-): any {
+    defaultVal: FormFieldProps[N]
+): Partial<FormFieldProps>[N] {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }
@@ -369,5 +390,8 @@ function getFormFieldTestId(
     formContext: FormContextType,
     fieldName: string
 ): string {
-    return props.testId ?? (formContext.testId ? `${formContext.testId}-${fieldName}` : undefined);
+    return (
+        props.testId ??
+        (formContext.testId && fieldName ? `${formContext.testId}-${fieldName}` : undefined)
+    );
 }

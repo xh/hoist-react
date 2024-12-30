@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import equal from 'fast-deep-equal';
@@ -199,6 +199,7 @@ export class RecordSet {
                     this.store.logDebug(`Attempted to remove non-existent record: ${id}`);
                     return;
                 }
+                allRemoves.add(id);
                 this.gatherDescendantIds(id, allRemoves);
             });
             allRemoves.forEach(it => newRecords.delete(it));
@@ -273,14 +274,13 @@ export class RecordSet {
     }
 
     private gatherDescendantIds(id: StoreRecordId, idSet: Set<StoreRecordId>): Set<StoreRecordId> {
-        if (!idSet.has(id)) {
-            idSet.add(id);
-            const children = this.childrenMap.get(id);
-            if (children) {
-                children.forEach(child => this.gatherDescendantIds(child.id, idSet));
+        this.childrenMap.get(id)?.forEach(child => {
+            if (!idSet.has(child.id)) {
+                // paranoia? did we encounter loops?
+                idSet.add(child.id);
+                this.gatherDescendantIds(child.id, idSet);
             }
-        }
-
+        });
         return idSet;
     }
 }

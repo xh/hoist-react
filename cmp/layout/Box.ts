@@ -2,12 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
-import {TEST_ID} from '@xh/hoist/utils/js';
+import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {merge} from 'lodash';
 import {div} from './Tags';
 
 export interface BoxComponentProps extends HoistProps, BoxProps {}
@@ -34,7 +33,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
         // a parent that has not properly managed its own props.
         let [layoutProps, {children, model, testId, ...restProps}] = splitLayoutProps(props);
 
-        restProps = merge(
+        restProps = mergeDeep(
             {style: {display: 'flex', overflow: 'hidden', position: 'relative'}},
             {style: layoutProps},
             {[TEST_ID]: testId},

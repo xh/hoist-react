@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     Thunkable,
@@ -10,7 +10,9 @@ import {
     ExceptionHandlerOptions,
     TaskObserver,
     TrackOptions,
-    XH
+    XH,
+    Some,
+    Awaitable
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -26,10 +28,7 @@ declare global {
          * Version of `then()` that wraps the callback in a MobX action, for use in a Promise chain
          * that modifies MobX observables.
          */
-        thenAction(
-            onFulfilled?: (value: T) => any,
-            onRejected?: (reason: any) => any
-        ): Promise<any>;
+        thenAction<TResult>(onFulfilled: (value: T) => Awaitable<TResult>): Promise<TResult>;
 
         /**
          * Version of `catch()` that will only catch certain exceptions.
@@ -39,24 +38,24 @@ declare global {
          *      selector will be handled by this method.
          * @param fn - catch handler
          */
-        catchWhen(
-            selector: ((e: any) => boolean) | string | string[],
-            fn?: (reason: any) => any
-        ): Promise<any>;
+        catchWhen<TResult = undefined>(
+            selector: ((e: any) => boolean) | Some<string>,
+            fn?: (reason: any) => Awaitable<TResult>
+        ): Promise<T | TResult>;
 
         /**
          * Version of `catch()` that passes the error onto Hoist's default exception handler for
          * convention-driven logging and alerting. Typically called last in a Promise chain.
          */
-        catchDefault(options?: ExceptionHandlerOptions): Promise<any>;
+        catchDefault(options?: ExceptionHandlerOptions): Promise<T | undefined>;
 
         /**
          * Version of `catchDefault()` that will only catch certain exceptions.
          */
         catchDefaultWhen(
-            selector: ((e: any) => boolean) | string | string[],
+            selector: ((e: any) => boolean) | Some<string>,
             options: ExceptionHandlerOptions
-        ): Promise<any>;
+        ): Promise<T | undefined>;
 
         /**
          * Wait on a potentially async function before passing on the original value.
@@ -122,21 +121,20 @@ export function wait<T>(interval: number = 0): Promise<T> {
 }
 
 /**
- * Return a promise that will resolve after a condition has been met, polling at the specified
- * interval.
- *
- * @param condition - function that should return true when condition is met
+ * Return a promise that will resolve after a condition has been met, or reject if timed out.
+ * @param condition - function returning true when expected condition is met.
  * @param interval - milliseconds to wait between checks (default 50). Note that the actual time
  *      will be subject to the minimum delay for `setTimeout()` in the browser.
  * @param timeout - milliseconds after which the Promise should be rejected (default 5000).
  */
 export function waitFor(
     condition: () => boolean,
-    interval: number = 50,
-    timeout: number = 5 * SECONDS
+    {interval = 50, timeout = 5 * SECONDS}: {interval?: number; timeout?: number} = {}
 ): Promise<void> {
-    const startTime = Date.now();
+    if (!isNumber(interval) || interval <= 0) throw new Error('Invalid interval');
+    if (!isNumber(timeout) || timeout <= 0) throw new Error('Invalid timeout');
 
+    const startTime = Date.now();
     return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
@@ -199,8 +197,11 @@ const enhancePromise = promisePrototype => {
 
             const startTime = Date.now();
             return this.finally(() => {
-                options.elapsed = Date.now() - startTime;
-                XH.track(options);
+                XH.track({
+                    timestamp: startTime,
+                    elapsed: Date.now() - startTime,
+                    ...options
+                });
             });
         },
 

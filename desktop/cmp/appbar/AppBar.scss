@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 .xh-appbar {
   // Menu button might be on left or right of appBar - add right margin when on left only.
-  .xh-app-menu:first-child {
+  .xh-app-menu-button:first-child {
     margin-right: var(--xh-pad-px);
   }
 
@@ -25,8 +25,8 @@
 //------------------------
 // Blueprint overrides
 //------------------------
-.bp4-navbar,
-.bp4-dark .bp4-navbar {
+.bp5-navbar,
+.bp5-dark .bp5-navbar {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -40,7 +40,7 @@
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
   min-height: var(--xh-appbar-height-px);
 
-  .bp4-navbar-divider {
+  .bp5-navbar-divider {
     border-left-color: var(--xh-tbar-separator-color);
   }
 
@@ -49,17 +49,17 @@
     flex-shrink: 0;
   }
 
-  .bp4-navbar-heading {
+  .bp5-navbar-heading {
     color: var(--xh-appbar-title-color);
     font-size: var(--xh-appbar-title-font-size-px);
     margin-left: var(--xh-pad-px);
   }
 
-  .bp4-navbar-group {
+  .bp5-navbar-group {
     overflow: hidden;
     height: var(--xh-appbar-height-px);
 
-    .bp4-navbar-divider {
+    .bp5-navbar-divider {
       margin: 0 var(--xh-pad-px);
     }
 
@@ -70,7 +70,7 @@
       margin: 0 5px 0 0;
     }
 
-    &.bp4-align-left {
+    &.bp5-align-left {
       // Flex simulates left alignment
       flex: 1;
 
@@ -80,13 +80,13 @@
       }
     }
 
-    &.bp4-align-right {
+    &.bp5-align-right {
       // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
-      > *:not(.bp4-navbar-divider):not(.xh-no-pad) {
+      > *:not(.bp5-navbar-divider):not(.xh-no-pad) {
         margin-left: var(--xh-pad-px);
       }
 
-      .bp4-navbar-divider {
+      .bp5-navbar-divider {
         margin-right: 0;
       }
     }

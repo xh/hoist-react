@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
@@ -199,7 +199,7 @@ export class ColumnWidthCalculator {
                 (includeHeaderIcons || gridModel.sortBy.find(sorter => sorter.colId === colId));
 
         let showMenu =
-            (agOptions?.suppressMenu === false || (filterable && filterModel)) &&
+            (agOptions?.suppressHeaderMenuButton === false || (filterable && filterModel)) &&
             includeHeaderIcons;
 
         // If only showing menu on hover, only need to allot room if the column is filtered

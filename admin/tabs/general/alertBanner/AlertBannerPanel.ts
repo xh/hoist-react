@@ -2,33 +2,54 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
-import {code, div, filler, hframe, p, placeholder, span, vbox} from '@xh/hoist/cmp/layout';
+import {
+    br,
+    code,
+    div,
+    filler,
+    fragment,
+    hframe,
+    li,
+    p,
+    placeholder,
+    span,
+    ul,
+    vbox
+} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {buttonGroupInput, dateInput, switchInput, textArea} from '@xh/hoist/desktop/cmp/input';
+import {
+    buttonGroupInput,
+    dateInput,
+    select,
+    switchInput,
+    textArea
+} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {isEmpty, truncate} from 'lodash';
+import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {LocalDate} from '@xh/hoist/utils/datetime';
+import {isEmpty} from 'lodash';
+import {ReactNode} from 'react';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
 
+const baseClassName = 'xh-alert-banner-panel';
 export const alertBannerPanel = hoistCmp.factory({
     model: creates(AlertBannerModel),
 
     render() {
         return panel({
-            className: 'xh-alert-banner-panel',
+            className: baseClassName,
             mask: 'onLoad',
             item: hframe(formPanel(), previewPanel())
         });
@@ -43,7 +64,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         title: 'Settings',
         icon: Icon.gear(),
         compactHeader: true,
-        className: 'xh-alert-banner-panel__form-panel',
+        className: `${baseClassName}__form-panel`,
         item: form({
             fieldDefaults: {
                 inline: true,
@@ -51,20 +72,18 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 labelWidth: 100
             },
             items: [
-                XH.alertBannerService.enabled
+                XH.getConf('xhAlertBannerConfig', {}).enabled
                     ? div({
-                          className: 'xh-alert-banner-panel__intro',
+                          className: `${baseClassName}__intro`,
                           items: [
                               p(`Show an alert banner to all ${XH.appName} users.`),
                               p(
-                                  `Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users within ${
-                                      XH.alertBannerService.interval / SECONDS
-                                  }s once marked Active and saved.`
+                                  'Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users once marked Active and saved.'
                               )
                           ]
                       })
                     : div({
-                          className: 'xh-alert-banner-panel__disabled-warning',
+                          className: `${baseClassName}__disabled-warning`,
                           items: [
                               p(
                                   'Feature currently disabled via ',
@@ -80,7 +99,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                           ]
                       }),
                 div({
-                    className: 'xh-alert-banner-panel__form-panel__fields',
+                    className: `${baseClassName}__form-panel__fields`,
                     items: [
                         formField({
                             field: 'message',
@@ -142,6 +161,24 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                             })
                         }),
                         formField({
+                            field: 'clientApps',
+                            item: select({
+                                enableMulti: true,
+                                enableClear: true,
+                                closeMenuOnSelect: false,
+                                noOptionsMessageFn: () => 'Enter one or more app codes.',
+                                options: XH.clientApps.map(app => ({
+                                    label: app,
+                                    value: app
+                                }))
+                            }),
+                            info: fragment(
+                                span('Specify what apps should the banner be shown to.'),
+                                br(),
+                                span('If blank, show to all apps.')
+                            )
+                        }),
+                        formField({
                             field: 'active',
                             info: 'Enable and save to show this banner to all users.',
                             item: switchInput()
@@ -149,13 +186,13 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         formField({
                             omit: !formModel.values.updated,
                             field: 'updated',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro',
+                            className: `${baseClassName}__form-panel__fields--ro`,
                             readonlyRenderer: dateTimeRenderer({})
                         }),
                         formField({
                             omit: !formModel.values.updatedBy,
                             field: 'updatedBy',
-                            className: 'xh-alert-banner-panel__form-panel__fields--ro'
+                            className: `${baseClassName}__form-panel__fields--ro`
                         })
                     ]
                 })
@@ -164,13 +201,22 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         bbar: toolbar({
             items: [
                 popover({
-                    target: button({
+                    item: button({
                         icon: Icon.bookmark(),
                         text: 'Presets',
                         outlined: true
                     }),
-                    content: presetMenu(),
-                    omit: !model.supportPresets
+                    content: presetMenu()
+                }),
+                button({
+                    icon: Icon.add(),
+                    text: 'Add Preset',
+                    disabled: model.shouldDisableAddPreset,
+                    onClick: () => model.addPreset(),
+                    tooltip: model.shouldDisableAddPreset
+                        ? 'Missing message or settings already saved as a preset.'
+                        : '',
+                    className: 'xh-margin-left'
                 }),
                 filler(),
                 button({
@@ -179,9 +225,10 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                     onClick: () => model.resetForm()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Save Changes',
                     icon: Icon.check(),
                     intent: 'success',
+                    outlined: true,
                     disabled: !isValid || !isDirty,
                     onClick: () => model.saveAsync()
                 })
@@ -196,7 +243,7 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
     return panel({
         title: 'Preview',
         compactHeader: true,
-        className: 'xh-alert-banner-panel__preview-panel xh-tiled-bg',
+        className: `${baseClassName}__preview-panel xh-tiled-bg`,
         items: [
             banner({
                 omit: !bannerModel,
@@ -214,46 +261,36 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 const presetMenu = hoistCmp.factory<AlertBannerModel>({
     render({model}) {
         const {savedPresets} = model,
-            items = [];
+            items = isEmpty(savedPresets)
+                ? [menuItem({text: 'No presets saved...', disabled: true})]
+                : savedPresets.map(preset => presetMenuItem({preset}));
 
-        if (isEmpty(savedPresets)) {
-            items.push(menuItem({text: 'No presets saved...', disabled: true}));
-        } else {
-            items.push(...savedPresets.map(preset => presetMenuItem({preset})));
-        }
-
-        items.push(
-            menuDivider(),
-            menuItem({
-                icon: Icon.add({intent: 'success'}),
-                disabled: !model.formModel.fields.message.value || model.currentValuesSavedAsPreset,
-                text: 'Add current',
-                onClick: e => {
-                    model.addPreset();
-                    e.stopPropagation();
-                }
-            })
-        );
-
-        return menu({items, style: {maxHeight: '400px', overflowY: 'auto'}});
+        return menu({
+            items,
+            style: {maxHeight: '400px', overflowY: 'auto'},
+            className: `${baseClassName}__preset-menu`
+        });
     }
 });
 
 const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
     render({model, preset}) {
-        const {iconName, intent, message, dateCreated, createdBy} = preset;
+        const {iconName, intent, message, dateCreated, createdBy, clientApps} = preset;
+
         return menuItem({
             icon: iconName
                 ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
                 : Icon.placeholder({size: 'lg'}),
             text: vbox({
                 items: [
-                    truncate(message, {length: 50}),
+                    span({item: message, className: 'xh-text-overflow-ellipsis'}),
+                    clientAppCellContainer(clientApps),
                     span({
                         item: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
                         className: 'xh-font-size-small xh-text-color-muted'
                     })
-                ]
+                ],
+                className: `${baseClassName}__menu-item`
             }),
             multiline: true,
             onClick: () => model.loadPreset(preset),
@@ -268,3 +305,13 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
         });
     }
 });
+
+const clientAppCellContainer = (clientApps: string[]): ReactNode => {
+    const isClientAppsEmpty = isEmpty(clientApps);
+    return ul({
+        items: isClientAppsEmpty
+            ? li({item: 'all apps', className: 'xh-bg-intent-primary'})
+            : clientApps.map(app => li(app)),
+        className: `${baseClassName}__client-app-cell-container`
+    });
+};

@@ -2,20 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
     countBy,
-    isArray,
     isEmpty,
     isFunction,
     isNil,
@@ -56,26 +55,11 @@ export class GridExportService extends HoistService {
             timeout = 30 * SECONDS
         }: ExportOptions = {}
     ) {
-        throwIf(!gridModel, 'GridModel required for export');
-        throwIf(
-            !isString(filename) && !isFunction(filename),
-            'Export filename must be either a string or a closure'
-        );
-        throwIf(
-            !['excel', 'excelTable', 'csv'].includes(type),
-            `Invalid export type "${type}". Must be either "excel", "excelTable" or "csv"`
-        );
-        throwIf(
-            !(isFunction(columns) || isArray(columns) || ['ALL', 'VISIBLE'].includes(columns)),
-            'Invalid columns config - must be "ALL", "VISIBLE", an array of colIds, or a function'
-        );
-        throwIf(!isBoolean(track), 'Invalid track value - must be either true or false');
-
         if (isFunction(filename)) filename = filename(gridModel);
 
         const config = XH.configService.get('xhExportConfig', {}),
             exportColumns = this.getExportableColumns(gridModel, columns),
-            summaryRecord = gridModel.store.summaryRecord,
+            summaryRecords = gridModel.store.summaryRecords,
             records = gridModel.store.rootRecords,
             meta = this.getColumnMetadata(exportColumns);
 
@@ -84,18 +68,17 @@ export class GridExportService extends HoistService {
             return;
         }
 
-        // If the grid includes a summary row, add it to the export payload as a root-level node.
-        const rows =
-            gridModel.showSummary && summaryRecord
-                ? [
-                      this.getHeaderRow(exportColumns, type, gridModel),
-                      this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0),
-                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
-                  ]
-                : [
-                      this.getHeaderRow(exportColumns, type, gridModel),
-                      ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 0)
-                  ];
+        // If the grid includes summary rows, add them to the export payload as root-level nodes.
+        const rows = [
+            this.getHeaderRow(exportColumns, type, gridModel),
+            ...(gridModel.showSummary && !isEmpty(summaryRecords)
+                ? summaryRecords.map(summaryRecord =>
+                      this.getRecordRow(gridModel, summaryRecord, exportColumns, type, 0)
+                  )
+                : []),
+
+            ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
+        ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
         let startToast = null,
@@ -154,11 +137,13 @@ export class GridExportService extends HoistService {
             XH.successToast('Export complete.');
 
             if (track) {
+                const trackOpts = track !== true ? track : null;
                 XH.track({
                     category: 'Export',
                     message: `Downloaded ${filename}${fileExt}`,
                     data: {rows: rows.length, columns: exportColumns.length},
-                    logData: true
+                    logData: true,
+                    ...trackOpts
                 });
             }
         } catch (e) {
@@ -461,7 +446,7 @@ export interface ExportOptions {
     columns?: 'VISIBLE' | 'ALL' | string[] | ((g: GridModel) => string[]);
 
     /** True to enable activity tracking of exports (default false). */
-    track?: boolean;
+    track?: boolean | Partial<TrackOptions>;
 
     /** Timeout (in ms) for export request - defaults to 30 seconds. */
     timeout?: number;

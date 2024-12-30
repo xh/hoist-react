@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {box} from '@xh/hoist/cmp/layout';
+import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
@@ -16,30 +16,45 @@ export const versionBar = hoistCmp.factory({
         if (!isShowing()) return null;
 
         const inspectorSvc = XH.inspectorService,
-            env = XH.getEnv('appEnvironment'),
-            version = XH.getEnv('clientVersion'),
-            build = XH.getEnv('clientBuild'),
+            envSvc = XH.environmentService,
+            env = envSvc.get('appEnvironment'),
+            version = envSvc.get('clientVersion'),
+            build = envSvc.get('clientBuild'),
+            instance = envSvc.serverInstance,
             isAdminApp = window.location.pathname?.startsWith('/admin/'),
             versionAndBuild =
                 !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
 
         return box({
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
+                span({
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
+                }),
+                span({
+                    className: 'xh-version-bar__instance',
+                    title: 'Currently Connected Server Instance',
+                    items: [Icon.server(), instance]
+                }),
+                span({
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
+                }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
+                    title: 'Show About Dialog',
                     onClick: () => XH.showAboutDialog()
                 }),
                 Icon.search({
                     omit: !inspectorSvc.enabled,
+                    title: 'Toggle Hoist Inspector',
                     onClick: () => inspectorSvc.toggleActive()
                 }),
                 Icon.wrench({
                     omit: isAdminApp || !XH.getUser().isHoistAdminReader,
+                    title: 'Open Admin Console',
                     onClick: () => window.open('/admin')
                 })
             ]

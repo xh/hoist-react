@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
@@ -20,7 +21,7 @@ export const toastSource = hoistCmp.factory({
     model: uses(ToastSourceModel),
 
     render({model}) {
-        const pending = model.toastModels.filter(it => it.isOpen),
+        const pending: ToastModel[] = model.toastModels.filter(it => it.isOpen),
             next = head(pending);
 
         if (!next) return null;

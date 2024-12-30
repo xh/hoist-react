@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {Column, ColumnRenderer, ColumnSortSpec} from '@xh/hoist/cmp/grid';
@@ -38,10 +38,10 @@ export interface ZoneField {
 }
 
 export interface ZoneGridModelPersistOptions extends PersistOptions {
-    /** True to include mapping information (default true) */
-    persistMapping?: boolean;
-    /** True to include grouping information (default true) */
-    persistGrouping?: boolean;
-    /** True to include sorting information (default true) */
-    persistSort?: boolean;
+    /** True (default) to include mapping state or provide mapping-specific PersistOptions. */
+    persistMappings?: boolean | PersistOptions;
+    /** True (default) to include grouping state or provide grouping-specific PersistOptions. */
+    persistGrouping?: boolean | PersistOptions;
+    /** True (default) to include sort state or provide sort-specific PersistOptions. */
+    persistSort?: boolean | PersistOptions;
 }

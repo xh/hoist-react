@@ -1,0 +1,19 @@
+.xh-admin-role-form {
+  &__fields {
+    padding: var(--xh-pad-px);
+  }
+
+  &__assignments {
+    &__panel {
+      flex: 1 0 !important;
+
+      &:not(:last-child) {
+        border-right: var(--xh-border-solid);
+      }
+
+      .xh-grid-count-label {
+        margin-right: var(--xh-pad-half-px);
+      }
+    }
+  }
+}

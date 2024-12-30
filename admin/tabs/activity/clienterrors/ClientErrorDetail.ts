@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {correlationId, instance} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {a, div, h3, hframe, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -35,20 +36,47 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                     style: {width: '400px'},
                     items: [
                         h3(Icon.info(), 'Error Info'),
-                        formField({field: 'username'}),
                         formField({
-                            field: 'dateCreated',
-                            readonlyRenderer: fmtDateTimeSec
+                            field: 'username',
+                            readonlyRenderer: username => {
+                                if (!username) return naSpan();
+                                const {impersonating} = formModel.values,
+                                    impSpan = impersonating
+                                        ? span({
+                                              className: 'xh-text-color-accent',
+                                              item: ` (impersonating ${impersonating})`
+                                          })
+                                        : null;
+                                return span(username, impSpan);
+                            }
                         }),
-                        formField({field: 'appVersion'}),
+                        formField({
+                            field: 'appVersion',
+                            readonlyRenderer: appVersion => {
+                                if (!appVersion) return naSpan();
+                                const {appEnvironment} = formModel.values;
+                                return `${appVersion} (${appEnvironment})`;
+                            }
+                        }),
                         formField({
                             field: 'userAlerted',
                             label: 'User Alerted?'
                         }),
-                        formField({field: 'id'}),
                         formField({
                             field: 'url',
                             readonlyRenderer: hyperlinkVal
+                        }),
+                        formField({
+                            field: 'instance',
+                            readonlyRenderer: v => instance.renderer(v, null)
+                        }),
+                        formField({
+                            field: 'correlationId',
+                            readonlyRenderer: v => correlationId.renderer(v, null)
+                        }),
+                        formField({
+                            field: 'dateCreated',
+                            readonlyRenderer: v => fmtDateTimeSec(v)
                         }),
                         h3(Icon.desktop(), 'Device / Browser'),
                         formField({field: 'device'}),
@@ -94,4 +122,4 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
 
 const valOrNa = v => (!isNil(v) ? v.toString() : naSpan());
 const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
-const hyperlinkVal = v => a({href: v, item: v, target: '_blank'});
+const hyperlinkVal = v => (v ? a({href: v, item: v, target: '_blank'}) : '-');

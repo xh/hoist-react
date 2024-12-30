@@ -2,30 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
-    HoistModel,
-    LoadSpec,
-    PlainObject,
-    Some,
-    managed,
-    XH,
-    Awaitable,
-    VSide
-} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {
-    RecordAction,
-    Store,
-    StoreConfig,
-    StoreRecordOrId,
-    StoreSelectionConfig,
-    StoreSelectionModel,
-    StoreTransaction
-} from '@xh/hoist/data';
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@ag-grid-community/core';
 import {
     Column,
+    ColumnRenderer,
     ColumnSpec,
     Grid,
     GridConfig,
@@ -37,28 +25,45 @@ import {
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
-    TreeStyle,
-    multiFieldRenderer
+    TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {
-    CellClickedEvent,
-    CellContextMenuEvent,
-    CellDoubleClickedEvent,
-    RowClickedEvent,
-    RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+    ZoneGridColConfig,
+    zoneGridRenderer,
+    ZoneGridSubField
+} from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
+import {
+    Awaitable,
+    HoistModel,
+    LoadSpec,
+    managed,
+    PlainObject,
+    Some,
+    VSide,
+    XH
+} from '@xh/hoist/core';
+import {
+    RecordAction,
+    Store,
+    StoreConfig,
+    StoreRecordOrId,
+    StoreSelectionConfig,
+    StoreSelectionModel,
+    StoreTransaction
+} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, forOwn, isEmpty, isFinite, isPlainObject, isString, find} from 'lodash';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
+import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
-import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
-import {ZoneGridModelPersistOptions, Zone, ZoneLimit, ZoneMapping} from './Types';
+import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
 export interface ZoneGridConfig {
     /**
-     * Available columns for this grid. Note that the actual display of
-     * the zone columns is managed via `mappings` below.
+     * Available columns for this grid. Columns with an omit property evaluating to true will be
+     * excluded. Note that the actual display of the zone columns is managed via `mappings` below.
      */
     columns: Array<ColumnSpec>;
 
@@ -69,33 +74,39 @@ export interface ZoneGridConfig {
     limits?: Partial<Record<Zone, ZoneLimit>>;
 
     /**
-     * Optional configs to apply to left column. Intended for use as an `escape hatch`, and should be used with care.
-     * Settings made here may interfere with the implementation of this component.
+     * Optional renderers to produce a row specific label for each column.
+     * If not specified, the label will default to the fixed  Header of the column.
+     */
+    labelRenderers?: Record<string, ColumnRenderer>;
+
+    /**
+     * Optional configs to apply to left column. Intended for use as an `escape hatch` - use with
+     * care. Settings made here may interfere with the implementation of this component.
      */
     leftColumnSpec?: Partial<ColumnSpec>;
 
     /**
-     * Optional configs to apply to right column. Intended for use as an `escape hatch`, and should be used with care.
-     * Settings made here may interfere with the implementation of this component.
+     * Optional configs to apply to right column. Intended for use as an `escape hatch` - use with
+     * care. Settings made here may interfere with the implementation of this component.
      */
     rightColumnSpec?: Partial<ColumnSpec>;
 
     /** String rendered between consecutive SubFields. */
-    delimiter?: string;
+    delimiter?: string | false;
 
     /** Config with which to create a ZoneMapperModel, or boolean `true` to enable default. */
     zoneMapperModel?: ZoneMapperConfig | boolean;
 
     /**
-     * A Store instance, or a config with which to create a Store. If not supplied,
-     * store fields will be inferred from columns config.
+     * A Store instance, or a config with which to create a Store.
+     * If not supplied, store fields will be inferred from columns config.
      */
     store?: Store | StoreConfig;
 
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
 
-    /** Location for a docked summary row. Requires `store.SummaryRecord` to be populated. */
+    /** Location for docked summary row(s). Requires `store.summaryRecords` to be populated. */
     showSummary?: boolean | VSide;
 
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
@@ -106,7 +117,7 @@ export interface ZoneGridConfig {
      * This function will be called after the built-in defaults have been restored, and can be
      * used to restore application specific defaults.
      */
-    restoreDefaultsFn?: () => Awaitable<boolean>;
+    restoreDefaultsFn?: () => Awaitable<void>;
 
     /**
      * Confirmation warning to be presented to user before restoring default state. Set to
@@ -289,6 +300,8 @@ export class ZoneGridModel extends HoistModel {
     @observable.ref
     mappings: Record<Zone, ZoneMapping[]>;
 
+    labelRenderers: Record<string, ColumnRenderer>;
+
     @bindable.ref
     leftColumnSpec: Partial<ColumnSpec>;
 
@@ -297,12 +310,11 @@ export class ZoneGridModel extends HoistModel {
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
-    delimiter: string;
-    restoreDefaultsFn: () => Awaitable<boolean>;
+    delimiter: string | false;
+    restoreDefaultsFn: () => Awaitable<void>;
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: ZoneGridPersistenceModel;
 
     constructor(config: ZoneGridConfig) {
         super();
@@ -318,13 +330,16 @@ export class ZoneGridModel extends HoistModel {
             rightColumnSpec,
             delimiter,
             zoneMapperModel,
+            labelRenderers,
             restoreDefaultsFn,
             restoreDefaultsWarning,
             persistWith,
             ...rest
         } = config;
 
-        this.availableColumns = columns.map(it => ({...it, hidden: true}));
+        this.availableColumns = columns
+            .filter(it => !executeIfFunction(it.omit))
+            .map(it => ({...it, hidden: true}));
         this.limits = limits;
         this.mappings = this.parseMappings(mappings, true);
 
@@ -333,6 +348,7 @@ export class ZoneGridModel extends HoistModel {
         this.delimiter = delimiter ?? ' • ';
         this.restoreDefaultsFn = restoreDefaultsFn;
         this.restoreDefaultsWarning = restoreDefaultsWarning;
+        this.labelRenderers = labelRenderers ?? {};
 
         this._defaultState = {
             mappings: this.mappings,
@@ -346,9 +362,7 @@ export class ZoneGridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
-        this.persistenceModel = persistWith
-            ? new ZoneGridPersistenceModel(this, persistWith)
-            : null;
+        if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({
             track: () => [this.leftColumnSpec, this.rightColumnSpec],
@@ -366,11 +380,10 @@ export class ZoneGridModel extends HoistModel {
     async restoreDefaultsAsync(): Promise<boolean> {
         if (this.restoreDefaultsWarning) {
             const confirmed = await XH.confirm({
-                title: 'Please Confirm',
-                icon: Icon.warning(),
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });
@@ -381,8 +394,6 @@ export class ZoneGridModel extends HoistModel {
         this.setMappings(mappings);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-
-        this.persistenceModel?.clear();
 
         if (this.restoreDefaultsFn) {
             await this.restoreDefaultsFn();
@@ -507,7 +518,7 @@ export class ZoneGridModel extends HoistModel {
         return this.gridModel.doLoadAsync(loadSpec);
     }
 
-    loadData(rawData: any[], rawSummaryData?: PlainObject) {
+    loadData(rawData: any[], rawSummaryData?: Some<PlainObject>) {
         return this.gridModel.loadData(rawData, rawSummaryData);
     }
 
@@ -544,14 +555,15 @@ export class ZoneGridModel extends HoistModel {
         return [
             this.buildZoneColumn(true),
             this.buildZoneColumn(false),
-            // Ensure all available columns are provided as hidden columns for lookup by multifield renderer
+            // Ensure all available columns are provided as hidden columns for lookup by zoneGridRenderer
             ...this.availableColumns
         ];
     }
 
     private buildZoneColumn(isLeft: boolean): ColumnSpec {
-        const topMappings = this.mappings[isLeft ? 'tl' : 'tr'],
-            bottomMappings = this.mappings[isLeft ? 'bl' : 'br'];
+        const {gridModel, labelRenderers, mappings, delimiter} = this,
+            topMappings = mappings[isLeft ? 'tl' : 'tr'],
+            bottomMappings = mappings[isLeft ? 'bl' : 'br'];
 
         throwIf(
             isEmpty(topMappings),
@@ -559,34 +571,48 @@ export class ZoneGridModel extends HoistModel {
         );
 
         // Extract the primary column from the top mappings
-        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), this.gridModel);
+        const primaryCol = new Column(this.findColumnSpec(topMappings[0]), gridModel);
 
         // Extract the sub-fields from the other mappings
-        const subFields = [];
+        const subFields: ZoneGridSubField[] = [];
         topMappings.slice(1).forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'top'});
+            const colId = it.field;
+            subFields.push({
+                colId,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
+                position: 'top'
+            });
         });
         bottomMappings.forEach(it => {
-            subFields.push({colId: it.field, label: it.showLabel, position: 'bottom'});
+            const colId = it.field;
+            subFields.push({
+                colId,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
+                position: 'bottom'
+            });
         });
+
+        const zoneGridConfig: ZoneGridColConfig = {
+            mainRenderer: primaryCol.renderer,
+            delimiter,
+            subFields
+        };
+
+        const overrideSpec = (isLeft ? this.leftColumnSpec : this.rightColumnSpec) ?? {};
 
         return {
             // Controlled properties
             field: isLeft ? 'left_column' : 'right_column',
-            flex: isLeft ? 2 : 1,
             align: isLeft ? 'left' : 'right',
-            renderer: multiFieldRenderer,
-            rowHeight: Grid['MULTIFIELD_ROW_HEIGHT'],
+            isTreeColumn: gridModel?.treeMode && isLeft,
+            flex: overrideSpec.width ? null : isLeft ? 2 : 1,
+            renderer: (value, context) => zoneGridRenderer(value, context, isLeft),
+            rendererIsComplex: true,
+            rowHeight: Grid['ZONEGRID_ROW_HEIGHT'],
             resizable: false,
             movable: false,
             hideable: false,
-            appData: {
-                multiFieldConfig: {
-                    mainRenderer: primaryCol.renderer,
-                    delimiter: this.delimiter,
-                    subFields
-                }
-            },
+            appData: {zoneGridConfig},
 
             // Properties inherited from primary column
             headerName: primaryCol.headerName,
@@ -599,7 +625,7 @@ export class ZoneGridModel extends HoistModel {
             getValueFn: primaryCol.getValueFn,
 
             // Optional overrides
-            ...(isLeft ? this.leftColumnSpec : this.rightColumnSpec)
+            ...overrideSpec
         };
     }
 

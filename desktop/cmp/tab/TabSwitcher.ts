@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties} from 'react';
+import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -99,9 +99,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 disabled,
                 style: tabStyle,
                 item: bpTooltip({
-                    content: tooltip,
+                    content: tooltip as ReactElement,
                     disabled: !tooltip,
-                    boundary: 'viewport',
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
@@ -142,7 +141,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId)
+                        onChange: tabId => model.activateTab(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
@@ -183,7 +182,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
             position: 'bottom-right',
-            target: button({
+            item: button({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,
@@ -298,7 +297,7 @@ class TabSwitcherLocalModel extends HoistModel {
 
     get tabEls() {
         if (!this.el) return [];
-        return Array.from(this.el.querySelectorAll('.bp4-tab'));
+        return Array.from(this.el.querySelectorAll('.bp5-tab'));
     }
 
     getTabDimensions(tab) {

@@ -1,20 +1,27 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./build/types",
+
     "target": "ES2022",
     "module": "ES2022",
+    "lib": ["dom", "es2022"],
+
+    "jsx": "react",
     "moduleResolution": "Node",
     "skipLibCheck": true,
+
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "jsx": "react",
-    "useDefineForClassFields": true,
+    "experimentalDecorators": true,
     "noImplicitOverride": true,
+    "resolveJsonModule": true,
+    "useDefineForClassFields": true,
+
     "paths": {
       "@xh/hoist/*": ["./*"]
-    },
-    "lib": ["dom", "es2022"]
+    }
   },
-  "exclude": ["node_modules"]
+  "include": ["./**/*", "package.json"],
+  "exclude": ["node_modules", "build"]
 }

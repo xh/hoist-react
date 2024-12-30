@@ -2,14 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {merge} from 'lodash';
 
 /**
- * Copy the chart in it's current state to the clipboard.
- * Works only on webkit based browsers.
+ * Copy the chart in its current state to the clipboard - supported for webkit based browsers only.
  * @internal
  */
 export function installCopyToClipboard(Highcharts) {
@@ -45,7 +43,7 @@ export function installCopyToClipboard(Highcharts) {
 async function convertChartToPngAsync(chart) {
     const svg = await new Promise((resolve, reject) =>
             chart.getSVGForLocalExport(
-                merge(chart.options.exporting),
+                chart.options.exporting,
                 {},
                 () => reject('Cannot fallback to export server'),
                 svg => resolve(svg)

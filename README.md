@@ -125,7 +125,7 @@ Key features of modern Javascript (and a bit of "BabelScript") used throughout H
 ### Promises
 
 🤝 Promises are a core code construct within Hoist React for executing asynchronous operations, and
-as such have been extended in a few key ways. See [`Promise.js`](promise/Promise.js) for
+as such have been extended in a few key ways. See [`Promise.ts`](promise/Promise.ts) for
 documentation comments and implementations of Promise-related utilities and direct extensions to the
 Promise prototype, including:
 
@@ -175,7 +175,7 @@ state changes and other updates.
 
 ## Core Concepts: XH
 
-Hoist creates and exports [`XH`, a singleton Model instance](core/XH.js), to coordinate the
+Hoist creates and exports [`XH`, a singleton Model instance](core/XH.ts), to coordinate the
 framework API at the top level and provide the most commonly used entry points to general
 functionality, including the creation, initialization, and aliases of key services. This model
 instance is installed as a `window.XH` global for convenient access on the console, although calling
@@ -186,9 +186,9 @@ instantiates Hoist service singletons and installs references to these instances
 aliases on itself for the most common framework service calls, e.g. `XH.getConf()` as a shortcut to
 `XH.configService.get()`.
 
-| Class/File |                                  Note                                  |      Link       |
-|------------|------------------------------------------------------------------------|:---------------:|
-| `XH.js`    | Hoist's top-level Model / framework API entry-point, exported as `XH`. | [⚛️](core/XH.js) |
+| Class/File |                                  Note                                  |       Link       |
+|------------|------------------------------------------------------------------------|:----------------:|
+| `XH.ts`    | Hoist's top-level Model / framework API entry-point, exported as `XH`. | [⚛️](core/XH.ts) |
 
 
 ## Core Concepts: Models, Components, and Services
@@ -208,11 +208,11 @@ function `hoistCmp` to define Components with this support.
 
 |     Class/File      |                                  Note                                   |            Link             |
 |---------------------|-------------------------------------------------------------------------|:---------------------------:|
-| `HoistBase.js`      | Root Base class. Support for mobx, persistence, and resource management |       [⚛️](core/XH.js)       |
-| `HoistModel.js`     | Base class for Models                                                   |   [⚛️](core/HoistModel.js)   |
-| `HoistService.js`   | Base class for Services                                                 |  [⚛️](core/HoistService.js)  |
-| `HoistComponent.js` | Contains `hoistComponent`, factory for creating functional Components   | [⚛️](core/HoistComponent.js) |
-| `HoistAppModel.js`  | Base class for an App's primary Model class.                            | [⚛️](core/HoistAppModel.js)  |
+| `HoistBase.ts`      | Root Base class. Support for mobx, persistence, and resource management |       [⚛️](core/XH.ts)       |
+| `HoistModel.ts`     | Base class for Models                                                   |   [⚛️](core/HoistModel.ts)   |
+| `HoistService.ts`   | Base class for Services                                                 |  [⚛️](core/HoistService.ts)  |
+| `HoistComponent.ts` | Contains `hoistComponent`, factory for creating functional Components   | [⚛️](core/HoistComponent.ts) |
+| `HoistAppModel.ts`  | Base class for an App's primary Model class.                            | [⚛️](core/HoistAppModel.ts)  |
 
 ### HoistModel
 
@@ -236,20 +236,20 @@ the specifics of how its visible Components are laid out or arranged.
 Components will reference properties of these Models within their render methods, and call methods
 on these Models in response to user actions or inputs. This can help to structure or encapsulate a
 Component's API, but also works with MobX to minimize extra render cycles and respond to state
-changes as efficiently as possible. The [`GridModel`](cmp/grid/GridModel.js) class is a notable
+changes as efficiently as possible. The [`GridModel`](cmp/grid/GridModel.ts) class is a notable
 example of managing a complex Component's configuration, state, and API surface via a Model. Hoist's
 `LeftRightChooser` Component is managed via its
-[dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.js), which includes
+[dedicated Model class](desktop/cmp/leftrightchooser/LeftRightChooserModel.ts), which includes
 nested GridModels.
 
 Models can also exist entirely independent of Components, or be generalized enough to be used as
 state sources for multiple, different Components. The
-['StoreSelectionModel'](data/StoreSelectionModel.js) is a good example of this.
+['StoreSelectionModel'](data/StoreSelectionModel.ts) is a good example of this.
 
 #### HoistAppModel
 
 Each client application must define a top-level Model class using
-[the specialized `HoistAppModel` base class](core/HoistAppModel.js). This class defines several
+[the specialized `HoistAppModel` base class](core/HoistAppModel.ts). This class defines several
 additional methods specific to the high-level lifecycle of the application, including those dealing
 with init, and routing. This class instance is available via an import of the `XH` (as
 `XH.appModel`) and can be a useful place to hang global state specific to your application.
@@ -257,7 +257,7 @@ with init, and routing. This class instance is available via an import of the `X
 Please review the inline documentation on the class for additional detailed information on what it
 provides and how an Application should provide concrete implementations for certain key methods. For
 an example within Hoist React itself, see HoistAppModel for the
-[built-in Admin Console](admin/AppModel.js).
+[built-in Admin Console](admin/AppModel.ts).
 
 ### hoistComponent
 
@@ -312,7 +312,7 @@ create with `new` are either marked as `@managed` or destroyed explicitly in `de
 
 | Class/File |                        Note                        |       Link        |
 |------------|----------------------------------------------------|:-----------------:|
-| `elem.js`  | Utils for creating elements and element factories. | [⚛️](core/elem.js) |
+| `elem.ts`  | Utils for creating elements and element factories. | [⚛️](core/elem.ts) |
 
 
 Hoist encourages the use of Element factories to create element trees in render functions using pure
@@ -403,4 +403,4 @@ will be filled in as soon as possible. These include planned notes on:
 
 📫☎️🌎 info@xh.io | <https://xh.io/contact>
 
-Copyright © 2023 Extremely Heavy Industries Inc.
+Copyright © 2024 Extremely Heavy Industries Inc.

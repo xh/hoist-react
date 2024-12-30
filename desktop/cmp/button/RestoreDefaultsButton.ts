@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
@@ -13,10 +13,10 @@ import {button, ButtonProps} from './Button';
 
 export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */
-    warningMessage: ReactNode;
+    warningMessage?: ReactNode;
 
     /** Title for confirm dialog shown prior to clearing user customizations. */
-    warningTitle: string;
+    warningTitle?: string;
 }
 
 /**
@@ -32,7 +32,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
 
         render(
             {
-                warningTitle = 'Please Confirm',
+                warningTitle = 'Please confirm...',
                 warningMessage = fragment(
                     'All app options (including grid customizations) will be restored to their default settings, and the app will be reloaded.',
                     br(),
@@ -51,6 +51,7 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
                     onConfirm: () => XH.restoreDefaultsAsync(),
                     confirmProps: {
                         text: 'Yes, restore defaults',
+                        icon: Icon.reset(),
                         intent: 'primary'
                     }
                 });

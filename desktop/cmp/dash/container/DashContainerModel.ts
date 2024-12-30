@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {
     managed,
     modelLookupContextProvider,
+    Persistable,
+    PersistableState,
     PersistenceProvider,
     PlainObject,
     RefreshMode,
@@ -14,15 +16,25 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {convertIconToHtml, deserializeIcon} from '@xh/hoist/icon';
-import {ContextMenu} from '@xh/hoist/kit/blueprint';
+import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {cloneDeep, defaultsDeep, find, isFinite, isNil, last, reject, startCase} from 'lodash';
+import {
+    cloneDeep,
+    defaultsDeep,
+    find,
+    isEqual,
+    isFinite,
+    isNil,
+    last,
+    reject,
+    startCase
+} from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
 import {DashViewModel, DashViewState} from '../DashViewModel';
@@ -37,7 +49,8 @@ import {
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 
-export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, DashViewState> {
+export interface DashContainerConfig
+    extends DashConfig<DashContainerViewSpec, DashContainerViewState> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
@@ -57,6 +70,16 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
     goldenLayoutSettings?: PlainObject;
 }
 
+// TODO - review other state inserted by library, determine if we want to model here
+export interface DashContainerViewState {
+    type: 'row' | 'column' | 'stack' | 'view';
+    id?: string;
+    content?: DashContainerViewState[];
+    title?: string;
+    width?: number | string;
+    height?: number | string;
+}
+
 /**
  * Model for a DashContainer, representing its contents and layout state.
  *
@@ -65,7 +88,7 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  *
  * State should be structured as nested arrays of container objects, according to
  * GoldenLayout's content config. Supported container types are `row`, `column` and `stack`.
- * Child containers and views should be provided as an array under the `contents` key.
+ * Child containers and views should be provided as an array under the `content` key.
  *
  *      + `row` lay out its children horizontally.
  *      + `column` lays out its children vertically.
@@ -86,20 +109,20 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * ```
  * [{
  *     type: 'row',
- *     contents: [
+ *     content: [
  *          // The first child of this row has pixel width of '200px'.
  *          // The column will take the remaining width.
  *         {
  *             type: 'stack',
  *             width: '200px',
- *             contents: [
+ *             content: [
  *                 {type: 'view', id: 'viewId'},
  *                 {type: 'view', id: 'viewId'}
  *             ]
  *         },
  *         {
  *             type: 'column',
- *             contents: [
+ *             content: [
  *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
  *                 {type: 'view', id: 'viewId', height: 40},
  *                 {type: 'view', id: 'viewId'},
@@ -113,11 +136,10 @@ export interface DashContainerConfig extends DashConfig<DashContainerViewSpec, D
  * @see http://golden-layout.com/docs/ItemConfig.html
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
-export class DashContainerModel extends DashModel<
-    DashContainerViewSpec,
-    DashViewState,
-    DashViewModel
-> {
+export class DashContainerModel
+    extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel>
+    implements Persistable<{state: DashViewState[]}>
+{
     //---------------------
     // Settable State
     //----------------------
@@ -187,32 +209,33 @@ export class DashContainerModel extends DashModel<
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+        this.state = initialState;
 
-        // Read state from provider -- fail gently
-        let persistState = null;
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'dashContainer', ...persistWith});
-                persistState = this.provider.read();
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dashContainer',
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
-        this.state = persistState?.state ?? initialState;
-
         // Initialize GoldenLayout with initial state once ref is ready
-        this.addReaction({
-            track: () => [this.containerRef.current, this.layoutLocked],
-            run: () => this.loadStateAsync(this.state)
-        });
-
-        this.addReaction({
-            track: () => this.viewState,
-            run: () => this.updateState()
-        });
+        this.addReaction(
+            {
+                track: () => [this.containerRef.current, this.layoutLocked] as const,
+                run: ([ref, locked]) => {
+                    // This reaction is intended to run when ref becomes available.
+                    // It's a no-op if ref *removed* due to component re-render.
+                    if (ref) this.loadStateAsync(this.state);
+                }
+            },
+            {
+                track: () => this.viewState,
+                run: () => this.updateState()
+            }
+        );
     }
 
     /**
@@ -228,35 +251,38 @@ export class DashContainerModel extends DashModel<
         this.contentLocked = restoreState.contentLocked;
         this.renameLocked = restoreState.renameLocked;
         await this.loadStateAsync(restoreState.initialState);
-        this.provider?.clear();
     }
 
-    /**
-     * Load state into the DashContainer, recreating its layout and contents
-     * @param state - State to load
-     */
-    async loadStateAsync(state) {
-        const containerEl = this.containerRef.current;
-        if (!containerEl) {
-            this.logWarn(
-                'DashboardContainer not yet rendered - cannot update state - change will be discarded!'
-            );
-            return;
-        }
+    /** Load state into the DashContainer, recreating its layout and contents */
+    async loadStateAsync(state: DashViewState[]) {
+        // Always save a reference to the state, even if the container is not yet rendered.
+        // Allows ref reaction on this class to loop back and apply it once GL is ready.
+        runInAction(() => (this.state = state));
 
-        // Show mask to provide user feedback
-        return wait()
-            .thenAction(() => {
-                this.destroyGoldenLayout();
-                this.goldenLayout = this.createGoldenLayout(containerEl, state);
-            })
-            .wait(500)
-            .then(() => {
+        // DOM required from this point on to recreate GL with new state.
+        const containerEl = this.containerRef.current;
+        if (!containerEl) return;
+
+        // Use of async below requires we check after each wait to ensure we haven't re-rendered
+        // again with a new ref. Bail out if so - ref reaction will re-enter and complete the job.
+        const refIsStale = () => this.containerRef.current !== containerEl;
+
+        return (
+            wait()
+                .thenAction(() => {
+                    if (refIsStale()) return;
+                    this.destroyGoldenLayout();
+                    this.goldenLayout = this.createGoldenLayout(containerEl, state);
+                })
                 // Since React v18, it's necessary to wait a short while for ViewModels to be available.
-                this.refreshActiveViews();
-                this.updateTabHeaders();
-            })
-            .linkTo(this.loadingStateTask);
+                .wait(500)
+                .then(() => {
+                    if (refIsStale()) return;
+                    this.refreshActiveViews();
+                    this.updateTabHeaders();
+                })
+                .linkTo(this.loadingStateTask)
+        );
     }
 
     /**
@@ -318,6 +344,26 @@ export class DashContainerModel extends DashModel<
         this.goldenLayout?.updateSize();
     }
 
+    getViewSpec(id: string): DashContainerViewSpec {
+        return this.viewSpecs.find(it => it.id === id);
+    }
+
+    getViewModel(id: string): DashViewModel<DashContainerViewSpec> {
+        return find(this.viewModels, {id});
+    }
+
+    //------------------------
+    // Persistable Interface
+    //------------------------
+    getPersistableState(): PersistableState<{state: DashViewState[]}> {
+        return new PersistableState({state: this.state});
+    }
+
+    setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
+        const {state} = persistableState.value;
+        if (state) this.loadStateAsync(state);
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -335,24 +381,21 @@ export class DashContainerModel extends DashModel<
         this.publishState();
     }
 
-    @debounced(1000)
+    @debounced(100)
     private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
-        runInAction(() => {
-            this.state = convertGLToState(goldenLayout, this);
-        });
-        this.provider?.write({state: this.state});
+
+        const newState = convertGLToState(goldenLayout, this);
+        if (!isEqual(this.state, newState)) {
+            runInAction(() => (this.state = newState));
+        }
     }
 
     private onItemDestroyed(item) {
         if (!item.isComponent) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
-    }
-
-    private getViewSpec(id: string) {
-        return this.viewSpecs.find(it => it.id === id);
     }
 
     //-----------------
@@ -384,10 +427,6 @@ export class DashContainerModel extends DashModel<
             ret[id] = {icon, title, viewState};
         });
         return ret;
-    }
-
-    private getViewModel(id: string) {
-        return find(this.viewModels, {id});
     }
 
     @action
@@ -449,7 +488,7 @@ export class DashContainerModel extends DashModel<
             dashContainerModel: this
         });
 
-        ContextMenu.show(menu, offset, null, XH.darkTheme);
+        showContextMenu(menu, offset);
     }
 
     //-----------------
@@ -501,7 +540,7 @@ export class DashContainerModel extends DashModel<
             if (icon) {
                 const $currentIcon = $el.find(iconSelector).first(),
                     currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
-                    newIconType = icon.props.iconName;
+                    newIconType = (icon.props as ResolvedIconProps).iconName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToHtml(icon);
@@ -566,7 +605,7 @@ export class DashContainerModel extends DashModel<
     //-----------------
     // Misc
     //-----------------
-    private createGoldenLayout(containerEl: HTMLElement, state: any): GoldenLayout {
+    private createGoldenLayout(containerEl: HTMLElement, state: DashViewState[]): GoldenLayout {
         const {viewSpecs} = this,
             ret = new GoldenLayout(
                 {

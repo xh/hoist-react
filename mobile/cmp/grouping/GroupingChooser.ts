@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {box, div, filler, hbox, placeholder, span, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -146,7 +146,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
             onDragEnd: result => model.onDragEnd(result),
             item: droppable({
                 droppableId: 'dimension-list',
-                item: dndProps =>
+                children: dndProps =>
                     div({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
@@ -171,7 +171,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
             key: dimension,
             draggableId: dimension,
             index: idx,
-            item: (dndProps, dndState) => {
+            children: (dndProps, dndState) => {
                 return div({
                     key: dimension,
                     className: classNames(

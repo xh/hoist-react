@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, MenuItem, MenuItemLike} from '@xh/hoist/core';
@@ -83,7 +83,7 @@ class LocalMenuModel extends HoistModel {
                 if (!isMenuItem(item)) return item;
 
                 // Process items
-                const {text, icon, actionFn, hidden} = item,
+                const {text, icon, className, actionFn, hidden} = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
                 return listItem({
@@ -91,7 +91,8 @@ class LocalMenuModel extends HoistModel {
                     tappable: true,
                     className: classNames(
                         'xh-menu__list__item',
-                        idx === pressedIdx ? 'xh-menu__list__item--pressed' : null
+                        idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,
+                        className
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,

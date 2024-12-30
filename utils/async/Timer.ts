@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
@@ -77,10 +77,9 @@ export class Timer {
     }
 
     /**
-     * Change the interval of this timer.
-     * @param interval - ms to wait between runs or any value `<=0` to pause the timer.
+     * Change the interval of this timer (any value `<=0` will pause the timer).
      */
-    setInterval(interval: number) {
+    setInterval(interval: number | string) {
         this.interval = this.parseDynamicVal(interval);
     }
 

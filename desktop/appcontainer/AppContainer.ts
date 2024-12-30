@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -17,7 +17,7 @@ import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/imp
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -25,7 +25,9 @@ import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
-import {hotkeysProvider} from '@xh/hoist/kit/blueprint';
+import {blueprintProvider} from '@xh/hoist/kit/blueprint';
+import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
+import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -41,7 +43,6 @@ import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 import {ReactElement} from 'react';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -56,7 +57,8 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
-    errorMessage
+    errorMessageImpl,
+    maskImpl
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -75,27 +77,25 @@ export const AppContainer = hoistCmp({
     render({model}) {
         useOnMount(() => model.initAsync());
 
-        return fragment(
-            hotkeysProvider(
-                errorBoundary({
-                    modelConfig: {
-                        errorHandler: {
-                            title: 'Critical Error',
-                            message:
-                                XH.clientAppName +
-                                ' encountered a critical error and cannot be displayed.',
-                            requireReload: true
-                        },
-                        errorRenderer: () => null
+        return blueprintProvider(
+            errorBoundary({
+                modelConfig: {
+                    errorHandler: {
+                        title: 'Critical Error',
+                        message:
+                            XH.clientAppName +
+                            ' encountered a critical error and cannot be displayed.',
+                        requireReload: true
                     },
-                    item: viewForState()
-                }),
-                // Modal component helpers rendered here at top-level to support display of messages
-                // and exceptions at any point during the app lifecycle.
-                exceptionDialog(),
-                messageSource(),
-                toastSource()
-            )
+                    errorRenderer: () => null
+                },
+                item: viewForState({model})
+            }),
+            // Modal component helpers rendered here at top-level to support display of messages
+            // and exceptions at any point during the app lifecycle.
+            exceptionDialog(),
+            messageSource(),
+            toastSource()
         );
     }
 });
@@ -103,11 +103,15 @@ export const AppContainer = hoistCmp({
 //-----------------------------------------
 // Implementation
 //-----------------------------------------
-function viewForState() {
+function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
-        case 'INITIALIZING':
-            return viewport(appLoadMask());
+        case 'AUTHENTICATING':
+        case 'INITIALIZING_HOIST':
+        case 'INITIALIZING_APP':
+            return viewport(
+                mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
+            );
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -170,11 +174,15 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
 
 const suspendedView = hoistCmp.factory<AppContainerModel>({
     render({model}) {
+        let ret;
         if (model.appStateModel.suspendData?.reason === 'IDLE') {
             const content = model.appSpec.idlePanel ?? idlePanel;
-            return elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
+        } else {
+            ret = suspendPanel();
         }
-        return suspendPanel();
+
+        return viewport(ret, appLoadMask());
     }
 });
 

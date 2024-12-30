@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {RuleLike} from '@xh/hoist/data';
@@ -23,18 +23,9 @@ export interface HoistUser {
     roles: string[];
     isHoistAdmin: boolean;
     isHoistAdminReader: boolean;
+    isHoistRoleManager: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
-}
-
-/**
- * Enhanced Response returned by FetchService.
- */
-export interface FetchResponse extends Response {
-    /**
-     * Property containing the already-awaited output of `response.text()`.
-     */
-    responseText: string;
 }
 
 /**
@@ -212,6 +203,9 @@ export interface TrackOptions {
     /** App-supplied category.*/
     category?: string;
 
+    /** Correlation ID to save along with track log. */
+    correlationId?: string;
+
     /** App-supplied data to save along with track log.*/
     data?: PlainObject | PlainObject[];
 
@@ -240,6 +234,9 @@ export interface TrackOptions {
     /** Optional LoadSpec associated with this track.*/
     loadSpec?: LoadSpec;
 
+    /** Timestamp for action. */
+    timestamp?: number;
+
     /** Elapsed time (ms) for action. */
     elapsed?: number;
 
@@ -259,8 +256,11 @@ export interface MenuItem {
     /** Icon to be displayed. */
     icon?: ReactElement;
 
-    /** Intent to be used for rendering the action. */
+    /** Intent to be used for rendering the menu item. */
     intent?: Intent;
+
+    /** Css class name to be added when rendering the menu item. */
+    className?: string;
 
     /** Executed when the user clicks the menu item. */
     actionFn?: () => void;
@@ -274,7 +274,7 @@ export interface MenuItem {
     /** True to disable this item. */
     disabled?: boolean;
 
-    /** True to hide this item. May be set dynamically via prepareFn.*/
+    /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;
 
     /** True to skip this item. May be set dynamically via prepareFn. Alias for hidden.  */

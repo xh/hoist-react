@@ -2,15 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {select} from '@xh/hoist/desktop/cmp/input';
 
 import {RegroupDialogModel} from './RegroupDialogModel';
 
@@ -23,7 +23,7 @@ export const regroupDialog = hoistCmp.factory({
 
         return dialog({
             title: 'Change Group',
-            icon: Icon.grip(),
+            icon: Icon.folder(),
             style: {width: 300},
             isOpen: true,
             isCloseButtonShown: false,
@@ -50,9 +50,10 @@ const tbar = hoistCmp.factory<RegroupDialogModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: model.groupName == null,
             onClick: () => model.saveAsync()
         })

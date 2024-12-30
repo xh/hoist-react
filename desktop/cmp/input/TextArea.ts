@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
-import {apiRemoved, TEST_ID, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {Ref} from 'react';
 import './TextArea.scss';
@@ -46,7 +46,6 @@ export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
     render(props, ref) {
-        apiRemoved(`fill`, {test: props['fill'], msg: 'Use the `flex` prop instead.', v: '58'});
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
 });
@@ -79,6 +78,7 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
     const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
@@ -87,7 +87,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
 
         autoFocus: props.autoFocus,
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef, props.inputRef),
+        inputRef: composeRefs(model.inputRef as Ref<HTMLTextAreaElement>, props.inputRef),
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
@@ -104,7 +104,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onBlur: model.onBlur,
         onChange: model.onChange,
         onFocus: model.onFocus,
-        onKeyDown: model.onKeyDown,
-        ref
+        onKeyDown: model.onKeyDown
     });
 });

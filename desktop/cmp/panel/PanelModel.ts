@@ -2,24 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import React from 'react';
 import {
     HoistModel,
     managed,
     ManagedRefreshContextModel,
+    Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
-    PrefProvider,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
-    Side,
-    XH
+    Side
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable, comparer, bindable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable, bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
@@ -107,11 +107,16 @@ export interface PanelConfig {
     xhImpl?;
 }
 
+export interface PanelPersistState {
+    collapsed?: boolean;
+    size?: number | string;
+}
+
 /**
  * PanelModel supports configuration and state-management for user-driven Panel resizing and
  * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
  */
-export class PanelModel extends HoistModel {
+export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;
 
     //-----------------------
@@ -134,7 +139,6 @@ export class PanelModel extends HoistModel {
     @managed modalSupportModel: ModalSupportModel;
     @managed refreshContextModel: RefreshContextModel;
     @managed errorBoundaryModel: ErrorBoundaryModel;
-    @managed provider: PersistenceProvider;
 
     //----------------
     // Settable State
@@ -235,10 +239,10 @@ export class PanelModel extends HoistModel {
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
-        this.defaultSize = defaultSize;
+        this.size = this.defaultSize = defaultSize;
         this.minSize = minSize;
         this.maxSize = maxSize;
-        this.defaultCollapsed = defaultCollapsed;
+        this.collapsed = this.defaultCollapsed = defaultCollapsed;
         this.side = side;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
@@ -270,36 +274,13 @@ export class PanelModel extends HoistModel {
             this._resizeRef = createRef();
         }
 
-        // Read state from provider -- fail gently
-        let state = null;
         if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'panel', ...persistWith});
-                state = this.provider.read() ?? this.legacyState();
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
-        }
-
-        // Initialize state.
-        this.size = resizable && !isNil(state?.size) ? state.size : defaultSize;
-        this.setCollapsed(
-            collapsible && !isNil(state?.collapsed) ? state.collapsed : defaultCollapsed
-        );
-
-        // Attach to provider last
-        if (this.provider) {
-            this.addReaction({
-                equals: comparer.shallow,
-                track: () => {
-                    const state: any = {};
-                    if (collapsible) state.collapsed = this.collapsed;
-                    if (resizable) state.size = this.size;
-                    return state;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'panel',
+                    ...persistWith
                 },
-                run: state => this.provider.write(state)
+                target: this
             });
         }
     }
@@ -353,6 +334,22 @@ export class PanelModel extends HoistModel {
     }
 
     //---------------------------------------------
+    // Persistable Interface
+    //---------------------------------------------
+    getPersistableState(): PersistableState<PanelPersistState> {
+        const ret: PanelPersistState = {};
+        if (this.collapsible) ret.collapsed = this.collapsed;
+        if (this.resizable) ret.size = this.size;
+        return new PersistableState(ret);
+    }
+
+    setPersistableState(state: PersistableState<PanelPersistState>): void {
+        const {collapsed, size} = state.value;
+        if (this.resizable && !isNil(size)) this.size = size;
+        if (this.collapsible && !isNil(collapsed)) this.setCollapsed(collapsed);
+    }
+
+    //---------------------------------------------
     // Implementation (for related private classes)
     //---------------------------------------------
     get vertical(): boolean {
@@ -396,23 +393,6 @@ export class PanelModel extends HoistModel {
     //---------------------------------------------
     // Implementation (internal)
     //---------------------------------------------
-    private legacyState() {
-        const {provider} = this;
-        if (provider instanceof PrefProvider) {
-            try {
-                const data = XH.getPref(provider.key);
-                if (data && !isNil(data.collapsed) && !isNil(data.size)) {
-                    provider.write(data);
-                    provider.clear('collapsed');
-                    provider.clear('size');
-                    return data;
-                }
-            } catch (e) {
-                this.logError('Failed reading legacy state', e);
-            }
-        }
-        return null;
-    }
 
     private dispatchResize() {
         // Forces other components to redraw if required.

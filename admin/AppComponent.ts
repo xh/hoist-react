@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -21,28 +21,30 @@ export const AppComponent = hoistCmp({
     render() {
         return panel({
             tbar: tbar(),
-            className: 'xh-admin-app-frame',
+            className: 'xh-admin-app',
             item: tabContainer()
         });
     }
 });
 
-const tbar = hoistCmp.factory<AppModel>(({model}) =>
-    appBar({
+const tbar = hoistCmp.factory<AppModel>(({model}) => {
+    const primaryApp = model.getPrimaryAppCode();
+    return appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
         leftItems: [tabSwitcher({testId: 'tab-switcher', enableOverflow: true})],
         rightItems: [
             button({
                 icon: Icon.openExternal(),
-                title: 'Open app...',
-                onClick: () => window.open('/')
+                tooltip: `Open ${primaryApp}...`,
+                omit: !primaryApp,
+                onClick: () => model.openPrimaryApp()
             }),
-            appBarSeparator()
+            appBarSeparator({omit: !primaryApp})
         ],
         appMenuButtonProps: {
             hideAdminItem: true,
             hideFeedbackItem: true,
             extraItems: model.getAppMenuButtonExtraItems()
         }
-    })
-);
+    });
+});

@@ -2,15 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {MenuItemLike, PersistOptions} from '@xh/hoist/core';
+import {DashViewState} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 
 /**
  * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.
  */
-export interface DashConfig<VSPEC, VSTATE> {
+export interface DashConfig<VSPEC extends DashViewSpec, VSTATE extends DashViewState> {
     /**
      * A collection of viewSpecs, each describing a type of view that can be displayed in this
      * container.

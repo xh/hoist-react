@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
+import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/mobile/cmp/dialog';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import './AboutDialog.scss';
+import {dialogPanel} from '@xh/hoist/mobile/cmp/panel';
 
 /**
  * A dialog box showing basic metadata and version information about the Hoist application
@@ -22,15 +24,13 @@ export const aboutDialog = hoistCmp.factory({
     model: uses(AboutDialogModel),
 
     render({model}) {
-        if (!model.isOpen) return null;
-
-        return dialog({
+        return dialogPanel({
             icon: Icon.info(),
             title: `About ${XH.appName}`,
             className: 'xh-about-dialog',
-            isOpen: true,
-            onCancel: () => model.hide(),
-            content: model.getTable()
+            item: model.getTable(),
+            isOpen: model.isOpen,
+            bbar: [filler(), button({text: 'Close', onClick: () => model.hide()})]
         });
     }
 });

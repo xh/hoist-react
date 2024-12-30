@@ -2,16 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, merge} from 'lodash';
+import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
 import {RestField} from '../data/RestField';
 
@@ -35,6 +34,9 @@ export class RestFormModel extends HoistModel {
 
     dialogRef = createRef<HTMLElement>();
 
+    get unit() {
+        return this.parent.unit;
+    }
     get actionWarning() {
         return this.parent.actionWarning;
     }
@@ -102,7 +104,6 @@ export class RestFormModel extends HoistModel {
 
     async validateAndSaveAsync() {
         throwIf(this.parent.readonly, 'StoreRecord not saved: this grid is read-only.');
-        const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'];
 
         const valid = await this.formModel.validateAsync();
         if (!valid) {
@@ -114,15 +115,12 @@ export class RestFormModel extends HoistModel {
             return;
         }
 
-        if (warning) {
-            const message = isFunction(warning) ? warning([this.currentRecord]) : warning,
-                confirmed = await XH.confirm({
-                    message,
-                    title: 'Warning',
-                    icon: Icon.warning()
-                });
-
-            if (!confirmed) return;
+        const warning = this.actionWarning[this.isAdd ? 'add' : 'edit'],
+            message = isFunction(warning) ? warning([this.currentRecord]) : warning;
+        if (message) {
+            if (!(await XH.confirm({message, title: 'Warning'}))) {
+                return;
+            }
         }
 
         return this.saveRecordAsync();
@@ -180,7 +178,7 @@ export class RestFormModel extends HoistModel {
             restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
-        return merge(
+        return mergeDeep(
             {
                 name,
                 rules: restField.required ? [required] : [],

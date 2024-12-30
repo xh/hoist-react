@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -23,7 +23,10 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     /** True to hide the Feedback item. */
     hideFeedbackItem?: boolean;
 
-    /** True to hide the Logout button. Defaulted to appSpec.isSSO. */
+    /** True to hide the Reload button. Defaulted to false. */
+    hideReloadItem?: boolean;
+
+    /** True to hide the Logout button. Defaulted to !appSpec.enableLogout. */
     hideLogoutItem?: boolean;
 
     /** True to hide the Options button. */
@@ -54,6 +57,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             extraItems,
             hideImpersonateItem,
             hideFeedbackItem,
+            hideReloadItem,
             hideLogoutItem,
             hideOptionsItem,
             hideThemeItem,
@@ -64,7 +68,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         return menuButton({
             className,
             menuItems: buildMenuItems(props),
-            popoverProps: {popoverClassName: 'xh-app-menu'},
+            menuClassName: 'xh-app-menu',
+            popoverProps: {popoverClassName: 'xh-app-menu-popover'},
             ...rest
         });
     }
@@ -78,6 +83,7 @@ function buildMenuItems({
     hideFeedbackItem,
     hideThemeItem,
     hideImpersonateItem,
+    hideReloadItem,
     hideLogoutItem,
     hideAboutItem,
     extraItems = []
@@ -85,7 +91,8 @@ function buildMenuItems({
     hideAboutItem = hideAboutItem || !XH.appContainerModel.hasAboutDialog();
     hideOptionsItem = hideOptionsItem || !XH.appContainerModel.optionsDialogModel.hasOptions;
     hideImpersonateItem = hideImpersonateItem || !XH.identityService.canImpersonate;
-    hideLogoutItem = withDefault(hideLogoutItem, XH.appSpec.isSSO);
+    hideReloadItem = withDefault(hideReloadItem, false);
+    hideLogoutItem = withDefault(hideLogoutItem, !XH.appSpec.enableLogout);
 
     const defaultItems = [
         {
@@ -122,10 +129,16 @@ function buildMenuItems({
             actionFn: () => XH.showAboutDialog()
         },
         {
+            omit: hideReloadItem,
+            icon: Icon.refresh(),
+            text: 'Reload App',
+            actionFn: () => XH.reloadApp()
+        },
+        {
             omit: hideLogoutItem,
             text: 'Logout',
             icon: Icon.logout(),
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 

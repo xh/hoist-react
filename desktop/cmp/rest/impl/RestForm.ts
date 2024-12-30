@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
 import {div, filler} from '@xh/hoist/cmp/layout';
@@ -15,6 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import './RestForm.scss';
+import {startCase} from 'lodash';
 import {restFormField} from './RestFormField';
 
 /**
@@ -29,8 +30,9 @@ export const restForm = hoistCmp.factory({
         const {isAdd, readonly, isOpen, dialogRef} = model;
         if (!isOpen) return null;
 
+        const unit = startCase(model.unit);
         return dialog({
-            title: isAdd ? 'Add Record' : !readonly ? 'Edit Record' : 'View Record',
+            title: isAdd ? `Add ${unit}` : !readonly ? `Edit ${unit}` : `View ${unit}`,
             icon: isAdd ? Icon.add() : Icon.edit(),
             className,
             isOpen: true,
@@ -78,9 +80,10 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: !model.isAdd && !formModel.isDirty,
             onClick: () => model.validateAndSaveAsync(),
             omit: formModel.readonly

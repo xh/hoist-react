@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -25,12 +26,14 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    SessionStorageService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
@@ -43,7 +46,6 @@ import {
     Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
-    FetchResponse,
     HoistAppModel,
     HoistException,
     HoistService,
@@ -61,15 +63,15 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
-export const MIN_HOIST_CORE_VERSION = '16.0';
+export const MIN_HOIST_CORE_VERSION = '21.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
 declare const xhAppVersion: string;
 declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
+declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
 
 /**
@@ -91,8 +93,8 @@ export class XHApi {
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
-    // Metadata - set via webpack.DefinePlugin at build time.
-    // See @xh/hoist-dev-utils/configureWebpack.
+    // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
+    // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     readonly appCode: string = xhAppCode;
@@ -112,12 +114,18 @@ export class XHApi {
     /** Root URL context/path - prepended to all relative fetch requests. */
     readonly baseUrl: string = xhBaseUrl;
 
+    /** List of all client app codes available in the application. */
+    readonly clientApps: string[] = xhClientApps;
+
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
+    /** Authentication Model for this App. */
+    authModel: HoistAuthModel;
+
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
-    // Singleton instances of each service are created and installed within initAsync() below.
+    // Singleton instances of each are created and installed within AppContainerModel.initAsync().
     //----------------------------------------------------------------------------------------------
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
@@ -133,6 +141,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    sessionStorageService: SessionStorageService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 
@@ -253,7 +262,7 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetch(opts);
     }
 
@@ -263,6 +272,14 @@ export class XHApi {
      */
     fetchJson(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetchJson(opts);
+    }
+
+    /**
+     * Send a POST request with a JSON body and decode the response as JSON.
+     * @see FetchService.postJson
+     */
+    postJson(opts: FetchOptions): Promise<any> {
+        return this.fetchService.postJson(opts);
     }
 
     /**
@@ -321,6 +338,15 @@ export class XHApi {
         return this.identityService?.username ?? null;
     }
 
+    /**
+     * Logout the current user.
+     * @see HoistAuthModel.logoutAsync
+     */
+    async logoutAsync(): Promise<void> {
+        await this.authModel?.logoutAsync();
+        this.reloadApp();
+    }
+
     //----------------------
     // App lifecycle support
     //----------------------
@@ -330,6 +356,27 @@ export class XHApi {
      */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
         this.acm.renderApp(appSpec);
+    }
+
+    /**
+     * Entry-point to start the Hoist Admin console app, with common properties defaulted.
+     * Call this from within your project's `/client-app/src/apps/admin.ts` file.
+     *
+     * NOTE you must still import and pass in the `componentClass`, `containerClass`, and
+     * `modelClass` options. We don't default those here, as we do not want to import admin-only
+     * code in XH, where it would be added to the bundles for all client apps.
+     */
+    renderAdminApp<T extends HoistAppModel>(
+        appSpec: SetOptional<AppSpec<T>, 'isMobileApp' | 'checkAccess'>
+    ) {
+        this.acm.renderApp({
+            clientAppCode: 'admin',
+            clientAppName: `${this.appName} Admin`,
+            isMobileApp: false,
+            webSocketsEnabled: true,
+            checkAccess: 'HOIST_ADMIN_READER',
+            ...appSpec
+        });
     }
 
     /**
@@ -345,13 +392,21 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
+     * @param path - relative path to reload (e.g. 'mobile/').  Defaults to the
+     * existing location pathname.
+     *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp() {
+    reloadApp(path?: string) {
         never().linkTo(this.appLoadModel);
-        window.location.reload();
+        const {location} = window,
+            href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
+            url = new URL(href);
+        // Add a unique query param to force a full reload without using the browser cache.
+        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        document.location.assign(url);
     }
 
     /**
@@ -580,14 +635,6 @@ export class XHApi {
      */
     handleException(exception: unknown, options?: ExceptionHandlerOptions) {
         this.exceptionHandler.handleException(exception, options);
-    }
-
-    showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        apiDeprecated('showException', {
-            msg: 'Use XH.exceptionHandler.showException instead',
-            v: '62'
-        });
-        this.exceptionHandler.showException(exception, options);
     }
 
     /**

@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
 import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
@@ -13,7 +14,7 @@ import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
-import {Column, ColumnSpec, getAgHeaderClassFn} from './Column';
+import {Column, ColumnSpec} from './Column';
 
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
@@ -26,6 +27,8 @@ export interface ColumnGroupSpec {
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
+    /** Tooltip text for grid header. */
+    headerTooltip?: string;
     /** True to render borders on column group edges. */
     borders?: boolean;
 
@@ -37,7 +40,7 @@ export interface ColumnGroupSpec {
      */
     agOptions?: PlainObject;
 
-    /** True to skip this column when adding to grid. */
+    /** True to skip this ColumnGroup when adding to grid. */
     omit?: Thunkable<boolean>;
 
     appData?: PlainObject;
@@ -54,7 +57,9 @@ export class ColumnGroup {
     readonly headerName: ReactNode | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
+    readonly headerTooltip: string;
     readonly borders: boolean;
+    readonly omit: Thunkable<boolean>;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -85,9 +90,11 @@ export class ColumnGroup {
             headerName,
             headerClass,
             headerAlign,
+            headerTooltip,
             agOptions,
             borders,
             appData,
+            omit,
             ...rest
         } = config;
 
@@ -101,11 +108,13 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
+        this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
+        this.omit = omit;
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
@@ -129,6 +138,7 @@ export class ColumnGroup {
                 return isString(ret) ? ret : genDisplayName(this.groupId);
             },
             headerClass: getAgHeaderClassFn(this),
+            headerTooltip: this.headerTooltip,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,

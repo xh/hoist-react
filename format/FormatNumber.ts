@@ -2,13 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {defaults, isBoolean, isFinite, isFunction, isNil, isString} from 'lodash';
+import {
+    defaults,
+    isBoolean,
+    isFinite,
+    isFunction,
+    isInteger,
+    isNil,
+    isNumber,
+    isString,
+    round
+} from 'lodash';
 import Numbro from 'numbro';
 import numbro from 'numbro';
 import {CSSProperties, ReactNode} from 'react';
+import {IntRange} from 'type-fest';
 import {fmtSpan, FormatOptions} from './FormatMisc';
 import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
@@ -28,58 +39,11 @@ const UP_TICK = '▴',
         neutral: 'xh-neutral-val'
     };
 
+export type NumericPrecision = IntRange<0, 13>;
+export type Precision = NumericPrecision | 'auto';
+export type ZeroPad = NumericPrecision | boolean;
+
 export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'tooltip'> {
-    /** A valid numbro format object or string. */
-    formatConfig?: string | Numbro.Format;
-
-    /** Desired number of decimal places. */
-    precision?: number | 'auto';
-
-    /** True to pad with trailing zeros out to given precision. */
-    zeroPad?: boolean;
-
-    /** Optional display value for the input value 0. */
-    zeroDisplay?: ReactNode;
-
-    /** True to use ledger format. */
-    ledger?: boolean;
-
-    /**
-     * True to add placeholder after positive ledgers to align vertically with negative ledgers
-     * in columns.
-     */
-    forceLedgerAlign?: boolean;
-
-    /** True to prepend positive numbers with a '+'. */
-    withPlusSign?: boolean;
-
-    /**
-     * If set to false, small numbers that would show only digits of zero due to precision will be
-     * formatted as exactly zero. In particular, if a zeroDisplay is specified it will be used and
-     * sign-based glyphs, '+/-' characters, and colors will not be shown.  Default true.
-     */
-    strictZero?: boolean;
-
-    /** True to prepend an up / down arrow. */
-    withSignGlyph?: boolean;
-
-    /** True to include comma delimiters. */
-    withCommas?: boolean;
-
-    /** Set to true to omit comma if value has exactly 4 digits (i.e. 1500 instead of 1,500). */
-    omitFourDigitComma?: boolean;
-
-    /** Prefix to prepend to value (between the number and its sign). */
-    prefix?: string;
-
-    /** Label to append to value, or true to append a default label for the formattter
-     * e.g. 'm' for fmtMillions.
-     */
-    label?: string | boolean;
-
-    /** CSS class of label span. */
-    labelCls?: string;
-
     /**
      * Color output based on the sign of the value. True to use red/green/grey defaults, or provide
      * an object with alternate CSS classes or properties.
@@ -87,10 +51,76 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     colorSpec?: boolean | ColorSpec;
 
     /**
+     * True to add placeholder after positive ledgers to ensure columns of mixed positive and
+     * negative numbers vertically align their digits, avoiding shift due to ")" on negative values.
+     */
+    forceLedgerAlign?: boolean;
+
+    /** A valid numbro format object or string. */
+    formatConfig?: Numbro.Format | string;
+
+    /**
+     * Label to append to value, or true to append a default label for the formatter -
+     * e.g. 'm' for fmtMillions.
+     */
+    label?: string | boolean;
+
+    /** CSS class of label span. */
+    labelCls?: string;
+
+    /** True to use ledger format. */
+    ledger?: boolean;
+
+    /**
+     * Set to true to omit thousands-separator comma if value is to be formatted as a whole number
+     * with exactly 4 digits (e.g. 1,500).
+     */
+    omitFourDigitComma?: boolean;
+
+    /**
+     * Desired number of decimal places, or 'auto' (default) to adjust the displayed precision
+     * automatically based on the scale of the value.
+     */
+    precision?: Precision;
+
+    /** Prefix to prepend to value (between the number and its sign). */
+    prefix?: string;
+
+    /**
+     * If set to false, small numbers that would show only digits of zero due to precision will be
+     * formatted as exactly zero. In particular, if a zeroDisplay is specified it will be used and
+     * sign-based glyphs, '+/-' characters, and colors will not be shown. Default true.
+     */
+    strictZero?: boolean;
+
+    /**
      * True to enable default tooltip with minimally formatted original value, or a function to
      * generate a custom tooltip string.
      */
     tooltip?: boolean | ((v: number) => string);
+
+    /** True to include comma delimiters. */
+    withCommas?: boolean;
+
+    /** True to prepend positive numbers with a '+'. */
+    withPlusSign?: boolean;
+
+    /** True to prepend an up / down arrow. */
+    withSignGlyph?: boolean;
+
+    /** Optional display value for the input value 0. */
+    zeroDisplay?: ReactNode;
+
+    /**
+     * True to pad with trailing zeros out to precision, false to skip adding any trailing zeroes.
+     * Can also be a number (lte precision) to specify a minimum number of trailing zeroes to add,
+     * without extending zero padding all the way out to full precision.
+     *
+     * e.g. `{precision:4, zeroPad:2}` will format `1.2` → "1.20" and `1.234` → "1.234"
+     *
+     * Default is true if a fixed precision is set, false if precision is 'auto'.
+     */
+    zeroPad?: ZeroPad;
 }
 
 export interface QuantityFormatOptions extends NumberFormatOptions {
@@ -119,15 +149,15 @@ export interface ColorSpec {
  * Hierarchy of params is by specificity: formatPattern, precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  *
- * @returns a ReactNode, for an HTML string see {@link fmtDateAsHtml}
+ * @returns a ReactNode.  For an HTML string use `asHtml = true`.
  */
 export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let {
         nullDisplay = '',
         zeroDisplay = null,
         formatConfig = null,
-        precision = 'auto',
-        zeroPad = precision != 'auto',
+        precision,
+        zeroPad,
         ledger = false,
         forceLedgerAlign = true,
         withPlusSign = false,
@@ -142,9 +172,12 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         tooltip = null,
         asHtml = false,
         originalValue = v
-    } = opts ?? {};
-
+    } = opts ?? ({} as NumberFormatOptions);
     if (isInvalidInput(v)) return nullDisplay;
+
+    // Ensure any non-int precision is treated as 'auto', use to default zeroPad.
+    if (!isInteger(precision)) precision = 'auto';
+    if (isNil(zeroPad)) zeroPad = precision != 'auto';
 
     formatConfig =
         formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
@@ -410,8 +443,8 @@ function signGlyph(v: number, asHtml: boolean = false) {
     return v === 0
         ? fmtSpan(UP_TICK, {className: 'xh-transparent', asHtml})
         : v > 0
-        ? UP_TICK
-        : DOWN_TICK;
+          ? UP_TICK
+          : DOWN_TICK;
 }
 
 function calcClassFromColorSpec(v: number, colorSpec: ColorSpec | boolean): string {
@@ -429,39 +462,78 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
     return !isString(possibleStyles) ? possibleStyles : {};
 }
 
-function buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma): Numbro.Format {
-    const num = Math.abs(v);
+function buildFormatConfig(
+    v: number,
+    precisionSpec: Precision,
+    zeroPad: ZeroPad,
+    withCommas: boolean,
+    omitFourDigitComma: boolean
+): Numbro.Format {
+    const absVal = Math.abs(v),
+        config: Numbro.Format = {};
 
-    const config: Numbro.Format = {};
-    let mantissa = undefined;
-
-    if (precision % 1 === 0) {
-        precision = precision < MAX_NUMERIC_PRECISION ? precision : MAX_NUMERIC_PRECISION;
-        mantissa = precision === 0 ? 0 : precision;
-    } else {
-        if (num === 0) {
-            mantissa = 2;
-        } else if (num < 0.01) {
-            mantissa = 6;
-        } else if (num < 100) {
-            mantissa = 4;
-        } else if (num < 10000) {
-            mantissa = 2;
+    let precision: number;
+    if (precisionSpec === 'auto') {
+        // Auto-precision - base on scale of number
+        if (absVal === 0) {
+            precision = 2;
+        } else if (absVal < 0.01) {
+            precision = 6;
+        } else if (absVal < 100) {
+            precision = 4;
+        } else if (absVal < 10000) {
+            precision = 2;
         } else {
-            mantissa = 0;
+            precision = 0;
         }
+    } else {
+        // Fixed precision - use requested, capped at max.
+        precision = precisionSpec < MAX_NUMERIC_PRECISION ? precisionSpec : MAX_NUMERIC_PRECISION;
     }
 
+    // If zeroPad gte precision, treat as `true` to pad out to (but not beyond) full precision.
+    // We don't support applying some precision (rounding) then padding out zeroes after that.
+    if (isNumber(zeroPad) && zeroPad >= precision) {
+        zeroPad = true;
+    }
+
+    // Calculate numbro mantissa and trimMantissa options based on precision and zeroPad settings.
+    if (isNumber(zeroPad)) {
+        // Specific zeroPad set - we want to show at least this much precision, but not more unless
+        // the value actually has more precision. Note, we round to requested *max* precision first,
+        // then determine the value's actual precision. This avoids issues where values resulting
+        // from floating point operations have spurious precision that would defeat this routine.
+        const requiredPrecision = countDecimalPlaces(round(absVal, precision));
+
+        // Then set mantissa to higher of required precision vs. requested zeroPad.
+        // Ensures we display all of the requested/available precision + extra zeros if needed.
+        config.mantissa = Math.max(requiredPrecision, zeroPad);
+        config.trimMantissa = false;
+    } else {
+        // Without a specific (numeric) zeroPad set, we can set mantissa to precision then
+        // optionally enable trimMantissa option to remove trailing zeroes if requested.
+        // No need to measure actual precision of number.
+        config.mantissa = precision;
+        config.trimMantissa = !zeroPad && precision != 0;
+    }
+
+    // Apply comma-separation unless contradicted by omitFourDigitComma, which should apply only to
+    // whole number values between 1000 and 9999, where we are not displaying any decimal places.
     config.thousandSeparated =
         withCommas &&
         !(
             omitFourDigitComma &&
-            num < 10000 &&
-            (mantissa == 0 || (!zeroPad && Number.isInteger(num)))
+            absVal < 10000 &&
+            (config.mantissa == 0 || (!zeroPad && Number.isInteger(absVal)))
         );
-    config.mantissa = mantissa;
-    config.trimMantissa = !zeroPad && mantissa != 0;
+
     return config;
+}
+
+function countDecimalPlaces(number: number): number {
+    const numStr = number.toString(),
+        dpIdx = numStr.indexOf('.');
+    return dpIdx === -1 ? 0 : numStr.length - dpIdx - 1;
 }
 
 function isInvalidInput(v) {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -17,8 +17,8 @@ import {
     useContextModel,
     uses
 } from '@xh/hoist/core';
-import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
+import {mask} from '@xh/hoist/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
@@ -50,7 +50,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
     collapsedIcon?: ReactElement;
 
-    /** Context Menu to show on context clicking this panel. */
+    /** Context menu to show on a right-click within this panel. */
     contextMenu?: ContextMenuSpec;
 
     /**
@@ -250,20 +250,20 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
     }
 });
 
-function parseLoadDecorator(prop: any, name: string, contextModel: HoistModel) {
-    const cmp = (name === 'mask' ? mask : loadingIndicator) as any;
-    if (isValidElement(prop)) return prop;
-    if (prop === true) return cmp({isDisplayed: true});
-    if (prop === 'onLoad') {
-        const loadModel = contextModel?.loadModel;
+function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel) {
+    const cmp = (propName === 'mask' ? mask : loadingIndicator) as any;
+    if (isValidElement(propVal)) return propVal;
+    if (propVal === true) return cmp({isDisplayed: true});
+    if (propVal === 'onLoad') {
+        const loadModel = ctxModel?.loadModel;
         if (!loadModel) {
             logWarn(
-                `Cannot use 'onLoad' for '${name}' - the linked context model must enable LoadSupport to support this feature.`,
+                `Cannot use 'onLoad' for '${propName}'. The linked context model (${ctxModel?.constructor.name} ${ctxModel?.xhId}) must enable LoadSupport to support this feature.`,
                 Panel
             );
             return null;
         }
         return cmp({bind: loadModel, spinner: true});
     }
-    return cmp({bind: prop, spinner: true});
+    return cmp({bind: propVal, spinner: true});
 }

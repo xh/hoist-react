@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
@@ -59,7 +59,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
-            target: button({
+            item: button({
                 icon: withDefault(icon, Icon.gridPanel()),
                 title: withDefault(title, 'Choose grid columns...'),
                 disabled,

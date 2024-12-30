@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import {
@@ -24,7 +24,7 @@ export interface ButtonGroupProps<M extends HoistModel = null>
         LayoutProps,
         StyleProps,
         TestSupportProps,
-        SetOptional<BpButtonGroupProps, 'children'> {
+        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
@@ -56,7 +56,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
                 ...layoutProps
             },
             ref,
-            ...rest
+            ...(rest as BpButtonGroupProps)
         });
     }
 });

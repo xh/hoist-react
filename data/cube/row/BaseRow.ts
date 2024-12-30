@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject, Some} from '@xh/hoist/core';
@@ -65,12 +65,14 @@ export abstract class BaseRow {
 
         // 3a) Before attaching examine that we don't have a chain of redundant nodes
         // (not sure if loop needed -- are these redundant relations transitive?)
-        while (dataChildren?.length === 1) {
-            const childRow = dataChildren[0]._meta;
-            if (this.isRedundantChild(this, childRow)) {
-                dataChildren = childRow.data.children;
-            } else {
-                break;
+        if (view.query.omitRedundantNodes) {
+            while (dataChildren?.length === 1) {
+                const childRow = dataChildren[0]._meta;
+                if (this.isRedundantChild(this, childRow)) {
+                    dataChildren = childRow.data.children;
+                } else {
+                    break;
+                }
             }
         }
 

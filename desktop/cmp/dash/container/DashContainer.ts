@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -14,7 +14,7 @@ import {
     TestSupportProps,
     uses
 } from '@xh/hoist/core';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {useContext} from 'react';

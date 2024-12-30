@@ -2,75 +2,61 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 .xh-status-tile {
   color: white;
   border: var(--xh-border-solid);
-  overflow: hidden;
 
   .xh-dark & {
     border-color: white;
   }
 
   &-ok {
-    background-color: var(--xh-intent-success-darker);
+    background: var(--xh-intent-success);
+    --xh-panel-title-bg: var(--xh-intent-success);
+    --xh-panel-bg: var(--xh-intent-success-darker);
   }
 
   &-warn {
-    background-color: var(--xh-intent-warning-darker);
+    background: var(--xh-intent-warning);
+    --xh-panel-title-bg: var(--xh-intent-warning);
+    --xh-panel-bg: var(--xh-intent-warning-darker);
   }
 
   &-fail {
-    background-color: var(--xh-intent-danger-darker);
+    background: var(--xh-intent-danger);
+    --xh-panel-title-bg: var(--xh-intent-danger);
+    --xh-panel-bg: var(--xh-intent-danger-darker);
   }
 
   &-inactive {
-    background-color: var(--xh-gray-dark);
+    background: var(--xh-gray);
+    --xh-panel-title-bg: var(--xh-gray);
+    --xh-panel-bg: var(--xh-gray-dark);
   }
 
   &-unknown {
-    background-color: var(--xh-gray-dark);
-  }
-
-  &__name {
-    padding: var(--xh-pad-px);
-    font-size: var(--xh-font-size-large-em);
-    background-color: rgba(255, 255, 255, 0.2);
-    border-bottom: 1px solid white;
-    white-space: nowrap;
+    background: var(--xh-gray);
+    --xh-panel-title-bg: var(--xh-gray);
+    --xh-panel-bg: var(--xh-gray-dark);
   }
 
   &__content {
     padding: var(--xh-pad-px);
     flex: 1;
-
-    svg {
-      position: absolute;
-      right: -20px;
-      bottom: 5px;
-      opacity: 0.5;
-    }
+    height: 100%;
+    overflow-y: auto;
   }
 
-  &__message {
-    flex: 1;
-    margin-top: var(--xh-pad-px);
-    overflow: auto;
-    text-overflow: ellipsis;
-    white-space: pre-wrap;
-    width: calc(100% - 90px);
+  &__instance-row {
+    padding: var(--xh-pad-half-px);
+    margin-top: 5px;
+    border-radius: 10px;
+  }
 
-    @media only screen and (max-width: 1350px) {
-      width: calc(100% - 95px);
-    }
-
-    @media only screen and (max-width: 700px) {
-      width: calc(100% - 115px);
-    }
-    &::-webkit-scrollbar {
-      max-width: 4px;
-    }
+  &__instance-name {
+    font-family: monospace;
   }
 }

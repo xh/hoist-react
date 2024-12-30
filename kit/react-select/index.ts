@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
+import {ComponentType} from 'react';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';
@@ -17,4 +18,4 @@ export const reactSelect = elementFactory(Select),
     reactCreatableSelect = elementFactory(Creatable),
     reactAsyncSelect = elementFactory(AsyncSelect),
     reactAsyncCreatableSelect = elementFactory(AsyncCreatable),
-    reactWindowedSelect = elementFactory(WindowedSelect);
+    reactWindowedSelect = elementFactory(WindowedSelect as ComponentType);

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {
@@ -19,7 +19,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
-import {ReactElement, ReactPortal} from 'react';
+import {ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import {usePopper} from 'react-popper';
 
@@ -28,9 +28,6 @@ import './Popover.scss';
 export interface PopoverProps extends HoistProps {
     /** Component to display inside the popover */
     content: Content;
-
-    /** The target to which the popover content is attached */
-    target: ReactElement;
 
     /** Whether the popover is visible. Passing this prop puts the popover in controlled mode */
     isOpen?: boolean;
@@ -83,8 +80,8 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     className: 'xh-popover',
 
     render({
+        children,
         className,
-        target,
         content,
         disabled = false,
         backdrop = false,
@@ -114,7 +111,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                 div({
                     ref: impl.targetRef,
                     className: 'xh-popover__target-wrapper',
-                    item: elementFromContent(target),
+                    items: children,
                     onClick: () => {
                         if (disabled) return;
                         impl.toggleOpen();

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
@@ -27,14 +27,6 @@ import {ReactNode} from 'react';
  */
 export class HoistAppModel extends HoistModel {
     /**
-     * Hoist will call this method early in the initialization sequence, prior to user
-     * authentication and full Hoist initialization. This means that several core services
-     * (identity, configs, prefs) will *not* be available, but it provides the app a hook to
-     * do early service initialization or other work to support flows such as OAuth.
-     */
-    static async preAuthAsync() {}
-
-    /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
@@ -44,15 +36,8 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook prior
-     * to logging out an authenticated user. Applicable only to apps that generally support
-     * logout (i.e. not SSO) and require handling in addition to Hoist server logout.
-     */
-    async logoutAsync() {}
-
-    /**
      * Should the version bar be shown in this application?.
-     * Applications  for which  a version bar might not be appropriate (e.g. a mini-app
+     * Applications for which a version bar might not be appropriate (e.g. a mini-app
      * being shown in a frame or modal) may override this getter and return false
      */
     get supportsVersionBar(): boolean {
@@ -87,6 +72,7 @@ export class HoistAppModel extends HoistModel {
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
+            {label: 'Instance', value: svc.serverInstance},
             {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
             {
                 label: 'Client',

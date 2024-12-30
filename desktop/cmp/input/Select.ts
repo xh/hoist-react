@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
@@ -28,20 +28,11 @@ import {
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {elemWithin, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import debouncePromise from 'debounce-promise';
-import {
-    castArray,
-    escapeRegExp,
-    isEmpty,
-    isEqual,
-    isNil,
-    isPlainObject,
-    keyBy,
-    merge
-} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import './Select.scss';
@@ -61,6 +52,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True (default) to close the menu after each selection. */
     closeMenuOnSelect?: boolean;
 
+    /**
+     * Value to use when the input is empty (default `null`).
+     * Recommended usage is `[]` when `enableMulti` is true to ensure value is always an array.
+     */
+    emptyValue?: any;
+
     /** True to show a "clear" button at the right of the control. */
     enableClear?: boolean;
 
@@ -77,8 +74,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableMulti?: boolean;
 
     /**
-     * True to enable tooltips on selected values. Enable when the space
-     * available to the select component might not support showing the value's full text.
+     * True to enable tooltips on selected values. Enable when the space available to the
+     * component might not support showing the value's full text.
      */
     enableTooltips?: boolean;
 
@@ -126,7 +123,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     leftIcon?: ReactElement;
 
     /** Function to return loading message during an async query. Passed current query input. */
-    loadingMessageFn?: (query: string) => string;
+    loadingMessageFn?: (query: string) => ReactNode;
 
     /** Maximum height of the menu before scrolling. Defaults to 300px. */
     maxMenuHeight?: number;
@@ -138,7 +135,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     menuWidth?: number;
 
     /** Function to return message indicating no options loaded. Passed current query input. */
-    noOptionsMessageFn?: (query: string) => string;
+    noOptionsMessageFn?: (query: string) => ReactNode;
 
     /** True to auto-open the dropdown menu on input focus. */
     openMenuOnFocus?: boolean;
@@ -148,7 +145,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * will contain at minimum a value and label field, as well as any other fields present in
      * the source objects).
      */
-    optionRenderer?: (SelectOption) => ReactNode;
+    optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
@@ -245,6 +242,10 @@ class SelectInputModel extends HoistInputModel {
         return !!this.componentProps.enableMulti;
     }
 
+    get emptyValue(): any {
+        return this.componentProps.emptyValue ?? null;
+    }
+
     get filterMode(): boolean {
         return this.componentProps.enableFilter ?? true;
     }
@@ -325,8 +326,8 @@ class SelectInputModel extends HoistInputModel {
                 ? reactAsyncCreatableSelect
                 : reactAsyncSelect
             : creatableMode
-            ? reactCreatableSelect
-            : reactSelect;
+              ? reactCreatableSelect
+              : reactSelect;
     }
 
     @action
@@ -433,11 +434,10 @@ class SelectInputModel extends HoistInputModel {
     // (Exception for a null value, which we will only accept if explicitly present in options.)
     override toInternal(external) {
         if (this.multiMode) {
-            if (external == null) external = []; // avoid [null]
+            if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
             return castArray(external).map(it => this.findOption(it, !isNil(it)));
         }
-
-        return this.findOption(external, !isNil(external));
+        return this.findOption(external, !isNil(external) && !isEqual(external, this.emptyValue));
     }
 
     private findOption(value, createIfNotFound, options = this.internalOptions) {
@@ -455,10 +455,10 @@ class SelectInputModel extends HoistInputModel {
     }
 
     override toExternal(internal) {
-        if (isNil(internal)) return null;
+        if (isNil(internal)) return this.emptyValue;
 
         if (this.multiMode) {
-            if (isEmpty(internal)) return null;
+            if (isEmpty(internal)) return this.emptyValue;
             return castArray(internal).map(it => it.value);
         }
 
@@ -680,13 +680,13 @@ class SelectInputModel extends HoistInputModel {
         return portal;
     }
 
-    private withTooltip(props: PlainObject, targetClassName: string): PlainObject {
+    private withTooltip(props: PlainObject, className: string): PlainObject {
         return {
             ...props,
             children: tooltip({
-                targetClassName,
+                className,
                 content: props.children,
-                target: props.children
+                item: props.children
             })
         };
     }
@@ -775,7 +775,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
     }
 
     const factory = model.getSelectFactory();
-    merge(rsProps, props.rsOptions);
+    mergeDeep(rsProps, props.rsOptions);
 
     return box({
         item: factory(rsProps),
@@ -794,7 +794,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
             // contain Selects.
             const target = e?.target as HTMLElement;
-            if (target && elemWithin(target, 'bp4-popover')) {
+            if (target && elemWithin(target, 'bp5-popover')) {
                 e.stopPropagation();
             }
         },

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment} from '@xh/hoist/cmp/layout';
@@ -66,7 +66,7 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
     return model.options.requireReload
         ? button({
               icon: Icon.refresh(),
-              text: sessionExpired(model.exception) ? 'Login' : 'Reload App',
+              text: 'Reload App',
               onClick: () => XH.reloadApp()
           })
         : button({
@@ -74,7 +74,3 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
               onClick: () => model.close()
           });
 });
-
-function sessionExpired(e) {
-    return e?.httpStatus === 401;
-}

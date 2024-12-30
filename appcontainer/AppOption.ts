@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {XH, AppOptionSpec} from '@xh/hoist/core';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -55,7 +55,7 @@ export class AppOption {
         this.reloadRequired = reloadRequired;
     }
 
-    async getValueAsync(name) {
+    async getValueAsync() {
         const {valueGetter, prefName} = this;
         if (isFunction(valueGetter)) {
             return valueGetter();
@@ -64,7 +64,7 @@ export class AppOption {
         }
     }
 
-    async setValueAsync(name, value) {
+    async setValueAsync(value) {
         const {valueSetter, prefName} = this;
         if (isFunction(valueSetter)) {
             await valueSetter(value);

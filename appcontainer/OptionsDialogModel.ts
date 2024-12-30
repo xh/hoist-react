@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {AppOptionSpec, HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {assign, mapValues, pickBy} from 'lodash';
+import {resolve} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {resolve} from '../promise/Promise';
+import {assign, mapValues, pickBy} from 'lodash';
 import {AppOption} from './AppOption';
 
 /**
@@ -19,14 +19,14 @@ import {AppOption} from './AppOption';
 export class OptionsDialogModel extends HoistModel {
     override xhImpl = true;
 
-    @observable isOpen = false;
-    @observable.ref options = [];
+    @observable isOpen: boolean = false;
+    @observable.ref options: AppOption[] = [];
 
     @managed
-    loadTask = TaskObserver.trackLast();
+    loadTask: TaskObserver = TaskObserver.trackLast();
 
     @managed
-    formModel = null;
+    formModel: FormModel = null;
 
     constructor() {
         super();
@@ -86,11 +86,12 @@ export class OptionsDialogModel extends HoistModel {
     }
 
     async initAsync() {
-        const {formModel} = this;
-        const promises = this.options.map(option => {
-            return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
-        });
-        await Promise.allSettled(promises).linkTo(this.loadTask);
+        const {options, formModel, loadTask} = this,
+            promises = options.map(option => {
+                return option.getValueAsync().then(v => formModel.fields[option.name].init(v));
+            });
+
+        await Promise.allSettled(promises).linkTo(loadTask);
     }
 
     async saveAsync(): Promise<void> {
@@ -103,7 +104,7 @@ export class OptionsDialogModel extends HoistModel {
             this.loadTask.setMessage('Reloading app to apply changes...');
         }
 
-        resolve()
+        await resolve()
             .then(() => this.doSaveAsync())
             .wait(1000)
             .then(() => {
@@ -123,7 +124,7 @@ export class OptionsDialogModel extends HoistModel {
             dirtyFields = pickBy(formModel.fields, {isDirty: true}),
             promises = this.options
                 .filter(o => dirtyFields[o.name])
-                .map(o => o.setValueAsync(o.name, dirtyFields[o.name].value));
+                .map(o => o.setValueAsync(dirtyFields[o.name].value));
         await Promise.allSettled(promises);
         await XH.prefService.pushPendingAsync();
 

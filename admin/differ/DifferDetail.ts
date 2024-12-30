@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {filler, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -26,7 +26,8 @@ export const differDetail = hoistCmp.factory({
 
         return dialog({
             title: 'Detail',
-            isOpen: model.record,
+            icon: Icon.diff(),
+            isOpen: !!model.record,
             className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
             item: panel({
@@ -40,10 +41,10 @@ export const differDetail = hoistCmp.factory({
                               onClick: () => model.close()
                           }),
                           button({
-                              text: 'Accept Remote',
+                              text: 'Apply Remote',
                               icon: Icon.cloudDownload(),
                               intent: 'primary',
-                              minimal: false,
+                              outlined: true,
                               onClick: () => model.confirmApplyRemote()
                           })
                       ]

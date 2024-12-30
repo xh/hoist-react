@@ -2,17 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {without} from 'lodash';
 import {Route} from 'router5';
 import {activityTab} from './tabs/activity/ActivityTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {serverTab} from './tabs/server/ServerTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
@@ -63,9 +64,26 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
-                    {name: 'users', path: '/users'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
+            },
+            {
+                name: 'cluster',
+                path: '/cluster',
+                children: [
+                    {name: 'logs', path: '/logs'},
+                    {name: 'memory', path: '/memory'},
+                    {name: 'jdbcPool', path: '/jdbcPool'},
+                    {name: 'environment', path: '/environment'},
+                    {name: 'services', path: '/services'},
+                    {name: 'objects', path: '/objects'},
+                    {name: 'hibernate', path: '/hibernate'},
+                    {name: 'webSockets', path: '/webSockets'}
+                ]
+            },
+            {
+                name: 'monitors',
+                path: '/monitors'
             },
             {
                 name: 'activity',
@@ -77,33 +95,12 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
-                name: 'server',
-                path: '/server',
-                children: [
-                    {name: 'logViewer', path: '/logViewer'},
-                    {name: 'logLevels', path: '/logLevels'},
-                    {name: 'memory', path: '/memory'},
-                    {name: 'connectionPool', path: '/connectionPool'},
-                    {name: 'environment', path: '/environment'},
-                    {name: 'services', path: '/services'},
-                    {name: 'ehCache', path: '/ehCache'},
-                    {name: 'webSockets', path: '/webSockets'}
-                ]
-            },
-            {
-                name: 'monitor',
-                path: '/monitor',
-                children: [
-                    {name: 'status', path: '/status'},
-                    {name: 'config', path: '/config'}
-                ]
-            },
-            {
                 name: 'userData',
                 path: '/userData',
                 children: [
+                    {name: 'users', path: '/users'},
+                    {name: 'roles', path: '/roles'},
                     {name: 'prefs', path: '/prefs'},
-                    {name: 'userPrefs', path: '/userPrefs'},
                     {name: 'jsonBlobs', path: '/jsonBlobs'}
                 ]
             }
@@ -118,17 +115,12 @@ export class AppModel extends HoistAppModel {
                 content: generalTab
             },
             {
-                id: 'activity',
-                icon: Icon.analytics(),
-                content: activityTab
-            },
-            {
-                id: 'server',
+                id: 'cluster',
                 icon: Icon.server(),
-                content: serverTab
+                content: clusterTab
             },
             {
-                id: 'monitor',
+                id: 'monitors',
                 icon: Icon.shieldCheck(),
                 content: monitorTab
             },
@@ -136,7 +128,23 @@ export class AppModel extends HoistAppModel {
                 id: 'userData',
                 icon: Icon.users(),
                 content: userDataTab
+            },
+            {
+                id: 'activity',
+                title: 'User Activity',
+                icon: Icon.analytics(),
+                content: activityTab
             }
         ];
+    }
+
+    /** Open the primary business-facing application, typically 'app'. */
+    openPrimaryApp() {
+        window.open(`/${this.getPrimaryAppCode()}`);
+    }
+
+    getPrimaryAppCode() {
+        const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
+        return appCodes.find(it => it === 'app') ?? appCodes[0];
     }
 }

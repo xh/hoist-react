@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
-import {Button, buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
+import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
@@ -130,8 +130,9 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
             throw XH.exception('ButtonGroupInput child must be a Button.');
         }
 
-        const {value, intent: btnIntent} = button.props,
-            btnDisabled = disabled || button.props.disabled;
+        const props = button.props as ButtonProps,
+            {value, intent: btnIntent} = props,
+            btnDisabled = disabled || props.disabled;
 
         throwIf(
             (enableClear || enableMulti) && value == null,

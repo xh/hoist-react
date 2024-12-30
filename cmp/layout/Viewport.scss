@@ -1,0 +1,18 @@
+.xh-viewport {
+  background-color: var(--xh-viewport-bg);
+  top: 0;
+  left: 0;
+  // Fallbacks for secure client browsers that don't support dynamic viewport units.
+  /* stylelint-disable consecutive-duplicates */
+  width: 100vw;
+  width: 100svw;
+  height: 100vh;
+  height: 100dvh;
+  /* stylelint-enable consecutive-duplicates */
+}
+
+// On mobile, this works in concert with modification to the viewport meta tag within AppContainerModel
+// to ensure that we don't allow app content to be obscured by the notch, bottom task switcher, etc.
+.xh-mobile .xh-viewport {
+  padding: var(--xh-pad-safe-all);
+}

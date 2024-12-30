@@ -2,15 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-
-const mbCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true})},
-    pctCol = {width: 150, renderer: numberRenderer({precision: 2, withCommas: true, label: '%'})},
-    msCol = {width: 150, renderer: numberRenderer({precision: 0, withCommas: false})};
 
 export const metricUnit: ColumnSpec = {
     field: {name: 'metricUnit', type: 'string'},
@@ -44,79 +39,10 @@ export const code: ColumnSpec = {
     width: 150
 };
 
-export const timestamp: ColumnSpec = {
-    field: {name: 'timestamp', type: 'date'},
-    ...Col.dateTime
-};
-
-export const totalHeapMb: ColumnSpec = {
-    field: {
-        name: 'totalHeapMb',
-        type: 'number',
-        displayName: 'Total (mb)'
-    },
-    ...mbCol
-};
-
-export const maxHeapMb: ColumnSpec = {
-    field: {
-        name: 'maxHeapMb',
-        type: 'number',
-        displayName: 'Max (mb)'
-    },
-    ...mbCol
-};
-
-export const freeHeapMb: ColumnSpec = {
-    field: {
-        name: 'freeHeapMb',
-        type: 'number',
-        displayName: 'Free (mb)'
-    },
-    ...mbCol
-};
-
-export const usedHeapMb: ColumnSpec = {
-    field: {
-        name: 'usedHeapMb',
-        type: 'number',
-        displayName: 'Used (mb)'
-    },
-    ...mbCol
-};
-
-export const usedPctMax: ColumnSpec = {
-    field: {
-        name: 'usedPctMax',
-        type: 'number',
-        displayName: 'Used (pct Max)'
-    },
-    ...pctCol
-};
-
-export const avgCollectionTime: ColumnSpec = {
-    field: {
-        name: 'avgCollectionTime',
-        type: 'number',
-        displayName: 'Avg (ms)'
-    },
-    ...msCol
-};
-
-export const collectionCount: ColumnSpec = {
-    field: {
-        name: 'collectionCount',
-        type: 'number',
-        displayName: '# GCs'
-    },
-    ...msCol
-};
-
-export const pctCollectionTime: ColumnSpec = {
-    field: {
-        name: 'pctCollectionTime',
-        type: 'number',
-        displayName: '% Time in GC'
-    },
-    ...pctCol
+export const primaryOnly: ColumnSpec = {
+    field: {name: 'primaryOnly', type: 'bool'},
+    headerName: 'P.Only',
+    headerTooltip: 'Primary Only',
+    ...Col.boolCheck,
+    width: 70
 };

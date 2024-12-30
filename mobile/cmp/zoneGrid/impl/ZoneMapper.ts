@@ -2,23 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/mobile/register';
-import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
-import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {checkbox} from '@xh/hoist/mobile/cmp/input';
-import {button} from '@xh/hoist/mobile/cmp/button';
-import {select} from '@xh/hoist/mobile/cmp/input';
+import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
+import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import {checkbox, select} from '@xh/hoist/mobile/cmp/input';
+import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {wait} from '@xh/hoist/promise';
 import {intersperse} from '@xh/hoist/utils/js';
-import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 import './ZoneMapper.scss';
-import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
+import {isEmpty} from 'lodash';
 
 /**
  * Hoist UI for user selection and discovery of available ZoneGrid columns, enabled via the
@@ -45,12 +44,18 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             title: 'Customize Fields',
             icon: Icon.gridLarge(),
             className,
-            items: [zonePicker(), grid({model: impl.gridModel}), sortPicker()],
+            items: [
+                introText({omit: XH.isLandscape}),
+                zonePicker(),
+                grid({model: impl.gridModel}),
+                sortPicker()
+            ],
             bbar: [
                 button({
-                    omit: !showRestoreDefaults,
                     text: 'Reset',
+                    icon: Icon.reset(),
                     minimal: true,
+                    omit: !showRestoreDefaults,
                     onClick: () => model.restoreDefaultsAsync()
                 }),
                 filler(),
@@ -68,6 +73,17 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
                         model.close();
                     }
                 })
+            ]
+        });
+    }
+});
+
+const introText = hoistCmp.factory({
+    render() {
+        return div({
+            className: 'xh-zone-mapper__intro-text',
+            items: [
+                'Tap any of the four quadrants in the sample row below to customize the fields displayed within. Fields will be shown in the order they are selected. The first field within the top zones will always be labelled by the column headers.'
             ]
         });
     }
@@ -172,6 +188,8 @@ class ZoneMapperLocalModel extends HoistModel {
         return new GridModel({
             store: {idSpec: 'field'},
             groupBy: hasGrouping ? 'chooserGroup' : null,
+            sizingMode: 'large',
+            rowBorders: true,
             colDefaults: {movable: false, resizable: false, sortable: false},
             columns: [
                 {
@@ -181,6 +199,7 @@ class ZoneMapperLocalModel extends HoistModel {
                 },
                 {
                     field: 'show',
+                    width: 80,
                     align: 'center',
                     renderer: (value, {record}) => {
                         const {field} = record.data;
@@ -189,7 +208,8 @@ class ZoneMapperLocalModel extends HoistModel {
                 },
                 {
                     field: 'showLabel',
-                    headerName: 'Label',
+                    headerName: 'w/Label',
+                    width: 80,
                     align: 'center',
                     renderer: (value, {record}) => {
                         const {label, field} = record.data;

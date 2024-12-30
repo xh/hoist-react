@@ -2,15 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     difference,
     escapeRegExp,
+    first,
     isArray,
     isEqual,
     isNil,
@@ -18,7 +20,7 @@ import {
     isUndefined,
     uniq
 } from 'lodash';
-import {parseFieldValue} from '../Field';
+import {FieldType, parseFieldValue} from '../Field';
 import {Store} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
@@ -71,7 +73,7 @@ export class FieldFilter extends Filter {
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
      * @internal
      */
-    constructor({field, op, value}: FieldFilterSpec) {
+    constructor({field, op, value, valueType}: FieldFilterSpec) {
         super();
 
         throwIf(!field, 'FieldFilter requires a field');
@@ -87,14 +89,13 @@ export class FieldFilter extends Filter {
 
         this.field = isString(field) ? field : field.name;
         this.op = op;
-        this.value = isArray(value) ? uniq(value) : value;
+        this.value = isArray(value)
+            ? uniq(value).map(it => (valueType ? parseFieldValue(it, valueType) : it))
+            : valueType
+              ? parseFieldValue(value, valueType)
+              : value;
 
         Object.freeze(this);
-    }
-
-    toJSON() {
-        const {field, op, value} = this;
-        return {field, op, value};
     }
 
     //-----------------
@@ -196,5 +197,20 @@ export class FieldFilter extends Filter {
                   difference(other.value, this.value).length === 0
                 : other.value === this.value)
         );
+    }
+
+    override toJSON(): FieldFilterSpec {
+        const {field, op, value, serializedValueType} = this;
+        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    private get serializedValueType(): FieldType {
+        const value = isArray(this.value) ? first(this.value) : this.value;
+        if (value instanceof Date) return 'date';
+        if (value instanceof LocalDate) return 'localDate';
+        return undefined;
     }
 }

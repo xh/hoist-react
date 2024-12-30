@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 //--------------------
 // Blueprint Imports
@@ -33,7 +33,7 @@ import {
     NavbarHeading,
     NumericInput,
     OverflowList,
-    Overlay,
+    Overlay2 as Overlay,
     Popover,
     Radio,
     RadioGroup,
@@ -49,7 +49,7 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker} from '@blueprintjs/datetime';
+import {DatePicker3 as DatePicker} from '@blueprintjs/datetime2';
 import {elementFactory} from '@xh/hoist/core';
 
 //---------------------

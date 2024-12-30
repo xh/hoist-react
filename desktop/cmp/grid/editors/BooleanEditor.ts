@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
+import {useEffect} from 'react';
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {hoistCmp} from '@xh/hoist/core';
 import {checkbox, CheckboxProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {wait} from '@xh/hoist/promise';
-import {useImperativeHandle} from 'react';
 import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
@@ -49,11 +49,11 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
     }
 });
 
-function useInstantEditor(agParams, ref) {
-    useImperativeHandle(ref, () => ({
-        getValue: () => !agParams.value
-    }));
-    wait().then(() => agParams.stopEditing());
+function useInstantEditor({onValueChange, initialValue, stopEditing}: CustomCellEditorProps, ref) {
+    useEffect(() => {
+        onValueChange(!initialValue);
+        stopEditing();
+    }, [stopEditing, initialValue, onValueChange]);
 
     return null;
 }

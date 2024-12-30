@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
@@ -118,6 +118,11 @@ export class Cube extends HoistBase {
     /** Records loaded in to this Cube. */
     get records(): StoreRecord[] {
         return this.store.records;
+    }
+
+    /** True if this Cube contains no data / records. */
+    get empty(): boolean {
+        return this.store.empty;
     }
 
     /** Count of currently connected, auto-updating Views. */

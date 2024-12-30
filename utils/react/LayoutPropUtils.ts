@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2023 Extremely Heavy Industries Inc.
+ * Copyright © 2024 Extremely Heavy Industries Inc.
  */
-import {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {LayoutProps, PlainObject} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 /**
@@ -40,7 +40,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings.
  */
-export function getLayoutProps(props: HoistProps): LayoutProps {
+export function getLayoutProps(props: PlainObject): LayoutProps {
     // Harvest all keys of interest
     const ret: LayoutProps = pick(props, allKeys) as LayoutProps;
 
@@ -66,14 +66,14 @@ export function getLayoutProps(props: HoistProps): LayoutProps {
 /**
  * Return all non-layout related props found in props.
  */
-export function getNonLayoutProps<T extends HoistProps>(props: T): T {
+export function getNonLayoutProps<T extends PlainObject>(props: T): T {
     return omit(props, allKeys) as T;
 }
 
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps<T extends HoistProps>(props: T): [LayoutProps, T] {
+export function splitLayoutProps<T extends PlainObject>(props: T): [LayoutProps, T] {
     const layoutProps = getLayoutProps(props);
     return [layoutProps, isEmpty(layoutProps) ? props : getNonLayoutProps(props)];
 }
