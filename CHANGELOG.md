@@ -4,35 +4,43 @@
 
 ### 💥 Breaking Changes
 
-* `ErrorMessage` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/error`
-  and `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
-* `Mask` is now cross-platform. Its import paths has changed from `@xh/hoist/desktop/cmp/mask`
-  and `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
-* `LoadingIndicator` is now cross-platform. Its import paths has changed from
-  `@xh/hoist/desktop/cmp/loadingindicator` and `@xh/hoist/mobile/cmp/loadingindicator` to
+* Requires `hoist-core >= 26.1` with new APIs to support `ViewManager`.
+* `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
+  or `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/mask` or
+  `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform - update imports from
+  `@xh/hoist/desktop/cmp/loadingindicator` or `@xh/hoist/mobile/cmp/loadingindicator` to
   `@xh/hoist/cmp/loadingindicator`.
 * `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
-  Their import paths have changed from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
-* The `RefreshButton` `model` prop has been renamed `target` for clarity and consistency.
+  Update imports from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* Renamed `RefreshButton.model` prop to `target` for clarity and consistency.
 
 ### 🎁 New Features
 
-* Major Improvements to ViewManager component
-  * Support for persisting pending value.
-  * Handle delete and update collisions more gracefully.
-  * Support for `settleTime`,
-  * Improved management UI Dialog.
-  * Support for "global" views.
-* New `SessionStorageService` and associated persistence provider provides support for saving
-  tab local data across reloads.
-* Added support for `AuthZeroClientConfig.audience` to support improved configuration of Auth0 OAuth
-  clients requesting access tokens, covering cases when third-party cookies are blocked.
+* Major improvements to ViewManager component, including:
+    * A clearer, better organized view management dialog.
+    * Support for persisting a view's pending value, to avoid users losing changes when e.g. an app
+      goes into idle mode and requires a page refresh to restore.
+    * Improved handling of delete / update collisions.
+    * New `ViewManagerModel.settleTime` config, to allow persisted components such as dashboards to
+      fully resolve their rendered state before capturing a baseline for dirty checks.
+* Added `SessionStorageService` and associated persistence provider to support saving tab-local
+  data across reloads. Exact analog to `LocalStorageService`, but scoped to lifetime of current tab.
+* Added `AuthZeroClientConfig.audience` config to support improved flow for Auth0 OAuth clients that
+  request access tokens. Specify your access token audience here to allow the client to fetch both
+  ID and access tokens in a single request and to use refresh tokens to maintain access without
+  relying on third-party cookies.
+* Updated sorting on grouped grids to place ungrouped items at the bottom.
 
 ### 🐞 Bug Fixes
 
 * Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
   positioned with `top` orientation.
 * Fixed styling of `ButtonGroup` in vertical orientations.
+* Improved handling of calls to `DashContainerModel.loadStateAsync()` when the component has yet
+  to be rendered. Requested state updates are no longer dropped, and will be applied as soon as the
+  component is ready to do so.
 
 ### ⚙️ Technical
 
