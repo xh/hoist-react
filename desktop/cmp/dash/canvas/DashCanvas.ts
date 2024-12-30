@@ -49,7 +49,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     render({className, model, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
-            [padX, padY] = model.containerPadding ?? [10, 10];
+            [padX, padY] = model.containerPadding;
 
         return refreshContextView({
             model: model.refreshContextModel,

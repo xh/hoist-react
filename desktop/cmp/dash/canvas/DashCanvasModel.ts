@@ -27,22 +27,28 @@ import {
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
-    /** Total number of columns (x coordinates for views correspond with column numbers). */
+    /**
+     * Total number of columns (x coordinates for views correspond with column numbers).
+     * Default `12`.
+     */
     columns?: number;
 
-    /** Height of each row in pixels (y coordinates for views correspond with row numbers). */
+    /**
+     * Height of each row in pixels (y coordinates for views correspond with row numbers).
+     * Default `50`.
+     */
     rowHeight?: number;
 
-    /** Whether views should "compact" vertically to condense vertical space. */
+    /** Whether views should "compact" vertically to condense vertical space. Default `true`. */
     compact?: boolean;
 
-    /** Between items [x,y] in pixels. */
+    /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
-    /** Maximum number of rows permitted for this container. */
+    /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. */
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
 }
 
@@ -130,7 +136,7 @@ export class DashCanvasModel
         compact = true,
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = null,
+        containerPadding = margin,
         extraMenuItems
     }: DashCanvasConfig) {
         super();
