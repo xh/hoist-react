@@ -86,7 +86,9 @@ export class SaveAsDialogModel extends HoistModel {
             name: name.trim(),
             group: group?.trim(),
             description: description?.trim(),
-            isShared
+            isPinned: true,
+            isShared,
+            value: parent.getValue()
         });
     }
 }

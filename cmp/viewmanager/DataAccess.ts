@@ -5,34 +5,12 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject, XH} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {map} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {ViewManagerModel} from './ViewManagerModel';
-
-export interface ViewCreateSpec {
-    name: string;
-    group: string;
-    description: string;
-    isShared: boolean;
-    value?: PlainObject;
-}
-
-export interface ViewUpdateSpec {
-    name: string;
-    group: string;
-    description: string;
-    isShared?: boolean;
-    isDefaultPinned?: boolean;
-}
-
-export interface ViewUserState {
-    currentView?: string;
-    userPinned: Record<string, boolean>;
-    autoSave: boolean;
-}
+import {ViewManagerModel, ViewUserState, ViewUpdateSpec, ViewCreateSpec} from './ViewManagerModel';
 
 /**
  * Supporting class for accessing and updating ViewManager and View data.
@@ -100,7 +78,7 @@ export class DataAccess<T> {
         try {
             this.ensureEditable(view);
             const raw = await XH.postJson({
-                url: 'xhView/updateViewInfo',
+                url: 'xhView/updateInfo',
                 params: {token: view.token},
                 body: updates
             });
@@ -157,9 +135,9 @@ export class DataAccess<T> {
     //--------------------------
     // State related changes
     //--------------------------
-    async updateStateAsync(update: Partial<ViewUserState>) {
+    async updateStateAsync(update: Partial<ViewUserState>): Promise<ViewUserState> {
         const {type, instance} = this.model;
-        await XH.postJson({
+        return XH.postJson({
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
             body: update

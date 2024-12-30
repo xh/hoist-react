@@ -25,7 +25,30 @@ import {find, isEqual, isNil, isNull, isUndefined, lowerCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {DataAccess, ViewCreateSpec, ViewUpdateSpec, ViewUserState} from './DataAccess';
+import {DataAccess} from './DataAccess';
+
+export interface ViewCreateSpec {
+    name: string;
+    group: string;
+    description: string;
+    isShared: boolean;
+    isPinned: boolean;
+    value: PlainObject;
+}
+
+export interface ViewUpdateSpec {
+    name: string;
+    group: string;
+    description: string;
+    isShared?: boolean;
+    isDefaultPinned?: boolean;
+}
+
+export interface ViewUserState {
+    currentView?: string;
+    userPinned: Record<string, boolean>;
+    autoSave: boolean;
+}
 
 export interface ViewManagerConfig {
     /**
@@ -338,9 +361,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
-        const view = await this.dataAccess.createViewAsync({...spec, value: this.getValue()});
+        const view = await this.dataAccess.createViewAsync(spec);
         this.noteSuccess(`Created ${view.typedName}`);
-        this.userPin(view.info);
         this.setAsView(view);
     }
 
@@ -404,10 +426,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //------------------
     // Pinning
     //------------------
-    togglePinned(view: ViewInfo) {
-        view.isPinned ? this.userUnpin(view) : this.userPin(view);
-    }
-
     @action
     userPin(view: ViewInfo) {
         this.userPinned = {...this.userPinned, [view.token]: true};

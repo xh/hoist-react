@@ -78,7 +78,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         autoSaveUnavailableReason,
         autoSave,
         isViewSavable,
-        views,
         isValueDirty,
         typeDisplayName
     } = parent;
@@ -119,7 +118,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         menuDivider(),
         menuItem({
             icon: Icon.gear(),
-            disabled: isEmpty(views),
             text: `Manage ${pluralName}...`,
             onClick: () => model.manageDialogModel.open()
         })
