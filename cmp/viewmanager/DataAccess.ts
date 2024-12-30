@@ -78,7 +78,7 @@ export class DataAccess<T> {
         try {
             this.ensureEditable(view);
             const raw = await XH.postJson({
-                url: 'xhView/updateViewInfo',
+                url: 'xhView/updateInfo',
                 params: {token: view.token},
                 body: updates
             });
