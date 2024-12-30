@@ -123,13 +123,13 @@ const defaultFileDisplay = hoistCmp.factory({
 const defaultEmptyDisplay = hoistCmp.factory({
     model: uses(FileChooserModel),
     render({model}) {
-        const {placeholderText, browseButtonConfig, placeholderBrowseButton} = model;
+        const {placeholderText, browseButtonConf, placeholderBrowseButton} = model;
         return vframe(
             placeholder(
                 placeholderText,
                 vspacer(),
                 button({
-                    ...browseButtonConfig,
+                    ...browseButtonConf,
                     omit: !placeholderBrowseButton
                 })
             )

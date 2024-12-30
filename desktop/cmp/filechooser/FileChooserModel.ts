@@ -30,22 +30,22 @@ export interface FileChooserConf {
     minFileSize?: number;
 
     /**
-     * Content to display on file reject within a danger toast.
+     * Content to display on file rejection within a toast.
      * Defaults to a list of rejected files with reasons for rejection.
      */
     rejectMessage?: (rejectedFiles: FileRejection[]) => ReactNode;
+
+    /**
+     * Config for file rejection toast. Primarily used to change timeout, intent, and icon. Toast
+     * message is controlled by the `rejectMessage` property.
+     */
+    rejectToastConf?: Partial<ToastSpec>;
 
     /** Mask the dropzone when dragging. Defaults to true. */
     maskOnDrag?: boolean;
 
     /** Mask the dropzone when disabled. Defaults to true. */
     maskOnDisabled?: boolean;
-
-    /**
-     * Config to change file rejection toast behavior. Primarily used to change timeout,
-     * intent, and icon. Toast message is controlled by the `rejectMessage` property.
-     */
-    rejectToastConf?: Partial<ToastSpec>;
 
     /** Text to display in the default empty display. */
     placeholderText?: ReactNode;
@@ -54,7 +54,7 @@ export interface FileChooserConf {
     placeholderBrowseButton?: boolean;
 
     /** Config for the browse button in the default empty display. */
-    browseButtonConfig?: ButtonProps;
+    browseButtonConf?: ButtonProps;
 }
 
 export class FileChooserModel extends HoistModel {
@@ -72,12 +72,12 @@ export class FileChooserModel extends HoistModel {
     readonly maskOnDisabled: boolean;
     readonly placeholderText: ReactNode;
     readonly placeholderBrowseButton: boolean;
-    readonly browseButtonConfig: Partial<ButtonProps>;
+    readonly browseButtonConf: Partial<ButtonProps>;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
-    private readonly rejectToastConfig: Partial<ToastSpec>;
     private readonly rejectMessage: (rejectedFiles: FileRejection[]) => ReactNode;
+    private readonly rejectToastConf: Partial<ToastSpec>;
 
     constructor(params: FileChooserConf) {
         super();
@@ -88,19 +88,12 @@ export class FileChooserModel extends HoistModel {
         this.minFileSize = params.minFileSize;
         this.accept = this.getMimesByExt(params.accept);
         this.rejectMessage = withDefault(params.rejectMessage, this.defaultRejectMessage);
+        this.rejectToastConf = this.getRejectToastConf(params.rejectToastConf);
         this.maskOnDrag = withDefault(params.maskOnDrag, true);
         this.maskOnDisabled = withDefault(params.maskOnDisabled, true);
         this.placeholderText = withDefault(params.placeholderText, 'Drag and drop files here');
         this.placeholderBrowseButton = withDefault(params.placeholderBrowseButton, true);
-        this.browseButtonConfig = {
-            text: 'Browse',
-            intent: 'primary',
-            outlined: true,
-            disabled: this.disabled,
-            ...params.browseButtonConfig,
-            onClick: () => this.openFileBrowser()
-        };
-        this.rejectToastConfig = {intent: 'danger', timeout: 10000, ...params.rejectToastConf};
+        this.browseButtonConf = this.getBrowseButtonConf(params.browseButtonConf);
     }
 
     /** Open the file browser programmatically. Typically used in a button's onClick callback.*/
@@ -151,7 +144,7 @@ export class FileChooserModel extends HoistModel {
         this.addFiles(accepted);
 
         if (rejectCount) {
-            XH.toast({...this.rejectToastConfig, message: rejectMessage(rejected)});
+            XH.toast({...this.rejectToastConf, message: rejectMessage(rejected)});
         }
     }
 
@@ -185,5 +178,24 @@ export class FileChooserModel extends HoistModel {
             });
 
         return vbox(rejectItems);
+    }
+
+    private getRejectToastConf(params: Partial<ToastSpec>): Partial<ToastSpec> {
+        return {
+            intent: 'danger',
+            timeout: 10000,
+            ...params
+        };
+    }
+
+    private getBrowseButtonConf(params: Partial<ButtonProps>): ButtonProps {
+        return {
+            text: 'Browse',
+            intent: 'primary',
+            outlined: true,
+            disabled: this.disabled,
+            ...params,
+            onClick: () => this.openFileBrowser()
+        };
     }
 }
