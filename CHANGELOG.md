@@ -53,6 +53,7 @@
 * Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
   provided by FontAwesome.
 * Improved accuracy of `PersistOptions.type` enum.
+* Corrected the type of `ColumnSpec.editor`.
 
 ### 📚 Libraries
 

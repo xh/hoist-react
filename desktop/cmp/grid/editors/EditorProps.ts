@@ -22,7 +22,7 @@ export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistP
     record: StoreRecord;
 
     /** Props to pass through to the underlying HoistInput component */
-    inputProps: InputPropsT;
+    inputProps?: InputPropsT;
 
     agParams: CustomCellEditorProps;
 }

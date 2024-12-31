@@ -34,9 +34,9 @@ import {
     toString
 } from 'lodash';
 import {
-    Attributes,
     createElement,
     forwardRef,
+    FunctionComponent,
     isValidElement,
     ReactNode,
     useImperativeHandle,
@@ -52,6 +52,7 @@ import {
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
+    ColumnEditorProps,
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
@@ -64,7 +65,6 @@ import {
     ColumnTooltipFn
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
-import {FunctionComponent} from 'react';
 import type {
     ColDef,
     ITooltipParams,
@@ -333,10 +333,10 @@ export interface ColumnSpec {
     editable?: boolean | ColumnEditableFn;
 
     /**
-     * Cell editor Component or a function to create one.  Adding an editor will also
-     * install a cellClassRule and tooltip to display the validation state of the cell in question.
+     * Cell editor Component or a function to create one. Adding an editor will also install a
+     * cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: FunctionComponent | ColumnEditorFn;
+    editor?: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -471,7 +471,7 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: FunctionComponent | ColumnEditorFn;
+    editor: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
@@ -986,8 +986,7 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent)
-                    return createElement(editor, props as Attributes);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });

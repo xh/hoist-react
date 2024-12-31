@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {IRowNode} from '@xh/hoist/kit/ag-grid';
+import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
@@ -19,6 +19,7 @@ import type {
     HeaderClassParams,
     HeaderValueGetterParams,
     ICellRendererParams,
+    IRowNode,
     ITooltipParams,
     RowClassParams,
     ValueSetterParams
@@ -278,15 +279,24 @@ export type ColumnEditableFn = (params: {
 }) => boolean;
 
 /**
- * Function to return one Grid cell editor.  This value will be used to create a new Component
- * whenever editing is initiated on a cell.
+ * Function to return one Grid cell editor. This function will be used to create a new
+ * Component, whenever editing is initiated on a cell.
+ * The never parameter is never provided - it is included to satisfy typescript. See
+ * discussion in https://github.com/xh/hoist-react/pull/3351.
  * @returns the react element to use as the cell editor.
  */
-export type ColumnEditorFn = (params: {
+export type ColumnEditorFn = (props: ColumnEditorProps, never?: any) => ReactElement;
+
+/**
+ * The object passed into the first argument of {@link ColumnSpec.editor}.
+ * Satisfies the {@link EditorProps} of an editor component.
+ */
+export type ColumnEditorProps = {
     record: StoreRecord;
     column: Column;
     gridModel: GridModel;
-}) => ReactElement;
+    agParams: CustomCellEditorProps;
+};
 
 /**
  * Function to update the value of a StoreRecord field after inline editing
