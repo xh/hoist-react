@@ -1,3 +1,32 @@
+@mixin resize-handle-ew {
+  height: 100%;
+  top: 0;
+  transform: rotate(0);
+  width: 8px;
+}
+
+@mixin resize-handle-ns {
+  height: 8px;
+  left: 0;
+  transform: rotate(0);
+  width: 100%;
+}
+
+@mixin resize-handle-corner {
+  height: 16px;
+  width: 16px;
+}
+
+@mixin resize-handle-se-sw {
+  @include resize-handle-corner;
+  bottom: -8px;
+}
+
+@mixin resize-handle-ne-nw {
+  @include resize-handle-corner;
+  top: -8px;
+}
+
 .xh-dash-canvas {
   width: 100%;
   height: 100%;
@@ -21,27 +50,44 @@
 
     > .react-resizable-handle {
       // Make the resize handles fill the entire side
+      &.react-resizable-handle-n {
+        @include resize-handle-ns;
+        top: -4px;
+      }
+
       &.react-resizable-handle-s {
+        @include resize-handle-ns;
         bottom: -4px;
-        height: 8px;
-        left: 0;
-        transform: rotate(0);
-        width: 100%;
       }
 
       &.react-resizable-handle-e {
-        height: 100%;
+        @include resize-handle-ew;
         right: -4px;
-        top: 0;
-        transform: rotate(0);
-        width: 8px;
+      }
+
+      &.react-resizable-handle-w {
+        @include resize-handle-ew;
+        left: -4px;
+      }
+
+      &.react-resizable-handle-ne {
+        @include resize-handle-ne-nw;
+        right: -8px;
+      }
+
+      &.react-resizable-handle-nw {
+        @include resize-handle-ne-nw;
+        left: -8px;
       }
 
       &.react-resizable-handle-se {
-        bottom: -8px;
-        height: 16px;
+        @include resize-handle-se-sw;
         right: -8px;
-        width: 16px;
+      }
+
+      &.react-resizable-handle-sw {
+        @include resize-handle-se-sw;
+        left: -8px;
       }
 
       // Hide the resize handles

@@ -32,6 +32,7 @@
   ID and access tokens in a single request and to use refresh tokens to maintain access without
   relying on third-party cookies.
 * Updated sorting on grouped grids to place ungrouped items at the bottom.
+* `DashCanvas` views can now be resized left and up in addition to right and down.
 * `FetchService.autoGenCorrelationIds` now supports a functional form for per-request behavior.
 
 ### 🐞 Bug Fixes
