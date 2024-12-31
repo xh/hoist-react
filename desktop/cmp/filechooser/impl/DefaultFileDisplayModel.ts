@@ -7,7 +7,7 @@ import {makeObservable} from '@xh/hoist/mobx';
 import filesize from 'filesize';
 
 export class FileDisplayModel extends HoistModel {
-    @lookup(FileChooserModel)
+    @lookup(() => FileChooserModel)
     chooserModel: FileChooserModel;
 
     @managed

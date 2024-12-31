@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy} from 'lodash';
+import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy, isFunction} from 'lodash';
 import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef, FileRejection} from 'react-dropzone';
@@ -33,7 +33,7 @@ export interface FileChooserConf {
      * Callback executed on drop event. Used for additional file validation outside of file type
      * and size prior to updating the model's file state.
      */
-    validateFilesAsync?: (accepted: File[]) => File[];
+    validateFilesAsync?: (accepted: File[]) => Promise<File[]>;
 
     /** Callback executed on drop event, invoked when files are accepted. */
     onFileAccepted?: (accepted: File[]) => void;
@@ -45,11 +45,11 @@ export interface FileChooserConf {
      * Config for file rejection toast. Primarily used to change timeout, intent, and icon. Toast
      * message is controlled by the `rejectMessage` property.
      */
-    rejectToastSpec?: Partial<ToastSpec>;
+    rejectToastSpec?: Partial<ToastSpec> | boolean;
 
     /**
-     * Content to display on file rejection within a toast.
-     * Defaults to a list of rejected files with reasons for rejection.
+     * Content to display on file rejection within a toast. Defaults to a list of rejected files
+     * with reasons for rejection.
      */
     rejectToastMessage?: (rejectedFiles: FileRejection[]) => ReactNode;
 
@@ -87,7 +87,7 @@ export class FileChooserModel extends HoistModel {
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
-    private readonly validateFilesAsync: (accepted: File[]) => File[];
+    private readonly validateFilesAsync: (accepted: File[]) => Promise<File[]>;
     private readonly onFileAccepted: (accepted: File[]) => void;
     private readonly onFileRejected: (rejected: FileRejection[]) => void;
     private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
@@ -143,9 +143,8 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     // Event Handlers
     //------------------------
-    @action
-    onDrop(accepted: File[], rejected: FileRejection[]) {
-        const {files, maxCount, rejectToastMessage} = this,
+    async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]> | any) {
+        const {files, maxCount, rejectToastMessage, validateFilesAsync} = this,
             currFileCount = files.length,
             acceptCount = accepted.length,
             rejectCount = rejected.length;
@@ -159,16 +158,18 @@ export class FileChooserModel extends HoistModel {
             return;
         }
 
-        accepted = this.validateFilesAsync?.(accepted) ?? accepted;
-
-        this.addFiles(accepted);
-
-        if (rejectCount && this.rejectToastSpec) {
+        if (rejected.length && this.rejectToastSpec) {
             XH.toast({...this.rejectToastSpec, message: rejectToastMessage(rejected)});
         }
 
-        this.onFileAccepted(accepted);
-        this.onFileRejected(rejected);
+        if (isFunction(validateFilesAsync) && !isEmpty(accepted)) {
+            accepted = await validateFilesAsync(accepted);
+        }
+
+        this.addFiles(accepted);
+
+        this.onFileAccepted?.(accepted);
+        this.onFileRejected?.(rejected);
     }
 
     //------------------------
@@ -216,7 +217,6 @@ export class FileChooserModel extends HoistModel {
 
     private getEmptyDisplayBrowseButtonProps(params: Partial<ButtonProps> | boolean): ButtonProps {
         if (params == false) return null;
-
         if (params == true) params = {};
         return {
             text: 'Browse',

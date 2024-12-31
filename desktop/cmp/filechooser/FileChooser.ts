@@ -8,14 +8,14 @@ import {frame, input} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
 import {BoxProps, Content, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {defaultEmptyDisplay} from '@xh/hoist/desktop/cmp/filechooser/impl/DefaultEmptyDisplay';
-import {defaultFileDisplay} from '@xh/hoist/desktop/cmp/filechooser/impl/DefaultFileDisplay';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {elementFromContent, getLayoutProps} from '@xh/hoist/utils/react';
 import {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
+import {defaultEmptyDisplay} from './impl/DefaultEmptyDisplay';
+import {defaultFileDisplay} from './impl/DefaultFileDisplay';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
     /**
@@ -93,7 +93,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                 });
             },
             onDrop: (accepted: File[], rejected: FileRejection[]) =>
-                model.onDrop(accepted, rejected)
+                model.onDropAsync(accepted, rejected)
         });
     }
 });
