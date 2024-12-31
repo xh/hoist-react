@@ -32,6 +32,7 @@
   ID and access tokens in a single request and to use refresh tokens to maintain access without
   relying on third-party cookies.
 * Updated sorting on grouped grids to place ungrouped items at the bottom.
+* `FetchService.autoGenCorrelationIds` now supports a functional form for per-request behavior.
 
 ### 🐞 Bug Fixes
 
