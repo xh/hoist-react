@@ -112,7 +112,9 @@ export class DashCanvasModel
 
             return {
                 ...it,
-                resizeHandles: autoHeight ? ['e'] : ['e', 's', 'se'],
+                resizeHandles: autoHeight
+                    ? ['w', 'e']
+                    : ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'],
                 maxH: viewSpec.maxHeight,
                 minH: viewSpec.minHeight,
                 maxW: viewSpec.maxWidth,
