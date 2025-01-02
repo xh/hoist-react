@@ -294,19 +294,17 @@ export class DistributedObjectsModel extends HoistModel {
             ),
             {selectedId} = this.detailGridModel ?? {};
 
-        // Only re-create grid model if columns are different.
-        if (!oldRecord || !isEqual(oldRecord.data.comparisonFields, comparisonFields)) {
-            XH.safeDestroy(this.detailGridModel);
-            const createColumnForField = fieldName => ({
-                field: {name: fieldName, displayName: fieldName},
-                renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
-                autosizeMaxWidth: 200
-            });
-            this.detailGridModel = this.createDetailGridModel(
-                comparisonFields.map(createColumnForField),
-                nonComparisonFields.map(createColumnForField)
-            );
-        }
+        // Always re-create the grid model, as its not trivial to check if columns have changed.
+        XH.safeDestroy(this.detailGridModel);
+        const createColumnForField = fieldName => ({
+            field: {name: fieldName, displayName: fieldName},
+            renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
+            autosizeMaxWidth: 200
+        });
+        this.detailGridModel = this.createDetailGridModel(
+            comparisonFields.map(createColumnForField),
+            nonComparisonFields.map(createColumnForField)
+        );
 
         this.detailGridModel.loadData(
             instanceNames.map(instanceName => {
