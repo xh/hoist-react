@@ -92,8 +92,7 @@ class NumberInputModel extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
-    constructor() {
-        super();
+    override onLinked() {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 

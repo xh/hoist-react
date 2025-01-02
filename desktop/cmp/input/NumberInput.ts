@@ -124,8 +124,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 class NumberInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    constructor() {
-        super();
+    override onLinked() {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 

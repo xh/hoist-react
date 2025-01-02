@@ -134,15 +134,14 @@ class RelativeTimestampLocalModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-
-        this.addReaction({
-            track: () => [this.timestamp, this.options],
-            run: () => this.refreshDisplay()
-        });
     }
 
     override onLinked() {
         this.model = this.lookupModel('*');
+        this.addReaction({
+            track: () => [this.timestamp, this.options],
+            run: () => this.refreshDisplay()
+        });
     }
 
     @action
