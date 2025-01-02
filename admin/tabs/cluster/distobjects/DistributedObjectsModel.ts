@@ -289,7 +289,7 @@ export class DistributedObjectsModel extends HoistModel {
         const {adminStatsbyInstance, comparisonFields} = record.data,
             instanceNames = Object.keys(adminStatsbyInstance),
             nonComparisonFields = without(
-                Object.keys(adminStatsbyInstance[instanceNames[0]]),
+                Object.keys(adminStatsbyInstance[instanceNames[0]] ?? {}),
                 ...comparisonFields
             ),
             {selectedId} = this.detailGridModel ?? {};
