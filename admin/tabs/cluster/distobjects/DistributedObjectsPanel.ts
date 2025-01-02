@@ -125,7 +125,7 @@ const bbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
     return toolbar(
         recordActionBar({
             selModel: model.gridModel.selModel,
-            actions: [model.clearAction]
+            actions: [model.clearHibernateCachesAction]
         }),
         '-',
         button({
@@ -133,7 +133,7 @@ const bbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
             icon: Icon.reset(),
             intent: 'warning',
             tooltip: 'Clear the Hibernate caches using the native Hibernate API',
-            onClick: () => model.clearHibernateCachesAsync()
+            onClick: () => model.clearAllHibernateCachesAsync()
         }),
         filler(),
         storeFilterField({

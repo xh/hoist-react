@@ -48,18 +48,19 @@ export class DistributedObjectsModel extends HoistModel {
         defaultSize: 450
     });
 
-    clearAction: RecordActionSpec = {
-        text: 'Clear Objects',
+    clearHibernateCachesAction: RecordActionSpec = {
+        text: 'Clear Selected Hibernate Caches',
         icon: Icon.reset(),
         intent: 'warning',
-        actionFn: () => this.clearAsync(),
+        actionFn: () => this.clearHibernateCachesAsync(),
         displayFn: ({selectedRecords}) => {
-            const {clearableSelectedRecords} = this,
-                clearableCount = clearableSelectedRecords.length,
-                totalCount = selectedRecords.length;
+            const clearableSelectedRecords = selectedRecords.filter(
+                    it => it.data.type === 'Hibernate Cache'
+                ),
+                clearableCount = clearableSelectedRecords.length;
             return {
                 hidden: AppModel.readonly,
-                text: `Clear ${clearableCount}/${pluralize('Hibernate Cache', totalCount, true)}`,
+                text: `Clear ${pluralize('Hibernate Cache', clearableCount, true)}`,
                 disabled: isEmpty(clearableSelectedRecords)
             };
         },
@@ -114,7 +115,7 @@ export class DistributedObjectsModel extends HoistModel {
             {field: 'name', headerName: 'Full Name', hidden: true},
             {field: 'parentName', hidden: true}
         ],
-        contextMenu: [this.clearAction, '-', ...GridModel.defaultContextMenu]
+        contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaultContextMenu]
     });
 
     @managed @observable.ref detailGridModel = this.createDetailGridModel();
@@ -170,25 +171,20 @@ export class DistributedObjectsModel extends HoistModel {
         );
     }
 
-    /** Keep in sync with backend clear logic - `DistributedObjectAdminService.clearObjects()`. */
-    private readonly clearableTypes = new Set(['Hibernate Cache']);
-
-    get clearableSelectedRecords() {
-        const {clearableTypes} = this;
-        return this.gridModel.selectedRecords.filter(it => clearableTypes.has(it.data.type));
-    }
-
-    async clearAsync() {
-        const {clearableSelectedRecords, gridModel} = this,
+    async clearHibernateCachesAsync() {
+        const {selectedRecords} = this.gridModel,
+            clearableSelectedRecords = selectedRecords.filter(
+                it => it.data.type === 'Hibernate Cache'
+            ),
             clearableCount = clearableSelectedRecords.length,
-            totalCount = gridModel.selectedRecords.length;
+            totalCount = selectedRecords.length;
         if (
             !(await XH.confirm({
                 message: fragment(
-                    `This will clear the hibernate cache state for ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected records', totalCount, true)}.`,
+                    `This will clear the cached state of ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected record', totalCount, true)}.`,
                     br(),
                     br(),
-                    `Please ensure you understand the impact of this operation on the running application before proceeding.`
+                    `This can resolve issues with data modifications made directly to the database not appearing in a running application, but should be used with care as it can have a temporary performance impact.`
                 ),
                 confirmProps: {
                     text: `Clear ${pluralize('Hibernate Cache', clearableCount, true)}`,
@@ -204,20 +200,20 @@ export class DistributedObjectsModel extends HoistModel {
 
         try {
             await XH.postJson({
-                url: 'distributedObjectAdmin/clearObjects',
+                url: 'distributedObjectAdmin/clearHibernateCaches',
                 body: {
                     names: clearableSelectedRecords.map(it => it.id)
                 }
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
-            XH.successToast('Objects cleared.');
+            XH.successToast(`${pluralize('hibernate cache', clearableCount, true)} cleared.`);
         } catch (e) {
             XH.handleException(e);
         }
     }
 
-    async clearHibernateCachesAsync() {
+    async clearAllHibernateCachesAsync() {
         const confirmed = await XH.confirm({
             message: fragment(
                 'This will clear the second-level Hibernate caches for all domain objects, requiring the server to re-query the database for their latest state.',
@@ -237,11 +233,11 @@ export class DistributedObjectsModel extends HoistModel {
 
         try {
             await XH.fetchJson({
-                url: 'distributedObjectAdmin/clearHibernateCaches'
+                url: 'distributedObjectAdmin/clearAllHibernateCaches'
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
-            XH.successToast('Hibernate Caches Cleared.');
+            XH.successToast('All hibernate caches cleared.');
         } catch (e) {
             XH.handleException(e);
         }
