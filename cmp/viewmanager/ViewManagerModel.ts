@@ -549,7 +549,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 track: () => this.userPinned,
                 run: userPinned => dataAccess.updateStateAsync({userPinned}),
                 equals: comparer.structural,
-                debounce: 2 * SECONDS
+                debounce: 1 * SECONDS
             },
             {
                 track: () => this.autoSave,
