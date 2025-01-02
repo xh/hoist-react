@@ -143,7 +143,7 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     // Event Handlers
     //------------------------
-    async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]> | any) {
+    async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]>) {
         const {files, maxCount, rejectToastMessage, validateFilesAsync} = this,
             currFileCount = files.length,
             acceptCount = accepted.length,
