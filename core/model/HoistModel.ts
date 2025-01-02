@@ -137,7 +137,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      */
     @computed({equals: comparer.shallow})
     get componentProps(): DefaultHoistProps {
-        return this._componentProps;
+        return this._componentProps ?? {};
     }
 
     /**
