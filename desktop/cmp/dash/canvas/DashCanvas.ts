@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
@@ -19,7 +19,6 @@ import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAd
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
-import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
@@ -49,13 +48,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
 
     render({className, model, testId}, ref) {
         const isDraggable = !model.layoutLocked,
-            isResizable = !model.layoutLocked;
-
-        ref = composeRefs(
-            ref,
-            model.ref,
-            useOnVisibleChange(viz => model.onVisibleChange(viz))
-        );
+            isResizable = !model.layoutLocked,
+            [padX, padY] = model.containerPadding;
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -65,7 +59,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                ref,
+                style: {padding: `${padY}px ${padX}px`},
+                ref: composeRefs(ref, model.ref),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     reactGridLayout({
@@ -77,7 +72,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         compactType: model.compact ? 'vertical' : null,
                         margin: model.margin,
                         maxRows: model.maxRows,
-                        containerPadding: model.containerPadding,
+                        containerPadding: [0, 0], // Workaround for https://github.com/react-grid-layout/react-grid-layout/issues/1990
                         autoSize: true,
                         isBounded: true,
                         draggableHandle:

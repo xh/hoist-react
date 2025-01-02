@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
@@ -24,7 +24,7 @@ import {viewPanel} from './ViewPanel';
 /**
  * Default management dialog for ViewManager.
  */
-export const manageDialog = hoistCmp.factory<ManageDialogModel>({
+export const manageDialog = hoistCmp.factory({
     displayName: 'ManageDialog',
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
@@ -74,7 +74,7 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
                     onFilterChange: f => (model.filter = f)
                 }),
                 filler(),
-                refreshButton({model})
+                refreshButton({target: model})
             ]
         });
     }

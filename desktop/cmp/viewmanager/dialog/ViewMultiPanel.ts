@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {placeholder, vbox, vframe, vspacer} from '@xh/hoist/cmp/layout';
@@ -14,7 +14,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 
-export const viewMultiPanel = hoistCmp.factory<ManageDialogModel>({
+export const viewMultiPanel = hoistCmp.factory({
     model: uses(() => ManageDialogModel),
     render({model}) {
         const views = model.selectedViews;

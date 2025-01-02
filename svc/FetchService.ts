@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     Awaitable,
@@ -28,8 +28,8 @@ import ShortUniqueId from 'short-unique-id';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Set {@link autoGenCorrelationIds} to true on this service to enable auto-generation of UUID
- * Correlation IDs for all requests issued by this service. Can also be set on a per-request basis
+ * Set {@link autoGenCorrelationIds} on this service to enable auto-generation of UUID
+ * Correlation IDs for requests issued by this service. Can also be set on a per-request basis
  * via {@link FetchOptions.correlationId}.
  *
  * Custom headers can be set on a request via {@link FetchOptions.headers}. Default headers for all
@@ -52,8 +52,11 @@ export class FetchService extends HoistService {
     //-----------------------------------
     // Public properties, Getters/Setters
     //------------------------------------
-    /** True to auto-generate a Correlation ID for each request unless otherwise specified. */
-    autoGenCorrelationIds = false;
+    /**
+     * Should hoist auto-generate a Correlation ID for a request when not otherwise specified?
+     * Set to `true` or a dynamic per-request function to enable.  Default false.
+     */
+    autoGenCorrelationIds: boolean | ((opts: FetchOptions) => boolean) = false;
 
     /**
      * Method for generating Correlation ID's. Defaults to a 16 character random string with
@@ -253,10 +256,12 @@ export class FetchService extends HoistService {
 
     // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
-        const {correlationId} = opts;
-        if (isString(correlationId)) return opts;
-        if (correlationId === false || correlationId === null) return omit(opts, 'correlationId');
-        if (correlationId === true || this.autoGenCorrelationIds) {
+        const cid = opts.correlationId,
+            autoCid = this.autoGenCorrelationIds;
+
+        if (isString(cid)) return opts;
+        if (cid === false || cid === null) return omit(opts, 'correlationId');
+        if (cid === true || autoCid === true || (isFunction(autoCid) && autoCid(opts))) {
             return {...opts, correlationId: this.genCorrelationId()};
         }
         return opts;

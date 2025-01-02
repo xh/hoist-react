@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {div, filler, hbox, p} from '@xh/hoist/cmp/layout';
@@ -17,8 +17,10 @@ import '@xh/hoist/desktop/register';
  * Desktop implementation of ErrorMessage.
  * @internal
  */
-export const errorMessageImpl = hoistCmp.factory<ErrorMessageProps>({
-    render({error, message, title, actionButtonProps, detailsButtonProps}) {
+export const errorMessageImpl = hoistCmp.factory<
+    Omit<ErrorMessageProps, 'error' | 'actionFn' | 'detailsFn'>
+>({
+    render({message, title, actionButtonProps, detailsButtonProps}) {
         let buttons = [],
             buttonBar = null;
         if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps as ButtonProps));
@@ -31,7 +33,7 @@ export const errorMessageImpl = hoistCmp.factory<ErrorMessageProps>({
 
         return div({
             className: 'xh-error-message__inner',
-            items: [titleCmp({title}), messageCmp({message, error}), buttonBar]
+            items: [titleCmp({title}), messageCmp({message}), buttonBar]
         });
     }
 });

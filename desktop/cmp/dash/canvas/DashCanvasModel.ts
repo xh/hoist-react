@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
@@ -27,22 +27,28 @@ import {
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
-    /** Total number of columns (x coordinates for views correspond with column numbers). */
+    /**
+     * Total number of columns (x coordinates for views correspond with column numbers).
+     * Default `12`.
+     */
     columns?: number;
 
-    /** Height of each row in pixels (y coordinates for views correspond with row numbers). */
+    /**
+     * Height of each row in pixels (y coordinates for views correspond with row numbers).
+     * Default `50`.
+     */
     rowHeight?: number;
 
-    /** Whether views should "compact" vertically to condense vertical space. */
+    /** Whether views should "compact" vertically to condense vertical space. Default `true`. */
     compact?: boolean;
 
-    /** Between items [x,y] in pixels. */
+    /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
-    /** Maximum number of rows permitted for this container. */
+    /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. */
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
 }
 
@@ -97,7 +103,6 @@ export class DashCanvasModel
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
-    private scrollbarVisible: boolean;
     private isLoadingState: boolean;
 
     get rglLayout() {
@@ -107,7 +112,9 @@ export class DashCanvasModel
 
             return {
                 ...it,
-                resizeHandles: autoHeight ? ['e'] : ['e', 's', 'se'],
+                resizeHandles: autoHeight
+                    ? ['w', 'e']
+                    : ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'],
                 maxH: viewSpec.maxHeight,
                 minH: viewSpec.minHeight,
                 maxW: viewSpec.maxWidth,
@@ -131,7 +138,7 @@ export class DashCanvasModel
         compact = true,
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = null,
+        containerPadding = margin,
         extraMenuItems
     }: DashCanvasConfig) {
         super();
@@ -194,19 +201,10 @@ export class DashCanvasModel
             });
         }
 
-        this.addReaction(
-            {
-                track: () => this.viewState,
-                run: () => (this.state = this.buildState())
-            },
-            {
-                when: () => !!this.ref.current,
-                run: () => {
-                    const {current: node} = this.ref;
-                    this.scrollbarVisible = node.offsetWidth > node.clientWidth;
-                }
-            }
-        );
+        this.addReaction({
+            track: () => this.viewState,
+            run: () => (this.state = this.buildState())
+        });
     }
 
     /** Removes all views from the canvas */
@@ -385,12 +383,6 @@ export class DashCanvasModel
         return model;
     }
 
-    // Trigger window resize event when component becomes visible to ensure layout adjusted to
-    // current window size - fixes https://github.com/xh/hoist-react/issues/3215
-    onVisibleChange(visible: boolean) {
-        if (visible) this.fireWindowResizeEvent();
-    }
-
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
@@ -404,15 +396,6 @@ export class DashCanvasModel
 
         this.layout = layout;
         if (!this.isLoadingState) this.state = this.buildState();
-
-        // Check if scrollbar visibility has changed, and force resize event if so
-        const node = this.ref.current;
-        if (!node) return;
-        const scrollbarVisible = node.offsetWidth > node.clientWidth;
-        if (scrollbarVisible !== this.scrollbarVisible) {
-            this.fireWindowResizeEvent();
-            this.scrollbarVisible = scrollbarVisible;
-        }
     }
 
     @action
@@ -529,9 +512,5 @@ export class DashCanvasModel
         }
 
         return {x: defaultX, y: endY ?? rows};
-    }
-
-    private fireWindowResizeEvent() {
-        window.dispatchEvent(new Event('resize'));
     }
 }

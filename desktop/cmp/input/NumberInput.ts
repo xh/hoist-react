@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
@@ -124,8 +124,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 class NumberInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    constructor() {
-        super();
+    override onLinked() {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 

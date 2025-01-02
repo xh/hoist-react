@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {hoistCmp} from '@xh/hoist/core';
@@ -78,7 +78,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         autoSaveUnavailableReason,
         autoSave,
         isViewSavable,
-        views,
         isValueDirty,
         typeDisplayName
     } = parent;
@@ -119,7 +118,6 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
         menuDivider(),
         menuItem({
             icon: Icon.gear(),
-            disabled: isEmpty(views),
             text: `Manage ${pluralName}...`,
             onClick: () => model.manageDialogModel.open()
         })

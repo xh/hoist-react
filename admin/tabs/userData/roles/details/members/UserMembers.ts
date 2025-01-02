@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ColumnRenderer, grid} from '@xh/hoist/cmp/grid';
 import {filler, hbox, span} from '@xh/hoist/cmp/layout';
@@ -60,8 +60,10 @@ class UserMembersModel extends BaseMembersModel {
                     'roles-renderer__role',
                     !isThisRole && 'roles-renderer__role--effective'
                 ),
-                item: isThisRole ? RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>' : role,
-                title: isThisRole ? directoryGroup ?? '<Direct>' : role,
+                item: isThisRole
+                    ? (RoleModel.fmtDirectoryGroup(directoryGroup) ?? '<Direct>')
+                    : role,
+                title: isThisRole ? (directoryGroup ?? '<Direct>') : role,
                 minimal: true,
                 onDoubleClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
             };
@@ -75,7 +77,7 @@ class UserMembersModel extends BaseMembersModel {
 
     override sourcesExportRenderer: ColumnRenderer = (sources: UserSource[]) => {
         const labels = sources.map(({role, directoryGroup}) => {
-            return role === this.selectedRole.name ? directoryGroup ?? '<Direct>' : role;
+            return role === this.selectedRole.name ? (directoryGroup ?? '<Direct>') : role;
         });
         return uniq(labels).join(', ');
     };

@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
-import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
@@ -15,7 +15,7 @@ import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
 
-    headerFilterModel: ColumnHeaderFilterModel;
+    headerFilterModel: HeaderFilterModel;
 
     /** Checkbox grid to display enumerated set of values */
     @managed @observable.ref gridModel: GridModel;
@@ -59,7 +59,7 @@ export class ValuesTabModel extends HoistModel {
     }
 
     get gridFilterModel() {
-        return this.headerFilterModel.gridFilterModel;
+        return this.headerFilterModel.filterModel;
     }
 
     get values() {
@@ -74,7 +74,7 @@ export class ValuesTabModel extends HoistModel {
         return this.values.length < this.valueCount;
     }
 
-    constructor(headerFilterModel: ColumnHeaderFilterModel) {
+    constructor(headerFilterModel: HeaderFilterModel) {
         super();
         makeObservable(this);
 
@@ -83,7 +83,8 @@ export class ValuesTabModel extends HoistModel {
 
         this.addReaction({
             track: () => this.pendingValues,
-            run: () => this.syncGrid()
+            run: () => this.syncGrid(),
+            fireImmediately: true
         });
     }
 
@@ -193,7 +194,7 @@ export class ValuesTabModel extends HoistModel {
             {fieldType} = headerFilterModel,
             renderer =
                 fieldSpec.renderer ??
-                (fieldType !== 'tags' ? this.headerFilterModel.column.renderer : null);
+                (fieldType !== 'tags' ? this.headerFilterModel.parent.column.renderer : null);
 
         return new GridModel({
             store: {

@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2025 Extremely Heavy Industries Inc.
+ */
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
