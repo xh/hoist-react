@@ -8,7 +8,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {capitalize} from 'lodash';
+import {capitalize, isUndefined} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
@@ -55,13 +55,13 @@ export class ViewPanelModel extends HoistModel {
 
     async saveAsync() {
         const {parent, view, formModel} = this,
-            {name, group, description, isDefaultPinned, isShared} = formModel.getData(),
+            {name, group, description, isDefaultPinned, isShared} = formModel.getData(true),
             isValid = await formModel.validateAsync(),
             isDirty = formModel.isDirty;
 
         if (!isValid || !isDirty) return;
 
-        if (view.isOwned && view.isShared != isShared) {
+        if (view.isOwned && !isUndefined(isShared)) {
             const msg: ReactNode = !isShared
                 ? `Your ${view.typedName} will no longer be visible to all other ${XH.appName} users.`
                 : `Your ${view.typedName} will become visible to all other ${XH.appName} users.`;

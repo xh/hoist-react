@@ -37,9 +37,9 @@ export interface ViewCreateSpec {
 }
 
 export interface ViewUpdateSpec {
-    name: string;
-    group: string;
-    description: string;
+    name?: string;
+    group?: string;
+    description?: string;
     isShared?: boolean;
     isDefaultPinned?: boolean;
 }
