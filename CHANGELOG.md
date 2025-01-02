@@ -59,6 +59,8 @@
 
 ### 📚 Libraries
 
+* @azure/msal-browser `3.27 → 3.28`
+* dompurify `3.1 → 3.2`
 * react-grid-layout `1.4.3 → 1.5.0`
 
 ## v70.0.0 - 2024-11-15
