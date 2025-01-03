@@ -19,7 +19,6 @@ import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
 import {
     capitalize,
     cloneDeep,
-    forIn,
     forOwn,
     groupBy,
     isArray,
@@ -96,11 +95,11 @@ export class DistributedObjectsModel extends HoistModel {
                 width: 38,
                 align: 'center',
                 resizable: false,
-                headerName: Icon.warning(),
+                headerName: Icon.diff(),
                 headerTooltip: 'Compare State',
                 renderer: v =>
                     v === 'failed'
-                        ? Icon.warning({prefix: 'fas', intent: 'danger'})
+                        ? Icon.diff({prefix: 'fas', intent: 'danger'})
                         : v === 'passed'
                           ? Icon.check({prefix: 'fas', intent: 'success'})
                           : null
@@ -126,6 +125,10 @@ export class DistributedObjectsModel extends HoistModel {
 
     get selectedRecordName(): string {
         return this.selectedRecord?.data.name ?? null;
+    }
+
+    get selectedRecordType(): string {
+        return this.selectedRecord?.data.type ?? null;
     }
 
     get selectedDetailRecord(): StoreRecord {
@@ -332,7 +335,9 @@ export class DistributedObjectsModel extends HoistModel {
                 },
                 {
                     groupId: 'comparisonFields',
-                    headerName: 'Comparison Fields',
+                    headerName: 'Compared Stats',
+                    headerTooltip:
+                        'Stats that are expected to be eventually consistent between all instances.',
                     children: comparedCols.map(col => ({
                         ...col,
                         cellClassRules: {
@@ -351,7 +356,9 @@ export class DistributedObjectsModel extends HoistModel {
                 },
                 {
                     groupId: 'otherFields',
-                    headerName: 'Non-Comparison Fields',
+                    headerName: 'Other Stats',
+                    headerTooltip:
+                        'Stats that are not expected to be consistent between all instances.',
                     children: notComparedCols.map(col => ({
                         ...col,
                         cellClassRules: {
@@ -418,7 +425,7 @@ export class DistributedObjectsModel extends HoistModel {
             });
 
         // Create known parent/grouping records.
-        // We leave children empty for now, as we'll populate them in the next step.
+        // We leave children empty for now, as we'll populate them all in the next step.
         recordsByName['App'] = this.createParentRecord({
             name: 'App',
             displayName: 'App',
@@ -444,29 +451,30 @@ export class DistributedObjectsModel extends HoistModel {
             parentName: 'App'
         });
 
-        // Place child records into the children of their parent record.
-        forIn(recordsByName, record => {
-            const parentName = record.parentName;
+        // Place child records into the children of their parent record. Note that this may create
+        // any missing parents as needed - they will be appended to the end of the list.
+        const recordNames = Object.keys(recordsByName);
+        for (let idx = 0; idx < recordNames.length; idx++) {
+            const name = recordNames[idx],
+                record = recordsByName[name],
+                parentName = record.parentName;
             if (parentName) {
-                // Create any unknown/missing parent records
-                // FIXME: Adding to a map while iterating over its values
+                // Create any unknown/missing parent records.
                 if (!recordsByName[parentName]) {
-                    recordsByName[parentName] = {
+                    recordsByName[parentName] = this.createParentRecord({
                         name: parentName,
                         displayName: this.deriveDisplayName(parentName, null),
                         type: null,
-                        parentName: this.deriveParent(parentName, null),
-                        compareState: 'inactive',
-                        comparisonFields: [],
-                        adminStatsbyInstance: {},
-                        children: []
-                    };
+                        parentName: this.deriveParent(parentName, null)
+                    });
+                    // Also append to end of list, to ensure we eventually also process this parent.
+                    recordNames.push(parentName);
                 }
 
-                // Place under parent
+                // Place self under parent.
                 recordsByName[parentName].children.push(record);
 
-                // Aggregate parent compareState
+                // Aggregate parent compareState.
                 const state = record.compareState,
                     parentState = recordsByName[parentName].compareState;
                 recordsByName[parentName].compareState =
@@ -476,7 +484,7 @@ export class DistributedObjectsModel extends HoistModel {
                           ? 'passed'
                           : 'inactive';
             }
-        });
+        }
 
         return Object.values(recordsByName).filter(record => !record.parentName);
     }
