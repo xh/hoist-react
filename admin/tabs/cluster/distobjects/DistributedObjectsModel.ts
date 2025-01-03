@@ -236,7 +236,7 @@ export class DistributedObjectsModel extends HoistModel {
 
         try {
             await XH.fetchJson({
-                url: 'distributedObjectAdmin/clearAllHibernateCaches'
+                url: 'clusterObjectsAdmin/clearAllHibernateCaches'
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
@@ -249,8 +249,13 @@ export class DistributedObjectsModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const report = await XH.fetchJson({
-                url: 'distributedObjectAdmin/getDistributedObjectsReport'
+                url: 'clusterObjectsAdmin/getClusterObjectsReport'
             });
+
+            report.info = report.info.map(it => ({
+                ...it,
+                comparableFields: it.comparableAdminStats
+            }));
 
             this.gridModel.loadData(this.processReport(report));
             runInAction(() => {

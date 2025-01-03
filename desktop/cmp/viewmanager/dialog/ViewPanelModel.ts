@@ -8,7 +8,7 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {capitalize} from 'lodash';
+import {capitalize, isUndefined} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
 import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
@@ -55,14 +55,14 @@ export class ViewPanelModel extends HoistModel {
 
     async saveAsync() {
         const {parent, view, formModel} = this,
-            {name, group, description, isDefaultPinned, isShared} = formModel.getData(),
+            updates = formModel.getData(true),
             isValid = await formModel.validateAsync(),
             isDirty = formModel.isDirty;
 
         if (!isValid || !isDirty) return;
 
-        if (view.isOwned && view.isShared != isShared) {
-            const msg: ReactNode = !isShared
+        if (view.isOwned && !isUndefined(updates.isShared)) {
+            const msg: ReactNode = !updates.isShared
                 ? `Your ${view.typedName} will no longer be visible to all other ${XH.appName} users.`
                 : `Your ${view.typedName} will become visible to all other ${XH.appName} users.`;
             const msgs = [msg, strong('Are you sure you want to proceed?')];
@@ -79,13 +79,7 @@ export class ViewPanelModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        await parent.updateAsync(view, {
-            name,
-            group,
-            description,
-            isShared,
-            isDefaultPinned
-        });
+        await parent.updateAsync(view, updates);
     }
 
     //------------------------
