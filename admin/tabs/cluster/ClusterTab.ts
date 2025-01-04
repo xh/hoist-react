@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {distributedObjectsPanel} from '@xh/hoist/admin/tabs/cluster/distobjects/DistributedObjectsPanel';
+import {clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterObjectsPanel';
 import {instancesTab} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTab';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
@@ -17,7 +17,7 @@ export const clusterTab = hoistCmp.factory(() =>
             switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
             tabs: [
                 {id: 'instances', icon: Icon.info(), content: instancesTab},
-                {id: 'objects', icon: Icon.diff(), content: distributedObjectsPanel}
+                {id: 'objects', icon: Icon.diff(), content: clusterObjectsPanel}
             ]
         }
     })

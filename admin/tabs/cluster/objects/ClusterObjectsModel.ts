@@ -17,7 +17,6 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {DAYS} from '@xh/hoist/utils/datetime';
 import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
 import {
-    capitalize,
     cloneDeep,
     forOwn,
     groupBy,
@@ -33,7 +32,7 @@ import {
 import {action, computed, observable, runInAction} from 'mobx';
 import {createRef} from 'react';
 
-export class DistributedObjectsModel extends HoistModel {
+export class ClusterObjectsModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
 
     @observable.ref startTimestamp: Date = null;
@@ -80,7 +79,7 @@ export class DistributedObjectsModel extends HoistModel {
                 {name: 'parentName', type: 'string'},
                 {name: 'provider', type: 'string'},
                 {name: 'compareState', type: 'string'},
-                {name: 'comparisonFields', type: 'auto'},
+                {name: 'comparableAdminStats', type: 'auto'},
                 {name: 'adminStatsbyInstance', type: 'auto'}
             ],
             idSpec: 'name'
@@ -107,7 +106,7 @@ export class DistributedObjectsModel extends HoistModel {
             {field: 'displayName', isTreeColumn: true},
             {field: 'type'},
             {
-                field: 'comparisonFields',
+                field: 'comparableAdminStats',
                 renderer: v => (!isEmpty(v) ? tagsRenderer(v) : null),
                 hidden: true
             },
@@ -252,11 +251,6 @@ export class DistributedObjectsModel extends HoistModel {
                 url: 'clusterObjectsAdmin/getClusterObjectsReport'
             });
 
-            report.info = report.info.map(it => ({
-                ...it,
-                comparableFields: it.comparableAdminStats
-            }));
-
             this.gridModel.loadData(this.processReport(report));
             runInAction(() => {
                 this.startTimestamp = report.startTimestamp
@@ -294,15 +288,15 @@ export class DistributedObjectsModel extends HoistModel {
             return;
         }
 
-        const {adminStatsbyInstance, comparisonFields} = record.data,
+        const {adminStatsbyInstance, comparableAdminStats} = record.data,
             instanceNames = Object.keys(adminStatsbyInstance),
             nonComparisonFields = without(
                 Object.keys(adminStatsbyInstance[instanceNames[0]] ?? {}),
-                ...comparisonFields
+                ...comparableAdminStats
             ),
             {selectedId} = this.detailGridModel ?? {};
 
-        // Always re-create the grid model, as its not trivial to check if columns have changed.
+        // Always re-create the grid model, as it is not trivial to check if columns have changed.
         XH.safeDestroy(this.detailGridModel);
         const createColumnForField = fieldName => ({
             field: {name: fieldName, displayName: fieldName},
@@ -310,7 +304,7 @@ export class DistributedObjectsModel extends HoistModel {
             autosizeMaxWidth: 200
         });
         this.detailGridModel = this.createDetailGridModel(
-            comparisonFields.map(createColumnForField),
+            comparableAdminStats.map(createColumnForField),
             nonComparisonFields.map(createColumnForField)
         );
 
@@ -339,7 +333,7 @@ export class DistributedObjectsModel extends HoistModel {
                     field: {name: 'instanceName', type: 'string', displayName: 'Instance'}
                 },
                 {
-                    groupId: 'comparisonFields',
+                    groupId: 'comparableAdminStats',
                     headerName: 'Compared Stats',
                     headerTooltip:
                         'Stats that are expected to be eventually consistent between all instances.',
@@ -409,7 +403,7 @@ export class DistributedObjectsModel extends HoistModel {
     }): DistributedObjectRecord[] {
         const byName = groupBy(info, 'name'),
             recordsByName: Record<string, DistributedObjectRecord> = mapValues(byName, objs => {
-                const {name, type, comparisonFields} = objs[0],
+                const {name, type, comparableAdminStats} = objs[0],
                     adminStatsbyInstance: PlainObject = Object.fromEntries(
                         objs.map(obj => [obj.instanceName, obj.adminStats])
                     );
@@ -418,12 +412,12 @@ export class DistributedObjectsModel extends HoistModel {
                     displayName: this.deriveDisplayName(name, type),
                     type,
                     parentName: this.deriveParent(name, type),
-                    compareState: (isEmpty(comparisonFields) || objs.length < 2
+                    compareState: (isEmpty(comparableAdminStats) || objs.length < 2
                         ? 'inactive'
                         : !isEmpty(breaks[name])
                           ? 'failed'
                           : 'passed') as CompareState,
-                    comparisonFields: comparisonFields ?? [],
+                    comparableAdminStats: comparableAdminStats ?? [],
                     adminStatsbyInstance,
                     children: []
                 };
@@ -503,7 +497,7 @@ export class DistributedObjectsModel extends HoistModel {
         return {
             ...args,
             compareState: 'inactive',
-            comparisonFields: [],
+            comparableAdminStats: [],
             adminStatsbyInstance: {},
             children: []
         };
@@ -517,7 +511,7 @@ export class DistributedObjectsModel extends HoistModel {
                 const last = name.substring(lastDotIdx + 1),
                     rest = name.substring(0, lastDotIdx);
                 // Identify collection caches by lowercase name after last dot.
-                if (last !== capitalize(last)) return rest;
+                if (!isEmpty(last) && last[0] !== last[0].toUpperCase()) return rest;
             }
             // Otherwise, group under the correct hibernate group record.
             return name.startsWith('io.xh.hoist') ||
@@ -612,7 +606,7 @@ interface DistributedObjectRecord {
     type: string;
     parentName?: string;
     compareState: CompareState;
-    comparisonFields: string[];
+    comparableAdminStats: string[];
     adminStatsbyInstance: Record<string, PlainObject>;
     children: DistributedObjectRecord[];
 }

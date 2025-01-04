@@ -17,12 +17,12 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
-import {DistributedObjectsModel} from './DistributedObjectsModel';
-import './DistributedObjects.scss';
+import {ClusterObjectsModel} from './ClusterObjectsModel';
+import './ClusterObjects.scss';
 
-export const distributedObjectsPanel = hoistCmp.factory({
+export const clusterObjectsPanel = hoistCmp.factory({
     displayName: 'DistributedObjectsPanel',
-    model: creates(DistributedObjectsModel),
+    model: creates(ClusterObjectsModel),
 
     render({model}) {
         return panel({
@@ -41,7 +41,7 @@ export const distributedObjectsPanel = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
+const tbar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     const {counts, isSingleInstance} = model;
     return toolbar({
         items: [
@@ -87,7 +87,7 @@ const tbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
     });
 });
 
-const adminSpecsPanel = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
+const adminSpecsPanel = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     const {
         instanceName,
         selectedAdminStats,
@@ -134,7 +134,7 @@ const adminSpecsPanel = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
     });
 });
 
-const bbar = hoistCmp.factory<DistributedObjectsModel>(({model}) => {
+const bbar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     return toolbar(
         recordActionBar({
             selModel: model.gridModel.selModel,
