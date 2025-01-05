@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/BaseInstanceModel';
+import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';

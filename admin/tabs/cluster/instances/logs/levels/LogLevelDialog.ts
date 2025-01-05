@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {LogLevelDialogModel} from '@xh/hoist/admin/tabs/cluster/logs/levels/LogLevelDialogModel';
+import {LogLevelDialogModel} from '@xh/hoist/admin/tabs/cluster/instances/logs/levels/LogLevelDialogModel';
 import {filler, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';

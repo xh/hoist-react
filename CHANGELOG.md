@@ -2,7 +2,7 @@
 
 ## v71.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade 🟢 Medium - Hoist core update, adjust imports)
 
 * Requires `hoist-core >= 26.1` with new APIs to support `ViewManager`.
 * `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
