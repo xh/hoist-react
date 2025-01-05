@@ -10,10 +10,9 @@ import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
-import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {DAYS} from '@xh/hoist/utils/datetime';
 import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
 import {
@@ -22,14 +21,11 @@ import {
     groupBy,
     isArray,
     isEmpty,
-    isEqual,
     isNumber,
     isPlainObject,
     mapValues,
-    size,
-    without
+    size
 } from 'lodash';
-import {action, computed, observable, runInAction} from 'mobx';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
@@ -41,25 +37,16 @@ export class ClusterObjectsModel extends HoistModel {
     @bindable showInactive: boolean = true;
     @bindable.ref textFilter: FilterTestFn = null;
 
-    @managed detailPanelModel = new PanelModel({
-        side: 'right',
-        defaultSize: 450
-    });
-
     clearHibernateCachesAction: RecordActionSpec = {
         text: 'Clear Selected Hibernate Caches',
         icon: Icon.reset(),
         intent: 'warning',
         actionFn: () => this.clearHibernateCachesAsync(),
         displayFn: ({selectedRecords}) => {
-            const clearableSelectedRecords = selectedRecords.filter(
-                    it => it.data.type === 'Hibernate Cache'
-                ),
-                clearableCount = clearableSelectedRecords.length;
+            const caches = selectedRecords.filter(it => it.data.type === 'Hibernate Cache');
             return {
-                hidden: AppModel.readonly,
-                text: `Clear ${pluralize('Hibernate Cache', clearableCount, true)}`,
-                disabled: isEmpty(clearableSelectedRecords)
+                hidden: AppModel.readonly || isEmpty(caches),
+                text: `Clear Hibernate Cache`
             };
         },
         recordsRequired: true
@@ -70,7 +57,7 @@ export class ClusterObjectsModel extends HoistModel {
         treeMode: true,
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         enableExport: true,
-        exportOptions: {filename: exportFilenameWithDate('distributed-objects'), columns: 'ALL'},
+        exportOptions: {filename: exportFilenameWithDate('cluster-objects'), columns: 'ALL'},
         sortBy: ['displayName'],
         store: {
             fields: [
@@ -80,21 +67,21 @@ export class ClusterObjectsModel extends HoistModel {
                 {name: 'provider', type: 'string'},
                 {name: 'compareState', type: 'string'},
                 {name: 'comparableAdminStats', type: 'auto'},
-                {name: 'adminStatsbyInstance', type: 'auto'}
+                {name: 'adminStatsByInstance', type: 'auto'}
             ],
             idSpec: 'name'
         },
         rowClassRules: {
-            'xh-distributed-objects-row-has-break': ({data: record}) =>
+            'xh-cluster-objects-row-has-break': ({data: record}) =>
                 record?.data.compareState === 'failed'
         },
         columns: [
             {
                 field: 'compareState',
-                width: 38,
+                width: 30,
                 align: 'center',
                 resizable: false,
-                headerName: Icon.diff(),
+                headerName: '',
                 headerTooltip: 'Compare State',
                 renderer: v =>
                     v === 'failed'
@@ -116,35 +103,13 @@ export class ClusterObjectsModel extends HoistModel {
         contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaultContextMenu]
     });
 
-    @managed @observable.ref detailGridModel = this.createDetailGridModel();
-
     get selectedRecord(): StoreRecord {
         return this.gridModel.selectedRecord;
     }
 
-    get selectedRecordName(): string {
-        return this.selectedRecord?.data.name ?? null;
-    }
-
-    get selectedRecordType(): string {
-        return this.selectedRecord?.data.type ?? null;
-    }
-
-    get selectedDetailRecord(): StoreRecord {
-        return this.detailGridModel.selectedRecord;
-    }
-
-    get instanceName(): string {
-        return this.selectedDetailRecord?.id as string;
-    }
-
-    get selectedAdminStats() {
-        return this.selectedRecord?.data.adminStatsbyInstance[this.instanceName];
-    }
-
     get isSingleInstance() {
         return this.gridModel.store.allRecords.every(
-            rec => size(rec.data?.adminStatsbyInstance) <= 1
+            rec => size(rec.data?.adminStatsByInstance) <= 1
         );
     }
 
@@ -160,56 +125,45 @@ export class ClusterObjectsModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-        this.addReaction(
-            {
-                track: () => this.gridModel.selectedRecord,
-                run: (record, oldRecord) => this.updateDetailGridModel(record, oldRecord)
-            },
-            {
-                track: () => [this.textFilter, this.showInactive],
-                run: this.applyFilters,
-                fireImmediately: true
-            }
-        );
+        this.addReaction({
+            track: () => [this.textFilter, this.showInactive],
+            run: this.applyFilters,
+            fireImmediately: true
+        });
     }
 
     async clearHibernateCachesAsync() {
         const {selectedRecords} = this.gridModel,
-            clearableSelectedRecords = selectedRecords.filter(
-                it => it.data.type === 'Hibernate Cache'
-            ),
-            clearableCount = clearableSelectedRecords.length,
-            totalCount = selectedRecords.length;
-        if (
-            !(await XH.confirm({
+            cacheRecords = selectedRecords.filter(it => it.data.type === 'Hibernate Cache'),
+            count = cacheRecords.length,
+            confirmed = await XH.confirm({
                 message: fragment(
-                    `This will clear the cached state of ${clearableCount !== totalCount ? clearableCount + ' out of the ' : ''}${pluralize('selected record', totalCount, true)}.`,
+                    `This will clear ${pluralize('Hibernate Cache', count, true)}.`,
                     br(),
                     br(),
                     `This can resolve issues with data modifications made directly to the database not appearing in a running application, but should be used with care as it can have a temporary performance impact.`
                 ),
                 confirmProps: {
-                    text: `Clear ${pluralize('Hibernate Cache', clearableCount, true)}`,
+                    text: `Clear ${pluralize('Hibernate Cache', count, true)}`,
                     icon: Icon.reset(),
                     intent: 'warning',
                     outlined: true,
                     autoFocus: false
                 }
-            }))
-        ) {
-            return;
-        }
+            });
+
+        if (!confirmed) return;
 
         try {
             await XH.postJson({
-                url: 'distributedObjectAdmin/clearHibernateCaches',
+                url: 'clusterObjectsAdmin/clearHibernateCaches',
                 body: {
-                    names: clearableSelectedRecords.map(it => it.id)
+                    names: cacheRecords.map(it => it.id)
                 }
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
-            XH.successToast(`${pluralize('hibernate cache', clearableCount, true)} cleared.`);
+            XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
         } catch (e) {
             XH.handleException(e);
         }
@@ -239,7 +193,7 @@ export class ClusterObjectsModel extends HoistModel {
             }).linkTo(this.loadModel);
 
             await this.refreshAsync();
-            XH.successToast('All hibernate caches cleared.');
+            XH.successToast('All Hibernate Caches cleared.');
         } catch (e) {
             XH.handleException(e);
         }
@@ -277,108 +231,6 @@ export class ClusterObjectsModel extends HoistModel {
     //----------------------
     // Implementation
     //----------------------
-    @action
-    private updateDetailGridModel(record: StoreRecord, oldRecord: StoreRecord) {
-        if (isEmpty(record)) {
-            // Only re-create grid model if columns are different.
-            if (!isEmpty(oldRecord)) {
-                XH.safeDestroy(this.detailGridModel);
-                this.detailGridModel = this.createDetailGridModel();
-            }
-            return;
-        }
-
-        const {adminStatsbyInstance, comparableAdminStats} = record.data,
-            instanceNames = Object.keys(adminStatsbyInstance),
-            nonComparisonFields = without(
-                Object.keys(adminStatsbyInstance[instanceNames[0]] ?? {}),
-                ...comparableAdminStats
-            ),
-            {selectedId} = this.detailGridModel ?? {};
-
-        // Always re-create the grid model, as it is not trivial to check if columns have changed.
-        XH.safeDestroy(this.detailGridModel);
-        const createColumnForField = fieldName => ({
-            field: {name: fieldName, displayName: fieldName},
-            renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
-            autosizeMaxWidth: 200
-        });
-        this.detailGridModel = this.createDetailGridModel(
-            comparableAdminStats.map(createColumnForField),
-            nonComparisonFields.map(createColumnForField)
-        );
-
-        this.detailGridModel.loadData(
-            instanceNames.map(instanceName => {
-                const data = cloneDeep(adminStatsbyInstance[instanceName] ?? {});
-                this.processTimestamps(data);
-                return {instanceName, ...data};
-            })
-        );
-
-        // Attempt to preserve selection across updates, or default.
-        if (selectedId) {
-            this.detailGridModel.selectAsync(selectedId);
-        } else {
-            this.detailGridModel.selectFirstAsync();
-        }
-    }
-
-    private createDetailGridModel(comparedCols = [], notComparedCols = []) {
-        return new GridModel({
-            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
-            store: {idSpec: 'instanceName'},
-            columns: [
-                {
-                    field: {name: 'instanceName', type: 'string', displayName: 'Instance'}
-                },
-                {
-                    groupId: 'comparableAdminStats',
-                    headerName: 'Compared Stats',
-                    headerTooltip:
-                        'Stats that are expected to be eventually consistent between all instances.',
-                    children: comparedCols.map(col => ({
-                        ...col,
-                        cellClassRules: {
-                            'xh-distributed-objects-cell-danger': ({value, colDef}) =>
-                                !colDef ||
-                                this.detailGridModel.store.records.some(
-                                    rec => !isEqual(rec.data[colDef.colId], value)
-                                ),
-                            'xh-distributed-objects-cell-success': ({value, colDef}) =>
-                                colDef &&
-                                this.detailGridModel.store.records.every(rec =>
-                                    isEqual(rec.data[colDef.colId], value)
-                                )
-                        }
-                    }))
-                },
-                {
-                    groupId: 'otherFields',
-                    headerName: 'Other Stats',
-                    headerTooltip:
-                        'Stats that are not expected to be consistent between all instances.',
-                    children: notComparedCols.map(col => ({
-                        ...col,
-                        cellClassRules: {
-                            'xh-distributed-objects-cell-warning': ({
-                                value,
-                                data: record,
-                                colDef
-                            }) =>
-                                !colDef ||
-                                this.detailGridModel.store.records.some(
-                                    rec =>
-                                        rec.id !== record.id &&
-                                        !isEqual(rec.data[colDef.colId], value)
-                                )
-                        }
-                    }))
-                }
-            ]
-        });
-    }
-
     private applyFilters() {
         const {showInactive, textFilter, isSingleInstance} = this,
             filters: FilterLike[] = [textFilter];
@@ -400,11 +252,11 @@ export class ClusterObjectsModel extends HoistModel {
     }: {
         info: PlainObject[];
         breaks: Record<string, [string, string]>;
-    }): DistributedObjectRecord[] {
+    }): ClusterObjectRecord[] {
         const byName = groupBy(info, 'name'),
-            recordsByName: Record<string, DistributedObjectRecord> = mapValues(byName, objs => {
+            recordsByName: Record<string, ClusterObjectRecord> = mapValues(byName, objs => {
                 const {name, type, comparableAdminStats} = objs[0],
-                    adminStatsbyInstance: PlainObject = Object.fromEntries(
+                    adminStatsByInstance: PlainObject = Object.fromEntries(
                         objs.map(obj => [obj.instanceName, obj.adminStats])
                     );
                 return {
@@ -418,7 +270,7 @@ export class ClusterObjectsModel extends HoistModel {
                           ? 'failed'
                           : 'passed') as CompareState,
                     comparableAdminStats: comparableAdminStats ?? [],
-                    adminStatsbyInstance,
+                    adminStatsByInstance,
                     children: []
                 };
             });
@@ -493,12 +345,12 @@ export class ClusterObjectsModel extends HoistModel {
         type: string;
         parentName: string;
         displayName: string;
-    }): DistributedObjectRecord {
+    }): ClusterObjectRecord {
         return {
             ...args,
             compareState: 'inactive',
             comparableAdminStats: [],
-            adminStatsbyInstance: {},
+            adminStatsByInstance: {},
             children: []
         };
     }
@@ -600,13 +452,13 @@ export class ClusterObjectsModel extends HoistModel {
 
 type CompareState = 'failed' | 'passed' | 'inactive';
 
-interface DistributedObjectRecord {
+interface ClusterObjectRecord {
     name: string;
     displayName: string;
     type: string;
     parentName?: string;
     compareState: CompareState;
     comparableAdminStats: string[];
-    adminStatsbyInstance: Record<string, PlainObject>;
-    children: DistributedObjectRecord[];
+    adminStatsByInstance: Record<string, PlainObject>;
+    children: ClusterObjectRecord[];
 }
