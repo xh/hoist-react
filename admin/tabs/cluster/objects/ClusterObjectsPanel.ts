@@ -61,8 +61,8 @@ const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     const {counts} = model;
     return [
         switchInput({
-            label: 'Show unchecked',
-            bind: 'showInactive'
+            label: 'Hide unchecked',
+            bind: 'hideUnchecked'
         }),
         div({
             className: 'xh-cluster-objects-result-count',
@@ -84,11 +84,11 @@ const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
         }),
         div({
             className: 'xh-cluster-objects-result-count',
-            omit: !counts.inactive || !model.showInactive,
+            omit: !counts.unchecked || model.hideUnchecked,
             items: [
                 toolbarSep(),
                 Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
-                label(`${counts.inactive} Unchecked`)
+                label(`${counts.unchecked} Unchecked`)
             ]
         })
     ];

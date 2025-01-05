@@ -22,7 +22,7 @@ export class ClusterObjectsModel extends HoistModel {
     @observable.ref startTimestamp: Date = null;
     @observable runDurationMs: number = 0;
 
-    @bindable showInactive: boolean = true;
+    @bindable hideUnchecked: boolean = false;
     @bindable.ref textFilter: FilterTestFn = null;
 
     clearHibernateCachesAction: RecordActionSpec = {
@@ -103,7 +103,7 @@ export class ClusterObjectsModel extends HoistModel {
 
     @computed
     get counts() {
-        const ret = {passed: 0, failed: 0, inactive: 0};
+        const ret = {passed: 0, failed: 0, unchecked: 0};
         this.gridModel.store.allRecords.forEach(record => {
             ret[record.data.compareState]++;
         });
@@ -114,7 +114,7 @@ export class ClusterObjectsModel extends HoistModel {
         super();
         makeObservable(this);
         this.addReaction({
-            track: () => [this.textFilter, this.showInactive],
+            track: () => [this.textFilter, this.hideUnchecked],
             run: this.applyFilters,
             fireImmediately: true
         });
@@ -220,14 +220,14 @@ export class ClusterObjectsModel extends HoistModel {
     // Implementation
     //----------------------
     private applyFilters() {
-        const {showInactive, textFilter, isSingleInstance} = this,
+        const {hideUnchecked, textFilter, isSingleInstance} = this,
             filters: FilterLike[] = [textFilter];
 
-        if (!showInactive && !isSingleInstance) {
+        if (hideUnchecked && !isSingleInstance) {
             filters.push({
                 field: 'compareState',
                 op: '!=',
-                value: 'inactive'
+                value: 'unchecked'
             });
         }
 
@@ -253,7 +253,7 @@ export class ClusterObjectsModel extends HoistModel {
                     type,
                     parentName: this.deriveParent(name, type),
                     compareState: (isEmpty(comparableAdminStats) || objs.length < 2
-                        ? 'inactive'
+                        ? 'unchecked'
                         : !isEmpty(breaks[name])
                           ? 'failed'
                           : 'passed') as CompareState,
@@ -321,7 +321,7 @@ export class ClusterObjectsModel extends HoistModel {
                         ? 'failed'
                         : state === 'passed' || parentState === 'passed'
                           ? 'passed'
-                          : 'inactive';
+                          : 'unchecked';
             }
         }
 
@@ -336,7 +336,7 @@ export class ClusterObjectsModel extends HoistModel {
     }): ClusterObjectRecord {
         return {
             ...args,
-            compareState: 'inactive',
+            compareState: 'unchecked',
             comparableAdminStats: [],
             adminStatsByInstance: {},
             children: []
@@ -413,7 +413,7 @@ export class ClusterObjectsModel extends HoistModel {
     }
 }
 
-type CompareState = 'failed' | 'passed' | 'inactive';
+type CompareState = 'failed' | 'passed' | 'unchecked';
 
 interface ClusterObjectRecord {
     name: string;
