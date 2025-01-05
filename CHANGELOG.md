@@ -4,7 +4,8 @@
 
 ### 💥 Breaking Changes (upgrade 🟢 Medium - Hoist core update, adjust imports)
 
-* Requires `hoist-core >= 26.1` with new APIs to support `ViewManager`.
+* Requires `hoist-core >= 27.0` with new APIs to support `ViewManager` and additional cluster
+  synchronization monitor in admin client.
 * `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
   or `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
 * `Mask` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/mask` or
@@ -34,6 +35,8 @@
 * Updated sorting on grouped grids to place ungrouped items at the bottom.
 * `DashCanvas` views can now be resized left and up in addition to right and down.
 * `FetchService.autoGenCorrelationIds` now supports a functional form for per-request behavior.
+* New `Objects` tab in admin client supports comparing state across the cluster, and flagging any
+  persistent state inconsistencies.
 
 ### 🐞 Bug Fixes
 
