@@ -28,43 +28,40 @@ export class DetailModel extends HoistModel {
 
     @managed
     @observable.ref
-    gridModel = this.createGridModel([], []);
+    gridModel: GridModel = null;
 
     //---------------------------------------------
     // Current cluster object and related.
     //--------------------------------------------
-    get selectedRecord(): StoreRecord {
-        return this.parent?.selectedRecord;
+    get selectedObject(): StoreRecord {
+        const selRecord = this.parent.selectedRecord;
+        return !isEmpty(selRecord?.data.adminStatsByInstance) ? selRecord : null;
     }
 
-    get selectedRecordName(): string {
-        return this.selectedRecord?.data.name ?? null;
+    get objectName(): string {
+        return this.selectedObject?.data.name ?? null;
     }
 
-    get selectedRecordType(): string {
-        return this.selectedRecord?.data.type ?? null;
-    }
-
-    get selectedRecordHasInstanceData(): boolean {
-        return !isEmpty(this.selectedRecord?.data.adminStatsByInstance);
+    get objectType(): string {
+        return this.selectedObject?.data.type ?? null;
     }
 
     //--------------------------------
     // Selected instance and related.
     //--------------------------------
     get instanceName(): string {
-        return this.gridModel.selectedRecord?.id as string;
+        return this.gridModel?.selectedRecord?.id as string;
     }
 
     get selectedAdminStats() {
-        return this.selectedRecord?.data.adminStatsByInstance[this.instanceName];
+        return this.selectedObject?.data.adminStatsByInstance[this.instanceName];
     }
 
     constructor() {
         super();
         makeObservable(this);
         this.addReaction({
-            track: () => this.selectedRecord,
+            track: () => this.selectedObject,
             run: record => this.updateGridModel(record)
         });
     }
@@ -121,16 +118,19 @@ export class DetailModel extends HoistModel {
                     headerAlign: 'center',
                     headerTooltip: 'Stats that are expected to be eventually consistent.',
                     children: diffFields.map(f => {
-                        const {records} = this.gridModel.store;
                         return {
                             ...this.createColSpec(f),
                             cellClassRules: {
                                 'xh-cluster-objects-cell-danger': ({value, colDef}) =>
                                     !colDef ||
-                                    records.some(r => !isEqual(r.data[colDef.colId], value)),
+                                    this.gridModel.store.records.some(
+                                        r => !isEqual(r.data[colDef.colId], value)
+                                    ),
                                 'xh-cluster-objects-cell-success': ({value, colDef}) =>
                                     colDef &&
-                                    records.every(r => isEqual(r.data[colDef.colId], value))
+                                    this.gridModel.store.records.every(r =>
+                                        isEqual(r.data[colDef.colId], value)
+                                    )
                             }
                         };
                     })

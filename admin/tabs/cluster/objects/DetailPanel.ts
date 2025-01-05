@@ -17,18 +17,11 @@ export const detailPanel = hoistCmp.factory({
     model: creates(DetailModel),
 
     render({model}) {
-        const {
-            instanceName,
-            selectedAdminStats,
-            selectedRecordName,
-            selectedRecordType,
-            selectedRecordHasInstanceData
-        } = model;
-
-        if (!selectedRecordHasInstanceData) return placeholder(Icon.grip(), 'Select an object');
+        const {instanceName, selectedAdminStats, objectName, objectType} = model;
+        if (!objectName) return placeholder(Icon.grip(), 'Select an object');
 
         return panel({
-            title: `${selectedRecordType}: ${selectedRecordName}`,
+            title: `${objectType} - ${objectName}`,
             icon: Icon.diff(),
             compactHeader: true,
             items: [

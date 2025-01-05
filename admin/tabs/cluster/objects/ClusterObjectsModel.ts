@@ -10,22 +10,10 @@ import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
-import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, computed, observable, runInAction} from '@xh/hoist/mobx';
-import {DAYS} from '@xh/hoist/utils/datetime';
 import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
-import {
-    cloneDeep,
-    forOwn,
-    groupBy,
-    isArray,
-    isEmpty,
-    isNumber,
-    isPlainObject,
-    mapValues,
-    size
-} from 'lodash';
+import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
@@ -422,31 +410,6 @@ export class ClusterObjectsModel extends HoistModel {
         }
         // Other groupings, Services, impl objects, etc.
         return name;
-    }
-
-    fmtStats(stats: PlainObject): string {
-        stats = cloneDeep(stats);
-        this.processTimestamps(stats);
-        return fmtJson(JSON.stringify(stats));
-    }
-
-    private processTimestamps(stats: PlainObject) {
-        forOwn(stats, (v, k) => {
-            // Convert numbers that look like recent timestamps to date values.
-            if (
-                (k.endsWith('Time') ||
-                    k.endsWith('Date') ||
-                    k.endsWith('Timestamp') ||
-                    k == 'timestamp') &&
-                isNumber(v) &&
-                v > Date.now() - 365 * DAYS
-            ) {
-                stats[k] = v ? fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss.SSS'}) : null;
-            }
-            if (isPlainObject(v) || isArray(v)) {
-                this.processTimestamps(v);
-            }
-        });
     }
 }
 
