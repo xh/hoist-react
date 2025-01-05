@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ClusterObjectsModel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterObjectsModel';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
@@ -112,62 +112,29 @@ export class DetailModel extends HoistModel {
             store: {idSpec: 'instanceName'},
             columns: [
                 {field: {name: 'instanceName', type: 'string', displayName: 'Instance'}},
-                {
-                    groupId: 'check',
-                    headerName: 'Check',
-                    headerAlign: 'center',
-                    headerTooltip: 'Stats that are expected to be eventually consistent.',
-                    children: diffFields.map(f => {
-                        return {
-                            ...this.createColSpec(f),
-                            cellClassRules: {
-                                'xh-cluster-objects-cell-danger': ({value, colDef}) =>
-                                    !colDef ||
-                                    this.gridModel.store.records.some(
-                                        r => !isEqual(r.data[colDef.colId], value)
-                                    ),
-                                'xh-cluster-objects-cell-success': ({value, colDef}) =>
-                                    colDef &&
-                                    this.gridModel.store.records.every(r =>
-                                        isEqual(r.data[colDef.colId], value)
-                                    )
-                            }
-                        };
-                    })
-                },
-                {
-                    groupId: 'other',
-                    headerName: 'Other',
-                    headerAlign: 'center',
-                    headerTooltip: 'Stats that are not expected to be consistent.',
-                    children: otherFields.map(f => ({
-                        ...this.createColSpec(f),
-                        cellClassRules: {
-                            'xh-cluster-objects-cell-warning': ({value, data, colDef}) =>
-                                !colDef ||
-                                this.gridModel.store.records.some(
-                                    r =>
-                                        r.id !== data.data.id &&
-                                        !isEqual(r.data[colDef.colId], value)
-                                )
-                        }
-                    }))
-                },
-                {
-                    groupId: 'fillerHeader',
-                    headerName: '',
-                    children: [{colId: 'filler', headerName: '', flex: 1}]
-                }
+                ...diffFields.map(f => this.createColSpec(f, true)),
+                ...otherFields.map(f => this.createColSpec(f, false))
             ]
         });
     }
 
-    private createColSpec(fieldName: string) {
-        return {
+    private createColSpec(fieldName: string, isDiff: boolean) {
+        const ret: ColumnSpec = {
             field: {name: fieldName, displayName: fieldName},
             renderer: v => (typeof v === 'object' ? JSON.stringify(v) : v),
             autosizeMaxWidth: 200
         };
+        if (isDiff) {
+            ret.cellClassRules = {
+                'xh-cluster-objects-cell-danger': ({value, colDef}) =>
+                    !colDef ||
+                    this.gridModel.store.records.some(r => !isEqual(r.data[colDef.colId], value)),
+                'xh-cluster-objects-cell-success': ({value, colDef}) =>
+                    colDef &&
+                    this.gridModel.store.records.every(r => isEqual(r.data[colDef.colId], value))
+            };
+        }
+        return ret;
     }
 
     private processTimestamps(stats: PlainObject) {
