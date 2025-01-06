@@ -357,7 +357,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
 
-        await this.loadViewAsync(info).catch(e => this.handleException(e));
+        return this.loadViewAsync(info);
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {

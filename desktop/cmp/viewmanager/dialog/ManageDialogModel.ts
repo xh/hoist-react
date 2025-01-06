@@ -86,7 +86,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     activateSelectedViewAndClose() {
-        this.viewManagerModel.selectViewAsync(this.selectedView);
+        this.viewManagerModel.selectViewAsync(this.selectedView).catchDefault();
         this.close();
     }
 
