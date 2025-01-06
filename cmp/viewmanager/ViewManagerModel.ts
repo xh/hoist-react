@@ -21,7 +21,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, isNil, isNull, isUndefined, lowerCase} from 'lodash';
+import {find, isEqual, isNil, isNull, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -346,14 +346,19 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
     }
 
-    async selectViewAsync(token: string): Promise<void> {
+    async selectViewAsync(token: string, opts = {alertUnsavedChanges: true}): Promise<void> {
         // ensure any pending auto-save gets completed
         if (this.isValueDirty && this.isViewAutoSavable) {
             await this.maybeAutoSaveAsync();
         }
 
         // if still dirty, require confirm
-        if (this.isValueDirty && this.view.isOwned && !(await this.confirmDiscardChangesAsync())) {
+        if (
+            opts.alertUnsavedChanges &&
+            this.isValueDirty &&
+            this.view.isOwned &&
+            !(await this.confirmDiscardChangesAsync())
+        ) {
             return;
         }
 
@@ -604,7 +609,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
         if (!view.isDefault) {
-            this.views = this.views.map(v => (v.token === view.token ? view.info : v));
+            this.views = uniqBy([view.info, ...this.views], 'token');
         }
     }
 
