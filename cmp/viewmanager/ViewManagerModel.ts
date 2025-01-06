@@ -346,14 +346,19 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
     }
 
-    async selectViewAsync(info: ViewInfo): Promise<void> {
+    async selectViewAsync(info: ViewInfo, opts = {alertUnsavedChanges: true}): Promise<void> {
         // ensure any pending auto-save gets completed
         if (this.isValueDirty && this.isViewAutoSavable) {
             await this.maybeAutoSaveAsync();
         }
 
         // if still dirty, require confirm
-        if (this.isValueDirty && this.view.isOwned && !(await this.confirmDiscardChangesAsync())) {
+        if (
+            opts.alertUnsavedChanges &&
+            this.isValueDirty &&
+            this.view.isOwned &&
+            !(await this.confirmDiscardChangesAsync())
+        ) {
             return;
         }
 
