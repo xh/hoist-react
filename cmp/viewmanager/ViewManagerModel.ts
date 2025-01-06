@@ -21,7 +21,7 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, isNil, isNull, isUndefined, lowerCase} from 'lodash';
+import {find, isEqual, isNil, isNull, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -609,7 +609,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.pendingValue = pendingValue;
         // Ensure we update meta-data as well.
         if (!view.isDefault) {
-            this.views = this.views.map(v => (v.token === view.token ? view.info : v));
+            this.views = uniqBy([view.info, ...this.views], 'token');
         }
     }
 
