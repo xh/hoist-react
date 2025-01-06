@@ -220,13 +220,21 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async doMakeGlobalAsync(view: ViewInfo) {
-        const {globalDisplayName, typeDisplayName} = this.viewManagerModel,
-            {typedName} = view,
-            msgs = [
-                `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`,
-                strong('Are you sure you want to proceed?')
-            ];
+        const {globalDisplayName, typeDisplayName, globalViews} = this.viewManagerModel,
+            {typedName} = view;
 
+        if (some(globalViews, {name: view.name})) {
+            XH.alert({
+                title: 'Alert',
+                message: `There is already a ${globalDisplayName} ${typedName}. Please rename or edit it instead.`
+            });
+            return;
+        }
+
+        const msgs = [
+            `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`,
+            strong('Are you sure you want to proceed?')
+        ];
         const confirmed = await XH.confirm({
             message: fragment(msgs.map(m => p(m))),
             confirmProps: {

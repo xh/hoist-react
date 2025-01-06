@@ -16,7 +16,7 @@ import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanel
 import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {capitalize} from 'lodash';
+import {capitalize, some} from 'lodash';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -128,7 +128,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
             });
         }
 
-        const {enableGlobal, globalDisplayName, manageGlobal, typeDisplayName} =
+        const {enableGlobal, globalDisplayName, manageGlobal, typeDisplayName, globalViews} =
             parent.viewManagerModel;
         return vbox({
             style: {gap: 10, alignItems: 'center'},
@@ -148,6 +148,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
                     icon: Icon.globe(),
                     width: 200,
                     outlined: true,
+                    disabled: some(globalViews, {name: view.name}),
                     omit: readonly || view.isGlobal || !enableGlobal || !manageGlobal,
                     onClick: () => parent.makeGlobalAsync(view)
                 }),
