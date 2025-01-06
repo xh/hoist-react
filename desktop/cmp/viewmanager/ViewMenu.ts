@@ -168,6 +168,6 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         text: view.name,
         title: title.join(' | '),
         icon,
-        onClick: () => model.selectViewAsync(view).catchDefault()
+        onClick: () => model.selectViewAsync(view.token).catchDefault()
     });
 }

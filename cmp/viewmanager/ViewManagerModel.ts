@@ -337,7 +337,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             if (!view.isDefault) {
                 const latestInfo = find(views, {token: view.token});
                 if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
-                    this.loadViewAsync(latestInfo, this.pendingValue);
+                    this.loadViewAsync(view.token, this.pendingValue);
                 }
             }
         } catch (e) {
@@ -346,7 +346,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
     }
 
-    async selectViewAsync(info: ViewInfo): Promise<void> {
+    async selectViewAsync(token: string): Promise<void> {
         // ensure any pending auto-save gets completed
         if (this.isValueDirty && this.isViewAutoSavable) {
             await this.maybeAutoSaveAsync();
@@ -357,7 +357,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
 
-        return this.loadViewAsync(info);
+        return this.loadViewAsync(token);
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
@@ -394,7 +394,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     async resetAsync(): Promise<void> {
-        await this.loadViewAsync(this.view.info).catch(e => this.handleException(e));
+        await this.loadViewAsync(this.view.info.token).catch(e => this.handleException(e));
     }
 
     //--------------------------------
@@ -478,7 +478,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const {views} = this;
 
         if (toDelete.some(view => view.isCurrentView) && !views.some(view => view.isCurrentView)) {
-            await this.loadViewAsync(this.initialViewSpec?.(views));
+            await this.loadViewAsync(this.initialViewSpec?.(views)?.token);
         }
 
         if (exception) throw exception;
@@ -564,13 +564,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private async loadViewAsync(
-        info: ViewInfo,
+        token: String,
         pendingValue: PendingValue<T> = null
     ): Promise<void> {
         return this.dataAccess
-            .fetchViewAsync(info)
+            .fetchViewAsync(token)
             .thenAction(latest => {
-                this.setAsView(latest, pendingValue?.token == info?.token ? pendingValue : null);
+                this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
                 this.lastPushed = Date.now();
             })
@@ -644,7 +644,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async maybeConfirmSaveAsync(view: View, pendingValue: PendingValue<T>) {
         // Get latest from server for reference
-        const latest = await this.dataAccess.fetchViewAsync(view.info),
+        const latest = await this.dataAccess.fetchViewAsync(view.info.token),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;
