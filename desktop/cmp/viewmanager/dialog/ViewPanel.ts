@@ -128,7 +128,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
             });
         }
 
-        const {enableGlobal, globalDisplayName, manageGlobal, typeDisplayName, globalViews} =
+        const {enableGlobal, globalDisplayName, manageGlobal, globalViews} =
             parent.viewManagerModel;
         return vbox({
             style: {gap: 10, alignItems: 'center'},
@@ -144,7 +144,7 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
                     onClick: () => parent.togglePinned([view])
                 }),
                 button({
-                    text: `Promote to ${capitalize(globalDisplayName)} ${typeDisplayName}`,
+                    text: `Promote to ${capitalize(globalDisplayName)}`,
                     icon: Icon.globe(),
                     width: 200,
                     outlined: true,
