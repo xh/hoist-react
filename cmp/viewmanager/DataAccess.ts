@@ -48,14 +48,14 @@ export class DataAccess<T> {
     }
 
     /** Fetch the latest version of a view. */
-    async fetchViewAsync(info: ViewInfo): Promise<View<T>> {
+    async fetchViewAsync(token: string): Promise<View<T>> {
         const {model} = this;
-        if (!info) return View.createDefault(model);
+        if (!token) return View.createDefault(model);
         try {
-            const raw = await XH.fetchJson({url: 'xhView/get', params: {token: info.token}});
+            const raw = await XH.fetchJson({url: 'xhView/get', params: {token}});
             return View.fromBlob(raw, model);
         } catch (e) {
-            throw XH.exception({message: `Unable to fetch ${info.typedName}`, cause: e});
+            throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
         }
     }
 
