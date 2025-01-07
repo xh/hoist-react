@@ -509,8 +509,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             });
 
             // 2) Initialize/choose initial view.  Null is ok, and will yield default.
-            let initialView,
-                initialTkn = initialState.currentView;
+            let initialView: ViewInfo,
+                initialTkn: string = initialState.currentView;
             if (isUndefined(initialTkn)) {
                 initialView = this.initialViewSpec?.(views);
             } else if (!isNull(initialTkn)) {
@@ -519,7 +519,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 initialView = null;
             }
 
-            await this.loadViewAsync(initialView, this.pendingValue);
+            await this.loadViewAsync(initialView?.token, this.pendingValue);
         } catch (e) {
             // Always ensure at least default view is installed (other state defaults are fine)
             this.loadViewAsync(null, this.pendingValue);
