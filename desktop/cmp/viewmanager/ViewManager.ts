@@ -118,7 +118,7 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
 const saveButton = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, mode, ...rest}) {
         if (hideStateButton(model, mode)) return null;
-        const {parent, saveAsDialogModel} = model,
+        const {parent} = model,
             {typeDisplayName, isLoading, isValueDirty} = parent;
         return button({
             className: 'xh-view-manager__save-button',
@@ -126,9 +126,7 @@ const saveButton = hoistCmp.factory<ViewManagerLocalModel>({
             tooltip: `Save changes to this ${typeDisplayName}`,
             intent: 'primary',
             disabled: !isValueDirty || isLoading,
-            onClick: () => {
-                parent.isViewSavable ? parent.saveAsync() : saveAsDialogModel.open();
-            },
+            onClick: () => model.saveAsync(),
             ...rest
         });
     }
@@ -144,7 +142,7 @@ const revertButton = hoistCmp.factory<ViewManagerLocalModel>({
             tooltip: `Revert changes to this ${typeDisplayName}`,
             intent: 'danger',
             disabled: !isValueDirty || isLoading,
-            onClick: () => model.parent.resetAsync(),
+            onClick: () => model.revertAsync(),
             ...rest
         });
     }
