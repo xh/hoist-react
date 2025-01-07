@@ -8,3 +8,10 @@
 .xh-message .xh-form-field {
   margin: 0;
 }
+
+.xh-message {
+  max-height: 90vh;
+  .bp5-dialog-body {
+    overflow-y: auto;
+  }
+}
