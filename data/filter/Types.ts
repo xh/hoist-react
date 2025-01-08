@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
@@ -59,10 +59,6 @@ export interface FunctionFilterSpec {
  */
 export type FilterTestFn = (candidate: PlainObject | StoreRecord) => boolean;
 
-export type FilterLike =
-    | Filter
-    | CompoundFilterSpec
-    | FieldFilterSpec
-    | FunctionFilterSpec
-    | FilterTestFn
-    | FilterLike[];
+export type FilterSpec = FieldFilterSpec | FunctionFilterSpec | CompoundFilterSpec;
+
+export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];

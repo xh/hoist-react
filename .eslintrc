@@ -3,5 +3,6 @@
     "extends": ["@xh/eslint-config", "prettier"],
     "rules": {
         "tsdoc/syntax": "warn"
-    }
+    },
+    "ignorePatterns": ["build/**/*", "node_modules/**/*"]
 }

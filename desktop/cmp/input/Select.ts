@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
@@ -123,7 +123,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     leftIcon?: ReactElement;
 
     /** Function to return loading message during an async query. Passed current query input. */
-    loadingMessageFn?: (query: string) => string;
+    loadingMessageFn?: (query: string) => ReactNode;
 
     /** Maximum height of the menu before scrolling. Defaults to 300px. */
     maxMenuHeight?: number;
@@ -135,7 +135,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     menuWidth?: number;
 
     /** Function to return message indicating no options loaded. Passed current query input. */
-    noOptionsMessageFn?: (query: string) => string;
+    noOptionsMessageFn?: (query: string) => ReactNode;
 
     /** True to auto-open the dropdown menu on input focus. */
     openMenuOnFocus?: boolean;
@@ -145,7 +145,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * will contain at minimum a value and label field, as well as any other fields present in
      * the source objects).
      */
-    optionRenderer?: (SelectOption) => ReactNode;
+    optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.

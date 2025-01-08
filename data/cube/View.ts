@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
@@ -470,6 +470,12 @@ export class View extends HoistBase {
         throwIf(
             ret.some(s => s.reuseRecords),
             'Store.reuseRecords cannot be used on a Store that is connected to a Cube View'
+        );
+
+        throwIf(
+            ret.some(s => s.idEncodesTreePath) &&
+                (!isNil(this.cube.bucketSpecFn) || !isNil(this.cube.omitFn)),
+            'Store.idEncodesTreePath cannot be used on a Store that is connected to a Cube with a `bucketSpecFn` or `omitFn`'
         );
 
         return ret;

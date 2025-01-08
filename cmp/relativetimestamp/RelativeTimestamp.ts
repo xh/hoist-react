@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {inRange, isNil} from 'lodash';
 import moment from 'moment';
@@ -134,15 +134,14 @@ class RelativeTimestampLocalModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
-
-        this.addReaction({
-            track: () => [this.timestamp, this.options],
-            run: () => this.refreshDisplay()
-        });
     }
 
     override onLinked() {
         this.model = this.lookupModel('*');
+        this.addReaction({
+            track: () => [this.timestamp, this.options],
+            run: () => this.refreshDisplay()
+        });
     }
 
     @action

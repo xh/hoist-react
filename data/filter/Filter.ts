@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {Store} from '../Store';
-import {FilterTestFn} from './Types';
+import {FilterSpec, FilterTestFn} from './Types';
 
 /**
  * Base class for Hoist data package Filters.
@@ -33,4 +33,7 @@ export abstract class Filter {
 
     /** @returns true if the provided other Filter is equivalent to this instance.*/
     abstract equals(other: Filter): boolean;
+
+    /** @returns a JSON serializable spec that can be used to persist and recreate this filter.*/
+    abstract toJSON(): FilterSpec;
 }

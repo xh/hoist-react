@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Content, Thunkable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -21,7 +21,7 @@ export interface DashViewSpec {
     content: Content;
 
     /** Title text added to the tab header. */
-    title: string;
+    title?: string;
 
     /** An icon placed at the left-side of the tab header. */
     icon?: ReactElement;

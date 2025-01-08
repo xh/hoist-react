@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
@@ -69,25 +69,29 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                         text: '6m',
                         outlined: true,
                         width: 40,
-                        onClick: () => model.adjustStartDate(6, 'months')
+                        onClick: () => model.adjustStartDate(6, 'months'),
+                        active: model.isInterval(6, 'months')
                     }),
                     button({
                         text: '1m',
                         outlined: true,
                         width: 40,
-                        onClick: () => model.adjustStartDate(1, 'months')
+                        onClick: () => model.adjustStartDate(1, 'months'),
+                        active: model.isInterval(1, 'months')
                     }),
                     button({
                         text: '7d',
                         outlined: true,
                         width: 40,
-                        onClick: () => model.adjustStartDate(7, 'days')
+                        onClick: () => model.adjustStartDate(7, 'days'),
+                        active: model.isInterval(7, 'days')
                     }),
                     button({
                         text: '1d',
                         outlined: true,
                         width: 40,
-                        onClick: () => model.adjustStartDate(1, 'days')
+                        onClick: () => model.adjustStartDate(1, 'days'),
+                        active: model.isInterval(1, 'days')
                     })
                 ),
                 toolbarSep(),

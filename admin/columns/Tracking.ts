@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import {badge} from '@xh/hoist/cmp/badge';
@@ -238,7 +238,8 @@ function badgeRenderer(v) {
     return v
         ? badge({
               item: v,
-              className: 'xh-font-family-mono xh-title-tip',
+              className: 'xh-font-family-mono',
+              style: {cursor: 'copy'},
               title: 'Double-click to copy',
               onDoubleClick: () => {
                   copy(v);

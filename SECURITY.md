@@ -21,3 +21,8 @@ with any Hoist or third-party server APIs, input sanitization, authentication pr
 Hoist is not and does not claim to be fully secure "out of the box" - it is dependent upon
 application developers to make and implement security decisions appropriate to their particular
 application and its deployment.
+
+------------------------------------------
+
+📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

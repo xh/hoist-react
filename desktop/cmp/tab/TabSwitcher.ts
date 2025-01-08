@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement} from 'react';
+import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.

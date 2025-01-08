@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {hspacer} from '@xh/hoist/cmp/layout';
@@ -49,25 +49,29 @@ const tbar = hoistCmp.factory<ClientErrorsModel>(({model}) => {
                 text: '6m',
                 outlined: true,
                 width: 40,
-                onClick: () => model.adjustStartDate(6, 'months')
+                onClick: () => model.adjustStartDate(6, 'months'),
+                active: model.isInterval(6, 'months')
             }),
             button({
                 text: '1m',
                 outlined: true,
                 width: 40,
-                onClick: () => model.adjustStartDate(1, 'months')
+                onClick: () => model.adjustStartDate(1, 'months'),
+                active: model.isInterval(1, 'months')
             }),
             button({
                 text: '7d',
                 outlined: true,
                 width: 40,
-                onClick: () => model.adjustStartDate(7, 'days')
+                onClick: () => model.adjustStartDate(7, 'days'),
+                active: model.isInterval(7, 'days')
             }),
             button({
                 text: '1d',
                 outlined: true,
                 width: 40,
-                onClick: () => model.adjustStartDate(1, 'days')
+                onClick: () => model.adjustStartDate(1, 'days'),
+                active: model.isInterval(1, 'days')
             })
         ),
         hspacer(),

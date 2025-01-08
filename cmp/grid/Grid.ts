@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
@@ -681,16 +681,8 @@ export class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            // If sizingMode different to autosizeState, autosize all columns...
-            if (model.autosizeState.sizingMode !== model.sizingMode) {
-                model.autosizeAsync();
-            } else {
-                // ...otherwise, only autosize columns that are not manually sized
-                const columns = model.columnState
-                    .filter(it => !it.manuallySized)
-                    .map(it => it.colId);
-                model.autosizeAsync({columns});
-            }
+            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
+            model.autosizeAsync({columns});
         }
 
         model.noteAgExpandStateChange();

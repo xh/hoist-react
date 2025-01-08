@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
-import {PlainObject, XH} from '../';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isPlainObject} from 'lodash';
-
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
@@ -39,15 +39,19 @@ export class Exception {
         });
     }
 
-    /**
-     * Create an Error for when an operation (e.g. a Promise) times out.
-     */
+    /** Create an Error for when an operation (e.g. a Promise) times out. */
     static timeout(config: TimeoutExceptionConfig): TimeoutException {
         const {interval, ...rest} = config,
-            displayInterval = interval % 1000 ? `${interval}ms` : `${interval / 1000}s`;
+            // Display timeout in seconds if an even multiple (or very close to it).
+            displayInterval =
+                interval % 1000 < 5
+                    ? pluralize('second', Math.round(interval / 1000), true)
+                    : `${interval}ms`;
+
         return this.createInternal({
             name: 'Timeout Exception',
-            message: `Operation timed out after ${displayInterval}`,
+            // Note FetchService.managedFetchAsync appends to this message - review if changing.
+            message: `Timed out after ${displayInterval}`,
             isTimeout: true,
             stack: null,
             interval,

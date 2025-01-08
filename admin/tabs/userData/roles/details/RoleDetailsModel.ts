@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {badge} from '@xh/hoist/cmp/badge';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -55,7 +55,7 @@ export class RoleDetailsModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private setTabTitle(id: string, name: string, col: []) {
+    private setTabTitle(id: string, name: string, col: any[]) {
         const title = col != null ? hbox(name, badge(col.length)) : name;
         this.tabContainerModel.setTabTitle(id, title);
     }

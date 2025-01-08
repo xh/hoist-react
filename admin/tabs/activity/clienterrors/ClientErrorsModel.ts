@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
@@ -180,6 +180,10 @@ export class ClientErrorsModel extends HoistModel {
         this.startDay = this.endDay.subtract(value, unit).nextDay();
     }
 
+    isInterval(value, unit) {
+        return this.startDay === this.endDay.subtract(value, unit).nextDay();
+    }
+
     @computed
     private get query() {
         return {
@@ -190,7 +194,7 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     private get defaultStartDay() {
-        return LocalDate.currentAppDay().subtract(6);
+        return LocalDate.currentAppDay();
     }
 
     private get defaultEndDay() {

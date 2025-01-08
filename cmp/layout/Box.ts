@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';

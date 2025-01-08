@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 @use "sass:color";
@@ -644,7 +644,7 @@ body {
   //------------------------
   // Popups / dialogs
   //------------------------
-  --xh-popup-bg: var(--popup-bg, #ebf1f5);
+  --xh-popup-bg: var(--popup-bg, var(--xh-bg));
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
@@ -653,10 +653,6 @@ body {
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
-
-  &.xh-dark {
-    --xh-popup-bg: var(--popup-bg, #293742);
-  }
 
   &.xh-mobile {
     --xh-popup-border-width: 2;

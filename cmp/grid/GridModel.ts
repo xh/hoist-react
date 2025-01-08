@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
@@ -95,10 +95,9 @@ import {ReactNode} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
-import {GridPersistenceModel} from './impl/GridPersistenceModel';
+import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
-    AutosizeState,
     ColChooserConfig,
     ColumnState,
     GridModelPersistOptions,
@@ -405,9 +404,12 @@ export class GridModel extends HoistModel {
     @observable.ref columns: Array<ColumnGroup | Column> = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
-    @observable.ref autosizeState: AutosizeState = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
+
+    get persistableColumnState(): ColumnState[] {
+        return this.cleanColumnState(this.columnState);
+    }
 
     @bindable showSummary: boolean | VSide = false;
     @bindable.ref emptyText: ReactNode;
@@ -446,7 +448,6 @@ export class GridModel extends HoistModel {
     ];
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: GridPersistenceModel;
 
     /**
      * Is autosizing enabled on this grid?
@@ -599,7 +600,7 @@ export class GridModel extends HoistModel {
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
-        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
+        if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
         this.onRowClicked = onRowClicked;
@@ -649,7 +650,6 @@ export class GridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.filterModel?.clear();
-        this.persistenceModel?.clear();
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
@@ -1112,24 +1112,11 @@ export class GridModel extends HoistModel {
         }
     }
 
-    @action
-    setAutosizeState(autosizeState) {
-        if (!equal(this.autosizeState, autosizeState)) {
-            this.autosizeState = deepFreeze(autosizeState);
-        }
-    }
-
     noteColumnManuallySized(colId, width) {
         const col = this.findColumn(this.columns, colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
         this.applyColumnStateChanges(colStateChanges);
-    }
-
-    noteColumnsAutosized(colIds) {
-        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: false}));
-        this.applyColumnStateChanges(colStateChanges);
-        this.setAutosizeState({sizingMode: this.sizingMode});
     }
 
     /**
@@ -1291,11 +1278,11 @@ export class GridModel extends HoistModel {
      * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
      * set to true.
      *
-     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
+     * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
     @logWithDebug
-    async autosizeAsync(options: GridAutosizeOptions = {}) {
-        options = {...this.autosizeOptions, ...options};
+    async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
+        const options = {...this.autosizeOptions, ...overrideOpts};
 
         if (options.mode === 'disabled') {
             return;
@@ -1305,16 +1292,16 @@ export class GridModel extends HoistModel {
         const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
-        let colIds,
-            includeColFn = col => true;
+        let colIds: string[],
+            includeColFn = (_: Column) => true;
         if (isFunction(columns)) {
-            includeColFn = columns as (col) => boolean;
+            includeColFn = columns as (col: Column) => boolean;
             colIds = this.columnState.map(it => it.colId);
         } else {
-            colIds = columns ?? this.columnState.map(it => it.colId);
+            colIds = columns ? castArray(columns) : this.columnState.map(it => it.colId);
         }
 
-        colIds = castArray(colIds).filter(id => {
+        colIds = colIds.filter(id => {
             if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
@@ -1327,7 +1314,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param recOrId - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param colId - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
@@ -1472,7 +1459,7 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    private async autosizeColsInternalAsync(colIds, options) {
+    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -1485,7 +1472,6 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-            this.noteColumnsAutosized(colIds);
         } finally {
             if (showMask) {
                 await wait();
@@ -1616,7 +1602,8 @@ export class GridModel extends HoistModel {
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
             // conflict with any code-level updates to their widths.
-            if (!col.resizable) state = omit(state, 'width');
+            if (!col.resizable || !state.manuallySized) state = omit(state, 'width');
+            state = {...state, manuallySized: state.manuallySized ?? false};
 
             // Remove all metadata other than the id and the hidden state from hidden columns, to save
             // on space when storing user configs with large amounts of hidden fields.
@@ -1784,7 +1771,11 @@ export class GridModel extends HoistModel {
     }
 
     defaultGroupSortFn = (a, b) => {
-        return a < b ? -1 : a > b ? 1 : 0;
+        // Place ungrouped items at bottom.
+        if (a === b) return 0;
+        if (a === '') return 1;
+        if (b === '') return -1;
+        return a.localeCompare(b);
     };
 
     private readonly LEFT_BORDER_CLASS = 'xh-cell--group-border-left';

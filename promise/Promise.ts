@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     Thunkable,
@@ -121,21 +121,20 @@ export function wait<T>(interval: number = 0): Promise<T> {
 }
 
 /**
- * Return a promise that will resolve after a condition has been met, polling at the specified
- * interval.
- *
- * @param condition - function that should return true when condition is met
+ * Return a promise that will resolve after a condition has been met, or reject if timed out.
+ * @param condition - function returning true when expected condition is met.
  * @param interval - milliseconds to wait between checks (default 50). Note that the actual time
  *      will be subject to the minimum delay for `setTimeout()` in the browser.
  * @param timeout - milliseconds after which the Promise should be rejected (default 5000).
  */
 export function waitFor(
     condition: () => boolean,
-    interval: number = 50,
-    timeout: number = 5 * SECONDS
+    {interval = 50, timeout = 5 * SECONDS}: {interval?: number; timeout?: number} = {}
 ): Promise<void> {
-    const startTime = Date.now();
+    if (!isNumber(interval) || interval <= 0) throw new Error('Invalid interval');
+    if (!isNumber(timeout) || timeout <= 0) throw new Error('Invalid timeout');
 
+    const startTime = Date.now();
     return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
@@ -198,8 +197,11 @@ const enhancePromise = promisePrototype => {
 
             const startTime = Date.now();
             return this.finally(() => {
-                options.elapsed = Date.now() - startTime;
-                XH.track(options);
+                XH.track({
+                    timestamp: startTime,
+                    elapsed: Date.now() - startTime,
+                    ...options
+                });
             });
         },
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -254,7 +254,9 @@ export class DraggerModel extends HoistModel {
     }
 
     private isValidMouseEvent(e) {
-        return e.buttons && e.buttons !== 0;
+        // Note: We fall back to deprecated 'which' to work around a Safari issue where `buttons`
+        // was not being set. We may be able to remove in the future.
+        return (e.buttons && e.buttons !== 0) || (e.which && e.which !== 0);
     }
 
     private isValidTouchEvent(e) {

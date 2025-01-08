@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
@@ -26,6 +26,7 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    SessionStorageService,
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
@@ -140,6 +141,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    sessionStorageService: SessionStorageService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 

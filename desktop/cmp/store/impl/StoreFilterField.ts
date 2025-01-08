@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -17,7 +17,7 @@ export function storeFilterFieldImpl(props) {
         commitOnChange: true,
         leftIcon: Icon.filter(),
         enableClear: true,
-        placeholder: 'Filter',
+        placeholder: 'Filter...',
         selectOnFocus: true,
         width: 180,
         ...props

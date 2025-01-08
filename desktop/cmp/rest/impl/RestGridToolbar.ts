@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -11,6 +11,7 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {castArray, isEmpty, isFunction} from 'lodash';
 import {RestGridModel} from '../RestGridModel';
 
@@ -52,6 +53,10 @@ export const restGridToolbar = hoistCmp.factory({
             exportButton({
                 gridModel,
                 omit: !model.gridModel.enableExport
+            }),
+            refreshButton({
+                target: model,
+                omit: !model.showRefreshButton
             })
         );
     }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
@@ -70,7 +70,7 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private _monthFormat = 'MMM YYYY';
-    private _defaultDims = ['day', 'username'];
+    private _defaultDims = ['username'];
 
     constructor() {
         super();
@@ -288,6 +288,11 @@ export class ActivityTrackingModel extends HoistModel {
         });
     }
 
+    isInterval(value, unit) {
+        const {startDay, endDay} = this.formModel.values;
+        return startDay === endDay.subtract(value, unit).nextDay();
+    }
+
     cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
         const rawA = recordA?.raw,
             rawB = recordB?.raw,
@@ -315,7 +320,7 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private get defaultStartDay() {
-        return LocalDate.currentAppDay().subtract(6);
+        return LocalDate.currentAppDay();
     }
 
     private get defaultEndDay() {

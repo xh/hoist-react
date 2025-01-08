@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {monitorEditorDialog} from '@xh/hoist/admin/tabs/monitor/editor/MonitorEditorDialog';
@@ -12,7 +12,7 @@ import {filler, hbox, label, placeholder, tileFrame} from '@xh/hoist/cmp/layout'
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -85,7 +85,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!failed),
             items: [
                 toolbarSep(),
-                Icon.error({prefix: 'fas', className: 'xh-red'}),
+                Icon.error({prefix: 'fas', intent: 'danger'}),
                 label(`${failed} failed`)
             ]
         }),
@@ -93,7 +93,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!warned),
             items: [
                 toolbarSep(),
-                Icon.warning({prefix: 'fas', className: 'xh-orange'}),
+                Icon.warning({prefix: 'fas', intent: 'warning'}),
                 label(`${warned} warned`)
             ]
         }),
@@ -101,7 +101,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!passed),
             items: [
                 toolbarSep(),
-                Icon.checkCircle({prefix: 'fas', className: 'xh-green'}),
+                Icon.checkCircle({prefix: 'fas', intent: 'success'}),
                 label(`${passed} passed`)
             ]
         }),
@@ -109,7 +109,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!inactive),
             items: [
                 toolbarSep(),
-                Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
+                Icon.disabled({prefix: 'fas', className: 'xh-text-color-muted'}),
                 label(`${inactive} inactive`)
             ]
         }),

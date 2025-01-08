@@ -1,6 +1,187 @@
 # Changelog
 
-## 69.0.0-SNAPSHOT - unreleased
+## v72.0.0-SNAPSHOT - unreleased
+
+## v71.0.0 - 2025-01-08
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
+
+* Requires `hoist-core >= 27.0` with new APIs to support `ViewManager` and enhanced cluster state
+  monitoring in the Admin Console.
+* `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
+  or `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/mask` or
+  `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform - update imports from
+  `@xh/hoist/desktop/cmp/loadingindicator` or `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Update imports from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* Renamed `RefreshButton.model` prop to `target` for clarity and consistency.
+
+### 🎁 New Features
+
+* Major improvements to the `ViewManager` component, including:
+    * A clearer, better organized management dialog.
+    * Support for persisting a view's pending value, to avoid users losing changes when e.g. an app
+      goes into idle mode and requires a page refresh to restore.
+    * Improved handling of delete / update collisions.
+    * New `ViewManagerModel.settleTime` config, to allow persisted components such as dashboards to
+      fully resolve their rendered state before capturing a baseline for dirty checks.
+* Added `SessionStorageService` and associated persistence provider to support saving tab-local
+  data across reloads. Exact analog to `LocalStorageService`, but scoped to lifetime of current tab.
+* Added `AuthZeroClientConfig.audience` config to support improved flow for Auth0 OAuth clients that
+  request access tokens. Specify your access token audience here to allow the client to fetch both
+  ID and access tokens in a single request and to use refresh tokens to maintain access without
+  relying on third-party cookies.
+* Updated sorting on grouped grids to place ungrouped items at the bottom.
+* Improved `DashCanvas` views to support resizing from left/top edges in addition to right/bottom.
+* Added functional form of `FetchService.autoGenCorrelationIds` for per-request behavior.
+* Added a new `Cluster›Objects` tab in Admin Console to support comparing state across the cluster
+  and alerting of any persistent state inconsistencies.
+
+### 🐞 Bug Fixes
+
+* Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
+  positioned with `top` orientation.
+* Fixed styling of `ButtonGroup` in vertical orientations.
+* Improved handling of calls to `DashContainerModel.loadStateAsync()` when the component has yet
+  to be rendered. Requested state updates are no longer dropped, and will be applied as soon as the
+  component is ready to do so.
+
+### ⚙️ Technical
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+* Improved accuracy of `PersistOptions.type` enum.
+* Corrected the type of `ColumnSpec.editor`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.27 → 3.28`
+* dompurify `3.1 → 3.2`
+* react-grid-layout `1.4 → 1.5`
+
+## v70.0.0 - 2024-11-15
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
+
+* Upgraded the `PersistenceProvider` API as noted in `New Features`. Could require updates in apps
+  with advanced direct usages of this API (uncommon).
+* Updated `GridModel` persistence to omit the widths of autosized columns from its persisted state.
+  This helps to keep persisted state more stable, avoiding spurious diffs due to autosize updates.
+  Note this can result in more visible column resizing for large grids without in-code default
+  widths. Please let XH know if this is a noticeable annoyance for your app.
+* Removed the following persistence-related model classes, properties, and methods:
+    * `GridPersistenceModel` and `ZoneGridPersistenceModel`
+    * `GridModel|ZoneGridModel.persistenceModel`
+    * `GridModel.autosizeState`
+    * `Column.manuallySized`
+    * `GroupingChooserModel|FilterChooserModel.persistValue`
+    * `DashModel|GroupingChooserModel|FilterChooserModel|PanelModel|TabContainerModel.provider`
+    * `PersistenceProvider.clearRaw()`
+* Renamed `ZoneGridModelPersistOptions.persistMappings`, adding the trailing `s` for consistency.
+* Changed signature of `JsonBlobService.listAsync()` to inline `loadSpec` with all other args in a
+  single options object.
+* Changed signature of `waitFor()` to take its optional `interval` and `timeout` arguments in a
+  single options object.
+
+### 🎁 New Features
+
+* Introduced a new `ViewManager` component and backing model to support user-driven management of
+  persisted component state - e.g. saved grid views.
+    * Bundled with a desktop-only menu button based component, but designed to be extensible.
+    * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
+    * Detects changes to any bound components and syncs them back to saved views, with support for
+      an autosave option or user-driven saving with a clear "dirty" indicator.
+    * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
+    * Includes a simple sharing model - if enabled for all or some users, allows those users to
+      publish saved views to everyone else in the application.
+    * Users can rename views, nest them into folders, and mark them as favorites for quick access.
+* Generally enhanced Hoist's persistence-related APIs:
+    * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
+    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
+      state on its bound `Persistable` when the provider is constructed and persisting state from
+      its bound `Persistable` when changes are detected.
+    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
+* Updated persistable components to support specifying distinct `PersistOptions` for individual
+  bits of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a
+  dashboard widget to persist its value to that particular widget's `DashViewModel` while saving the
+  user's favorites to a global preference.
+
+### ⚙️ Typescript API Adjustments
+
+* Tightened `FilterChooserFilterLike` union type to remove the generic `Filter` type, as filter
+  chooser supports only `FieldFilter` and `CompoundFilter`.
+* Improved `HoistBase.markPersist()` signature to ensure the provided property name is a known key
+  of the model.
+* Expanded the `JsonBlob` interface to include additional properties present on all blobs.
+* Corrected `DashViewSpec.title` to be optional - it can be defaulted from the `id`.
+* Corrected the return type for `SelectProps.loadingMessageFn` and `noOptionsMessageFn` to return
+  `ReactNode` vs `string`. The component supports rendering richer content via these options.
+
+## 69.1.0 - 2024-11-07
+
+### 🐞 Bug Fixes
+
+* Updated minimum required version of FontAwesome to 6.6, as required by the `fileXml()` icon added
+  in the prior Hoist release. The previous spec for FA dependencies allowed apps to upgrade to 6.6,
+  but did not enforce it, which could result in a build error due to an unresolved import.
+
+### ⚙️ Technical
+
+* Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+* Improved timeout error message thrown by `FetchService` to format the timeout interval in seconds
+  where possible.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.23 → 3.27`
+* @fortawesome/fontawesome-pro `6.2 → 6.6`
+* qs `6.12 → 6.13`
+* store2 `2.13 → 2.14`
+
+## 69.0.0 - 2024-10-17
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
+  new memory monitoring persistence.
+* Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
+
+### 🎁 New Features
+
+* Optimized activity tracking to batch its calls to the server, reducing network overhead.
+* Enhanced data posted with the built-in "Loaded App" entry to include a new `timings` block that
+  breaks down the overall initial load time into more discrete phases.
+* Added an optional refresh button to `RestGrid`s toolbar.
+* Updated the nested search input within Grid column filters to match candidate values on `any` vs
+  `startsWith`. (Note that this does not change how grid filters are applied, only how users can
+  search for values to select/deselect.)
+* Support for persisting of memory monitoring results
+
+### ⚙️ Typescript API Adjustments
+
+* Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
+  to the `run` closure that receives them.
+    * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
+      accurate typing, specifically if they are tracking an array of values, destructuring those
+      values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+
+### ✨ Styles
+
+* Reset the `--xh-popup-bg` background color to match the primary `--xh-bg` color by default.
+
+### 🐞 Bug Fixes
+
+* Fixed broken `Panel` resizing in Safari. (Other browsers were not affected.)
 
 ## 68.1.0 - 2024-09-27
 
@@ -10,11 +191,12 @@
   props to the underlying `reactMarkdown` instance.
 
 ### ⚙️ Technical
+
 * Misc. Improvements to Cluster Tab in Admin Panel.
 
 ## 68.0.0 - 2024-09-18
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
 
 * Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
 
@@ -38,10 +220,9 @@
 * mobx  `6.9.1 -> 6.13.2`,
 * mobx-react-lite  `3.4.3 -> 4.0.7`,
 
-
 ## 67.0.0 - 2024-09-03
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update only)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
 
 * Requires `hoist-core >= 21.0`.
 
@@ -183,6 +364,7 @@
 
 * Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
   This should be a drop-in change for applications.
+* iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
 
 ### 🎁 New Features
 
@@ -6177,8 +6359,5 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2024 Extremely Heavy Industries Inc. - all rights reserved
-
-------------------------------------------
-
 📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
@@ -48,6 +48,7 @@ const modelSpec: RestGridConfig = {
     persistWith: {localStorageKey: 'xhAdminMonitorState'},
     colChooserModel: true,
     enableExport: true,
+    showRefreshButton: true,
     store: {
         url: 'rest/monitorAdmin',
         fieldDefaults: {disableXssProtection: true},

@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {serializeIcon} from '@xh/hoist/icon';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
+import GoldenLayout, {ContentItem} from 'golden-layout';
 
 /**
  * Lookup the DashViewModel id of a rendered view
@@ -21,21 +23,28 @@ export function getViewModelId(view) {
 /**
  * Convert the output from Golden Layouts into our serializable state
  */
-export function convertGLToState(goldenLayout, dashContainerModel) {
+export function convertGLToState(
+    goldenLayout: GoldenLayout,
+    dashContainerModel: DashContainerModel
+) {
     const configItems = goldenLayout.toConfig().content,
         contentItems = goldenLayout.root.contentItems;
 
     return convertGLToStateInner(configItems, contentItems, dashContainerModel);
 }
 
-function convertGLToStateInner(configItems = [], contentItems = [], dashContainerModel) {
+function convertGLToStateInner(
+    configItems = [],
+    contentItems: ContentItem[] = [],
+    dashContainerModel: DashContainerModel
+) {
     const ret = [];
 
     configItems.forEach((configItem, idx) => {
         const contentItem = contentItems[idx];
 
         if (configItem.type === 'component') {
-            const viewSpecId = configItem.component,
+            const viewSpecId: string = configItem.component,
                 viewSpec = dashContainerModel.getViewSpec(viewSpecId),
                 viewModelId = getViewModelId(contentItem),
                 viewModel = dashContainerModel.getViewModel(viewModelId),
@@ -70,7 +79,7 @@ function convertGLToStateInner(configItems = [], contentItems = [], dashContaine
 /**
  * Convert our serializable state into GoldenLayout config
  */
-export function convertStateToGL(state = [], dashContainerModel) {
+export function convertStateToGL(state = [], dashContainerModel: DashContainerModel) {
     const {viewSpecs, containerRef} = dashContainerModel,
         containerSize = {
             width: containerRef.current?.offsetWidth,

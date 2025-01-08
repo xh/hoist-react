@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -199,10 +199,7 @@ class ColumnHeaderModel extends HoistModel {
         this.availableSorts = this.parseAvailableSorts();
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
-            this.columnHeaderFilterModel = new ColumnHeaderFilterModel({
-                filterModel,
-                column: xhColumn
-            });
+            this.columnHeaderFilterModel = new ColumnHeaderFilterModel(filterModel, xhColumn);
             this.enableFilter = true;
         } else {
             this.isAgFiltered = agColumn.isFilterActive();

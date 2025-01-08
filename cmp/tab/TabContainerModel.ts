@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
     managed,
+    Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
     RefreshContextModel,
@@ -18,7 +20,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {difference, find, findLast, isString, isUndefined, without} from 'lodash';
+import {difference, find, findLast, isString, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 import {TabSwitcherProps} from './TabSwitcherProps';
@@ -85,7 +87,7 @@ export interface TabContainerConfig {
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
-export class TabContainerModel extends HoistModel {
+export class TabContainerModel extends HoistModel implements Persistable<{activeTabId: string}> {
     declare config: TabContainerConfig;
 
     @managed
@@ -102,7 +104,6 @@ export class TabContainerModel extends HoistModel {
     renderMode: RenderMode;
     refreshMode: RefreshMode;
     emptyText: ReactNode;
-    provider: PersistenceProvider;
 
     @managed
     refreshContextModel: RefreshContextModel;
@@ -156,7 +157,13 @@ export class TabContainerModel extends HoistModel {
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
-            this.setupStateProvider(persistWith);
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'tabContainer',
+                    ...persistWith
+                },
+                target: this
+            });
         }
 
         if (track) {
@@ -321,6 +328,17 @@ export class TabContainerModel extends HoistModel {
     }
 
     //-------------------------
+    // Persistable Interface
+    //-------------------------
+    getPersistableState(): PersistableState<{activeTabId: string}> {
+        return new PersistableState({activeTabId: this.activeTabId});
+    }
+
+    setPersistableState(state: PersistableState<{activeTabId: string}>): void {
+        this.activateTab(state.value.activeTabId);
+    }
+
+    //-------------------------
     // Implementation
     //-------------------------
     @action
@@ -331,6 +349,19 @@ export class TabContainerModel extends HoistModel {
         this.lastActiveTabId = this.activeTabId;
         this.activeTabId = id;
         this.forwardRouterToTab(id);
+    }
+
+    protected syncWithRouter() {
+        const {tabs, route} = this,
+            {router} = XH,
+            state = router.getState();
+
+        if (state && router.isActive(route)) {
+            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
+            if (tab && !tab.isActive && !tab.disabled) {
+                this.setActiveTabIdInternal(tab.id);
+            }
+        }
     }
 
     protected forwardRouterToTab(id) {
@@ -360,51 +391,6 @@ export class TabContainerModel extends HoistModel {
         if (ret) return ret.id;
 
         return null;
-    }
-
-    protected syncWithRouter() {
-        const {tabs, route} = this,
-            {router} = XH,
-            state = router.getState();
-
-        if (state && router.isActive(route)) {
-            const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
-            if (tab && !tab.isActive && !tab.disabled) {
-                this.setActiveTabIdInternal(tab.id);
-            }
-        }
-    }
-
-    private setupStateProvider(persistWith) {
-        // Read state from provider -- fail gently
-        let state = null;
-
-        try {
-            this.provider = PersistenceProvider.create({path: 'tabContainer', ...persistWith});
-            state = this.provider.read() || null;
-        } catch (e) {
-            this.logError(e);
-            XH.safeDestroy(this.provider);
-            this.provider = null;
-        }
-
-        // Initialize state, or clear if state's activeTabId no longer exists
-        if (!isUndefined(state?.activeTabId)) {
-            const id = state.activeTabId;
-            if (this.findTab(id)) {
-                this.activateTab(id);
-            } else {
-                this.provider.clear();
-            }
-        }
-
-        // Attach to provider last
-        if (this.provider) {
-            this.addReaction({
-                track: () => this.activeTabId,
-                run: activeTabId => this.provider.write({activeTabId})
-            });
-        }
     }
 }
 
