@@ -382,33 +382,36 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
             isClearable = model.internalValue !== null,
             isOpen = enablePicker && model.popoverOpen && !disabled;
 
-        const rightElement = hbox({
-            height: '100%',
-            paddingRight: 3,
-            items: [
-                button({
-                    className: 'xh-date-input__clear-icon',
-                    omit: !enableClear || !isClearable || disabled,
-                    icon: Icon.cross(),
-                    tabIndex: -1,
-                    onClick: model.onClearBtnClick,
-                    testId: getTestId(props, 'clear')
-                }),
-                withDefault(
-                    props.rightElement,
+        const defaultButtonStyles = {padding: 0, margin: 0, height: '100%'},
+            rightElement = hbox({
+                height: '100%',
+                paddingRight: 3,
+                items: [
                     button({
-                        className: 'xh-date-input__picker-icon',
-                        disabled: disabled,
-                        omit: props.showPickerOnFocus,
-                        icon: Icon.calendar(),
-                        tabIndex: enableTextInput || disabled ? -1 : undefined,
-                        ref: model.buttonRef,
-                        onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
-                        testId: getTestId(props, 'picker')
-                    })
-                )
-            ]
-        });
+                        className: 'xh-date-input__clear-icon',
+                        ...defaultButtonStyles,
+                        omit: !enableClear || !isClearable || disabled,
+                        icon: Icon.cross(),
+                        tabIndex: -1,
+                        onClick: model.onClearBtnClick,
+                        testId: getTestId(props, 'clear')
+                    }),
+                    withDefault(
+                        props.rightElement,
+                        button({
+                            className: 'xh-date-input__picker-icon',
+                            ...defaultButtonStyles,
+                            disabled: disabled,
+                            omit: props.showPickerOnFocus,
+                            icon: Icon.calendar(),
+                            tabIndex: enableTextInput || disabled ? -1 : undefined,
+                            ref: model.buttonRef,
+                            onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
+                            testId: getTestId(props, 'picker')
+                        })
+                    )
+                ]
+            });
 
         let {minDate, maxDate, initialMonth, renderValue} = model;
 

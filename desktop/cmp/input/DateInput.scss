@@ -15,13 +15,6 @@
   }
 
   .xh-date-input {
-    &__picker-icon,
-    &__clear-icon {
-      padding: 0 !important;
-      margin: 0 !important;
-      height: 100% !important;
-    }
-
     // Style input in picker-only mode
     &--picker-only {
       input {
