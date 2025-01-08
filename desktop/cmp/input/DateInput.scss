@@ -4,14 +4,15 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+
 .xh-date-input__wrapper {
   .bp5-input-action {
     height: 100%;
   }
 
   .bp5-input-group .xh-icon {
+    position: relative;
     margin: 0 !important;
-    position: relative !important;
   }
 
   .xh-date-input {
