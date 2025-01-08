@@ -85,7 +85,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!failed),
             items: [
                 toolbarSep(),
-                Icon.error({prefix: 'fas', className: 'xh-red'}),
+                Icon.error({prefix: 'fas', intent: 'danger'}),
                 label(`${failed} failed`)
             ]
         }),
@@ -93,7 +93,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!warned),
             items: [
                 toolbarSep(),
-                Icon.warning({prefix: 'fas', className: 'xh-orange'}),
+                Icon.warning({prefix: 'fas', intent: 'warning'}),
                 label(`${warned} warned`)
             ]
         }),
@@ -101,7 +101,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!passed),
             items: [
                 toolbarSep(),
-                Icon.checkCircle({prefix: 'fas', className: 'xh-green'}),
+                Icon.checkCircle({prefix: 'fas', intent: 'success'}),
                 label(`${passed} passed`)
             ]
         }),
@@ -109,7 +109,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
             className: getClassName(!inactive),
             items: [
                 toolbarSep(),
-                Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
+                Icon.disabled({prefix: 'fas', className: 'xh-text-color-muted'}),
                 label(`${inactive} inactive`)
             ]
         }),

@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, label} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, label} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
@@ -49,49 +49,56 @@ const tbar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     return toolbar(
         diffBar({omit: isSingleInstance}),
         filler(),
-        'As of',
+        label('As of'),
         relativeTimestamp({bind: 'startTimestamp'}),
-        toolbarSep(),
-        'Took ',
-        fmtNumber(model.runDurationMs, {label: 'ms'})
+        '-',
+        label('Took '),
+        fmtNumber(model.runDurationMs, {label: 'ms'}),
+        '-',
+        storeFilterField({
+            matchMode: 'any',
+            autoApply: false,
+            onFilterChange: f => (model.textFilter = f)
+        }),
+        exportButton()
     );
 });
 
 const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
     const {counts} = model;
-    return [
-        switchInput({
-            label: 'Hide unchecked',
-            bind: 'hideUnchecked'
-        }),
-        div({
-            className: 'xh-cluster-objects-result-count',
+    return fragment(
+        Icon.diff(),
+        label('Cross-instance comparisons'),
+        fragment({
             omit: !counts.failed,
             items: [
                 toolbarSep(),
-                Icon.error({prefix: 'fas', className: 'xh-red'}),
-                label(`${counts.failed} Failed`)
+                Icon.diff({prefix: 'fas', intent: 'danger'}),
+                label(`${counts.failed} diffs`)
             ]
         }),
-        div({
-            className: 'xh-cluster-objects-result-count',
+        fragment({
             omit: !counts.passed,
             items: [
                 toolbarSep(),
-                Icon.checkCircle({prefix: 'fas', className: 'xh-green'}),
-                label(`${counts.passed} OK`)
+                Icon.checkCircle({prefix: 'fas', intent: 'success'}),
+                label(`${counts.passed} in-sync`)
             ]
         }),
-        div({
-            className: 'xh-cluster-objects-result-count',
-            omit: !counts.unchecked || model.hideUnchecked,
+        fragment({
+            omit: !counts.unchecked,
             items: [
                 toolbarSep(),
-                Icon.disabled({prefix: 'fas', className: 'xh-gray'}),
-                label(`${counts.unchecked} Unchecked`)
+                Icon.disabled({prefix: 'fas', className: 'xh-text-color-muted'}),
+                label(`${counts.unchecked} unchecked`)
             ]
+        }),
+        toolbarSep(),
+        switchInput({
+            label: 'w/Comparisons only',
+            bind: 'hideUnchecked'
         })
-    ];
+    );
 });
 
 const bbar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
@@ -102,13 +109,6 @@ const bbar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
             intent: 'warning',
             tooltip: 'Clear the Hibernate caches using the native Hibernate API',
             onClick: () => model.clearAllHibernateCachesAsync()
-        }),
-        filler(),
-        storeFilterField({
-            matchMode: 'any',
-            autoApply: false,
-            onFilterChange: f => (model.textFilter = f)
-        }),
-        exportButton()
+        })
     );
 });

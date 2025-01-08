@@ -9,7 +9,7 @@ import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
-import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {DAYS} from '@xh/hoist/utils/datetime';
 import {
     cloneDeep,

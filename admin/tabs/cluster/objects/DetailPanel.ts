@@ -18,11 +18,11 @@ export const detailPanel = hoistCmp.factory({
 
     render({model}) {
         const {instanceName, selectedAdminStats, objectName, objectType} = model;
-        if (!objectName) return placeholder(Icon.grip(), 'Select an object');
+        if (!objectName) return placeholder(Icon.grip(), 'Select an object to view details...');
 
         return panel({
             title: `${objectType} - ${objectName}`,
-            icon: Icon.diff(),
+            icon: getIcon(objectType),
             compactHeader: true,
             items: [
                 grid({flex: 1}),
@@ -49,3 +49,14 @@ export const detailPanel = hoistCmp.factory({
         });
     }
 });
+
+const getIcon = (objType: string) => {
+    switch (objType) {
+        case 'Service':
+            return Icon.gears();
+        case 'Topic':
+            return Icon.mail();
+    }
+
+    return Icon.database();
+};

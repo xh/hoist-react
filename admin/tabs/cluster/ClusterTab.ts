@@ -16,8 +16,8 @@ export const clusterTab = hoistCmp.factory(() =>
             route: 'default.cluster',
             switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
             tabs: [
-                {id: 'instances', icon: Icon.info(), content: instancesTab},
-                {id: 'objects', icon: Icon.diff(), content: clusterObjectsPanel}
+                {id: 'instances', icon: Icon.server(), content: instancesTab},
+                {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
             ]
         }
     })
