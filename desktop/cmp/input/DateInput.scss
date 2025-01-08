@@ -42,7 +42,7 @@
     }
 
     // Style buttons when disabled
-    &.xh-input-disabled:not(.xh-date-input--picker-only) button:hover svg {
+    &.xh-input-disabled:not(.xh-date-input--picker-only) button:hover {
       background-color: transparent !important;
       cursor: not-allowed;
     }
