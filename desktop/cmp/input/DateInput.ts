@@ -22,7 +22,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {assign, castArray, clone, trim} from 'lodash';
+import {assign, castArray, clone, compact, isEmpty, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
@@ -377,40 +377,8 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
     ({model, className, ...props}, ref) => {
         const enablePicker = props.enablePicker ?? true,
             enableTextInput = props.enableTextInput ?? true,
-            enableClear = props.enableClear ?? false,
             disabled = props.disabled ?? false,
-            isClearable = model.internalValue !== null,
             isOpen = enablePicker && model.popoverOpen && !disabled;
-
-        const buttonLayoutProps = {padding: 0, margin: 0, height: '100%'},
-            rightElement = hbox({
-                height: '100%',
-                paddingRight: 3,
-                items: [
-                    button({
-                        className: 'xh-date-input__clear-icon',
-                        icon: Icon.cross(),
-                        tabIndex: -1,
-                        onClick: model.onClearBtnClick,
-                        testId: getTestId(props, 'clear'),
-                        omit: !enableClear || !isClearable || disabled,
-                        ...buttonLayoutProps
-                    }),
-                    withDefault(
-                        props.rightElement,
-                        button({
-                            className: 'xh-date-input__picker-icon',
-                            icon: Icon.calendar(),
-                            tabIndex: enableTextInput || disabled ? -1 : undefined,
-                            onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
-                            testId: getTestId(props, 'picker'),
-                            disabled,
-                            ref: model.buttonRef,
-                            ...buttonLayoutProps
-                        })
-                    )
-                ]
-            });
 
         let {minDate, maxDate, initialMonth, renderValue} = model;
 
@@ -474,7 +442,13 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         onCommit: model.onInputCommit,
                         onChange: model.onInputChange,
                         onKeyDown: model.onInputKeyDown,
-                        rightElement: rightElement as ReactElement,
+                        rightElement: rightElement({
+                            model,
+                            props,
+                            disabled,
+                            enableTextInput,
+                            enablePicker
+                        }) as ReactElement,
                         disabled: disabled || !enableTextInput,
                         leftIcon: props.leftIcon,
                         tabIndex: props.tabIndex,
@@ -497,3 +471,50 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
         });
     }
 );
+
+const rightElement = hoistCmp.factory<DateInputModel>({
+    render({model, props, disabled, enableTextInput, enablePicker}) {
+        const buttonLayoutProps = {padding: 0, margin: 0, height: '100%'},
+            rightElements = [],
+            enableClear = props.enableClear ?? false,
+            isClearable = model.internalValue !== null;
+
+        if (enableClear) {
+            rightElements.push(
+                button({
+                    className: 'xh-date-input__clear-icon',
+                    icon: Icon.cross(),
+                    tabIndex: -1,
+                    onClick: model.onClearBtnClick,
+                    omit: !isClearable || disabled,
+                    testId: getTestId(props, 'clear'),
+                    ...buttonLayoutProps
+                })
+            );
+        }
+
+        rightElements.push(
+            withDefault(
+                props.rightElement,
+                button({
+                    className: 'xh-date-input__picker-icon',
+                    icon: Icon.calendar(),
+                    tabIndex: enableTextInput || disabled ? -1 : undefined,
+                    onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
+                    testId: getTestId(props, 'picker'),
+                    disabled,
+                    ref: model.buttonRef,
+                    ...buttonLayoutProps
+                })
+            )
+        );
+
+        return !isEmpty(compact(rightElements))
+            ? hbox({
+                  height: '100%',
+                  paddingRight: 3,
+                  items: rightElements
+              })
+            : null;
+    }
+});
