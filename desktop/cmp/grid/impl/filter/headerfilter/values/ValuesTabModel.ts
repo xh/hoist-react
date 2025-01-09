@@ -10,7 +10,7 @@ import {FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, difference, isEmpty, map, partition, uniq, without} from 'lodash';
+import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
@@ -25,10 +25,6 @@ export class ValuesTabModel extends HoistModel {
 
     /** Bound search term for `StoreFilterField` */
     @bindable filterText: string = null;
-
-    /** Available only when commit on change is false merge
-     * current filter with pendingValues on commit*/
-    @bindable combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
     @computed.struct
@@ -93,7 +89,7 @@ export class ValuesTabModel extends HoistModel {
             },
             {
                 track: () => this.filterText,
-                run: () => this.setPending(),
+                run: () => this.setPendingValues(),
                 debounce: 300
             }
         );
@@ -106,7 +102,6 @@ export class ValuesTabModel extends HoistModel {
     @action
     reset() {
         this.filterText = null;
-        this.combineCurrentFilters = false;
         this.fieldSpec.loadValues();
     }
 
@@ -127,16 +122,19 @@ export class ValuesTabModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
-    private setPending() {
-        this.combineCurrentFilters = false;
+    @action
+    setPendingValues(combine = false) {
         if (!this.filterText) {
             this.doSyncWithFilter();
             this.syncGrid();
             return;
         }
+
         const {records} = this.gridModel.store,
+            currentFilterValues = flatten(map(this.columnFilters, 'value')),
             values = map(records, it => it.get('value'));
-        this.pendingValues = uniq(values);
+
+        this.pendingValues = uniq(combine ? [...currentFilterValues, ...values] : values);
     }
 
     private getFilter() {
