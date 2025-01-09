@@ -17,14 +17,14 @@ import {
     toPath
 } from 'lodash';
 import {IReactionDisposer, reaction} from 'mobx';
-import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
+import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
 import {
     CustomProvider,
     DashViewProvider,
     LocalStorageProvider,
-    SessionStorageProvider,
     PersistOptions,
     PrefProvider,
+    SessionStorageProvider,
     ViewManagerProvider
 } from './';
 
@@ -67,6 +67,24 @@ export abstract class PersistenceProvider<S> {
 
     private disposer: IReactionDisposer;
 
+    private static readonly PROVIDERS: Record<string, typeof PersistenceProvider> = {
+        pref: PrefProvider,
+        localStorage: LocalStorageProvider,
+        sessionStorage: SessionStorageProvider,
+        dashView: DashViewProvider,
+        viewManager: ViewManagerProvider,
+        custom: CustomProvider
+    };
+
+    /**
+     * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory.
+     * @param type - provider identifier to support as a `PersistOptions.type` value.
+     * @param provider - the custom provider class to instantiate.
+     */
+    static registerType(type: string, provider: typeof PersistenceProvider) {
+        this.PROVIDERS[type] = provider;
+    }
+
     /**
      * Construct an instance of this class.
      *
@@ -98,29 +116,12 @@ export abstract class PersistenceProvider<S> {
                 if (rest.getData || rest.setData) type = 'custom';
             }
 
-            switch (type) {
-                case 'pref':
-                    ret = new PrefProvider(cfg);
-                    break;
-                case 'localStorage':
-                    ret = new LocalStorageProvider(cfg);
-                    break;
-                case 'sessionStorage':
-                    ret = new SessionStorageProvider(cfg);
-                    break;
-                case `dashView`:
-                    ret = new DashViewProvider(cfg);
-                    break;
-                case `viewManager`:
-                    ret = new ViewManagerProvider(cfg);
-                    break;
-                case 'custom':
-                    ret = new CustomProvider(cfg);
-                    break;
-                default:
-                    throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
-            }
+            const clazz = this.PROVIDERS[type] as unknown as {
+                new (cfg: PersistenceProviderConfig<S>): PersistenceProvider<S>;
+            };
+            throwIf(!clazz, `Unknown Persistence Provider type: ${type}`);
 
+            ret = new clazz(cfg);
             ret.bindToTarget(target);
             return ret;
         } catch (e) {
