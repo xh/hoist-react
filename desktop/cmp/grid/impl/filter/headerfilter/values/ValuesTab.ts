@@ -69,7 +69,7 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
             hframe({
                 omit: !filterText || store.empty || headerFilterModel.commitOnChange,
                 items: [
-                    checkbox({onChange: () => model.setPendingValues(true)}),
+                    checkbox({bind: 'combineCurrentFilters'}),
                     span(`Add current selection to filter`)
                 ]
             })

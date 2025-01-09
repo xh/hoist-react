@@ -26,6 +26,10 @@ export class ValuesTabModel extends HoistModel {
     /** Bound search term for `StoreFilterField` */
     @bindable filterText: string = null;
 
+    /** Available only when commit on change is false merge
+     * current filter with pendingValues on commit*/
+    @bindable combineCurrentFilters: boolean = false;
+
     /** FieldFilter output by this model. */
     @computed.struct
     get filter(): FieldFilterSpec {
@@ -88,7 +92,7 @@ export class ValuesTabModel extends HoistModel {
                 fireImmediately: true
             },
             {
-                track: () => this.filterText,
+                track: () => [this.filterText, this.combineCurrentFilters],
                 run: () => this.setPendingValues(),
                 debounce: 300
             }
@@ -123,7 +127,7 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    setPendingValues(combine = false) {
+    setPendingValues() {
         if (!this.filterText) {
             this.doSyncWithFilter();
             this.syncGrid();
@@ -134,7 +138,9 @@ export class ValuesTabModel extends HoistModel {
             currentFilterValues = flatten(map(this.columnFilters, 'value')),
             values = map(records, it => it.get('value'));
 
-        this.pendingValues = uniq(combine ? [...currentFilterValues, ...values] : values);
+        this.pendingValues = uniq(
+            this.combineCurrentFilters ? [...currentFilterValues, ...values] : values
+        );
     }
 
     private getFilter() {
