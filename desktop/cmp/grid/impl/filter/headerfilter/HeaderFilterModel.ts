@@ -9,7 +9,7 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, managed, lookup} from '@xh/hoist/core';
 import {action, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty} from 'lodash';
+import {castArray, isEmpty, map} from 'lodash';
 import {GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {customTab} from './custom/CustomTab';
 import {CustomTabModel} from './custom/CustomTabModel';
@@ -125,10 +125,15 @@ export class HeaderFilterModel extends HoistModel {
         const {tabContainerModel, customTabModel, valuesTabModel} = this,
             {activeTabId} = tabContainerModel,
             valuesIsActive = activeTabId === 'valuesFilter',
-            activeTabModel = valuesIsActive ? valuesTabModel : customTabModel,
             otherTabModel = valuesIsActive ? customTabModel : valuesTabModel;
 
-        this.setColumnFilters(activeTabModel.filter);
+        valuesIsActive
+            ? this.setValueTabColumnFilters(
+                  valuesTabModel.filter,
+                  valuesTabModel.combineCurrentFilters
+              )
+            : this.setCustomTabColumnFilters(customTabModel.filter);
+
         if (close) {
             this.parent.close();
         } else {
@@ -139,7 +144,7 @@ export class HeaderFilterModel extends HoistModel {
 
     @action
     clear(close: boolean = true) {
-        this.setColumnFilters(null);
+        this.filterModel.setColumnFilters(this.field, null);
         if (close) {
             this.parent.close();
         } else {
@@ -164,7 +169,16 @@ export class HeaderFilterModel extends HoistModel {
         tabContainerModel.activateTab(toTabId);
     }
 
-    private setColumnFilters(filters) {
+    private setValueTabColumnFilters(filter, combine = false) {
+        const oldValues = map(this.columnFilters, 'value').flat(),
+            newValues = castArray(filter.value);
+        this.filterModel.setColumnFilters(this.field, {
+            ...filter,
+            value: combine ? [...oldValues, ...newValues] : newValues
+        });
+    }
+
+    private setCustomTabColumnFilters(filters) {
         this.filterModel.setColumnFilters(this.field, filters);
     }
 
