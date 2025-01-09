@@ -382,32 +382,31 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
             isClearable = model.internalValue !== null,
             isOpen = enablePicker && model.popoverOpen && !disabled;
 
-        const defaultButtonStyles = {padding: 0, margin: 0, height: '100%'},
+        const buttonLayoutProps = {padding: 0, margin: 0, height: '100%'},
             rightElement = hbox({
                 height: '100%',
                 paddingRight: 3,
                 items: [
                     button({
                         className: 'xh-date-input__clear-icon',
-                        ...defaultButtonStyles,
-                        omit: !enableClear || !isClearable || disabled,
                         icon: Icon.cross(),
                         tabIndex: -1,
                         onClick: model.onClearBtnClick,
-                        testId: getTestId(props, 'clear')
+                        testId: getTestId(props, 'clear'),
+                        omit: !enableClear || !isClearable || disabled,
+                        ...buttonLayoutProps
                     }),
                     withDefault(
                         props.rightElement,
                         button({
                             className: 'xh-date-input__picker-icon',
-                            ...defaultButtonStyles,
-                            disabled: disabled,
-                            omit: props.showPickerOnFocus,
                             icon: Icon.calendar(),
                             tabIndex: enableTextInput || disabled ? -1 : undefined,
-                            ref: model.buttonRef,
                             onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
-                            testId: getTestId(props, 'picker')
+                            testId: getTestId(props, 'picker'),
+                            disabled,
+                            ref: model.buttonRef,
+                            ...buttonLayoutProps
                         })
                     )
                 ]
