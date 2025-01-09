@@ -94,7 +94,7 @@ export class ValuesTabModel extends HoistModel {
             {
                 track: () => this.filterText,
                 run: () => this.setPending(),
-                debounce: 500
+                debounce: 300
             }
         );
     }
@@ -135,7 +135,7 @@ export class ValuesTabModel extends HoistModel {
             return;
         }
         const {records} = this.gridModel.store,
-            values = map(records, record => record.get('value'));
+            values = map(records, it => it.get('value'));
         this.pendingValues = uniq(values);
     }
 

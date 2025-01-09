@@ -52,20 +52,22 @@ const body = hoistCmp.factory<ValuesTabModel>(({model}) => {
 });
 
 const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
+    const {gridModel, allVisibleRecsChecked, filterText, headerFilterModel} = model,
+        {store} = gridModel;
     return vbox({
         className: 'store-filter-header',
         items: [
             hframe(
                 checkbox({
-                    disabled: model.gridModel.store.empty,
+                    disabled: store.empty,
                     displayUnsetState: true,
-                    value: model.allVisibleRecsChecked,
+                    value: allVisibleRecsChecked,
                     onChange: () => model.toggleAllRecsChecked()
                 }),
-                span(`(Select All${model.filterText ? ' Search Results' : ''})`)
+                span(`(Select All${filterText ? ' Search Results' : ''})`)
             ),
             hframe({
-                omit: !model.filterText || model.gridModel.store.empty,
+                omit: !filterText || store.empty || headerFilterModel.commitOnChange,
                 items: [
                     checkbox({bind: 'combineCurrentFilters'}),
                     span(`Add current selection to filter`)
