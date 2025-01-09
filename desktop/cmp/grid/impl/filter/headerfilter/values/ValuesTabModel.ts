@@ -62,6 +62,10 @@ export class ValuesTabModel extends HoistModel {
         return this.headerFilterModel.filterModel;
     }
 
+    get commitOnChange() {
+        return this.headerFilterModel.commitOnChange;
+    }
+
     get values() {
         return this.fieldSpec.values;
     }
