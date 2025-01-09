@@ -63,7 +63,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
                 className: 'xh-view-manager__menu-item',
                 icon: view.isDefault ? Icon.check() : Icon.placeholder(),
                 text: `Default ${startCase(typeDisplayName)}`,
-                onClick: () => model.selectViewAsync(null)
+                onClick: () => model.selectViewAsync(null).catchDefault()
             })
         );
     }
@@ -89,7 +89,7 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
             icon: Icon.save(),
             text: 'Save',
             disabled: !isViewSavable || !isValueDirty,
-            onClick: () => parent.saveAsync()
+            onClick: () => model.saveAsync()
         }),
         menuItem({
             icon: Icon.placeholder(),
@@ -100,7 +100,7 @@ function getOtherMenuItems(model: ViewManagerLocalModel): ReactNode[] {
             icon: Icon.reset(),
             text: `Revert`,
             disabled: !isValueDirty,
-            onClick: () => parent.resetAsync()
+            onClick: () => model.revertAsync()
         }),
         menuDivider({omit: !enableAutoSave}),
         menuItem({
@@ -168,6 +168,6 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         text: view.name,
         title: title.join(' | '),
         icon,
-        onClick: () => model.selectViewAsync(view)
+        onClick: () => model.selectViewAsync(view).catchDefault()
     });
 }

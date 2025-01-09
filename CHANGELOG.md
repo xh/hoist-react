@@ -1,10 +1,13 @@
 # Changelog
 
-## v71.0.0-SNAPSHOT - unreleased
+## v72.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+## v71.0.0 - 2025-01-08
 
-* Requires `hoist-core >= 26.1` with new APIs to support `ViewManager`.
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
+
+* Requires `hoist-core >= 27.0` with new APIs to support `ViewManager` and enhanced cluster state
+  monitoring in the Admin Console.
 * `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
   or `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
 * `Mask` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/mask` or
@@ -18,8 +21,8 @@
 
 ### 🎁 New Features
 
-* Major improvements to ViewManager component, including:
-    * A clearer, better organized view management dialog.
+* Major improvements to the `ViewManager` component, including:
+    * A clearer, better organized management dialog.
     * Support for persisting a view's pending value, to avoid users losing changes when e.g. an app
       goes into idle mode and requires a page refresh to restore.
     * Improved handling of delete / update collisions.
@@ -32,8 +35,10 @@
   ID and access tokens in a single request and to use refresh tokens to maintain access without
   relying on third-party cookies.
 * Updated sorting on grouped grids to place ungrouped items at the bottom.
-* `DashCanvas` views can now be resized left and up in addition to right and down.
-* `FetchService.autoGenCorrelationIds` now supports a functional form for per-request behavior.
+* Improved `DashCanvas` views to support resizing from left/top edges in addition to right/bottom.
+* Added functional form of `FetchService.autoGenCorrelationIds` for per-request behavior.
+* Added a new `Cluster›Objects` tab in Admin Console to support comparing state across the cluster
+  and alerting of any persistent state inconsistencies.
 
 ### 🐞 Bug Fixes
 
@@ -61,7 +66,7 @@
 
 * @azure/msal-browser `3.27 → 3.28`
 * dompurify `3.1 → 3.2`
-* react-grid-layout `1.4.3 → 1.5.0`
+* react-grid-layout `1.4 → 1.5`
 
 ## v70.0.0 - 2024-11-15
 

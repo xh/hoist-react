@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {WebSocketModel} from '@xh/hoist/admin/tabs/cluster/websocket/WebSocketModel';
+import {WebSocketModel} from '@xh/hoist/admin/tabs/cluster/instances/websocket/WebSocketModel';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {box, filler, fragment, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';

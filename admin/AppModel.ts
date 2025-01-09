@@ -71,14 +71,21 @@ export class AppModel extends HoistAppModel {
                 name: 'cluster',
                 path: '/cluster',
                 children: [
-                    {name: 'logs', path: '/logs'},
-                    {name: 'memory', path: '/memory'},
-                    {name: 'jdbcPool', path: '/jdbcPool'},
-                    {name: 'environment', path: '/environment'},
-                    {name: 'services', path: '/services'},
-                    {name: 'objects', path: '/objects'},
-                    {name: 'hibernate', path: '/hibernate'},
-                    {name: 'webSockets', path: '/webSockets'}
+                    {
+                        name: 'instances',
+                        path: '/instances',
+                        children: [
+                            {name: 'logs', path: '/logs'},
+                            {name: 'memory', path: '/memory'},
+                            {name: 'jdbcPool', path: '/jdbcPool'},
+                            {name: 'environment', path: '/environment'},
+                            {name: 'services', path: '/services'},
+                            {name: 'hibernate', path: '/hibernate'},
+                            {name: 'consistency', path: '/consistency'},
+                            {name: 'webSockets', path: '/webSockets'}
+                        ]
+                    },
+                    {name: 'objects', path: '/objects'}
                 ]
             },
             {

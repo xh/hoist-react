@@ -23,6 +23,24 @@ export class ViewManagerLocalModel extends HoistModel {
     @bindable
     isVisible = true;
 
+    async saveAsync() {
+        const {parent} = this,
+            {view} = parent;
+
+        if (!parent.isViewSavable) {
+            this.saveAsDialogModel.open();
+            return;
+        }
+
+        return parent.saveAsync().catchDefault({
+            message: `Failed to save ${view.typedName}.  If this persists consider \`Save As...\`.`
+        });
+    }
+
+    async revertAsync() {
+        return this.parent.resetAsync().catchDefault();
+    }
+
     constructor(parent: ViewManagerModel) {
         super();
         makeObservable(this);

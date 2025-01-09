@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
 import {PlainObject, XH} from '@xh/hoist/core';
@@ -57,6 +58,8 @@ export class ViewInfo {
     readonly model: ViewManagerModel;
 
     constructor(blob: JsonBlob, model: ViewManagerModel) {
+        throwIf(blob.type !== model.type, 'View type does not match ViewManager type.');
+
         this.token = blob.token;
         this.type = blob.type;
         this.name = blob.name;

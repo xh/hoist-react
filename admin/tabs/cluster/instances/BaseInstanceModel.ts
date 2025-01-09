@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ClusterTabModel} from '@xh/hoist/admin/tabs/cluster/ClusterTabModel';
+import {InstancesTabModel} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTabModel';
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {DAYS} from '@xh/hoist/utils/datetime';
@@ -15,7 +15,7 @@ import {isDisplayed} from '@xh/hoist/utils/js';
 export class BaseInstanceModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
 
-    @lookup(() => ClusterTabModel) parent: ClusterTabModel;
+    @lookup(() => InstancesTabModel) parent: InstancesTabModel;
 
     get instanceName(): string {
         return this.parent.instanceName;
