@@ -22,7 +22,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {assign, castArray, clone, compact, isEmpty, trim} from 'lodash';
+import {assign, castArray, clone, isEmpty, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
 import './DateInput.scss';
@@ -442,15 +442,15 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         onCommit: model.onInputCommit,
                         onChange: model.onInputChange,
                         onKeyDown: model.onInputKeyDown,
-                        rightElement: rightElement({
+                        disabled: disabled || !enableTextInput,
+                        leftIcon: props.leftIcon,
+                        rightElement: rightIcons({
                             model,
-                            props,
+                            ...props,
                             disabled,
                             enableTextInput,
                             enablePicker
-                        }) as ReactElement,
-                        disabled: disabled || !enableTextInput,
-                        leftIcon: props.leftIcon,
+                        }),
                         tabIndex: props.tabIndex,
                         placeholder: props.placeholder,
                         textAlign: props.textAlign,
@@ -472,49 +472,43 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
     }
 );
 
-const rightElement = hoistCmp.factory<DateInputModel>({
-    render({model, props, disabled, enableTextInput, enablePicker}) {
+const rightIcons = hoistCmp.factory<DateInputModel>({
+    render({model, disabled, enableTextInput, enablePicker, ...props}) {
         const buttonLayoutProps = {padding: 0, margin: 0, height: '100%'},
-            rightElements = [],
             enableClear = props.enableClear ?? false,
-            isClearable = model.internalValue !== null;
+            isClearable = model.internalValue !== null,
+            items = [];
 
-        if (enableClear) {
-            rightElements.push(
+        // 1) First potential icon is clear button
+        if (enableClear && isClearable && !disabled) {
+            items.push(
                 button({
                     className: 'xh-date-input__clear-icon',
                     icon: Icon.cross(),
                     tabIndex: -1,
                     onClick: model.onClearBtnClick,
-                    omit: !isClearable || disabled,
                     testId: getTestId(props, 'clear'),
                     ...buttonLayoutProps
                 })
             );
         }
 
-        rightElements.push(
-            withDefault(
-                props.rightElement,
-                button({
-                    className: 'xh-date-input__picker-icon',
-                    icon: Icon.calendar(),
-                    tabIndex: enableTextInput || disabled ? -1 : undefined,
-                    onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
-                    testId: getTestId(props, 'picker'),
-                    disabled,
-                    ref: model.buttonRef,
-                    ...buttonLayoutProps
-                })
-            )
+        // 2) Second potential icon is app-specified, or default calendar icon.  Set prop to null to hide.
+        const rightElement = withDefault(
+            props.rightElement,
+            button({
+                className: 'xh-date-input__picker-icon',
+                icon: Icon.calendar(),
+                tabIndex: enableTextInput || disabled ? -1 : undefined,
+                onClick: enablePicker && !disabled ? model.onOpenPopoverClick : null,
+                testId: getTestId(props, 'picker'),
+                disabled,
+                ref: model.buttonRef,
+                ...buttonLayoutProps
+            })
         );
+        if (rightElement) items.push(rightElement);
 
-        return !isEmpty(compact(rightElements))
-            ? hbox({
-                  height: '100%',
-                  paddingRight: 3,
-                  items: rightElements
-              })
-            : null;
+        return hbox({height: '100%', paddingRight: 3, items, omit: isEmpty(items)});
     }
 });
