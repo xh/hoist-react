@@ -2,6 +2,11 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Added support for registering custom `PersistenceProvider` implementations via
+  `PersistenceProvider.register()`, for advanced application usages requiring a custom provider.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)

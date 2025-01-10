@@ -77,11 +77,16 @@ export abstract class PersistenceProvider<S> {
     };
 
     /**
-     * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory.
+     * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory called
+     * by all persistable components. Supports passing `persistWith: {type: 'myCustomType'}`.
+     *
+     * Note you will need to extend/redeclare the {@link PersistenceProviderTypeRegistry} interface
+     * to satisfy Typescript - see the comment w/example on that interface below.
+     *
      * @param type - provider identifier to support as a `PersistOptions.type` value.
      * @param provider - the custom provider class to instantiate.
      */
-    static registerType(type: string, provider: typeof PersistenceProvider) {
+    static registerType(type: PersistenceProviderType, provider: typeof PersistenceProvider) {
         this.PROVIDERS[type] = provider;
     }
 
@@ -116,12 +121,10 @@ export abstract class PersistenceProvider<S> {
                 if (rest.getData || rest.setData) type = 'custom';
             }
 
-            const clazz = this.PROVIDERS[type] as unknown as {
-                new (cfg: PersistenceProviderConfig<S>): PersistenceProvider<S>;
-            };
+            const clazz = this.PROVIDERS[type] as any;
             throwIf(!clazz, `Unknown Persistence Provider type: ${type}`);
 
-            ret = new clazz(cfg);
+            ret = new clazz(cfg) as PersistenceProvider<S>;
             ret.bindToTarget(target);
             return ret;
         } catch (e) {
@@ -216,3 +219,27 @@ export abstract class PersistenceProvider<S> {
         return null;
     }
 }
+
+/**
+ * For app-level declaration merging, to define a type identifier for a custom `PersistenceProvider`
+ * implementation registered via {@link PersistenceProvider.registerType}.
+ *
+ * Add the below within your app's Bootstrap.ts file or similar:
+ * ```typescript
+ * declare module '@xh/hoist/core' {
+ *     interface PersistenceProviderTypeRegistry {myCustomType: true;}
+ * }
+ * ```
+ *
+ * Then register with: `PersistenceProvider.registerType('myCustomType', MyCustomProviderClass)`.
+ */
+export interface PersistenceProviderTypeRegistry {
+    pref: true;
+    localStorage: true;
+    sessionStorage: true;
+    dashView: true;
+    viewManager: true;
+    custom: true;
+}
+
+export type PersistenceProviderType = keyof PersistenceProviderTypeRegistry;
