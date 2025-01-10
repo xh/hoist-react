@@ -67,15 +67,17 @@ export abstract class PersistenceProvider<S> {
 
     private disposer: IReactionDisposer;
 
-    private static readonly PROVIDERS: Record<PersistenceProviderType, typeof PersistenceProvider> =
-        {
-            pref: PrefProvider,
-            localStorage: LocalStorageProvider,
-            sessionStorage: SessionStorageProvider,
-            dashView: DashViewProvider,
-            viewManager: ViewManagerProvider,
-            custom: CustomProvider
-        };
+    private static readonly PROVIDERS: Record<
+        PersistenceProviderType,
+        new <S>(cfg: PersistenceProviderConfig<S>) => PersistenceProvider<S>
+    > = {
+        pref: PrefProvider,
+        localStorage: LocalStorageProvider,
+        sessionStorage: SessionStorageProvider,
+        dashView: DashViewProvider,
+        viewManager: ViewManagerProvider,
+        custom: CustomProvider
+    };
 
     /**
      * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory called
@@ -87,7 +89,10 @@ export abstract class PersistenceProvider<S> {
      * @param type - provider identifier to support as a `PersistOptions.type` value.
      * @param provider - the custom provider class to instantiate.
      */
-    static registerType(type: PersistenceProviderType, provider: typeof PersistenceProvider) {
+    static registerType(
+        type: PersistenceProviderType,
+        provider: new <S>(cfg: PersistenceProviderConfig<S>) => PersistenceProvider<S>
+    ) {
         this.PROVIDERS[type] = provider;
     }
 
@@ -122,10 +127,10 @@ export abstract class PersistenceProvider<S> {
                 if (rest.getData || rest.setData) type = 'custom';
             }
 
-            const clazz = this.PROVIDERS[type] as any;
+            const clazz = this.PROVIDERS[type];
             throwIf(!clazz, `Unknown Persistence Provider type: ${type}`);
 
-            ret = new clazz(cfg) as PersistenceProvider<S>;
+            ret = new clazz(cfg);
             ret.bindToTarget(target);
             return ret;
         } catch (e) {
