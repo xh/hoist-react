@@ -67,14 +67,15 @@ export abstract class PersistenceProvider<S> {
 
     private disposer: IReactionDisposer;
 
-    private static readonly PROVIDERS: Record<string, typeof PersistenceProvider> = {
-        pref: PrefProvider,
-        localStorage: LocalStorageProvider,
-        sessionStorage: SessionStorageProvider,
-        dashView: DashViewProvider,
-        viewManager: ViewManagerProvider,
-        custom: CustomProvider
-    };
+    private static readonly PROVIDERS: Record<PersistenceProviderType, typeof PersistenceProvider> =
+        {
+            pref: PrefProvider,
+            localStorage: LocalStorageProvider,
+            sessionStorage: SessionStorageProvider,
+            dashView: DashViewProvider,
+            viewManager: ViewManagerProvider,
+            custom: CustomProvider
+        };
 
     /**
      * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory called
