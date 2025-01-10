@@ -26,8 +26,10 @@ export class ValuesTabModel extends HoistModel {
     /** Bound search term for `StoreFilterField` */
     @bindable filterText: string = null;
 
-    /** Available only when commit on change is false merge
-     * current filter with pendingValues on commit*/
+    /*
+     * Available only when commit on change is false merge
+     * current filter with pendingValues on commit
+     */
     @bindable combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
