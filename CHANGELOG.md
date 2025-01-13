@@ -2,6 +2,10 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
