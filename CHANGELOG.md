@@ -2,6 +2,16 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
+  `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
+
+### 🎁 New Features
+
+* Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
+  largely the same, notwithstanding the minor breaking changes detailed above.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
