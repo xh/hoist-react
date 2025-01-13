@@ -7,7 +7,7 @@
 import type {Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
-import {never, wait} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
@@ -99,11 +99,13 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
     protected override async doLoginRedirectAsync(): Promise<void> {
         const appState = this.captureRedirectState();
+
         await this.client.loginWithRedirect({
             appState,
             authorizationParams: {scope: this.loginScope}
         });
-        await never();
+
+        await this.maskAfterRedirect();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
