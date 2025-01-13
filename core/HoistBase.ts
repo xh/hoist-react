@@ -256,7 +256,7 @@ export abstract class HoistBase {
      * @param options - options governing the persistence of this object. These will be applied
      *      on top of any default persistWith options defined on the instance itself.
      */
-    markPersist(property: keyof this & string, options: PersistOptions = {}) {
+    markPersist<P extends keyof this & string>(property: P, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         PersistenceProvider.create({
             persistOptions: {
