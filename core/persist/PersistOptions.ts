@@ -10,6 +10,9 @@ import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../'
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
 
+/**
+ * Built-in Hoist PersistenceProviders.
+ */
 export type PersistenceProviderType =
     | 'pref'
     | 'localStorage'
