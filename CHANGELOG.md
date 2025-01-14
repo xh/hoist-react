@@ -6,6 +6,11 @@
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
 
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
