@@ -12,6 +12,10 @@
 * Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
   largely the same, notwithstanding the minor breaking changes detailed above.
 
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
