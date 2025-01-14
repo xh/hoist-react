@@ -305,9 +305,11 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
                 br(),
                 'Please click below or refresh this tab in your browser to try again.'
             ),
-            confirmProps: {text: 'Reload', icon: Icon.refresh(), intent: 'primary', minimal: false},
-            onConfirm: () => XH.reloadApp()
+            confirmProps: {text: 'Reload', icon: Icon.refresh(), intent: 'primary', minimal: false}
         });
+
+        XH.reloadApp();
+
         // Ensure stale init does not progress - this tab should *really* be on its way out now!
         await never();
     }
