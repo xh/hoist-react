@@ -210,7 +210,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             redirectUri: this.redirectUrl
         });
 
-        await this.maskAfterRedirect();
+        await this.maskAfterRedirectAsync();
     }
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {

@@ -289,7 +289,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     /** Call after requesting the provider library redirect the user away for auth. */
-    protected async maskAfterRedirect() {
+    protected async maskAfterRedirectAsync() {
         // We expect the tab to unload momentarily and be redirected to the provider's login page.
         // Wait here to ensure we mask the app while the browser processes the redirect...
         await wait(10 * SECONDS);

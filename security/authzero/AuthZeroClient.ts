@@ -105,7 +105,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             authorizationParams: {scope: this.loginScope}
         });
 
-        await this.maskAfterRedirect();
+        await this.maskAfterRedirectAsync();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
