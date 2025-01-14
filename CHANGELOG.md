@@ -2,6 +2,11 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
+
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved signature of `HoistBase.markPersist`.
