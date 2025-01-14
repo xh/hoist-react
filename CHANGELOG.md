@@ -4,8 +4,7 @@
 
 ### ⚙️ Technical
 
-* Added support for registering custom `PersistenceProvider` implementations via
-  `PersistenceProvider.register()`, for advanced application usages requiring a custom provider.
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
 
 ## v71.0.0 - 2025-01-08
 
