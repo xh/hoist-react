@@ -12,12 +12,14 @@ import {
     get,
     isEmpty,
     isNumber,
+    isString,
     isUndefined,
     set,
     toPath
 } from 'lodash';
 import {IReactionDisposer, reaction} from 'mobx';
-import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
+import {Class} from 'type-fest';
+import {DebounceSpec, HoistBase, Persistable, PersistableState, PersistenceProviderType} from '../';
 import {
     CustomProvider,
     DashViewProvider,
@@ -28,17 +30,11 @@ import {
     ViewManagerProvider
 } from './';
 
-export type PersistenceProviderConfig<S> =
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S>;
-          owner: HoistBase;
-      }
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S> & HoistBase;
-          owner?: HoistBase;
-      };
+export type PersistenceProviderConfig<S = any> = {
+    persistOptions: PersistOptions;
+    target: Persistable<S>;
+    owner?: HoistBase;
+};
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -57,7 +53,7 @@ export type PersistenceProviderConfig<S> =
  *   - {@link ViewManagerProvider} - persists to saved views managed by {@link ViewManagerModel}.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
-export abstract class PersistenceProvider<S> {
+export abstract class PersistenceProvider<S = any> {
     readonly path: string;
     readonly debounce: DebounceSpec;
     readonly owner: HoistBase;
@@ -66,35 +62,6 @@ export abstract class PersistenceProvider<S> {
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
-
-    private static readonly PROVIDERS: Record<
-        PersistenceProviderType,
-        new <S>(cfg: PersistenceProviderConfig<S>) => PersistenceProvider<S>
-    > = {
-        pref: PrefProvider,
-        localStorage: LocalStorageProvider,
-        sessionStorage: SessionStorageProvider,
-        dashView: DashViewProvider,
-        viewManager: ViewManagerProvider,
-        custom: CustomProvider
-    };
-
-    /**
-     * Register a custom `PersistenceProvider` subclass for use by the {@link create} factory called
-     * by all persistable components. Supports passing `persistWith: {type: 'myCustomType'}`.
-     *
-     * Note you will need to extend/redeclare the {@link PersistenceProviderTypeRegistry} interface
-     * to satisfy Typescript - see the comment w/example on that interface below.
-     *
-     * @param type - provider identifier to support as a `PersistOptions.type` value.
-     * @param provider - the custom provider class to instantiate.
-     */
-    static registerType(
-        type: PersistenceProviderType,
-        provider: new <S>(cfg: PersistenceProviderConfig<S>) => PersistenceProvider<S>
-    ) {
-        this.PROVIDERS[type] = provider;
-    }
 
     /**
      * Construct an instance of this class.
@@ -115,8 +82,8 @@ export abstract class PersistenceProvider<S> {
         const {target, persistOptions} = cfg;
 
         let {type, ...rest} = persistOptions,
+            clazz: Class<PersistenceProvider<S>, [PersistenceProviderConfig<S>]> = null,
             ret: PersistenceProvider<S>;
-
         try {
             if (!type) {
                 if (rest.prefKey) type = 'pref';
@@ -127,7 +94,12 @@ export abstract class PersistenceProvider<S> {
                 if (rest.getData || rest.setData) type = 'custom';
             }
 
-            const clazz = this.PROVIDERS[type];
+            if (isString(type)) {
+                clazz = this.PROVIDERS[type];
+            } else {
+                clazz = type;
+            }
+
             throwIf(!clazz, `Unknown Persistence Provider type: ${type}`);
 
             ret = new clazz(cfg);
@@ -221,31 +193,20 @@ export abstract class PersistenceProvider<S> {
     }
 
     protected writeRaw(obj: Record<typeof this.path, S>) {}
+
     protected readRaw(): Record<typeof this.path, S> {
         return null;
     }
-}
 
-/**
- * For app-level declaration merging, to define a type identifier for a custom `PersistenceProvider`
- * implementation registered via {@link PersistenceProvider.registerType}.
- *
- * Add the below within your app's Bootstrap.ts file or similar:
- * ```typescript
- * declare module '@xh/hoist/core' {
- *     interface PersistenceProviderTypeRegistry {myCustomType: true;}
- * }
- * ```
- *
- * Then register with: `PersistenceProvider.registerType('myCustomType', MyCustomProviderClass)`.
- */
-export interface PersistenceProviderTypeRegistry {
-    pref: true;
-    localStorage: true;
-    sessionStorage: true;
-    dashView: true;
-    viewManager: true;
-    custom: true;
+    private static readonly PROVIDERS: Record<
+        PersistenceProviderType,
+        Class<PersistenceProvider, [PersistenceProviderConfig]>
+    > = {
+        pref: PrefProvider,
+        localStorage: LocalStorageProvider,
+        sessionStorage: SessionStorageProvider,
+        dashView: DashViewProvider,
+        viewManager: ViewManagerProvider,
+        custom: CustomProvider
+    };
 }
-
-export type PersistenceProviderType = keyof PersistenceProviderTypeRegistry;

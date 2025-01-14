@@ -5,9 +5,18 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec, PersistenceProviderType} from '../';
+import {Class} from 'type-fest';
+import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
+
+export type PersistenceProviderType =
+    | 'pref'
+    | 'localStorage'
+    | 'sessionStorage'
+    | 'dashView'
+    | 'viewManager'
+    | 'custom';
 
 export interface PersistOptions {
     /** Dot delimited path to store state. */
@@ -17,10 +26,13 @@ export interface PersistOptions {
     debounce?: DebounceSpec;
 
     /**
-     * Type of PersistenceProvider to create. If not provided, defaulted based on the presence of
+     * Type of PersistenceProvider to create. Specify as one of the built-in string types,
+     * or a subclass of PersistenceProvider.
+     *
+     * If not provided, defaulted to one of the built-in string types based on the presence of
      * `prefKey`, `localStorageKey`, `dashViewModel`, 'viewManagerModel', or `getData/setData`.
      */
-    type?: PersistenceProviderType;
+    type?: PersistenceProviderType | Class<PersistenceProvider, [PersistenceProviderConfig]>;
 
     /** Predefined Hoist application Preference key used to store state. */
     prefKey?: string;
