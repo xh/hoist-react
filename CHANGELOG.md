@@ -12,6 +12,10 @@
 * Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
   largely the same, notwithstanding the minor breaking changes detailed above.
 
+### ⚙️ Technical
+
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
+
 ### ⚙️ Typescript API Adjustments
 
 * Improved signature of `HoistBase.markPersist`.

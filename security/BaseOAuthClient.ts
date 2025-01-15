@@ -4,8 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
+import {never, wait} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
@@ -283,6 +286,32 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         this.logDebug('Restoring Redirect State', state);
         const {search, pathname} = state;
         window.history.replaceState(null, '', pathname + search);
+    }
+
+    /** Call after requesting the provider library redirect the user away for auth. */
+    protected async maskAfterRedirectAsync() {
+        // We expect the tab to unload momentarily and be redirected to the provider's login page.
+        // Wait here to ensure we mask the app while the browser processes the redirect...
+        await wait(10 * SECONDS);
+
+        // ...but also handle an observed edge case where the browser decided to open a new tab
+        // instead of redirecting the current one (https://github.com/xh/hoist-react/issues/3899).
+        // Show message below if/when user swaps back to the original tab, vs. endless spinner.
+        await XH.alert({
+            title: 'Auth / Redirect Error',
+            message: fragment(
+                'Authentication did not complete as expected / tab was not redirected.',
+                br(),
+                br(),
+                'Please click below or refresh this tab in your browser to try again.'
+            ),
+            confirmProps: {text: 'Reload', icon: Icon.refresh(), intent: 'primary', minimal: false}
+        });
+
+        XH.reloadApp();
+
+        // Ensure stale init does not progress - this tab should *really* be on its way out now!
+        await never();
     }
 
     protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {

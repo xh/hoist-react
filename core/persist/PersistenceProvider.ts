@@ -12,33 +12,29 @@ import {
     get,
     isEmpty,
     isNumber,
+    isString,
     isUndefined,
     set,
     toPath
 } from 'lodash';
 import {IReactionDisposer, reaction} from 'mobx';
-import {DebounceSpec, HoistBase, Persistable, PersistableState, XH} from '../';
+import {Class} from 'type-fest';
+import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
 import {
     CustomProvider,
     DashViewProvider,
     LocalStorageProvider,
-    SessionStorageProvider,
     PersistOptions,
     PrefProvider,
+    SessionStorageProvider,
     ViewManagerProvider
 } from './';
 
-export type PersistenceProviderConfig<S> =
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S>;
-          owner: HoistBase;
-      }
-    | {
-          persistOptions: PersistOptions;
-          target: Persistable<S> & HoistBase;
-          owner?: HoistBase;
-      };
+export type PersistenceProviderConfig<S = any> = {
+    persistOptions: PersistOptions;
+    target: Persistable<S>;
+    owner?: HoistBase;
+};
 
 /**
  * Abstract superclass for adaptor objects used by models and components to (re)store state to and
@@ -57,7 +53,7 @@ export type PersistenceProviderConfig<S> =
  *   - {@link ViewManagerProvider} - persists to saved views managed by {@link ViewManagerModel}.
  *   - {@link CustomProvider} - API for app and components to provide their own storage mechanism.
  */
-export abstract class PersistenceProvider<S> {
+export abstract class PersistenceProvider<S = any> {
     readonly path: string;
     readonly debounce: DebounceSpec;
     readonly owner: HoistBase;
@@ -79,49 +75,14 @@ export abstract class PersistenceProvider<S> {
      * target without thrashing.
      */
     static create<S>(cfg: PersistenceProviderConfig<S>): PersistenceProvider<S> {
-        cfg = {
-            owner: cfg.target instanceof HoistBase ? cfg.target : cfg.owner,
-            ...cfg
-        };
-        const {target, persistOptions} = cfg;
-
-        let {type, ...rest} = persistOptions,
-            ret: PersistenceProvider<S>;
-
+        let ret: PersistenceProvider<S>;
         try {
-            if (!type) {
-                if (rest.prefKey) type = 'pref';
-                if (rest.localStorageKey) type = 'localStorage';
-                if (rest.sessionStorageKey) type = 'sessionStorage';
-                if (rest.dashViewModel) type = 'dashView';
-                if (rest.viewManagerModel) type = 'viewManager';
-                if (rest.getData || rest.setData) type = 'custom';
-            }
+            // default owner to target
+            cfg = {owner: cfg.target instanceof HoistBase ? cfg.target : cfg.owner, ...cfg};
 
-            switch (type) {
-                case 'pref':
-                    ret = new PrefProvider(cfg);
-                    break;
-                case 'localStorage':
-                    ret = new LocalStorageProvider(cfg);
-                    break;
-                case 'sessionStorage':
-                    ret = new SessionStorageProvider(cfg);
-                    break;
-                case `dashView`:
-                    ret = new DashViewProvider(cfg);
-                    break;
-                case `viewManager`:
-                    ret = new ViewManagerProvider(cfg);
-                    break;
-                case 'custom':
-                    ret = new CustomProvider(cfg);
-                    break;
-                default:
-                    throw XH.exception(`Unknown Persistence Provider for type: ${type}`);
-            }
-
-            ret.bindToTarget(target);
+            const providerClass = this.parseProviderClass<S>(cfg.persistOptions);
+            ret = new providerClass(cfg);
+            ret.bindToTarget(cfg.target);
             return ret;
         } catch (e) {
             logError(e, cfg.owner);
@@ -211,7 +172,39 @@ export abstract class PersistenceProvider<S> {
     }
 
     protected writeRaw(obj: Record<typeof this.path, S>) {}
+
     protected readRaw(): Record<typeof this.path, S> {
         return null;
+    }
+
+    private static parseProviderClass<S>(
+        opts: PersistOptions
+    ): Class<PersistenceProvider<S>, [PersistenceProviderConfig<S>]> {
+        // 1) Recognize shortcut form
+        const {type, ...rest} = opts;
+        if (!type) {
+            if (rest.prefKey) return PrefProvider;
+            if (rest.localStorageKey) return LocalStorageProvider;
+            if (rest.sessionStorageKey) return SessionStorageProvider;
+            if (rest.dashViewModel) return DashViewProvider;
+            if (rest.viewManagerModel) return ViewManagerProvider;
+            if (rest.getData || rest.setData) return CustomProvider;
+        }
+
+        // 2) Map any string to known Provider Class, or return raw class
+        const ret = isString(type)
+            ? {
+                  pref: PrefProvider,
+                  localStorage: LocalStorageProvider,
+                  sessionStorage: SessionStorageProvider,
+                  dashView: DashViewProvider,
+                  viewManager: ViewManagerProvider,
+                  custom: CustomProvider
+              }[type]
+            : type;
+
+        throwIf(!ret, `Unknown Persistence Provider: ${type}`);
+
+        return ret;
     }
 }
