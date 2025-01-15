@@ -2,6 +2,10 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` unique name validation.
+
 ### ⚙️ Technical
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
