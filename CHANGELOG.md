@@ -2,6 +2,10 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed un-optimal column state synchronization between `GridModel` and Ag-Grid
+
 ### ⚙️ Technical
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
