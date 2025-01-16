@@ -46,7 +46,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -477,11 +477,13 @@ export class GridLocalModel extends HoistModel {
                 // Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
                 if (autoColState) {
-                    colState.splice(
-                        agColState.indexOf(autoColState),
-                        0,
-                        autoColState as ColumnState
-                    );
+                    const {colId, width, hide, pinned} = autoColState;
+                    colState.splice(agColState.indexOf(autoColState), 0, {
+                        colId,
+                        width,
+                        hidden: hide,
+                        pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned
+                    });
                 }
 
                 // Determine if column order has changed
@@ -518,6 +520,8 @@ export class GridLocalModel extends HoistModel {
                         return hasChanges ? ret : null;
                     })
                 );
+
+                if (isEmpty(colState)) return;
 
                 this.doWithPreservedState({expansion: false}, () => {
                     api.applyColumnState({state: colState, applyOrder});
