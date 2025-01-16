@@ -12,6 +12,10 @@
 * Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
   largely the same, notwithstanding the minor breaking changes detailed above.
 
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` unique name validation.
+
 ### ⚙️ Technical
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
