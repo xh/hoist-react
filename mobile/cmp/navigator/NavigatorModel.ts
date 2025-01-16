@@ -182,13 +182,14 @@ export class NavigatorModel extends HoistModel {
 
                     swiper.allowTouchMove = allowTouchMove;
 
-                    // During the swiper transition, undo the scrollable parent's internal scroll.
+                    // During the swiper transition, undo the scrollable parent's internal scroll
+                    // to keep it static.
                     if (swiper.progress < 1) {
                         scrollableParent.scrollLeft -= distance;
                     }
                 }
             } else {
-                // If there is no scrollable parent, allow the swipe to proceed.
+                // If there is no scrollable parent, simply allow the swipe to proceed.
                 swiper.allowTouchMove = true;
             }
         });
