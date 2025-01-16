@@ -177,10 +177,8 @@ export class NavigatorModel extends HoistModel {
                     // If we are scrolling "right" (i.e. "back"), we favor Swiper if the scrollable
                     // parent is at the leftmost start of its scroll, or if we are in the middle of
                     // a Swiper transition.
-                    const allowTouchMove =
+                    swiper.allowTouchMove =
                         swiper.progress < 1 || !isDraggableEl(scrollableParent, 'right');
-
-                    swiper.allowTouchMove = allowTouchMove;
 
                     // During the swiper transition, undo the scrollable parent's internal scroll
                     // to keep it static.
