@@ -6,6 +6,7 @@
  */
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {div} from '@xh/hoist/cmp/layout';
+import {throwIf} from '@xh/hoist/utils/js';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {PageModel} from '../PageModel';
 import './Page.scss';
@@ -26,6 +27,10 @@ export const page = hoistCmp.factory({
 
     render({model}) {
         const {content, props, isActive, renderMode, refreshContextModel} = model;
+        throwIf(
+            renderMode === 'always',
+            "RenderMode 'always' is not supported in Navigator. Pages can't exist before being mounted."
+        );
 
         if (!isActive && renderMode === 'unmountOnHide') {
             // Note: We must render an empty placeholder page to work with the Navigator.

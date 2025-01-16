@@ -6,7 +6,7 @@
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
-import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf, mergeDeep} from '@xh/hoist/utils/js';
+import {ensureNotEmpty, ensureUniqueBy, throwIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys} from 'lodash';
 import {Swiper} from 'swiper/types';
@@ -97,9 +97,9 @@ export class NavigatorModel extends HoistModel {
     }: NavigatorConfig) {
         super();
         makeObservable(this);
-        warnIf(
+        throwIf(
             renderMode === 'always',
-            "RenderMode.ALWAYS is not supported in Navigator. Pages can't exist before being mounted."
+            "RenderMode 'always' is not supported in Navigator. Pages can't exist before being mounted."
         );
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
