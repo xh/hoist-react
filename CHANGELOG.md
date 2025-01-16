@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `ViewManagerModel` unique name validation.
 * Fixed un-optimal column state synchronization between `GridModel` and Ag-Grid
 
 ### ⚙️ Technical
