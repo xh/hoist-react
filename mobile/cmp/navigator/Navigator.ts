@@ -34,7 +34,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorModel>({
                 creativeEffect: {
                     prev: {
                         shadow: true,
-                        translate: ['-60%', 0, -1]
+                        translate: ['-15%', 0, -1]
                     },
                     next: {
                         translate: ['100%', 0, 0]

@@ -13,7 +13,7 @@ import './GestureRefresh.scss';
 import {GestureRefreshModel} from './GestureRefreshModel';
 
 /**
- * Wrap the Onsen Navigator with drag gesture handling.
+ * Wrap the Navigator with gesture that triggers a refresh by pulling down.
  *
  * @internal
  */

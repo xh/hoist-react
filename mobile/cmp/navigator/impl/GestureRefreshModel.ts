@@ -9,7 +9,7 @@ import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {isFinite, clamp} from 'lodash';
 import {NavigatorModel} from '../NavigatorModel';
-import {isDraggingChild} from './Utils';
+import {hasDraggableParent} from './Utils';
 
 /**
  * @internal
@@ -53,7 +53,7 @@ export class GestureRefreshModel extends HoistModel {
         if (
             direction === 'down' &&
             navigatorModel.pullDownToRefresh &&
-            !isDraggingChild(e, 'down')
+            !hasDraggableParent(e, 'down')
         ) {
             this.refreshStart();
             consumeEvent(e);

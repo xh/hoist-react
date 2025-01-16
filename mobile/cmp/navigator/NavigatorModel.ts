@@ -5,14 +5,14 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, warnIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys} from 'lodash';
 import {Swiper} from 'swiper/types';
+import '@xh/hoist/mobile/register';
 import {PageConfig, PageModel} from './PageModel';
-import {isScrollable} from './impl/Utils';
+import {findScrollableParent, isDraggableEl} from './impl/Utils';
 
 export interface NavigatorConfig {
     /** Configs for PageModels, representing all supported pages within this Navigator/App. */
@@ -65,6 +65,7 @@ export class NavigatorModel extends HoistModel {
 
     private _swiper: Swiper;
     private _callback: () => void;
+    private _touchStartX: number;
 
     get activePageId(): string {
         return this.activePage?.id;
@@ -75,7 +76,7 @@ export class NavigatorModel extends HoistModel {
     }
 
     get activePageIdx(): number {
-        return this._swiper?.activeIndex ?? this.stack.length - 1;
+        return this._swiper?.activeIndex ?? 0;
     }
 
     get allowSlideNext(): boolean {
@@ -145,15 +146,56 @@ export class NavigatorModel extends HoistModel {
         if (this._swiper) return;
         this._swiper = swiper;
 
-        this._swiper.on('transitionEnd', () => this.onPageChange());
+        swiper.on('transitionEnd', () => this.onPageChange());
 
-        // Cancel drag back if you are dragging a horizontally scrollable element.
-        this._swiper.on('touchStart', (s, event: TouchEvent) => {
-            this._swiper.allowTouchMove = !isScrollable(event, 'horizontal');
+        // Ensure Swiper's touch move is initially disabled, and capture
+        // the initial touch position. This is required to allow touch move
+        // to propagate to scrollable elements within the page.
+        swiper.on('touchStart', (s, event: PointerEvent) => {
+            swiper.allowTouchMove = false;
+            this._touchStartX = event.pageX;
         });
 
-        this._swiper.on('touchEnd', () => {
-            this._swiper.allowTouchMove = true;
+        // Add our own "touchmove" handler to the swiper, allowing us to toggle
+        // the built-in touch detection based on the presence of scrollable elements.
+        swiper.el.addEventListener('touchmove', (event: TouchEvent) => {
+            const touch = event.touches[0],
+                distance = touch.clientX - this._touchStartX,
+                direction = distance > 0 ? 'right' : 'left';
+
+            const scrollableParent = findScrollableParent(event, 'horizontal');
+            if (scrollableParent) {
+                // If there is a scrollable parent we need to determine whether to allow
+                // the swiper or the scrollable parent to "win".
+
+                if (direction === 'left') {
+                    // If we are scrolling "left" (i.e. "forward"), simply always prevent Swiper
+                    // to allow internal scrolling. Our stack-based navigation does not allow
+                    // forward navigation.
+                    swiper.allowTouchMove = false;
+                } else {
+                    // If we are scrolling "right" (i.e. "back"), we favor Swiper if the scrollable
+                    // parent is at the leftmost start of its scroll, or if we are in the middle of
+                    // a Swiper transition.
+                    const allowTouchMove =
+                        swiper.progress < 1 || !isDraggableEl(scrollableParent, 'right');
+
+                    swiper.allowTouchMove = allowTouchMove;
+
+                    // During the swiper transition, undo the scrollable parent's internal scroll.
+                    if (swiper.progress < 1) {
+                        scrollableParent.scrollLeft -= distance;
+                    }
+                }
+            } else {
+                // If there is no scrollable parent, allow the swipe to proceed.
+                swiper.allowTouchMove = true;
+            }
+        });
+
+        // Ensure Swiper's touch move is disabled after each touch completes.
+        swiper.on('touchEnd', () => {
+            swiper.allowTouchMove = false;
         });
 
         this.onRouteChange(true);
@@ -267,7 +309,7 @@ export class NavigatorModel extends HoistModel {
             this.stack = stack;
             this._swiper.update();
 
-            // Wait for the new page to be rendered before sliding to it.
+            // Wait for the new stack to be rendered before sliding to the new page.
             wait(1).then(() => {
                 if (forwardOnePage) {
                     this._swiper.slideNext(transitionMs);
