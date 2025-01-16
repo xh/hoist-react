@@ -97,10 +97,6 @@ export class NavigatorModel extends HoistModel {
     }: NavigatorConfig) {
         super();
         makeObservable(this);
-        throwIf(
-            renderMode === 'always',
-            "RenderMode 'always' is not supported in Navigator. Pages can't exist before being mounted."
-        );
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
@@ -267,7 +263,7 @@ export class NavigatorModel extends HoistModel {
             }
 
             // Re-use existing PageModels where possible
-            const existingPageModel = i < this.stack.length ? this.stack[i] : null;
+            const existingPageModel = this.stack[i];
             if (
                 existingPageModel?.id === part.id &&
                 isEqual(existingPageModel?.props, part.props)
