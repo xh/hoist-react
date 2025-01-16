@@ -167,7 +167,6 @@ export class NavigatorModel extends HoistModel {
             if (scrollableParent) {
                 // If there is a scrollable parent we need to determine whether to allow
                 // the swiper or the scrollable parent to "win".
-
                 if (direction === 'left') {
                     // If we are scrolling "left" (i.e. "forward"), simply always prevent Swiper
                     // to allow internal scrolling. Our stack-based navigation does not allow
