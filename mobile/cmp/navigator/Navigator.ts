@@ -29,6 +29,7 @@ export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorModel>({
                 allowSlideNext,
                 allowSlidePrev,
                 slidesPerView: 1,
+                shortSwipes: false,
                 modules: [EffectCreative],
                 effect: 'creative',
                 creativeEffect: {
