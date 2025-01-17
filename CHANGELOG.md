@@ -9,6 +9,19 @@
   * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
   * Column header filtering functionality now similar to Excel on Windows
 
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` unique name validation.
+
+### ⚙️ Technical
+
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
+
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)

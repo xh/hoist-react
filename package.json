@@ -12,7 +12,6 @@
     "lint:all": "yarn lint:ts && yarn lint:js && yarn lint:styles",
     "lint:js": "eslint --ext .js,.jsx .",
     "lint:ts": "eslint --ext .ts,.tsx .",
-    "tsc": "./node_modules/typescript/bin/tsc",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "prepare": "husky"
   },

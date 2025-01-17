@@ -10,11 +10,9 @@ import {
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
-    RedirectRequest,
     SilentRequest
 } from '@azure/msal-browser';
 import {XH} from '@xh/hoist/core';
-import {never} from '@xh/hoist/promise';
 import {Token, TokenMap} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
@@ -201,18 +199,18 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
-        const {client} = this,
-            state = this.captureRedirectState(),
-            opts: RedirectRequest = {
-                state,
-                loginHint: this.getSelectedUsername(),
-                domainHint: this.config.domainHint,
-                scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopesToConsent,
-                redirectUri: this.redirectUrl
-            };
-        await client.acquireTokenRedirect(opts);
-        await never();
+        const state = this.captureRedirectState();
+
+        await this.client.acquireTokenRedirect({
+            state,
+            loginHint: this.getSelectedUsername(),
+            domainHint: this.config.domainHint,
+            scopes: this.loginScopes,
+            extraScopesToConsent: this.loginExtraScopesToConsent,
+            redirectUri: this.redirectUrl
+        });
+
+        await this.maskAfterRedirectAsync();
     }
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
