@@ -2,6 +2,13 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Improvements to  Grid columns `HeaderFilter` component:
+  * `GridFilterModel` `commitOnChage` now set to `false` by default
+  * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
+  * Column header filtering functionality now similar to Excel on Windows
+
 ## v71.0.0 - 2025-01-08
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
