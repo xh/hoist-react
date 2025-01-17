@@ -5,6 +5,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed `ViewManagerModel` unique name validation.
+* `GridModel.restoreDefaultsAsync()` now restores default filter rather than simply clearing it.
 
 ### ⚙️ Technical
 
