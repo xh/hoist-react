@@ -2,14 +2,24 @@
 
 ## v72.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
+  `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
+
+### 🎁 New Features
+
+* Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
+  largely the same, notwithstanding the minor breaking changes detailed above.
+
 ### 🐞 Bug Fixes
 
 * Fixed `ViewManagerModel` unique name validation.
+* `GridModel.restoreDefaultsAsync()` now restores default filter rather than simply clearing it.
 
 ### ⚙️ Technical
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
-
 
 ### ⚙️ Typescript API Adjustments
 

@@ -600,6 +600,7 @@ export class GridModel extends HoistModel {
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
+        if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
         if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
@@ -644,12 +645,12 @@ export class GridModel extends HoistModel {
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy} = this._defaultState;
+        const {columns, sortBy, groupBy, filter} = this._defaultState;
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
-        this.filterModel?.clear();
+        this.filterModel?.setFilter(filter);
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();

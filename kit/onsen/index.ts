@@ -23,7 +23,6 @@ export const [button, Button] = wrappedCmp(ons.Button),
     [checkbox, Checkbox] = wrappedCmp(ons.Checkbox),
     [gestureDetector, GestureDetector] = wrappedCmp(ons.GestureDetector),
     [input, Input] = wrappedCmp(ons.Input),
-    [navigator, Navigator] = wrappedCmp(ons.Navigator),
     [searchInput, SearchInput] = wrappedCmp(ons.SearchInput),
     [select, Select] = wrappedCmp(ons.Select),
     [switchControl, SwitchControl] = wrappedCmp(ons.Switch);
