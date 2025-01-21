@@ -132,6 +132,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'userAgent'},
                 {field: 'url', displayName: 'URL'},
                 {field: 'instance'},
+                {field: 'severity'},
                 {field: 'appVersion'},
                 {field: 'appEnvironment', displayName: 'Environment'}
             ]
