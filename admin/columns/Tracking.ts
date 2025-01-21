@@ -37,6 +37,16 @@ export const browser: ColumnSpec = {
     width: 100
 };
 
+export const severity: ColumnSpec = {
+    field: {
+        name: 'severity',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    width: 80
+};
+
 export const category: ColumnSpec = {
     field: {
         name: 'category',

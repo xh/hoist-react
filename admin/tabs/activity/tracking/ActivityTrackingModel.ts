@@ -87,6 +87,7 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 Col.browser.field,
                 Col.category.field,
+                Col.severity.field,
                 Col.correlationId.field,
                 Col.data.field,
                 {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
