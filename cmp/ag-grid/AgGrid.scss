@@ -26,6 +26,12 @@
   .ag-floating-bottom {
     overflow-y: hidden !important;
   }
+
+  // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
+  // conflicts with the drag management in the Navigator.
+  .ag-center-cols-viewport {
+    overscroll-behavior-x: none;
+  }
 }
 
 // Ag-Grid themes referenced here to help ensure a high enough level of specificity for our rules.
