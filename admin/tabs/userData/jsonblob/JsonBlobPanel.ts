@@ -56,12 +56,12 @@ export const jsonBlobPanel = hoistCmp.factory({
                             field: {name: 'owner', type: 'string'},
                             width: 200
                         },
-                        {...Col.lastUpdated},
+                        {...AdminCol.name},
                         {
                             field: {name: 'json', type: 'string'},
                             hidden: true
                         },
-                        {...AdminCol.name}
+                        {...Col.lastUpdated}
                     ]
                 }
             }),

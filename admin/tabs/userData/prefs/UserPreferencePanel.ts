@@ -44,20 +44,16 @@ export const userPreferencePanel = hoistCmp.factory({
                     groupBy: 'groupName',
                     columns: [
                         {
-                            field: {name: 'type', type: 'string'},
-                            width: 200
-                        },
-                        {
                             field: {name: 'owner', type: 'string'},
                             width: 200
                         },
-                        {...Col.lastUpdated},
+                        {...AdminCol.groupName},
+                        {...AdminCol.name},
                         {
                             field: {name: 'json', type: 'string'},
                             hidden: true
                         },
-                        {...AdminCol.name},
-                        {...AdminCol.groupName}
+                        {...Col.lastUpdated}
                     ]
                 }
             })
