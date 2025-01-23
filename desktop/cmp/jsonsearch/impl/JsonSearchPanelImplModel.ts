@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -16,8 +17,15 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     gridModel: GridModel;
 
-    @bindable.ref path;
-    @bindable matchingNodes: string;
+    @bindable path: string = '';
+    @bindable pathOrValue: 'path' | 'value' = 'value';
+    @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
+    @bindable matchingNodes: string = '';
+    @bindable matchingNodeCount: number = 0;
+
+    get asPathList(): boolean {
+        return this.pathOrValue === 'path';
+    }
 
     get queryBuffer(): number {
         return this.componentProps.queryBuffer ?? 200;
@@ -53,7 +61,12 @@ export class JsonSearchPanelImplModel extends HoistModel {
                 debounce: this.queryBuffer
             },
             {
-                track: () => [this.gridModel.selectedRecord, this.path],
+                track: () => [
+                    this.gridModel.selectedRecord,
+                    this.path,
+                    this.pathOrValue,
+                    this.pathFormat
+                ],
                 run: () => this.loadJsonNodesAsync(),
                 debounce: 300
             }
@@ -61,7 +74,12 @@ export class JsonSearchPanelImplModel extends HoistModel {
     }
 
     private async loadJsonDocsAsync() {
-        let data = await XH.fetchJson({
+        if (this.path.endsWith('.') || this.path === '$') {
+            this.gridModel.clear();
+            return;
+        }
+
+        const data = await XH.fetchJson({
             url: this.docSearchUrl,
             params: {path: this.path}
         });
@@ -71,15 +89,31 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     private async loadJsonNodesAsync() {
         if (!this.gridModel.selectedRecord) {
+            this.matchingNodeCount = 0;
             this.matchingNodes = '';
             return;
         }
 
-        const nodes = await XH.fetchJson({
+        let nodes = await XH.fetchJson({
             url: this.matchingNodesUrl,
-            params: {path: this.path, json: this.gridModel.selectedRecord.data.json}
+            params: {
+                path: this.path,
+                asPathList: this.pathOrValue === 'path',
+                json: this.gridModel.selectedRecord.data.json
+            }
         });
 
+        this.matchingNodeCount = nodes.length;
+        if (this.asPathList && this.pathFormat === 'XPath') {
+            nodes = nodes.map(it => this.convertToPath(it));
+        }
         this.matchingNodes = JSON.stringify(nodes, null, 2);
+    }
+
+    private convertToPath(JSONPath: string): string {
+        return JSONPath.replaceAll(/^\$\['?/g, '/')
+            .replaceAll(/^\$/g, '')
+            .replaceAll(/'?]\['?/g, '/')
+            .replaceAll(/'?]$/g, '');
     }
 }
