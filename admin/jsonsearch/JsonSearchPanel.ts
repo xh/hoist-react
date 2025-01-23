@@ -133,7 +133,8 @@ const helpButton = hoistCmp.factory({
                                 key: query,
                                 items: [
                                     span({
-                                        className: 'xh-bg-alt xh-gray-dark xh-font-family-mono',
+                                        className:
+                                            'xh-border xh-pad-half xh-bg-alt xh-font-family-mono',
                                         item: query
                                     }),
                                     ' ',
