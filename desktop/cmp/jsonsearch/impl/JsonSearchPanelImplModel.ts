@@ -6,8 +6,9 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {isEmpty} from 'lodash';
 
 /**
  * @internal
@@ -15,8 +16,11 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 export class JsonSearchPanelImplModel extends HoistModel {
     override xhImpl = true;
 
-    gridModel: GridModel;
+    @managed gridModel: GridModel;
+    @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
+    @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
 
+    @bindable.ref error = null;
     @bindable path: string = '';
     @bindable pathOrValue: 'path' | 'value' = 'value';
     @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
@@ -57,34 +61,41 @@ export class JsonSearchPanelImplModel extends HoistModel {
         this.addReaction(
             {
                 track: () => this.path,
-                run: () => this.loadJsonDocsAsync(),
-                debounce: this.queryBuffer
+                run: path => {
+                    if (isEmpty(path)) {
+                        this.error = null;
+                        this.gridModel.clear();
+                    }
+                }
             },
             {
-                track: () => [
-                    this.gridModel.selectedRecord,
-                    this.path,
-                    this.pathOrValue,
-                    this.pathFormat
-                ],
+                track: () => [this.gridModel.selectedRecord, this.pathOrValue, this.pathFormat],
                 run: () => this.loadJsonNodesAsync(),
                 debounce: 300
             }
         );
     }
 
-    private async loadJsonDocsAsync() {
-        if (this.path.endsWith('.') || this.path === '$') {
+    async loadJsonDocsAsync() {
+        if (isEmpty(this.path)) {
+            this.error = null;
             this.gridModel.clear();
             return;
         }
 
-        const data = await XH.fetchJson({
-            url: this.docSearchUrl,
-            params: {path: this.path}
-        });
+        try {
+            const data = await XH.fetchJson({
+                url: this.docSearchUrl,
+                params: {path: this.path}
+            }).linkTo(this.docLoadTask);
 
-        this.gridModel.loadData(data);
+            this.error = null;
+            this.gridModel.loadData(data);
+            this.gridModel.selectFirstAsync();
+        } catch (e) {
+            this.gridModel.clear();
+            this.error = e;
+        }
     }
 
     private async loadJsonNodesAsync() {
@@ -101,7 +112,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
                 asPathList: this.pathOrValue === 'path',
                 json: this.gridModel.selectedRecord.data.json
             }
-        });
+        }).linkTo(this.nodeLoadTask);
 
         this.matchingNodeCount = nodes.length;
         if (this.asPathList && this.pathFormat === 'XPath') {
