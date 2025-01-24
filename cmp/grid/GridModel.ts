@@ -9,6 +9,7 @@ import {
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     ColumnEvent,
+    ColumnState as AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
@@ -77,6 +78,7 @@ import {
     first,
     forEach,
     isArray,
+    isBoolean,
     isEmpty,
     isFunction,
     isNil,
@@ -1073,17 +1075,19 @@ export class GridModel extends HoistModel {
         (this.colChooserModel as any)?.open();
     }
 
-    noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
-            const col = this.findColumn(this.columns, colId);
-            if (!col) return null;
-            return {
-                colId,
-                pinned: pinned ?? null,
-                hidden: !!hide,
-                width: col.flex ? undefined : width
-            };
-        });
+    noteAgColumnStateChanged(agColState: AgColumnState[]) {
+        const colStateChanges: Partial<ColumnState>[] = agColState.map(
+            ({colId, width, hide, pinned}) => {
+                const col = this.findColumn(this.columns, colId);
+                if (!col) return null;
+                return {
+                    colId,
+                    pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned,
+                    hidden: !!hide,
+                    width: col.flex ? undefined : width
+                };
+            }
+        );
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
