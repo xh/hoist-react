@@ -15,7 +15,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed `ViewManagerModel` unique name validation.
-* `GridModel.restoreDefaultsAsync()` now restores default filter rather than simply clearing it.
+* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply clearing it.
+* Improved suboptimal column state synchronization between `GridModel` and AG Grid.
 
 ### ⚙️ Technical
 
