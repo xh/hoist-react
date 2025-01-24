@@ -9,6 +9,7 @@ import {
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     ColumnEvent,
+    ColumnState as AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
@@ -77,6 +78,7 @@ import {
     first,
     forEach,
     isArray,
+    isBoolean,
     isEmpty,
     isFunction,
     isNil,
@@ -600,6 +602,7 @@ export class GridModel extends HoistModel {
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
+        if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
         if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
@@ -644,12 +647,12 @@ export class GridModel extends HoistModel {
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy} = this._defaultState;
+        const {columns, sortBy, groupBy, filter} = this._defaultState;
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
 
-        this.filterModel?.clear();
+        this.filterModel?.setFilter(filter);
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
@@ -1072,17 +1075,19 @@ export class GridModel extends HoistModel {
         (this.colChooserModel as any)?.open();
     }
 
-    noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
-            const col = this.findColumn(this.columns, colId);
-            if (!col) return null;
-            return {
-                colId,
-                pinned: pinned ?? null,
-                hidden: !!hide,
-                width: col.flex ? undefined : width
-            };
-        });
+    noteAgColumnStateChanged(agColState: AgColumnState[]) {
+        const colStateChanges: Partial<ColumnState>[] = agColState.map(
+            ({colId, width, hide, pinned}) => {
+                const col = this.findColumn(this.columns, colId);
+                if (!col) return null;
+                return {
+                    colId,
+                    pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned,
+                    hidden: !!hide,
+                    width: col.flex ? undefined : width
+                };
+            }
+        );
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);

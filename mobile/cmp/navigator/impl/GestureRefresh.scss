@@ -7,7 +7,12 @@
 $size: 36px;
 $half-size: 18px;
 
-.xh-swiper-indicator {
+.xh-gesture-refresh {
+  flex: 1;
+  width: 100%;
+}
+
+.xh-gesture-refresh-indicator {
   margin: -$half-size 0 0;
   position: absolute;
   display: flex;

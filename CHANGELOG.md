@@ -9,14 +9,25 @@
   * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
   * Column header filtering functionality now similar to Excel on Windows
 
+### 💥 Breaking Changes
+
+* Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
+  `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
+
+### 🎁 New Features
+
+* Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
+  largely the same, notwithstanding the minor breaking changes detailed above.
+
 ### 🐞 Bug Fixes
 
 * Fixed `ViewManagerModel` unique name validation.
+* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply clearing it.
+* Improved suboptimal column state synchronization between `GridModel` and AG Grid.
 
 ### ⚙️ Technical
 
 * Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
-
 
 ### ⚙️ Typescript API Adjustments
 

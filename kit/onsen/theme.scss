@@ -11,15 +11,10 @@
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
 body.xh-app.xh-mobile {
   // Background
-  .page,
-  .page__content,
-  .page__background,
   .textarea {
     background-color: var(--xh-bg);
   }
 
-  .page--material,
-  .page--material__background,
   .bottom-bar,
   .tabbar {
     background-color: var(--xh-bg-alt);
