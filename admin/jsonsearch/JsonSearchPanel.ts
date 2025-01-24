@@ -53,14 +53,14 @@ export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory<JsonBlobM
                             }),
                             panel({
                                 mask: impl.nodeLoadTask,
-                                tbar: nodeTbar({model: impl}),
+                                tbar: readerTbar({model: impl}),
                                 bbar: nodeBbar({
                                     omit: !impl.asPathList,
                                     model: impl
                                 }),
                                 item: jsonInput({
                                     model: impl,
-                                    bind: 'matchingNodes',
+                                    bind: 'readerContent',
                                     flex: 1,
                                     width: '100%',
                                     readonly: true,
@@ -161,30 +161,37 @@ const helpButton = hoistCmp.factory({
     }
 });
 
-const nodeTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
-    return toolbar(
-        buttonGroupInput({
-            model,
-            bind: 'pathOrValue',
-            minimal: true,
-            outlined: true,
-            items: [
-                button({
-                    text: 'Path',
-                    value: 'path'
-                }),
-                button({
-                    text: 'Value',
-                    value: 'value'
-                })
-            ]
-        }),
-        filler(),
-        box({
-            omit: !model.matchingNodeCount,
-            item: `${model.matchingNodeCount} ${model.matchingNodeCount === 1 ? 'match' : 'matches'}`
-        })
-    );
+const readerTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
+    return toolbar({
+        items: [
+            buttonGroupInput({
+                model,
+                bind: 'readerContentType',
+                minimal: true,
+                outlined: true,
+                disabled: !model.selectedRecord,
+                items: [
+                    button({
+                        text: 'Document',
+                        value: 'document'
+                    }),
+                    button({
+                        text: 'Matching Paths',
+                        value: 'paths'
+                    }),
+                    button({
+                        text: 'Matching Values',
+                        value: 'values'
+                    })
+                ]
+            }),
+            filler(),
+            box({
+                omit: !model.matchingNodeCount,
+                item: `${model.matchingNodeCount} ${model.matchingNodeCount === 1 ? 'match' : 'matches'}`
+            })
+        ]
+    });
 });
 
 const nodeBbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {

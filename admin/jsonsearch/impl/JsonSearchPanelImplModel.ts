@@ -22,13 +22,13 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     @bindable.ref error = null;
     @bindable path: string = '';
-    @bindable pathOrValue: 'path' | 'value' = 'value';
+    @bindable readerContentType: 'document' | 'paths' | 'values' = 'values';
     @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
-    @bindable matchingNodes: string = '';
+    @bindable readerContent: string = '';
     @bindable matchingNodeCount: number = 0;
 
     get asPathList(): boolean {
-        return this.pathOrValue === 'path';
+        return this.readerContentType === 'paths';
     }
 
     get queryBuffer(): number {
@@ -41,6 +41,10 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     get matchingNodesUrl(): string {
         return this.componentProps.matchingNodesUrl;
+    }
+
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
     }
 
     get gridModelConfig() {
@@ -69,8 +73,8 @@ export class JsonSearchPanelImplModel extends HoistModel {
                 }
             },
             {
-                track: () => [this.gridModel.selectedRecord, this.pathOrValue, this.pathFormat],
-                run: () => this.loadJsonNodesAsync(),
+                track: () => [this.selectedRecord, this.readerContentType, this.pathFormat],
+                run: () => this.loadreaderContentTypeAsync(),
                 debounce: 300
             }
         );
@@ -98,10 +102,17 @@ export class JsonSearchPanelImplModel extends HoistModel {
         }
     }
 
-    private async loadJsonNodesAsync() {
-        if (!this.gridModel.selectedRecord) {
+    private async loadreaderContentTypeAsync() {
+        if (!this.selectedRecord) {
             this.matchingNodeCount = 0;
-            this.matchingNodes = '';
+            this.readerContent = '';
+            return;
+        }
+
+        const {json} = this.selectedRecord.data;
+
+        if (this.readerContentType === 'document') {
+            this.readerContent = JSON.stringify(JSON.parse(json), null, 2);
             return;
         }
 
@@ -109,8 +120,8 @@ export class JsonSearchPanelImplModel extends HoistModel {
             url: this.matchingNodesUrl,
             params: {
                 path: this.path,
-                asPathList: this.pathOrValue === 'path',
-                json: this.gridModel.selectedRecord.data.json
+                asPathList: this.readerContentType === 'paths',
+                json
             }
         }).linkTo(this.nodeLoadTask);
 
@@ -118,7 +129,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
         if (this.asPathList && this.pathFormat === 'XPath') {
             nodes = nodes.map(it => this.convertToPath(it));
         }
-        this.matchingNodes = JSON.stringify(nodes, null, 2);
+        this.readerContent = JSON.stringify(nodes, null, 2);
     }
 
     private convertToPath(JSONPath: string): string {
