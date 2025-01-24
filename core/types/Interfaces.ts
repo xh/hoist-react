@@ -194,6 +194,11 @@ export interface AppOptionSpec {
 }
 
 /**
+ * Severity levels for tracking.  Default is 'INFO'.
+ */
+export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN';
+
+/**
  * Options for tracking activity on the server via TrackService.
  */
 export interface TrackOptions {
@@ -219,11 +224,16 @@ export interface TrackOptions {
     logData?: boolean | string[];
 
     /**
-     * Flag to indicate relative importance of activity.
-     * Default 'INFO'. Note, errors should be tracked via {@link XH.handleException}, which
+     * Flag to indicate relative importance of activity. Default 'INFO'.
+     *
+     * Allows conditional saving of messages depending on the currently active
+     * level configuration for the category/user.  See HoistCore's 'TrackService' for
+     * more information.
+     *
+     * Note, errors should be tracked via {@link XH.handleException}, which
      * will post to the server for dedicated logging if requested.
      */
-    severity?: string;
+    severity?: TrackSeverity;
 
     /**
      * Set to true to log this message only once during the current session. The category and

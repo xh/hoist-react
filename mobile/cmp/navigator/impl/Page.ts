@@ -5,9 +5,9 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
-import {page as onsenPage} from '@xh/hoist/kit/onsen';
+import {div} from '@xh/hoist/cmp/layout';
+import {throwIf} from '@xh/hoist/utils/js';
 import {elementFromContent} from '@xh/hoist/utils/react';
-import {useRef} from 'react';
 import {PageModel} from '../PageModel';
 import './Page.scss';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
@@ -26,22 +26,20 @@ export const page = hoistCmp.factory({
     model: uses(PageModel, {publishMode: 'limited'}),
 
     render({model}) {
-        const {content, props, isActive, renderMode, refreshContextModel} = model,
-            wasActivated = useRef(false);
+        const {content, props, isActive, renderMode, refreshContextModel} = model;
+        throwIf(
+            renderMode === 'always',
+            "RenderMode 'always' is not supported in Navigator. Pages can't exist before being mounted."
+        );
 
-        if (!wasActivated.current && isActive) wasActivated.current = true;
-
-        if (
-            !isActive &&
-            (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
-        ) {
+        if (!isActive && renderMode === 'unmountOnHide') {
             // Note: We must render an empty placeholder page to work with the Navigator.
-            return onsenPage({className: 'xh-page'});
+            return div({className: 'xh-page'});
         }
 
         return refreshContextView({
             model: refreshContextModel,
-            item: onsenPage({
+            item: div({
                 className: 'xh-page',
                 item: errorBoundary(elementFromContent(content, props))
             })
