@@ -34,8 +34,8 @@ export const jsonBlobPanel = hoistCmp.factory({
                 })
             }),
             jsonSearchPanel({
-                docSearchUrl: 'jsonBlobSearchAdmin/searchByJsonPath',
-                matchingNodesUrl: 'jsonBlobSearchAdmin/getMatchingNodes',
+                docSearchUrl: 'jsonSearch/searchBlobs',
+                matchingNodesUrl: 'jsonSearch/getMatchingNodes',
                 gridModelConfig: {
                     sortBy: ['owner', 'name'],
                     store: {
