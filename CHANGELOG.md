@@ -1,6 +1,8 @@
 # Changelog
 
-## v72.0.0-SNAPSHOT - unreleased
+## v73.0.0-SNAPSHOT - unreleased
+
+## v72.0.0 - 2025-01-27
 
 ### 💥 Breaking Changes
 
