@@ -10,7 +10,7 @@ import {FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, difference, isEmpty, partition, uniq, without} from 'lodash';
+import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
@@ -25,6 +25,12 @@ export class ValuesTabModel extends HoistModel {
 
     /** Bound search term for `StoreFilterField` */
     @bindable filterText: string = null;
+
+    /*
+     * Available only when commit on change is false merge
+     * current filter with pendingValues on commit
+     */
+    @bindable combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
     @computed.struct
@@ -81,11 +87,18 @@ export class ValuesTabModel extends HoistModel {
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
 
-        this.addReaction({
-            track: () => this.pendingValues,
-            run: () => this.syncGrid(),
-            fireImmediately: true
-        });
+        this.addReaction(
+            {
+                track: () => this.pendingValues,
+                run: () => this.syncGrid(),
+                fireImmediately: true
+            },
+            {
+                track: () => [this.filterText, this.combineCurrentFilters],
+                run: () => this.setPendingValues(),
+                debounce: 300
+            }
+        );
     }
 
     syncWithFilter() {
@@ -115,6 +128,23 @@ export class ValuesTabModel extends HoistModel {
     //-------------------
     // Implementation
     //-------------------
+    @action
+    setPendingValues() {
+        if (!this.filterText) {
+            this.doSyncWithFilter();
+            this.syncGrid();
+            return;
+        }
+
+        const {records} = this.gridModel.store,
+            currentFilterValues = flatten(map(this.columnFilters, 'value')),
+            values = map(records, it => it.get('value'));
+
+        this.pendingValues = uniq(
+            this.combineCurrentFilters ? [...currentFilterValues, ...values] : values
+        );
+    }
+
     private getFilter() {
         const {gridFilterModel, pendingValues, values, valueCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
@@ -217,17 +247,10 @@ export class ValuesTabModel extends HoistModel {
             onRowClicked: ({data: record}) => {
                 this.setRecsChecked(!record.get('isChecked'), record.get('value'));
             },
+            hideHeaders: true,
             columns: [
                 {
                     field: 'isChecked',
-                    headerName: ({gridModel}) => {
-                        return checkbox({
-                            disabled: gridModel.store.empty,
-                            displayUnsetState: true,
-                            value: this.allVisibleRecsChecked,
-                            onChange: () => this.toggleAllRecsChecked()
-                        });
-                    },
                     width: 28,
                     autosizable: false,
                     pinned: true,
@@ -245,7 +268,6 @@ export class ValuesTabModel extends HoistModel {
                 },
                 {
                     field: 'value',
-                    displayName: '(Select All)',
                     align: 'left',
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
