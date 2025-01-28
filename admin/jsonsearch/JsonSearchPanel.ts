@@ -10,7 +10,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, box, filler, h4, hframe, label, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, SelectOption, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -19,7 +19,7 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {JsonSearchPanelImplModel} from './impl/JsonSearchPanelImplModel';
 
-export interface JsonSearchPanelProps {
+export interface JsonSearchPanelProps extends HoistProps {
     /** Url to endpoint for searching for matching JSON documents */
     docSearchUrl: string;
 
@@ -37,7 +37,7 @@ export interface JsonSearchPanelProps {
     groupByOptions: SelectOption[];
 }
 
-export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory({
+export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory<JsonSearchPanelProps>({
     displayName: 'JsonSearchPanel',
 
     render() {
