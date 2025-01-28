@@ -32,7 +32,7 @@ export interface JsonSearchPanelProps extends HoistProps {
     gridModelConfig: GridConfig;
 
     /**
-     * Names of field(s) that can be used to group by.
+     * Names of fields that can be used to group by.
      */
     groupByOptions: Array<SelectOption | any>;
 }
