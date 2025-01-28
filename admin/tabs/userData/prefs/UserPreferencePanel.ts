@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import * as AdminCol from '@xh/hoist/admin/columns';
 import {prefEditorDialog} from '@xh/hoist/admin/tabs/userData/prefs/editor/PrefEditorDialog';
@@ -11,10 +12,7 @@ import {UserPreferenceModel} from '@xh/hoist/admin/tabs/userData/prefs/UserPrefe
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {
-    jsonSearchPanel,
-    type JsonSearchPanelProps
-} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
+import {jsonSearchPanel} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
@@ -59,7 +57,7 @@ export const userPreferencePanel = hoistCmp.factory({
                     ]
                 },
                 groupByOptions: ['owner', 'groupName', 'name']
-            } as JsonSearchPanelProps)
+            })
         );
     }
 });

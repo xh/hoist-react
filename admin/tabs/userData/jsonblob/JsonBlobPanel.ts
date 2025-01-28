@@ -10,10 +10,7 @@ import * as AdminCol from '@xh/hoist/admin/columns';
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {
-    jsonSearchPanel,
-    type JsonSearchPanelProps
-} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
+import {jsonSearchPanel} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
@@ -67,7 +64,7 @@ export const jsonBlobPanel = hoistCmp.factory({
                     ]
                 },
                 groupByOptions: ['owner', 'type', 'name']
-            } as JsonSearchPanelProps),
+            }),
             differ({omit: !model.differModel})
         );
     }

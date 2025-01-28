@@ -34,7 +34,7 @@ export interface JsonSearchPanelProps extends HoistProps {
     /**
      * Names of field(s) that can be used to group by.
      */
-    groupByOptions: SelectOption[];
+    groupByOptions: Array<SelectOption | any>;
 }
 
 export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory<JsonSearchPanelProps>({
