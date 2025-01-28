@@ -41,7 +41,6 @@ export const jsonBlobPanel = hoistCmp.factory({
                     store: {
                         idSpec: 'token'
                     },
-                    groupBy: 'type',
                     columns: [
                         {
                             field: {name: 'token', type: 'string'},
@@ -63,7 +62,8 @@ export const jsonBlobPanel = hoistCmp.factory({
                         },
                         {...Col.lastUpdated}
                     ]
-                }
+                },
+                groupByOptions: ['owner', 'type', 'name']
             }),
             differ({omit: !model.differModel})
         );

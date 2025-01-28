@@ -41,7 +41,6 @@ export const userPreferencePanel = hoistCmp.factory({
                 matchingNodesUrl: 'jsonSearch/getMatchingNodes',
                 gridModelConfig: {
                     sortBy: ['name'],
-                    groupBy: 'groupName',
                     columns: [
                         {
                             field: {name: 'owner', type: 'string'},
@@ -55,7 +54,8 @@ export const userPreferencePanel = hoistCmp.factory({
                         },
                         {...Col.lastUpdated}
                     ]
-                }
+                },
+                groupByOptions: ['owner', 'groupName', 'name']
             })
         );
     }

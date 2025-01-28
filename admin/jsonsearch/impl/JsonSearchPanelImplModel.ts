@@ -6,8 +6,9 @@
  */
 
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
 
 /**
@@ -17,8 +18,11 @@ export class JsonSearchPanelImplModel extends HoistModel {
     override xhImpl = true;
 
     @managed gridModel: GridModel;
+    @managed groupingChooserModel: GroupingChooserModel;
     @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
     @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
+
+    @observable groupBy: string = null;
 
     @bindable.ref error = null;
     @bindable path: string = '';
@@ -49,6 +53,10 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     get gridModelConfig() {
         return this.componentProps.gridModelConfig;
+    }
+
+    get groupByOptions() {
+        return [...this.componentProps.groupByOptions, {value: null, label: 'None'}];
     }
 
     constructor() {
@@ -137,5 +145,15 @@ export class JsonSearchPanelImplModel extends HoistModel {
             .replaceAll(/^\$/g, '')
             .replaceAll(/'?]\['?/g, '/')
             .replaceAll(/'?]$/g, '');
+    }
+
+    @action
+    private setGroupBy(groupBy: string) {
+        this.groupBy = groupBy;
+
+        // Always select first when regrouping.
+        const groupByArr = groupBy ? groupBy.split(',') : [];
+        this.gridModel.setGroupBy(groupByArr);
+        this.gridModel.preSelectFirstAsync();
     }
 }

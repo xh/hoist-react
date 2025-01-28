@@ -5,23 +5,41 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {startCase} from 'lodash';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {errorMessage} from '@xh/hoist/cmp/error';
-import {JsonBlobModel} from '@xh/hoist/admin/tabs/userData/jsonblob/JsonBlobModel';
-import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, box, filler, h4, hframe, label, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, useLocalModel} from '@xh/hoist/core';
+import {hoistCmp, SelectOption, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput, jsonInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {startCase} from 'lodash';
-
 import {JsonSearchPanelImplModel} from './impl/JsonSearchPanelImplModel';
 
-export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory<JsonBlobModel>({
+export interface JsonSearchPanelProps {
+    /** Url to endpoint for searching for matching JSON documents */
+    docSearchUrl: string;
+
+    /** Url to endpoint for listing matching JSON nodes */
+    matchingNodesUrl: string;
+
+    /**
+     * Config for GridModel used to display search results.
+     */
+    gridModelConfig: GridConfig;
+
+    /**
+     * Names of field(s) that can be used to group by.
+     */
+    groupByOptions: SelectOption[];
+}
+
+export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory({
+    displayName: 'JsonSearchPanel',
+
     render() {
         const impl = useLocalModel(JsonSearchPanelImplModel),
             {error} = impl;
@@ -79,6 +97,14 @@ const searchTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
     return toolbar(
         pathField({model}),
         helpButton(),
+        toolbarSep(),
+        span('Group by:'),
+        select({
+            bind: 'groupBy',
+            options: model.groupByOptions,
+            width: 160,
+            enableFilter: false
+        }),
         toolbarSep(),
         gridCountLabel({
             gridModel: model.gridModel,
