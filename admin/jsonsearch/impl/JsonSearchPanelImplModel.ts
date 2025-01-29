@@ -23,6 +23,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
     @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
 
     @observable groupBy: string = null;
+    @observable isOpen: boolean = false;
 
     @bindable.ref error = null;
     @bindable path: string = '';
@@ -35,8 +36,8 @@ export class JsonSearchPanelImplModel extends HoistModel {
         return this.readerContentType === 'paths';
     }
 
-    get queryBuffer(): number {
-        return this.componentProps.queryBuffer ?? 200;
+    get subjectName(): string {
+        return this.componentProps.subjectName;
     }
 
     get docSearchUrl(): string {
@@ -57,6 +58,11 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     get groupByOptions() {
         return [...this.componentProps.groupByOptions, {value: null, label: 'None'}];
+    }
+
+    @action
+    toggleSearchIsOpen() {
+        this.isOpen = !this.isOpen;
     }
 
     constructor() {

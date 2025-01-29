@@ -9,17 +9,32 @@ import {startCase} from 'lodash';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, box, filler, h4, hframe, label, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
+import {
+    a,
+    box,
+    filler,
+    fragment,
+    h4,
+    hframe,
+    label,
+    li,
+    span,
+    ul,
+    vbox
+} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
+import {dialog, popover} from '@xh/hoist/kit/blueprint';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {JsonSearchPanelImplModel} from './impl/JsonSearchPanelImplModel';
 
-export interface JsonSearchPanelProps extends HoistProps {
+export interface JsonSearchButtonProps extends HoistProps {
+    /** Name of the type of Json Documents being searched.  This appears in the dialog title. */
+    subjectName: string;
+
     /** Url to endpoint for searching for matching JSON documents */
     docSearchUrl: string;
 
@@ -37,57 +52,84 @@ export interface JsonSearchPanelProps extends HoistProps {
     groupByOptions: Array<SelectOption | any>;
 }
 
-export const [JsonSearchPanel, jsonSearchPanel] = hoistCmp.withFactory<JsonSearchPanelProps>({
+export const [JsonSearchButton, jsonSearchButton] = hoistCmp.withFactory<JsonSearchButtonProps>({
     displayName: 'JsonSearchPanel',
 
     render() {
-        const impl = useLocalModel(JsonSearchPanelImplModel),
-            {error} = impl;
+        const impl = useLocalModel(JsonSearchPanelImplModel);
 
-        return panel({
-            title: 'JSON Path Search',
-            icon: Icon.json(),
-            modelConfig: {
-                side: 'right',
-                defaultSize: '75%',
-                collapsible: true,
-                defaultCollapsed: true
+        return fragment(
+            button({
+                icon: Icon.json(),
+                text: 'JSON Search',
+                onClick: () => impl.toggleSearchIsOpen()
+            }),
+            jsonSearchDialog({
+                omit: !impl.isOpen,
+                model: impl
+            })
+        );
+    }
+});
+
+const jsonSearchDialog = hoistCmp.factory<JsonSearchPanelImplModel>({
+    displayName: 'JsonSearchPanel',
+
+    render({model}) {
+        const {error, subjectName} = model;
+
+        return dialog({
+            title: `${subjectName} Json Search`,
+            style: {
+                width: '90vw',
+                height: '90vh'
             },
-            compactHeader: true,
-            tbar: searchTbar({model: impl}),
-            flex: 1,
+            icon: Icon.json(),
+            isOpen: true,
+            className: 'xh-admin-diff-detail',
+            onClose: () => model.toggleSearchIsOpen(),
             item: panel({
-                mask: impl.docLoadTask,
-                items: [
-                    errorMessage({
-                        error,
-                        title: error?.name ? startCase(error.name) : undefined
-                    }),
-                    hframe({
-                        omit: impl.error,
-                        items: [
-                            panel({
-                                item: grid({model: impl.gridModel})
-                            }),
-                            panel({
-                                mask: impl.nodeLoadTask,
-                                tbar: readerTbar({model: impl}),
-                                bbar: nodeBbar({
-                                    omit: !impl.asPathList,
-                                    model: impl
+                tbar: searchTbar(),
+                item: panel({
+                    mask: model.docLoadTask,
+                    items: [
+                        errorMessage({
+                            error,
+                            title: error?.name ? startCase(error.name) : undefined
+                        }),
+                        hframe({
+                            omit: error,
+                            items: [
+                                panel({
+                                    item: grid({model: model.gridModel}),
+                                    modelConfig: {
+                                        side: 'left',
+                                        defaultSize: '30%',
+                                        collapsible: true,
+                                        defaultCollapsed: false,
+                                        resizable: true
+                                    }
                                 }),
-                                item: jsonInput({
-                                    model: impl,
-                                    bind: 'readerContent',
-                                    flex: 1,
-                                    width: '100%',
-                                    readonly: true,
-                                    showCopyButton: true
+                                panel({
+                                    mask: model.nodeLoadTask,
+                                    tbar: readerTbar(),
+                                    bbar: nodeBbar({
+                                        omit: !model.asPathList,
+                                        model
+                                    }),
+                                    item: jsonInput({
+                                        model,
+                                        bind: 'readerContent',
+                                        flex: 1,
+                                        width: '100%',
+                                        readonly: true,
+                                        showCopyButton: true
+                                    })
                                 })
-                            })
-                        ]
-                    })
-                ]
+                            ]
+                        })
+                    ]
+                })
             })
         });
     }

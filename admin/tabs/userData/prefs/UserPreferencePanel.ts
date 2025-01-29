@@ -12,9 +12,10 @@ import {UserPreferenceModel} from '@xh/hoist/admin/tabs/userData/prefs/UserPrefe
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {jsonSearchPanel} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
+import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
+import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 
 export const userPreferencePanel = hoistCmp.factory({
@@ -25,38 +26,40 @@ export const userPreferencePanel = hoistCmp.factory({
             panel({
                 items: [
                     restGrid({
-                        extraToolbarItems: () => {
-                            return button({
+                        extraToolbarItems: () => [
+                            button({
                                 icon: Icon.gear(),
                                 text: 'Configure',
                                 onClick: () => (model.showEditorDialog = true)
-                            });
-                        }
+                            }),
+                            toolbarSep(),
+                            jsonSearchButton({
+                                subjectName: 'User Preference',
+                                docSearchUrl: 'jsonSearch/searchUserPreferences',
+                                matchingNodesUrl: 'jsonSearch/getMatchingNodes',
+                                gridModelConfig: {
+                                    sortBy: ['groupName', 'name', 'owner'],
+                                    columns: [
+                                        {
+                                            field: {name: 'owner', type: 'string'},
+                                            width: 200
+                                        },
+                                        {...AdminCol.groupName},
+                                        {...AdminCol.name},
+                                        {
+                                            field: {name: 'json', type: 'string'},
+                                            hidden: true
+                                        },
+                                        {...Col.lastUpdated}
+                                    ]
+                                },
+                                groupByOptions: ['owner', 'groupName', 'name']
+                            })
+                        ]
                     }),
                     prefEditorDialog()
                 ],
                 mask: 'onLoad'
-            }),
-            jsonSearchPanel({
-                docSearchUrl: 'jsonSearch/searchUserPreferences',
-                matchingNodesUrl: 'jsonSearch/getMatchingNodes',
-                gridModelConfig: {
-                    sortBy: ['name'],
-                    columns: [
-                        {
-                            field: {name: 'owner', type: 'string'},
-                            width: 200
-                        },
-                        {...AdminCol.groupName},
-                        {...AdminCol.name},
-                        {
-                            field: {name: 'json', type: 'string'},
-                            hidden: true
-                        },
-                        {...Col.lastUpdated}
-                    ]
-                },
-                groupByOptions: ['owner', 'groupName', 'name']
             })
         );
     }
