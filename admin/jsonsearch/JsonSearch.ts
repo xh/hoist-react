@@ -5,8 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {startCase} from 'lodash';
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {
@@ -24,36 +22,39 @@ import {
 } from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog, popover} from '@xh/hoist/kit/blueprint';
-import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
-import {JsonSearchPanelImplModel} from './impl/JsonSearchPanelImplModel';
+import {pluralize} from '@xh/hoist/utils/js';
+import {startCase} from 'lodash';
+import {JsonSearchImplModel} from './impl/JsonSearchImplModel';
 
 export interface JsonSearchButtonProps extends HoistProps {
-    /** Name of the type of Json Documents being searched.  This appears in the dialog title. */
+    /** Descriptive label for the type of records being searched - appears in the dialog title. */
     subjectName: string;
 
-    /** Url to endpoint for searching for matching JSON documents */
+    /** Endpoint to search and return matches - Hoist `JsonSearchController` action expected. */
     docSearchUrl: string;
 
-    /**
-     * Config for GridModel used to display search results.
-     */
+    /** Config for GridModel used to display search results. */
     gridModelConfig: GridConfig;
 
-    /**
-     * Names of fields that can be used to group by.
-     */
+    /** Field names on returned results to enable for grouping in the search results grid. */
     groupByOptions: Array<SelectOption | any>;
 }
 
-export const [JsonSearchButton, jsonSearchButton] = hoistCmp.withFactory<JsonSearchButtonProps>({
-    displayName: 'JsonSearchPanel',
+/**
+ * Main entry point component for the JSON search feature. Supported out-of-the-box for a limited
+ * set of Hoist artifacts that hold JSON values: JSONBlob, Configs, and User Preferences.
+ */
+export const jsonSearchButton = hoistCmp.factory<JsonSearchButtonProps>({
+    displayName: 'JsonSearchButton',
 
     render() {
-        const impl = useLocalModel(JsonSearchPanelImplModel);
+        const impl = useLocalModel(JsonSearchImplModel);
 
         return fragment(
             button({
@@ -69,14 +70,14 @@ export const [JsonSearchButton, jsonSearchButton] = hoistCmp.withFactory<JsonSea
     }
 });
 
-const jsonSearchDialog = hoistCmp.factory<JsonSearchPanelImplModel>({
-    displayName: 'JsonSearchPanel',
+const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
+    displayName: 'JsonSearchDialog',
 
     render({model}) {
         const {error, subjectName} = model;
 
         return dialog({
-            title: `${subjectName} Json Search`,
+            title: `JSON Search: ${subjectName}`,
             style: {
                 width: '90vw',
                 height: '90vh'
@@ -110,10 +111,6 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchPanelImplModel>({
                                 panel({
                                     mask: model.nodeLoadTask,
                                     tbar: readerTbar(),
-                                    bbar: nodeBbar({
-                                        omit: model.readerContentType !== 'matches',
-                                        model
-                                    }),
                                     item: jsonInput({
                                         model,
                                         bind: 'readerContent',
@@ -132,7 +129,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchPanelImplModel>({
     }
 });
 
-const searchTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
+const searchTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
     return toolbar(
         pathField({model}),
         helpButton(),
@@ -152,7 +149,7 @@ const searchTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
     );
 });
 
-const pathField = hoistCmp.factory<JsonSearchPanelImplModel>({
+const pathField = hoistCmp.factory<JsonSearchImplModel>({
     render({model}) {
         return textInput({
             bind: 'path',
@@ -219,7 +216,7 @@ const helpButton = hoistCmp.factory({
     }
 });
 
-const readerTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
+const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
     return toolbar({
         items: [
             buttonGroupInput({
@@ -239,36 +236,36 @@ const readerTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
                     })
                 ]
             }),
+            fragment({
+                omit: model.readerContentType !== 'matches' || !model.selectedRecord,
+                items: [
+                    toolbarSep(),
+                    label('View path as'),
+                    buttonGroupInput({
+                        model,
+                        bind: 'pathFormat',
+                        minimal: true,
+                        outlined: true,
+                        items: [
+                            button({
+                                text: 'XPath',
+                                value: 'XPath'
+                            }),
+                            button({
+                                text: 'JSONPath',
+                                value: 'JSONPath'
+                            })
+                        ]
+                    })
+                ]
+            }),
             filler(),
             box({
                 omit: !model.matchingNodeCount,
-                item: `${model.matchingNodeCount} ${model.matchingNodeCount === 1 ? 'match' : 'matches'}`
+                item: `${pluralize('match', model.matchingNodeCount, true)} within this document`
             })
         ]
     });
-});
-
-const nodeBbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
-    return toolbar(
-        label('Path Format:'),
-        buttonGroupInput({
-            model,
-            bind: 'pathFormat',
-            minimal: true,
-            outlined: true,
-            disabled: !model.selectedRecord,
-            items: [
-                button({
-                    text: 'XPath',
-                    value: 'XPath'
-                }),
-                button({
-                    text: 'JSONPath',
-                    value: 'JSONPath'
-                })
-            ]
-        })
-    );
 });
 
 const queryExamples = [

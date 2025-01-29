@@ -5,8 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty, zipWith} from 'lodash';
@@ -14,13 +13,12 @@ import {isEmpty, zipWith} from 'lodash';
 /**
  * @internal
  */
-export class JsonSearchPanelImplModel extends HoistModel {
+export class JsonSearchImplModel extends HoistModel {
     override xhImpl = true;
 
     private matchingNodesUrl = 'jsonSearch/getMatchingNodes';
 
     @managed gridModel: GridModel;
-    @managed groupingChooserModel: GroupingChooserModel;
     @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
     @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
 
@@ -46,12 +44,19 @@ export class JsonSearchPanelImplModel extends HoistModel {
         return this.gridModel.selectedRecord;
     }
 
-    get gridModelConfig() {
+    get gridModelConfig(): GridConfig {
         return this.componentProps.gridModelConfig;
     }
 
     get groupByOptions() {
-        return [...this.componentProps.groupByOptions, {value: null, label: 'None'}];
+        const cols = this.gridModel.getLeafColumns();
+        return [
+            ...this.componentProps.groupByOptions.map(it => ({
+                value: it,
+                label: cols.find(col => col.colId === it)?.displayName ?? it
+            })),
+            {value: null, label: 'None'}
+        ];
     }
 
     @action
@@ -67,6 +72,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
     override onLinked() {
         this.gridModel = new GridModel({
             ...this.gridModelConfig,
+            emptyText: 'No matches found...',
             selModel: 'single'
         });
 
@@ -82,7 +88,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
             },
             {
                 track: () => [this.selectedRecord, this.readerContentType, this.pathFormat],
-                run: () => this.loadreaderContentAsync(),
+                run: () => this.loadReaderContentAsync(),
                 debounce: 300
             }
         );
@@ -110,7 +116,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
         }
     }
 
-    private async loadreaderContentAsync() {
+    private async loadReaderContentAsync() {
         if (!this.selectedRecord) {
             this.matchingNodeCount = 0;
             this.readerContent = '';

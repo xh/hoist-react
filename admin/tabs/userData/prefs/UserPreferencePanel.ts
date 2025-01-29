@@ -12,7 +12,7 @@ import {UserPreferenceModel} from '@xh/hoist/admin/tabs/userData/prefs/UserPrefe
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearchPanel';
+import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearch';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
