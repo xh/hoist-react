@@ -38,9 +38,6 @@ export interface JsonSearchButtonProps extends HoistProps {
     /** Url to endpoint for searching for matching JSON documents */
     docSearchUrl: string;
 
-    /** Url to endpoint for listing matching JSON nodes */
-    matchingNodesUrl: string;
-
     /**
      * Config for GridModel used to display search results.
      */

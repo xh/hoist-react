@@ -17,6 +17,8 @@ import {isEmpty} from 'lodash';
 export class JsonSearchPanelImplModel extends HoistModel {
     override xhImpl = true;
 
+    private matchingNodesUrl = 'jsonSearch/getMatchingNodes';
+
     @managed gridModel: GridModel;
     @managed groupingChooserModel: GroupingChooserModel;
     @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
@@ -42,10 +44,6 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     get docSearchUrl(): string {
         return this.componentProps.docSearchUrl;
-    }
-
-    get matchingNodesUrl(): string {
-        return this.componentProps.matchingNodesUrl;
     }
 
     get selectedRecord() {

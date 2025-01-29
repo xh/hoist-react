@@ -36,7 +36,6 @@ export const userPreferencePanel = hoistCmp.factory({
                             jsonSearchButton({
                                 subjectName: 'User Preference',
                                 docSearchUrl: 'jsonSearch/searchUserPreferences',
-                                matchingNodesUrl: 'jsonSearch/getMatchingNodes',
                                 gridModelConfig: {
                                     sortBy: ['groupName', 'name', 'owner'],
                                     columns: [

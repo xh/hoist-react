@@ -35,12 +35,8 @@ export const jsonBlobPanel = hoistCmp.factory({
                         jsonSearchButton({
                             subjectName: 'JSON Blob',
                             docSearchUrl: 'jsonSearch/searchBlobs',
-                            matchingNodesUrl: 'jsonSearch/getMatchingNodes',
                             gridModelConfig: {
                                 sortBy: ['type', 'name', 'owner'],
-                                store: {
-                                    idSpec: 'token'
-                                },
                                 columns: [
                                     {
                                         field: {name: 'token', type: 'string'},
