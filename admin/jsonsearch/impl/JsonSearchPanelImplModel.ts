@@ -9,7 +9,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
+import {isEmpty, zipWith} from 'lodash';
 
 /**
  * @internal
@@ -29,14 +29,10 @@ export class JsonSearchPanelImplModel extends HoistModel {
 
     @bindable.ref error = null;
     @bindable path: string = '';
-    @bindable readerContentType: 'document' | 'paths' | 'values' = 'values';
+    @bindable readerContentType: 'document' | 'matches' = 'matches';
     @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
     @bindable readerContent: string = '';
     @bindable matchingNodeCount: number = 0;
-
-    get asPathList(): boolean {
-        return this.readerContentType === 'paths';
-    }
 
     get subjectName(): string {
         return this.componentProps.subjectName;
@@ -86,7 +82,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
             },
             {
                 track: () => [this.selectedRecord, this.readerContentType, this.pathFormat],
-                run: () => this.loadreaderContentTypeAsync(),
+                run: () => this.loadreaderContentAsync(),
                 debounce: 300
             }
         );
@@ -114,7 +110,7 @@ export class JsonSearchPanelImplModel extends HoistModel {
         }
     }
 
-    private async loadreaderContentTypeAsync() {
+    private async loadreaderContentAsync() {
         if (!this.selectedRecord) {
             this.matchingNodeCount = 0;
             this.readerContent = '';
@@ -132,19 +128,21 @@ export class JsonSearchPanelImplModel extends HoistModel {
             url: this.matchingNodesUrl,
             params: {
                 path: this.path,
-                asPathList: this.readerContentType === 'paths',
                 json
             }
         }).linkTo(this.nodeLoadTask);
 
-        this.matchingNodeCount = nodes.length;
-        if (this.asPathList && this.pathFormat === 'XPath') {
-            nodes = nodes.map(it => this.convertToPath(it));
-        }
+        this.matchingNodeCount = nodes.paths.length;
+        nodes = zipWith(nodes.paths, nodes.values, (path: string, value) => {
+            return {
+                path: this.pathFormat === 'XPath' ? this.convertToXPath(path) : path,
+                value
+            };
+        });
         this.readerContent = JSON.stringify(nodes, null, 2);
     }
 
-    private convertToPath(JSONPath: string): string {
+    private convertToXPath(JSONPath: string): string {
         return JSONPath.replaceAll(/^\$\['?/g, '/')
             .replaceAll(/^\$/g, '')
             .replaceAll(/'?]\['?/g, '/')

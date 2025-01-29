@@ -111,7 +111,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchPanelImplModel>({
                                     mask: model.nodeLoadTask,
                                     tbar: readerTbar(),
                                     bbar: nodeBbar({
-                                        omit: !model.asPathList,
+                                        omit: model.readerContentType !== 'matches',
                                         model
                                     }),
                                     item: jsonInput({
@@ -186,14 +186,7 @@ const helpButton = hoistCmp.factory({
                 items: [
                     h4('Sample Queries'),
                     ul({
-                        style: {listStyleType: 'none'},
-                        items: [
-                            {
-                                query: "$..[?(@.colId == 'trader')]",
-                                explanation:
-                                    'Find all nodes with a property "colId" equal to "trader"'
-                            }
-                        ].map(({query, explanation}) =>
+                        items: queryExamples.map(({query, explanation}) =>
                             li({
                                 key: query,
                                 items: [
@@ -241,12 +234,8 @@ const readerTbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
                         value: 'document'
                     }),
                     button({
-                        text: 'Matching Paths',
-                        value: 'paths'
-                    }),
-                    button({
-                        text: 'Matching Values',
-                        value: 'values'
+                        text: 'Matches',
+                        value: 'matches'
                     })
                 ]
             }),
@@ -267,6 +256,7 @@ const nodeBbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
             bind: 'pathFormat',
             minimal: true,
             outlined: true,
+            disabled: !model.selectedRecord,
             items: [
                 button({
                     text: 'XPath',
@@ -280,3 +270,31 @@ const nodeBbar = hoistCmp.factory<JsonSearchPanelImplModel>(({model}) => {
         })
     );
 });
+
+const queryExamples = [
+    {
+        query: '$',
+        explanation: 'Return the root object'
+    },
+    {
+        query: '$..*',
+        explanation: 'Return all nodes, recursively'
+    },
+    {
+        query: '$..[?(@.colId && @.width && @.hidden != true)]',
+        explanation:
+            'Find all nodes with a property "colId" and a property "width" and a property "hidden" not equal to true'
+    },
+    {
+        query: '$..[?(@.colId && @.width)]',
+        explanation: 'Find all nodes with a property "colId" and a property "width"'
+    },
+    {
+        query: "$..[?(@.colId == 'trader')]",
+        explanation: 'Find all nodes with a property "colId" equal to "trader"'
+    },
+    {
+        query: '$..grid[?(@.version == 1)]',
+        explanation: 'Find all grid nodes with a property "version" equal to 1'
+    }
+];
