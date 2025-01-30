@@ -8,7 +8,8 @@
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty, zipWith} from 'lodash';
+import {pluralize} from '@xh/hoist/utils/js';
+import {camelCase, isEmpty, zipWith} from 'lodash';
 
 /**
  * @internal
@@ -33,19 +34,19 @@ export class JsonSearchImplModel extends HoistModel {
     @bindable matchingNodeCount: number = 0;
 
     get subjectName(): string {
-        return this.componentProps.subjectName;
+        return pluralize(this.componentProps.subjectName);
     }
 
     get docSearchUrl(): string {
         return this.componentProps.docSearchUrl;
     }
 
-    get selectedRecord() {
-        return this.gridModel.selectedRecord;
-    }
-
     get gridModelConfig(): GridConfig {
         return this.componentProps.gridModelConfig;
+    }
+
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
     }
 
     get groupByOptions() {
@@ -76,6 +77,8 @@ export class JsonSearchImplModel extends HoistModel {
             selModel: 'single'
         });
 
+        this.markPersist('path', {localStorageKey: `xhJsonSearch${camelCase(this.subjectName)}`});
+
         this.addReaction(
             {
                 track: () => this.path,
@@ -92,26 +95,31 @@ export class JsonSearchImplModel extends HoistModel {
                 debounce: 300
             }
         );
+
+        // We might have a persisted path - go ahead and load if so.
+        this.loadMatchingDocsAsync();
     }
 
-    async loadJsonDocsAsync() {
-        if (isEmpty(this.path)) {
+    async loadMatchingDocsAsync() {
+        const {path, gridModel, docLoadTask} = this;
+
+        if (isEmpty(path)) {
             this.error = null;
-            this.gridModel.clear();
+            gridModel.clear();
             return;
         }
 
         try {
             const data = await XH.fetchJson({
                 url: this.docSearchUrl,
-                params: {path: this.path}
-            }).linkTo(this.docLoadTask);
+                params: {path}
+            }).linkTo(docLoadTask);
 
             this.error = null;
-            this.gridModel.loadData(data);
-            this.gridModel.selectFirstAsync();
+            gridModel.loadData(data);
+            gridModel.preSelectFirstAsync();
         } catch (e) {
-            this.gridModel.clear();
+            gridModel.clear();
             this.error = e;
         }
     }

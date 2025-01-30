@@ -7,19 +7,7 @@
 
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {
-    a,
-    box,
-    filler,
-    fragment,
-    h4,
-    hframe,
-    label,
-    li,
-    span,
-    ul,
-    vbox
-} from '@xh/hoist/cmp/layout';
+import {a, box, filler, fragment, hframe, label, li, p, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
@@ -33,7 +21,7 @@ import {startCase} from 'lodash';
 import {JsonSearchImplModel} from './impl/JsonSearchImplModel';
 
 export interface JsonSearchButtonProps extends HoistProps {
-    /** Descriptive label for the type of records being searched - appears in the dialog title. */
+    /** Descriptive label for the type of records being searched - will be auto-pluralized. */
     subjectName: string;
 
     /** Endpoint to search and return matches - Hoist `JsonSearchController` action expected. */
@@ -129,24 +117,34 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
     }
 });
 
-const searchTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
-    return toolbar(
-        pathField({model}),
-        helpButton(),
-        toolbarSep(),
-        span('Group by:'),
-        select({
-            bind: 'groupBy',
-            options: model.groupByOptions,
-            width: 160,
-            enableFilter: false
-        }),
-        toolbarSep(),
-        gridCountLabel({
-            gridModel: model.gridModel,
-            unit: 'document'
-        })
-    );
+const searchTbar = hoistCmp.factory<JsonSearchImplModel>({
+    render({model}) {
+        return toolbar(
+            pathField({model}),
+            button({
+                text: `Search ${model.subjectName}`,
+                intent: 'success',
+                outlined: true,
+                disabled: !model.path,
+                onClick: () => model.loadMatchingDocsAsync()
+            }),
+            '-',
+            helpButton({model}),
+            '-',
+            span('Group by:'),
+            select({
+                bind: 'groupBy',
+                options: model.groupByOptions,
+                width: 160,
+                enableFilter: false
+            }),
+            '-',
+            gridCountLabel({
+                gridModel: model.gridModel,
+                unit: 'match'
+            })
+        );
+    }
 });
 
 const pathField = hoistCmp.factory<JsonSearchImplModel>({
@@ -157,31 +155,32 @@ const pathField = hoistCmp.factory<JsonSearchImplModel>({
             commitOnChange: true,
             leftIcon: Icon.search(),
             enableClear: true,
-            placeholder:
-                "JSON Path - e.g. $..[?(@.colId == 'trader')] - type a path and hit ENTER to search",
+            placeholder: 'Provide a JSON Path expression to evaluate',
             width: null,
             flex: 1,
             onKeyDown: e => {
-                if (e.key === 'Enter') model.loadJsonDocsAsync();
+                if (e.key === 'Enter') model.loadMatchingDocsAsync();
             }
         });
     }
 });
 
-const helpButton = hoistCmp.factory({
-    model: false,
-    render() {
+const helpButton = hoistCmp.factory<JsonSearchImplModel>({
+    render({model}) {
         return popover({
             item: button({
                 icon: Icon.questionCircle(),
                 outlined: true
             }),
             content: vbox({
-                style: {
-                    padding: '0px 20px 10px 20px'
-                },
+                className: 'xh-pad',
                 items: [
-                    h4('Sample Queries'),
+                    p(
+                        `JSON Path expressions allow you to recursively query JSON documents, matching nodes based on their path, properties, and values.`
+                    ),
+                    p(
+                        `Enter a path and press [Enter] to search for matches within the JSON content of ${model.subjectName}.`
+                    ),
                     ul({
                         items: queryExamples.map(({query, explanation}) =>
                             li({
@@ -203,7 +202,8 @@ const helpButton = hoistCmp.factory({
                                     explanation
                                 ]
                             })
-                        )
+                        ),
+                        style: {marginTop: 0}
                     }),
                     a({
                         href: 'https://github.com/json-path/JsonPath?tab=readme-ov-file#operators',
@@ -270,28 +270,25 @@ const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
 
 const queryExamples = [
     {
-        query: '$',
-        explanation: 'Return the root object'
+        query: '$.displayMode',
+        explanation: 'Return documents with a top-level property "displayMode"'
     },
     {
-        query: '$..*',
-        explanation: 'Return all nodes, recursively'
-    },
-    {
-        query: '$..[?(@.colId && @.width && @.hidden != true)]',
+        query: "$..[?(@.colId == 'trader')]",
         explanation:
-            'Find all nodes with a property "colId" and a property "width" and a property "hidden" not equal to true'
+            'Find all nodes (anywhere in the document) with a property "colId" equal to "trader"'
     },
     {
         query: '$..[?(@.colId && @.width)]',
         explanation: 'Find all nodes with a property "colId" and a property "width"'
     },
     {
-        query: "$..[?(@.colId == 'trader')]",
-        explanation: 'Find all nodes with a property "colId" equal to "trader"'
+        query: '$..[?(@.colId && @.hidden != true)]',
+        explanation:
+            'Find all nodes with a property "colId" and a property "hidden" not equal to true'
     },
     {
         query: '$..grid[?(@.version == 1)]',
-        explanation: 'Find all grid nodes with a property "version" equal to 1'
+        explanation: 'Find all nodes with a key of "grid" and a property "version" equal to 1'
     }
 ];
