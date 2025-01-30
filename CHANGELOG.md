@@ -12,6 +12,10 @@
   User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
   to filter and match data using JSON Path expressions.
 
+### 🐞 Bug Fixes
+
+* Fixed Role grid losing view state on refresh.
+
 ## v72.0.0 - 2025-01-27
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor changes to mobile nav)
