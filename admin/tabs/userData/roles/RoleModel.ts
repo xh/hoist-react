@@ -80,7 +80,7 @@ export class RoleModel extends HoistModel {
             runInAction(() => {
                 this.allRoles = this.processRolesFromServer(data);
             });
-            this.displayRoles();
+            this.displayRoles(loadSpec.isRefresh);
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
@@ -212,13 +212,13 @@ export class RoleModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private displayRoles() {
+    private displayRoles(isRefresh?: boolean) {
         const {gridModel} = this,
             gridData = this.showInGroups
                 ? this.processRolesForTreeGrid(this.allRoles)
                 : this.allRoles;
         gridModel.loadData(gridData);
-        gridModel.expandAll();
+        if (!isRefresh) gridModel.expandAll();
         gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
