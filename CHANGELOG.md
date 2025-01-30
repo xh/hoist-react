@@ -2,9 +2,19 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+
+* Requires `hoist-core >= 28.1` with new APIs to support JSON searching in the Admin Console.
+
+### 🎁 New Features
+
+* Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
+  User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
+  to filter and match data using JSON Path expressions.
+
 ## v72.0.0 - 2025-01-27
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor changes to mobile nav)
 
 * Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
   `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
@@ -17,7 +27,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed `ViewManagerModel` unique name validation.
-* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply clearing it.
+* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply
+  clearing it.
 * Improved suboptimal column state synchronization between `GridModel` and AG Grid.
 
 ### ⚙️ Technical
