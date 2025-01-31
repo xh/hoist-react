@@ -415,7 +415,9 @@ export class FilterChooserModel extends HoistModel {
     }: FilterChooserPersistOptions) {
         if (persistValue) {
             const status = {initialized: false},
-                persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+                persistWith = isObject(persistValue)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+                    : rootPersistWith;
             PersistenceProvider.create({
                 persistOptions: {
                     path: `${path}.value`,
@@ -432,7 +434,9 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+            const persistWith = isObject(persistFavorites)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
+                    : rootPersistWith,
                 provider = PersistenceProvider.create({
                     persistOptions: {
                         path: `${path}.favorites`,

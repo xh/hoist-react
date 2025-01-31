@@ -293,7 +293,9 @@ export class GroupingChooserModel extends HoistModel {
         ...rootPersistWith
     }: GroupingChooserPersistOptions) {
         if (persistValue) {
-            const persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            const persistWith = isObject(persistValue)
+                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+                : rootPersistWith;
             PersistenceProvider.create({
                 persistOptions: {
                     path: `${path}.value`,
@@ -308,7 +310,9 @@ export class GroupingChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+            const persistWith = isObject(persistFavorites)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
+                    : rootPersistWith,
                 provider = PersistenceProvider.create({
                     persistOptions: {
                         path: `${path}.favorites`,
