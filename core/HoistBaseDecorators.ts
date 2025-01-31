@@ -81,7 +81,10 @@ function createPersistDescriptor(
         // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
         ret = codeValue?.call(this);
 
-        const persistOptions = {path: property, ...this.persistWith, ...options};
+        const persistOptions = {
+            path: property,
+            ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
+        };
         PersistenceProvider.create({
             persistOptions,
             owner: this,

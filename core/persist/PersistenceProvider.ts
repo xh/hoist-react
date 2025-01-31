@@ -8,12 +8,14 @@
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
+    compact,
     debounce as lodashDebounce,
     get,
     isEmpty,
     isNumber,
     isString,
     isUndefined,
+    omit,
     set,
     toPath
 } from 'lodash';
@@ -89,6 +91,35 @@ export abstract class PersistenceProvider<S = any> {
             ret?.destroy();
             return null;
         }
+    }
+
+    /**
+     * Merge PersistOptions, respecting provider types, with later options overriding earlier ones.
+     */
+    static mergePersistOptions(
+        defaults: PersistOptions,
+        ...overrides: PersistOptions[]
+    ): PersistOptions {
+        const TYPE_RELATED_KEYS = [
+            'type',
+            'prefKey',
+            'localStorageKey',
+            'sessionStorageKey',
+            'dashViewModel',
+            'viewManagerModel',
+            'getData',
+            'setData'
+        ];
+        return compact(overrides).reduce(
+            (ret, override) =>
+                TYPE_RELATED_KEYS.some(key => override[key])
+                    ? {
+                          ...omit(ret, ...TYPE_RELATED_KEYS),
+                          ...override
+                      }
+                    : {...ret, ...override},
+            defaults
+        );
     }
 
     /** Read persisted state at this provider's path. */

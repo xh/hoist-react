@@ -15,6 +15,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed Role grid losing view state on refresh.
+* Fixed bug when merging `PersistOptions` with conflicting implicit provider types.
+* Fixed bug where explicit `persistGrouping` options were not being respected by `GridModel`.
 
 ## v72.0.0 - 2025-01-27
 
