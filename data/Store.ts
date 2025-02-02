@@ -666,7 +666,7 @@ export class Store extends HoistBase {
         return this.allRecords.filter(it => it.isDirty);
     }
 
-    /** Alias for {@link Store.dirtyRecords}*/
+    /** Alias for {@link Store.dirtyRecords} */
     get modifiedRecords(): StoreRecord[] {
         return this.dirtyRecords;
     }
