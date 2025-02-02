@@ -46,9 +46,9 @@ export class RoleFormModel extends HoistModel {
     @computed
     get hasDirtyMembers(): boolean {
         return (
-            this.usersGridModel.store.isModified ||
-            this.directoryGroupsGridModel.store.isModified ||
-            this.rolesGridModel.store.isModified
+            this.usersGridModel.store.isDirty ||
+            this.directoryGroupsGridModel.store.isDirty ||
+            this.rolesGridModel.store.isDirty
         );
     }
 
