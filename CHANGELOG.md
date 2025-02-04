@@ -11,6 +11,8 @@
 * Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
   User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
   to filter and match data using JSON Path expressions.
+* New aliases `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` provide a more
+ consistent API in the data package.
 
 ### 🐞 Bug Fixes
 
