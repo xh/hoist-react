@@ -149,6 +149,7 @@ export class NavigatorModel extends HoistModel {
         // to propagate to scrollable elements within the page.
         swiper.on('touchStart', (s, event: PointerEvent) => {
             swiper.allowTouchMove = false;
+            swiper.params.shortSwipes = true;
             this._touchStartX = event.pageX;
         });
 
@@ -174,6 +175,12 @@ export class NavigatorModel extends HoistModel {
                     // a Swiper transition.
                     swiper.allowTouchMove =
                         swiper.progress < 1 || !isDraggableEl(scrollableParent, 'right');
+
+                    // Disable short swipes to prevent accidental navigation when reaching the
+                    // end of the scrollable parent.
+                    if (!swiper.allowTouchMove) {
+                        swiper.params.shortSwipes = false;
+                    }
 
                     // During the swiper transition, undo the scrollable parent's internal scroll
                     // to keep it static.
