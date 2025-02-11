@@ -24,7 +24,9 @@ export function initPersist(
     }: GridModelPersistOptions
 ) {
     if (persistColumns) {
-        const persistWith = isObject(persistColumns) ? persistColumns : rootPersistWith;
+        const persistWith = isObject(persistColumns)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistColumns)
+            : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.columns`,
@@ -39,7 +41,9 @@ export function initPersist(
     }
 
     if (persistSort) {
-        const persistWith = isObject(persistSort) ? persistSort : rootPersistWith;
+        const persistWith = isObject(persistSort)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistSort)
+            : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.sortBy`,
@@ -55,7 +59,9 @@ export function initPersist(
     }
 
     if (persistGrouping) {
-        const persistWith = isObject(persistSort) ? persistSort : rootPersistWith;
+        const persistWith = isObject(persistGrouping)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistGrouping)
+            : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.groupBy`,

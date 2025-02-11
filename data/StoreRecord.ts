@@ -71,8 +71,13 @@ export class StoreRecord {
     }
 
     /** True if the StoreRecord has been modified since it was last committed. */
-    get isModified(): boolean {
+    get isDirty(): boolean {
         return this.committedData && this.committedData !== this.data;
+    }
+
+    /** Alias for {@link StoreRecord.isDirty} */
+    get isModified(): boolean {
+        return this.isDirty;
     }
 
     /** False if the StoreRecord has been added or modified. */

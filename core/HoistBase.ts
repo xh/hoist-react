@@ -261,8 +261,7 @@ export abstract class HoistBase {
         PersistenceProvider.create({
             persistOptions: {
                 path: property,
-                ...this.persistWith,
-                ...options
+                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
             },
             owner: this,
             target: {
