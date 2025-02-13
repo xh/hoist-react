@@ -2,21 +2,21 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
-
-* Requires `hoist-core >= 28.1` with new APIs to support JSON searching in the Admin Console.
-
 ### 🎁 New Features
 
 * Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
   User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
   to filter and match data using JSON Path expressions.
-* New aliases `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` provide a more
- consistent API in the data package.
+    * ⚠️Requires `hoist-core >= 28.1` with new APIs for this (optional) feature to function.
+* Added new getters `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` to provide a
+  more consistent API in the data package. The pre-existing `isModified` getters are retained as
+  aliases, with the same semantics.
 
 ### 🐞 Bug Fixes
 
-* Fixed Role grid losing view state on refresh.
+* Tuned mobile swipe handling to prevent horizontal swipes on a scrolling grid view from triggering
+  the Navigator's back gesture.
+* Prevented the Admin Console Roles grid from losing its expand/collapse/scroll state on refresh.
 * Fixed bug when merging `PersistOptions` with conflicting implicit provider types.
 * Fixed bug where explicit `persistGrouping` options were not being respected by `GridModel`.
 
