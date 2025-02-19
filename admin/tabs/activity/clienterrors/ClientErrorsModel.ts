@@ -11,9 +11,10 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {fmtJson} from '@xh/hoist/format';
+import {fmtJson, fmtSpan} from '@xh/hoist/format';
 import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {isEmpty} from 'lodash';
 
 export class ClientErrorsModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
@@ -62,6 +63,22 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.appVersion},
                 {...Col.appEnvironment},
                 {...Col.msg, displayName: 'User Message', hidden},
+                {
+                    field: {
+                        name: 'errorName',
+                        type: 'string'
+                    },
+                    autosizeMaxWidth: 400,
+                    renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+                },
+                {
+                    field: {
+                        name: 'errorMessage',
+                        type: 'string'
+                    },
+                    autosizeMaxWidth: 400,
+                    renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+                },
                 {...Col.error, hidden},
                 {...Col.url},
                 {...Col.correlationId},
@@ -127,7 +144,13 @@ export class ClientErrorsModel extends HoistModel {
                 body: this.query,
                 loadSpec
             });
-
+            if (!isEmpty(data)) {
+                data.forEach(it => {
+                    const error = JSON.parse(it.error);
+                    it.errorName = error?.name;
+                    it.errorMessage = error?.message;
+                });
+            }
             gridModel.loadData(data);
             await gridModel.preSelectFirstAsync();
         } catch (e) {
