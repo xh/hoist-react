@@ -392,18 +392,22 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
-     * @param path - relative path to reload (e.g. 'mobile/').  Defaults to the
+     * @param path - Relative path to reload (e.g. 'mobile/').  Defaults to the
      * existing location pathname.
+     * @param removeQueryParams - To remove existing URL's parameter string.
      *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp(path?: string) {
+    reloadApp(path?: string, removeQueryParams: boolean = false) {
         never().linkTo(this.appLoadModel);
         const {location} = window,
             href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
             url = new URL(href);
+
+        if (removeQueryParams) url.search = '';
+
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
         document.location.assign(url);
