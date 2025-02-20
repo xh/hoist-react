@@ -118,6 +118,7 @@ export interface LayoutProps {
     flexGrow?: string | number;
     flexShrink?: string | number;
     flexWrap?: Property.FlexWrap;
+    gap?: string | number;
 
     alignItems?: string;
     alignSelf?: string;

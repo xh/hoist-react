@@ -97,7 +97,8 @@ const dimKeys = [
     'maxHeight',
     'width',
     'minWidth',
-    'maxWidth'
+    'maxWidth',
+    'gap'
 ];
 const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
