@@ -79,7 +79,7 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
               icon: Icon.refresh(),
               text: 'Reload App',
               autoFocus: true,
-              onClick: () => XH.reloadApp()
+              onClick: () => XH.reloadApp({removeQueryParams: model.options.removeQueryParams})
           })
         : button({
               text: 'Close',
