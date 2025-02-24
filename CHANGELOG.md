@@ -1,6 +1,53 @@
 # Changelog
 
-## v72.0.0-SNAPSHOT - unreleased
+## v73.0.0-SNAPSHOT - unreleased
+
+## v72.1.0 - 2025-02-13
+
+### 🎁 New Features
+
+* Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
+  User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
+  to filter and match data using JSON Path expressions.
+    * ⚠️Requires `hoist-core >= 28.1` with new APIs for this (optional) feature to function.
+* Added new getters `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` to provide a
+  more consistent API in the data package. The pre-existing `isModified` getters are retained as
+  aliases, with the same semantics.
+
+### 🐞 Bug Fixes
+
+* Tuned mobile swipe handling to prevent horizontal swipes on a scrolling grid view from triggering
+  the Navigator's back gesture.
+* Prevented the Admin Console Roles grid from losing its expand/collapse/scroll state on refresh.
+* Fixed bug when merging `PersistOptions` with conflicting implicit provider types.
+* Fixed bug where explicit `persistGrouping` options were not being respected by `GridModel`.
+
+## v72.0.0 - 2025-01-27
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor changes to mobile nav)
+
+* Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
+  `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
+
+### 🎁 New Features
+
+* Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
+  largely the same, notwithstanding the minor breaking changes detailed above.
+
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` unique name validation.
+* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply
+  clearing it.
+* Improved suboptimal column state synchronization between `GridModel` and AG Grid.
+
+### ⚙️ Technical
+
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
 
 ## v71.0.0 - 2025-01-08
 

@@ -87,6 +87,7 @@ export class ActivityTrackingModel extends HoistModel {
             fields: [
                 Col.browser.field,
                 Col.category.field,
+                Col.severity.field,
                 Col.correlationId.field,
                 Col.data.field,
                 {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
@@ -131,6 +132,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'userAgent'},
                 {field: 'url', displayName: 'URL'},
                 {field: 'instance'},
+                {field: 'severity'},
                 {field: 'appVersion'},
                 {field: 'appEnvironment', displayName: 'Environment'}
             ]

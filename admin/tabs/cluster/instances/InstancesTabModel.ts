@@ -17,12 +17,11 @@ import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
 import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/instances/websocket/WebSocketPanel';
 import {badge} from '@xh/hoist/cmp/badge';
-import {GridModel, numberCol} from '@xh/hoist/cmp/grid';
+import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -37,15 +36,6 @@ export class InstancesTabModel extends HoistModel {
     @managed readonly gridModel: GridModel = this.createGridModel();
     @managed readonly tabContainerModel: TabContainerModel = this.createTabContainerModel();
     @managed readonly timer: Timer;
-
-    shutdownAction: RecordActionSpec = {
-        icon: Icon.skull(),
-        text: 'Shutdown Instance',
-        intent: 'danger',
-        actionFn: ({record}) => this.shutdownInstanceAsync(record.data),
-        displayFn: () => ({hidden: AppModel.readonly}),
-        recordsRequired: 1
-    };
 
     get instance(): PlainObject {
         return this.gridModel.selectedRecord?.data;
@@ -182,8 +172,23 @@ export class InstancesTabModel extends HoistModel {
                     rendererIsComplex: true
                 }
             ],
-            contextMenu: [this.shutdownAction, '-', ...GridModel.defaultContextMenu]
+            contextMenu: this.createContextMenu()
         });
+    }
+
+    private createContextMenu(): GridContextMenuSpec {
+        return [
+            {
+                icon: Icon.skull(),
+                text: 'Shutdown Instance',
+                intent: 'danger',
+                actionFn: ({record}) => this.shutdownInstanceAsync(record.data),
+                displayFn: () => ({hidden: AppModel.readonly}),
+                recordsRequired: 1
+            },
+            '-',
+            ...GridModel.defaultContextMenu
+        ];
     }
 
     private createTabContainerModel() {

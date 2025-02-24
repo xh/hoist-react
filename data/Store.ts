@@ -435,7 +435,7 @@ export class Store extends HoistBase {
             // sourced from the server / source of record and are coming in as committed.
             this._committed = this._committed.withTransaction(rsTransaction);
 
-            if (this.isModified) {
+            if (this.isDirty) {
                 // If this store had pre-existing local modifications, apply the updates over that
                 // local state. This might (or might not) effectively overwrite those local changes,
                 // so we normalize against the newly updated committed state to verify if any local
@@ -662,8 +662,13 @@ export class Store extends HoistBase {
     }
 
     /** Records modified locally since they were last loaded. */
+    get dirtyRecords(): StoreRecord[] {
+        return this.allRecords.filter(it => it.isDirty);
+    }
+
+    /** Alias for {@link Store.dirtyRecords} */
     get modifiedRecords(): StoreRecord[] {
-        return this.allRecords.filter(it => it.isModified);
+        return this.dirtyRecords;
     }
 
     /**
@@ -696,8 +701,13 @@ export class Store extends HoistBase {
 
     /** True if the store has changes which need to be committed. */
     @computed
-    get isModified(): boolean {
+    get isDirty(): boolean {
         return this._current !== this._committed;
+    }
+
+    /** Alias for {@link Store.isDirty} */
+    get isModified(): boolean {
+        return this.isDirty;
     }
 
     /**

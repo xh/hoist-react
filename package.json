@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "72.0.0-SNAPSHOT",
+  "version": "73.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -12,7 +12,6 @@
     "lint:all": "yarn lint:ts && yarn lint:js && yarn lint:styles",
     "lint:js": "eslint --ext .js,.jsx .",
     "lint:ts": "eslint --ext .ts,.tsx .",
-    "tsc": "./node_modules/typescript/bin/tsc",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "prepare": "husky"
   },
@@ -85,6 +84,7 @@
     "semver": "~7.6.0",
     "short-unique-id": "~5.2.0",
     "store2": "~2.14.3",
+    "swiper": "^11.2.0",
     "ua-parser-js": "~1.0.2"
   },
   "peerDependencies": {
@@ -97,7 +97,7 @@
     "@ag-grid-community/react": "31.x",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
-    "@xh/hoist-dev-utils": "9.x",
+    "@xh/hoist-dev-utils": "10.x",
     "csstype": "3.x",
     "eslint": "8.x",
     "eslint-config-prettier": "9.x",

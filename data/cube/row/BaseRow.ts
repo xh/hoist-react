@@ -7,7 +7,7 @@
 
 import {PlainObject, Some} from '@xh/hoist/core';
 import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
-import {isEmpty, reduce} from 'lodash';
+import {compact, isEmpty, reduce} from 'lodash';
 import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
 
@@ -97,7 +97,8 @@ export abstract class BaseRow {
         }
 
         // Recurse
-        return children.flatMap(it => it.getVisibleDatas());
+        const ret = compact(children.flatMap(it => it.getVisibleDatas()));
+        return !isEmpty(ret) ? ret : null;
     }
 
     private isRedundantChild(parent: any, child: any) {

@@ -395,7 +395,7 @@ export class AgGridModel extends HoistModel {
             ];
 
         let {isPivot, columns} = colState;
-        agApi.setPivotMode(isPivot);
+        agApi.setGridOption('pivotMode', isPivot);
 
         if (isPivot && columns.some(it => !isNil(it.pivotIndex) && it.pivotIndex >= 0)) {
             // Exclude the auto group column as this causes issues with ag-grid when in pivot mode
