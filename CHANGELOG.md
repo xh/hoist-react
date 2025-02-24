@@ -2,6 +2,10 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Modify TabContainerModel to be more extensible
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
@@ -299,7 +303,6 @@
   when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
 * Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
   already constructed `GroupingChooserModel`.
-* Modify TabContainerModel to be more extensible
 
 ### 🐞 Bug Fixes
 
