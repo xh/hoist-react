@@ -2,6 +2,10 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Modify TabContainerModel to be more extensible
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
