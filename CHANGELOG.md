@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* Modify TabContainerModel to be more extensible
+* Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
+use-cases.
 
 ## v72.1.0 - 2025-02-13
 
