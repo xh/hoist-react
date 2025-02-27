@@ -60,8 +60,6 @@ export type Content =
 
 export type DateLike = Date | LocalDate | MomentInput;
 
-export type ReloadAppOptions = string | {path?: string; removeQueryParams?: boolean};
-
 export type PageState =
     /**
      * Window/tab is visible and focused.

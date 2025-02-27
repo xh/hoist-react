@@ -6,6 +6,7 @@
 
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
+* Enhance `XH.reloadApp` with new argument to clear query parameters before loading.
 
 ## v72.1.0 - 2025-02-13
 
