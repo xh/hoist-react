@@ -54,6 +54,7 @@ import {
     MessageSpec,
     PageState,
     PlainObject,
+    ReloadAppOptions,
     SizingMode,
     TaskObserver,
     Theme,
@@ -404,7 +405,7 @@ export class XHApi {
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp(opts?: string | {path?: string; removeQueryParams?: boolean}) {
+    reloadApp(opts?: ReloadAppOptions) {
         never().linkTo(this.appLoadModel);
 
         const {location} = window,
