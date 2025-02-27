@@ -108,7 +108,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     @managed
     refreshContextModel: RefreshContextModel;
 
-    private lastActiveTabId: string;
+    protected lastActiveTabId: string;
 
     constructor({
         tabs = [],
@@ -342,7 +342,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     // Implementation
     //-------------------------
     @action
-    private setActiveTabIdInternal(id) {
+    protected setActiveTabIdInternal(id) {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -351,7 +351,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.forwardRouterToTab(id);
     }
 
-    private syncWithRouter() {
+    protected syncWithRouter() {
         const {tabs, route} = this,
             {router} = XH,
             state = router.getState();
@@ -364,14 +364,14 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         }
     }
 
-    private forwardRouterToTab(id) {
+    protected forwardRouterToTab(id) {
         const {route} = this;
         if (route && id) {
             XH.router.forward(route, route + '.' + id);
         }
     }
 
-    private calculateActiveTabId(tabs) {
+    protected calculateActiveTabId(tabs) {
         let ret;
 
         // try route

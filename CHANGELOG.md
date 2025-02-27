@@ -2,6 +2,11 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
+use-cases.
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
