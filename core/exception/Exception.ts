@@ -7,7 +7,7 @@
 import {PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {pluralize} from '@xh/hoist/utils/js';
-import {isPlainObject} from 'lodash';
+import {isPlainObject, truncate} from 'lodash';
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
@@ -90,17 +90,16 @@ export class Exception {
         // Try to "smart" decode as server provided JSON Exception (with a name)
         try {
             const cType = headers.get('Content-Type');
-            if (cType && cType.includes('application/json')) {
-                const serverDetails = JSON.parse(responseText);
-                if (serverDetails?.name) {
-                    return this.createFetchException({
-                        ...defaults,
-                        name: serverDetails.name,
-                        message: serverDetails.message,
-                        isRoutine: serverDetails.isRoutine ?? false,
-                        serverDetails
-                    });
-                }
+            if (cType?.includes('application/json')) {
+                const obj = safeParseJson(responseText),
+                    message = obj ? obj.message : truncate(responseText?.trim(), {length: 255});
+                return this.createFetchException({
+                    ...defaults,
+                    name: obj?.name ?? defaults.name,
+                    message: message ?? statusText,
+                    isRoutine: obj.isRoutine ?? false,
+                    serverDetails: obj ?? responseText
+                });
             }
         } catch (ignored) {}
 
@@ -219,6 +218,14 @@ export class Exception {
             },
             rest
         ) as HoistException;
+    }
+}
+
+function safeParseJson(txt: string): PlainObject {
+    try {
+        return JSON.parse(txt);
+    } catch (ignored) {
+        return null;
     }
 }
 
