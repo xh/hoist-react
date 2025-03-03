@@ -97,7 +97,7 @@ export class Exception {
                     ...defaults,
                     name: obj?.name ?? defaults.name,
                     message: message ?? statusText,
-                    isRoutine: obj.isRoutine ?? false,
+                    isRoutine: obj?.isRoutine ?? false,
                     serverDetails: obj ?? responseText
                 });
             }
