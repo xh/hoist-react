@@ -21,11 +21,18 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     displayName: 'JsonInput',
     className: 'xh-json-input',
     render(props, ref) {
+        let {value, ...jsonInputProps} = props;
+
+        if (typeof value !== 'string') {
+            value = value === null ? '' : JSON.stringify(value, null, 2);
+        }
+
         return codeInput({
             linter: linter,
             formatter: fmtJson,
             mode: 'application/json',
-            ...props,
+            ...jsonInputProps,
+            value,
             ref
         });
     }
