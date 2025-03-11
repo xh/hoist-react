@@ -7,6 +7,12 @@
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
 
+### ⚙️ Technical
+
+* Updated the `jsonInput` component to auto-format its provided value for display.
+It can accept JSON, stringified JSON or plain objects and output proper pretty-printed JSON in the
+UI - without the need for manual formatting in the call.
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
