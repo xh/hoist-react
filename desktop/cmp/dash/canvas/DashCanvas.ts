@@ -115,6 +115,8 @@ const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(({model}) => {
 });
 
 const onContextMenu = (e, model) => {
+    e.preventDefault();
+
     const {classList} = e.target;
     if (
         classList.contains('react-grid-layout') ||
