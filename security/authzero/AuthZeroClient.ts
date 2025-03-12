@@ -8,7 +8,8 @@ import type {Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from '../Types';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
@@ -40,10 +41,7 @@ export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroToke
     authZeroClientOptions?: Partial<Auth0ClientOptions>;
 }
 
-export interface AuthZeroTokenSpec {
-    /** Scopes for the desired access token.*/
-    scopes: string[];
-
+export interface AuthZeroTokenSpec extends AccessTokenSpec {
     /**
      * Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0.
      * Note that this is required to ensure that issued token is a JWT and not an opaque string.

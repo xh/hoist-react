@@ -9,7 +9,8 @@ import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, throwIf} from '@xh/hoist/utils/js';
@@ -18,7 +19,7 @@ import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
-export interface BaseOAuthClientConfig<S> {
+export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -94,7 +95,10 @@ export interface BaseOAuthClientConfig<S> {
  * server-side `AuthenticationService` implementation to validate the token and actually resolve
  * the user.) On init, the client impl will initiate a pop-up or redirect flow as necessary.
  */
-export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> extends HoistBase {
+export abstract class BaseOAuthClient<
+    C extends BaseOAuthClientConfig<S>,
+    S extends AccessTokenSpec
+> extends HoistBase {
     /** Config loaded from UI server + init method. */
     protected config: C;
 
@@ -317,7 +321,14 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         const ret: TokenMap = {},
             {accessSpecs} = this;
         for (const key of keys(accessSpecs)) {
-            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
+            const spec = accessSpecs[key];
+            if (spec.fetchMode == 'eager') {
+                try {
+                    ret[key] = await this.fetchAccessTokenAsync(spec, useCache);
+                } catch (e) {
+                    XH.handleException(e, {logOnServer: true, showAlert: false});
+                }
+            }
         }
         // Do this after getting any access tokens --which can also populate the idToken cache!
         ret.id = await this.fetchIdTokenSafeAsync(useCache);
