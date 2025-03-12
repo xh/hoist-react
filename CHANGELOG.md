@@ -6,6 +6,7 @@
 
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
+* Enhance `XH.reloadApp` with new argument to clear query parameters before loading.
 * Enhance exception handling in `FetchService` to capture messages returned as raw strings, or without
 explicit names.
 
