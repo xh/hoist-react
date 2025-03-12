@@ -73,7 +73,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             const {appState} = await client.handleRedirectCallback();
             this.restoreRedirectState(appState);
             await this.noteUserAuthenticatedAsync();
-            return this.fetchAllTokensAsync();
+            return this.fetchAllTokensAsync({eagerOnly: true});
         }
 
         // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
@@ -81,7 +81,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         if (await client.isAuthenticated()) {
             try {
                 this.logDebug('Attempting silent token load.');
-                return await this.fetchAllTokensAsync();
+                return await this.fetchAllTokensAsync({eagerOnly: true});
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             }
@@ -92,7 +92,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await this.loginAsync();
 
         // 3) return tokens
-        return this.fetchAllTokensAsync();
+        return this.fetchAllTokensAsync({eagerOnly: true});
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {

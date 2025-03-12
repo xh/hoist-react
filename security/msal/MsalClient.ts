@@ -125,7 +125,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             this.logDebug('Completing Redirect login');
             this.noteUserAuthenticated(redirectResp.account);
             this.restoreRedirectState(redirectResp.state);
-            return this.fetchAllTokensAsync();
+            return this.fetchAllTokensAsync({eagerOnly: true});
         }
 
         // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
@@ -140,7 +140,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             try {
                 this.initialTokenLoad = true;
                 this.logDebug('Attempting silent token load.');
-                return await this.fetchAllTokensAsync();
+                return await this.fetchAllTokensAsync({eagerOnly: true});
             } catch (e) {
                 this.account = null;
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
@@ -169,7 +169,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
 
         // 3) Return tokens
-        return this.fetchAllTokensAsync();
+        return this.fetchAllTokensAsync({eagerOnly: true});
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {

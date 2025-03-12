@@ -12,7 +12,7 @@ export type TokenMap = Record<string, Token>;
 export interface AccessTokenSpec {
     /**
      * Mode governing when the access token should be requested from provider.
-     *      eager - initiate lookup on initialization, but do not block on failure.
+     *      eager (default) - initiate lookup on initialization, but do not block on failure.
      *      lazy - lookup when requested by client.
      */
     fetchMode: 'eager' | 'lazy';
