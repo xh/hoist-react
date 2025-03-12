@@ -9,12 +9,11 @@ import * as Col from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {fmtJson, fmtSpan} from '@xh/hoist/format';
+import {fmtJson} from '@xh/hoist/format';
 import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isEmpty} from 'lodash';
 
 export class ClientErrorsModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminClientErrorsState'};
@@ -64,20 +63,12 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.appEnvironment},
                 {...Col.msg, displayName: 'User Message', hidden},
                 {
-                    field: {
-                        name: 'errorName',
-                        type: 'string'
-                    },
-                    autosizeMaxWidth: 400,
-                    renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+                    field: {name: 'errorName', type: 'string'},
+                    autosizeMaxWidth: 400
                 },
                 {
-                    field: {
-                        name: 'errorMessage',
-                        type: 'string'
-                    },
-                    autosizeMaxWidth: 400,
-                    renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+                    field: {name: 'errorMessage', type: 'string'},
+                    autosizeMaxWidth: 400
                 },
                 {...Col.error, hidden},
                 {...Col.url},
@@ -136,24 +127,29 @@ export class ClientErrorsModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {gridModel} = this;
+        const {query, gridModel} = this;
 
         try {
-            const data = await XH.fetchService.postJson({
+            const data: PlainObject[] = await XH.fetchService.postJson({
                 url: 'clientErrorAdmin',
-                body: this.query,
+                body: query,
                 loadSpec
             });
-            if (!isEmpty(data)) {
-                data.forEach(it => {
+
+            // Parse name + message from JSON-serialized error object out to top-level properties.
+            data.forEach(it => {
+                try {
                     const error = JSON.parse(it.error);
                     it.errorName = error?.name;
                     it.errorMessage = error?.message;
-                });
-            }
+                } catch (ignored) {}
+            });
+
             gridModel.loadData(data);
             await gridModel.preSelectFirstAsync();
         } catch (e) {
+            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+
             gridModel.clear();
             XH.handleException(e);
         }
