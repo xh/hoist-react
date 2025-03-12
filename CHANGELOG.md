@@ -7,6 +7,10 @@
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
 
+* Enhance exception handling in `FetchService` to capture messages returned as raw strings, or without
+explicit names.
+
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
