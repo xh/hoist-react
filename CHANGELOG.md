@@ -6,10 +6,13 @@
 
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
-
 * Enhance exception handling in `FetchService` to capture messages returned as raw strings, or without
 explicit names.
 
+### 🐞 Bug Fixes
+
+* Prevent native browser context menu on Dash Canvas surfaces. It can hide the Dash Canvas custom
+  context menu when an app's `showBrowserContextMenu` flag is `true`.
 
 ## v72.1.0 - 2025-02-13
 
