@@ -313,10 +313,10 @@ export abstract class BaseOAuthClient<
     }): Promise<TokenMap> {
         const eagerOnly = opts?.eagerOnly ?? false,
             useCache = opts?.useCache ?? true,
+            accessSpecs = eagerOnly
+                ? pickBy(this.accessSpecs, spec => spec.fetchMode === 'eager')
+                : this.accessSpecs,
             ret: TokenMap = {};
-
-        let {accessSpecs} = this;
-        if (eagerOnly) accessSpecs = pickBy(accessSpecs, spec => spec.fetchMode === 'eager');
 
         await Promise.allSettled(
             toPairs(accessSpecs).map(async ([key, spec]) => {
