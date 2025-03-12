@@ -18,7 +18,7 @@ import {
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {TEST_ID} from '@xh/hoist/utils/js';
+import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
@@ -115,8 +115,6 @@ const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(({model}) => {
 });
 
 const onContextMenu = (e, model) => {
-    e.preventDefault();
-
     const {classList} = e.target;
     if (
         classList.contains('react-grid-layout') ||
@@ -127,6 +125,7 @@ const onContextMenu = (e, model) => {
             x = clientX + model.ref.current.scrollLeft,
             y = clientY + model.ref.current.scrollTop;
 
+        consumeEvent(e);
         showContextMenu(
             dashCanvasContextMenu({
                 dashCanvasModel: model,
