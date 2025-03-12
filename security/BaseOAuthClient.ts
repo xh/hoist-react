@@ -89,11 +89,10 @@ export interface BaseOAuthClientConfig<S> {
  * suitable concrete implementation to power a client-side OauthService. See `MsalClient` and
  * `AuthZeroClient`
  *
- * Initialize such a service and this client within the `preAuthInitAsync()` lifecycle method of
- * `AppModel` to use the tokens it acquires to authenticate with the Hoist server. (Note this
- * requires a suitable server-side `AuthenticationService` implementation to validate the token and
- * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
- * flow as necessary.
+ * Initialize such a service and this client within an app's primary {@link HoistAuthModel} to use
+ * the tokens it acquires to authenticate with the Hoist server. (Note this requires a suitable
+ * server-side `AuthenticationService` implementation to validate the token and actually resolve
+ * the user.) On init, the client impl will initiate a pop-up or redirect flow as necessary.
  */
 export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> extends HoistBase {
     /** Config loaded from UI server + init method. */

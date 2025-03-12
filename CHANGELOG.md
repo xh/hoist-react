@@ -2,6 +2,19 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
+use-cases.
+* Enhance `XH.reloadApp` with new argument to clear query parameters before loading.
+* Enhance exception handling in `FetchService` to capture messages returned as raw strings, or without
+explicit names.
+
+### 🐞 Bug Fixes
+
+* Prevent native browser context menu on Dash Canvas surfaces. It can hide the Dash Canvas custom
+  context menu when an app's `showBrowserContextMenu` flag is `true`.
+
 ## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features

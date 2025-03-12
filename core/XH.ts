@@ -54,6 +54,7 @@ import {
     MessageSpec,
     PageState,
     PlainObject,
+    ReloadAppOptions,
     SizingMode,
     TaskObserver,
     Theme,
@@ -64,7 +65,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '21.0';
+export const MIN_HOIST_CORE_VERSION = '28.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -392,18 +393,25 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
-     * @param path - relative path to reload (e.g. 'mobile/').  Defaults to the
-     * existing location pathname.
+     * @param opts - options to govern reload. To support legacy usages, a provided
+     *       string will be treated as `ReloadAppOptions.path`.
      *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp(path?: string) {
+    reloadApp(opts?: ReloadAppOptions | string) {
         never().linkTo(this.appLoadModel);
+
+        opts = isString(opts) ? {path: opts} : (opts ?? {});
+
         const {location} = window,
-            href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
+            href = opts.path
+                ? `${location.origin}/${opts.path.replace(/^\/+/, '')}`
+                : location.href,
             url = new URL(href);
+
+        if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
         document.location.assign(url);
