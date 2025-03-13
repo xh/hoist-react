@@ -14,7 +14,7 @@ import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, isObject, keys, pickBy, toPairs, union} from 'lodash';
+import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
@@ -319,7 +319,7 @@ export abstract class BaseOAuthClient<
             ret: TokenMap = {};
 
         await Promise.allSettled(
-            toPairs(accessSpecs).map(async ([key, spec]) => {
+            map(accessSpecs, async (spec, key) => {
                 try {
                     ret[key] = await this.fetchAccessTokenAsync(spec, useCache);
                 } catch (e) {
