@@ -4,11 +4,18 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    PlainObject
+} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forEach, forOwn, isObject, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
@@ -22,11 +29,19 @@ export interface FormConfig {
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;
 
+    /** Options governing persistence. */
+    persistWith?: FormPersistOptions;
+
     disabled?: boolean;
     readonly?: boolean;
 
     /** @internal */
     xhImpl?: boolean;
+}
+
+export interface FormPersistOptions extends PersistOptions {
+    /** True (default) to include value or provide value-specific PersistOptions. */
+    persistValue?: boolean | PersistOptions;
 }
 
 /**
@@ -87,6 +102,7 @@ export class FormModel extends HoistModel {
         fields = [],
         initialValues = {},
         disabled = false,
+        persistWith = null,
         readonly = false,
         xhImpl = false
     }: FormConfig = {}) {
@@ -97,6 +113,7 @@ export class FormModel extends HoistModel {
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
+
         fields.forEach((f: any) => {
             const model =
                     f instanceof BaseFieldModel
@@ -111,6 +128,7 @@ export class FormModel extends HoistModel {
         this.fields = models;
 
         this.init(initialValues);
+        if (persistWith) this.initPersist(persistWith);
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
@@ -273,5 +291,28 @@ export class FormModel extends HoistModel {
                 }
             }
         );
+    }
+
+    private initPersist({
+        persistValue = false,
+        path = 'form',
+        ...rootPersistWith
+    }: FormPersistOptions) {
+        if (persistValue) {
+            const persistWith = isObject(persistValue)
+                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+                : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.value`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.values),
+                    setPersistableState: ({value}) => this.setValues(value)
+                },
+                owner: this
+            });
+        }
     }
 }
