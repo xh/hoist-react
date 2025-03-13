@@ -1,5 +1,7 @@
 # Changelog
 
+## v73.0.0-SNAPSHOT - unreleased
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
