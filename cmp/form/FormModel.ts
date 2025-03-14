@@ -15,10 +15,11 @@ import {
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forEach, forOwn, isString, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 
 export interface FormConfig {
     /**
@@ -311,6 +312,13 @@ export class FormModel extends HoistModel {
                         return new PersistableState(this.fields[name].value);
                     },
                     setPersistableState: ({value}) => {
+                        // There is no metadata on a field to denote it is a date.
+                        // Use a regex matcher to tests for dates and format matches accurately.
+                        if (isString(value) && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            this.setValues({[name]: LocalDate.from(value)});
+                            return;
+                        }
+
                         this.setValues({[name]: value});
                     }
                 },
