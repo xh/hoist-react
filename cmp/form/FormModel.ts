@@ -15,7 +15,7 @@ import {
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, isObject, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
@@ -40,8 +40,8 @@ export interface FormConfig {
 }
 
 export interface FormPersistOptions extends PersistOptions {
-    /** True (default) to include fields or provide field-specific PersistOptions. */
-    persistFields?: boolean | PersistOptions;
+    /** If persisting only a subset of all fields, provide an array of field names. */
+    fieldsToPersist?: string[];
 }
 
 /**
@@ -294,29 +294,28 @@ export class FormModel extends HoistModel {
     }
 
     private initPersist({
-        persistFields = true,
+        fieldsToPersist = null,
         path = 'form',
         ...rootPersistWith
     }: FormPersistOptions) {
-        if (persistFields) {
-            const persistWith = isObject(persistFields)
-                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFields)
-                : rootPersistWith;
+        const fieldNameMap = fieldsToPersist || Object.keys(this.fields);
+
+        fieldNameMap.forEach(name => {
             PersistenceProvider.create({
                 persistOptions: {
-                    path: `${path}.fields`,
-                    ...persistWith
+                    path: `${path}.fields.${name}.value`,
+                    ...rootPersistWith
                 },
                 target: {
                     getPersistableState: () => {
-                        return new PersistableState(this.fields);
+                        return new PersistableState(this.fields[name].value);
                     },
                     setPersistableState: ({value}) => {
-                        this.setValues(value);
+                        this.setValues({[name]: value});
                     }
                 },
                 owner: this
             });
-        }
+        });
     }
 }
