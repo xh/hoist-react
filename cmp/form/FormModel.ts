@@ -40,8 +40,8 @@ export interface FormConfig {
 }
 
 export interface FormPersistOptions extends PersistOptions {
-    /** True (default) to include value or provide value-specific PersistOptions. */
-    persistValue?: boolean | PersistOptions;
+    /** True (default) to include fields or provide field-specific PersistOptions. */
+    persistFields?: boolean | PersistOptions;
 }
 
 /**
@@ -294,22 +294,26 @@ export class FormModel extends HoistModel {
     }
 
     private initPersist({
-        persistValue = false,
+        persistFields = true,
         path = 'form',
         ...rootPersistWith
     }: FormPersistOptions) {
-        if (persistValue) {
-            const persistWith = isObject(persistValue)
-                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+        if (persistFields) {
+            const persistWith = isObject(persistFields)
+                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFields)
                 : rootPersistWith;
             PersistenceProvider.create({
                 persistOptions: {
-                    path: `${path}.value`,
+                    path: `${path}.fields`,
                     ...persistWith
                 },
                 target: {
-                    getPersistableState: () => new PersistableState(this.values),
-                    setPersistableState: ({value}) => this.setValues(value)
+                    getPersistableState: () => {
+                        return new PersistableState(this.fields);
+                    },
+                    setPersistableState: ({value}) => {
+                        this.setValues(value);
+                    }
                 },
                 owner: this
             });
