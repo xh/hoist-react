@@ -6,6 +6,8 @@
 
 * Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
 use-cases.
+* Update the `FormModel` with configuration options to support persisting the form state - either the entire form
+or a provided subset of fields.
 
 ## v72.1.0 - 2025-02-13
 

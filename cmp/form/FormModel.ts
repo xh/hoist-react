@@ -30,7 +30,7 @@ export interface FormConfig {
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;
 
-    /** Options governing persistence. */
+    /** Options governing persistence of the form state. */
     persistWith?: FormPersistOptions;
 
     disabled?: boolean;
