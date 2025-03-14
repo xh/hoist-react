@@ -192,7 +192,8 @@ export abstract class PersistenceProvider<S = any> {
                 } else {
                     this.write(state.value);
                 }
-            }
+            },
+            {fireImmediately: true}
         );
     }
 
