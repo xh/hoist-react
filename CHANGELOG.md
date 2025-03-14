@@ -2,6 +2,10 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Update the `FormModel` with configuration options to support persisting the form state - either the entire form
+or a provided subset of fields.
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
