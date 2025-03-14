@@ -9,11 +9,11 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
-import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {select} from '@xh/hoist/desktop/cmp/input';
 import {ServiceModel} from './ServiceModel';
 
 export const servicePanel = hoistCmp.factory({
@@ -52,15 +52,14 @@ const bbar = hoistCmp.factory({
             filler(),
             gridCountLabel({unit: 'service'}),
             '-',
-            select({
-                options: [
-                    {value: 'all', label: 'All'},
-                    {value: 'app', label: 'App Only'},
-                    {value: 'hoist', label: 'Hoist Only'}
-                ],
-                width: 125,
+            buttonGroupInput({
                 bind: 'typeFilter',
-                hideDropdownIndicator: true
+                outlined: true,
+                items: [
+                    button({value: 'all', text: 'All'}),
+                    button({value: 'app', text: 'App'}),
+                    button({value: 'hoist', text: 'Hoist'})
+                ]
             }),
             storeFilterField({
                 matchMode: 'any',

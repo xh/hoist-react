@@ -10,7 +10,7 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -52,15 +52,16 @@ export class ServiceModel extends BaseInstanceModel {
         selModel: 'multiple',
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('services')},
+        groupBy: 'provider',
         store: {
             idSpec: 'name',
             processRawData: this.processRawData,
             fields: [
                 {name: 'provider', type: 'string'},
                 {name: 'name', type: 'string'},
-                {name: 'displayName', type: 'string'},
+                {name: 'displayName', type: 'string', displayName: 'Service'},
                 {name: 'initializedDate', type: 'date', displayName: 'Initialized'},
-                {name: 'lastCachesCleared', type: 'date', displayName: 'Last Cleared'}
+                {name: 'lastCachesCleared', type: 'date', displayName: 'Caches Last Cleared'}
             ]
         },
         sortBy: ['provider', 'displayName'],
@@ -81,6 +82,7 @@ export class ServiceModel extends BaseInstanceModel {
     constructor() {
         super();
         makeObservable(this);
+
         this.addReaction({
             track: () => [this.textFilter, this.typeFilter],
             run: this.applyFilters,
@@ -91,6 +93,7 @@ export class ServiceModel extends BaseInstanceModel {
     async clearCachesAsync(entireCluster: boolean) {
         const {gridModel, instanceName, loadModel} = this,
             {selectedRecords} = gridModel;
+
         if (isEmpty(selectedRecords)) return;
 
         const cacheStr =
@@ -131,19 +134,24 @@ export class ServiceModel extends BaseInstanceModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        const {gridModel, instanceName: instance} = this;
         try {
             const data = await XH.fetchJson({
                 url: 'serviceManagerAdmin/listServices',
-                params: {instance: this.instanceName},
+                params: {instance},
                 loadSpec
             });
-            return this.gridModel.loadData(data);
+
+            if (!loadSpec.isStale) {
+                gridModel.loadData(data);
+                gridModel.preSelectFirstAsync();
+            }
         } catch (e) {
             this.handleLoadException(e, loadSpec);
         }
     }
 
-    private processRawData(r) {
+    private processRawData(r: PlainObject) {
         const provider = r.name && r.name.startsWith('hoistCore') ? 'Hoist' : 'App';
         const displayName = lowerFirst(r.name.replace('hoistCore', ''));
         return {provider, displayName, ...r};
