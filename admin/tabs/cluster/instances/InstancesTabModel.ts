@@ -149,7 +149,7 @@ export class InstancesTabModel extends HoistModel {
                 },
                 {
                     ...usedHeapMb,
-                    headerName: 'Heap (MB)'
+                    headerName: 'Heap (mb)'
                 },
                 {
                     ...usedPctMax,
@@ -214,11 +214,12 @@ export class InstancesTabModel extends HoistModel {
     private async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
-                message: `Are you SURE you want to shutdown instance ${instance.name}?`,
+                message: `Are you sure you wish to immediately terminate instance ${instance.name}?`,
                 confirmProps: {
                     icon: Icon.skull(),
-                    text: 'Shutdown Now',
+                    text: 'Yes, kill the instance',
                     intent: 'danger',
+                    outlined: true,
                     autoFocus: false
                 }
             }))

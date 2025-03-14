@@ -131,6 +131,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
                 },
                 {
                     groupId: 'GC',
+                    headerName: 'Garbage Collection',
                     headerAlign: 'center',
                     children: [collectionCount, avgCollectionTime, pctCollectionTime]
                 }
