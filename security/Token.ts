@@ -11,8 +11,6 @@ import {jwtDecode} from 'jwt-decode';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {isNil} from 'lodash';
 
-export type TokenMap = Record<string, Token>;
-
 export class Token {
     readonly value: string;
     readonly decoded: PlainObject;

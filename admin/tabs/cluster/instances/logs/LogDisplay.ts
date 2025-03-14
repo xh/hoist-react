@@ -6,12 +6,12 @@
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
-import {code, filler, fragment, hspacer, label, placeholder} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hspacer, label, placeholder} from '@xh/hoist/cmp/layout';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {numberInput, switchInput, textInput} from '@xh/hoist/desktop/cmp/input';
-import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -48,7 +48,7 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
         numberInput({
             bind: 'startLine',
             min: 1,
-            width: 80,
+            width: 70,
             disabled: model.tail,
             displayWithCommas: true
         }),
@@ -57,13 +57,13 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
         numberInput({
             bind: 'maxLines',
             min: 1,
-            width: 80,
+            width: 70,
             displayWithCommas: true
         }),
         '-',
         textInput({
             bind: 'pattern',
-            placeholder: 'Filter',
+            placeholder: 'Filter lines...',
             leftIcon: Icon.filter(),
             flex: 1,
             rightElement: fragment(
@@ -85,7 +85,7 @@ const tbar = hoistCmp.factory<LogDisplayModel>(({model}) => {
                 })
             )
         }),
-        gridFindField({flex: 1}),
+        gridFindField({flex: 1, placeholder: 'Find lines...'}),
         '-',
         switchInput({
             bind: 'tail',
@@ -123,16 +123,14 @@ const bbar = hoistCmp.factory<LogDisplayModel>({
             }),
             filler(),
             Icon.clock(),
-            code(
-                clock({
-                    timezone: zone,
-                    format: 'HH:mm',
-                    suffix: fmtTimeZone(zone, offset)
-                })
-            ),
+            clock({
+                timezone: zone,
+                format: 'HH:mm',
+                suffix: fmtTimeZone(zone, offset)
+            }),
             fragment({
                 omit: !logRootPath,
-                items: [toolbarSep(), Icon.folder(), code(logRootPath)]
+                items: [toolbarSep(), Icon.folder({className: 'xh-margin-right'}), logRootPath]
             })
         );
     }

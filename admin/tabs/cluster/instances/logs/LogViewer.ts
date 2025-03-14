@@ -5,8 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {logLevelDialog} from '@xh/hoist/admin/tabs/cluster/instances/logs/levels/LogLevelDialog';
-import {grid} from '@xh/hoist/cmp/grid';
-import {hframe} from '@xh/hoist/cmp/layout';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
+import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
@@ -37,9 +37,8 @@ export const logViewer = hoistCmp.factory({
                         side: 'left',
                         defaultSize: 380
                     },
-                    item: grid(),
-                    bbar: [
-                        storeFilterField({flex: 1}),
+                    tbar: [
+                        storeFilterField({flex: 1, placeholder: 'Filter files...'}),
                         select({
                             leftIcon: Icon.server(),
                             bind: 'instanceOnly',
@@ -53,6 +52,8 @@ export const logViewer = hoistCmp.factory({
                             ]
                         })
                     ],
+                    item: grid(),
+                    bbar: [filler(), gridCountLabel({unit: 'log file'})],
                     mask: 'onLoad'
                 }),
                 logDisplay(),

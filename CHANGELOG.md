@@ -3,11 +3,26 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-
-* Modify `TabContainerModel` to make more methods `protected`, improving extensibility for advanced
-use-cases.
 * Update the `FormModel` with configuration options to support persisting the form state - either the entire form
 or a provided subset of fields.
+
+## v72.2.0 - 2025-03-13
+
+### 🎁 New Features
+* Modified `TabContainerModel` to make more methods `protected`, improving extensibility for
+  advanced use-cases.
+* Enhanced `XH.reloadApp` with new argument to clear query parameters before loading.
+* Enhanced exception handling in `FetchService` to capture messages returned as raw strings, or
+  without explicit names.
+* Added dedicated columns to the Admin Console "Client Errors" tab for error names and messages.
+* `BaseOAuthClient` has been enhanced to allow `lazy` loading of Access Tokens, and also made more
+  robust such that Access Tokens that fail to load will never prevent the client from
+  initialization.
+
+### 🐞 Bug Fixes
+
+* Prevent native browser context menu on Dash Canvas surfaces. It can hide the Dash Canvas custom
+  context menu when an app's `showBrowserContextMenu` flag is `true`.
 
 ## v72.1.0 - 2025-02-13
 

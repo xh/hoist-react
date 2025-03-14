@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
 import {bindable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
@@ -14,7 +13,7 @@ export class DetailsModel extends HoistModel {
     parent: ServiceModel;
 
     @bindable.ref
-    svcName: StoreRecord;
+    svcName: String;
 
     @bindable.ref
     stats: PlainObject;

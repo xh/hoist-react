@@ -13,7 +13,8 @@ import {
     SilentRequest
 } from '@azure/msal-browser';
 import {XH} from '@xh/hoist/core';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from '../Types';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
@@ -65,10 +66,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     msalClientOptions?: Partial<msal.Configuration>;
 }
 
-export interface MsalTokenSpec {
-    /** Scopes for the desired access token. */
-    scopes: string[];
-
+export interface MsalTokenSpec extends AccessTokenSpec {
     /**
      * Scopes to be added to the scopes requested during interactive and SSO logins.
      * See the `scopes` property on  `PopupRequest`, `RedirectRequest`, and `SSORequest`
@@ -127,7 +125,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             this.logDebug('Completing Redirect login');
             this.noteUserAuthenticated(redirectResp.account);
             this.restoreRedirectState(redirectResp.state);
-            return this.fetchAllTokensAsync();
+            return this.fetchAllTokensAsync({eagerOnly: true});
         }
 
         // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
@@ -142,7 +140,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             try {
                 this.initialTokenLoad = true;
                 this.logDebug('Attempting silent token load.');
-                return await this.fetchAllTokensAsync();
+                return await this.fetchAllTokensAsync({eagerOnly: true});
             } catch (e) {
                 this.account = null;
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
@@ -171,7 +169,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
 
         // 3) Return tokens
-        return this.fetchAllTokensAsync();
+        return this.fetchAllTokensAsync({eagerOnly: true});
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
