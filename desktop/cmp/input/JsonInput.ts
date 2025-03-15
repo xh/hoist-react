@@ -11,6 +11,7 @@ import * as codemirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
 import {codeInput, CodeInputProps} from './CodeInput';
 import {jsonlint} from './impl/jsonlint';
+import {isPlainObject} from 'lodash';
 
 export type JsonInputProps = CodeInputProps;
 
@@ -21,11 +22,20 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     displayName: 'JsonInput',
     className: 'xh-json-input',
     render(props, ref) {
+        let {value, ...codeInputProps} = props;
+
+        if (isPlainObject(value)) {
+            value = JSON.stringify(value, null, 2);
+        } else if (value === null) {
+            value = '';
+        }
+
         return codeInput({
-            linter: linter,
+            linter,
             formatter: fmtJson,
             mode: 'application/json',
-            ...props,
+            ...codeInputProps,
+            value,
             ref
         });
     }
