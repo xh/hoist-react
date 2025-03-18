@@ -43,6 +43,9 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
+    /** @TODO */
+    autoFormat?: boolean;
+
     /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
 
@@ -196,7 +199,7 @@ class CodeInputModel extends HoistInputModel {
                 ? button({
                       icon: Icon.magic(),
                       title: 'Auto-format',
-                      onClick: () => this.onAutoFormat()
+                      onClick: () => this.formatValue()
                   })
                 : null,
             showFullscreenButton
@@ -305,8 +308,8 @@ class CodeInputModel extends HoistInputModel {
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
-                'Cmd-P': this.onAutoFormat,
-                'Ctrl-P': this.onAutoFormat
+                'Cmd-P': () => this.formatValue(),
+                'Ctrl-P': () => this.formatValue()
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
@@ -326,20 +329,31 @@ class CodeInputModel extends HoistInputModel {
         if (this.cursor) this.clearSearchResults();
     };
 
-    onAutoFormat = () => {
+    override toInternal(val: any) {
+        return this.componentProps.readonly && this.componentProps.autoFormat
+            ? this.safeFormatValue(val)
+            : val;
+    }
+
+    private safeFormatValue(val: any) {
+        if (!isFunction(this.componentProps.formatter)) return val;
+
+        try {
+            return this.componentProps.formatter(val);
+        } catch (ignored) {
+            return val;
+        }
+    }
+
+    private formatValue() {
         if (!isFunction(this.componentProps.formatter)) return;
 
-        const editor = this.editor,
-            val = this.tryPrettyPrint(editor.getValue());
-        editor.setValue(val);
-    };
-
-    tryPrettyPrint(str) {
+        const editor = this.editor;
+        let val = editor.getValue();
         try {
-            return this.componentProps.formatter(str);
-        } catch (e) {
-            return str;
-        }
+            val = this.componentProps.formatter(val);
+        } catch (ignored) {}
+        editor.setValue(val);
     }
 
     toggleFullScreen() {
