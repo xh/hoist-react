@@ -4,9 +4,8 @@
 
 ### ⚙️ Technical
 
-* Updated the `jsonInput` component to auto-format its provided value for display.
-It can accept JSON, stringified JSON or plain objects and output proper pretty-printed JSON in the
-UI - without the need for manual formatting in the call.
+* Updated the `codeInput` component to (optionally) auto-format its provided value for display.
+  Requires the input to be readonly and a formatter to be configured / provided.
 
 ## v72.2.0 - 2025-03-13
 

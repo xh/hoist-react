@@ -43,7 +43,12 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
-    /** @TODO */
+    /**
+     * True to automatically format the code based on the provided "formatter".
+     * Requires the "formatter" prop to be configured.
+     * Requires the input to be readonly to avoid any possible formatting
+     *   side effects in user edits
+     */
     autoFormat?: boolean;
 
     /** False to not commit on every change/keystroke, default true. */
