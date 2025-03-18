@@ -29,6 +29,17 @@ export interface HoistUser {
 }
 
 /**
+ * Options governing XH.reloadApp().
+ */
+export interface ReloadAppOptions {
+    /** Relative path to reload (e.g. 'mobile/').  Defaults to the existing location pathname. */
+    path?: string;
+
+    /** Should the query parameters be removed from the url before reload.  Default false. */
+    removeQueryParams?: boolean;
+}
+
+/**
  * Options for showing a "toast" notification that appears and then automatically dismisses.
  */
 export interface ToastSpec {
