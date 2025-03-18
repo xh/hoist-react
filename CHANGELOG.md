@@ -2,6 +2,12 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Updated the `jsonInput` component to auto-format its provided value for display.
+It can accept JSON, stringified JSON or plain objects and output proper pretty-printed JSON in the
+UI - without the need for manual formatting in the call.
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
@@ -19,12 +25,6 @@
 
 * Prevent native browser context menu on Dash Canvas surfaces. It can hide the Dash Canvas custom
   context menu when an app's `showBrowserContextMenu` flag is `true`.
-
-### ⚙️ Technical
-
-* Updated the `jsonInput` component to auto-format its provided value for display.
-It can accept JSON, stringified JSON or plain objects and output proper pretty-printed JSON in the
-UI - without the need for manual formatting in the call.
 
 ## v72.1.0 - 2025-02-13
 
