@@ -204,7 +204,7 @@ class CodeInputModel extends HoistInputModel {
                 ? button({
                       icon: Icon.magic(),
                       title: 'Auto-format',
-                      onClick: () => this.formatValue()
+                      onClick: () => this.formatAndSetEditorValue()
                   })
                 : null,
             showFullscreenButton
@@ -313,8 +313,8 @@ class CodeInputModel extends HoistInputModel {
             lineNumbers: true,
             autoCloseBrackets: true,
             extraKeys: {
-                'Cmd-P': () => this.formatValue(),
-                'Ctrl-P': () => this.formatValue()
+                'Cmd-P': () => this.formatAndSetEditorValue(),
+                'Ctrl-P': () => this.formatAndSetEditorValue()
             },
             foldGutter: true,
             scrollbarStyle: 'simple',
@@ -350,7 +350,7 @@ class CodeInputModel extends HoistInputModel {
         }
     }
 
-    private formatValue() {
+    private formatAndSetEditorValue() {
         if (!isFunction(this.componentProps.formatter)) return;
 
         const editor = this.editor;
