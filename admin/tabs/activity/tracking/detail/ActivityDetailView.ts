@@ -138,7 +138,7 @@ const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) 
         width: '100%',
         height: '100%',
         showCopyButton: true,
-        value: model.formattedData
+        value: model.displayData
     });
 });
 
