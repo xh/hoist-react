@@ -128,7 +128,6 @@ export class WebSocketService extends HoistService {
      * Send a message back to the server via the connected websocket.
      */
     sendMessage(message: WebSocketMessage) {
-        message.clientAppVersion = XH.appVersion;
         this.updateConnectedStatus();
         throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
@@ -327,5 +326,4 @@ export class WebSocketSubscription {
 export interface WebSocketMessage {
     topic: string;
     data?: any;
-    clientAppVersion?: string;
 }
