@@ -173,7 +173,11 @@ export class WebSocketService extends HoistService {
     heartbeatOrReconnect() {
         this.updateConnectedStatus();
         if (this.connected) {
-            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+            this.sendMessage({
+                topic: this.HEARTBEAT_TOPIC,
+                data: 'ping',
+                clientAppVersion: XH.appVersion
+            });
         } else {
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.disconnect();
@@ -323,4 +327,5 @@ export class WebSocketSubscription {
 export interface WebSocketMessage {
     topic: string;
     data?: any;
+    clientAppVersion?: string;
 }
