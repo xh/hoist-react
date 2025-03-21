@@ -2,6 +2,11 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Updated the `codeInput` component to (optionally) auto-format its provided value for display.
+  Requires the input to be readonly and a formatter to be configured / provided.
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
