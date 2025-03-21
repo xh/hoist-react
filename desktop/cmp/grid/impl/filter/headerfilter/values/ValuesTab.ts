@@ -5,10 +5,11 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {div, hframe, placeholder, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -47,7 +48,33 @@ const tbar = hoistCmp.factory(() => {
 const body = hoistCmp.factory<ValuesTabModel>(({model}) => {
     const {isCustomFilter} = model.headerFilterModel;
     if (isCustomFilter) return customFilterPlaceholder();
-    return vframe(grid(), hiddenValuesMessage());
+    return vframe(storeFilterSelect(), grid(), hiddenValuesMessage());
+});
+
+const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
+    const {gridModel, allVisibleRecsChecked, filterText, headerFilterModel} = model,
+        {store} = gridModel;
+    return vbox({
+        className: 'store-filter-header',
+        items: [
+            hframe(
+                checkbox({
+                    disabled: store.empty,
+                    displayUnsetState: true,
+                    value: allVisibleRecsChecked,
+                    onChange: () => model.toggleAllRecsChecked()
+                }),
+                span(`(Select All${filterText ? ' Search Results' : ''})`)
+            ),
+            hframe({
+                omit: !filterText || store.empty || headerFilterModel.commitOnChange,
+                items: [
+                    checkbox({bind: 'combineCurrentFilters'}),
+                    span(`Add current selection to filter`)
+                ]
+            })
+        ]
+    });
 });
 
 const customFilterPlaceholder = hoistCmp.factory<ValuesTabModel>(({model}) => {
