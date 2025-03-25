@@ -173,10 +173,7 @@ export class WebSocketService extends HoistService {
     heartbeatOrReconnect() {
         this.updateConnectedStatus();
         if (this.connected) {
-            this.sendMessage({
-                topic: this.HEARTBEAT_TOPIC,
-                data: 'ping'
-            });
+            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
         } else {
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.disconnect();
@@ -285,10 +282,10 @@ export class WebSocketService extends HoistService {
 
     buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
-            endpoint = 'xhWebSocket';
+            endpoint = 'xhWebSocket?clientAppVersion=' + XH.appVersion;
         return XH.isDevelopmentMode
-            ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}?clientAppVersion=${XH.appVersion}`
-            : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}?clientAppVersion=${XH.appVersion}`;
+            ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
+            : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
     }
 
     showTestMessageAlert(message) {
