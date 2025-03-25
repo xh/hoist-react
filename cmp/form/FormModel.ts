@@ -42,7 +42,9 @@ export interface FormConfig {
 
 export interface FormPersistOptions extends PersistOptions {
     /** If persisting only a subset of all fields, provide an array of field names. */
-    fieldsToPersist?: string[];
+    fieldsToInclude?: string[];
+    /** If excluding a subset of all fields, provide an array of field names. */
+    fieldsToExclude?: string[];
 }
 
 /**
@@ -295,11 +297,15 @@ export class FormModel extends HoistModel {
     }
 
     private initPersist({
-        fieldsToPersist = null,
+        fieldsToInclude = null,
+        fieldsToExclude = null,
         path = 'form',
         ...rootPersistWith
     }: FormPersistOptions) {
-        const fieldNameMap = fieldsToPersist || Object.keys(this.fields);
+        const fieldNameMap = this.createFormFieldsToPersistListing(
+            fieldsToInclude,
+            fieldsToExclude
+        );
 
         fieldNameMap.forEach(name => {
             PersistenceProvider.create({
@@ -325,5 +331,21 @@ export class FormModel extends HoistModel {
                 owner: this
             });
         });
+    }
+    /**
+     * Helper to build a list of fields to persist on a form.
+     */
+    private createFormFieldsToPersistListing(
+        fieldsToInclude: string[] | null,
+        fieldsToExclude: string[] | null
+    ) {
+        if (!fieldsToInclude && !fieldsToExclude) return Object.keys(this.fields);
+        if (fieldsToInclude && !fieldsToExclude) return fieldsToInclude;
+        if (!fieldsToInclude && fieldsToExclude)
+            return Object.keys(this.fields).filter(name => !fieldsToExclude.includes(name));
+
+        return Object.keys(this.fields).filter(
+            name => !fieldsToExclude.includes(name) && fieldsToInclude.includes(name)
+        );
     }
 }
