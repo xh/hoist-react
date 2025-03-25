@@ -2,6 +2,8 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+* Support for reporting Client Version in Admin WebSockets tab.
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
