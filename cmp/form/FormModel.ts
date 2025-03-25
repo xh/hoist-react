@@ -304,7 +304,7 @@ export class FormModel extends HoistModel {
         fieldNameMap.forEach(name => {
             PersistenceProvider.create({
                 persistOptions: {
-                    path: `${path}.fields.${name}.value`,
+                    path: `${path}.${name}.value`,
                     ...rootPersistWith
                 },
                 target: {
