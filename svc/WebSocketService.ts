@@ -175,8 +175,7 @@ export class WebSocketService extends HoistService {
         if (this.connected) {
             this.sendMessage({
                 topic: this.HEARTBEAT_TOPIC,
-                data: 'ping',
-                clientAppVersion: XH.appVersion
+                data: 'ping'
             });
         } else {
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
@@ -287,10 +286,9 @@ export class WebSocketService extends HoistService {
     buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
             endpoint = 'xhWebSocket';
-
         return XH.isDevelopmentMode
-            ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
-            : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
+            ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}?clientAppVersion=${XH.appVersion}`
+            : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}?clientAppVersion=${XH.appVersion}`;
     }
 
     showTestMessageAlert(message) {
@@ -327,5 +325,4 @@ export class WebSocketSubscription {
 export interface WebSocketMessage {
     topic: string;
     data?: any;
-    clientAppVersion?: string;
 }
