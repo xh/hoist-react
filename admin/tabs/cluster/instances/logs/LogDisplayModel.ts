@@ -117,8 +117,6 @@ export class LogDisplayModel extends HoistModel {
             },
             loadSpec
         });
-        // Backward compatibility for Hoist Core < v22, which returned exception in-band
-        if (!response.success) throw XH.exception(response.exception);
         this.updateGridData(response.content);
     }
 
