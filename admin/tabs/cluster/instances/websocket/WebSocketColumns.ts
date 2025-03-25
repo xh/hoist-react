@@ -77,7 +77,7 @@ export const clientAppVersion: ColumnSpec = {
     field: {
         name: 'clientAppVersion',
         type: 'string',
-        displayName: 'Client App Version'
+        displayName: 'Client Version'
     },
     width: 120
 };
