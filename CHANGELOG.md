@@ -3,6 +3,10 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 * Support for reporting Client Version in Admin WebSockets tab.
+* ⚠️ Removed TS rule from DashViewSpec that allowed any type of additional values to be added to a DashViewSpec.
+  The rule defeats the goal of the DashViewSpec interface, which is to help guide app developers
+  in writing DashViewSpecs.  We don't think many apps were declaring additional values on DashViewSpecs.
+  If any were, these additional values would now be identified by the TS compiler as not permitted.
 
 ## v72.2.0 - 2025-03-13
 
