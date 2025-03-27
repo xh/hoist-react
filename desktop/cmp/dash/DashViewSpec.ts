@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Content, Thunkable} from '@xh/hoist/core';
+import {Content, RefreshMode, RenderMode, Thunkable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {ReactElement} from 'react';
 
@@ -53,6 +53,15 @@ export interface DashViewSpec {
     /** True (default) to allow renaming the view. */
     allowRename?: boolean;
 
-    /** Additional properties to store on the DashView */
-    [x: string]: any;
+    /**
+     * Strategy for rendering this view.
+     * See enum for description of supported modes.
+     */
+    renderMode?: RenderMode;
+
+    /**
+     * Strategy for refreshing this view.
+     * See enum for description of supported modes.
+     */
+    refreshMode?: RefreshMode;
 }
