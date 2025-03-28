@@ -299,7 +299,7 @@ export class FormModel extends HoistModel {
     private initPersist({
         fieldsToInclude = null,
         fieldsToExclude = null,
-        path = 'form',
+        path = 'formValues',
         ...rootPersistWith
     }: FormPersistOptions) {
         const fieldNameMap = this.createFormFieldsToPersistListing(
@@ -309,22 +309,32 @@ export class FormModel extends HoistModel {
 
         PersistenceProvider.create({
             persistOptions: {
-                path: `${path}.value`,
+                path,
                 ...rootPersistWith
             },
             target: {
                 getPersistableState: () => {
-                    return new PersistableState(Object.keys(this.fields).map(name => [name, this.fields[name].value]));
+                    return new PersistableState(
+                        fieldNameMap.reduce(
+                            (acc, name) => ({...acc, [name]: this.fields[name].value}),
+                            {}
+                        )
+                    );
                 },
-                setPersistableState: ({value}) => {
+                setPersistableState: ({value: formValues}) => {
                     // There is no metadata on a field to denote it is a date.
                     // Use a regex matcher to tests for dates and format matches accurately.
-                    // if (isString(value) && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    //     this.setValues({[name]: LocalDate.from(value)});
-                    //     return;
-                    // }
-
-                    this.setValues(Object.keys(this.fields).reduce((acc, name) => ({...acc, [name]: value[name]}), {}));
+                    this.setValues(
+                        fieldNameMap.reduce((acc, name) => {
+                            if (
+                                isString(formValues[name]) &&
+                                formValues[name].match(/^\d{4}-\d{2}-\d{2}$/)
+                            ) {
+                                return {...acc, [name]: LocalDate.from(formValues[name])};
+                            }
+                            return {...acc, [name]: formValues[name]};
+                        }, {} as PlainObject)
+                    );
                 }
             },
             owner: this
