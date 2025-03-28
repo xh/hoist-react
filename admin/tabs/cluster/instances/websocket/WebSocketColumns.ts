@@ -72,3 +72,12 @@ export const lastReceivedTime: ColumnSpec = {
     ...Col.compactDate,
     width: 140
 };
+
+export const clientAppVersion: ColumnSpec = {
+    field: {
+        name: 'clientAppVersion',
+        type: 'string',
+        displayName: 'Client Version'
+    },
+    width: 120
+};

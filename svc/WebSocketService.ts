@@ -282,8 +282,7 @@ export class WebSocketService extends HoistService {
 
     buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
-            endpoint = 'xhWebSocket';
-
+            endpoint = 'xhWebSocket?clientAppVersion=' + XH.appVersion;
         return XH.isDevelopmentMode
             ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
             : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;

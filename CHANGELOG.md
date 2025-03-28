@@ -2,7 +2,7 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
+* Support for reporting Client Version in Admin WebSockets tab.
 * Update the `FormModel` with configuration options to support persisting the form state - either the entire form
 or a provided subset of fields.
 
