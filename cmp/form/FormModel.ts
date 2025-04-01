@@ -15,7 +15,7 @@ import {
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, isString, map, mapValues, pickBy, some, values} from 'lodash';
+import {flatMap, forEach, forOwn, isNil, map, mapValues, pickBy, some, values} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
@@ -316,7 +316,13 @@ export class FormModel extends HoistModel {
                 getPersistableState: () => {
                     return new PersistableState(
                         fieldNameMap.reduce(
-                            (acc, name) => ({...acc, [name]: this.fields[name].value}),
+                            (acc, name) => ({
+                                ...acc,
+                                [name]: {
+                                    value: this.fields[name].value,
+                                    valueType: this.fields[name].valueType
+                                }
+                            }),
                             {}
                         )
                     );
@@ -326,19 +332,28 @@ export class FormModel extends HoistModel {
                     // Use a regex matcher to tests for dates and format matches accurately.
                     this.setValues(
                         fieldNameMap.reduce((acc, name) => {
-                            if (
-                                isString(formValues[name]) &&
-                                formValues[name].match(/^\d{4}-\d{2}-\d{2}$/)
-                            ) {
-                                return {...acc, [name]: LocalDate.from(formValues[name])};
-                            }
-                            return {...acc, [name]: formValues[name]};
+                            return {...acc, [name]: this.processFormValue(formValues[name])};
                         }, {} as PlainObject)
                     );
                 }
             },
             owner: this
         });
+    }
+
+    /**
+     * TODO
+     */
+    private processFormValue(persistedValue: PlainObject) {
+        if (isNil(persistedValue.value) || persistedValue.value === '') return null;
+
+        if (persistedValue.valueType === 'boolean') return !!persistedValue.value;
+        if (persistedValue.valueType === 'number') return Number(persistedValue.value);
+        if (persistedValue.valueType === 'localDate') return LocalDate.from(persistedValue.value);
+        if (persistedValue.valueType === 'date') return new Date(persistedValue.value);
+        if (persistedValue.valueType === 'string') return String(persistedValue.value);
+
+        return persistedValue.value;
     }
     /**
      * Helper to build a list of fields to persist on a form.
