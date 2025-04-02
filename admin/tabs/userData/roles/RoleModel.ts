@@ -275,7 +275,7 @@ export class RoleModel extends HoistModel {
         return new GridModel({
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            autosizeOptions: {mode: 'managed'},
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             selModel: 'multiple',
             emptyText: 'No roles found.',
             colChooserModel: true,
