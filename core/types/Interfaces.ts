@@ -6,7 +6,7 @@
  */
 
 import {RuleLike} from '@xh/hoist/data';
-import {ReactElement, ReactNode} from 'react';
+import {MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
@@ -284,7 +284,7 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: () => void;
+    actionFn?: (e: MouseEvent) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
     prepareFn?: (me: MenuItem) => void;

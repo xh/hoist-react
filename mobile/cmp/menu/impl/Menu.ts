@@ -98,9 +98,9 @@ class LocalMenuModel extends HoistModel {
                     omit: hidden,
                     onTouchStart: () => (this.pressedIdx = idx),
                     onTouchEnd: () => (this.pressedIdx = null),
-                    onClick: () => {
+                    onClick: e => {
                         this.pressedIdx = null;
-                        if (actionFn) actionFn();
+                        if (actionFn) actionFn(e);
                         onDismiss();
                     }
                 });
