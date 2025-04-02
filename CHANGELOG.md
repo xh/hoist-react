@@ -2,7 +2,9 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
 * Support for reporting Client Version in Admin WebSockets tab.
+* Menu items `actionFn()` now receives the click event as an argument.
 
 ## v72.2.0 - 2025-03-13
 
