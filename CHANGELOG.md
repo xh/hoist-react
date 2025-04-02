@@ -3,6 +3,7 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 * Support for reporting Client Version in Admin WebSockets tab.
+* NULL check when accessing records in Store to prevent a thrown error
 
 ## v72.2.0 - 2025-03-13
 
