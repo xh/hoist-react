@@ -15,11 +15,24 @@ import {
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, isNil, map, mapValues, pickBy, some, values} from 'lodash';
+import {
+    flatMap,
+    forEach,
+    forOwn,
+    isArray,
+    isDate,
+    isObject,
+    isString,
+    map,
+    mapValues,
+    pickBy,
+    some,
+    values
+} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
-import {LocalDate} from '@xh/hoist/utils/datetime';
+import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
 export interface FormConfig {
     /**
@@ -318,10 +331,7 @@ export class FormModel extends HoistModel {
                         fieldNameMap.reduce(
                             (acc, name) => ({
                                 ...acc,
-                                [name]: {
-                                    value: this.fields[name].value,
-                                    valueType: this.fields[name].valueType
-                                }
+                                [name]: this.serialize(this.fields[name].value)
                             }),
                             {}
                         )
@@ -332,7 +342,7 @@ export class FormModel extends HoistModel {
                     // Use a regex matcher to tests for dates and format matches accurately.
                     this.setValues(
                         fieldNameMap.reduce((acc, name) => {
-                            return {...acc, [name]: this.processFormValue(formValues[name])};
+                            return {...acc, [name]: this.deserialize(formValues[name])};
                         }, {} as PlainObject)
                     );
                 }
@@ -341,20 +351,26 @@ export class FormModel extends HoistModel {
         });
     }
 
-    /**
-     * TODO
-     */
-    private processFormValue(persistedValue: PlainObject) {
-        if (isNil(persistedValue.value) || persistedValue.value === '') return null;
-
-        if (persistedValue.valueType === 'boolean') return !!persistedValue.value;
-        if (persistedValue.valueType === 'number') return Number(persistedValue.value);
-        if (persistedValue.valueType === 'localDate') return LocalDate.from(persistedValue.value);
-        if (persistedValue.valueType === 'date') return new Date(persistedValue.value);
-        if (persistedValue.valueType === 'string') return String(persistedValue.value);
-
-        return persistedValue.value;
+    private serialize(formValue: unknown) {
+        if (isArray(formValue)) return formValue.map(this.serialize);
+        if (isDate(formValue)) return {__type: 'date', value: formValue.toJSON()};
+        if (isLocalDate(formValue)) return {__type: 'localDate', value: formValue.toJSON()};
+        if (isObject(formValue)) return mapValues(formValue, this.serialize);
+        return formValue;
     }
+
+    private deserialize(formValue: unknown) {
+        if (isArray(formValue)) return formValue.map(this.deserialize);
+        if (isObject(formValue)) {
+            if ('__type' in formValue && 'value' in formValue && isString(formValue.value)) {
+                if (formValue.__type === 'date') return new Date(formValue.value);
+                if (formValue.__type === 'localDate') return LocalDate.get(formValue.value);
+            }
+            return mapValues(formValue, this.deserialize);
+        }
+        return formValue;
+    }
+
     /**
      * Helper to build a list of fields to persist on a form.
      */
