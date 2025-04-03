@@ -20,9 +20,6 @@ export interface BaseFieldConfig {
     /** User-facing name for labels and validation messages. */
     displayName?: string;
 
-    /** Type of value this field holds (date, number, etc.). */
-    valueType?: string;
-
     /**
      * Initial value of this field.  If a function, will be executed dynamically when form is
      * initialized to provide value.
@@ -91,8 +88,6 @@ export abstract class BaseFieldModel extends HoistModel {
 
     private _formModel: FormModel;
     private origInitialValue: any;
-
-    valueType: string;
 
     boundInputRef = createObservableRef();
 
@@ -186,22 +181,6 @@ export abstract class BaseFieldModel extends HoistModel {
     /** All validation errors for this field and its sub-forms. */
     get allErrors(): string[] {
         return this.errors;
-    }
-
-    setValueType(elementName: string, valueType?: string) {
-        switch (elementName) {
-            case 'Checkbox':
-                this.valueType = 'boolean';
-                break;
-            case 'NumberInput':
-                this.valueType = 'number';
-                break;
-            case 'DateInput':
-                this.valueType = valueType ? valueType : 'date';
-                break;
-            default:
-                this.valueType = 'string';
-        }
     }
 
     /**

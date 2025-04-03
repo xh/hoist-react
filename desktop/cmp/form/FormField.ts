@@ -171,10 +171,6 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
 
-        // The form model does not know the value type of any given field.]
-        // Use the UI element to set the value type on the form field model.
-        model.setValueType(childElementName, child?.props?.valueType);
-
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
