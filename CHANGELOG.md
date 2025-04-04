@@ -3,6 +3,11 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 * Support for reporting Client Version in Admin WebSockets tab.
+* Update the `FormModel` with configuration options to support persisting the form state - either the entire form
+or a provided subset of fields.
+
+### 🐞 Bug Fixes
+
 * NULL check when accessing records in Store to prevent a thrown error
 
 ## v72.2.0 - 2025-03-13
