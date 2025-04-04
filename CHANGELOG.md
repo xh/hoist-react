@@ -3,17 +3,21 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Support for reporting Client Version in Admin WebSockets tab.
+
+* Added the reported client app version as a column in the Admin Console WebSockets tab.
 
 ### 🐞 Bug Fixes
-* Improve tracking of fetch to include time spent loading headers specified
-by application.
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### 📚 Libraries
 
 * @azure/msal-browser `3.28 → 4.8.0`
 
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
+
 * Modified `TabContainerModel` to make more methods `protected`, improving extensibility for
   advanced use-cases.
 * Enhanced `XH.reloadApp` with new argument to clear query parameters before loading.
