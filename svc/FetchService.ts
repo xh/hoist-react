@@ -218,7 +218,7 @@ export class FetchService extends HoistService {
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
 
-        // Core Promise
+        // Core Promise - chained with custom headers callback to ensure that work is included in overall tracked time.
         let ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
 
         // Apply tracking
