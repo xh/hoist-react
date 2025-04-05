@@ -7,6 +7,8 @@
 import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
+    BrowserPerformanceClient,
+    Configuration,
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
@@ -33,6 +35,12 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * The value of the domain hint is a registered domain for the tenant.
      */
     domainHint?: string;
+
+    /**
+     * True to enable support for built-in telemetry provided by this class's internal MSAL client.
+     * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/performance.md
+     */
+    enableTelemetry?: boolean;
 
     /**
      * If specified, the client will use this value when initializing the app to enforce a minimum
@@ -263,29 +271,38 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const {clientId, authority, msalLogLevel, msalClientOptions} = this.config;
+        const {clientId, authority, msalLogLevel, msalClientOptions, enableTelemetry} = this.config;
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        return msal.PublicClientApplication.createPublicClientApplication(
-            mergeDeep(
-                {
-                    auth: {
-                        clientId,
-                        authority,
-                        postLogoutRedirectUri: this.postLogoutRedirectUrl
-                    },
-                    system: {
-                        loggerOptions: {
-                            loggerCallback: this.logFromMsal,
-                            logLevel: msalLogLevel
-                        }
-                    },
-                    cache: {
-                        cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+        const mergedConf: Configuration = mergeDeep(
+            {
+                auth: {
+                    clientId,
+                    authority,
+                    postLogoutRedirectUri: this.postLogoutRedirectUrl
+                },
+                system: {
+                    loggerOptions: {
+                        loggerCallback: this.logFromMsal,
+                        logLevel: msalLogLevel
                     }
                 },
-                msalClientOptions
-            )
+                cache: {
+                    cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+                }
+            },
+            msalClientOptions
+        );
+
+        return msal.PublicClientApplication.createPublicClientApplication(
+            enableTelemetry
+                ? {
+                      ...mergedConf,
+                      telemetry: {
+                          client: new BrowserPerformanceClient(mergedConf)
+                      }
+                  }
+                : mergedConf
         );
     }
 
