@@ -6,6 +6,14 @@
 
 * Added the reported client app version as a column in the Admin Console WebSockets tab.
 
+### 🐞 Bug Fixes
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.28 → 4.8.0`
+
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
