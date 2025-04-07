@@ -328,6 +328,21 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             });
         });
 
+        // Ask TrackService to include in background health check report, if enabled on that service.
+        if (XH.appIsRunning) {
+            XH.trackService.addClientHealthReportSource('msalClient', () => this.telemetryResults);
+        } else {
+            // Handle TrackService not yet initialized (common, this client likely initialized before.)
+            this.addReaction({
+                when: () => XH.appIsRunning,
+                run: () =>
+                    XH.trackService.addClientHealthReportSource(
+                        'msalClient',
+                        () => this.telemetryResults
+                    )
+            });
+        }
+
         this.logInfo('Telemetry enabled');
     }
 
@@ -340,6 +355,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.client.removePerformanceCallback(this._telemetryCbHandle);
         this._telemetryCbHandle = null;
         this.telemetryResults.endTime = new Date();
+
+        XH.trackService.removeClientHealthReportSource('msalClient');
         this.logInfo('Telemetry disabled', this.telemetryResults);
     }
 

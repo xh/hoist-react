@@ -9,20 +9,22 @@ import {pick} from 'lodash';
 /**
  * Extract information (if available) about the client browser's window, screen, and network speed.
  */
-export function getClientDeviceInfo() {
-    const data: any = pick(window, [
-        'screen',
-        'devicePixelRatio',
-        'screenX',
-        'screenY',
-        'innerWidth',
-        'innerHeight',
-        'outerWidth',
-        'outerHeight'
-    ]);
+export function getClientDeviceInfo(): ClientDeviceInfo {
+    const ret: ClientDeviceInfo = {
+        window: pick(window, [
+            'devicePixelRatio',
+            'screenX',
+            'screenY',
+            'innerWidth',
+            'innerHeight',
+            'outerWidth',
+            'outerHeight'
+        ])
+    };
 
-    if (data.screen) {
-        data.screen = pick(data.screen, [
+    const screen = window.screen as any;
+    if (screen) {
+        ret.screen = pick(screen, [
             'availWidth',
             'availHeight',
             'width',
@@ -30,23 +32,58 @@ export function getClientDeviceInfo() {
             'colorDepth',
             'pixelDepth',
             'availLeft',
-            'availTop',
-            'orientation'
+            'availTop'
         ]);
-        if (data.screen.orientation) {
-            data.screen.orientation = pick(data.screen.orientation, ['angle', 'type']);
+        if (screen.orientation) {
+            ret.screen.orientation = pick(screen.orientation, ['angle', 'type']);
         }
     }
 
     const nav = window.navigator as any;
     if (nav.connection) {
-        data.connection = pick(nav.connection, ['downlink', 'effectiveType', 'rtt']);
+        ret.connection = pick(nav.connection, ['downlink', 'effectiveType', 'rtt']);
     }
 
     const perf = window.performance as any;
     if (perf?.memory) {
-        data.memory = pick(perf.memory, ['jsHeapSizeLimit', 'totalJSHeapSize', 'usedJSHeapSize']);
+        ret.memory = pick(perf.memory, ['jsHeapSizeLimit', 'totalJSHeapSize', 'usedJSHeapSize']);
     }
 
-    return data;
+    return ret;
+}
+
+export interface ClientDeviceInfo {
+    window: {
+        devicePixelRatio: number;
+        screenX: number;
+        screenY: number;
+        innerWidth: number;
+        innerHeight: number;
+        outerWidth: number;
+        outerHeight: number;
+    };
+    screen?: {
+        availWidth: number;
+        availHeight: number;
+        width: number;
+        height: number;
+        colorDepth: number;
+        pixelDepth: number;
+        availLeft: number;
+        availTop: number;
+        orientation?: {
+            angle: number;
+            type: string;
+        };
+    };
+    connection?: {
+        downlink: number;
+        effectiveType: string;
+        rtt: number;
+    };
+    memory?: {
+        jsHeapSizeLimit: number;
+        totalJSHeapSize: number;
+        usedJSHeapSize: number;
+    };
 }
