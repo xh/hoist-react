@@ -42,9 +42,10 @@ export interface TelemetryEventResults {
         average: number;
         worst: number;
     };
-    lastError?: {
-        timestamp: number;
+    lastFailure?: {
+        time: Date;
         code: string;
         name: string;
+        raw: any;
     };
 }

@@ -286,31 +286,32 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             events.forEach(e => {
                 try {
                     const {events} = this.telemetryResults,
-                        {name, durationMs, success, errorName, errorCode} = e,
-                        now = new Date();
+                        {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
+                        eTime = startTimeMs ? new Date(startTimeMs) : new Date();
 
                     if (!events[name]) {
                         events[name] = {
-                            firstTime: now,
-                            lastTime: now,
+                            firstTime: eTime,
+                            lastTime: eTime,
                             successCount: 0,
                             failureCount: 0,
                             duration: {count: 0, total: 0, average: 0, worst: 0},
-                            lastError: null
+                            lastFailure: null
                         };
                     }
 
                     const eResult = events[name];
-                    eResult.lastTime = now;
+                    eResult.lastTime = eTime;
 
                     if (success) {
                         eResult.successCount++;
                     } else {
                         eResult.failureCount++;
-                        eResult.lastError = {
-                            timestamp: Date.now(),
+                        eResult.lastFailure = {
+                            time: eTime,
                             code: errorCode,
-                            name: errorName
+                            name: errorName,
+                            raw: e
                         };
                     }
 
