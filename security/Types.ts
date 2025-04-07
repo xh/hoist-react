@@ -42,6 +42,7 @@ export interface TelemetryEventResults {
     };
     lastFailure?: {
         time: Date;
+        duration: number;
         code: string;
         name: string;
     };

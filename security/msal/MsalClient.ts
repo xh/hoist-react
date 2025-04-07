@@ -297,6 +297,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         eResult.failureCount++;
                         eResult.lastFailure = {
                             time: eTime,
+                            duration: e.durationMs,
                             code: errorCode,
                             name: errorName
                         };
@@ -306,7 +307,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         const {duration} = eResult;
                         duration.count++;
                         duration.total += durationMs;
-                        duration.average = duration.total / duration.count;
+                        duration.average = Math.round(duration.total / duration.count);
                         duration.worst = Math.max(duration.worst, durationMs);
                     }
                 } catch (e) {
@@ -316,19 +317,15 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         });
 
         // Ask TrackService to include in background health check report, if enabled on that service.
-        if (XH.appIsRunning) {
-            XH.trackService.addClientHealthReportSource('msalClient', () => this.telemetryResults);
-        } else {
-            // Handle TrackService not yet initialized (common, this client likely initialized before.)
-            this.addReaction({
-                when: () => XH.appIsRunning,
-                run: () =>
-                    XH.trackService.addClientHealthReportSource(
-                        'msalClient',
-                        () => this.telemetryResults
-                    )
-            });
-        }
+        // Handle TrackService not yet initialized (common, this client likely initialized before.)
+        this.addReaction({
+            when: () => XH.appIsRunning,
+            run: () =>
+                XH.trackService.addClientHealthReportSource(
+                    'msalClient',
+                    () => this.telemetryResults
+                )
+        });
 
         this.logInfo('Telemetry enabled');
     }

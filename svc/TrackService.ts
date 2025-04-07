@@ -178,7 +178,13 @@ export class TrackService extends HoistService {
     }
 
     private sendClientHealthReport() {
-        const {loadStarted} = XH.appContainerModel.appStateModel;
+        const {
+                intervalMins,
+                severity: defaultSeverity,
+                ...rest
+            } = this.conf.clientHealthReport ?? {},
+            {loadStarted} = XH.appContainerModel.appStateModel;
+
         const data = {
             session: {
                 started: loadStarted,
@@ -188,19 +194,21 @@ export class TrackService extends HoistService {
             ...getClientDeviceInfo()
         };
 
+        let severity = defaultSeverity ?? 'INFO';
         this.clientHealthReportSources.forEach((cb, k) => {
             try {
                 data[k] = cb();
+                if (data[k]?.severity === 'WARN') severity = 'WARN';
             } catch (e) {
                 data[k] = `Error: ${e.message}`;
                 this.logWarn(`Error running client health report callback for [${k}]`, e);
             }
         });
 
-        const {intervalMins, ...rest} = this.conf.clientHealthReport ?? {};
         this.track({
-            category: 'Client Health Report',
-            message: 'Submitted report',
+            category: 'App',
+            message: 'Submitted health report',
+            severity,
             ...rest,
             data
         });
