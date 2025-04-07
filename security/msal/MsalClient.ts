@@ -114,11 +114,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private initialTokenLoad: boolean;
 
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
-    telemetryResults: TelemetryResults = {
-        startTime: null,
-        endTime: null,
-        events: {}
-    };
+    telemetryResults: TelemetryResults = {events: {}};
     private _telemetryCbHandle: string = null;
 
     constructor(config: MsalClientConfig) {
@@ -276,11 +272,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             return;
         }
 
-        this.telemetryResults = {
-            startTime: new Date(),
-            endTime: null,
-            events: {}
-        };
+        this.telemetryResults = {events: {}};
 
         this._telemetryCbHandle = this.client.addPerformanceCallback(events => {
             events.forEach(e => {
@@ -349,7 +341,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
 
         this.client.removePerformanceCallback(this._telemetryCbHandle);
         this._telemetryCbHandle = null;
-        this.telemetryResults.endTime = new Date();
 
         XH.trackService.removeClientHealthReportSource('msalClient');
         this.logInfo('Telemetry disabled', this.telemetryResults);

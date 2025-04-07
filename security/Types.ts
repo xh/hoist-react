@@ -23,8 +23,6 @@ export type TokenMap = Record<string, Token>;
 
 /** Aggregated telemetry results, produced by {@link MsalClient} when enabled via config. */
 export interface TelemetryResults {
-    startTime: Date;
-    endTime: Date;
     /** Stats by event type - */
     events: Record<string, TelemetryEventResults>;
 }
