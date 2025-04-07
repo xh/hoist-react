@@ -5,6 +5,8 @@
 ### 🎁 New Features
 
 * Added the reported client app version as a column in the Admin Console WebSockets tab.
+* Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
+  timing and success/failure count for all events emitted by the library.
 
 ### 🐞 Bug Fixes
 
