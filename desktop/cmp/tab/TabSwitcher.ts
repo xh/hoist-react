@@ -41,7 +41,7 @@ import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
  *
  * Overflowing tabs can be displayed in a dropdown menu if `enableOverflow` is true.
  * Note that in order for tabs to overflow, the TabSwitcher or it's wrapper must have a
- * a maximum width.
+ * maximum width.
  */
 export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>({
     displayName: 'TabSwitcher',
