@@ -19,7 +19,7 @@
 ### ⚙️ Technical
 
 * Update shape of returned `BrowserUtils.getClientDeviceInfo()` to nest several properties under new
-  top-level `window` key.
+  top-level `window` key and report JS heap size / usage values under the `memory` block in MB.
 
 ### 📚 Libraries
 

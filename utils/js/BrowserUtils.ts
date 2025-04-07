@@ -4,7 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {pick} from 'lodash';
+import {XH} from '@xh/hoist/core';
+import {pick, round} from 'lodash';
 
 /**
  * Extract information (if available) about the client browser's window, screen, and network speed.
@@ -19,7 +20,10 @@ export function getClientDeviceInfo(): ClientDeviceInfo {
             'innerHeight',
             'outerWidth',
             'outerHeight'
-        ])
+        ]),
+        memory: {
+            modelCount: XH.getModels().length
+        }
     };
 
     const screen = window.screen as any;
@@ -46,7 +50,15 @@ export function getClientDeviceInfo(): ClientDeviceInfo {
 
     const perf = window.performance as any;
     if (perf?.memory) {
-        ret.memory = pick(perf.memory, ['jsHeapSizeLimit', 'totalJSHeapSize', 'usedJSHeapSize']);
+        ['jsHeapSizeLimit', 'totalJSHeapSize', 'usedJSHeapSize'].forEach(key => {
+            const raw = perf.memory[key];
+            if (raw) ret.memory[key] = round(raw / 1024 / 1024); // convert to MB
+        });
+
+        const {jsHeapSizeLimit: limit, usedJSHeapSize: used} = ret.memory;
+        if (limit && used) {
+            ret.memory.usedPctLimit = round((used / limit) * 100, 1);
+        }
     }
 
     return ret;
@@ -81,9 +93,11 @@ export interface ClientDeviceInfo {
         effectiveType: string;
         rtt: number;
     };
-    memory?: {
-        jsHeapSizeLimit: number;
-        totalJSHeapSize: number;
-        usedJSHeapSize: number;
+    memory: {
+        modelCount: number;
+        usedPctLimit?: number;
+        jsHeapSizeLimit?: number;
+        totalJSHeapSize?: number;
+        usedJSHeapSize?: number;
     };
 }

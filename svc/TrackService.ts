@@ -190,7 +190,6 @@ export class TrackService extends HoistService {
                 started: loadStarted,
                 durationMins: round((Date.now() - loadStarted) / 60_000, 1)
             },
-            modelCount: XH.getModels().length,
             ...getClientDeviceInfo()
         };
 
