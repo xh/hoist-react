@@ -46,6 +46,5 @@ export interface TelemetryEventResults {
         time: Date;
         code: string;
         name: string;
-        raw: any;
     };
 }

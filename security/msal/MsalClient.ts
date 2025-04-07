@@ -306,8 +306,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         eResult.lastFailure = {
                             time: eTime,
                             code: errorCode,
-                            name: errorName,
-                            raw: e
+                            name: errorName
                         };
                     }
 

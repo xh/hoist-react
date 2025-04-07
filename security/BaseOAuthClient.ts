@@ -120,7 +120,7 @@ export abstract class BaseOAuthClient<
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
-        this.accessSpecs = this.config.accessTokens;
+        this.accessSpecs = this.config.accessTokens ?? {};
     }
 
     /**
@@ -164,7 +164,10 @@ export abstract class BaseOAuthClient<
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+        const spec = this.accessSpecs[key];
+        if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
+
+        return this.fetchAccessTokenAsync(spec, true);
     }
 
     /**
