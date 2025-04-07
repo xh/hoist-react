@@ -315,8 +315,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         };
                     }
 
-                    const {duration} = eResult;
                     if (durationMs) {
+                        const {duration} = eResult;
                         duration.count++;
                         duration.total += durationMs;
                         duration.average = duration.total / duration.count;
