@@ -289,18 +289,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
                         eTime = startTimeMs ? new Date(startTimeMs) : new Date();
 
-                    if (!events[name]) {
-                        events[name] = {
-                            firstTime: eTime,
-                            lastTime: eTime,
-                            successCount: 0,
-                            failureCount: 0,
-                            duration: {count: 0, total: 0, average: 0, worst: 0},
-                            lastFailure: null
-                        };
-                    }
-
-                    const eResult = events[name];
+                    const eResult = (events[name] ??= {
+                        firstTime: eTime,
+                        lastTime: eTime,
+                        successCount: 0,
+                        failureCount: 0,
+                        duration: {count: 0, total: 0, average: 0, worst: 0},
+                        lastFailure: null
+                    });
                     eResult.lastTime = eTime;
 
                     if (success) {
