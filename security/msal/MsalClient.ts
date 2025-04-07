@@ -16,10 +16,10 @@ import {
 } from '@azure/msal-browser';
 import {XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, TokenMap} from '../Types';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
@@ -38,6 +38,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /**
      * True to enable support for built-in telemetry provided by this class's internal MSAL client.
+     * Captured performance events will be summarized via {@link telemetryResults}.
      * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/performance.md
      */
     enableTelemetry?: boolean;
@@ -112,6 +113,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private account: AccountInfo; // Authenticated account
     private initialTokenLoad: boolean;
 
+    /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
+    telemetryResults: TelemetryResults = {
+        startTime: null,
+        endTime: null,
+        events: {}
+    };
+    private _telemetryCbHandle: string = null;
+
     constructor(config: MsalClientConfig) {
         super({
             initRefreshTokenExpirationOffsetSecs: -1,
@@ -126,6 +135,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //-------------------------------------------
     protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync());
+        if (this.config.enableTelemetry) {
+            this.enableTelemetry();
+        }
 
         // 0) Handle redirect return
         const redirectResp = await client.handleRedirectPromise();
@@ -253,6 +265,81 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         loginMethod == 'REDIRECT'
             ? await client.logoutRedirect(opts)
             : await client.logoutPopup(opts);
+    }
+
+    //------------------------
+    // Telemetry
+    //------------------------
+    enableTelemetry(): void {
+        if (this._telemetryCbHandle) {
+            this.logInfo('Telemetry already enabled', this.telemetryResults);
+            return;
+        }
+
+        this.telemetryResults = {
+            startTime: new Date(),
+            endTime: null,
+            events: {}
+        };
+
+        this._telemetryCbHandle = this.client.addPerformanceCallback(events => {
+            events.forEach(e => {
+                try {
+                    const {events} = this.telemetryResults,
+                        {name, durationMs, success, errorName, errorCode} = e,
+                        now = new Date();
+
+                    if (!events[name]) {
+                        events[name] = {
+                            firstTime: now,
+                            lastTime: now,
+                            successCount: 0,
+                            failureCount: 0,
+                            duration: {count: 0, total: 0, average: 0, worst: 0},
+                            lastError: null
+                        };
+                    }
+
+                    const eResult = events[name];
+                    eResult.lastTime = now;
+
+                    if (success) {
+                        eResult.successCount++;
+                    } else {
+                        eResult.failureCount++;
+                        eResult.lastError = {
+                            timestamp: Date.now(),
+                            code: errorCode,
+                            name: errorName
+                        };
+                    }
+
+                    const {duration} = eResult;
+                    if (durationMs) {
+                        duration.count++;
+                        duration.total += durationMs;
+                        duration.average = duration.total / duration.count;
+                        duration.worst = Math.max(duration.worst, durationMs);
+                    }
+                } catch (e) {
+                    this.logError(`Error processing telemetry event`, e);
+                }
+            });
+        });
+
+        this.logInfo('Telemetry enabled');
+    }
+
+    disableTelemetry(): void {
+        if (!this._telemetryCbHandle) {
+            this.logInfo('Telemetry already disabled');
+            return;
+        }
+
+        this.client.removePerformanceCallback(this._telemetryCbHandle);
+        this._telemetryCbHandle = null;
+        this.telemetryResults.endTime = new Date();
+        this.logInfo('Telemetry disabled', this.telemetryResults);
     }
 
     //------------------------
