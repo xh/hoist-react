@@ -125,9 +125,8 @@ export interface ViewManagerConfig {
     globalDisplayName?: string;
 
     /**
-     * Optional key used as route param for view tokens.  Specify if you have customized your
-     * ViewManager implementation to be routable, and you want users to be able to Ctrl+Click or
-     * ContextMenu Click to open views from the view menu in new tabs or windows.
+     * Optional key to pass a method that returns customized BlueprintJS `menuItem` for listing
+     * views in the ViewManager menu.
      */
     customViewMenuItem?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
 }
