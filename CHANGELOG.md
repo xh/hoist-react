@@ -2,6 +2,11 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+`ViewManagerConfig` takes new key `viewRouteParam` to allow ViewManagers implemented with routing to
+have the view buttons on their menu items be right clickable/Ctrl+ Click to open views in new tabs or windows.
+
 ## v72.3.0 - 2025-04-08
 
 ### 🎁 New Features

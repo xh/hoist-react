@@ -305,7 +305,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
         throwIf(
             !enableDefault && !initialViewSpec,
-            "ViewManagerModel requires 'initialViewSpec' if `enableDefault` is false."
+            "ViewManagerModel requires 'initialViewSpec' if 'enableDefault' is false."
+        );
+
+        throwIf(
+            viewRouteParam && isNil(XH.routerState),
+            "Cannot use 'viewRouteParam' if your app does not define a router."
         );
 
         this.type = type;

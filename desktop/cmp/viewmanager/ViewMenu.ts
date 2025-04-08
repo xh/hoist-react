@@ -158,7 +158,7 @@ function getGroupedMenuItems(
 function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
         title = [],
-        usingRouting = XH.routerState && model.viewRouteParam;
+        usingRouting = !!(XH.routerState && model.viewRouteParam);
 
     if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
@@ -178,15 +178,9 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         icon,
         href,
         onClick: e => {
-            if (!usingRouting) {
+            if (!usingRouting || (e.button === 0 && !e.ctrlKey && !e.metaKey)) {
                 consumeEvent(e);
                 model.selectViewAsync(view).catchDefault();
-                return false;
-            }
-
-            if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
-                consumeEvent(e);
-                XH.navigate(href);
                 return false;
             }
 
