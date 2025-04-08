@@ -4,8 +4,8 @@
 
 ### 🎁 New Features
 
-`ViewManagerConfig` takes new key `viewRouteParam` to allow ViewManagers implemented with routing to
-have the view buttons on their menu items be right clickable/Ctrl+ Click to open views in new tabs or windows.
+`ViewManagerConfig` takes new key `customViewMenuItem` to allow ViewManagers implementations to customize
+ the menu items for views in the view manager menu.
 
 ## v72.3.0 - 2025-04-08
 

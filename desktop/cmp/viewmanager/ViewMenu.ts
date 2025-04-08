@@ -5,12 +5,12 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp, XH} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
+import {pluralize} from '@xh/hoist/utils/js';
 import {Dictionary} from 'express-serve-static-core';
 import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -157,34 +157,19 @@ function getGroupedMenuItems(
 
 function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
-        title = [],
-        usingRouting = !!(XH.routerState && model.viewRouteParam);
+        title = [];
 
     if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
 
-    const href = usingRouting
-        ? XH.router.buildUrl(XH.routerState.name, {
-              ...XH.routerState.params,
-              [model.viewRouteParam]: view.token
-          })
-        : undefined;
-
-    return menuItem({
-        className: 'xh-view-manager__menu-item',
-        key: view.token,
-        text: view.name,
-        title: title.join(' | '),
-        icon,
-        href,
-        onClick: e => {
-            if (!usingRouting || (e.button === 0 && !e.ctrlKey && !e.metaKey)) {
-                consumeEvent(e);
-                model.selectViewAsync(view).catchDefault();
-                return false;
-            }
-
-            return true;
-        }
-    });
+    return model.customViewMenuItem
+        ? model.customViewMenuItem(view)
+        : menuItem({
+              className: 'xh-view-manager__menu-item',
+              key: view.token,
+              text: view.name,
+              title: title.join(' | '),
+              icon,
+              onClick: () => model.selectViewAsync(view).catchDefault()
+          });
 }
