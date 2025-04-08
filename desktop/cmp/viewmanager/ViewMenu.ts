@@ -10,7 +10,7 @@ import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import {pluralize} from '@xh/hoist/utils/js';
+import {consumeEvent, pluralize} from '@xh/hoist/utils/js';
 import {Dictionary} from 'express-serve-static-core';
 import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -178,14 +178,19 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         icon,
         href,
         onClick: e => {
-            if (!usingRouting || e.button !== 0) {
+            if (!usingRouting || (e.button === 0 && !e.ctrlKey && !e.metaKey)) {
+                consumeEvent(e);
                 model.selectViewAsync(view).catchDefault();
                 return false;
             }
 
-            e.preventDefault();
-            XH.navigate(href);
-            return false;
+            if (e.button === 0) {
+                consumeEvent(e);
+                XH.navigate(href);
+                return false;
+            }
+
+            return true;
         }
     });
 }
