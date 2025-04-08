@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
@@ -157,10 +157,18 @@ function getGroupedMenuItems(
 
 function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     const icon = view.isCurrentView ? Icon.check() : Icon.placeholder(),
-        title = [];
+        title = [],
+        usingRouting = XH.routerState && model.viewRouteParam;
 
     if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
+
+    const href = usingRouting
+        ? XH.router.buildUrl(XH.routerState.name, {
+              ...XH.routerState.params,
+              [model.viewRouteParam]: view.token
+          })
+        : undefined;
 
     return menuItem({
         className: 'xh-view-manager__menu-item',
@@ -168,6 +176,16 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         text: view.name,
         title: title.join(' | '),
         icon,
-        onClick: () => model.selectViewAsync(view).catchDefault()
+        href,
+        onClick: e => {
+            if (!usingRouting || e.button !== 0) {
+                model.selectViewAsync(view).catchDefault();
+                return false;
+            }
+
+            e.preventDefault();
+            XH.navigate(href);
+            return false;
+        }
     });
 }

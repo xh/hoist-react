@@ -123,6 +123,13 @@ export interface ViewManagerConfig {
      * Optional user-facing display name for describing global views. Defaults to 'global'
      */
     globalDisplayName?: string;
+
+    /**
+     * Optional key used as route param for view tokens.  Specify if you have customized your
+     * ViewManager implementation to be routable, and you want users to be able to Ctrl+Click or
+     * ContextMenu Click to open views from the view menu in new tabs or windows.
+     */
+    viewRouteParam?: string;
 }
 
 /**
@@ -165,6 +172,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly instance: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
+    readonly viewRouteParam: string;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
@@ -283,6 +291,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         instance = 'default',
         typeDisplayName,
         globalDisplayName = 'global',
+        viewRouteParam,
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
@@ -303,6 +312,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.instance = instance;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(type));
         this.globalDisplayName = globalDisplayName;
+        this.viewRouteParam = viewRouteParam;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
