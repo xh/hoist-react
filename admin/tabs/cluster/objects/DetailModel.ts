@@ -9,8 +9,8 @@ import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {cloneDeep, isEmpty, isEqual, without} from 'lodash';
-import {processWithFriendlyTimestamps} from '@xh/hoist/admin/AdminUtils';
+import {isEmpty, isEqual, without} from 'lodash';
+import {timestampReplacer} from '@xh/hoist/admin/AdminUtils';
 
 export class DetailModel extends HoistModel {
     @lookup(ClusterObjectsModel)
@@ -79,8 +79,8 @@ export class DetailModel extends HoistModel {
         const gridModel = this.createGridModel(diffFields, otherFields);
         gridModel.loadData(
             instanceNames.map(instanceName => {
-                const data = cloneDeep(adminStatsByInstance[instanceName] ?? {});
-                processWithFriendlyTimestamps(data);
+                let data = adminStatsByInstance[instanceName] ?? {};
+                data = JSON.parse(JSON.stringify(data, timestampReplacer));
                 return {instanceName, ...data};
             })
         );

@@ -12,7 +12,8 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {DetailModel} from './DetailModel';
 import './ClusterObjects.scss';
-import {fmtJsonWithFriendlyTimestamps} from '@xh/hoist/admin/AdminUtils';
+import {timestampReplacer} from '@xh/hoist/admin/AdminUtils';
+import {fmtJson} from '@xh/hoist/format';
 
 export const detailPanel = hoistCmp.factory({
     model: creates(DetailModel),
@@ -43,7 +44,7 @@ export const detailPanel = hoistCmp.factory({
                         height: '100%',
                         showFullscreenButton: false,
                         editorProps: {lineNumbers: false},
-                        value: fmtJsonWithFriendlyTimestamps(selectedAdminStats)
+                        value: fmtJson(selectedAdminStats, {replacer: timestampReplacer})
                     })
                 })
             ]
