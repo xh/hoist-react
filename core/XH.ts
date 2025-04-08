@@ -28,7 +28,8 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
-    WebSocketService
+    WebSocketService,
+    ClientHealthService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
@@ -131,6 +132,7 @@ export class XHApi {
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
     changelogService: ChangelogService;
+    clientHealthService: ClientHealthService;
     configService: ConfigService;
     environmentService: EnvironmentService;
     fetchService: FetchService;

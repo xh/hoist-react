@@ -6,21 +6,11 @@
  */
 import {ClusterObjectsModel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterObjectsModel';
 import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {fmtDateTimeSec, fmtJson} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {DAYS} from '@xh/hoist/utils/datetime';
-import {
-    cloneDeep,
-    forOwn,
-    isArray,
-    isEmpty,
-    isEqual,
-    isNumber,
-    isPlainObject,
-    without
-} from 'lodash';
+import {cloneDeep, isEmpty, isEqual, without} from 'lodash';
+import {processWithFriendlyTimestamps} from '@xh/hoist/admin/AdminUtils';
 
 export class DetailModel extends HoistModel {
     @lookup(ClusterObjectsModel)
@@ -66,12 +56,6 @@ export class DetailModel extends HoistModel {
         });
     }
 
-    fmtStats(stats: PlainObject): string {
-        stats = cloneDeep(stats);
-        this.processTimestamps(stats);
-        return fmtJson(JSON.stringify(stats));
-    }
-
     //----------------------
     // Implementation
     //----------------------
@@ -96,7 +80,7 @@ export class DetailModel extends HoistModel {
         gridModel.loadData(
             instanceNames.map(instanceName => {
                 const data = cloneDeep(adminStatsByInstance[instanceName] ?? {});
-                this.processTimestamps(data);
+                processWithFriendlyTimestamps(data);
                 return {instanceName, ...data};
             })
         );
@@ -135,24 +119,5 @@ export class DetailModel extends HoistModel {
             };
         }
         return ret;
-    }
-
-    private processTimestamps(stats: PlainObject) {
-        forOwn(stats, (v, k) => {
-            // Convert numbers that look like recent timestamps to date values.
-            if (
-                (k.endsWith('Time') ||
-                    k.endsWith('Date') ||
-                    k.endsWith('Timestamp') ||
-                    k == 'timestamp') &&
-                isNumber(v) &&
-                v > Date.now() - 365 * DAYS
-            ) {
-                stats[k] = v ? fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss.SSS'}) : null;
-            }
-            if (isPlainObject(v) || isArray(v)) {
-                this.processTimestamps(v);
-            }
-        });
     }
 }

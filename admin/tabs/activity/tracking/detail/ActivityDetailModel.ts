@@ -4,12 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import {exportFilename, fmtJsonWithFriendlyTimestamps} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {fmtJson} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
@@ -118,7 +117,7 @@ export class ActivityDetailModel extends HoistModel {
         let formattedTrackData = trackData;
         if (formattedTrackData) {
             try {
-                formattedTrackData = fmtJson(trackData);
+                formattedTrackData = fmtJsonWithFriendlyTimestamps(trackData);
             } catch (ignored) {}
         }
 
