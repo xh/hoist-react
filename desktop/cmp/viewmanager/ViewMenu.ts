@@ -163,7 +163,7 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     if (view.description) title.push(view.description);
 
     return model.customViewMenuItem
-        ? model.customViewMenuItem(view)
+        ? model.customViewMenuItem(view, model)
         : menuItem({
               className: 'xh-view-manager__menu-item',
               key: view.token,

@@ -129,7 +129,7 @@ export interface ViewManagerConfig {
      * ViewManager implementation to be routable, and you want users to be able to Ctrl+Click or
      * ContextMenu Click to open views from the view menu in new tabs or windows.
      */
-    customViewMenuItem?: (view: ViewInfo) => ReactNode;
+    customViewMenuItem?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
 }
 
 /**
@@ -172,7 +172,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly instance: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
-    readonly customViewMenuItem: (view: ViewInfo) => ReactNode;
+    readonly customViewMenuItem: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
