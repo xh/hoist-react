@@ -4,7 +4,26 @@
 
 ### 🎁 New Features
 
+* Added support for posting a "Client Health Report" track message on a configurable interval. This
+  message will include basic client information, and can be extended to include any other desired
+  data via `XH.trackService.addClientHealthReportSource()`. Enable by updating your app's
+  `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
+* Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
+  timing and success/failure count for all events emitted by the library.
 * Added the reported client app version as a column in the Admin Console WebSockets tab.
+
+### 🐞 Bug Fixes
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### ⚙️ Technical
+
+* Update shape of returned `BrowserUtils.getClientDeviceInfo()` to nest several properties under new
+  top-level `window` key and report JS heap size / usage values under the `memory` block in MB.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.28 → 4.8.0`
 
 ## v72.2.0 - 2025-03-13
 

@@ -7,8 +7,6 @@
 
 import {Token} from './Token';
 
-export type TokenMap = Record<string, Token>;
-
 export interface AccessTokenSpec {
     /**
      * Mode governing when the access token should be requested from provider:
@@ -21,4 +19,33 @@ export interface AccessTokenSpec {
 
     /** Scopes for the desired access token.*/
     scopes: string[];
+}
+
+export type TokenMap = Record<string, Token>;
+
+/** Aggregated telemetry results, produced by {@link MsalClient} when enabled via config. */
+export interface TelemetryResults {
+    /** Stats by event type - */
+    events: Record<string, TelemetryEventResults>;
+}
+
+/** Aggregated telemetry results for a single type of event. */
+export interface TelemetryEventResults {
+    firstTime: Date;
+    lastTime: Date;
+    successCount: number;
+    failureCount: number;
+    /** Timing info (in ms) for event instances reported with duration. */
+    duration: {
+        count: number;
+        total: number;
+        average: number;
+        worst: number;
+    };
+    lastFailure?: {
+        time: Date;
+        duration: number;
+        code: string;
+        name: string;
+    };
 }

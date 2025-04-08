@@ -5,10 +5,11 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {Timer} from '@xh/hoist/utils/async';
+import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
-import {isEmpty, isNil, isString} from 'lodash';
+import {debounced, getClientDeviceInfo, stripTags, withDefault} from '@xh/hoist/utils/js';
+import {isEmpty, isNil, isString, round} from 'lodash';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
@@ -18,23 +19,38 @@ import {isEmpty, isNil, isString} from 'lodash';
 export class TrackService extends HoistService {
     static instance: TrackService;
 
+    private clientHealthReportSources: Map<string, () => any> = new Map();
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
     override async initAsync() {
+        const {clientHealthReport} = this.conf;
+        if (clientHealthReport?.intervalMins > 0) {
+            Timer.create({
+                runFn: () => this.sendClientHealthReport(),
+                interval: clientHealthReport.intervalMins,
+                intervalUnits: MINUTES,
+                delay: true
+            });
+        }
+
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
-    get conf() {
-        return XH.getConf('xhActivityTrackingConfig', {
+    get conf(): ActivityTrackingConfig {
+        const appConfig = XH.getConf('xhActivityTrackingConfig', {});
+        return {
+            clientHealthReport: {intervalMins: -1},
             enabled: true,
+            logData: false,
             maxDataLength: 2000,
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
             },
-            logData: false
-        });
+            levels: [{username: '*', category: '*', severity: 'INFO'}],
+            ...appConfig
+        };
     }
 
     get enabled(): boolean {
@@ -79,11 +95,27 @@ export class TrackService extends HoistService {
             sent.set(key, true);
         }
 
-        // Otherwise - log and for next batch,
+        // Otherwise - log and queue to send with next debounced push to server.
         this.logMessage(options);
 
         this.pending.push(this.toServerJson(options));
         this.pushPendingBuffered();
+    }
+
+    /**
+     * Register a new source for client health report data. No-op if background health report is
+     * not generally enabled via `xhActivityTrackingConfig.clientHealthReport.intervalMins`.
+     *
+     * @param key - key under which to report the data - can be used to remove this source later.
+     * @param callback - function returning serializable to include with each report.
+     */
+    addClientHealthReportSource(key: string, callback: () => any) {
+        this.clientHealthReportSources.set(key, callback);
+    }
+
+    /** Unregister a previously-enabled source for client health report data. */
+    removeClientHealthReportSource(key: string) {
+        this.clientHealthReportSources.delete(key);
     }
 
     //------------------
@@ -144,4 +176,58 @@ export class TrackService extends HoistService {
 
         this.logInfo(...consoleMsgs);
     }
+
+    private sendClientHealthReport() {
+        const {
+                intervalMins,
+                severity: defaultSeverity,
+                ...rest
+            } = this.conf.clientHealthReport ?? {},
+            {loadStarted} = XH.appContainerModel.appStateModel;
+
+        const data = {
+            session: {
+                started: loadStarted,
+                durationMins: round((Date.now() - loadStarted) / 60_000, 1)
+            },
+            ...getClientDeviceInfo()
+        };
+
+        let severity = defaultSeverity ?? 'INFO';
+        this.clientHealthReportSources.forEach((cb, k) => {
+            try {
+                data[k] = cb();
+                if (data[k]?.severity === 'WARN') severity = 'WARN';
+            } catch (e) {
+                data[k] = `Error: ${e.message}`;
+                this.logWarn(`Error running client health report callback for [${k}]`, e);
+            }
+        });
+
+        this.track({
+            category: 'App',
+            message: 'Submitted health report',
+            severity,
+            ...rest,
+            data
+        });
+    }
+}
+
+interface ActivityTrackingConfig {
+    clientHealthReport?: Partial<TrackOptions> & {
+        intervalMins: number;
+    };
+    enabled: boolean;
+    logData: boolean;
+    maxDataLength: number;
+    maxRows?: {
+        default: number;
+        options: number[];
+    };
+    levels?: Array<{
+        username: string | '*';
+        category: string | '*';
+        severity: 'DEBUG' | 'INFO' | 'WARN';
+    }>;
 }
