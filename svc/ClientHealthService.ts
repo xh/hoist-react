@@ -25,7 +25,8 @@ export class ClientHealthService extends HoistService {
         const {clientHealthReport} = XH.trackService.conf;
         Timer.create({
             runFn: () => this.sendReport(),
-            interval: clientHealthReport.intervalMins * MINUTES
+            interval: clientHealthReport.intervalMins * MINUTES,
+            delay: true
         });
     }
 
