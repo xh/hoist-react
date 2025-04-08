@@ -7,7 +7,6 @@
 import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {getClientDeviceInfo} from '@xh/hoist/utils/js';
 import {camelCase, isBoolean, isString, mapKeys} from 'lodash';
 
 /**
@@ -97,7 +96,7 @@ export class AppStateModel extends HoistModel {
                         appBuild: XH.appBuild,
                         locationHref: window.location.href,
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
-                        ...getClientDeviceInfo()
+                        clientHealth: XH.clientHealthService.getReport()
                     },
                     logData: ['appVersion', 'appBuild'],
                     omit: !XH.appSpec.trackAppLoad

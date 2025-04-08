@@ -2,13 +2,16 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+* Added enhanced `ClientHealthService` for managing client health report.
+
 ## v72.3.0 - 2025-04-08
 
 ### 🎁 New Features
 
 * Added support for posting a "Client Health Report" track message on a configurable interval. This
   message will include basic client information, and can be extended to include any other desired
-  data via `XH.trackService.addClientHealthReportSource()`. Enable by updating your app's
+  data via `XH.clientHealthService.addSource()`. Enable by updating your app's
   `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
 * Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
   timing and success/failure count for all events emitted by the library.
