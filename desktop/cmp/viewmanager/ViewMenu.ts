@@ -178,13 +178,13 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
         icon,
         href,
         onClick: e => {
-            if (!usingRouting || (e.button === 0 && !e.ctrlKey && !e.metaKey)) {
+            if (!usingRouting) {
                 consumeEvent(e);
                 model.selectViewAsync(view).catchDefault();
                 return false;
             }
 
-            if (e.button === 0) {
+            if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
                 consumeEvent(e);
                 XH.navigate(href);
                 return false;
