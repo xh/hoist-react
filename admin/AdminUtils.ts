@@ -31,7 +31,7 @@ export function timestampReplacer(k: string, v: any) {
     if (
         (k.endsWith('Time') || k.endsWith('Date') || k.endsWith('Timestamp') || k == 'timestamp') &&
         isNumber(v) &&
-        v > Date.now() - 365 * DAYS
+        v > Date.now() - 25 * 365 * DAYS // heuristic to avoid catching smaller ms ranges
     ) {
         return fmtDateTimeSec(v, {fmt: 'MMM DD HH:mm:ss.SSS'});
     }
