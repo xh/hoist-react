@@ -20,6 +20,7 @@ import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hois
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
+import {fmtDate} from '@xh/hoist/format';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
@@ -279,7 +280,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 try {
                     const {events} = this.telemetryResults,
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
-                        eTime = startTimeMs ? new Date(startTimeMs) : new Date();
+                        eTime = fmtDate(startTimeMs ?? Date.now(), {
+                            fmt: 'MMM D h:mm:ssa'
+                        }) as string;
 
                     const eResult = (events[name] ??= {
                         firstTime: eTime,

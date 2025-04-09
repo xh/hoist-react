@@ -31,8 +31,8 @@ export interface TelemetryResults {
 
 /** Aggregated telemetry results for a single type of event. */
 export interface TelemetryEventResults {
-    firstTime: Date;
-    lastTime: Date;
+    firstTime: string;
+    lastTime: string;
     successCount: number;
     failureCount: number;
     /** Timing info (in ms) for event instances reported with duration. */
@@ -43,7 +43,7 @@ export interface TelemetryEventResults {
         worst: number;
     };
     lastFailure?: {
-        time: Date;
+        time: string;
         duration: number;
         code: string;
         name: string;

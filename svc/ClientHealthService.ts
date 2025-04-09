@@ -89,7 +89,7 @@ export class ClientHealthService extends HoistService {
 
         const {jsHeapSizeLimit: limit, usedJSHeapSize: used} = ret;
         if (limit && used) {
-            ret.usedPctLimit = round((used / limit) * 100, 1);
+            ret.usedPctLimit = round((used / limit) * 100);
         }
 
         return ret;
