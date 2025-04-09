@@ -14,7 +14,7 @@ import {
     PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {XH} from '@xh/hoist/core';
+import {AppState, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union, uniq} from 'lodash';
@@ -319,10 +319,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             });
         });
 
-        // Ask TrackService to include in background health check report, if enabled on that service.
-        // Handle TrackService not yet initialized (common, this client likely initialized before.)
+        // Wait for clientHealthService (this client likely initialized during earlier AUTHENTICATING.)
         this.addReaction({
-            when: () => XH.appIsRunning,
+            when: () => XH.appState === AppState.INITIALIZING_APP,
             run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetryResults)
         });
 
