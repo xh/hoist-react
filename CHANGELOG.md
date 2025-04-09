@@ -4,6 +4,7 @@
 
 ### ⚙️ Technical
 * Added enhanced `ClientHealthService` for managing client health report.
+* Updated the `codeInput` component to (optionally) auto-format its provided value for display. Requires the input to be readonly and a formatter to be configured / provided.
 
 ## v72.3.0 - 2025-04-08
 

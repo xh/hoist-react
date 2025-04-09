@@ -134,10 +134,11 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
 const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return jsonInput({
         readonly: true,
+        autoFormat: true,
         width: '100%',
         height: '100%',
         showCopyButton: true,
-        value: model.formattedData
+        value: model.displayData
     });
 });
 

@@ -17,7 +17,7 @@ export class ActivityDetailModel extends HoistModel {
     @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
     @managed gridModel: GridModel;
     @managed formModel: FormModel;
-    @observable formattedData;
+    @observable displayData;
 
     @computed
     get hasSelection() {
@@ -122,6 +122,6 @@ export class ActivityDetailModel extends HoistModel {
             } catch (ignored) {}
         }
 
-        this.formattedData = formattedTrackData;
+        this.displayData = formattedTrackData;
     }
 }
