@@ -2,10 +2,12 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
-
 ### 🎁 New Features
 * New methods for formatting timestamps within nested JSON objects.  See `withFormattedTimestamps`
   and `timestampReplacer` in the `@xh/hoist/format` package.
+
+*`ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations to customize
+  the menu items for views in the view manager menu.
 
 ### ⚙️ Technical
 * Added dedicated `ClientHealthService` for managing client health report.  Additional enhancements
