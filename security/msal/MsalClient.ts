@@ -320,11 +320,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // Handle TrackService not yet initialized (common, this client likely initialized before.)
         this.addReaction({
             when: () => XH.appIsRunning,
-            run: () =>
-                XH.trackService.addClientHealthReportSource(
-                    'msalClient',
-                    () => this.telemetryResults
-                )
+            run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetryResults)
         });
 
         this.logInfo('Telemetry enabled');
@@ -339,7 +335,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.client.removePerformanceCallback(this._telemetryCbHandle);
         this._telemetryCbHandle = null;
 
-        XH.trackService.removeClientHealthReportSource('msalClient');
+        XH.clientHealthService.removeSource('msalClient');
         this.logInfo('Telemetry disabled', this.telemetryResults);
     }
 

@@ -5,7 +5,10 @@
 ### 🎁 New Features
 
 `ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations to customize
- the menu items for views in the view manager menu.
+the menu items for views in the view manager menu.
+
+### ⚙️ Technical
+* Added enhanced `ClientHealthService` for managing client health report.
 
 ## v72.3.0 - 2025-04-08
 
@@ -13,7 +16,7 @@
 
 * Added support for posting a "Client Health Report" track message on a configurable interval. This
   message will include basic client information, and can be extended to include any other desired
-  data via `XH.trackService.addClientHealthReportSource()`. Enable by updating your app's
+  data via `XH.clientHealthService.addSource()`. Enable by updating your app's
   `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
 * Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
   timing and success/failure count for all events emitted by the library.

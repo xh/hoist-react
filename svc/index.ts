@@ -19,5 +19,6 @@ export * from './JsonBlobService';
 export * from './PrefService';
 export * from './TrackService';
 export * from './WebSocketService';
+export * from './ClientHealthService';
 export * from './storage/LocalStorageService';
 export * from './storage/SessionStorageService';
