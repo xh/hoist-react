@@ -6,7 +6,7 @@
  */
 import {HoistService, PageState, PlainObject, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES} from '@xh/hoist/utils/datetime';
+import {MINUTES, formatTimestamps} from '@xh/hoist/utils/datetime';
 import {pick, round} from 'lodash';
 
 /**
@@ -31,7 +31,7 @@ export class ClientHealthService extends HoistService {
     }
 
     /**
-     * Main Entry report.  Return a default report of client health.
+     * Main entry point.  Return a default report of client health.
      */
     getReport(): ClientHealthReport {
         return {
@@ -40,6 +40,11 @@ export class ClientHealthService extends HoistService {
             connection: this.getConnection(),
             ...this.getCustom()
         };
+    }
+
+    /** Get report, suitable for viewing in console. **/
+    getFormattedReport(): PlainObject {
+        return formatTimestamps(this.getReport());
     }
 
     /**
@@ -124,7 +129,7 @@ export class ClientHealthService extends HoistService {
             data: {
                 clientId: XH.clientId,
                 sessionId: XH.sessionId,
-                report: this.getReport()
+                ...this.getReport()
             }
         });
     }
