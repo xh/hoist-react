@@ -14,13 +14,13 @@ import {
     PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {AppState, XH} from '@xh/hoist/core';
+import {AppState, PlainObject, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {formatTimestamps} from '@xh/hoist/utils/datetime';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
-import {fmtDate} from '@xh/hoist/format';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
@@ -267,9 +267,13 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //------------------------
     // Telemetry
     //------------------------
+    getFormattedTelemetry(): PlainObject {
+        return formatTimestamps(this.telemetryResults);
+    }
+
     enableTelemetry(): void {
         if (this._telemetryCbHandle) {
-            this.logInfo('Telemetry already enabled', this.telemetryResults);
+            this.logInfo('Telemetry already enabled', this.getFormattedTelemetry());
             return;
         }
 
@@ -280,9 +284,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 try {
                     const {events} = this.telemetryResults,
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
-                        eTime = fmtDate(startTimeMs ?? Date.now(), {
-                            fmt: 'MMM D h:mm:ssa'
-                        }) as string;
+                        eTime = startTimeMs ?? Date.now();
 
                     const eResult = (events[name] ??= {
                         firstTime: eTime,
@@ -338,7 +340,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this._telemetryCbHandle = null;
 
         XH.clientHealthService.removeSource('msalClient');
-        this.logInfo('Telemetry disabled', this.telemetryResults);
+        this.logInfo('Telemetry disabled', this.getFormattedTelemetry());
     }
 
     //------------------------

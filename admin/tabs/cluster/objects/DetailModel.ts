@@ -10,7 +10,7 @@ import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty, isEqual, without} from 'lodash';
-import {timestampReplacer} from '@xh/hoist/admin/AdminUtils';
+import {formatTimestamps} from '@xh/hoist/utils/datetime';
 
 export class DetailModel extends HoistModel {
     @lookup(ClusterObjectsModel)
@@ -79,8 +79,7 @@ export class DetailModel extends HoistModel {
         const gridModel = this.createGridModel(diffFields, otherFields);
         gridModel.loadData(
             instanceNames.map(instanceName => {
-                let data = adminStatsByInstance[instanceName] ?? {};
-                data = JSON.parse(JSON.stringify(data, timestampReplacer));
+                const data = formatTimestamps(adminStatsByInstance[instanceName] ?? {});
                 return {instanceName, ...data};
             })
         );
