@@ -3,13 +3,38 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 ### ⚙️ Technical
+* Added enhanced `ClientHealthService` for managing client health report.
+* Updated the `codeInput` component to (optionally) auto-format its provided value for display. Requires the input to be readonly and a formatter to be configured / provided.
 
-* Updated the `codeInput` component to (optionally) auto-format its provided value for display.
-  Requires the input to be readonly and a formatter to be configured / provided.
+## v72.3.0 - 2025-04-08
+
+### 🎁 New Features
+
+* Added support for posting a "Client Health Report" track message on a configurable interval. This
+  message will include basic client information, and can be extended to include any other desired
+  data via `XH.clientHealthService.addSource()`. Enable by updating your app's
+  `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
+* Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
+  timing and success/failure count for all events emitted by the library.
+* Added the reported client app version as a column in the Admin Console WebSockets tab.
+
+### 🐞 Bug Fixes
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### ⚙️ Technical
+
+* Update shape of returned `BrowserUtils.getClientDeviceInfo()` to nest several properties under new
+  top-level `window` key and report JS heap size / usage values under the `memory` block in MB.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.28 → 4.8.0`
 
 ## v72.2.0 - 2025-03-13
 
 ### 🎁 New Features
+
 * Modified `TabContainerModel` to make more methods `protected`, improving extensibility for
   advanced use-cases.
 * Enhanced `XH.reloadApp` with new argument to clear query parameters before loading.
@@ -22,8 +47,8 @@
 
 ### 🐞 Bug Fixes
 
-* Prevent native browser context menu on Dash Canvas surfaces. It can hide the Dash Canvas custom
-  context menu when an app's `showBrowserContextMenu` flag is `true`.
+* Prevented native browser context menu from showing on `DashCanvas` surfaces and obscuring the
+  `DashCanvas` custom context menu.
 
 ## v72.1.0 - 2025-02-13
 
