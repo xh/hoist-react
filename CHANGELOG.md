@@ -2,6 +2,11 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+`ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations to customize
+the menu items for views in the view manager menu.
+
 ### ⚙️ Technical
 * Added enhanced `ClientHealthService` for managing client health report.
 
