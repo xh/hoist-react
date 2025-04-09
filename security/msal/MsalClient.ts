@@ -17,7 +17,7 @@ import {
 import {AppState, PlainObject, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
-import {formatTimestamps} from '@xh/hoist/utils/datetime';
+import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
@@ -268,7 +268,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     // Telemetry
     //------------------------
     getFormattedTelemetry(): PlainObject {
-        return formatTimestamps(this.telemetryResults);
+        return withFormattedTimestamps(this.telemetryResults);
     }
 
     enableTelemetry(): void {

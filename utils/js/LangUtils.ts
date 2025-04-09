@@ -173,7 +173,6 @@ export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
  * @param name - the name of the deprecated parameter
  */
 const _seenWarnings = {};
-
 export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 

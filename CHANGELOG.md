@@ -2,8 +2,15 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+
+### 🎁 New Features
+* New methods for formatting timestamps within nested JSON objects.  See `withFormattedTimestamps`
+  and `timestampReplacer` in the `@xh/hoist/format` package.
+
 ### ⚙️ Technical
-* Added enhanced `ClientHealthService` for managing client health report.
+* Added dedicated `ClientHealthService` for managing client health report.  Additional enhancements
+  to health report to include information about web sockets, idle time, and page state.
+
 
 ## v72.3.0 - 2025-04-08
 

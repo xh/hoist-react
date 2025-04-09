@@ -4,10 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {isDate, isNil, isFinite} from 'lodash';
+import {isDate, isNil} from 'lodash';
 import moment from 'moment';
-import {PlainObject} from '@xh/hoist/core';
-import {fmtDateTime} from '@xh/hoist/format';
 
 export const MILLISECONDS = 1,
     SECONDS = 1000,
@@ -37,46 +35,4 @@ export function startOfDay(date: Date = new Date()) {
 /** Returns 11:59:59pm browser local time for the provided date, or current date. */
 export function endOfDay(date: Date = new Date()) {
     return moment(date).endOf('day').toDate();
-}
-
-export interface TimestampReplacerConfig {
-    /**
-     * Suffixes used to identify keys that may hold timestamps.
-     * Defaults to ['time', 'date', 'timestamp']
-     */
-    suffixes?: string[];
-
-    /**
-     * Format for replaced timestamp.
-     * Defaults to 'MMM DD HH:mm:ss.SSS'
-     */
-    format?: string;
-}
-
-/**
- * Replace timestamps in an Object with formatted strings.
- */
-export function formatTimestamps(
-    obj: PlainObject,
-    config: TimestampReplacerConfig = {}
-): PlainObject {
-    return JSON.parse(JSON.stringify(obj, timestampReplacer(config)));
-}
-
-/**
- * Create a replacer, suitable for JSON.stringify, that will replace timestamps with
- * formatted strings.
- */
-export function timestampReplacer(
-    config: TimestampReplacerConfig = {}
-): (k: string, v: any) => any {
-    const suffixes = config.suffixes ?? ['time', 'date', 'timestamp'],
-        fmt = 'MMM DD HH:mm:ss.SSS';
-    return (k: string, v: any) => {
-        return suffixes.some(s => k.toLowerCase().endsWith(s.toLowerCase())) &&
-            isFinite(v) &&
-            v > Date.now() - 25 * 365 * DAYS // heuristic to avoid catching smaller ms ranges
-            ? fmtDateTime(v, {fmt})
-            : v;
-    };
 }

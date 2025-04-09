@@ -6,7 +6,8 @@
  */
 import {HoistService, PageState, PlainObject, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
-import {MINUTES, formatTimestamps} from '@xh/hoist/utils/datetime';
+import {MINUTES} from '@xh/hoist/utils/datetime';
+import {withFormattedTimestamps} from '@xh/hoist/format';
 import {pick, round} from 'lodash';
 
 /**
@@ -44,7 +45,7 @@ export class ClientHealthService extends HoistService {
 
     /** Get report, suitable for viewing in console. **/
     getFormattedReport(): PlainObject {
-        return formatTimestamps(this.getReport());
+        return withFormattedTimestamps(this.getReport());
     }
 
     /**

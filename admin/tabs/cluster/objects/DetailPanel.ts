@@ -12,8 +12,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {DetailModel} from './DetailModel';
 import './ClusterObjects.scss';
-import {timestampReplacer} from '@xh/hoist/utils/datetime';
-import {fmtJson} from '@xh/hoist/format';
+import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export const detailPanel = hoistCmp.factory({
     model: creates(DetailModel),
