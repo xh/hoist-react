@@ -4,10 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, PageState, PlainObject, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {find, isPlainObject, pick, round} from 'lodash';
+import {withFormattedTimestamps} from '@xh/hoist/format';
+import {pick, round} from 'lodash';
 
 /**
  * Service for gathering data about client health.
@@ -31,17 +32,20 @@ export class ClientHealthService extends HoistService {
     }
 
     /**
-     * Main Entry report.  Return a default report of client health.
+     * Main entry point.  Return a default report of client health.
      */
     getReport(): ClientHealthReport {
         return {
-            session: this.getSession(),
-            ...this.getCustom(),
+            general: this.getGeneral(),
             memory: this.getMemory(),
             connection: this.getConnection(),
-            window: this.getWindow(),
-            screen: this.getScreen()
+            ...this.getCustom()
         };
+    }
+
+    /** Get report, suitable for viewing in console. **/
+    getFormattedReport(): PlainObject {
+        return withFormattedTimestamps(this.getReport());
     }
 
     /**
@@ -63,11 +67,16 @@ export class ClientHealthService extends HoistService {
     // -----------------------------------
     // Generate individual report sections
     //------------------------------------
-    getSession(): SessionData {
-        const {loadStarted} = XH.appContainerModel.appStateModel;
+    getGeneral(): GeneralData {
+        const startTime = XH.appContainerModel.appStateModel.loadStarted,
+            elapsedMins = (ts: number) => round((Date.now() - ts) / 60_000, 1);
+
         return {
-            startTime: loadStarted,
-            durationMins: round((Date.now() - loadStarted) / 60_000, 1)
+            startTime,
+            durationMins: elapsedMins(startTime),
+            idleMins: elapsedMins(XH.lastActivityMs),
+            pageState: XH.pageState,
+            webSocket: XH.webSocketService.channelKey
         };
     }
 
@@ -89,42 +98,10 @@ export class ClientHealthService extends HoistService {
 
         const {jsHeapSizeLimit: limit, usedJSHeapSize: used} = ret;
         if (limit && used) {
-            ret.usedPctLimit = round((used / limit) * 100, 1);
+            ret.usedPctLimit = round((used / limit) * 100);
         }
 
         return ret;
-    }
-
-    getScreen(): ScreenData {
-        const screen = window.screen as any;
-        if (!screen) return null;
-
-        const ret: ScreenData = pick(screen, [
-            'availWidth',
-            'availHeight',
-            'width',
-            'height',
-            'colorDepth',
-            'pixelDepth',
-            'availLeft',
-            'availTop'
-        ]);
-        if (screen.orientation) {
-            ret.orientation = pick(screen.orientation, ['angle', 'type']);
-        }
-        return ret;
-    }
-
-    getWindow(): WindowData {
-        return pick(window, [
-            'devicePixelRatio',
-            'screenX',
-            'screenY',
-            'innerWidth',
-            'innerHeight',
-            'outerWidth',
-            'outerHeight'
-        ]);
     }
 
     getCustom(): PlainObject {
@@ -144,31 +121,27 @@ export class ClientHealthService extends HoistService {
     // Implementation
     //------------------
     private sendReport() {
-        const {
-            intervalMins,
-            severity: defaultSeverity,
-            ...rest
-        } = XH.trackService.conf.clientHealthReport ?? {};
-
-        const rpt = this.getReport();
-        let severity = defaultSeverity ?? 'INFO';
-        if (find(rpt, (v: any) => isPlainObject(v) && v.severity === 'WARN')) {
-            severity = 'WARN';
-        }
+        const {intervalMins, ...rest} = XH.trackService.conf.clientHealthReport ?? {};
 
         XH.track({
             category: 'App',
             message: 'Submitted health report',
-            severity,
             ...rest,
-            data: rpt
+            data: {
+                clientId: XH.clientId,
+                sessionId: XH.sessionId,
+                ...this.getReport()
+            }
         });
     }
 }
 
-export interface SessionData {
+export interface GeneralData {
     startTime: number;
     durationMins: number;
+    idleMins: number;
+    pageState: PageState;
+    webSocket: string;
 }
 
 export interface ConnectionData {
@@ -185,35 +158,8 @@ export interface MemoryData {
     usedJSHeapSize?: number;
 }
 
-export interface WindowData {
-    devicePixelRatio: number;
-    screenX: number;
-    screenY: number;
-    innerWidth: number;
-    innerHeight: number;
-    outerWidth: number;
-    outerHeight: number;
-}
-
-export interface ScreenData {
-    availWidth: number;
-    availHeight: number;
-    width: number;
-    height: number;
-    colorDepth: number;
-    pixelDepth: number;
-    availLeft: number;
-    availTop: number;
-    orientation?: {
-        angle: number;
-        type: string;
-    };
-}
-
 export interface ClientHealthReport {
-    session: SessionData;
+    general: GeneralData;
     connection: ConnectionData;
     memory: MemoryData;
-    window: WindowData;
-    screen: ScreenData;
 }

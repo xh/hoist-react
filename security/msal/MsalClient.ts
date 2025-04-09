@@ -14,9 +14,10 @@ import {
     PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {XH} from '@xh/hoist/core';
+import {AppState, PlainObject, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
@@ -266,9 +267,13 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //------------------------
     // Telemetry
     //------------------------
+    getFormattedTelemetry(): PlainObject {
+        return withFormattedTimestamps(this.telemetryResults);
+    }
+
     enableTelemetry(): void {
         if (this._telemetryCbHandle) {
-            this.logInfo('Telemetry already enabled', this.telemetryResults);
+            this.logInfo('Telemetry already enabled', this.getFormattedTelemetry());
             return;
         }
 
@@ -279,7 +284,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 try {
                     const {events} = this.telemetryResults,
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
-                        eTime = startTimeMs ? new Date(startTimeMs) : new Date();
+                        eTime = startTimeMs ?? Date.now();
 
                     const eResult = (events[name] ??= {
                         firstTime: eTime,
@@ -316,10 +321,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             });
         });
 
-        // Ask TrackService to include in background health check report, if enabled on that service.
-        // Handle TrackService not yet initialized (common, this client likely initialized before.)
+        // Wait for clientHealthService (this client likely initialized during earlier AUTHENTICATING.)
         this.addReaction({
-            when: () => XH.appIsRunning,
+            when: () => XH.appState === AppState.INITIALIZING_APP,
             run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetryResults)
         });
 
@@ -336,7 +340,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this._telemetryCbHandle = null;
 
         XH.clientHealthService.removeSource('msalClient');
-        this.logInfo('Telemetry disabled', this.telemetryResults);
+        this.logInfo('Telemetry disabled', this.getFormattedTelemetry());
     }
 
     //------------------------

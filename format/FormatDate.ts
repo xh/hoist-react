@@ -4,11 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {defaults, isString} from 'lodash';
+import {DAYS, isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {defaults, isFinite, isString} from 'lodash';
 import moment from 'moment';
 import {ReactNode} from 'react';
-import {DateLike} from '../core/types/Types';
+import {DateLike, PlainObject} from '../core/types/Types';
 import {fmtSpan, FormatOptions} from './FormatMisc';
 import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
@@ -146,6 +146,48 @@ export function fmtCompactDate(v: DateLike, opts?: CompactDateFormatOptions) {
     }
 
     return fmtDate(v, dateOpts);
+}
+
+export interface TimestampReplacerConfig {
+    /**
+     * Suffixes used to identify keys that may hold timestamps.
+     * Defaults to ['time', 'date', 'timestamp']
+     */
+    suffixes?: string[];
+
+    /**
+     * Format for replaced timestamp.
+     * Defaults to 'MMM DD HH:mm:ss.SSS'
+     */
+    format?: string;
+}
+
+/**
+ * Replace timestamps in an Object with formatted strings.
+ */
+export function withFormattedTimestamps(
+    obj: PlainObject,
+    config: TimestampReplacerConfig = {}
+): PlainObject {
+    return JSON.parse(JSON.stringify(obj, timestampReplacer(config)));
+}
+
+/**
+ * Create a replacer, suitable for JSON.stringify, that will replace timestamps with
+ * formatted strings.
+ */
+export function timestampReplacer(
+    config: TimestampReplacerConfig = {}
+): (k: string, v: any) => any {
+    const suffixes = config.suffixes ?? ['time', 'date', 'timestamp'],
+        fmt = 'MMM DD HH:mm:ss.SSS';
+    return (k: string, v: any) => {
+        return suffixes.some(s => k.toLowerCase().endsWith(s.toLowerCase())) &&
+            isFinite(v) &&
+            v > Date.now() - 25 * 365 * DAYS // heuristic to avoid catching smaller ms ranges
+            ? fmtDateTime(v, {fmt})
+            : v;
+    };
 }
 
 export const dateRenderer = createRenderer(fmtDate),
