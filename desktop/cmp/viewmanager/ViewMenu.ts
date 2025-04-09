@@ -12,7 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {Dictionary} from 'express-serve-static-core';
-import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
+import {each, filter, groupBy, isEmpty, isFunction, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
@@ -162,8 +162,8 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
 
-    return model.customViewMenuItem
-        ? model.customViewMenuItem(view, model)
+    return isFunction(model.viewMenuItemFn)
+        ? model.viewMenuItemFn(view, model)
         : menuItem({
               className: 'xh-view-manager__menu-item',
               key: view.token,

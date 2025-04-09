@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-`ViewManagerConfig` takes new optional key `customViewMenuItem` to allow ViewManagers implementations to customize
+`ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations to customize
  the menu items for views in the view manager menu.
 
 ## v72.3.0 - 2025-04-08

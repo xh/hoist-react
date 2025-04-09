@@ -125,10 +125,10 @@ export interface ViewManagerConfig {
     globalDisplayName?: string;
 
     /**
-     * Optional key to pass a method that returns customized BlueprintJS `menuItem` for listing
+     * Optional key to pass a method that returns a customized BlueprintJS `menuItem` for listing
      * views in the ViewManager menu.
      */
-    customViewMenuItem?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+    viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
 }
 
 /**
@@ -171,7 +171,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly instance: string;
     readonly typeDisplayName: string;
     readonly globalDisplayName: string;
-    readonly customViewMenuItem: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+    readonly viewMenuItemFn: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
@@ -290,7 +290,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         instance = 'default',
         typeDisplayName,
         globalDisplayName = 'global',
-        customViewMenuItem,
+        viewMenuItemFn,
         manageGlobal = false,
         enableAutoSave = true,
         enableDefault = true,
@@ -311,7 +311,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.instance = instance;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(type));
         this.globalDisplayName = globalDisplayName;
-        this.customViewMenuItem = customViewMenuItem;
+        this.viewMenuItemFn = viewMenuItemFn;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
