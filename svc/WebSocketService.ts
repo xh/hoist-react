@@ -41,6 +41,7 @@ export class WebSocketService extends HoistService {
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
+    readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
 
     /** Unique channel assigned by server upon successful connection. */
     @observable
@@ -210,7 +211,7 @@ export class WebSocketService extends HoistService {
         this.updateConnectedStatus();
     }
 
-    onMessage(rawMsg) {
+    onMessage(rawMsg: MessageEvent) {
         try {
             const msg = JSON.parse(rawMsg.data),
                 {topic, data} = msg;
@@ -227,6 +228,9 @@ export class WebSocketService extends HoistService {
                 case this.FORCE_APP_SUSPEND_TOPIC:
                     XH.suspendApp({reason: 'SERVER_FORCE', message: data});
                     XH.track({category: 'App', message: 'App suspended via WebSocket'});
+                    break;
+                case this.REQ_CLIENT_HEALTH_RPT_TOPIC:
+                    XH.clientHealthService.sendReportAsync();
                     break;
             }
 

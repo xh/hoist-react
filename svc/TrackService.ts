@@ -90,10 +90,11 @@ export class TrackService extends HoistService {
         this.pushPendingBuffered();
     }
 
-    //------------------
-    // Implementation
-    //------------------
-    private async pushPendingAsync() {
+    /**
+     * Flush the queue of pending activity tracking messages to the server.
+     * @internal - apps should generally allow this service to manage w/its internal debounce.
+     */
+    async pushPendingAsync() {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
@@ -105,6 +106,9 @@ export class TrackService extends HoistService {
         });
     }
 
+    //------------------
+    // Implementation
+    //------------------
     @debounced(10 * SECONDS)
     private pushPendingBuffered() {
         this.pushPendingAsync();
