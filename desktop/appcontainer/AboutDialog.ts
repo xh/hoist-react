@@ -48,7 +48,7 @@ export const aboutDialog = hoistCmp.factory({
                         omit: !XH.trackService.enabled,
                         onClick: async () => {
                             try {
-                                XH.clientHealthService.sendReport();
+                                XH.clientHealthService.sendReport({trackOpts: {severity: 'INFO'}});
                                 await XH.trackService.pushPendingAsync();
                                 XH.successToast('Client health report successfully submitted.');
                             } catch (e) {

@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistService, PageState, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {withFormattedTimestamps} from '@xh/hoist/format';
@@ -65,13 +65,14 @@ export class ClientHealthService extends HoistService {
      * Generate and submit a report to the server, via TrackService.
      * @internal - apps should enable via config and allow this service to submit on timer.
      */
-    sendReport() {
+    sendReport(opts: {trackOpts?: Partial<TrackOptions>} = {}) {
         const {intervalMins, ...rest} = XH.trackService.conf.clientHealthReport ?? {};
 
         XH.track({
             category: 'App',
             message: 'Submitted health report',
             ...rest,
+            ...opts.trackOpts,
             data: {
                 clientId: XH.clientId,
                 sessionId: XH.sessionId,
