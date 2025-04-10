@@ -44,7 +44,8 @@ export class WebSocketModel extends BaseInstanceModel {
         text: 'Request Health Report',
         icon: Icon.health(),
         actionFn: ({selectedRecords}) => this.requestHealthReportAsync(selectedRecords),
-        recordsRequired: true
+        recordsRequired: true,
+        hidden: !XH.trackService.enabled
     };
 
     constructor() {
