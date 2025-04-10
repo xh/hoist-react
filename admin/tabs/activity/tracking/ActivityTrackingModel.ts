@@ -5,17 +5,17 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
-import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import * as Col from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {action, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import * as Col from '@xh/hoist/admin/columns';
-import {isEmpty, round} from 'lodash';
+import {compact, isEmpty, round} from 'lodash';
 import moment from 'moment';
 
 export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
@@ -109,14 +109,13 @@ export class ActivityTrackingModel extends HoistModel {
             ] as CubeFieldSpec[]
         });
 
-        const enableValues = true;
         this.filterChooserModel = new FilterChooserModel({
             fieldSpecs: [
-                {field: 'category', enableValues},
+                {field: 'category'},
                 {field: 'correlationId'},
-                {field: 'username', displayName: 'User', enableValues},
-                {field: 'device', enableValues},
-                {field: 'browser', enableValues},
+                {field: 'username', displayName: 'User'},
+                {field: 'device'},
+                {field: 'browser'},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -330,12 +329,21 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private async loadLookupsAsync() {
-        const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
+        try {
+            const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
+            this.filterChooserModel.fieldSpecs.forEach(spec => {
+                const {field} = spec,
+                    lookup = lookups[field] ? compact(lookups[field]) : null;
 
-        this.filterChooserModel.fieldSpecs.forEach(spec => {
-            const {field} = spec;
-            if (lookups[field]) spec.values = lookups[field];
-        });
+                if (!isEmpty(lookup)) {
+                    spec.values = lookup;
+                    spec.enableValues = true;
+                    spec.hasExplicitValues = true;
+                }
+            });
+        } catch (e) {
+            XH.handleException(e, {title: 'Error loading lookups for filtering'});
+        }
     }
 
     @computed
