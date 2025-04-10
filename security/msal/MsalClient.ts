@@ -7,17 +7,20 @@
 import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
+    BrowserPerformanceClient,
+    Configuration,
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {XH} from '@xh/hoist/core';
+import {AppState, PlainObject, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, TokenMap} from '../Types';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
@@ -33,6 +36,13 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * The value of the domain hint is a registered domain for the tenant.
      */
     domainHint?: string;
+
+    /**
+     * True to enable support for built-in telemetry provided by this class's internal MSAL client.
+     * Captured performance events will be summarized via {@link telemetryResults}.
+     * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/performance.md
+     */
+    enableTelemetry?: boolean;
 
     /**
      * If specified, the client will use this value when initializing the app to enforce a minimum
@@ -104,6 +114,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private account: AccountInfo; // Authenticated account
     private initialTokenLoad: boolean;
 
+    /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
+    telemetryResults: TelemetryResults = {events: {}};
+    private _telemetryCbHandle: string = null;
+
     constructor(config: MsalClientConfig) {
         super({
             initRefreshTokenExpirationOffsetSecs: -1,
@@ -118,6 +132,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //-------------------------------------------
     protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync());
+        if (this.config.enableTelemetry) {
+            this.enableTelemetry();
+        }
 
         // 0) Handle redirect return
         const redirectResp = await client.handleRedirectPromise();
@@ -248,6 +265,85 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     //------------------------
+    // Telemetry
+    //------------------------
+    getFormattedTelemetry(): PlainObject {
+        return withFormattedTimestamps(this.telemetryResults);
+    }
+
+    enableTelemetry(): void {
+        if (this._telemetryCbHandle) {
+            this.logInfo('Telemetry already enabled', this.getFormattedTelemetry());
+            return;
+        }
+
+        this.telemetryResults = {events: {}};
+
+        this._telemetryCbHandle = this.client.addPerformanceCallback(events => {
+            events.forEach(e => {
+                try {
+                    const {events} = this.telemetryResults,
+                        {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
+                        eTime = startTimeMs ?? Date.now();
+
+                    const eResult = (events[name] ??= {
+                        firstTime: eTime,
+                        lastTime: eTime,
+                        successCount: 0,
+                        failureCount: 0,
+                        duration: {count: 0, total: 0, average: 0, worst: 0},
+                        lastFailure: null
+                    });
+                    eResult.lastTime = eTime;
+
+                    if (success) {
+                        eResult.successCount++;
+                    } else {
+                        eResult.failureCount++;
+                        eResult.lastFailure = {
+                            time: eTime,
+                            duration: e.durationMs,
+                            code: errorCode,
+                            name: errorName
+                        };
+                    }
+
+                    if (durationMs) {
+                        const {duration} = eResult;
+                        duration.count++;
+                        duration.total += durationMs;
+                        duration.average = Math.round(duration.total / duration.count);
+                        duration.worst = Math.max(duration.worst, durationMs);
+                    }
+                } catch (e) {
+                    this.logError(`Error processing telemetry event`, e);
+                }
+            });
+        });
+
+        // Wait for clientHealthService (this client likely initialized during earlier AUTHENTICATING.)
+        this.addReaction({
+            when: () => XH.appState === AppState.INITIALIZING_APP,
+            run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetryResults)
+        });
+
+        this.logInfo('Telemetry enabled');
+    }
+
+    disableTelemetry(): void {
+        if (!this._telemetryCbHandle) {
+            this.logInfo('Telemetry already disabled');
+            return;
+        }
+
+        this.client.removePerformanceCallback(this._telemetryCbHandle);
+        this._telemetryCbHandle = null;
+
+        XH.clientHealthService.removeSource('msalClient');
+        this.logInfo('Telemetry disabled', this.getFormattedTelemetry());
+    }
+
+    //------------------------
     // Private implementation
     //------------------------
     private async loginSsoAsync(): Promise<void> {
@@ -263,29 +359,38 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private async createClientAsync(): Promise<IPublicClientApplication> {
-        const {clientId, authority, msalLogLevel, msalClientOptions} = this.config;
+        const {clientId, authority, msalLogLevel, msalClientOptions, enableTelemetry} = this.config;
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        return msal.PublicClientApplication.createPublicClientApplication(
-            mergeDeep(
-                {
-                    auth: {
-                        clientId,
-                        authority,
-                        postLogoutRedirectUri: this.postLogoutRedirectUrl
-                    },
-                    system: {
-                        loggerOptions: {
-                            loggerCallback: this.logFromMsal,
-                            logLevel: msalLogLevel
-                        }
-                    },
-                    cache: {
-                        cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+        const mergedConf: Configuration = mergeDeep(
+            {
+                auth: {
+                    clientId,
+                    authority,
+                    postLogoutRedirectUri: this.postLogoutRedirectUrl
+                },
+                system: {
+                    loggerOptions: {
+                        loggerCallback: this.logFromMsal,
+                        logLevel: msalLogLevel
                     }
                 },
-                msalClientOptions
-            )
+                cache: {
+                    cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+                }
+            },
+            msalClientOptions
+        );
+
+        return msal.PublicClientApplication.createPublicClientApplication(
+            enableTelemetry
+                ? {
+                      ...mergedConf,
+                      telemetry: {
+                          client: new BrowserPerformanceClient(mergedConf)
+                      }
+                  }
+                : mergedConf
         );
     }
 

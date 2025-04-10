@@ -9,9 +9,9 @@ import * as Col from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {fmtJson} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
+import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export class ActivityDetailModel extends HoistModel {
     @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
@@ -118,7 +118,7 @@ export class ActivityDetailModel extends HoistModel {
         let formattedTrackData = trackData;
         if (formattedTrackData) {
             try {
-                formattedTrackData = fmtJson(trackData);
+                formattedTrackData = fmtJson(trackData, {replacer: timestampReplacer()});
             } catch (ignored) {}
         }
 

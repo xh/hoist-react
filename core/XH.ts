@@ -28,7 +28,8 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
-    WebSocketService
+    WebSocketService,
+    ClientHealthService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
@@ -64,6 +65,7 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import ShortUniqueId from 'short-unique-id';
 
 export const MIN_HOIST_CORE_VERSION = '28.0';
 
@@ -84,6 +86,15 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
+    /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
+    clientId: string = this.genClientId();
+
+    /**
+     * Unique id for this browser tab/window on this domain.
+     * Corresponds to the scope of the built-in sessionStorage object.
+     */
+    sessionId: string = this.genSessionId();
+
     //--------------------------
     // Implementation Delegates
     //--------------------------
@@ -131,6 +142,7 @@ export class XHApi {
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
     changelogService: ChangelogService;
+    clientHealthService: ClientHealthService;
     configService: ConfigService;
     environmentService: EnvironmentService;
     fetchService: FetchService;
@@ -793,6 +805,19 @@ export class XHApi {
     //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
+    }
+
+    private genClientId(): string {
+        return new ShortUniqueId({length: 8}).rnd();
+    }
+
+    private genSessionId(): string {
+        let ret = window.sessionStorage?.getItem('xhSessionId');
+        if (!ret) {
+            ret = new ShortUniqueId({length: 8}).rnd();
+            window.sessionStorage?.setItem('xhSessionId', ret);
+        }
+        return ret;
     }
 }
 
