@@ -34,11 +34,10 @@ export const aboutDialog = hoistCmp.factory({
                 button({
                     text: 'Send Client Health Report',
                     icon: Icon.health(),
-                    omit: !XH.trackService.enabled,
+                    omit: !XH.clientHealthService.enabled,
                     onClick: async () => {
                         try {
-                            XH.clientHealthService.sendReport({trackOpts: {severity: 'INFO'}});
-                            await XH.trackService.pushPendingAsync();
+                            await XH.clientHealthService.sendReportAsync();
                             XH.successToast({
                                 message: 'Client health report submitted.',
                                 timeout: 2000

@@ -26,10 +26,14 @@ export class ClientHealthService extends HoistService {
     override async initAsync() {
         const {clientHealthReport} = XH.trackService.conf;
         Timer.create({
-            runFn: () => this.sendReport(),
+            runFn: () => this.sendReportInternal(),
             interval: clientHealthReport.intervalMins * MINUTES,
             delay: true
         });
+    }
+
+    get enabled(): boolean {
+        return XH.trackService.enabled;
     }
 
     /** @returns a customizable report with metrics capturing client app/session state. */
@@ -63,22 +67,13 @@ export class ClientHealthService extends HoistService {
 
     /**
      * Generate and submit a report to the server, via TrackService.
-     * @internal - apps should enable via config and allow this service to submit on timer.
+     *
+     * For ad-hoc troubleshooting.  Apps may also configure this service to
+     * submit on regular intervals.
      */
-    sendReport(opts: {trackOpts?: Partial<TrackOptions>} = {}) {
-        const {intervalMins, ...rest} = XH.trackService.conf.clientHealthReport ?? {};
-
-        XH.track({
-            category: 'App',
-            message: 'Submitted health report',
-            ...rest,
-            ...opts.trackOpts,
-            data: {
-                clientId: XH.clientId,
-                sessionId: XH.sessionId,
-                ...this.getReport()
-            }
-        });
+    async sendReportAsync() {
+        this.sendReportInternal({severity: 'INFO'});
+        await XH.trackService.pushPendingAsync();
     }
 
     // -----------------------------------
@@ -132,6 +127,25 @@ export class ClientHealthService extends HoistService {
             }
         });
         return ret;
+    }
+
+    //---------------------
+    // Implementation
+    //---------------------
+    private sendReportInternal(opts: Partial<TrackOptions> = {}) {
+        const {intervalMins, ...rest} = XH.trackService.conf.clientHealthReport ?? {};
+
+        XH.track({
+            category: 'App',
+            message: 'Submitted health report',
+            ...rest,
+            ...opts,
+            data: {
+                clientId: XH.clientId,
+                sessionId: XH.sessionId,
+                ...this.getReport()
+            }
+        });
     }
 }
 
