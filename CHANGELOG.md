@@ -6,6 +6,7 @@
 
 * Added option from the Admin Console > Websockets tab to request a client health report from any
   connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
 
 ## v72.4.0 - 2025-04-09
 
