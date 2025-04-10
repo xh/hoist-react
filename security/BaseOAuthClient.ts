@@ -64,14 +64,13 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     idScopes?: string[];
 
     /**
-     * Optional map of access tokens to be loaded and maintained.
+     * Optional spec for access tokens to be loaded and maintained to support access to one or more
+     * different back-end resources, distinct from the core Hoist auth flow via ID token.
      *
-     * Map of code to a spec for an access token.  The code is app-determined and
-     * will simply be used to get the loaded token via tha getAccessToken() method. The
-     * spec is implementation specific, but will typically include scopes to be loaded
-     * for the access token and potentially other meta-data required by the underlying provider.
-     *
-     * Use this map to gain targeted access tokens for different back-end resources.
+     * Map of key to a spec for an access token. The key is an arbitrary, app-determined string
+     * used to retrieve the loaded token via {@link getAccessTokenAsync}. The spec is implementation
+     * specific, but will typically include scopes to be loaded for the access token and potentially
+     * other metadata required by the underlying provider.
      */
     accessTokens?: Record<string, S>;
 }
@@ -120,7 +119,7 @@ export abstract class BaseOAuthClient<
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
-        this.accessSpecs = this.config.accessTokens;
+        this.accessSpecs = this.config.accessTokens ?? {};
     }
 
     /**
@@ -164,7 +163,10 @@ export abstract class BaseOAuthClient<
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+        const spec = this.accessSpecs[key];
+        if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
+
+        return this.fetchAccessTokenAsync(spec, true);
     }
 
     /**
@@ -314,7 +316,7 @@ export abstract class BaseOAuthClient<
         const eagerOnly = opts?.eagerOnly ?? false,
             useCache = opts?.useCache ?? true,
             accessSpecs = eagerOnly
-                ? pickBy(this.accessSpecs, spec => spec.fetchMode === 'eager')
+                ? pickBy(this.accessSpecs, spec => spec.fetchMode !== 'lazy') // specs are eager by default - opt-in to lazy
                 : this.accessSpecs,
             ret: TokenMap = {};
 

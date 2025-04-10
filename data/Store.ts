@@ -18,6 +18,7 @@ import {
     isEmpty,
     isFunction,
     isNil,
+    isNull,
     isString,
     values,
     remove as lodashRemove,
@@ -692,6 +693,8 @@ export class Store extends HoistBase {
      * for backwards compat with app code predating support for multiple {@link summaryRecords}.
      */
     get summaryRecord(): StoreRecord {
+        if (isNull(this.summaryRecords)) return null;
+
         throwIf(
             this.summaryRecords.length > 1,
             'Store has multiple summary records - must access via Store.summaryRecords.'

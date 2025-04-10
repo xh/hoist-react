@@ -25,16 +25,20 @@ export class TrackService extends HoistService {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
-    get conf() {
-        return XH.getConf('xhActivityTrackingConfig', {
+    get conf(): ActivityTrackingConfig {
+        const appConfig = XH.getConf('xhActivityTrackingConfig', {});
+        return {
+            clientHealthReport: {intervalMins: -1},
             enabled: true,
+            logData: false,
             maxDataLength: 2000,
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
             },
-            logData: false
-        });
+            levels: [{username: '*', category: '*', severity: 'INFO'}],
+            ...appConfig
+        };
     }
 
     get enabled(): boolean {
@@ -79,7 +83,7 @@ export class TrackService extends HoistService {
             sent.set(key, true);
         }
 
-        // Otherwise - log and for next batch,
+        // Otherwise - log and queue to send with next debounced push to server.
         this.logMessage(options);
 
         this.pending.push(this.toServerJson(options));
@@ -144,4 +148,22 @@ export class TrackService extends HoistService {
 
         this.logInfo(...consoleMsgs);
     }
+}
+
+interface ActivityTrackingConfig {
+    clientHealthReport?: Partial<TrackOptions> & {
+        intervalMins: number;
+    };
+    enabled: boolean;
+    logData: boolean;
+    maxDataLength: number;
+    maxRows?: {
+        default: number;
+        options: number[];
+    };
+    levels?: Array<{
+        username: string | '*';
+        category: string | '*';
+        severity: 'DEBUG' | 'INFO' | 'WARN';
+    }>;
 }
