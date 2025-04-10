@@ -25,9 +25,11 @@ import {
     isString,
     map,
     mapValues,
+    pick,
     pickBy,
     some,
-    values
+    values,
+    without
 } from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
@@ -315,10 +317,10 @@ export class FormModel extends HoistModel {
         path = 'formValues',
         ...rootPersistWith
     }: FormPersistOptions) {
-        const fieldNameMap = this.createFormFieldsToPersistListing(
-            fieldsToInclude,
-            fieldsToExclude
-        );
+        const allFields = Object.keys(this.fields);
+        const fieldNamesToPersist = fieldsToExclude
+            ? without(allFields, ...fieldsToExclude)
+            : (fieldsToInclude ?? allFields);
 
         PersistenceProvider.create({
             persistOptions: {
@@ -326,26 +328,30 @@ export class FormModel extends HoistModel {
                 ...rootPersistWith
             },
             target: {
-                getPersistableState: () => {
-                    return new PersistableState(
-                        fieldNameMap.reduce(
-                            (acc, name) => ({
-                                ...acc,
-                                [name]: this.serialize(this.fields[name].value)
-                            }),
-                            {}
-                        )
-                    );
-                },
-                setPersistableState: ({value: formValues}) => {
-                    // There is no metadata on a field to denote it is a date.
-                    // Use a regex matcher to tests for dates and format matches accurately.
-                    this.setValues(
-                        fieldNameMap.reduce((acc, name) => {
-                            return {...acc, [name]: this.deserialize(formValues[name])};
-                        }, {} as PlainObject)
-                    );
-                }
+                getPersistableState: () =>
+                    new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),
+                //     {
+                //     return new PersistableState(
+                //         fieldNamesToPersist.reduce(
+                //             (acc, name) => ({
+                //                 ...acc,
+                //                 [name]: this.serialize(this.fields[name].value)
+                //             }),
+                //             {}
+                //         )
+                //     );
+                // },
+                setPersistableState: ({value: formValues}) =>
+                    this.setValues(this.deserialize(pick(formValues, fieldNamesToPersist)))
+                //     {
+                //     // There is no metadata on a field to denote it is a date.
+                //     // Use a regex matcher to tests for dates and format matches accurately.
+                //     this.setValues(
+                //         fieldNamesToPersist.reduce((acc, name) => {
+                //             return {...acc, [name]: this.deserialize(formValues[name])};
+                //         }, {} as PlainObject)
+                //     );
+                // }
             },
             owner: this
         });
@@ -369,22 +375,5 @@ export class FormModel extends HoistModel {
             return mapValues(formValue, this.deserialize);
         }
         return formValue;
-    }
-
-    /**
-     * Helper to build a list of fields to persist on a form.
-     */
-    private createFormFieldsToPersistListing(
-        fieldsToInclude: string[] | null,
-        fieldsToExclude: string[] | null
-    ) {
-        if (!fieldsToInclude && !fieldsToExclude) return Object.keys(this.fields);
-        if (fieldsToInclude && !fieldsToExclude) return fieldsToInclude;
-        if (!fieldsToInclude && fieldsToExclude)
-            return Object.keys(this.fields).filter(name => !fieldsToExclude.includes(name));
-
-        return Object.keys(this.fields).filter(
-            name => !fieldsToExclude.includes(name) && fieldsToInclude.includes(name)
-        );
     }
 }
