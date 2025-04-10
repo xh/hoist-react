@@ -115,7 +115,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private initialTokenLoad: boolean;
 
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
-    telemetryResults: TelemetryResults = {events: {}};
+    telemetryResults: TelemetryResults = null;
     private _telemetryCbHandle: string = null;
 
     constructor(config: MsalClientConfig) {
@@ -277,12 +277,20 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             return;
         }
 
-        this.telemetryResults = {events: {}};
+        this.telemetryResults = {
+            summary: {
+                successCount: 0,
+                failureCount: 0,
+                maxDuration: 0,
+                lastFailureTime: null
+            },
+            events: {}
+        };
 
         this._telemetryCbHandle = this.client.addPerformanceCallback(events => {
             events.forEach(e => {
                 try {
-                    const {events} = this.telemetryResults,
+                    const {summary, events} = this.telemetryResults,
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
                         eTime = startTimeMs ?? Date.now();
 
@@ -290,15 +298,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         firstTime: eTime,
                         lastTime: eTime,
                         successCount: 0,
-                        failureCount: 0,
-                        duration: {count: 0, total: 0, average: 0, worst: 0},
-                        lastFailure: null
+                        failureCount: 0
                     });
                     eResult.lastTime = eTime;
 
                     if (success) {
+                        summary.successCount++;
                         eResult.successCount++;
                     } else {
+                        summary.failureCount++;
+                        summary.lastFailureTime = eTime;
                         eResult.failureCount++;
                         eResult.lastFailure = {
                             time: eTime,
@@ -309,11 +318,17 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                     }
 
                     if (durationMs) {
-                        const {duration} = eResult;
+                        const duration = (eResult.duration ??= {
+                            count: 0,
+                            total: 0,
+                            average: 0,
+                            max: 0
+                        });
                         duration.count++;
                         duration.total += durationMs;
                         duration.average = Math.round(duration.total / duration.count);
-                        duration.worst = Math.max(duration.worst, durationMs);
+                        duration.max = Math.max(duration.max, durationMs);
+                        summary.maxDuration = Math.max(summary.maxDuration, durationMs);
                     }
                 } catch (e) {
                     this.logError(`Error processing telemetry event`, e);

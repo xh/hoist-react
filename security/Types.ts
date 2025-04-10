@@ -25,7 +25,14 @@ export type TokenMap = Record<string, Token>;
 
 /** Aggregated telemetry results, produced by {@link MsalClient} when enabled via config. */
 export interface TelemetryResults {
-    /** Stats by event type - */
+    /** Stats across all events */
+    summary: {
+        successCount: number;
+        failureCount: number;
+        maxDuration: number;
+        lastFailureTime: number;
+    };
+    /** Stats by event type */
     events: Record<string, TelemetryEventResults>;
 }
 
@@ -36,11 +43,11 @@ export interface TelemetryEventResults {
     successCount: number;
     failureCount: number;
     /** Timing info (in ms) for event instances reported with duration. */
-    duration: {
+    duration?: {
         count: number;
         total: number;
         average: number;
-        worst: number;
+        max: number;
     };
     lastFailure?: {
         time: number;
