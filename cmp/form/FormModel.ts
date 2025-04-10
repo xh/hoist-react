@@ -330,42 +330,22 @@ export class FormModel extends HoistModel {
             target: {
                 getPersistableState: () =>
                     new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),
-                //     {
-                //     return new PersistableState(
-                //         fieldNamesToPersist.reduce(
-                //             (acc, name) => ({
-                //                 ...acc,
-                //                 [name]: this.serialize(this.fields[name].value)
-                //             }),
-                //             {}
-                //         )
-                //     );
-                // },
                 setPersistableState: ({value: formValues}) =>
                     this.setValues(this.deserialize(pick(formValues, fieldNamesToPersist)))
-                //     {
-                //     // There is no metadata on a field to denote it is a date.
-                //     // Use a regex matcher to tests for dates and format matches accurately.
-                //     this.setValues(
-                //         fieldNamesToPersist.reduce((acc, name) => {
-                //             return {...acc, [name]: this.deserialize(formValues[name])};
-                //         }, {} as PlainObject)
-                //     );
-                // }
             },
             owner: this
         });
     }
 
-    private serialize(formValue: unknown) {
+    private serialize = (formValue: unknown) => {
         if (isArray(formValue)) return formValue.map(this.serialize);
         if (isDate(formValue)) return {__type: 'date', value: formValue.toJSON()};
         if (isLocalDate(formValue)) return {__type: 'localDate', value: formValue.toJSON()};
         if (isObject(formValue)) return mapValues(formValue, this.serialize);
         return formValue;
-    }
+    };
 
-    private deserialize(formValue: unknown) {
+    private deserialize = (formValue: unknown) => {
         if (isArray(formValue)) return formValue.map(this.deserialize);
         if (isObject(formValue)) {
             if ('__type' in formValue && 'value' in formValue && isString(formValue.value)) {
@@ -375,5 +355,5 @@ export class FormModel extends HoistModel {
             return mapValues(formValue, this.deserialize);
         }
         return formValue;
-    }
+    };
 }
