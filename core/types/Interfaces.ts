@@ -284,7 +284,7 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: (e: MouseEvent) => void;
+    actionFn?: (e: MouseEvent | PointerEvent) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
     prepareFn?: (me: MenuItem) => void;
