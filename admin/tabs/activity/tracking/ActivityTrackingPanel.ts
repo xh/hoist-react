@@ -6,7 +6,7 @@
  */
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, hframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/cmp/error';
@@ -35,7 +35,7 @@ export const activityTrackingPanel = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
-            item: hframe(aggregateView(), activityDetailView({flex: 1})),
+            items: [filterBar(), hframe(aggregateView(), activityDetailView({flex: 1}))],
             mask: 'onLoad'
         });
     }
@@ -95,11 +95,6 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     })
                 ),
                 toolbarSep(),
-                filterChooser({
-                    flex: 1,
-                    enableClear: true
-                }),
-                toolbarSep(),
                 formField({
                     field: 'maxRows',
                     label: 'Max rows:',
@@ -110,7 +105,7 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                         options: model.maxRowOptions
                     })
                 }),
-                toolbarSep(),
+                filler(),
                 button({
                     icon: Icon.reset(),
                     intent: 'danger',
@@ -122,10 +117,19 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     );
 });
 
+const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    return toolbar(
+        filterChooser({
+            flex: 1,
+            enableClear: true
+        })
+    );
+});
+
 const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     return panel({
-        title: 'Aggregate Activity Report',
-        icon: Icon.users(),
+        collapsedTitle: 'Aggregate Activity',
+        collapsedIcon: Icon.users(),
         compactHeader: true,
         modelConfig: {
             side: 'left',

@@ -24,23 +24,22 @@ export const activityDetailView = hoistCmp.factory({
 
     render({model, ...props}) {
         return panel({
-            title: 'Track Log Entries',
-            icon: Icon.list(),
             className: 'xh-admin-activity-detail',
-            compactHeader: true,
-            items: [grid({flex: 1}), detailRecPanel()],
             tbar: tbar(),
+            items: [grid({flex: 1}), detailRecPanel()],
             ...props
         });
     }
 });
 
-const tbar = hoistCmp.factory(({model}) => {
+const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    const {gridModel} = model;
     return toolbar(
         filler(),
         gridCountLabel({unit: 'entry'}),
-        gridFindField(),
-        colChooserButton(),
+        // TODO - these don't react properly to swapping out grid model
+        gridFindField({gridModel}),
+        colChooserButton({gridModel}),
         exportButton()
     );
 });
