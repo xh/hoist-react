@@ -68,7 +68,7 @@ export class ClientHealthService extends HoistService {
     /**
      * Generate and submit a report to the server, via TrackService.
      *
-     * For ad-hoc troubleshooting.  Apps may also configure this service to
+     * For ad-hoc troubleshooting. Apps may also configure this service to
      * submit on regular intervals.
      */
     async sendReportAsync() {

@@ -2,15 +2,22 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added option from the Admin Console > Websockets tab to request a client health report from any
+  connected clients.
+
 ## v72.4.0 - 2025-04-09
 
 ### 🎁 New Features
-* New methods for formatting timestamps within nested JSON objects.  See `withFormattedTimestamps`
+
+* Added new methods for formatting timestamps within JSON objects. See `withFormattedTimestamps`
   and `timestampReplacer` in the `@xh/hoist/format` package.
-* `ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations
-  to customize the menu items for views in the view manager menu.
+* Added new `ViewManagerConfig.viewMenuItemFn` option to support custom rendering of pinned views in
+  the drop-down menu.
 
 ### ⚙️ Technical
+
 * Added dedicated `ClientHealthService` for managing client health report. Additional enhancements
   to health report to include information about web sockets, idle time, and page state.
 
@@ -29,11 +36,6 @@
 ### 🐞 Bug Fixes
 
 * Improved fetch request tracking to include time spent loading headers as specified by application.
-
-### ⚙️ Technical
-
-* Update shape of returned `BrowserUtils.getClientDeviceInfo()` to nest several properties under new
-  top-level `window` key and report JS heap size / usage values under the `memory` block in MB.
 
 ### 📚 Libraries
 
