@@ -5,20 +5,21 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import * as WSCol from './WebSocketColumns';
-import {RecordActionSpec} from '@xh/hoist/data';
-import {AppModel} from '@xh/hoist/admin/AppModel';
 
 export class WebSocketModel extends BaseInstanceModel {
     @observable
@@ -34,8 +35,15 @@ export class WebSocketModel extends BaseInstanceModel {
         text: 'Force suspend',
         icon: Icon.stopCircle(),
         intent: 'danger',
-        actionFn: () => this.forceSuspendAsync(),
+        actionFn: ({selectedRecords}) => this.forceSuspendAsync(selectedRecords),
         displayFn: () => ({hidden: AppModel.readonly}),
+        recordsRequired: true
+    };
+
+    reqHealthReportAction: RecordActionSpec = {
+        text: 'Request Health Report',
+        icon: Icon.health(),
+        actionFn: ({selectedRecords}) => this.requestHealthReportAsync(selectedRecords),
         recordsRequired: true
     };
 
@@ -48,7 +56,12 @@ export class WebSocketModel extends BaseInstanceModel {
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('ws-connections')},
             selModel: 'multiple',
-            contextMenu: [this.forceSuspendAction, '-', ...GridModel.defaultContextMenu],
+            contextMenu: [
+                this.forceSuspendAction,
+                this.reqHealthReportAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ],
             store: {
                 idSpec: 'key',
                 processRawData: row => {
@@ -107,9 +120,8 @@ export class WebSocketModel extends BaseInstanceModel {
         }
     }
 
-    async forceSuspendAsync() {
-        const {selectedRecords} = this.gridModel;
-        if (isEmpty(selectedRecords)) return;
+    async forceSuspendAsync(toRecs: StoreRecord[]) {
+        if (isEmpty(toRecs)) return;
 
         const message = await XH.prompt<string>({
             title: 'Please confirm...',
@@ -123,7 +135,7 @@ export class WebSocketModel extends BaseInstanceModel {
             },
             message: div(
                 p(
-                    `This action will force ${selectedRecords.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`
+                    `This action will force ${toRecs.length} connected client(s) into suspended mode, halting all background refreshes and other activity, masking the UI, and requiring users to reload the app to continue.`
                 ),
                 p('Enter an optional message below to display within the suspended app.')
             ),
@@ -134,23 +146,58 @@ export class WebSocketModel extends BaseInstanceModel {
         });
 
         if (message !== false) {
-            const tasks = selectedRecords.map(rec =>
-                XH.fetchJson({
-                    url: 'webSocketAdmin/pushToChannel',
-                    params: {
-                        channelKey: rec.data.key,
-                        topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
-                        instance: this.instanceName,
-                        message
-                    }
-                })
-            );
-
-            await Promise.allSettled(tasks).track({
-                category: 'Audit',
-                message: 'Suspended clients via WebSocket',
-                data: {users: selectedRecords.map(it => it.data.user).sort()}
+            await this.bulkPush({
+                toRecs,
+                topic: XH.webSocketService.FORCE_APP_SUSPEND_TOPIC,
+                message,
+                trackMessage: 'Suspended clients via WebSocket'
             });
         }
+    }
+
+    async requestHealthReportAsync(toRecs: StoreRecord[]) {
+        await this.bulkPush({
+            toRecs,
+            topic: XH.webSocketService.REQ_CLIENT_HEALTH_RPT_TOPIC
+        });
+        XH.successToast(
+            `Client health report requested for ${pluralize('client', toRecs.length, true)} - available in User Activity shortly...`
+        );
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    private async bulkPush({
+        toRecs,
+        topic,
+        message,
+        trackMessage
+    }: {
+        toRecs?: StoreRecord[];
+        topic: string;
+        message?: string;
+        trackMessage?: string;
+    }) {
+        if (isEmpty(toRecs)) return;
+
+        const tasks = toRecs.map(rec =>
+            XH.fetchJson({
+                url: 'webSocketAdmin/pushToChannel',
+                params: {
+                    channelKey: rec.data.key,
+                    instance: this.instanceName,
+                    topic,
+                    message
+                }
+            })
+        );
+
+        await Promise.allSettled(tasks).track({
+            category: 'Audit',
+            message: trackMessage,
+            data: {users: toRecs.map(it => it.data.user).sort()},
+            omit: !trackMessage
+        });
     }
 }
