@@ -22,37 +22,3 @@ export interface AccessTokenSpec {
 }
 
 export type TokenMap = Record<string, Token>;
-
-/** Aggregated telemetry results, produced by {@link MsalClient} when enabled via config. */
-export interface TelemetryResults {
-    /** Stats across all events */
-    summary: {
-        successCount: number;
-        failureCount: number;
-        maxDuration: number;
-        lastFailureTime: number;
-    };
-    /** Stats by event type */
-    events: Record<string, TelemetryEventResults>;
-}
-
-/** Aggregated telemetry results for a single type of event. */
-export interface TelemetryEventResults {
-    firstTime: number;
-    lastTime: number;
-    successCount: number;
-    failureCount: number;
-    /** Timing info (in ms) for event instances reported with duration. */
-    duration?: {
-        count: number;
-        total: number;
-        average: number;
-        max: number;
-    };
-    lastFailure?: {
-        time: number;
-        duration: number;
-        code: string;
-        name: string;
-    };
-}

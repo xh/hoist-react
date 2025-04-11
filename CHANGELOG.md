@@ -6,6 +6,7 @@
 
 * Added option from the Admin Console > Websockets tab to request a client health report from any
   connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
 * Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
 
 ## v72.4.0 - 2025-04-09
