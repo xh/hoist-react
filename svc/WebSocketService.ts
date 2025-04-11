@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {AppState, HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -60,11 +60,7 @@ export class WebSocketService extends HoistService {
     /** Set to true to log all sent/received messages - very chatty. */
     logMessages: boolean = false;
 
-    telemetry: WebSocketTelemetry = {
-        channelKey: null,
-        subscriptionCount: 0,
-        events: {}
-    };
+    telemetry: WebSocketTelemetry = null;
 
     private _timer: Timer;
     private _socket: WebSocket;
@@ -86,20 +82,14 @@ export class WebSocketService extends HoistService {
             this.enabled = false;
             return;
         }
+        this.telemetry = {channelKey: null, subscriptionCount: 0, events: {}};
 
         this.connect();
 
-        this.addReaction(
-            {
-                track: () => environmentService.serverInstance,
-                run: () => this.onServerInstanceChange()
-            },
-            {
-                when: () => XH.appState === AppState.INITIALIZING_APP,
-                run: () =>
-                    XH.clientHealthService.addSource('webSocketService', () => this.telemetry)
-            }
-        );
+        this.addReaction({
+            track: () => environmentService.serverInstance,
+            run: () => this.onServerInstanceChange()
+        });
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
@@ -355,7 +345,7 @@ export interface WebSocketMessage {
 }
 
 /** Telemetry collected by this service + included in {@link ClientHealthService} reporting. */
-interface WebSocketTelemetry {
+export interface WebSocketTelemetry {
     channelKey: string;
     subscriptionCount: number;
     events: {
@@ -369,7 +359,7 @@ interface WebSocketTelemetry {
     };
 }
 
-interface WebSocketEventTelemetry {
+export interface WebSocketEventTelemetry {
     count: number;
     lastTime: number;
 }
