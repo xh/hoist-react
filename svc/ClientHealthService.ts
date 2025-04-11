@@ -142,8 +142,8 @@ export class ClientHealthService extends HoistService {
             ...rest,
             ...opts,
             data: {
-                clientId: XH.clientId,
-                sessionId: XH.sessionId,
+                loadId: XH.loadId,
+                tabId: XH.tabId,
                 ...this.getReport()
             }
         });
