@@ -73,9 +73,9 @@ export const lastReceivedTime: ColumnSpec = {
     width: 140
 };
 
-export const clientAppVersion: ColumnSpec = {
+export const appVersion: ColumnSpec = {
     field: {
-        name: 'clientAppVersion',
+        name: 'appVersion',
         type: 'string',
         displayName: 'Client Version'
     },
