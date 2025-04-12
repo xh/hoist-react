@@ -81,3 +81,25 @@ export const clientAppVersion: ColumnSpec = {
     },
     width: 120
 };
+
+export const appBuild: ColumnSpec = {
+    field: {
+        name: 'appBuild',
+        type: 'string'
+    },
+    width: 120
+};
+export const loadId: ColumnSpec = {
+    field: {
+        name: 'loadId',
+        type: 'string'
+    },
+    width: 120
+};
+export const tabId: ColumnSpec = {
+    field: {
+        name: 'tabId',
+        type: 'string'
+    },
+    width: 120
+};

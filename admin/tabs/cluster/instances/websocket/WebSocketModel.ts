@@ -92,7 +92,10 @@ export class WebSocketModel extends BaseInstanceModel {
                 WSCol.lastSentTime,
                 WSCol.receivedMessageCount,
                 WSCol.lastReceivedTime,
-                WSCol.clientAppVersion
+                WSCol.clientAppVersion,
+                WSCol.appBuild,
+                WSCol.loadId,
+                WSCol.tabId
             ]
         });
 
