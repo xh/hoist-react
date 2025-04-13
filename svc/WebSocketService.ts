@@ -42,6 +42,7 @@ export class WebSocketService extends HoistService {
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
+    readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
 
     /** True if WebSockets generally enabled - set statically in code via {@link AppSpec}. */
     enabled: boolean = XH.appSpec.webSocketsEnabled;
@@ -304,7 +305,7 @@ export class WebSocketService extends HoistService {
 
     private buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
-            endpoint = 'xhWebSocket?clientAppVersion=' + XH.appVersion;
+            endpoint = `xhWebSocket?${this.METADATA_FOR_HANDSHAKE.map(key => `${key}=${XH[key]}`).join('&')}`;
         return XH.isDevelopmentMode
             ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
             : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;

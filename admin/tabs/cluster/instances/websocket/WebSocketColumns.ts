@@ -73,11 +73,33 @@ export const lastReceivedTime: ColumnSpec = {
     width: 140
 };
 
-export const clientAppVersion: ColumnSpec = {
+export const appVersion: ColumnSpec = {
     field: {
-        name: 'clientAppVersion',
+        name: 'appVersion',
         type: 'string',
         displayName: 'Client Version'
+    },
+    width: 120
+};
+
+export const appBuild: ColumnSpec = {
+    field: {
+        name: 'appBuild',
+        type: 'string'
+    },
+    width: 120
+};
+export const loadId: ColumnSpec = {
+    field: {
+        name: 'loadId',
+        type: 'string'
+    },
+    width: 120
+};
+export const tabId: ColumnSpec = {
+    field: {
+        name: 'tabId',
+        type: 'string'
     },
     width: 120
 };

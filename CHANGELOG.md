@@ -8,6 +8,7 @@
   connected clients.
 * Enabled telemetry reporting from `WebSocketService`.
 * Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
+* Support for reporting App Build, TabID and Client ID in websocket admin page
 
 ## v72.4.0 - 2025-04-09
 
