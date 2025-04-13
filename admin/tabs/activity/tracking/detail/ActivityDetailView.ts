@@ -92,6 +92,12 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               }
                           }),
                           formField({
+                              field: 'loadId'
+                          }),
+                          formField({
+                              field: 'tabId'
+                          }),
+                          formField({
                               field: 'url',
                               readonlyRenderer: hyperlinkVal
                           }),

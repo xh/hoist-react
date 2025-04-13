@@ -27,6 +27,16 @@ export const appVersion: ColumnSpec = {
     width: 130
 };
 
+export const loadId: ColumnSpec = {
+    field: {name: 'loadId', type: 'string'},
+    width: 130
+};
+
+export const tabId: ColumnSpec = {
+    field: {name: 'tabId', type: 'string'},
+    width: 130
+};
+
 export const browser: ColumnSpec = {
     field: {
         name: 'browser',
