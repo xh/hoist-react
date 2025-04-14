@@ -61,7 +61,7 @@ export class WebSocketService extends HoistService {
     /** Set to true to log all sent/received messages - very chatty. */
     logMessages: boolean = false;
 
-    telemetry: WebSocketTelemetry = null;
+    telemetry: WebSocketTelemetry = {channelKey: null, subscriptionCount: 0, events: {}};
 
     private _timer: Timer;
     private _socket: WebSocket;
@@ -83,7 +83,6 @@ export class WebSocketService extends HoistService {
             this.enabled = false;
             return;
         }
-        this.telemetry = {channelKey: null, subscriptionCount: 0, events: {}};
 
         this.connect();
 
