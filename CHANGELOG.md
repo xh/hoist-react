@@ -12,6 +12,11 @@
 * Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
 * Support for reporting App Build, Tab Id, and Load Id in websocket admin page.
 
+### ⚙️ Technical
+
+* Update the `FormModel` with configuration options to support persisting the form state - either the entire form
+or a provided subset of fields.
+
 ## v72.4.0 - 2025-04-09
 
 ### 🎁 New Features
