@@ -108,6 +108,7 @@ export class WebSocketService extends HoistService {
      *      dispose of their subs on destroy.
      */
     subscribe(topic: string, fn: (msg: WebSocketMessage) => any): WebSocketSubscription {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(topic),
             existingSub = find(subs, {fn});
 
@@ -125,6 +126,7 @@ export class WebSocketService extends HoistService {
      * @param subscription - WebSocketSubscription returned when the subscription was established.
      */
     unsubscribe(subscription: WebSocketSubscription) {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(subscription.topic);
         pull(subs, subscription);
         this.telemetry.subscriptionCount--;
@@ -134,6 +136,7 @@ export class WebSocketService extends HoistService {
      * Send a message back to the server via the connected websocket.
      */
     sendMessage(message: WebSocketMessage) {
+        this.ensureEnabled();
         this.updateConnectedStatus();
         throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
@@ -318,6 +321,10 @@ export class WebSocketService extends HoistService {
         const evtTel = (this.telemetry.events[eventKey] ??= {count: 0, lastTime: null});
         evtTel.count++;
         evtTel.lastTime = Date.now();
+    }
+
+    private ensureEnabled() {
+        throwIf(!this.enabled, 'Operation not available.  WebSocketService is disabled.');
     }
 }
 
