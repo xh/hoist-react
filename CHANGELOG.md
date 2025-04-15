@@ -2,6 +2,12 @@
 
 ## 73.0.0-SNAPSHOT - unreleased
 
+## v72.5.1 - 2025-04-15
+
+### 🐞 Bug Fixes
+
+* Allow the display of very long log lines in Admin log viewer.
+
 ## v72.5.0 - 2025-04-14
 
 ### 🎁 New Features
