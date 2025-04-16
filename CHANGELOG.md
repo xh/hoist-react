@@ -2,6 +2,10 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+
 ## v72.5.1 - 2025-04-15
 
 ### 🐞 Bug Fixes
