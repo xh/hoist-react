@@ -90,6 +90,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
+                                isDropDisabled: true,
                                 children: dndProps =>
                                     columnList({
                                         model: impl,
