@@ -5,13 +5,10 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {InstancesTabModel} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTabModel';
-import {HoistModel, LoadSpec, lookup, XH} from '@xh/hoist/core';
-import {createRef} from 'react';
-import {isDisplayed} from '@xh/hoist/utils/js';
+import {LoadSpec, lookup, XH} from '@xh/hoist/core';
+import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
-export class BaseInstanceModel extends HoistModel {
-    viewRef = createRef<HTMLElement>();
-
+export class BaseInstanceModel extends BaseAdminTabModel {
     @lookup(() => InstancesTabModel) parent: InstancesTabModel;
 
     get instanceName(): string {
@@ -28,10 +25,6 @@ export class BaseInstanceModel extends HoistModel {
             showAlert: !instanceNotFound && !connDown && isVisible,
             logOnServer: !instanceNotFound && !connDown && isVisible && !isAutoRefresh
         });
-    }
-
-    get isVisible() {
-        return isDisplayed(this.viewRef.current);
     }
 
     //-------------------

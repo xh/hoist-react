@@ -22,7 +22,7 @@ export const clientErrorsPanel = hoistCmp.factory({
 
     render() {
         return panel({
-            className: 'xh-admin-activity-panel',
+            className: 'xh-admin-client-errors-panel',
             tbar: tbar(),
             items: [grid(), clientErrorDetail()],
             mask: 'onLoad'

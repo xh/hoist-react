@@ -21,6 +21,7 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityTrackingModel} from './ActivityTrackingModel';
 import {chartsPanel} from './charts/ChartsPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
+import './ActivityTracking.scss';
 
 export const activityTrackingPanel = hoistCmp.factory({
     model: creates(ActivityTrackingModel),

@@ -11,10 +11,11 @@ import {HoistAppModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
-import {activityTab} from './tabs/activity/ActivityTab';
+import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
+import {clientTab} from './tabs/client/ClientTab';
 
 export class AppModel extends HoistAppModel {
     static instance: AppModel;
@@ -79,13 +80,19 @@ export class AppModel extends HoistAppModel {
                             {name: 'memory', path: '/memory'},
                             {name: 'jdbcPool', path: '/jdbcPool'},
                             {name: 'environment', path: '/environment'},
-                            {name: 'services', path: '/services'},
-                            {name: 'hibernate', path: '/hibernate'},
-                            {name: 'consistency', path: '/consistency'},
-                            {name: 'webSockets', path: '/webSockets'}
+                            {name: 'services', path: '/services'}
                         ]
                     },
                     {name: 'objects', path: '/objects'}
+                ]
+            },
+            {
+                name: 'clients',
+                path: '/clients',
+                children: [
+                    {name: 'clients', path: '/clients'},
+                    {name: 'clientErrors', path: '/clientErrors'},
+                    {name: 'feedback', path: '/feedback'}
                 ]
             },
             {
@@ -94,12 +101,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'activity',
-                path: '/activity',
-                children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
+                path: '/activity'
             },
             {
                 name: 'userData',
@@ -127,6 +129,11 @@ export class AppModel extends HoistAppModel {
                 content: clusterTab
             },
             {
+                id: 'clients',
+                icon: Icon.desktop(),
+                content: clientTab
+            },
+            {
                 id: 'monitors',
                 icon: Icon.shieldCheck(),
                 content: monitorTab
@@ -140,7 +147,7 @@ export class AppModel extends HoistAppModel {
                 id: 'activity',
                 title: 'User Activity',
                 icon: Icon.analytics(),
-                content: activityTab
+                content: activityTrackingPanel
             }
         ];
     }

@@ -1,7 +1,14 @@
 # Changelog
 
-## v73.0.0-SNAPSHOT - unreleased
+## v73.0.0-SNAPSHOT
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
+
+### 🎁 New Features
+
+* New "Clients" tab in admin app now provides a consolidated view of all websocket connected clients
+  in the cluster (requires Hoist Core v30).
+  
 ## v72.5.1 - 2025-04-15
 
 ### 🐞 Bug Fixes
