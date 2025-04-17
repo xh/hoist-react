@@ -8,7 +8,7 @@
 
 * New "Clients" tab in admin app now provides a consolidated view of all websocket connected clients
   in the cluster (requires Hoist Core v30).
-
+  
 ## v72.5.1 - 2025-04-15
 
 ### 🐞 Bug Fixes
