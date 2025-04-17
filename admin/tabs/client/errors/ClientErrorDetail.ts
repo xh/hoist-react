@@ -23,7 +23,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
     if (!selectedRecord) return null;
 
     return panel({
-        className: 'xh-admin-activity-detail',
+        className: 'xh-admin-client-errors-detail',
         modelConfig: {
             side: 'bottom',
             defaultSize: 370
@@ -32,7 +32,7 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
             fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
             item: hframe(
                 div({
-                    className: 'xh-admin-activity-detail__form',
+                    className: 'xh-admin-client-errors-detail__form',
                     style: {width: '400px'},
                     items: [
                         h3(Icon.info(), 'Error Info'),
