@@ -87,13 +87,13 @@ declare const xhIsDevelopmentMode: boolean;
  */
 export class XHApi {
     /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
-    clientId: string = this.genClientId();
+    loadId: string = this.genLoadId();
 
     /**
      * Unique id for this browser tab/window on this domain.
      * Corresponds to the scope of the built-in sessionStorage object.
      */
-    sessionId: string = this.genSessionId();
+    tabId: string = this.genTabId();
 
     //--------------------------
     // Implementation Delegates
@@ -807,15 +807,15 @@ export class XHApi {
         return this.appContainerModel;
     }
 
-    private genClientId(): string {
+    private genLoadId(): string {
         return new ShortUniqueId({length: 8}).rnd();
     }
 
-    private genSessionId(): string {
-        let ret = window.sessionStorage?.getItem('xhSessionId');
+    private genTabId(): string {
+        let ret = window.sessionStorage?.getItem('xhTabId');
         if (!ret) {
             ret = new ShortUniqueId({length: 8}).rnd();
-            window.sessionStorage?.setItem('xhSessionId', ret);
+            window.sessionStorage?.setItem('xhTabId', ret);
         }
         return ret;
     }

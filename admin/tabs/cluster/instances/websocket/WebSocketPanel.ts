@@ -16,7 +16,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 
-export const webSocketPanel = hoistCmp.factory({
+export const webSocketPanel = hoistCmp.factory<WebSocketModel>({
     model: creates(WebSocketModel),
 
     render({model}) {
@@ -26,7 +26,7 @@ export const webSocketPanel = hoistCmp.factory({
             bbar: [
                 recordActionBar({
                     selModel: model.gridModel.selModel,
-                    actions: [model.forceSuspendAction]
+                    actions: [model.forceSuspendAction, model.reqHealthReportAction]
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastRefresh', options: {prefix: 'Refreshed'}}),

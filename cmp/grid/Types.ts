@@ -46,8 +46,8 @@ export interface ColumnState {
  *      and a positive number if `b` sorts first.
  */
 export type GridGroupSortFn = (
-    groupAVal: any,
-    groupBVal: any,
+    groupAVal: string,
+    groupBVal: string,
     groupField: string,
     metadata: {
         gridModel: GridModel;

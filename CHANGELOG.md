@@ -2,20 +2,57 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Updated `FormModel` to support `persistWith` for storing and recalling its values, including
+  developer options to persist all or a provided subset of fields.
+
+### 🐞 Bug Fixes
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `GridGroupSortFn` param types.
+
 ### ⚙️ Technical
 
-* Update the `FormModel` with configuration options to support persisting the form state - either the entire form
-or a provided subset of fields.
+* Updated the background version checking performed by `EnvironmentService` to use the app version
+  and build information baked into the client build when comparing against the latest values from
+  the server. Previously the versions loaded from the server on init were used as the baseline.
+  * The two versions *should* be the same, but in cases where a browser "restores" a tab and
+    re-inits an app without reloading the code itself, the upgrade check would miss the fact that
+    the client remained on an older version.
+  * Note that a misconfigured build - where the client build version is not set to the same value as
+    the server - would result in a false positive for an upgrade. The two should always match.
+
+## v72.5.1 - 2025-04-15
+
+### 🐞 Bug Fixes
+
+* Allow the display of very long log lines in Admin log viewer.
+
+## v72.5.0 - 2025-04-14
+
+### 🎁 New Features
+
+* Added option from the Admin Console > Websockets tab to request a client health report from any
+  connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
+* Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
+* Support for reporting App Build, Tab Id, and Load Id in websocket admin page.
 
 ## v72.4.0 - 2025-04-09
 
 ### 🎁 New Features
-* New methods for formatting timestamps within nested JSON objects.  See `withFormattedTimestamps`
+
+* Added new methods for formatting timestamps within JSON objects. See `withFormattedTimestamps`
   and `timestampReplacer` in the `@xh/hoist/format` package.
-* `ViewManagerConfig` takes new optional key `viewMenuItemFn` to allow ViewManager implementations
-  to customize the menu items for views in the view manager menu.
+* Added new `ViewManagerConfig.viewMenuItemFn` option to support custom rendering of pinned views in
+  the drop-down menu.
 
 ### ⚙️ Technical
+
 * Added dedicated `ClientHealthService` for managing client health report. Additional enhancements
   to health report to include information about web sockets, idle time, and page state.
 
@@ -34,11 +71,6 @@ or a provided subset of fields.
 ### 🐞 Bug Fixes
 
 * Improved fetch request tracking to include time spent loading headers as specified by application.
-
-### ⚙️ Technical
-
-* Update shape of returned `BrowserUtils.getClientDeviceInfo()` to nest several properties under new
-  top-level `window` key and report JS heap size / usage values under the `memory` block in MB.
 
 ### 📚 Libraries
 

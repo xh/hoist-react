@@ -20,7 +20,7 @@ import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hois
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
-import {AccessTokenSpec, TelemetryResults, TokenMap} from '../Types';
+import {AccessTokenSpec, TokenMap} from '../Types';
 
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
@@ -39,8 +39,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /**
      * True to enable support for built-in telemetry provided by this class's internal MSAL client.
-     * Captured performance events will be summarized via {@link telemetryResults}.
-     * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/performance.md
+     * Captured performance events will be summarized as {@link MsalClientTelemetry}.
      */
     enableTelemetry?: boolean;
 
@@ -115,7 +114,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private initialTokenLoad: boolean;
 
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
-    telemetryResults: TelemetryResults = {events: {}};
+    telemetry: MsalClientTelemetry = null;
     private _telemetryCbHandle: string = null;
 
     constructor(config: MsalClientConfig) {
@@ -268,7 +267,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     // Telemetry
     //------------------------
     getFormattedTelemetry(): PlainObject {
-        return withFormattedTimestamps(this.telemetryResults);
+        return withFormattedTimestamps(this.telemetry);
     }
 
     enableTelemetry(): void {
@@ -277,12 +276,20 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             return;
         }
 
-        this.telemetryResults = {events: {}};
+        this.telemetry = {
+            summary: {
+                successCount: 0,
+                failureCount: 0,
+                maxDuration: 0,
+                lastFailureTime: null
+            },
+            events: {}
+        };
 
         this._telemetryCbHandle = this.client.addPerformanceCallback(events => {
             events.forEach(e => {
                 try {
-                    const {events} = this.telemetryResults,
+                    const {summary, events} = this.telemetry,
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
                         eTime = startTimeMs ?? Date.now();
 
@@ -290,15 +297,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         firstTime: eTime,
                         lastTime: eTime,
                         successCount: 0,
-                        failureCount: 0,
-                        duration: {count: 0, total: 0, average: 0, worst: 0},
-                        lastFailure: null
+                        failureCount: 0
                     });
                     eResult.lastTime = eTime;
 
                     if (success) {
+                        summary.successCount++;
                         eResult.successCount++;
                     } else {
+                        summary.failureCount++;
+                        summary.lastFailureTime = eTime;
                         eResult.failureCount++;
                         eResult.lastFailure = {
                             time: eTime,
@@ -309,11 +317,17 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                     }
 
                     if (durationMs) {
-                        const {duration} = eResult;
+                        const duration = (eResult.duration ??= {
+                            count: 0,
+                            total: 0,
+                            average: 0,
+                            max: 0
+                        });
                         duration.count++;
                         duration.total += durationMs;
                         duration.average = Math.round(duration.total / duration.count);
-                        duration.worst = Math.max(duration.worst, durationMs);
+                        duration.max = Math.max(duration.max, durationMs);
+                        summary.maxDuration = Math.max(summary.maxDuration, durationMs);
                     }
                 } catch (e) {
                     this.logError(`Error processing telemetry event`, e);
@@ -324,10 +338,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // Wait for clientHealthService (this client likely initialized during earlier AUTHENTICATING.)
         this.addReaction({
             when: () => XH.appState === AppState.INITIALIZING_APP,
-            run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetryResults)
+            run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetry)
         });
 
-        this.logInfo('Telemetry enabled');
+        this.logDebug('Telemetry enabled');
     }
 
     disableTelemetry(): void {
@@ -433,4 +447,42 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.setSelectedUsername(account.username);
         this.logDebug('User Authenticated', account.username);
     }
+}
+
+/**
+ * Telemetry produced by this client (if enabled) + included in {@link ClientHealthService}
+ * reporting. Leverages MSAL's opt-in support for emitting performance events.
+ * See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/performance.md
+ */
+interface MsalClientTelemetry {
+    /** Stats across all events */
+    summary: {
+        successCount: number;
+        failureCount: number;
+        maxDuration: number;
+        lastFailureTime: number;
+    };
+    /** Stats by event type */
+    events: Record<string, MsalEventTelemetry>;
+}
+
+/** Aggregated telemetry results for a single type of event. */
+interface MsalEventTelemetry {
+    firstTime: number;
+    lastTime: number;
+    successCount: number;
+    failureCount: number;
+    /** Timing info (in ms) for event instances reported with duration. */
+    duration?: {
+        count: number;
+        total: number;
+        average: number;
+        max: number;
+    };
+    lastFailure?: {
+        time: number;
+        duration: number;
+        code: string;
+        name: string;
+    };
 }
