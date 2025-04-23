@@ -1432,6 +1432,18 @@ export class GridModel extends HoistModel {
         return this.isReady;
     }
 
+    /**
+     * Sorts ungrouped items to the bottom.
+     */
+    defaultGroupSortFn = (a: string, b: string): number => {
+        a = a ?? '';
+        b = b ?? '';
+        if (a === b) return 0;
+        if (a === '') return 1;
+        if (b === '') return -1;
+        return a.localeCompare(b);
+    };
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -1774,14 +1786,6 @@ export class GridModel extends HoistModel {
     private isGroupSpec(col: ColumnGroupSpec | ColumnSpec): col is ColumnGroupSpec {
         return 'children' in col;
     }
-
-    defaultGroupSortFn = (a, b) => {
-        // Place ungrouped items at bottom.
-        if (a === b) return 0;
-        if (a === '') return 1;
-        if (b === '') return -1;
-        return a.localeCompare(b);
-    };
 
     private readonly LEFT_BORDER_CLASS = 'xh-cell--group-border-left';
     private readonly RIGHT_BORDER_CLASS = 'xh-cell--group-border-right';

@@ -27,8 +27,7 @@ export function useOnUnmount(fn: () => void) {
 
 /**
  * Hook to run a function when a DOM element is resized.
- *
- * @see observeResize() for more details.
+ * See {@link observeResize} for more details.
  *
  * @param fn - receives a DOMRect containing the dimensions of the DOM element.
  * @param opts - extra options, currently supporting a `debounce` specified in ms.
