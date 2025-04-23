@@ -70,6 +70,7 @@
     "react-grid-layout": "1.5.0",
     "react-markdown": "~10.1.0",
     "react-onsenui": "~1.13.2",
+    "react-pdf": "~10.2.0",
     "react-popper": "~2.3.0",
     "react-select": "~4.3.1",
     "react-transition-group": "~4.4.2",
