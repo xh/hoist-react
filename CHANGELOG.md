@@ -3,8 +3,13 @@
 ## v73.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
-
 * Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `GridGroupSortFn` param types.
 
 ## v72.5.1 - 2025-04-15
 
