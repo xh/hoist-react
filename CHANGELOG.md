@@ -1,14 +1,38 @@
 # Changelog
 
-## v73.0.0-SNAPSHOT
+## v73.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
+Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab.
+
 ### 🎁 New Features
 
-* New "Clients" tab in admin app now provides a consolidated view of all websocket connected clients
-  in the cluster (requires Hoist Core v30).
-  
+* Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
+  across all instances in the cluster.
+
+### 🐞 Bug Fixes
+
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `GridGroupSortFn` param types.
+
+### ⚙️ Technical
+
+* Updated the background version checking performed by `EnvironmentService` to use the app version
+  and build information baked into the client build when comparing against the latest values from
+  the server. Previously the versions loaded from the server on init were used as the baseline.
+    * The two versions *should* be the same, but in cases where a browser "restores" a tab and
+      re-inits an app without reloading the code itself, the upgrade check would miss the fact that
+      the client remained on an older version.
+    * Note that a misconfigured build - where the client build version is not set to the same value
+      as
+      the server - would result in a false positive for an upgrade. The two should always match.
+
 ## v72.5.1 - 2025-04-15
 
 ### 🐞 Bug Fixes

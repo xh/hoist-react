@@ -1,15 +1,17 @@
 .xh-col-chooser {
   &__internal {
     height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   &__section {
     &:first-child {
-      height: 65% !important;
+      flex: 1 1 65% !important;
     }
 
     &:last-child {
-      height: 35% !important;
+      flex: 1 1 35% !important;
     }
 
     .xh-panel__content {
@@ -71,6 +73,11 @@
         color: var(--xh-accent-color);
       }
     }
+  }
+
+  .xh-checkbox-button {
+    border-radius: 0 !important;
+    border-width: 1px 0 !important;
   }
 
   .hidden-columns .xh-col-chooser-row {
