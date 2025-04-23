@@ -2,6 +2,10 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Typescript API Adjustments
+
+* Corrected `StoreCountLabelProps` interface.
+
 ## v72.5.1 - 2025-04-15
 
 ### 🐞 Bug Fixes
