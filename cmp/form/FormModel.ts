@@ -57,9 +57,9 @@ export interface FormConfig {
 
 export interface FormPersistOptions extends PersistOptions {
     /** If persisting only a subset of all fields, provide an array of field names. */
-    fieldsToInclude?: string[];
+    includeFields?: string[];
     /** If excluding a subset of all fields, provide an array of field names. */
-    fieldsToExclude?: string[];
+    excludeFields?: string[];
 }
 
 /**
@@ -312,15 +312,15 @@ export class FormModel extends HoistModel {
     }
 
     private initPersist({
-        fieldsToInclude = null,
-        fieldsToExclude = null,
+        includeFields = null,
+        excludeFields = null,
         path = 'formValues',
         ...rootPersistWith
     }: FormPersistOptions) {
         const allFields = Object.keys(this.fields);
-        const fieldNamesToPersist = fieldsToExclude
-            ? without(allFields, ...fieldsToExclude)
-            : (fieldsToInclude ?? allFields);
+        const fieldNamesToPersist = excludeFields
+            ? without(allFields, ...excludeFields)
+            : (includeFields ?? allFields);
 
         PersistenceProvider.create({
             persistOptions: {
