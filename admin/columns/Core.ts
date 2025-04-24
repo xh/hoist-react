@@ -4,8 +4,12 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {badge} from '@xh/hoist/cmp/badge';
 import {ColumnSpec, dateTimeSec} from '@xh/hoist/cmp/grid';
+import {XH} from '@xh/hoist/core';
 import {dateTimeRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
+import copy from 'clipboard-copy';
 
 export const name: ColumnSpec = {
     field: {name: 'name', type: 'string'},
@@ -45,4 +49,29 @@ export const timestampNoYear: ColumnSpec = {
     field: {name: 'timestamp', type: 'date'},
     ...dateTimeSec,
     renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss.SSS'})
+};
+
+export function badgeRenderer(v) {
+    return v
+        ? badge({
+              item: v,
+              className: 'xh-font-family-mono',
+              style: {cursor: 'copy'},
+              intent: 'primary',
+              title: 'Double-click to copy',
+              onDoubleClick: () => {
+                  copy(v);
+                  XH.toast({
+                      icon: Icon.copy(),
+                      message: `Copied ${v}`
+                  });
+              }
+          })
+        : '-';
+}
+
+export const badgeCol: ColumnSpec = {
+    autosizable: false,
+    width: 90,
+    renderer: badgeRenderer
 };
