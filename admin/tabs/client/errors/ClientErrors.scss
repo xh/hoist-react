@@ -5,34 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-.xh-admin-client-errors-panel {
-  .xh-toolbar .xh-form-field {
-    margin: 0 0 0 var(--xh-tbar-item-pad-px);
-
-    .xh-form-field-label {
-      min-width: 0 !important;
-      margin-right: 6px;
-    }
-  }
-
-  &__metric-switcher {
-    .xh-button {
-      text-align: center;
-    }
-  }
-
-  &__max-rows-alert {
-    background-color: var(--xh-intent-warning);
-    color: white;
-    padding: var(--xh-pad-half-px);
-    text-align: center;
-
-    .xh-icon {
-      margin-right: var(--xh-pad-half-px);
-    }
-  }
-}
-
 .xh-admin-client-errors-detail {
   &__form {
     overflow-y: auto;
@@ -54,14 +26,6 @@
       font-size: var(--xh-font-size-small-px);
       padding: 0;
     }
-  }
-
-  &__message {
-    background-color: var(--xh-grid-bg-odd);
-    padding: var(--xh-pad-px);
-    overflow: auto;
-    width: 100%;
-    height: 100%;
   }
 
   h3 {

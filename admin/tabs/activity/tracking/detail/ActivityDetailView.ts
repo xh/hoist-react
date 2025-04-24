@@ -49,9 +49,12 @@ const tbar = hoistCmp.factory(({model}) => {
 // Discrete outer panel to retain sizing across master/detail selection changes.
 const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return panel({
+        collapsedTitle: 'Activity Details',
+        collapsedIcon: Icon.info(),
+        compactHeader: true,
         modelConfig: {
             side: 'bottom',
-            defaultSize: 370
+            defaultSize: 400
         },
         item: detailRecForm()
     });

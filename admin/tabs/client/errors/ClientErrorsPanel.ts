@@ -16,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {clientErrorDetail} from './ClientErrorDetail';
 import {ClientErrorsModel} from './ClientErrorsModel';
+import './ClientErrors.scss';
 
 export const clientErrorsPanel = hoistCmp.factory({
     model: creates(ClientErrorsModel),
