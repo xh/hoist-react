@@ -90,8 +90,8 @@ export class AppModel extends HoistAppModel {
                 name: 'clients',
                 path: '/clients',
                 children: [
-                    {name: 'clients', path: '/clients'},
-                    {name: 'clientErrors', path: '/clientErrors'},
+                    {name: 'connections', path: '/connections'},
+                    {name: 'errors', path: '/errors'},
                     {name: 'feedback', path: '/feedback'}
                 ]
             },

@@ -17,8 +17,8 @@ export const clientTab = hoistCmp.factory(() =>
             route: 'default.clients',
             switcher: {orientation: 'left', testId: 'client-tab-switcher'},
             tabs: [
-                {id: 'clients', icon: Icon.desktop(), content: clientsPanel},
-                {id: 'clientErrors', icon: Icon.warning(), content: clientErrorsPanel},
+                {id: 'connections', icon: Icon.diff(), content: clientsPanel},
+                {id: 'errors', icon: Icon.warning(), content: clientErrorsPanel},
                 {id: 'feedback', icon: Icon.comment(), content: feedbackPanel}
             ]
         }
