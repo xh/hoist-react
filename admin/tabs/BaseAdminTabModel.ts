@@ -12,6 +12,6 @@ export class BaseAdminTabModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
 
     get isVisible() {
-        return !XH.pageIsVisible && isDisplayed(this.viewRef.current);
+        return XH.pageIsVisible && isDisplayed(this.viewRef.current);
     }
 }

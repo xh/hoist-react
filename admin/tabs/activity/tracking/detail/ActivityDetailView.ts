@@ -39,6 +39,7 @@ const tbar = hoistCmp.factory(({model}) => {
     return toolbar(
         filler(),
         gridCountLabel({unit: 'entry'}),
+        '-',
         gridFindField(),
         colChooserButton(),
         exportButton()

@@ -54,20 +54,22 @@ export class ClientsModel extends BaseAdminTabModel {
     constructor() {
         super();
         makeObservable(this);
+
         this.gridModel = this.createGridModel();
+
         this._timer = Timer.create({
-            runFn: () => {
-                if (this.isVisible) this.autoRefreshAsync();
+            runFn: async () => {
+                if (this.isVisible) {
+                    await this.autoRefreshAsync();
+                }
             },
             interval: 5 * SECONDS,
             delay: true
         });
+
         this.addReaction({
             track: () => this.groupBy,
-            run: v => {
-                this.logError(v);
-                this.gridModel.setGroupBy(v);
-            }
+            run: () => this.applyGroupBy()
         });
     }
 
@@ -77,11 +79,14 @@ export class ClientsModel extends BaseAdminTabModel {
                 url: 'clientAdmin/allClients',
                 loadSpec
             });
+            if (loadSpec.isStale) return;
+
             this.gridModel.loadData(data);
             runInAction(() => {
                 this.lastRefresh = Date.now();
             });
         } catch (e) {
+            if (loadSpec.isStale) return;
             XH.handleException(e, {alertType: 'toast'});
         }
     }
@@ -135,13 +140,16 @@ export class ClientsModel extends BaseAdminTabModel {
     // Implementation
     //------------------
     private createGridModel(): GridModel {
+        const hidden = true;
+
         return new GridModel({
             emptyText: 'No clients connected.',
             groupBy: this.groupBy,
             colChooserModel: true,
             enableExport: true,
-            exportOptions: {filename: exportFilenameWithDate('clients')},
             selModel: 'multiple',
+            exportOptions: {filename: exportFilenameWithDate('clients')},
+            restoreDefaultsFn: async () => this.applyGroupBy(),
             contextMenu: [
                 this.forceSuspendAction,
                 this.reqHealthReportAction,
@@ -167,21 +175,36 @@ export class ClientsModel extends BaseAdminTabModel {
                     {name: 'apparentUser', type: 'string'}
                 ]
             },
-            sortBy: ['key'],
+            sortBy: ['user'],
             columns: [
                 WSCol.isOpen,
                 Col.user,
-                WSCol.loadId,
-                WSCol.tabId,
-                Col.instance,
-                WSCol.createdTime,
-                WSCol.sentMessageCount,
-                WSCol.lastSentTime,
-                WSCol.appVersion,
-                WSCol.appBuild,
-                {...WSCol.receivedMessageCount, hidden: true},
-                {...WSCol.lastReceivedTime, hidden: true},
-                {...WSCol.key, hidden: true}
+                {
+                    headerName: 'Session',
+                    headerAlign: 'center',
+                    children: [
+                        WSCol.createdTime,
+                        {...WSCol.key, hidden},
+                        Col.instance,
+                        WSCol.loadId,
+                        WSCol.tabId
+                    ]
+                },
+                {
+                    headerName: 'Client App',
+                    headerAlign: 'center',
+                    children: [WSCol.appVersion, WSCol.appBuild]
+                },
+                {
+                    headerName: 'Send/Receive',
+                    headerAlign: 'center',
+                    children: [
+                        WSCol.sentMessageCount,
+                        WSCol.lastSentTime,
+                        WSCol.receivedMessageCount,
+                        WSCol.lastReceivedTime
+                    ]
+                }
             ]
         });
     }
@@ -217,5 +240,10 @@ export class ClientsModel extends BaseAdminTabModel {
             data: {users: toRecs.map(it => it.data.user).sort()},
             omit: !trackMessage
         });
+    }
+
+    private applyGroupBy() {
+        const {groupBy, gridModel} = this;
+        gridModel.setGroupBy(groupBy);
     }
 }

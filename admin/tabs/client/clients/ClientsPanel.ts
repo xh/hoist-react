@@ -4,18 +4,17 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ClientsModel} from './ClientsModel';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {box, filler, fragment, p} from '@xh/hoist/cmp/layout';
+import {filler, fragment, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {exportButton, colChooserButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/cmp/error';
+import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
-import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {ClientsModel} from './ClientsModel';
 
 export const clientsPanel = hoistCmp.factory<ClientsModel>({
     model: creates(ClientsModel),
@@ -27,24 +26,25 @@ export const clientsPanel = hoistCmp.factory<ClientsModel>({
             tbar: [
                 select({
                     bind: 'groupBy',
-                    placeholder: 'Group by...',
+                    placeholder: 'Ungrouped',
                     options: [
                         {value: 'user', label: 'By User'},
-                        {value: 'instance', label: 'By Server'}
+                        {value: 'instance', label: 'By Instance'}
                     ],
-                    enableClear: true
+                    enableClear: true,
+                    enableFilter: false
                 }),
-                storeFilterField(),
-                toolbarSep(),
-                gridCountLabel({unit: 'client'}),
-                toolbarSep(),
-                relativeTimestamp({bind: 'lastRefresh'}),
-                filler(),
+                '-',
                 recordActionBar({
                     selModel: model.gridModel.selModel,
                     actions: [model.forceSuspendAction, model.reqHealthReportAction]
                 }),
-                toolbarSep(),
+                filler(),
+                relativeTimestamp({bind: 'lastRefresh'}),
+                '-',
+                gridCountLabel({unit: 'client'}),
+                '-',
+                storeFilterField(),
                 colChooserButton(),
                 exportButton()
             ],
@@ -56,20 +56,14 @@ export const clientsPanel = hoistCmp.factory<ClientsModel>({
 });
 
 const notPresentMessage = hoistCmp.factory(() =>
-    box({
-        height: 200,
-        width: 1000,
-        items: [
-            errorMessage({
-                error: {
-                    message: fragment(
-                        p('WebSockets are not enabled in this application.'),
-                        p(
-                            'Please ensure that you have enabled web sockets in your server and client application configuration.'
-                        )
-                    )
-                }
-            })
-        ]
+    errorMessage({
+        error: {
+            message: fragment(
+                p('WebSockets are not enabled in this application.'),
+                p(
+                    'Please ensure that you have enabled WebSockets in your server and client application configuration.'
+                )
+            )
+        }
     })
 );
