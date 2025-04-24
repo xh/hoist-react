@@ -92,7 +92,7 @@ declare global {
          * Track a Promise (with timing) via Hoist activity tracking.
          * @param options - TrackOptions, or simply a message string.
          */
-        track(options: TrackOptions | ((v: T, t: unknown) => TrackOptions) | string): Promise<T>;
+        track(options: TrackOptions | string): Promise<T>;
     }
 }
 
@@ -199,33 +199,29 @@ const enhancePromise = promisePrototype => {
             });
         },
 
-        track<T>(
-            options: TrackOptions | ((v: T, t: unknown) => TrackOptions) | string
-        ): Promise<T | undefined> {
+        track<T>(options: TrackOptions | string): Promise<T | undefined> {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (v: T, t: unknown) => {
+                doTrack = (isError: boolean) => {
                     const opts: TrackOptions = isString(options)
                         ? {message: options}
-                        : isFunction(options)
-                          ? options(v, t)
-                          : {...options};
+                        : {...options};
 
                     opts.timestamp = startTime;
                     opts.elapsed = Date.now() - startTime;
-                    if (t != null) opts.severity = 'ERROR';
+                    if (isError) opts.severity = 'ERROR';
 
                     XH.track(opts);
                 };
 
             return this.then(
                 (v: T) => {
-                    doTrack(v, null);
+                    doTrack(true);
                     return v;
                 },
                 (t: unknown) => {
-                    doTrack(null, t);
+                    doTrack(false);
                     throw t;
                 }
             );
