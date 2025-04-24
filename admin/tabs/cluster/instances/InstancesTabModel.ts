@@ -15,7 +15,6 @@ import {
 } from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorModel';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
-import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/instances/websocket/WebSocketPanel';
 import {badge} from '@xh/hoist/cmp/badge';
 import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -205,8 +204,7 @@ export class InstancesTabModel extends HoistModel {
                     content: connPoolMonitorPanel
                 },
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
-                {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
+                {id: 'services', icon: Icon.gears(), content: servicePanel}
             ]
         });
     }

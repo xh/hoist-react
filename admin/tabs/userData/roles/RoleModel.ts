@@ -328,6 +328,7 @@ export class RoleModel extends HoistModel {
                 {
                     ...actionCol,
                     actionsShowOnHoverOnly: true,
+                    excludeFromChooser: true,
                     width: calcActionColWidth(1),
                     actions: [this.editAction()],
                     omit: this.readonly
