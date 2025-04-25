@@ -12,13 +12,11 @@ import {
     TrackOptions,
     XH,
     Some,
-    Awaitable,
-    TimeoutExceptionConfig
+    Awaitable
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
-import {isOmitted} from '@xh/hoist/utils/impl';
 
 /**
  * Enhancements to the Global Promise object.
@@ -41,8 +39,8 @@ declare global {
          * @param fn - catch handler
          */
         catchWhen<TResult = undefined>(
-            selector: ((e: unknown) => boolean) | Some<string>,
-            fn?: (reason: unknown) => Awaitable<TResult>
+            selector: ((e: any) => boolean) | Some<string>,
+            fn?: (reason: any) => Awaitable<TResult>
         ): Promise<T | TResult>;
 
         /**
@@ -55,7 +53,7 @@ declare global {
          * Version of `catchDefault()` that will only catch certain exceptions.
          */
         catchDefaultWhen(
-            selector: ((e: unknown) => boolean) | Some<string>,
+            selector: ((e: any) => boolean) | Some<string>,
             options: ExceptionHandlerOptions
         ): Promise<T | undefined>;
 
@@ -171,63 +169,43 @@ export function never<T>(): Promise<T> {
 //--------------------------------
 const enhancePromise = promisePrototype => {
     Object.assign(promisePrototype, {
-        thenAction<T, TResult>(fn: (value: T) => Awaitable<TResult>): Promise<TResult> {
+        thenAction(fn) {
             return this.then(action(fn));
         },
 
-        catchWhen<T, TResult = undefined>(
-            selector: ((e: unknown) => boolean) | Some<string>,
-            fn?: (reason: unknown) => Awaitable<TResult>
-        ): Promise<T | TResult> {
-            return this.catch((e: unknown) => {
+        catchWhen(selector, fn) {
+            return this.catch(e => {
                 this.throwIfFailsSelector(e, selector);
                 return fn ? fn(e) : undefined;
             });
         },
 
-        catchDefault<T>(options?: ExceptionHandlerOptions): Promise<T | undefined> {
-            return this.catch((e: unknown) => XH.handleException(e, options));
+        catchDefault(options) {
+            return this.catch(e => XH.handleException(e, options));
         },
 
-        catchDefaultWhen<T>(
-            selector: ((e: unknown) => boolean) | Some<string>,
-            options: ExceptionHandlerOptions
-        ): Promise<T | undefined> {
-            return this.catch((e: unknown) => {
+        catchDefaultWhen(selector, options) {
+            return this.catch(e => {
                 this.throwIfFailsSelector(e, selector);
                 return XH.handleException(e, options);
             });
         },
 
-        track<T>(options: TrackOptions | string): Promise<T> {
-            if (!options) return this;
+        track(options) {
+            if (!options || (isFunction(options.omit) ? options.omit() : options.omit)) return this;
+            if (isString(options)) options = {message: options};
 
-            const startTime = Date.now(),
-                doTrack = (isError: boolean) => {
-                    const opts: TrackOptions = isString(options)
-                        ? {message: options}
-                        : {...options};
-
-                    opts.timestamp = startTime;
-                    opts.elapsed = Date.now() - startTime;
-                    if (isError) opts.severity = 'ERROR';
-
-                    XH.track(opts);
-                };
-
-            return this.then(
-                (v: T) => {
-                    doTrack(true);
-                    return v;
-                },
-                (t: unknown) => {
-                    doTrack(false);
-                    throw t;
-                }
-            );
+            const startTime = Date.now();
+            return this.finally(() => {
+                XH.track({
+                    timestamp: startTime,
+                    elapsed: Date.now() - startTime,
+                    ...options
+                });
+            });
         },
 
-        tap<T>(onFulfillment: (value: T) => any): Promise<T> {
+        tap(onFulfillment) {
             let ret = null;
             const resolveFn = data => {
                 ret = data;
@@ -237,14 +215,13 @@ const enhancePromise = promisePrototype => {
             return this.then(resolveFn).then(() => ret);
         },
 
-        wait<T>(interval: number): Promise<T> {
+        wait(interval) {
             return this.finally(() => wait(interval));
         },
 
-        timeout<T>(spec: PromiseTimeoutSpec): Promise<T> {
-            if (spec == null) return this;
-
-            const config: TimeoutExceptionConfig = isNumber(spec) ? {interval: spec} : spec;
+        timeout(config) {
+            if (config == null) return this;
+            if (isNumber(config)) config = {interval: config};
             const interval = config.interval;
 
             let completed = false;
@@ -259,14 +236,14 @@ const enhancePromise = promisePrototype => {
             return Promise.race([deadline, promise]);
         },
 
-        linkTo<T>(cfg: PromiseLinkSpec): Promise<T> {
+        linkTo(cfg) {
             if (!cfg) return this;
 
-            if (cfg instanceof TaskObserver) {
+            if (cfg.isTaskObserver) {
                 cfg = {observer: cfg};
             }
 
-            if (cfg.observer && !isOmitted(cfg)) {
+            if (cfg.observer && !(isFunction(cfg.omit) ? cfg.omit() : cfg.omit)) {
                 cfg.observer.linkTo(TaskObserver.forPromise({promise: this, message: cfg.message}));
             }
             return this;
@@ -275,7 +252,7 @@ const enhancePromise = promisePrototype => {
         //--------------------------------
         // Implementation
         //--------------------------------
-        throwIfFailsSelector(e: any, selector: any) {
+        throwIfFailsSelector(e, selector) {
             const fn = isFunction(selector) ? selector : e => castArray(selector).includes(e.name);
             if (!fn(e)) throw e;
         }
