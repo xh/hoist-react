@@ -199,7 +199,7 @@ const enhancePromise = promisePrototype => {
             });
         },
 
-        track<T>(options: TrackOptions | string): Promise<T | undefined> {
+        track<T>(options: TrackOptions | string): Promise<T> {
             if (!options) return this;
 
             const startTime = Date.now(),
