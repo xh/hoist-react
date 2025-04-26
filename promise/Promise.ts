@@ -12,7 +12,8 @@ import {
     TrackOptions,
     XH,
     Some,
-    Awaitable
+    Awaitable,
+    TimeoutExceptionConfig
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -239,9 +240,10 @@ const enhancePromise = promisePrototype => {
             return this.finally(() => wait(interval));
         },
 
-        timeout(config) {
-            if (config == null) return this;
-            if (isNumber(config)) config = {interval: config};
+        timeout<T>(spec: PromiseTimeoutSpec): Promise<T> {
+            if (spec == null) return this;
+
+            const config: TimeoutExceptionConfig = isNumber(spec) ? {interval: spec} : spec;
             const interval = config.interval;
 
             let completed = false;
@@ -256,10 +258,10 @@ const enhancePromise = promisePrototype => {
             return Promise.race([deadline, promise]);
         },
 
-        linkTo(cfg) {
+        linkTo<T>(cfg: PromiseLinkSpec): Promise<T> {
             if (!cfg) return this;
 
-            if (cfg.isTaskObserver) {
+            if (cfg instanceof TaskObserver) {
                 cfg = {observer: cfg};
             }
 
