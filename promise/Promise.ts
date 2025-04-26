@@ -39,8 +39,8 @@ declare global {
          * @param fn - catch handler
          */
         catchWhen<TResult = undefined>(
-            selector: ((e: any) => boolean) | Some<string>,
-            fn?: (reason: any) => Awaitable<TResult>
+            selector: ((e: unknown) => boolean) | Some<string>,
+            fn?: (reason: unknown) => Awaitable<TResult>
         ): Promise<T | TResult>;
 
         /**
@@ -53,7 +53,7 @@ declare global {
          * Version of `catchDefault()` that will only catch certain exceptions.
          */
         catchDefaultWhen(
-            selector: ((e: any) => boolean) | Some<string>,
+            selector: ((e: unknown) => boolean) | Some<string>,
             options: ExceptionHandlerOptions
         ): Promise<T | undefined>;
 
@@ -169,43 +169,63 @@ export function never<T>(): Promise<T> {
 //--------------------------------
 const enhancePromise = promisePrototype => {
     Object.assign(promisePrototype, {
-        thenAction(fn) {
+        thenAction<T, TResult>(fn: (value: T) => Awaitable<TResult>): Promise<TResult> {
             return this.then(action(fn));
         },
 
-        catchWhen(selector, fn) {
-            return this.catch(e => {
+        catchWhen<T, TResult = undefined>(
+            selector: ((e: unknown) => boolean) | Some<string>,
+            fn?: (reason: unknown) => Awaitable<TResult>
+        ): Promise<T | TResult> {
+            return this.catch((e: unknown) => {
                 this.throwIfFailsSelector(e, selector);
                 return fn ? fn(e) : undefined;
             });
         },
 
-        catchDefault(options) {
-            return this.catch(e => XH.handleException(e, options));
+        catchDefault<T>(options?: ExceptionHandlerOptions): Promise<T | undefined> {
+            return this.catch((e: unknown) => XH.handleException(e, options));
         },
 
-        catchDefaultWhen(selector, options) {
-            return this.catch(e => {
+        catchDefaultWhen<T>(
+            selector: ((e: unknown) => boolean) | Some<string>,
+            options: ExceptionHandlerOptions
+        ): Promise<T | undefined> {
+            return this.catch((e: unknown) => {
                 this.throwIfFailsSelector(e, selector);
                 return XH.handleException(e, options);
             });
         },
 
-        track(options) {
-            if (!options || (isFunction(options.omit) ? options.omit() : options.omit)) return this;
-            if (isString(options)) options = {message: options};
+        track<T>(options: TrackOptions | string): Promise<T> {
+            if (!options) return this;
 
-            const startTime = Date.now();
-            return this.finally(() => {
-                XH.track({
-                    timestamp: startTime,
-                    elapsed: Date.now() - startTime,
-                    ...options
-                });
-            });
+            const startTime = Date.now(),
+                doTrack = (isError: boolean) => {
+                    const opts: TrackOptions = isString(options)
+                        ? {message: options}
+                        : {...options};
+
+                    opts.timestamp = startTime;
+                    opts.elapsed = Date.now() - startTime;
+                    if (isError) opts.severity = 'ERROR';
+
+                    XH.track(opts);
+                };
+
+            return this.then(
+                (v: T) => {
+                    doTrack(true);
+                    return v;
+                },
+                (t: unknown) => {
+                    doTrack(false);
+                    throw t;
+                }
+            );
         },
 
-        tap(onFulfillment) {
+        tap<T>(onFulfillment: (value: T) => any): Promise<T> {
             let ret = null;
             const resolveFn = data => {
                 ret = data;
@@ -215,7 +235,7 @@ const enhancePromise = promisePrototype => {
             return this.then(resolveFn).then(() => ret);
         },
 
-        wait(interval) {
+        wait<T>(interval: number): Promise<T> {
             return this.finally(() => wait(interval));
         },
 
@@ -252,7 +272,7 @@ const enhancePromise = promisePrototype => {
         //--------------------------------
         // Implementation
         //--------------------------------
-        throwIfFailsSelector(e, selector) {
+        throwIfFailsSelector(e: any, selector: any) {
             const fn = isFunction(selector) ? selector : e => castArray(selector).includes(e.name);
             if (!fn(e)) throw e;
         }
