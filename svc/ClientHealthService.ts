@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistService, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {withFormattedTimestamps} from '@xh/hoist/format';
@@ -42,6 +43,7 @@ export class ClientHealthService extends HoistService {
             general: this.getGeneral(),
             memory: this.getMemory(),
             connection: this.getConnection(),
+            webSockets: XH.webSocketService.telemetry,
             ...this.getCustom()
         };
     }
@@ -87,8 +89,7 @@ export class ClientHealthService extends HoistService {
             startTime,
             durationMins: elapsedMins(startTime),
             idleMins: elapsedMins(XH.lastActivityMs),
-            pageState: XH.pageState,
-            webSocket: XH.webSocketService.channelKey
+            pageState: XH.pageState
         };
     }
 
@@ -141,8 +142,8 @@ export class ClientHealthService extends HoistService {
             ...rest,
             ...opts,
             data: {
-                clientId: XH.clientId,
-                sessionId: XH.sessionId,
+                loadId: XH.loadId,
+                tabId: XH.tabId,
                 ...this.getReport()
             }
         });
@@ -154,7 +155,6 @@ export interface GeneralData {
     durationMins: number;
     idleMins: number;
     pageState: PageState;
-    webSocket: string;
 }
 
 export interface ConnectionData {
@@ -175,4 +175,5 @@ export interface ClientHealthReport {
     general: GeneralData;
     connection: ConnectionData;
     memory: MemoryData;
+    webSockets: WebSocketTelemetry;
 }

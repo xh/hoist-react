@@ -37,6 +37,7 @@ const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return toolbar(
         filler(),
         gridCountLabel({unit: 'entry'}),
+        '-',
         // TODO - these don't react properly to swapping out grid model
         gridFindField({gridModel}),
         colChooserButton({gridModel}),
@@ -47,9 +48,12 @@ const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
 // Discrete outer panel to retain sizing across master/detail selection changes.
 const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return panel({
+        collapsedTitle: 'Activity Details',
+        collapsedIcon: Icon.info(),
+        compactHeader: true,
         modelConfig: {
             side: 'bottom',
-            defaultSize: 370
+            defaultSize: 400
         },
         item: detailRecForm()
     });

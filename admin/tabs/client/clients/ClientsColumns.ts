@@ -4,9 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Icon} from '@xh/hoist/icon';
+import {badgeCol} from '@xh/hoist/admin/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import {Icon} from '@xh/hoist/icon';
 
 export const isOpen: ColumnSpec = {
     field: {name: 'isOpen', type: 'bool'},
@@ -20,7 +21,11 @@ export const isOpen: ColumnSpec = {
 };
 
 export const key: ColumnSpec = {
-    field: {name: 'key', type: 'string'},
+    field: {
+        name: 'key',
+        type: 'string',
+        displayName: 'Channel Key'
+    },
     width: 160
 };
 
@@ -73,11 +78,34 @@ export const lastReceivedTime: ColumnSpec = {
     width: 140
 };
 
-export const clientAppVersion: ColumnSpec = {
+export const appVersion: ColumnSpec = {
     field: {
-        name: 'clientAppVersion',
-        type: 'string',
-        displayName: 'Client Version'
+        name: 'appVersion',
+        displayName: 'Version',
+        type: 'string'
     },
     width: 120
+};
+
+export const appBuild: ColumnSpec = {
+    field: {
+        name: 'appBuild',
+        displayName: 'Build',
+        type: 'string'
+    },
+    width: 120
+};
+export const loadId: ColumnSpec = {
+    field: {
+        name: 'loadId',
+        type: 'string'
+    },
+    ...badgeCol
+};
+export const tabId: ColumnSpec = {
+    field: {
+        name: 'tabId',
+        type: 'string'
+    },
+    ...badgeCol
 };

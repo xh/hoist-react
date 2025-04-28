@@ -8,7 +8,7 @@ import {recategorizeDialog} from '@xh/hoist/admin/tabs/userData/roles/recategori
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -50,7 +50,9 @@ export const rolePanel = hoistCmp.factory({
                         bind: 'showInGroups',
                         label: 'Group by Category',
                         labelSide: 'left'
-                    })
+                    }),
+                    '-',
+                    colChooserButton()
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),

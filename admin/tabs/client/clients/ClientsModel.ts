@@ -7,26 +7,29 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, p} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import * as WSCol from './WebSocketColumns';
+import * as WSCol from './ClientsColumns';
+import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
-export class WebSocketModel extends BaseInstanceModel {
+export class ClientsModel extends BaseAdminTabModel {
     @observable
     lastRefresh: number;
 
     @managed
     gridModel: GridModel;
+
+    @bindable
+    groupBy: 'user' | 'instance' = null;
 
     @managed
     private _timer: Timer;
@@ -52,72 +55,39 @@ export class WebSocketModel extends BaseInstanceModel {
         super();
         makeObservable(this);
 
-        this.gridModel = new GridModel({
-            emptyText: 'No clients connected.',
-            enableExport: true,
-            exportOptions: {filename: exportFilenameWithDate('ws-connections')},
-            selModel: 'multiple',
-            contextMenu: [
-                this.forceSuspendAction,
-                this.reqHealthReportAction,
-                '-',
-                ...GridModel.defaultContextMenu
-            ],
-            store: {
-                idSpec: 'key',
-                processRawData: row => {
-                    const authUser = row.authUser.username,
-                        apparentUser = row.apparentUser.username,
-                        impersonating = authUser !== apparentUser;
-
-                    return {
-                        ...row,
-                        authUser,
-                        apparentUser,
-                        user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
-                    };
-                },
-                fields: [
-                    {name: 'authUser', type: 'string'},
-                    {name: 'apparentUser', type: 'string'}
-                ]
-            },
-            sortBy: ['key'],
-            columns: [
-                WSCol.isOpen,
-                WSCol.key,
-                Col.user,
-                WSCol.createdTime,
-                WSCol.sentMessageCount,
-                WSCol.lastSentTime,
-                WSCol.receivedMessageCount,
-                WSCol.lastReceivedTime,
-                WSCol.clientAppVersion
-            ]
-        });
+        this.gridModel = this.createGridModel();
 
         this._timer = Timer.create({
-            runFn: () => {
-                if (this.isVisible) this.autoRefreshAsync();
+            runFn: async () => {
+                if (this.isVisible) {
+                    await this.autoRefreshAsync();
+                }
             },
             interval: 5 * SECONDS,
             delay: true
+        });
+
+        this.addReaction({
+            track: () => this.groupBy,
+            run: () => this.applyGroupBy()
         });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
             const data = await XH.fetchJson({
-                url: 'webSocketAdmin/allChannels',
-                params: {instance: this.instanceName},
+                url: 'clientAdmin/allClients',
                 loadSpec
             });
+            if (loadSpec.isStale) return;
+
             this.gridModel.loadData(data);
             runInAction(() => {
                 this.lastRefresh = Date.now();
             });
         } catch (e) {
-            this.handleLoadException(e, loadSpec);
+            if (loadSpec.isStale) return;
+            XH.handleException(e, {alertType: 'toast'});
         }
     }
 
@@ -169,6 +139,76 @@ export class WebSocketModel extends BaseInstanceModel {
     //------------------
     // Implementation
     //------------------
+    private createGridModel(): GridModel {
+        const hidden = true;
+
+        return new GridModel({
+            emptyText: 'No clients connected.',
+            groupBy: this.groupBy,
+            colChooserModel: true,
+            enableExport: true,
+            selModel: 'multiple',
+            exportOptions: {filename: exportFilenameWithDate('clients')},
+            restoreDefaultsFn: async () => this.applyGroupBy(),
+            contextMenu: [
+                this.forceSuspendAction,
+                this.reqHealthReportAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ],
+            store: {
+                idSpec: 'key',
+                processRawData: row => {
+                    const authUser = row.authUser.username,
+                        apparentUser = row.apparentUser.username,
+                        impersonating = authUser !== apparentUser;
+
+                    return {
+                        ...row,
+                        authUser,
+                        apparentUser,
+                        user: impersonating ? `${authUser} (as ${apparentUser})` : authUser
+                    };
+                },
+                fields: [
+                    {name: 'authUser', type: 'string'},
+                    {name: 'apparentUser', type: 'string'}
+                ]
+            },
+            sortBy: ['user'],
+            columns: [
+                WSCol.isOpen,
+                Col.user,
+                {
+                    headerName: 'Session',
+                    headerAlign: 'center',
+                    children: [
+                        WSCol.createdTime,
+                        {...WSCol.key, hidden},
+                        Col.instance,
+                        WSCol.loadId,
+                        WSCol.tabId
+                    ]
+                },
+                {
+                    headerName: 'Client App',
+                    headerAlign: 'center',
+                    children: [WSCol.appVersion, WSCol.appBuild]
+                },
+                {
+                    headerName: 'Send/Receive',
+                    headerAlign: 'center',
+                    children: [
+                        WSCol.sentMessageCount,
+                        WSCol.lastSentTime,
+                        WSCol.receivedMessageCount,
+                        WSCol.lastReceivedTime
+                    ]
+                }
+            ]
+        });
+    }
+
     private async bulkPush({
         toRecs,
         topic,
@@ -184,10 +224,10 @@ export class WebSocketModel extends BaseInstanceModel {
 
         const tasks = toRecs.map(rec =>
             XH.fetchJson({
-                url: 'webSocketAdmin/pushToChannel',
+                url: 'clientAdmin/pushToClient',
                 params: {
                     channelKey: rec.data.key,
-                    instance: this.instanceName,
+                    instance: rec.data.instance,
                     topic,
                     message
                 }
@@ -200,5 +240,10 @@ export class WebSocketModel extends BaseInstanceModel {
             data: {users: toRecs.map(it => it.data.user).sort()},
             omit: !trackMessage
         });
+    }
+
+    private applyGroupBy() {
+        const {groupBy, gridModel} = this;
+        gridModel.setGroupBy(groupBy);
     }
 }

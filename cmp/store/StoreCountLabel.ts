@@ -12,7 +12,7 @@ import {pluralize, singularize} from '@xh/hoist/utils/js';
 
 export interface StoreCountLabelProps extends HoistProps, BoxProps {
     /** Store to which this component should bind. */
-    store?: Store;
+    store: Store;
 
     /**
      * True to count nested child records.

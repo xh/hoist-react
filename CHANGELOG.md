@@ -2,10 +2,53 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
+
+Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab.
+
+### 🎁 New Features
+
+* Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
+  across all instances in the cluster.
+
+### 🐞 Bug Fixes
+
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `GridGroupSortFn` param types.
+
+### ⚙️ Technical
+
+* Updated the background version checking performed by `EnvironmentService` to use the app version
+  and build information baked into the client build when comparing against the latest values from
+  the server. Previously the versions loaded from the server on init were used as the baseline.
+    * The two versions *should* be the same, but in cases where a browser "restores" a tab and
+      re-inits an app without reloading the code itself, the upgrade check would miss the fact that
+      the client remained on an older version.
+    * Note that a misconfigured build - where the client build version is not set to the same value
+      as the server - would result in a false positive for an upgrade. The two should always match.
+*  Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+   severity level of `TrackSeverity.ERROR`
+
+## v72.5.1 - 2025-04-15
+
+### 🐞 Bug Fixes
+
+* Allow the display of very long log lines in Admin log viewer.
+
+## v72.5.0 - 2025-04-14
+
 ### 🎁 New Features
 
 * Added option from the Admin Console > Websockets tab to request a client health report from any
   connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
+* Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
+* Support for reporting App Build, Tab Id, and Load Id in websocket admin page.
 
 ## v72.4.0 - 2025-04-09
 

@@ -168,6 +168,6 @@ interface ActivityTrackingConfig {
     levels?: Array<{
         username: string | '*';
         category: string | '*';
-        severity: 'DEBUG' | 'INFO' | 'WARN';
+        severity: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
     }>;
 }

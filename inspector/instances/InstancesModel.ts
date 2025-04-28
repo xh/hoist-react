@@ -264,9 +264,9 @@ export class InstancesModel extends HoistModel {
             showGroupRowCounts: false,
             groupRowRenderer: ({value, node}) => propsGridGroupRenderer({value, node, model: this}),
             groupSortFn: (a, b) => {
-                a = a === 'Watchlist' ? 0 : 1;
-                b = b === 'Watchlist' ? 0 : 1;
-                return a - b;
+                const sortValA = a === 'Watchlist' ? 0 : 1,
+                    sortValB = b === 'Watchlist' ? 0 : 1;
+                return sortValA - sortValB;
             },
             store: {
                 fields: [
