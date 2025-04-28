@@ -4,26 +4,25 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {
+    ActivityTrackingDataFieldSpec,
+    DataFieldsEditorModel
+} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {fmtNumber} from '@xh/hoist/format';
-import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {dateRenderer, dateTimeSecRenderer, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, round} from 'lodash';
-import {observable} from 'mobx';
+import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
 
-export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
-
 export class ActivityTrackingModel extends HoistModel {
-    override persistWith = PERSIST_ACTIVITY;
-
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -32,12 +31,13 @@ export class ActivityTrackingModel extends HoistModel {
     @managed @observable.ref cube: Cube;
     @managed @observable.ref filterChooserModel: FilterChooserModel;
     @managed @observable.ref gridModel: GridModel;
+    @managed dataFieldsEditorModel: DataFieldsEditorModel;
 
     /**
-     * Optional set of field names to be extracted from additional data returned by track
-     * entries and promoted as top-level columns in the grid. Supports dot-delimited paths as names.
+     * Optional spec for fields to be extracted from additional `data` returned by track entries
+     * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
      */
-    @bindable.ref dataFields: CubeFieldSpec[] = [];
+    @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
 
     get enabled(): boolean {
         return XH.trackService.enabled;
@@ -45,15 +45,6 @@ export class ActivityTrackingModel extends HoistModel {
 
     get dimensions(): string[] {
         return this.groupingChooserModel.value;
-    }
-
-    /**
-     * Summary of currently active query / filters.
-     * TODO - include new local filters if feasible, or drop this altogether.
-     * Formerly summarized server-side filters, but was misleading w/new filtering.
-     */
-    get queryDisplayString(): string {
-        return `${XH.appName} Activity`;
     }
 
     get endDay(): LocalDate {
@@ -79,10 +70,19 @@ export class ActivityTrackingModel extends HoistModel {
         return this.maxRows === this.cube.store.allCount;
     }
 
-    get dataFieldsAsCols(): ColumnSpec[] {
+    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
+    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
+    //        underlying field.
+    get dataFieldCols(): ColumnSpec[] {
         return this.dataFields.map(df => ({
-            field: df
+            field: df,
+            renderer: this.getDfRenderer(df),
+            appData: {showInAggGrid: !!df.aggregator}
         }));
+    }
+
+    get viewManagerModel() {
+        return getAppModel().viewManagerModels.activityTracking;
     }
 
     private _monthFormat = 'MMM YYYY';
@@ -92,6 +92,8 @@ export class ActivityTrackingModel extends HoistModel {
         super();
         makeObservable(this);
 
+        this.persistWith = {viewManagerModel: this.viewManagerModel};
+
         this.formModel = new FormModel({
             fields: [
                 {name: 'startDay', initialValue: () => this.defaultStartDay},
@@ -99,6 +101,10 @@ export class ActivityTrackingModel extends HoistModel {
                 {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
             ]
         });
+
+        this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
+
+        this.markPersist('dataFields');
 
         this.addReaction(
             {
@@ -130,11 +136,7 @@ export class ActivityTrackingModel extends HoistModel {
                 loadSpec
             });
 
-            data.forEach(it => {
-                it.day = LocalDate.from(it.day);
-                it.month = it.day.format(this._monthFormat);
-                it.dayRange = {min: it.day, max: it.day};
-            });
+            data.forEach(it => this.processRawTrackLog(it));
 
             await cube.loadDataAsync(data);
         } catch (e) {
@@ -144,18 +146,17 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     @action
-    resetQuery() {
-        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims} = this;
-        formModel.init();
-        filterChooserModel.setValue(null);
-        groupingChooserModel.setValue(_defaultDims);
+    setDataFields(dataFields: ActivityTrackingDataFieldSpec[]) {
+        if (!isEqual(dataFields, this.dataFields)) {
+            this.dataFields = dataFields ?? [];
+        }
     }
 
-    adjustDates(dir) {
+    adjustDates(dir: 'add' | 'subtract') {
         const {startDay, endDay} = this.formModel.fields,
             appDay = LocalDate.currentAppDay(),
-            start = startDay.value,
-            end = endDay.value,
+            start: LocalDate = startDay.value,
+            end: LocalDate = endDay.value,
             diff = end.diff(start),
             incr = diff + 1;
 
@@ -261,7 +262,7 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     //------------------------
-    // Core data-handling models
+    // Impl - core data models
     //------------------------
     @action
     private createAndSetCoreModels() {
@@ -301,7 +302,9 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private createFilterChooserModel(): FilterChooserModel {
+        // TODO - data fields?
         const ret = new FilterChooserModel({
+            persistWith: {...this.persistWith, persistFavorites: false},
             fieldSpecs: [
                 {field: 'category'},
                 {field: 'correlationId'},
@@ -353,8 +356,8 @@ export class ActivityTrackingModel extends HoistModel {
 
     private createGroupingChooserModel(): GroupingChooserModel {
         return new GroupingChooserModel({
+            persistWith: {...this.persistWith, persistFavorites: false},
             dimensions: this.cube.dimensions,
-            persistWith: this.persistWith,
             initialValue: this._defaultDims
         });
     }
@@ -364,11 +367,7 @@ export class ActivityTrackingModel extends HoistModel {
         return new GridModel({
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            persistWith: {
-                ...this.persistWith,
-                path: 'aggGridModel',
-                persistSort: false
-            },
+            persistWith: {...this.persistWith, path: 'aggGrid'},
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilename('activity-summary')},
@@ -400,8 +399,42 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.appVersion, hidden},
                 {...Col.url, hidden},
                 {...Col.instance, hidden},
-                ...this.dataFieldsAsCols
+                ...this.dataFieldCols.map(it => ({...it, hidden: !it.appData.showInAggGrid}))
             ]
         });
+    }
+
+    //------------------------------
+    // Impl - data fields processing
+    //------------------------------
+    private processRawTrackLog(raw: PlainObject) {
+        try {
+            raw.day = LocalDate.from(raw.day);
+            raw.month = raw.day.format(this._monthFormat);
+            raw.dayRange = {min: raw.day, max: raw.day};
+
+            const data = JSON.parse(raw.data);
+            if (isEmpty(data)) return;
+
+            this.dataFields.forEach(df => {
+                const path = df.path;
+                raw[df.name] = get(data, path);
+            });
+        } catch (e) {
+            this.logError(`Error processing raw track log`, e);
+        }
+    }
+
+    private getDfRenderer(df: ActivityTrackingDataFieldSpec): ColumnRenderer {
+        switch (df.type) {
+            case 'number':
+                return numberRenderer();
+            case 'date':
+                return dateTimeSecRenderer();
+            case 'localDate':
+                return dateRenderer();
+            default:
+                return v => v ?? '-';
+        }
     }
 }

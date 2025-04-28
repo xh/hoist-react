@@ -20,7 +20,7 @@ export class ActivityDetailModel extends HoistModel {
     @managed @observable.ref gridModel: GridModel;
     @managed @observable.ref formModel: FormModel;
 
-    @observable formattedData;
+    @observable formattedData: string;
 
     @computed
     get hasSelection() {
@@ -101,12 +101,13 @@ export class ActivityDetailModel extends HoistModel {
     @action
     private createAndSetCoreModels() {
         this.gridModel = this.createGridModel();
-        this.formModel = this.createFormModel();
+        this.formModel = this.createSingleEntryFormModel();
     }
 
     private createGridModel(): GridModel {
         const hidden = true;
         return new GridModel({
+            persistWith: {...this.activityTrackingModel.persistWith, path: 'detailGrid'},
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
             enableExport: true,
@@ -135,12 +136,12 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.severity, hidden},
                 {...Col.elapsed},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
-                ...this.activityTrackingModel.dataFieldsAsCols
+                ...this.activityTrackingModel.dataFieldCols
             ]
         });
     }
 
-    private createFormModel(): FormModel {
+    private createSingleEntryFormModel(): FormModel {
         return new FormModel({
             readonly: true,
             fields: this.gridModel

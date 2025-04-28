@@ -53,7 +53,11 @@ const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
         compactHeader: true,
         modelConfig: {
             side: 'bottom',
-            defaultSize: 400
+            defaultSize: 400,
+            persistWith: {
+                ...model.activityTrackingModel.persistWith,
+                path: 'singleActivityDetailPanel'
+            }
         },
         item: detailRecForm()
     });

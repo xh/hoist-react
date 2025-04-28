@@ -6,23 +6,16 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, lookup} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {capitalizeWords, fmtDate} from '@xh/hoist/format';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {filter, sortBy, isEmpty} from 'lodash';
-import moment from 'moment';
-import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
-import {ActivityTrackingModel} from '../ActivityTrackingModel';
 import {ONE_DAY} from '@xh/hoist/utils/datetime/DateTimeUtils';
+import {filter, isEmpty, sortBy} from 'lodash';
+import moment from 'moment';
+import {ActivityTrackingModel} from '../ActivityTrackingModel';
 
 export class ChartsModel extends HoistModel {
-    @managed panelModel = new PanelModel({
-        modalSupport: {width: '90vw', height: '60vh'},
-        side: 'bottom',
-        defaultSize: 370
-    });
-
     @lookup(ActivityTrackingModel)
     activityTrackingModel: ActivityTrackingModel;
 
@@ -133,7 +126,6 @@ export class ChartsModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-
     private selectRow(e) {
         const date = moment(e.point.x).format('YYYY-MM-DD'),
             id = `root>>day=[${date}]`;
@@ -207,7 +199,7 @@ export class ChartsModel extends HoistModel {
         return [{name: metricLabel, data: chartData}];
     }
 
-    private getUnitsForDim(dim) {
+    private getUnitsForDim(dim: string): string {
         return (
             {
                 username: 'User',

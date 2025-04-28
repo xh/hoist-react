@@ -7,21 +7,21 @@
 import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed, XH} from '@xh/hoist/core';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {HoistAppModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
+import {clientTab} from './tabs/client/ClientTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
-import {clientTab} from './tabs/client/ClientTab';
 
 export class AppModel extends HoistAppModel {
-    static instance: AppModel;
-
-    @managed
     tabModel: TabContainerModel;
+
+    viewManagerModels: Record<string, ViewManagerModel> = {};
 
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
@@ -38,6 +38,11 @@ export class AppModel extends HoistAppModel {
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+    }
+
+    override async initAsync() {
+        await this.initViewManagerModelsAsync();
+        await super.initAsync();
     }
 
     override getRoutes(): Route[] {
@@ -160,5 +165,12 @@ export class AppModel extends HoistAppModel {
     getPrimaryAppCode() {
         const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
         return appCodes.find(it => it === 'app') ?? appCodes[0];
+    }
+
+    async initViewManagerModelsAsync() {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
+            type: 'xhAdminActivityTrackingView',
+            typeDisplayName: 'View'
+        });
     }
 }

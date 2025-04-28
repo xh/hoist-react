@@ -4,18 +4,20 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {dataFieldsEditor} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditor';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe} from '@xh/hoist/cmp/layout';
+import {div, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
 import {dateInput, DateInputProps, select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityTrackingModel} from './ActivityTrackingModel';
@@ -44,6 +46,11 @@ export const activityTrackingPanel = hoistCmp.factory({
 
 const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     return toolbar(
+        viewManager({
+            model: model.viewManagerModel,
+            showSaveButton: 'always'
+        }),
+        '-',
         form({
             fieldDefaults: {label: null},
             items: [
@@ -106,13 +113,8 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                         options: model.maxRowOptions
                     })
                 }),
-                filler(),
-                button({
-                    icon: Icon.reset(),
-                    intent: 'danger',
-                    title: 'Reset query to defaults',
-                    onClick: () => model.resetQuery()
-                })
+                toolbarSep(),
+                dataFieldsEditor()
             ]
         })
     );
@@ -134,7 +136,8 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
         compactHeader: true,
         modelConfig: {
             side: 'left',
-            defaultSize: 500
+            defaultSize: 500,
+            persistWith: {...model.persistWith, path: 'aggPanel'}
         },
         tbar: [groupingChooser({flex: 1}), colChooserButton(), exportButton()],
         items: [
