@@ -5,17 +5,17 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
-import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import * as Col from '@xh/hoist/admin/columns';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import * as Col from '@xh/hoist/admin/columns';
-import {isEmpty, round} from 'lodash';
+import {compact, isEmpty, round} from 'lodash';
 import {observable} from 'mobx';
 import moment from 'moment';
 
@@ -301,14 +301,13 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private createFilterChooserModel(): FilterChooserModel {
-        const enableValues = true;
         const ret = new FilterChooserModel({
             fieldSpecs: [
-                {field: 'category', enableValues},
+                {field: 'category'},
                 {field: 'correlationId'},
-                {field: 'username', displayName: 'User', enableValues},
-                {field: 'device', enableValues},
-                {field: 'browser', enableValues},
+                {field: 'username', displayName: 'User'},
+                {field: 'device'},
+                {field: 'browser'},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -335,12 +334,18 @@ export class ActivityTrackingModel extends HoistModel {
             XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
-                    const {field} = spec;
-                    if (lookups[field]) spec.values = lookups[field];
+                    const {field} = spec,
+                        lookup = lookups[field] ? compact(lookups[field]) : null;
+
+                    if (!isEmpty(lookup)) {
+                        spec.values = lookup;
+                        spec.enableValues = true;
+                        spec.hasExplicitValues = true;
+                    }
                 });
             });
         } catch (e) {
-            XH.handleException(e);
+            XH.handleException(e, {title: 'Error loading lookups for filtering'});
         }
 
         return ret;
