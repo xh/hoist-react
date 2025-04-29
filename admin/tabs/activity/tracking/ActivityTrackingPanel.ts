@@ -114,19 +114,35 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     })
                 }),
                 toolbarSep(),
+                filterChooserToggleButton(),
+                toolbarSep(),
                 dataFieldsEditor()
             ]
         })
     );
 });
 
+const filterChooserToggleButton = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    const {hasFilter, showFilterChooser} = model;
+
+    return button({
+        text: 'Filter',
+        icon: Icon.filter({prefix: hasFilter ? 'fas' : 'far'}),
+        intent: hasFilter ? 'primary' : null,
+        outlined: showFilterChooser,
+        onClick: () => model.toggleFilterChooser()
+    });
+});
+
 const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
-    return toolbar(
-        filterChooser({
-            flex: 1,
-            enableClear: true
-        })
-    );
+    return model.showFilterChooser
+        ? toolbar(
+              filterChooser({
+                  flex: 1,
+                  enableClear: true
+              })
+          )
+        : null;
 });
 
 const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {

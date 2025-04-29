@@ -39,6 +39,8 @@ export class ActivityTrackingModel extends HoistModel {
      */
     @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
 
+    @observable showFilterChooser: boolean = false;
+
     get enabled(): boolean {
         return XH.trackService.enabled;
     }
@@ -49,6 +51,11 @@ export class ActivityTrackingModel extends HoistModel {
 
     get endDay(): LocalDate {
         return this.formModel.values.endDay;
+    }
+
+    @computed
+    get hasFilter(): boolean {
+        return !!this.filterChooserModel.value;
     }
 
     get maxRowOptions() {
@@ -93,7 +100,9 @@ export class ActivityTrackingModel extends HoistModel {
         makeObservable(this);
 
         this.persistWith = {viewManagerModel: this.viewManagerModel};
+        this.markPersist('showFilterChooser');
 
+        // TODO - persist maxRows via FM persistence (to be merged shortly)
         this.formModel = new FormModel({
             fields: [
                 {name: 'startDay', initialValue: () => this.defaultStartDay},
@@ -103,7 +112,6 @@ export class ActivityTrackingModel extends HoistModel {
         });
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
-
         this.markPersist('dataFields');
 
         this.addReaction(
@@ -150,6 +158,11 @@ export class ActivityTrackingModel extends HoistModel {
         if (!isEqual(dataFields, this.dataFields)) {
             this.dataFields = dataFields ?? [];
         }
+    }
+
+    @action
+    toggleFilterChooser() {
+        this.showFilterChooser = !this.showFilterChooser;
     }
 
     adjustDates(dir: 'add' | 'subtract') {

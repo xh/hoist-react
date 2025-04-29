@@ -1,11 +1,11 @@
 import {DataFieldsEditorModel} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {form, FormModel} from '@xh/hoist/cmp/form';
-import {filler, hbox, hspacer, placeholder, vspacer} from '@xh/hoist/cmp/layout';
+import {br, filler, hbox, hspacer, placeholder, span, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
@@ -15,11 +15,15 @@ export const dataFieldsEditor = hoistCmp.factory({
     model: uses(DataFieldsEditorModel),
 
     render({model}) {
+        const {showEditor, appliedDataFieldCount, hasAppliedDataFields} = model;
+
         return popover({
-            isOpen: model.showEditor,
+            isOpen: showEditor,
             item: button({
-                text: `Extracted Data Fields (${model.appliedDataFieldCount})`,
-                icon: Icon.json(),
+                text: `Extract Data Fields${appliedDataFieldCount ? ' (' + appliedDataFieldCount + ')' : ''}`,
+                icon: Icon.json({prefix: hasAppliedDataFields ? 'fas' : 'far'}),
+                intent: hasAppliedDataFields ? 'primary' : null,
+                outlined: showEditor,
                 onClick: () => model.show()
             }),
             content: formPanel(),
@@ -70,9 +74,15 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
                                           width: 120,
                                           item: select({
                                               placeholder: 'Aggregator',
+                                              // TODO - cascade select with type?
                                               options: model.aggTokens,
                                               enableClear: true
                                           })
+                                      }),
+                                      formField({
+                                          field: 'isDimension',
+                                          marginTop: 8,
+                                          item: checkbox({label: 'dimension'})
                                       }),
                                       button({
                                           icon: Icon.copy(),
@@ -116,7 +126,11 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
 
 const emptyPlaceholder = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
     return placeholder(
-        'Add a field to extract from tracked data within activity tracking records.',
+        span(
+            'Define fields to extract from the optional data payload on each activity record.',
+            br(),
+            'Extracted data can then be viewed on both aggregate and detail levels.'
+        ),
         vspacer(),
         addButton()
     );

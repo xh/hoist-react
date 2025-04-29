@@ -10,9 +10,6 @@ import {last, uniqBy} from 'lodash';
  * Slimmed down {@link CubeFieldSpec} for persisted specs of fields to be extracted from the `data`
  * block of loaded track statements and promoted to top-level columns in the grids. These are the
  * entities (stored on parent `ActivityTrackingModel`) that are edited by the this component.
- *
- * TODO - move persistence into here, implement with customer setter to parse and validate?
- *      - validate / defend against dupe fields - make path + agg compound key, bake into normalized name
  */
 export interface ActivityTrackingDataFieldSpec {
     /**
@@ -48,6 +45,10 @@ export class DataFieldsEditorModel extends HoistModel {
         return this.parentModel.dataFields.length;
     }
 
+    get hasAppliedDataFields(): boolean {
+        return this.appliedDataFieldCount > 0;
+    }
+
     constructor(parentModel: ActivityTrackingModel) {
         super();
         makeObservable(this);
@@ -78,6 +79,7 @@ export class DataFieldsEditorModel extends HoistModel {
         });
     }
 
+    @action
     show() {
         this.syncFromParent();
         this.showEditor = true;
