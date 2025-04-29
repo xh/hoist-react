@@ -35,15 +35,18 @@ export const activityDetailView = hoistCmp.factory({
 
 const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     const {gridModel} = model;
-    return toolbar(
-        filler(),
-        gridCountLabel({unit: 'entry'}),
-        '-',
-        // TODO - these don't react properly to swapping out grid model
-        gridFindField({gridModel}),
-        colChooserButton({gridModel}),
-        exportButton()
-    );
+    return toolbar({
+        compact: true,
+        items: [
+            filler(),
+            gridCountLabel({unit: 'entry'}),
+            '-',
+            // TODO - these don't react properly to swapping out grid model
+            gridFindField({gridModel}),
+            colChooserButton({gridModel}),
+            exportButton()
+        ]
+    });
 });
 
 // Discrete outer panel to retain sizing across master/detail selection changes.

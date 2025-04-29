@@ -8,7 +8,7 @@ import {dataFieldsEditor} from '@xh/hoist/admin/tabs/activity/tracking/datafield
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {form} from '@xh/hoist/cmp/form';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, hframe} from '@xh/hoist/cmp/layout';
+import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
@@ -45,6 +45,7 @@ export const activityTrackingPanel = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    const dateBtn = {outlined: true, width: 40} as const;
     return toolbar(
         viewManager({
             model: model.viewManagerModel,
@@ -72,51 +73,49 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     onClick: () => model.adjustDates('add'),
                     disabled: model.endDay >= LocalDate.currentAppDay()
                 }),
-                buttonGroup(
-                    button({
-                        text: '6m',
-                        outlined: true,
-                        width: 40,
-                        onClick: () => model.adjustStartDate(6, 'months'),
-                        active: model.isInterval(6, 'months')
-                    }),
-                    button({
-                        text: '1m',
-                        outlined: true,
-                        width: 40,
-                        onClick: () => model.adjustStartDate(1, 'months'),
-                        active: model.isInterval(1, 'months')
-                    }),
-                    button({
-                        text: '7d',
-                        outlined: true,
-                        width: 40,
-                        onClick: () => model.adjustStartDate(7, 'days'),
-                        active: model.isInterval(7, 'days')
-                    }),
-                    button({
-                        text: '1d',
-                        outlined: true,
-                        width: 40,
-                        onClick: () => model.adjustStartDate(1, 'days'),
-                        active: model.isInterval(1, 'days')
-                    })
-                ),
+                buttonGroup({
+                    items: [
+                        button({
+                            text: '6m',
+                            onClick: () => model.adjustStartDate(6, 'months'),
+                            active: model.isInterval(6, 'months'),
+                            ...dateBtn
+                        }),
+                        button({
+                            text: '1m',
+                            onClick: () => model.adjustStartDate(1, 'months'),
+                            active: model.isInterval(1, 'months'),
+                            ...dateBtn
+                        }),
+                        button({
+                            text: '7d',
+                            onClick: () => model.adjustStartDate(7, 'days'),
+                            active: model.isInterval(7, 'days'),
+                            ...dateBtn
+                        }),
+                        button({
+                            text: '1d',
+                            onClick: () => model.adjustStartDate(1, 'days'),
+                            active: model.isInterval(1, 'days'),
+                            ...dateBtn
+                        })
+                    ]
+                }),
                 toolbarSep(),
+                filterChooserToggleButton(),
+                toolbarSep(),
+                dataFieldsEditor(),
+                filler(),
                 formField({
                     field: 'maxRows',
-                    label: 'Max rows:',
+                    label: 'Max rows',
                     width: 140,
                     item: select({
                         enableFilter: false,
                         hideDropdownIndicator: true,
                         options: model.maxRowOptions
                     })
-                }),
-                toolbarSep(),
-                filterChooserToggleButton(),
-                toolbarSep(),
-                dataFieldsEditor()
+                })
             ]
         })
     );
@@ -155,7 +154,15 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             defaultSize: 500,
             persistWith: {...model.persistWith, path: 'aggPanel'}
         },
-        tbar: [groupingChooser({flex: 1}), colChooserButton(), exportButton()],
+        tbar: toolbar({
+            compact: true,
+            items: [
+                groupingChooser({flex: 1, maxWidth: 300}),
+                filler(),
+                colChooserButton(),
+                exportButton()
+            ]
+        }),
         items: [
             grid({
                 flex: 1,
