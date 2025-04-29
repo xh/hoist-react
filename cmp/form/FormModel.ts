@@ -339,8 +339,8 @@ export class FormModel extends HoistModel {
 
     private serialize = (formValue: unknown) => {
         if (isArray(formValue)) return formValue.map(this.serialize);
-        if (isDate(formValue)) return {__type: 'date', value: formValue.toJSON()};
-        if (isLocalDate(formValue)) return {__type: 'localDate', value: formValue.toJSON()};
+        if (isDate(formValue)) return {_xhType: 'date', value: formValue.toJSON()};
+        if (isLocalDate(formValue)) return {_xhType: 'localDate', value: formValue.toJSON()};
         if (isObject(formValue)) return mapValues(formValue, this.serialize);
         return formValue;
     };
@@ -348,9 +348,9 @@ export class FormModel extends HoistModel {
     private deserialize = (formValue: unknown) => {
         if (isArray(formValue)) return formValue.map(this.deserialize);
         if (isObject(formValue)) {
-            if ('__type' in formValue && 'value' in formValue && isString(formValue.value)) {
-                if (formValue.__type === 'date') return new Date(formValue.value);
-                if (formValue.__type === 'localDate') return LocalDate.get(formValue.value);
+            if ('_xhType' in formValue && 'value' in formValue && isString(formValue.value)) {
+                if (formValue._xhType === 'date') return new Date(formValue.value);
+                if (formValue._xhType === 'localDate') return LocalDate.get(formValue.value);
             }
             return mapValues(formValue, this.deserialize);
         }
