@@ -7,16 +7,17 @@
 import {correlationId, instance} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, creates} from '@xh/hoist/core';
+import {a, br, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
-import {jsonInput} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
 export const activityDetailView = hoistCmp.factory({
@@ -128,23 +129,47 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                           formField({field: 'userAgent'})
                       ]
                   }),
-                  panel({
-                      flex: 1,
-                      className: 'xh-border-left',
-                      items: [h3(Icon.json(), 'Additional Data'), additionalDataJsonInput()]
-                  })
+                  additionalDataPanel()
               )
           })
-        : placeholder('Select an activity tracking record to view details.');
+        : placeholder(Icon.detail(), 'Select an activity tracking record to view details.');
 });
 
-const additionalDataJsonInput = hoistCmp.factory<ActivityDetailModel>(({model}) => {
-    return jsonInput({
-        readonly: true,
-        width: '100%',
-        height: '100%',
-        showCopyButton: true,
-        value: model.formattedData
+const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    return panel({
+        flex: 1,
+        className: 'xh-border-left',
+        items: [
+            h3(Icon.json(), 'Additional Data'),
+            jsonInput({
+                readonly: true,
+                width: '100%',
+                height: '100%',
+                showCopyButton: true,
+                value: model.formattedData
+            }),
+            toolbar({
+                compact: true,
+                items: [
+                    textInput({
+                        placeholder: 'Path filter(s)...',
+                        leftIcon: Icon.filter(),
+                        commitOnChange: true,
+                        enableClear: true,
+                        flex: 1,
+                        bind: 'formattedDataFilterPath'
+                    }),
+                    tooltip({
+                        item: Icon.questionCircle({className: 'xh-margin-right'}),
+                        content: span(
+                            'Specify one or more dot-delimited paths to filter the JSON data displayed above.',
+                            br(),
+                            'Separate multiple paths that you wish to include with a | character.'
+                        )
+                    })
+                ]
+            })
+        ]
     });
 });
 

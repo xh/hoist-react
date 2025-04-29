@@ -10,9 +10,10 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {timestampReplacer} from '@xh/hoist/format';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {get} from 'lodash';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
-import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export class ActivityDetailModel extends HoistModel {
     @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
@@ -20,6 +21,14 @@ export class ActivityDetailModel extends HoistModel {
     @managed @observable.ref gridModel: GridModel;
     @managed @observable.ref formModel: FormModel;
 
+    /**
+     * Optional dot-delimited path(s) to filter the displayed `data` payload down to a particular
+     * node or nodes, for easier browsing of records with a large data payload. Multiple paths
+     * can be separated with `|`.
+     */
+    @bindable formattedDataFilterPath: string;
+
+    /** Stringified, pretty-printed, optionally path-filtered `data` payload. */
     @observable formattedData: string;
 
     @computed
@@ -33,6 +42,8 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     override onLinked() {
+        this.markPersist('formattedDataFilterPath', this.activityTrackingModel.persistWith);
+
         this.addReaction(
             {
                 track: () => this.activityTrackingModel.dataFields,
@@ -46,6 +57,10 @@ export class ActivityDetailModel extends HoistModel {
             {
                 track: () => this.gridModel.selectedRecord,
                 run: detailRec => this.showEntryDetail(detailRec)
+            },
+            {
+                track: () => this.formattedDataFilterPath,
+                run: () => this.updateFormattedData()
             }
         );
     }
@@ -76,23 +91,37 @@ export class ActivityDetailModel extends HoistModel {
         return ret;
     }
 
-    // Extract data from a (detail) grid record and flush it into our form for display.
-    // Also parse/format any additional data (as JSON) if provided.
+    /** Extract data from a (detail) grid record and flush it into our form for display. */
     @action
     private showEntryDetail(detailRec: StoreRecord) {
-        const recData = detailRec?.data ?? {},
-            trackData = recData.data;
+        this.formModel.init(detailRec?.data ?? {});
+        this.updateFormattedData();
+    }
 
-        this.formModel.init(recData);
+    @action
+    private updateFormattedData() {
+        const {gridModel, formattedDataFilterPath} = this,
+            trackData = gridModel.selectedRecord?.data.data;
 
-        let formattedTrackData = trackData;
-        if (formattedTrackData) {
-            try {
-                formattedTrackData = fmtJson(trackData, {replacer: timestampReplacer()});
-            } catch (ignored) {}
+        if (!trackData) {
+            this.formattedData = '';
+            return;
         }
 
-        this.formattedData = formattedTrackData;
+        let parsed = JSON.parse(trackData),
+            toFormat = parsed;
+
+        if (formattedDataFilterPath) {
+            const paths = formattedDataFilterPath.split('|');
+            if (paths.length > 1) {
+                toFormat = {};
+                paths.forEach(path => (toFormat[path.trim()] = get(parsed, path.trim())));
+            } else {
+                toFormat = get(parsed, formattedDataFilterPath.trim());
+            }
+        }
+
+        this.formattedData = JSON.stringify(toFormat, timestampReplacer(), 2);
     }
 
     //------------------------
@@ -141,6 +170,7 @@ export class ActivityDetailModel extends HoistModel {
         });
     }
 
+    // TODO - don't base on grid cols
     private createSingleEntryFormModel(): FormModel {
         return new FormModel({
             readonly: true,
