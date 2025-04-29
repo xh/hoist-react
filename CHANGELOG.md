@@ -33,6 +33,8 @@ Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Co
       the client remained on an older version.
     * Note that a misconfigured build - where the client build version is not set to the same value
       as the server - would result in a false positive for an upgrade. The two should always match.
+*  Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+   severity level of `TrackSeverity.ERROR`
 
 ## v72.5.1 - 2025-04-15
 

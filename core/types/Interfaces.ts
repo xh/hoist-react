@@ -207,7 +207,7 @@ export interface AppOptionSpec {
 /**
  * Severity levels for tracking.  Default is 'INFO'.
  */
-export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN';
+export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 /**
  * Options for tracking activity on the server via TrackService.
