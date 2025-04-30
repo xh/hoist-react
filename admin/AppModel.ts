@@ -170,7 +170,8 @@ export class AppModel extends HoistAppModel {
     async initViewManagerModelsAsync() {
         this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
             type: 'xhAdminActivityTrackingView',
-            typeDisplayName: 'View'
+            typeDisplayName: 'View',
+            manageGlobal: XH.getUser().isHoistAdmin
         });
     }
 }
