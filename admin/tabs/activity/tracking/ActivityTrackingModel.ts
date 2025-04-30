@@ -290,10 +290,12 @@ export class ActivityTrackingModel extends HoistModel {
 
     private createCube(): Cube {
         const fields = [
+            Col.appEnvironment.field,
+            Col.appVersion.field,
             Col.browser.field,
             Col.category.field,
-            Col.severity.field,
             Col.correlationId.field,
+            {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
             Col.data.field,
             {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
             Col.day.field,
@@ -302,15 +304,15 @@ export class ActivityTrackingModel extends HoistModel {
             Col.elapsed.field,
             Col.entryCount.field,
             Col.impersonating.field,
+            Col.instance.field,
+            Col.loadId.field,
             Col.msg.field,
+            {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+            Col.severity.field,
+            Col.tabId.field,
             Col.userAgent.field,
             Col.username.field,
-            {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-            {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
             Col.url.field,
-            Col.instance.field,
-            Col.appVersion.field,
-            Col.appEnvironment.field,
             ...this.dataFields
         ] as CubeFieldSpec[];
 
@@ -344,6 +346,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'instance'},
                 {field: 'severity'},
                 {field: 'appVersion'},
+                {field: 'loadId'},
+                {field: 'tabId'},
                 {field: 'appEnvironment', displayName: 'Environment'}
             ]
         });
@@ -413,6 +417,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'count', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.loadId, hidden},
+                {...Col.tabId, hidden},
                 {...Col.url, hidden},
                 {...Col.instance, hidden},
                 ...this.dataFieldCols.map(it => ({...it, hidden: !it.appData.showInAggGrid}))

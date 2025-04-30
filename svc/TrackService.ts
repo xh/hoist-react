@@ -119,6 +119,8 @@ export class TrackService extends HoistService {
             msg: stripTags(options.message),
             clientUsername: XH.getUsername(),
             appVersion: XH.getEnv('clientVersion'),
+            loadId: XH.loadId,
+            tabId: XH.tabId,
             url: window.location.href,
             timestamp: Date.now()
         };

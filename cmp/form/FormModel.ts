@@ -4,14 +4,37 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    PlainObject
+} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {
+    flatMap,
+    forEach,
+    forOwn,
+    isArray,
+    isDate,
+    isObject,
+    isString,
+    map,
+    mapValues,
+    pick,
+    pickBy,
+    some,
+    values,
+    without
+} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
+import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
 export interface FormConfig {
     /** FieldModels, or configs to create them, for all data fields managed by the model. */
@@ -20,11 +43,21 @@ export interface FormConfig {
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;
 
+    /** Options governing persistence of the form state. */
+    persistWith?: FormPersistOptions;
+
     disabled?: boolean;
     readonly?: boolean;
 
     /** @internal */
     xhImpl?: boolean;
+}
+
+export interface FormPersistOptions extends PersistOptions {
+    /** If persisting only a subset of all fields, provide an array of field names. */
+    includeFields?: string[];
+    /** If excluding a subset of all fields, provide an array of field names. */
+    excludeFields?: string[];
 }
 
 /**
@@ -85,6 +118,7 @@ export class FormModel extends HoistModel {
         fields = [],
         initialValues = {},
         disabled = false,
+        persistWith = null,
         readonly = false,
         xhImpl = false
     }: FormConfig = {}) {
@@ -95,6 +129,7 @@ export class FormModel extends HoistModel {
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
+
         fields.forEach((f: any) => {
             const model =
                     f instanceof BaseFieldModel
@@ -109,6 +144,7 @@ export class FormModel extends HoistModel {
         this.fields = models;
 
         this.init(initialValues);
+        if (persistWith) this.initPersist(persistWith);
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
@@ -264,4 +300,50 @@ export class FormModel extends HoistModel {
             }
         );
     }
+
+    private initPersist({
+        includeFields = null,
+        excludeFields = null,
+        path = 'formValues',
+        ...rootPersistWith
+    }: FormPersistOptions) {
+        const allFields = Object.keys(this.fields);
+        const fieldNamesToPersist = excludeFields
+            ? without(allFields, ...excludeFields)
+            : (includeFields ?? allFields);
+
+        PersistenceProvider.create({
+            persistOptions: {
+                path,
+                ...rootPersistWith
+            },
+            target: {
+                getPersistableState: () =>
+                    new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),
+                setPersistableState: ({value: formValues}) =>
+                    this.setValues(this.deserialize(pick(formValues, fieldNamesToPersist)))
+            },
+            owner: this
+        });
+    }
+
+    private serialize = (formValue: unknown) => {
+        if (isArray(formValue)) return formValue.map(this.serialize);
+        if (isDate(formValue)) return {_xhType: 'date', value: formValue.toJSON()};
+        if (isLocalDate(formValue)) return {_xhType: 'localDate', value: formValue.toJSON()};
+        if (isObject(formValue)) return mapValues(formValue, this.serialize);
+        return formValue;
+    };
+
+    private deserialize = (formValue: unknown) => {
+        if (isArray(formValue)) return formValue.map(this.deserialize);
+        if (isObject(formValue)) {
+            if ('_xhType' in formValue && 'value' in formValue && isString(formValue.value)) {
+                if (formValue._xhType === 'date') return new Date(formValue.value);
+                if (formValue._xhType === 'localDate') return LocalDate.get(formValue.value);
+            }
+            return mapValues(formValue, this.deserialize);
+        }
+        return formValue;
+    };
 }

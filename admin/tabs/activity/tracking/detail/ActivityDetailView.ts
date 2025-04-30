@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {correlationId, instance} from '@xh/hoist/admin/columns';
+import {badgeRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, br, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
@@ -103,16 +103,24 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                               }
                           }),
                           formField({
+                              field: 'loadId',
+                              readonlyRenderer: badgeRenderer
+                          }),
+                          formField({
+                              field: 'tabId',
+                              readonlyRenderer: badgeRenderer
+                          }),
+                          formField({
                               field: 'url',
                               readonlyRenderer: hyperlinkVal
                           }),
                           formField({
                               field: 'instance',
-                              readonlyRenderer: v => instance.renderer(v, null)
+                              readonlyRenderer: badgeRenderer
                           }),
                           formField({
                               field: 'correlationId',
-                              readonlyRenderer: v => correlationId.renderer(v, null)
+                              readonlyRenderer: badgeRenderer
                           }),
                           formField({
                               field: 'elapsed',
