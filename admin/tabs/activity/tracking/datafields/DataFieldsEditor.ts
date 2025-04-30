@@ -3,7 +3,7 @@ import {form, FormModel} from '@xh/hoist/cmp/form';
 import {br, filler, hbox, hspacer, placeholder, span, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {checkbox, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -84,18 +84,19 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
                                           marginTop: 8,
                                           item: checkbox({label: 'dimension'})
                                       }),
-                                      button({
-                                          icon: Icon.copy(),
+                                      buttonGroup({
+                                          outlined: true,
                                           marginTop: 3,
-                                          marginRight: 4,
-                                          onClick: () => model.cloneField(dfModel)
-                                      }),
-                                      button({
-                                          icon: Icon.delete(),
-                                          intent: 'danger',
-                                          marginTop: 3,
-                                          marginRight: 4,
-                                          onClick: () => dataFields.remove(dfModel)
+                                          items: [
+                                              button({
+                                                  icon: Icon.copy(),
+                                                  onClick: () => model.cloneField(dfModel)
+                                              }),
+                                              button({
+                                                  icon: Icon.delete({intent: 'danger'}),
+                                                  onClick: () => dataFields.remove(dfModel)
+                                              })
+                                          ]
                                       })
                                   ]
                               })
