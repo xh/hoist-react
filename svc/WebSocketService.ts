@@ -42,6 +42,7 @@ export class WebSocketService extends HoistService {
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
+    readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
 
     /** True if WebSockets generally enabled - set statically in code via {@link AppSpec}. */
     enabled: boolean = XH.appSpec.webSocketsEnabled;
@@ -60,7 +61,7 @@ export class WebSocketService extends HoistService {
     /** Set to true to log all sent/received messages - very chatty. */
     logMessages: boolean = false;
 
-    telemetry: WebSocketTelemetry = null;
+    telemetry: WebSocketTelemetry = {channelKey: null, subscriptionCount: 0, events: {}};
 
     private _timer: Timer;
     private _socket: WebSocket;
@@ -82,7 +83,6 @@ export class WebSocketService extends HoistService {
             this.enabled = false;
             return;
         }
-        this.telemetry = {channelKey: null, subscriptionCount: 0, events: {}};
 
         this.connect();
 
@@ -108,6 +108,7 @@ export class WebSocketService extends HoistService {
      *      dispose of their subs on destroy.
      */
     subscribe(topic: string, fn: (msg: WebSocketMessage) => any): WebSocketSubscription {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(topic),
             existingSub = find(subs, {fn});
 
@@ -125,6 +126,7 @@ export class WebSocketService extends HoistService {
      * @param subscription - WebSocketSubscription returned when the subscription was established.
      */
     unsubscribe(subscription: WebSocketSubscription) {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(subscription.topic);
         pull(subs, subscription);
         this.telemetry.subscriptionCount--;
@@ -134,6 +136,7 @@ export class WebSocketService extends HoistService {
      * Send a message back to the server via the connected websocket.
      */
     sendMessage(message: WebSocketMessage) {
+        this.ensureEnabled();
         this.updateConnectedStatus();
         throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
@@ -304,7 +307,7 @@ export class WebSocketService extends HoistService {
 
     private buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
-            endpoint = 'xhWebSocket?clientAppVersion=' + XH.appVersion;
+            endpoint = `xhWebSocket?${this.METADATA_FOR_HANDSHAKE.map(key => `${key}=${XH[key]}`).join('&')}`;
         return XH.isDevelopmentMode
             ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
             : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
@@ -318,6 +321,10 @@ export class WebSocketService extends HoistService {
         const evtTel = (this.telemetry.events[eventKey] ??= {count: 0, lastTime: null});
         evtTel.count++;
         evtTel.lastTime = Date.now();
+    }
+
+    private ensureEnabled() {
+        throwIf(!this.enabled, 'Operation not available.  WebSocketService is disabled.');
     }
 }
 

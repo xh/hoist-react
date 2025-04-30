@@ -4,14 +4,12 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
-import {badge} from '@xh/hoist/cmp/badge';
-import {XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-import copy from 'clipboard-copy';
+import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 
 export const appEnvironment: ColumnSpec = {
     field: {
@@ -252,22 +250,4 @@ function dayRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
         maxB = rangeB?.max;
 
     return defaultComparator(maxA, maxB);
-}
-
-function badgeRenderer(v) {
-    return v
-        ? badge({
-              item: v,
-              className: 'xh-font-family-mono',
-              style: {cursor: 'copy'},
-              title: 'Double-click to copy',
-              onDoubleClick: () => {
-                  copy(v);
-                  XH.toast({
-                      icon: Icon.copy(),
-                      message: `Copied ${v}`
-                  });
-              }
-          })
-        : '-';
 }
