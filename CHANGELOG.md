@@ -26,6 +26,7 @@ and new properties on `TrackLog`.
 
 * Fixed drag-and-drop usability issues with the mobile `ColChooser`.
 * Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+* Disable `dashCanvasAddViewButton` if there are no `menuItems` to show.
 
 ### ⚙️ Typescript API Adjustments
 

@@ -41,6 +41,7 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
                     ref,
                     icon: withDefault(icon, Icon.add()),
                     text: withDefault(text, dashCanvasModel.addViewButtonText),
+                    disabled: !menuItems.length,
                     ...rest
                 }),
                 content: contextMenu({menuItems})
