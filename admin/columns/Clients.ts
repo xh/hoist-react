@@ -4,10 +4,18 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {badgeCol} from '@xh/hoist/admin/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {Icon} from '@xh/hoist/icon';
+
+export const createdTime: ColumnSpec = {
+    field: {
+        name: 'createdTime',
+        type: 'date',
+        displayName: 'Created'
+    },
+    ...Col.compactDate
+};
 
 export const isOpen: ColumnSpec = {
     field: {name: 'isOpen', type: 'bool'},
@@ -29,23 +37,14 @@ export const key: ColumnSpec = {
     width: 160
 };
 
-export const createdTime: ColumnSpec = {
+export const lastReceivedTime: ColumnSpec = {
     field: {
-        name: 'createdTime',
+        name: 'lastReceivedTime',
         type: 'date',
-        displayName: 'Created'
+        displayName: 'Last Received'
     },
-    ...Col.compactDate
-};
-
-export const sentMessageCount: ColumnSpec = {
-    field: {
-        name: 'sentMessageCount',
-        type: 'int',
-        displayName: 'Sent'
-    },
-    ...Col.number,
-    width: 90
+    ...Col.compactDate,
+    width: 140
 };
 
 export const lastSentTime: ColumnSpec = {
@@ -68,44 +67,12 @@ export const receivedMessageCount: ColumnSpec = {
     width: 90
 };
 
-export const lastReceivedTime: ColumnSpec = {
+export const sentMessageCount: ColumnSpec = {
     field: {
-        name: 'lastReceivedTime',
-        type: 'date',
-        displayName: 'Last Received'
+        name: 'sentMessageCount',
+        type: 'int',
+        displayName: 'Sent'
     },
-    ...Col.compactDate,
-    width: 140
-};
-
-export const appVersion: ColumnSpec = {
-    field: {
-        name: 'appVersion',
-        displayName: 'Version',
-        type: 'string'
-    },
-    width: 120
-};
-
-export const appBuild: ColumnSpec = {
-    field: {
-        name: 'appBuild',
-        displayName: 'Build',
-        type: 'string'
-    },
-    width: 120
-};
-export const loadId: ColumnSpec = {
-    field: {
-        name: 'loadId',
-        type: 'string'
-    },
-    ...badgeCol
-};
-export const tabId: ColumnSpec = {
-    field: {
-        name: 'tabId',
-        type: 'string'
-    },
-    ...badgeCol
+    ...Col.number,
+    width: 90
 };

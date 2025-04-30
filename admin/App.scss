@@ -25,6 +25,12 @@
     height: 80vh;
     width: 80vw;
   }
+
+  .xh-badge-col {
+    --xh-badge-font-size: 0.9em;
+    background-color: var(--xh-intent-primary-darker);
+    font-family: var(--xh-font-family-mono);
+  }
 }
 
 .xh-units-label {

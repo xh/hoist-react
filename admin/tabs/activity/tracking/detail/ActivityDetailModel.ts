@@ -31,7 +31,6 @@ export class ActivityDetailModel extends HoistModel {
 
     override onLinked() {
         const hidden = true;
-
         this.gridModel = new GridModel({
             sortBy: 'dateCreated|desc',
             colChooserModel: true,
@@ -53,11 +52,13 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.device},
                 {...Col.userAgent, hidden},
                 {...Col.appVersion},
+                {...Col.loadId},
+                {...Col.tabId},
                 {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
                 {...Col.url},
-                {...Col.correlationId},
                 {...Col.instance, hidden},
+                {...Col.correlationId},
                 {...Col.severity, hidden},
                 {...Col.elapsed},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'}

@@ -4,7 +4,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab.
+Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab
+and new properties on `TrackLog`.
 
 ### 🎁 New Features
 
@@ -12,6 +13,9 @@ Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Co
   across all instances in the cluster.
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
+* Enhanced all activity tracking messages with new `tabId` and `loadId` properties, to disambiguate
+  tracking activity for users with multiple browser tabs and multiple full refreshes/restarts of a
+  client app within the same tab.
 
 ### 🐞 Bug Fixes
 

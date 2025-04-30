@@ -18,7 +18,6 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import * as WSCol from './ClientsColumns';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
@@ -177,32 +176,32 @@ export class ClientsModel extends BaseAdminTabModel {
             },
             sortBy: ['user'],
             columns: [
-                WSCol.isOpen,
+                Col.isOpen,
                 Col.user,
                 {
                     headerName: 'Session',
                     headerAlign: 'center',
                     children: [
-                        WSCol.createdTime,
-                        {...WSCol.key, hidden},
+                        Col.createdTime,
+                        {...Col.key, hidden},
                         Col.instance,
-                        WSCol.loadId,
-                        WSCol.tabId
+                        Col.loadId,
+                        Col.tabId
                     ]
                 },
                 {
                     headerName: 'Client App',
                     headerAlign: 'center',
-                    children: [WSCol.appVersion, WSCol.appBuild]
+                    children: [Col.appVersion, Col.appBuild]
                 },
                 {
                     headerName: 'Send/Receive',
                     headerAlign: 'center',
                     children: [
-                        WSCol.sentMessageCount,
-                        WSCol.lastSentTime,
-                        WSCol.receivedMessageCount,
-                        WSCol.lastReceivedTime
+                        Col.sentMessageCount,
+                        Col.lastSentTime,
+                        Col.receivedMessageCount,
+                        Col.lastReceivedTime
                     ]
                 }
             ]

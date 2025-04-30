@@ -105,7 +105,9 @@ export class ActivityTrackingModel extends HoistModel {
                 Col.url.field,
                 Col.instance.field,
                 Col.appVersion.field,
-                Col.appEnvironment.field
+                Col.appEnvironment.field,
+                Col.loadId.field,
+                Col.tabId.field
             ] as CubeFieldSpec[]
         });
 
@@ -133,6 +135,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'instance'},
                 {field: 'severity'},
                 {field: 'appVersion'},
+                {field: 'loadId'},
+                {field: 'tabId'},
                 {field: 'appEnvironment', displayName: 'Environment'}
             ]
         });
@@ -183,6 +187,8 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'count', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.loadId, hidden},
+                {...Col.tabId, hidden},
                 {...Col.url, hidden},
                 {...Col.instance, hidden}
             ]
