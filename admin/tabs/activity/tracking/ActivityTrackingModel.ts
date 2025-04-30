@@ -93,7 +93,6 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     private _monthFormat = 'MMM YYYY';
-    private _defaultDims = ['username'];
 
     constructor() {
         super();
@@ -134,13 +133,13 @@ export class ActivityTrackingModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube} = this;
+        const {enabled, cube, query} = this;
         if (!enabled) return;
 
         try {
             const data = await XH.postJson({
                 url: 'trackLogAdmin',
-                body: this.query,
+                body: query,
                 loadSpec
             });
 
@@ -196,6 +195,10 @@ export class ActivityTrackingModel extends HoistModel {
     isInterval(value, unit) {
         const {startDay, endDay} = this.formModel.values;
         return startDay === endDay.subtract(value, unit).nextDay();
+    }
+
+    getDisplayName(fieldName: string) {
+        return fieldName ? (this.cube.store.getField(fieldName)?.displayName ?? fieldName) : null;
     }
 
     //------------------
@@ -371,18 +374,19 @@ export class ActivityTrackingModel extends HoistModel {
         return new GroupingChooserModel({
             persistWith: {...this.persistWith, persistFavorites: false},
             dimensions: this.cube.dimensions,
-            initialValue: this._defaultDims
+            initialValue: ['username', 'category']
         });
     }
 
     private createGridModel(): GridModel {
         const hidden = true;
         return new GridModel({
+            persistWith: {...this.persistWith, path: 'aggGrid'},
+            enableExport: true,
+            colChooserModel: true,
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            persistWith: {...this.persistWith, path: 'aggGrid'},
-            colChooserModel: true,
-            enableExport: true,
+            autosizeOptions: {mode: 'managed'},
             exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
@@ -391,9 +395,8 @@ export class ActivityTrackingModel extends HoistModel {
                     field: {
                         name: 'cubeLabel',
                         type: 'string',
-                        displayName: 'Tracked Activity'
+                        displayName: 'Group'
                     },
-                    flex: 1,
                     minWidth: 100,
                     isTreeColumn: true,
                     comparator: this.cubeLabelComparator.bind(this)

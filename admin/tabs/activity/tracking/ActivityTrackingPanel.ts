@@ -21,7 +21,7 @@ import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {ActivityTrackingModel} from './ActivityTrackingModel';
-import {chartsPanel} from './charts/ChartsPanel';
+import {aggChartPanel} from '@xh/hoist/admin/tabs/activity/tracking/chart/AggChartPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
 
@@ -176,7 +176,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                 ],
                 omit: !model.maxRowsReached
             }),
-            chartsPanel()
+            aggChartPanel()
         ]
     });
 });
