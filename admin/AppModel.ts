@@ -70,6 +70,7 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
+                    {name: 'feedback', path: '/feedback'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
@@ -96,8 +97,7 @@ export class AppModel extends HoistAppModel {
                 path: '/clients',
                 children: [
                     {name: 'connections', path: '/connections'},
-                    {name: 'errors', path: '/errors'},
-                    {name: 'feedback', path: '/feedback'}
+                    {name: 'errors', path: '/errors'}
                 ]
             },
             {
