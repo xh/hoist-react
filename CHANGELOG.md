@@ -4,7 +4,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab.
+Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab
+and new properties on `TrackLog`.
 
 ### 🎁 New Features
 
