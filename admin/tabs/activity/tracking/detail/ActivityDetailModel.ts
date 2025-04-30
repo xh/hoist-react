@@ -57,8 +57,8 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.appEnvironment, hidden},
                 {...Col.data, hidden},
                 {...Col.url},
-                {...Col.correlationId},
                 {...Col.instance, hidden},
+                {...Col.correlationId},
                 {...Col.severity, hidden},
                 {...Col.elapsed},
                 {...Col.dateCreatedWithSec, displayName: 'Timestamp'}

@@ -4,12 +4,21 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {badgeRenderer} from '@xh/hoist/admin/columns';
+import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+
+export const appBuild: ColumnSpec = {
+    field: {
+        name: 'appBuild',
+        displayName: 'Build',
+        type: 'string'
+    },
+    width: 120
+};
 
 export const appEnvironment: ColumnSpec = {
     field: {
@@ -21,18 +30,12 @@ export const appEnvironment: ColumnSpec = {
 };
 
 export const appVersion: ColumnSpec = {
-    field: {name: 'appVersion', type: 'string'},
-    width: 130
-};
-
-export const loadId: ColumnSpec = {
-    field: {name: 'loadId', type: 'string'},
-    width: 130
-};
-
-export const tabId: ColumnSpec = {
-    field: {name: 'tabId', type: 'string'},
-    width: 130
+    field: {
+        name: 'appVersion',
+        displayName: 'Version',
+        type: 'string'
+    },
+    width: 120
 };
 
 export const browser: ColumnSpec = {
@@ -45,16 +48,6 @@ export const browser: ColumnSpec = {
     width: 100
 };
 
-export const severity: ColumnSpec = {
-    field: {
-        name: 'severity',
-        type: 'string',
-        isDimension: true,
-        aggregator: 'UNIQUE'
-    },
-    width: 80
-};
-
 export const category: ColumnSpec = {
     field: {
         name: 'category',
@@ -63,6 +56,17 @@ export const category: ColumnSpec = {
         aggregator: 'UNIQUE'
     },
     width: 100
+};
+
+export const correlationId: ColumnSpec = {
+    field: {
+        name: 'correlationId',
+        type: 'string',
+        displayName: 'Correlation ID'
+    },
+    renderer: badgeRenderer,
+    width: 180,
+    autosizeBufferPx: 20
 };
 
 export const data: ColumnSpec = {
@@ -79,6 +83,20 @@ export const day: ColumnSpec = {
     },
     ...Col.localDate,
     displayName: 'App Day'
+};
+
+export const dayRange: ColumnSpec = {
+    field: {
+        name: 'dayRange',
+        type: 'json',
+        aggregator: new RangeAggregator(),
+        displayName: 'App Day Range'
+    },
+    align: 'right',
+    width: 200,
+    renderer: dayRangeRenderer,
+    exportValue: dayRangeRenderer,
+    comparator: dayRangeComparator
 };
 
 export const device: ColumnSpec = {
@@ -127,16 +145,6 @@ export const entryId: ColumnSpec = {
     align: 'right'
 };
 
-export const correlationId: ColumnSpec = {
-    field: {
-        name: 'correlationId',
-        type: 'string',
-        displayName: 'Correlation ID'
-    },
-    renderer: badgeRenderer,
-    width: 100
-};
-
 export const error: ColumnSpec = {
     field: {
         name: 'error',
@@ -145,6 +153,25 @@ export const error: ColumnSpec = {
     width: 250,
     autosizeMaxWidth: 400,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+};
+
+export const instance: ColumnSpec = {
+    field: {
+        name: 'instance',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    renderer: badgeRenderer,
+    width: 100
+};
+
+export const loadId: ColumnSpec = {
+    field: {
+        name: 'loadId',
+        type: 'string'
+    },
+    ...badgeCol
 };
 
 export const msg: ColumnSpec = {
@@ -159,6 +186,24 @@ export const msg: ColumnSpec = {
     autosizeMaxWidth: 400
 };
 
+export const severity: ColumnSpec = {
+    field: {
+        name: 'severity',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    width: 80
+};
+
+export const tabId: ColumnSpec = {
+    field: {
+        name: 'tabId',
+        type: 'string'
+    },
+    ...badgeCol
+};
+
 export const url: ColumnSpec = {
     field: {
         name: 'url',
@@ -167,17 +212,6 @@ export const url: ColumnSpec = {
     },
     width: 250,
     autosizeMaxWidth: 400
-};
-
-export const instance: ColumnSpec = {
-    field: {
-        name: 'instance',
-        type: 'string',
-        isDimension: true,
-        aggregator: 'UNIQUE'
-    },
-    renderer: badgeRenderer,
-    width: 100
 };
 
 export const userAgent: ColumnSpec = {
@@ -215,20 +249,6 @@ export const userMessageFlag: ColumnSpec = {
         const {msg} = record.data;
         return msg ? Icon.comment() : null;
     }
-};
-
-export const dayRange: ColumnSpec = {
-    field: {
-        name: 'dayRange',
-        type: 'json',
-        aggregator: new RangeAggregator(),
-        displayName: 'App Day Range'
-    },
-    align: 'right',
-    width: 200,
-    renderer: dayRangeRenderer,
-    exportValue: dayRangeRenderer,
-    comparator: dayRangeComparator
 };
 
 //-----------------------
