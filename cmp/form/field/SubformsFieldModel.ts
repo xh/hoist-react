@@ -28,6 +28,13 @@ export interface SubformsFieldConfig extends BaseFieldConfig {
     initialValue?: any[];
 }
 
+export interface SubformAddOptions {
+    /** Initial values for the new object/subform. */
+    initialValues?: PlainObject;
+    /** Index within the collection where the new subform should be inserted. */
+    index?: number;
+}
+
 /**
  * A data field in a form whose value is a collection of nested objects - all of the same shape, but
  * with arbitrary internal complexity. A dedicated {@link FormModel} is auto-created to manage and
@@ -167,14 +174,7 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     /** Add a new object (subform) to this field's collection. */
     @action
-    add(
-        opts: {
-            /** Initial values for the new object/subform. */
-            initialValues?: PlainObject;
-            /** Index within the collection where the new subform should be inserted. */
-            index?: number;
-        } = {}
-    ) {
+    add(opts: SubformAddOptions = {}) {
         const {initialValues = {}, index = this.value.length} = opts,
             newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);

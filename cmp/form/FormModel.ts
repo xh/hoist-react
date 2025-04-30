@@ -60,6 +60,11 @@ export interface FormPersistOptions extends PersistOptions {
     excludeFields?: string[];
 }
 
+export interface FormValidateOptions {
+    /** True to trigger display of validation errors (if any) by bound `FormField`s after validation is complete. */
+    display?: boolean;
+}
+
 /**
  * FormModel is the main entry point for Form specification. This Model's `fields` object references
  * multiple {@link FieldModel} instances, keyed by name, which in turn hold the state of user-
@@ -260,10 +265,7 @@ export class FormModel extends HoistModel {
     }
 
     /** Recompute all validations and return true if the form is valid. */
-    async validateAsync(opts?: {
-        /** True to trigger display of validation errors (if any) by bound `FormField`s after validation is complete. */
-        display?: boolean;
-    }): Promise<boolean> {
+    async validateAsync(opts?: FormValidateOptions): Promise<boolean> {
         const {display = true} = opts ?? {},
             promises = map(this.fields, m => m.validateAsync({display}));
         await Promise.all(promises);
