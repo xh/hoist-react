@@ -101,14 +101,7 @@ export class ActivityTrackingModel extends HoistModel {
         this.persistWith = {viewManagerModel: this.viewManagerModel};
         this.markPersist('showFilterChooser');
 
-        // TODO - persist maxRows via FM persistence (to be merged shortly)
-        this.formModel = new FormModel({
-            fields: [
-                {name: 'startDay', initialValue: () => this.defaultStartDay},
-                {name: 'endDay', initialValue: () => this.defaultEndDay},
-                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
-            ]
-        });
+        this.formModel = this.createQueryFormModel();
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
         this.markPersist('dataFields');
@@ -204,6 +197,17 @@ export class ActivityTrackingModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
+    private createQueryFormModel(): FormModel {
+        return new FormModel({
+            persistWith: {...this.persistWith, path: 'queryFormValues', includeFields: ['maxRows']},
+            fields: [
+                {name: 'startDay', initialValue: () => LocalDate.currentAppDay()},
+                {name: 'endDay', initialValue: () => LocalDate.currentAppDay()},
+                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
+            ]
+        });
+    }
+
     private async loadGridAsync() {
         const {cube, gridModel, dimensions} = this,
             data = cube.executeQuery({
@@ -256,14 +260,6 @@ export class ActivityTrackingModel extends HoistModel {
             default:
                 return rawVal;
         }
-    }
-
-    private get defaultStartDay() {
-        return LocalDate.currentAppDay();
-    }
-
-    private get defaultEndDay() {
-        return LocalDate.currentAppDay();
     }
 
     @computed
@@ -324,11 +320,13 @@ export class ActivityTrackingModel extends HoistModel {
         const ret = new FilterChooserModel({
             persistWith: {...this.persistWith, persistFavorites: false},
             fieldSpecs: [
+                {field: 'appEnvironment', displayName: 'Environment'},
+                {field: 'appVersion'},
+                {field: 'browser'},
                 {field: 'category'},
                 {field: 'correlationId'},
-                {field: 'username', displayName: 'User'},
+                {field: 'data'},
                 {field: 'device'},
-                {field: 'browser'},
                 {
                     field: 'elapsed',
                     valueRenderer: v => {
@@ -339,16 +337,14 @@ export class ActivityTrackingModel extends HoistModel {
                     },
                     fieldType: 'number'
                 },
-                {field: 'msg', displayName: 'Message'},
-                {field: 'data'},
-                {field: 'userAgent'},
-                {field: 'url', displayName: 'URL'},
                 {field: 'instance'},
-                {field: 'severity'},
-                {field: 'appVersion'},
                 {field: 'loadId'},
+                {field: 'msg', displayName: 'Message'},
+                {field: 'severity'},
                 {field: 'tabId'},
-                {field: 'appEnvironment', displayName: 'Environment'}
+                {field: 'userAgent'},
+                {field: 'username', displayName: 'User'},
+                {field: 'url', displayName: 'URL'}
             ]
         });
 
