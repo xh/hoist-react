@@ -8,8 +8,10 @@ import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import {TrackSeverity} from '@xh/hoist/core';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
+import {ReactElement} from 'react';
 
 export const appBuild: ColumnSpec = {
     field: {
@@ -109,6 +111,32 @@ export const device: ColumnSpec = {
     width: 100
 };
 
+export const deviceIcon: ColumnSpec = {
+    field: device.field,
+    headerName: Icon.desktop(),
+    headerTooltip: 'Device',
+    tooltip: true,
+    resizable: false,
+    align: 'center',
+    width: 50,
+    renderer: v => {
+        // See Hoist Core `Device.groovy` for enumeration
+        switch (v) {
+            case 'ANDROID':
+            case 'IPAD':
+            case 'IPHONE':
+            case 'IPOD':
+                return Icon.phone();
+            case 'LINUX':
+            case 'MAC':
+            case 'WINDOWS':
+                return Icon.desktop();
+            default:
+                return Icon.questionCircle();
+        }
+    }
+};
+
 export const elapsed: ColumnSpec = {
     field: {
         name: 'elapsed',
@@ -196,6 +224,34 @@ export const severity: ColumnSpec = {
     width: 80
 };
 
+export const severityIcon: ColumnSpec = {
+    field: severity.field,
+    headerName: Icon.info(),
+    headerTooltip: 'Severity',
+    tooltip: true,
+    resizable: false,
+    align: 'center',
+    width: 50,
+    renderer: v => getSeverityIcon(v)
+};
+
+export function getSeverityIcon(severity: TrackSeverity): ReactElement {
+    if (!severity) return null;
+
+    switch (severity) {
+        case 'DEBUG':
+            return Icon.code();
+        case 'INFO':
+            return Icon.infoCircle({className: 'xh-text-color-muted'});
+        case 'WARN':
+            return Icon.warning({intent: 'warning'});
+        case 'ERROR':
+            return Icon.error({intent: 'danger'});
+        default:
+            return Icon.questionCircle();
+    }
+}
+
 export const tabId: ColumnSpec = {
     field: {
         name: 'tabId',
@@ -212,6 +268,22 @@ export const url: ColumnSpec = {
     },
     width: 250,
     autosizeMaxWidth: 400
+};
+
+export const urlPathOnly: ColumnSpec = {
+    field: url.field,
+    width: 250,
+    autosizeMaxWidth: 400,
+    tooltip: true,
+    renderer: v => {
+        if (!v) return null;
+        try {
+            const urlObj = new URL(v);
+            return urlObj.pathname;
+        } catch (ignored) {
+            return v;
+        }
+    }
 };
 
 export const userAgent: ColumnSpec = {

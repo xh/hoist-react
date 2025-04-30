@@ -139,7 +139,9 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     private createGridModel(): GridModel {
-        const hidden = true;
+        const hidden = true,
+            pinned = true;
+
         return new GridModel({
             persistWith: {...this.activityTrackingModel.persistWith, path: 'detailGrid'},
             sortBy: 'dateCreated|desc',
@@ -152,26 +154,26 @@ export class ActivityDetailModel extends HoistModel {
             },
             emptyText: 'Select a group on the left to see detailed tracking logs.',
             columns: [
-                {...Col.impersonatingFlag},
-                {...Col.entryId, hidden},
-                {...Col.username},
+                {...Col.entryId, hidden, pinned},
+                {...Col.severityIcon, pinned},
+                {...Col.impersonatingFlag, pinned},
+                {...Col.username, pinned},
                 {...Col.impersonating, hidden},
                 {...Col.category},
                 {...Col.msg},
-                {...Col.browser},
-                {...Col.device},
-                {...Col.userAgent, hidden},
-                {...Col.appVersion},
-                {...Col.loadId},
-                {...Col.tabId},
-                {...Col.appEnvironment, hidden},
-                {...Col.data, hidden},
-                {...Col.url},
-                {...Col.instance, hidden},
-                {...Col.correlationId},
-                {...Col.severity, hidden},
                 {...Col.elapsed},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'},
+                {...Col.deviceIcon},
+                {...Col.browser, hidden},
+                {...Col.userAgent, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.loadId, hidden},
+                {...Col.tabId},
+                {...Col.correlationId, hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.instance, hidden},
+                {...Col.urlPathOnly},
+                {...Col.data, hidden},
+                {...Col.dateCreatedNoYear, displayName: 'Timestamp'},
                 ...this.activityTrackingModel.dataFieldCols
             ]
         });

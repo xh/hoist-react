@@ -157,7 +157,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
         tbar: toolbar({
             // compact: true,
             items: [
-                groupingChooser({flex: 1, maxWidth: 300}),
+                groupingChooser({flex: 10, maxWidth: 300}),
                 filler(),
                 colChooserButton(),
                 exportButton()

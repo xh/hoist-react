@@ -40,8 +40,7 @@ const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
             filler(),
             gridCountLabel({unit: 'entry'}),
             '-',
-            // TODO - these don't react properly to swapping out grid model
-            gridFindField({gridModel}),
+            gridFindField({gridModel, key: gridModel.xhId}),
             colChooserButton({gridModel}),
             exportButton()
         ]
@@ -77,6 +76,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                       style: {flex: 1},
                       items: [
                           h3(Icon.info(), 'Activity'),
+                          formField({field: 'severity', label: 'Severity'}),
                           formField({
                               field: 'username',
                               readonlyRenderer: username => {
@@ -94,6 +94,42 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                           formField({field: 'category'}),
                           formField({field: 'msg'}),
                           formField({
+                              field: 'elapsed',
+                              readonlyRenderer: numberRenderer({
+                                  label: 'ms',
+                                  nullDisplay: '-',
+                                  formatConfig: {thousandSeparated: false, mantissa: 0}
+                              }),
+                              omit: !formModel.values.elapsed
+                          }),
+                          formField({
+                              field: 'dateCreated',
+                              readonlyRenderer: dateTimeSecRenderer({})
+                          }),
+                          formField({
+                              field: 'correlationId',
+                              readonlyRenderer: badgeRenderer,
+                              omit: !formModel.values.correlationId
+                          }),
+                          h3(Icon.idBadge(), 'Session IDs'),
+                          formField({
+                              field: 'loadId',
+                              readonlyRenderer: badgeRenderer,
+                              omit: !formModel.values.loadId
+                          }),
+                          formField({
+                              field: 'tabId',
+                              readonlyRenderer: badgeRenderer,
+                              omit: !formModel.values.tabId
+                          }),
+                          formField({
+                              field: 'instance',
+                              readonlyRenderer: badgeRenderer,
+                              omit: !formModel.values.instance
+                          }),
+
+                          h3(Icon.desktop(), 'Client App / Browser'),
+                          formField({
                               field: 'appVersion',
                               readonlyRenderer: appVersion => {
                                   if (!appVersion) return naSpan();
@@ -101,42 +137,13 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   return `${appVersion} (${appEnvironment})`;
                               }
                           }),
-                          formField({
-                              field: 'loadId',
-                              readonlyRenderer: badgeRenderer
-                          }),
-                          formField({
-                              field: 'tabId',
-                              readonlyRenderer: badgeRenderer
-                          }),
+                          formField({field: 'device', label: 'Device'}),
+                          formField({field: 'browser'}),
+                          formField({field: 'userAgent'}),
                           formField({
                               field: 'url',
                               readonlyRenderer: hyperlinkVal
-                          }),
-                          formField({
-                              field: 'instance',
-                              readonlyRenderer: badgeRenderer
-                          }),
-                          formField({
-                              field: 'correlationId',
-                              readonlyRenderer: badgeRenderer
-                          }),
-                          formField({
-                              field: 'elapsed',
-                              readonlyRenderer: numberRenderer({
-                                  label: 'ms',
-                                  nullDisplay: '-',
-                                  formatConfig: {thousandSeparated: false, mantissa: 0}
-                              })
-                          }),
-                          formField({
-                              field: 'dateCreated',
-                              readonlyRenderer: dateTimeSecRenderer({})
-                          }),
-                          h3(Icon.desktop(), 'Device / Browser'),
-                          formField({field: 'device'}),
-                          formField({field: 'browser'}),
-                          formField({field: 'userAgent'})
+                          })
                       ]
                   }),
                   additionalDataPanel()
