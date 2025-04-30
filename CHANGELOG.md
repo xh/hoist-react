@@ -10,6 +10,8 @@ Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Co
 
 * Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
   across all instances in the cluster.
+* Updated `FormModel` to support `persistWith` for storing and recalling its values, including
+  developer options to persist all or a provided subset of fields.
 
 ### 🐞 Bug Fixes
 
