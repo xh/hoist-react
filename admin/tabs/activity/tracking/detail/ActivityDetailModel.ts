@@ -9,15 +9,32 @@ import * as Col from '@xh/hoist/admin/columns';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {StoreRecord} from '@xh/hoist/data';
+import {timestampReplacer} from '@xh/hoist/format';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {get} from 'lodash';
 import {ActivityTrackingModel} from '../ActivityTrackingModel';
-import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export class ActivityDetailModel extends HoistModel {
     @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
-    @managed gridModel: GridModel;
-    @managed formModel: FormModel;
-    @observable formattedData;
+
+    @managed @observable.ref gridModel: GridModel;
+    @managed @observable.ref formModel: FormModel;
+
+    /**
+     * Optional dot-delimited path(s) to filter the displayed `data` payload down to a particular
+     * node or nodes, for easier browsing of records with a large data payload. Multiple paths
+     * can be separated with `|`.
+     */
+    @bindable formattedDataFilterPath: string;
+
+    /** Stringified, pretty-printed, optionally path-filtered `data` payload. */
+    @observable formattedData: string;
+
+    @computed
+    get hasExtraTrackData(): boolean {
+        return this.gridModel.selectedRecord?.data.data != null;
+    }
 
     @computed
     get hasSelection() {
@@ -30,49 +47,14 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     override onLinked() {
-        const hidden = true;
-        this.gridModel = new GridModel({
-            sortBy: 'dateCreated|desc',
-            colChooserModel: true,
-            enableExport: true,
-            filterModel: false,
-            exportOptions: {
-                columns: 'ALL',
-                filename: exportFilename('activity-detail')
-            },
-            emptyText: 'Select a group on the left to see detailed tracking logs.',
-            columns: [
-                {...Col.impersonatingFlag},
-                {...Col.entryId, hidden},
-                {...Col.username},
-                {...Col.impersonating, hidden},
-                {...Col.category},
-                {...Col.msg},
-                {...Col.browser},
-                {...Col.device},
-                {...Col.userAgent, hidden},
-                {...Col.appVersion},
-                {...Col.loadId},
-                {...Col.tabId},
-                {...Col.appEnvironment, hidden},
-                {...Col.data, hidden},
-                {...Col.url},
-                {...Col.instance, hidden},
-                {...Col.correlationId},
-                {...Col.severity, hidden},
-                {...Col.elapsed},
-                {...Col.dateCreatedWithSec, displayName: 'Timestamp'}
-            ]
-        });
-
-        this.formModel = new FormModel({
-            readonly: true,
-            fields: this.gridModel
-                .getLeafColumns()
-                .map(it => ({name: it.field, displayName: it.headerName as string}))
-        });
+        this.markPersist('formattedDataFilterPath', this.activityTrackingModel.persistWith);
 
         this.addReaction(
+            {
+                track: () => this.activityTrackingModel.dataFields,
+                run: () => this.createAndSetCoreModels(),
+                fireImmediately: true
+            },
             {
                 track: () => this.activityTrackingModel.gridModel.selectedRecord,
                 run: aggRec => this.showActivityEntriesAsync(aggRec)
@@ -80,11 +62,18 @@ export class ActivityDetailModel extends HoistModel {
             {
                 track: () => this.gridModel.selectedRecord,
                 run: detailRec => this.showEntryDetail(detailRec)
+            },
+            {
+                track: () => this.formattedDataFilterPath,
+                run: () => this.updateFormattedData()
             }
         );
     }
 
-    private async showActivityEntriesAsync(aggRec) {
+    //------------------
+    // Implementation
+    //------------------
+    private async showActivityEntriesAsync(aggRec: StoreRecord) {
         const {gridModel} = this,
             leaves = this.getAllLeafRows(aggRec);
 
@@ -93,7 +82,7 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
-    private getAllLeafRows(aggRec, ret = []) {
+    private getAllLeafRows(aggRec: StoreRecord, ret = []) {
         if (!aggRec) return [];
 
         if (aggRec.children.length) {
@@ -107,22 +96,96 @@ export class ActivityDetailModel extends HoistModel {
         return ret;
     }
 
-    // Extract data from a (detail) grid record and flush it into our form for display.
-    // Also parse/format any additional data (as JSON) if provided.
+    /** Extract data from a (detail) grid record and flush it into our form for display. */
     @action
-    private showEntryDetail(detailRec) {
-        const recData = detailRec?.data ?? {},
-            trackData = recData.data;
+    private showEntryDetail(detailRec: StoreRecord) {
+        this.formModel.init(detailRec?.data ?? {});
+        this.updateFormattedData();
+    }
 
-        this.formModel.init(recData);
+    @action
+    private updateFormattedData() {
+        const {gridModel, formattedDataFilterPath} = this,
+            trackData = gridModel.selectedRecord?.data.data;
 
-        let formattedTrackData = trackData;
-        if (formattedTrackData) {
-            try {
-                formattedTrackData = fmtJson(trackData, {replacer: timestampReplacer()});
-            } catch (ignored) {}
+        if (!trackData) {
+            this.formattedData = '';
+            return;
         }
 
-        this.formattedData = formattedTrackData;
+        let parsed = JSON.parse(trackData),
+            toFormat = parsed;
+
+        if (formattedDataFilterPath) {
+            const paths = formattedDataFilterPath.split('|');
+            if (paths.length > 1) {
+                toFormat = {};
+                paths.forEach(path => (toFormat[path.trim()] = get(parsed, path.trim())));
+            } else {
+                toFormat = get(parsed, formattedDataFilterPath.trim());
+            }
+        }
+
+        this.formattedData = JSON.stringify(toFormat, timestampReplacer(), 2);
+    }
+
+    //------------------------
+    // Core data-handling models
+    //------------------------
+    @action
+    private createAndSetCoreModels() {
+        this.gridModel = this.createGridModel();
+        this.formModel = this.createSingleEntryFormModel();
+    }
+
+    private createGridModel(): GridModel {
+        const hidden = true,
+            pinned = true;
+
+        return new GridModel({
+            persistWith: {...this.activityTrackingModel.persistWith, path: 'detailGrid'},
+            sortBy: 'dateCreated|desc',
+            colChooserModel: true,
+            enableExport: true,
+            filterModel: false,
+            exportOptions: {
+                columns: 'ALL',
+                filename: exportFilename('activity-detail')
+            },
+            emptyText: 'Select a group on the left to see detailed tracking logs.',
+            columns: [
+                {...Col.entryId, hidden, pinned},
+                {...Col.severityIcon, pinned},
+                {...Col.impersonatingFlag, pinned},
+                {...Col.username, pinned},
+                {...Col.impersonating, hidden},
+                {...Col.category},
+                {...Col.msg},
+                {...Col.elapsed},
+                {...Col.deviceIcon},
+                {...Col.browser, hidden},
+                {...Col.userAgent, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.loadId, hidden},
+                {...Col.tabId},
+                {...Col.correlationId, hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.instance, hidden},
+                {...Col.urlPathOnly},
+                {...Col.data, hidden},
+                {...Col.dateCreatedNoYear, displayName: 'Timestamp'},
+                ...this.activityTrackingModel.dataFieldCols
+            ]
+        });
+    }
+
+    // TODO - don't base on grid cols
+    private createSingleEntryFormModel(): FormModel {
+        return new FormModel({
+            readonly: true,
+            fields: this.gridModel
+                .getLeafColumns()
+                .map(it => ({name: it.field, displayName: it.headerName as string}))
+        });
     }
 }

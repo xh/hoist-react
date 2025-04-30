@@ -4,30 +4,42 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {exportFilename} from '@xh/hoist/admin/AdminUtils';
+import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {
+    ActivityTrackingDataFieldSpec,
+    DataFieldsEditorModel
+} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {fmtNumber} from '@xh/hoist/format';
-import {action, computed, makeObservable} from '@xh/hoist/mobx';
+import {dateRenderer, dateTimeSecRenderer, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, isEmpty, round} from 'lodash';
+import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
 
-export const PERSIST_ACTIVITY = {localStorageKey: 'xhAdminActivityState'};
-
 export class ActivityTrackingModel extends HoistModel {
-    override persistWith = PERSIST_ACTIVITY;
-
+    /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
-    @managed groupingChooserModel: GroupingChooserModel;
-    @managed cube: Cube;
-    @managed filterChooserModel: FilterChooserModel;
-    @managed gridModel: GridModel;
+
+    /** Models for data-handling components - can be rebuilt due to change in dataFields. */
+    @managed @observable.ref groupingChooserModel: GroupingChooserModel;
+    @managed @observable.ref cube: Cube;
+    @managed @observable.ref filterChooserModel: FilterChooserModel;
+    @managed @observable.ref gridModel: GridModel;
+    @managed dataFieldsEditorModel: DataFieldsEditorModel;
+
+    /**
+     * Optional spec for fields to be extracted from additional `data` returned by track entries
+     * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
+     */
+    @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
+
+    @observable showFilterChooser: boolean = false;
 
     get enabled(): boolean {
         return XH.trackService.enabled;
@@ -37,17 +49,13 @@ export class ActivityTrackingModel extends HoistModel {
         return this.groupingChooserModel.value;
     }
 
-    /**
-     * Summary of currently active query / filters.
-     * TODO - include new local filters if feasible, or drop this altogether.
-     * Formerly summarized server-side filters, but was misleading w/new filtering.
-     */
-    get queryDisplayString(): string {
-        return `${XH.appName} Activity`;
-    }
-
     get endDay(): LocalDate {
         return this.formModel.values.endDay;
+    }
+
+    @computed
+    get hasFilter(): boolean {
+        return !!this.filterChooserModel.value;
     }
 
     get maxRowOptions() {
@@ -69,160 +77,66 @@ export class ActivityTrackingModel extends HoistModel {
         return this.maxRows === this.cube.store.allCount;
     }
 
+    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
+    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
+    //        underlying field.
+    get dataFieldCols(): ColumnSpec[] {
+        return this.dataFields.map(df => ({
+            field: df,
+            renderer: this.getDfRenderer(df),
+            appData: {showInAggGrid: !!df.aggregator}
+        }));
+    }
+
+    get viewManagerModel() {
+        return getAppModel().viewManagerModels.activityTracking;
+    }
+
     private _monthFormat = 'MMM YYYY';
-    private _defaultDims = ['username'];
 
     constructor() {
         super();
         makeObservable(this);
-        this.formModel = new FormModel({
-            fields: [
-                {name: 'startDay', initialValue: () => this.defaultStartDay},
-                {name: 'endDay', initialValue: () => this.defaultEndDay},
-                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
-            ]
-        });
 
-        this.cube = new Cube({
-            fields: [
-                Col.browser.field,
-                Col.category.field,
-                Col.severity.field,
-                Col.correlationId.field,
-                Col.data.field,
-                {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
-                Col.day.field,
-                Col.dayRange.field,
-                Col.device.field,
-                Col.elapsed.field,
-                Col.entryCount.field,
-                Col.impersonating.field,
-                Col.msg.field,
-                Col.userAgent.field,
-                Col.username.field,
-                {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
-                {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
-                Col.url.field,
-                Col.instance.field,
-                Col.appVersion.field,
-                Col.appEnvironment.field,
-                Col.loadId.field,
-                Col.tabId.field
-            ] as CubeFieldSpec[]
-        });
+        this.persistWith = {viewManagerModel: this.viewManagerModel};
+        this.markPersist('showFilterChooser');
 
-        this.filterChooserModel = new FilterChooserModel({
-            fieldSpecs: [
-                {field: 'category'},
-                {field: 'correlationId'},
-                {field: 'username', displayName: 'User'},
-                {field: 'device'},
-                {field: 'browser'},
-                {
-                    field: 'elapsed',
-                    valueRenderer: v => {
-                        return fmtNumber(v, {
-                            label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
-                        });
-                    },
-                    fieldType: 'number'
-                },
-                {field: 'msg', displayName: 'Message'},
-                {field: 'data'},
-                {field: 'userAgent'},
-                {field: 'url', displayName: 'URL'},
-                {field: 'instance'},
-                {field: 'severity'},
-                {field: 'appVersion'},
-                {field: 'loadId'},
-                {field: 'tabId'},
-                {field: 'appEnvironment', displayName: 'Environment'}
-            ]
-        });
+        this.formModel = this.createQueryFormModel();
 
-        this.loadLookupsAsync();
+        this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
+        this.markPersist('dataFields');
 
-        this.groupingChooserModel = new GroupingChooserModel({
-            dimensions: this.cube.dimensions,
-            persistWith: this.persistWith,
-            initialValue: this._defaultDims
-        });
-
-        const hidden = true;
-        this.gridModel = new GridModel({
-            treeMode: true,
-            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            persistWith: {
-                ...this.persistWith,
-                path: 'aggGridModel',
-                persistSort: false
+        this.addReaction(
+            {
+                track: () => this.dataFields,
+                run: () => this.createAndSetCoreModels(),
+                fireImmediately: true
             },
-            colChooserModel: true,
-            enableExport: true,
-            exportOptions: {filename: exportFilename('activity-summary')},
-            emptyText: 'No activity reported...',
-            sortBy: ['cubeLabel'],
-            columns: [
-                {
-                    field: {
-                        name: 'cubeLabel',
-                        type: 'string',
-                        displayName: 'Tracked Activity'
-                    },
-                    flex: 1,
-                    minWidth: 100,
-                    isTreeColumn: true,
-                    comparator: this.cubeLabelComparator.bind(this)
-                },
-                {...Col.username, hidden},
-                {...Col.category, hidden},
-                {...Col.device, hidden},
-                {...Col.browser, hidden},
-                {...Col.userAgent, hidden},
-                {...Col.impersonating, hidden},
-                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
-                {...Col.dayRange, hidden},
-                {...Col.entryCount},
-                {field: 'count', hidden},
-                {...Col.appEnvironment, hidden},
-                {...Col.appVersion, hidden},
-                {...Col.loadId, hidden},
-                {...Col.tabId, hidden},
-                {...Col.url, hidden},
-                {...Col.instance, hidden}
-            ]
-        });
-
-        this.addReaction({
-            track: () => this.query,
-            run: () => this.loadAsync(),
-            debounce: 100
-        });
-
-        this.addReaction({
-            track: () => [this.cube.records, this.dimensions],
-            run: () => this.loadGridAsync(),
-            debounce: 100
-        });
+            {
+                track: () => this.query,
+                run: () => this.loadAsync(),
+                debounce: 100
+            },
+            {
+                track: () => [this.cube.records, this.dimensions],
+                run: () => this.loadGridAsync(),
+                debounce: 100
+            }
+        );
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {enabled, cube} = this;
+        const {enabled, cube, query} = this;
         if (!enabled) return;
 
         try {
-            const data = await XH.fetchService.postJson({
+            const data = await XH.postJson({
                 url: 'trackLogAdmin',
-                body: this.query,
+                body: query,
                 loadSpec
             });
 
-            data.forEach(it => {
-                it.day = LocalDate.from(it.day);
-                it.month = it.day.format(this._monthFormat);
-                it.dayRange = {min: it.day, max: it.day};
-            });
+            data.forEach(it => this.processRawTrackLog(it));
 
             await cube.loadDataAsync(data);
         } catch (e) {
@@ -231,47 +145,23 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    async loadGridAsync() {
-        const {cube, gridModel, dimensions} = this,
-            data = cube.executeQuery({
-                dimensions,
-                includeRoot: true,
-                includeLeaves: true
-            });
-
-        data.forEach(node => this.separateLeafRows(node));
-        gridModel.loadData(data);
-        await gridModel.preSelectFirstAsync();
-    }
-
-    // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
-    // carry the leaves with the record, but deliberately not show them in the tree grid. We only
-    // want the tree grid to show aggregate records.
-    separateLeafRows(node) {
-        if (isEmpty(node.children)) return;
-
-        const childrenAreLeaves = !node.children[0].children;
-        if (childrenAreLeaves) {
-            node.leafRows = node.children;
-            delete node.children;
-        } else {
-            node.children.forEach(child => this.separateLeafRows(child));
+    @action
+    setDataFields(dataFields: ActivityTrackingDataFieldSpec[]) {
+        if (!isEqual(dataFields, this.dataFields)) {
+            this.dataFields = dataFields ?? [];
         }
     }
 
     @action
-    resetQuery() {
-        const {formModel, filterChooserModel, groupingChooserModel, _defaultDims} = this;
-        formModel.init();
-        filterChooserModel.setValue(null);
-        groupingChooserModel.setValue(_defaultDims);
+    toggleFilterChooser() {
+        this.showFilterChooser = !this.showFilterChooser;
     }
 
-    adjustDates(dir) {
+    adjustDates(dir: 'add' | 'subtract') {
         const {startDay, endDay} = this.formModel.fields,
             appDay = LocalDate.currentAppDay(),
-            start = startDay.value,
-            end = endDay.value,
+            start: LocalDate = startDay.value,
+            end: LocalDate = endDay.value,
             diff = end.diff(start),
             incr = diff + 1;
 
@@ -300,7 +190,53 @@ export class ActivityTrackingModel extends HoistModel {
         return startDay === endDay.subtract(value, unit).nextDay();
     }
 
-    cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
+    getDisplayName(fieldName: string) {
+        return fieldName ? (this.cube.store.getField(fieldName)?.displayName ?? fieldName) : null;
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    private createQueryFormModel(): FormModel {
+        return new FormModel({
+            persistWith: {...this.persistWith, path: 'queryFormValues', includeFields: ['maxRows']},
+            fields: [
+                {name: 'startDay', initialValue: () => LocalDate.currentAppDay()},
+                {name: 'endDay', initialValue: () => LocalDate.currentAppDay()},
+                {name: 'maxRows', initialValue: XH.trackService.conf.maxRows?.default}
+            ]
+        });
+    }
+
+    private async loadGridAsync() {
+        const {cube, gridModel, dimensions} = this,
+            data = cube.executeQuery({
+                dimensions,
+                includeRoot: true,
+                includeLeaves: true
+            });
+
+        data.forEach(node => this.separateLeafRows(node));
+        gridModel.loadData(data);
+        await gridModel.preSelectFirstAsync();
+    }
+
+    // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
+    // carry the leaves with the record, but deliberately not show them in the tree grid. We only
+    // want the tree grid to show aggregate records.
+    private separateLeafRows(node) {
+        if (isEmpty(node.children)) return;
+
+        const childrenAreLeaves = !node.children[0].children;
+        if (childrenAreLeaves) {
+            node.leafRows = node.children;
+            delete node.children;
+        } else {
+            node.children.forEach(child => this.separateLeafRows(child));
+        }
+    }
+
+    private cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
         const rawA = recordA?.raw,
             rawB = recordB?.raw,
             sortValA = this.getComparableValForDim(rawA, rawA?.cubeDimension),
@@ -309,7 +245,7 @@ export class ActivityTrackingModel extends HoistModel {
         return defaultComparator(sortValA, sortValB);
     }
 
-    getComparableValForDim(raw, dim) {
+    private getComparableValForDim(raw, dim) {
         const rawVal = raw ? raw[dim] : null;
         if (rawVal == null) return null;
 
@@ -326,32 +262,6 @@ export class ActivityTrackingModel extends HoistModel {
         }
     }
 
-    private get defaultStartDay() {
-        return LocalDate.currentAppDay();
-    }
-
-    private get defaultEndDay() {
-        return LocalDate.currentAppDay();
-    }
-
-    private async loadLookupsAsync() {
-        try {
-            const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'});
-            this.filterChooserModel.fieldSpecs.forEach(spec => {
-                const {field} = spec,
-                    lookup = lookups[field] ? compact(lookups[field]) : null;
-
-                if (!isEmpty(lookup)) {
-                    spec.values = lookup;
-                    spec.enableValues = true;
-                    spec.hasExplicitValues = true;
-                }
-            });
-        } catch (e) {
-            XH.handleException(e, {title: 'Error loading lookups for filtering'});
-        }
-    }
-
     @computed
     private get query() {
         const {values} = this.formModel;
@@ -361,5 +271,188 @@ export class ActivityTrackingModel extends HoistModel {
             maxRows: values.maxRows,
             filters: this.filterChooserModel.value
         };
+    }
+
+    //------------------------
+    // Impl - core data models
+    //------------------------
+    @action
+    private createAndSetCoreModels() {
+        this.cube = this.createCube();
+        this.filterChooserModel = this.createFilterChooserModel();
+        this.groupingChooserModel = this.createGroupingChooserModel();
+        this.gridModel = this.createGridModel();
+    }
+
+    private createCube(): Cube {
+        const fields = [
+            Col.appEnvironment.field,
+            Col.appVersion.field,
+            Col.browser.field,
+            Col.category.field,
+            Col.correlationId.field,
+            {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
+            Col.data.field,
+            {...(Col.dateCreated.field as FieldSpec), displayName: 'Timestamp'},
+            Col.day.field,
+            Col.dayRange.field,
+            Col.device.field,
+            Col.elapsed.field,
+            Col.entryCount.field,
+            Col.impersonating.field,
+            Col.instance.field,
+            Col.loadId.field,
+            Col.msg.field,
+            {name: 'month', type: 'string', isDimension: true, aggregator: 'UNIQUE'},
+            Col.severity.field,
+            Col.tabId.field,
+            Col.userAgent.field,
+            Col.username.field,
+            Col.url.field,
+            ...this.dataFields
+        ] as CubeFieldSpec[];
+
+        return new Cube({fields});
+    }
+
+    private createFilterChooserModel(): FilterChooserModel {
+        // TODO - data fields?
+        const ret = new FilterChooserModel({
+            persistWith: {...this.persistWith, persistFavorites: false},
+            fieldSpecs: [
+                {field: 'appEnvironment', displayName: 'Environment'},
+                {field: 'appVersion'},
+                {field: 'browser'},
+                {field: 'category'},
+                {field: 'correlationId'},
+                {field: 'data'},
+                {field: 'device'},
+                {
+                    field: 'elapsed',
+                    valueRenderer: v => {
+                        return fmtNumber(v, {
+                            label: 'ms',
+                            formatConfig: {thousandSeparated: false, mantissa: 0}
+                        });
+                    },
+                    fieldType: 'number'
+                },
+                {field: 'instance'},
+                {field: 'loadId'},
+                {field: 'msg', displayName: 'Message'},
+                {field: 'severity'},
+                {field: 'tabId'},
+                {field: 'userAgent'},
+                {field: 'username', displayName: 'User'},
+                {field: 'url', displayName: 'URL'}
+            ]
+        });
+
+        // Load lookups - not awaited
+        try {
+            XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
+                if (ret !== this.filterChooserModel) return;
+                ret.fieldSpecs.forEach(spec => {
+                    const {field} = spec,
+                        lookup = lookups[field] ? compact(lookups[field]) : null;
+
+                    if (!isEmpty(lookup)) {
+                        spec.values = lookup;
+                        spec.enableValues = true;
+                        spec.hasExplicitValues = true;
+                    }
+                });
+            });
+        } catch (e) {
+            XH.handleException(e, {title: 'Error loading lookups for filtering'});
+        }
+
+        return ret;
+    }
+
+    private createGroupingChooserModel(): GroupingChooserModel {
+        return new GroupingChooserModel({
+            persistWith: {...this.persistWith, persistFavorites: false},
+            dimensions: this.cube.dimensions,
+            initialValue: ['username', 'category']
+        });
+    }
+
+    private createGridModel(): GridModel {
+        const hidden = true;
+        return new GridModel({
+            persistWith: {...this.persistWith, path: 'aggGrid'},
+            enableExport: true,
+            colChooserModel: true,
+            treeMode: true,
+            treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
+            autosizeOptions: {mode: 'managed'},
+            exportOptions: {filename: exportFilename('activity-summary')},
+            emptyText: 'No activity reported...',
+            sortBy: ['cubeLabel'],
+            columns: [
+                {
+                    field: {
+                        name: 'cubeLabel',
+                        type: 'string',
+                        displayName: 'Group'
+                    },
+                    minWidth: 100,
+                    isTreeColumn: true,
+                    comparator: this.cubeLabelComparator.bind(this)
+                },
+                {...Col.username, hidden},
+                {...Col.category, hidden},
+                {...Col.device, hidden},
+                {...Col.browser, hidden},
+                {...Col.userAgent, hidden},
+                {...Col.impersonating, hidden},
+                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
+                {...Col.dayRange, hidden},
+                {...Col.entryCount},
+                {field: 'count', hidden},
+                {...Col.appEnvironment, hidden},
+                {...Col.appVersion, hidden},
+                {...Col.loadId, hidden},
+                {...Col.tabId, hidden},
+                {...Col.url, hidden},
+                {...Col.instance, hidden},
+                ...this.dataFieldCols.map(it => ({...it, hidden: !it.appData.showInAggGrid}))
+            ]
+        });
+    }
+
+    //------------------------------
+    // Impl - data fields processing
+    //------------------------------
+    private processRawTrackLog(raw: PlainObject) {
+        try {
+            raw.day = LocalDate.from(raw.day);
+            raw.month = raw.day.format(this._monthFormat);
+            raw.dayRange = {min: raw.day, max: raw.day};
+
+            const data = JSON.parse(raw.data);
+            if (isEmpty(data)) return;
+
+            this.dataFields.forEach(df => {
+                const path = df.path;
+                raw[df.name] = get(data, path);
+            });
+        } catch (e) {
+            this.logError(`Error processing raw track log`, e);
+        }
+    }
+
+    private getDfRenderer(df: ActivityTrackingDataFieldSpec): ColumnRenderer {
+        switch (df.type) {
+            case 'number':
+                return numberRenderer();
+            case 'date':
+                return dateTimeSecRenderer();
+            case 'localDate':
+                return dateRenderer();
+            default:
+                return v => v ?? '-';
+        }
     }
 }

@@ -13,9 +13,8 @@ import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {forOwn, orderBy, sortBy} from 'lodash';
-import {observable, runInAction} from 'mobx';
 
 export interface PastInstance {
     name: string;

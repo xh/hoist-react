@@ -4,11 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {clientErrorsPanel} from '@xh/hoist/admin/tabs/client/errors/ClientErrorsPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {clientErrorsPanel} from '@xh/hoist/admin/tabs/client/errors/ClientErrorsPanel';
-import {feedbackPanel} from './feedback/FeedbackPanel';
 import {clientsPanel} from './clients/ClientsPanel';
 
 export const clientTab = hoistCmp.factory(() =>
@@ -18,8 +17,7 @@ export const clientTab = hoistCmp.factory(() =>
             switcher: {orientation: 'left', testId: 'client-tab-switcher'},
             tabs: [
                 {id: 'connections', icon: Icon.diff(), content: clientsPanel},
-                {id: 'errors', icon: Icon.warning(), content: clientErrorsPanel},
-                {id: 'feedback', icon: Icon.comment(), content: feedbackPanel}
+                {id: 'errors', icon: Icon.warning(), content: clientErrorsPanel}
             ]
         }
     })
