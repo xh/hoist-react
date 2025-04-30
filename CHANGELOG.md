@@ -11,11 +11,16 @@ and new properties on `TrackLog`.
 
 * Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
   across all instances in the cluster.
+* Major Enhancements to Admin 'User Activity' tab:
+  * Provide user customizable persisted views via ViewManager.
+  * Provide the ability to promote data in `data` block to grids for aggregation, reporting and charting.
+  * Improved charting.
+  * Enhanced all messages with new `tabId` and `loadId` properties, to disambiguate activity for
+    users with multiple browser tabs and multiple full refreshes/restarts of a client app within
+    the same tab.
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
-* Enhanced all activity tracking messages with new `tabId` and `loadId` properties, to disambiguate
-  tracking activity for users with multiple browser tabs and multiple full refreshes/restarts of a
-  client app within the same tab.
+
 
 ### 🐞 Bug Fixes
 
