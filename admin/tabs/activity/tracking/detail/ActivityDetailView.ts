@@ -36,7 +36,6 @@ export const activityDetailView = hoistCmp.factory({
 const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     const {gridModel} = model;
     return toolbar({
-        compact: true,
         items: [
             filler(),
             gridCountLabel({unit: 'entry'}),
@@ -147,39 +146,49 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
 });
 
 const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    const item = model.formattedData
+        ? jsonInput({
+              readonly: true,
+              width: '100%',
+              height: '100%',
+              showCopyButton: true,
+              value: model.formattedData
+          })
+        : placeholder({
+              items: [
+                  model.hasExtraTrackData ? Icon.filter() : null,
+                  model.hasExtraTrackData
+                      ? 'Additional data available, but hidden by path filter below.'
+                      : 'No additional data available.'
+              ]
+          });
+
     return panel({
         flex: 1,
         className: 'xh-border-left',
         items: [
             h3(Icon.json(), 'Additional Data'),
-            jsonInput({
-                readonly: true,
-                width: '100%',
-                height: '100%',
-                showCopyButton: true,
-                value: model.formattedData
-            }),
-            toolbar({
-                compact: true,
-                items: [
-                    textInput({
-                        placeholder: 'Path filter(s)...',
-                        leftIcon: Icon.filter(),
-                        commitOnChange: true,
-                        enableClear: true,
-                        flex: 1,
-                        bind: 'formattedDataFilterPath'
+            item,
+            toolbar(
+                textInput({
+                    placeholder: 'Path filter(s)...',
+                    leftIcon: Icon.filter({
+                        intent: model.formattedDataFilterPath ? 'warning' : null
                     }),
-                    tooltip({
-                        item: Icon.questionCircle({className: 'xh-margin-right'}),
-                        content: span(
-                            'Specify one or more dot-delimited paths to filter the JSON data displayed above.',
-                            br(),
-                            'Separate multiple paths that you wish to include with a | character.'
-                        )
-                    })
-                ]
-            })
+                    commitOnChange: true,
+                    enableClear: true,
+                    flex: 1,
+                    bind: 'formattedDataFilterPath'
+                }),
+                tooltip({
+                    item: Icon.questionCircle({className: 'xh-margin-right'}),
+                    content: span(
+                        'Specify one or more dot-delimited paths to filter the JSON data displayed above.',
+                        br(),
+                        'Separate multiple paths that you wish to include with a | character.'
+                    )
+                })
+            )
         ]
     });
 });

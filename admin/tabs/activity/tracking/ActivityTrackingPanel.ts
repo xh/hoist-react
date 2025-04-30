@@ -127,7 +127,7 @@ const filterChooserToggleButton = hoistCmp.factory<ActivityTrackingModel>(({mode
     return button({
         text: 'Filter',
         icon: Icon.filter({prefix: hasFilter ? 'fas' : 'far'}),
-        intent: hasFilter ? 'primary' : null,
+        intent: hasFilter ? 'warning' : null,
         outlined: showFilterChooser,
         onClick: () => model.toggleFilterChooser()
     });
@@ -155,7 +155,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             persistWith: {...model.persistWith, path: 'aggPanel'}
         },
         tbar: toolbar({
-            compact: true,
+            // compact: true,
             items: [
                 groupingChooser({flex: 1, maxWidth: 300}),
                 filler(),

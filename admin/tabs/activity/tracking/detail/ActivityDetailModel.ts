@@ -32,6 +32,11 @@ export class ActivityDetailModel extends HoistModel {
     @observable formattedData: string;
 
     @computed
+    get hasExtraTrackData(): boolean {
+        return this.gridModel.selectedRecord?.data.data != null;
+    }
+
+    @computed
     get hasSelection() {
         return this.gridModel.selectedRecord != null;
     }
