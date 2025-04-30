@@ -18,6 +18,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
+import {isNil} from 'lodash';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
 export const activityDetailView = hoistCmp.factory({
@@ -100,7 +101,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   nullDisplay: '-',
                                   formatConfig: {thousandSeparated: false, mantissa: 0}
                               }),
-                              omit: !formModel.values.elapsed
+                              omit: isNil(formModel.values.elapsed)
                           }),
                           formField({
                               field: 'dateCreated',
