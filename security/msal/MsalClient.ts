@@ -8,7 +8,8 @@ import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
     BrowserPerformanceClient,
-    Configuration, InteractionRequiredAuthError,
+    Configuration,
+    InteractionRequiredAuthError,
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
@@ -73,14 +74,6 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * consequences or fail to work with Hoist's expected usage of the client library.
      */
     msalClientOptions?: Partial<msal.Configuration>;
-
-    /**
-     * Maximum number of times this client will try to re-login interactively if tokens begin
-     * failing to load with MSAL `InteractionRequiredAuthException`.  This can happen, for
-     * example, if a refresh token is expired or invalidated during the lifetime of the client,
-     * Default is -1 and no retry will happen.
-     */
-    maxInteractiveLoginRetries?: number;
 }
 
 export interface MsalTokenSpec extends AccessTokenSpec {
@@ -111,18 +104,14 @@ export interface MsalTokenSpec extends AccessTokenSpec {
  * Also see this doc re. use of blankUrl as redirectUri for all "silent" token requests:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
  *
- * TODO: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this library
- *   require 3rd party cookies to be enabled in the browser so that MSAL can load contact in a
- *   hidden iFrame  If its *not* enabled, we may be doing extra work.  Consider checking 3rd party
- *   cookie support and adding conditional behavior?
+ * Important note: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this
+ *    library equire 3rd party cookies to be enabled in the browser so that MSAL can load contact
+ *    in a hidden iFrame.
  */
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account
     private initialTokenLoad: boolean;
-    private pendingLoginRetry: Promise<void> = null;
-    private loginRetryCount: number = 0;
-
 
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
     telemetry: MsalClientTelemetry = null;
@@ -239,7 +228,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
-        const ret = await this.acquireTokenSilentWithRetry({
+        const ret = await this.client.acquireTokenSilent({
             account: this.account,
             scopes: this.idScopes,
             forceRefresh: !useCache,
@@ -254,7 +243,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         spec: MsalTokenSpec,
         useCache: boolean = true
     ): Promise<Token> {
-        const ret = await this.acquireTokenSilentWithRetry({
+        const ret = await this.client.acquireTokenSilent({
             account: this.account,
             scopes: spec.scopes,
             forceRefresh: !useCache,
@@ -272,6 +261,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         loginMethod == 'REDIRECT'
             ? await client.logoutRedirect(opts)
             : await client.logoutPopup(opts);
+    }
+
+    protected override interactiveLoginNeeded(exception: unknown): boolean {
+        return exception instanceof InteractionRequiredAuthError;
     }
 
     //------------------------
@@ -457,32 +450,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.account = account;
         this.setSelectedUsername(account.username);
         this.logDebug('User Authenticated', account.username);
-    }
-
-    private async acquireTokenSilentWithRetry(spec: msal.SilentRequest): Promise<msal.AuthenticationResult> {
-        const {client, config} = this;
-        try {
-            return client.acquireTokenSilent(spec)
-        } catch (e) {
-            if (e instanceof InteractionRequiredAuthError)
-                // Create and start a login task only if needed and possible
-                if (!this.pendingLoginRetry) {
-                    const maxRetries = config.maxInteractiveLoginRetries;
-                    if (this.loginRetryCount >= maxRetries) throw e;
-                    this.loginRetryCount++;
-                    this.logWarn(
-                        'Acquire Token Silent Failed',
-                        `Trying ${this.loginRetryCount} of ${maxRetries}`
-                    );
-                    this.pendingLoginRetry = this
-                        .doLoginPopupAsync()
-                        .tap(() => this.loginRetryCount = 0);
-                }
-            //... but always wait for it to complete
-            await this.pendingLoginRetry;
-
-            return client.acquireTokenSilent(spec);
-        }
     }
 }
 

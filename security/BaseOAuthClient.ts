@@ -73,6 +73,14 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
      * other metadata required by the underlying provider.
      */
     accessTokens?: Record<string, S>;
+
+    /**
+     * Maximum number of times this client will try to re-login interactively if tokens begin
+     * failing to load due with provider-specific exceptions indicating a problem with the users
+     * auth.  This can happen, for example, if a refresh token is expired or invalidated during
+     * the lifetime of the client.  Default is -1 and no retry will happen.
+     */
+    maxInteractiveLoginRetries?: number;
 }
 
 /**
@@ -101,6 +109,8 @@ export abstract class BaseOAuthClient<
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
+    private pendingLoginRetry: Promise<void> = null;
+    private loginRetryCount: number = 0;
 
     //------------------------
     // Public API
@@ -114,6 +124,7 @@ export abstract class BaseOAuthClient<
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
+            maxInteractiveLoginRetries: 2,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -156,7 +167,7 @@ export abstract class BaseOAuthClient<
      * Get an ID token.
      */
     async getIdTokenAsync(): Promise<Token> {
-        return this.fetchIdTokenSafeAsync(true);
+        return this.getWithRetry(() => this.fetchIdTokenSafeAsync(true));
     }
 
     /**
@@ -166,14 +177,14 @@ export abstract class BaseOAuthClient<
         const spec = this.accessSpecs[key];
         if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
 
-        return this.fetchAccessTokenAsync(spec, true);
+        return this.getWithRetry(() => this.fetchAccessTokenAsync(spec, true));
     }
 
     /**
      * Get all configured tokens.
      */
     async getAllTokensAsync(opts?: {eagerOnly?: boolean; useCache?: boolean}): Promise<TokenMap> {
-        return this.fetchAllTokensAsync(opts);
+        return this.getWithRetry(() => this.fetchAllTokensAsync(opts));
     }
 
     /**
@@ -209,6 +220,7 @@ export abstract class BaseOAuthClient<
 
     protected abstract doLogoutAsync(): Promise<void>;
 
+    protected abstract interactiveLoginNeeded(exception: unknown): boolean;
     //---------------------------------------
     // Implementation
     //---------------------------------------
@@ -357,7 +369,7 @@ export abstract class BaseOAuthClient<
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(ONE_MINUTE)) {
+        if (useCache && ret.expiresWithin(58 * MINUTES)) {
             this.logDebug('Stale ID Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
@@ -365,6 +377,42 @@ export abstract class BaseOAuthClient<
         // Paranoia -- we don't expect this after workaround above to skip cache
         throwIf(ret.expiresWithin(ONE_MINUTE), 'Cannot get valid ID Token from provider.');
         return ret;
+    }
+
+    private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
+        const maxRetries = this.config.maxInteractiveLoginRetries;
+
+        try {
+            return await fn();
+        } catch (e) {
+            if (!this.interactiveLoginNeeded(e)) throw e;
+
+            if (this.loginRetryCount >= maxRetries) {
+                XH.track({
+                    severity: 'ERROR',
+                    message: 'Interactive login needed, no login retries left. ',
+                    data: {attempt: this.loginRetryCount, maxRetries}
+                });
+                throw e;
+            }
+
+            // Create and start a login task if needed (otherwise we will just join it)
+            if (!this.pendingLoginRetry) {
+                this.loginRetryCount++;
+
+                this.pendingLoginRetry = this.doLoginPopupAsync()
+                    .tap(() => (this.loginRetryCount = 0))
+                    .track({
+                        message: 'Interactive re-login attempt',
+                        data: {attempt: this.loginRetryCount, maxRetries}
+                    });
+            }
+
+            // ...but always wait for it to complete
+            await this.pendingLoginRetry;
+
+            return await fn();
+        }
     }
 
     @action
