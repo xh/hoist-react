@@ -4,9 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {clientDetailPanel} from '@xh/hoist/admin/tabs/client/clients/activity/ClientDetailPanel';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, fragment, p} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, p} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
@@ -48,7 +49,7 @@ export const clientsPanel = hoistCmp.factory<ClientsModel>({
                 colChooserButton(),
                 exportButton()
             ],
-            item: grid(),
+            items: hframe(grid(), clientDetailPanel()),
             mask: 'onLoad',
             ref: model.viewRef
         });

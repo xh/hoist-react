@@ -13,6 +13,8 @@ import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {ReactElement} from 'react';
 
+const autosizeMaxWidth = 400;
+
 export const appBuild: ColumnSpec = {
     field: {
         name: 'appBuild',
@@ -74,7 +76,7 @@ export const correlationId: ColumnSpec = {
 export const data: ColumnSpec = {
     field: {name: 'data', type: 'json'},
     width: 250,
-    autosizeMaxWidth: 400
+    autosizeMaxWidth
 };
 
 export const day: ColumnSpec = {
@@ -179,7 +181,7 @@ export const error: ColumnSpec = {
         type: 'string'
     },
     width: 250,
-    autosizeMaxWidth: 400,
+    autosizeMaxWidth,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
 };
 
@@ -211,7 +213,7 @@ export const msg: ColumnSpec = {
         aggregator: 'UNIQUE'
     },
     width: 250,
-    autosizeMaxWidth: 400
+    autosizeMaxWidth
 };
 
 export const severity: ColumnSpec = {
@@ -267,13 +269,13 @@ export const url: ColumnSpec = {
         displayName: 'URL'
     },
     width: 250,
-    autosizeMaxWidth: 400
+    autosizeMaxWidth
 };
 
 export const urlPathOnly: ColumnSpec = {
     field: url.field,
     width: 250,
-    autosizeMaxWidth: 400,
+    autosizeMaxWidth,
     tooltip: true,
     renderer: v => {
         if (!v) return null;
@@ -293,7 +295,8 @@ export const userAgent: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
-    width: 130
+    width: 130,
+    autosizeMaxWidth
 };
 
 export const userAlertedFlag: ColumnSpec = {

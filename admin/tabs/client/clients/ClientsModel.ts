@@ -73,6 +73,8 @@ export class ClientsModel extends BaseAdminTabModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
+        const {gridModel} = this;
+
         try {
             const data = await XH.fetchJson({
                 url: 'clientAdmin/allClients',
@@ -80,12 +82,15 @@ export class ClientsModel extends BaseAdminTabModel {
             });
             if (loadSpec.isStale) return;
 
-            this.gridModel.loadData(data);
+            gridModel.loadData(data);
+            gridModel.preSelectFirstAsync();
             runInAction(() => {
                 this.lastRefresh = Date.now();
             });
         } catch (e) {
-            if (loadSpec.isStale) return;
+            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+
+            gridModel.clear();
             XH.handleException(e, {alertType: 'toast'});
         }
     }
