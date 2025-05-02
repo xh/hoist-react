@@ -17,6 +17,7 @@ export const dateCreatedNoYear: ColumnSpec = {
     ...Col.dateTimeSec,
     field: {name: 'dateCreated', type: 'date'},
     tooltip: true,
+    align: 'right',
     renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss'})
 };
 
