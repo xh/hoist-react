@@ -144,10 +144,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.refreshContextModel.xhImpl = xhImpl;
 
         if (route) {
-            if (XH.isMobileApp) {
-                this.logWarn('TabContainer routing is not supported for mobile applications.');
-                return;
-            }
+            // if (XH.isMobileApp) {
+            //     this.logWarn('TabContainer routing is not supported for mobile applications.');
+            //     return;
+            // }
 
             this.addReaction({
                 track: () => XH.routerState,
@@ -356,8 +356,11 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             {router} = XH,
             state = router.getState();
 
+        console.log('syncWithRouter', state, router.isActive(route));
+
         if (state && router.isActive(route)) {
             const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
+            console.log('activating', tab);
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }
