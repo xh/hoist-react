@@ -32,6 +32,8 @@ and new properties on `TrackLog`.
 
 * Corrected `GridGroupSortFn` param types.
 * Corrected `StoreCountLabelProps` interface.
+* Corrected `textAlign` type in `DateInputProps`, `NumberInputProps` `SearchInputProps` and
+  `TextInputProps`.
 
 ### ⚙️ Technical
 
