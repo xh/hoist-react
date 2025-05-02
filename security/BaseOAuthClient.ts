@@ -390,7 +390,8 @@ export abstract class BaseOAuthClient<
     }
 
     private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
-        const {reloginMaxAttempts, reloginTimeoutSecs} = this.config;
+        const {reloginMaxAttempts, reloginTimeoutSecs} = this.config,
+            {appContainerModel} = XH;
 
         try {
             return await fn();
@@ -404,14 +405,18 @@ export abstract class BaseOAuthClient<
             // Create and start a login task if needed (otherwise we will just join it)
             if (!this.reloginPendingTask) {
                 this.reloginCount++;
+                const started = Date.now();
                 this.reloginPendingTask = this.doLoginPopupAsync()
-                    .tap(() => (this.reloginCount = 0))
                     .timeout(reloginTimeoutSecs * SECONDS)
+                    .tap(() => (this.reloginCount = 0))
                     .track({
                         message: 'Interactive re-login attempt.',
                         data: {attempt: this.reloginCount, maxAttempts: reloginMaxAttempts}
                     })
-                    .catch(e => this.rethrowLoginRequired('Re-login attempt failed', e));
+                    .catch(e => this.rethrowLoginRequired('Re-login attempt failed', e))
+                    .finally(() => {
+                        appContainerModel.lastInteractiveLogin = {started, completed: Date.now()};
+                    });
             }
 
             // ...but always wait for it to complete

@@ -203,12 +203,16 @@ const enhancePromise = promisePrototype => {
 
             const startTime = Date.now(),
                 doTrack = (isError: boolean) => {
-                    const opts: TrackOptions = isString(options)
-                        ? {message: options}
-                        : {...options};
-
+                    const endTime = Date.now(),
+                        opts: TrackOptions = isString(options) ? {message: options} : {...options};
                     opts.timestamp = startTime;
-                    opts.elapsed = Date.now() - startTime;
+                    opts.elapsed = endTime - startTime;
+
+                    // Remove any time spent during interactive login, if it was within the period!
+                    const login = XH.appContainerModel.lastInteractiveLogin;
+                    if (login && login.completed <= endTime) {
+                        // opts.elapsed -= (login.completed - max(login.started, startTime);
+                    }
                     if (isError) opts.severity = 'ERROR';
 
                     XH.track(opts);
