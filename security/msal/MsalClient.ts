@@ -8,7 +8,7 @@ import * as msal from '@azure/msal-browser';
 import {
     AccountInfo,
     BrowserPerformanceClient,
-    Configuration,
+    Configuration, InteractionRequiredAuthError,
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
@@ -73,6 +73,14 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      * consequences or fail to work with Hoist's expected usage of the client library.
      */
     msalClientOptions?: Partial<msal.Configuration>;
+
+    /**
+     * Maximum number of times this client will try to re-login interactively if tokens begin
+     * failing to load with MSAL `InteractionRequiredAuthException`.  This can happen, for
+     * example, if a refresh token is expired or invalidated during the lifetime of the client,
+     * Default is -1 and no retry will happen.
+     */
+    maxInteractiveLoginRetries?: number;
 }
 
 export interface MsalTokenSpec extends AccessTokenSpec {
@@ -112,6 +120,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     private client: IPublicClientApplication;
     private account: AccountInfo; // Authenticated account
     private initialTokenLoad: boolean;
+    private pendingLoginRetry: Promise<void> = null;
+    private loginRetryCount: number = 0;
+
 
     /** Enable telemetry via `enableTelemetry` ctor config, or via {@link enableTelemetry}. */
     telemetry: MsalClientTelemetry = null;
@@ -228,7 +239,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async fetchIdTokenAsync(useCache: boolean = true): Promise<Token> {
-        const ret = await this.client.acquireTokenSilent({
+        const ret = await this.acquireTokenSilentWithRetry({
             account: this.account,
             scopes: this.idScopes,
             forceRefresh: !useCache,
@@ -243,7 +254,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         spec: MsalTokenSpec,
         useCache: boolean = true
     ): Promise<Token> {
-        const ret = await this.client.acquireTokenSilent({
+        const ret = await this.acquireTokenSilentWithRetry({
             account: this.account,
             scopes: spec.scopes,
             forceRefresh: !useCache,
@@ -446,6 +457,32 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.account = account;
         this.setSelectedUsername(account.username);
         this.logDebug('User Authenticated', account.username);
+    }
+
+    private async acquireTokenSilentWithRetry(spec: msal.SilentRequest): Promise<msal.AuthenticationResult> {
+        const {client, config} = this;
+        try {
+            return client.acquireTokenSilent(spec)
+        } catch (e) {
+            if (e instanceof InteractionRequiredAuthError)
+                // Create and start a login task only if needed and possible
+                if (!this.pendingLoginRetry) {
+                    const maxRetries = config.maxInteractiveLoginRetries;
+                    if (this.loginRetryCount >= maxRetries) throw e;
+                    this.loginRetryCount++;
+                    this.logWarn(
+                        'Acquire Token Silent Failed',
+                        `Trying ${this.loginRetryCount} of ${maxRetries}`
+                    );
+                    this.pendingLoginRetry = this
+                        .doLoginPopupAsync()
+                        .tap(() => this.loginRetryCount = 0);
+                }
+            //... but always wait for it to complete
+            await this.pendingLoginRetry;
+
+            return client.acquireTokenSilent(spec);
+        }
     }
 }
 
