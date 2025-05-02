@@ -9,18 +9,18 @@ and new properties on `TrackLog`.
 
 ### 🎁 New Features
 
-* Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
+* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
   across all instances in the cluster.
-* Major Enhancements to Admin 'User Activity' tab:
-  * Provide user customizable persisted views via ViewManager.
-  * Provide the ability to promote data in `data` block to grids for aggregation, reporting and charting.
-  * Improved charting.
-  * Enhanced all messages with new `tabId` and `loadId` properties, to disambiguate activity for
-    users with multiple browser tabs and multiple full refreshes/restarts of a client app within
-    the same tab.
+* Significantly upgraded the Admin Console "User Activity" tab with:
+    * Persisted custom views via `ViewManager`.
+    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
+    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
+      users with multiple browser tabs and multiple full refreshes/restarts of a client app within
+      the same tab.
+    * Improved charting, with a column chart used for both timeseries and category data and fixes to
+      the "skip weekends" option.
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
-
 
 ### 🐞 Bug Fixes
 
@@ -30,8 +30,8 @@ and new properties on `TrackLog`.
 
 ### ⚙️ Typescript API Adjustments
 
-* Corrected `StoreCountLabelProps` interface.
 * Corrected `GridGroupSortFn` param types.
+* Corrected `StoreCountLabelProps` interface.
 
 ### ⚙️ Technical
 
@@ -43,8 +43,8 @@ and new properties on `TrackLog`.
       the client remained on an older version.
     * Note that a misconfigured build - where the client build version is not set to the same value
       as the server - would result in a false positive for an upgrade. The two should always match.
-*  Calls to `Promise.track()` that are rejected with an exception will be tracked with new
-   severity level of `TrackSeverity.ERROR`
+* Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+  severity level of `TrackSeverity.ERROR`
 
 ## v72.5.1 - 2025-04-15
 
