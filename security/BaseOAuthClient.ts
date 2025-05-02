@@ -379,7 +379,7 @@ export abstract class BaseOAuthClient<
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(58 * MINUTES)) {
+        if (useCache && ret.expiresWithin(1 * MINUTES)) {
             this.logDebug('Stale ID Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
