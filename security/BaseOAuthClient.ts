@@ -76,11 +76,20 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
 
     /**
      * Maximum number of times this client will try to re-login interactively if tokens begin
-     * failing to load due with provider-specific exceptions indicating a problem with the users
+     * failing to load due to provider-specific exceptions indicating a problem with the user's
      * auth.  This can happen, for example, if a refresh token is expired or invalidated during
-     * the lifetime of the client.  Default is -1 and no retry will happen.
+     * the lifetime of the client.  Default is 0 and no retries will be attempted.
      */
-    maxInteractiveLoginRetries?: number;
+    reloginMaxAttempts?: number;
+
+    /**
+     * Maximum time for (interactive) re-login.
+     *
+     * Set to a reasonably fixed amount of time, to allow user to type in password and complete
+     * MFA, but not so long as to allow a problematic build-up of application requests.
+     * Default 60secs;
+     */
+    reloginTimeoutSecs?: number;
 }
 
 /**
@@ -109,8 +118,8 @@ export abstract class BaseOAuthClient<
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
-    private pendingLoginRetry: Promise<void> = null;
-    private loginRetryCount: number = 0;
+    private reloginPendingTask: Promise<void> = null;
+    private reloginCount: number = 0;
 
     //------------------------
     // Public API
@@ -124,7 +133,8 @@ export abstract class BaseOAuthClient<
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
-            maxInteractiveLoginRetries: 2,
+            reloginMaxAttempts: 0,
+            reloginTimeoutSecs: 60,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -380,39 +390,41 @@ export abstract class BaseOAuthClient<
     }
 
     private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
-        const maxRetries = this.config.maxInteractiveLoginRetries;
+        const {reloginMaxAttempts, reloginTimeoutSecs} = this.config;
 
         try {
             return await fn();
         } catch (e) {
             if (!this.interactiveLoginNeeded(e)) throw e;
 
-            if (this.loginRetryCount >= maxRetries) {
-                XH.track({
-                    severity: 'ERROR',
-                    message: 'Interactive login needed, no login retries left. ',
-                    data: {attempt: this.loginRetryCount, maxRetries}
-                });
-                throw e;
+            if (this.reloginCount >= reloginMaxAttempts) {
+                this.rethrowLoginRequired('Re-login disallowed or no attempts remaining.', e);
             }
 
             // Create and start a login task if needed (otherwise we will just join it)
-            if (!this.pendingLoginRetry) {
-                this.loginRetryCount++;
-
-                this.pendingLoginRetry = this.doLoginPopupAsync()
-                    .tap(() => (this.loginRetryCount = 0))
+            if (!this.reloginPendingTask) {
+                this.reloginCount++;
+                this.reloginPendingTask = this.doLoginPopupAsync()
+                    .tap(() => (this.reloginCount = 0))
+                    .timeout(reloginTimeoutSecs * SECONDS)
                     .track({
-                        message: 'Interactive re-login attempt',
-                        data: {attempt: this.loginRetryCount, maxRetries}
-                    });
+                        message: 'Interactive re-login attempt.',
+                        data: {attempt: this.reloginCount, maxAttempts: reloginMaxAttempts}
+                    })
+                    .catch(e => this.rethrowLoginRequired('Re-login attempt failed', e));
             }
 
             // ...but always wait for it to complete
-            await this.pendingLoginRetry;
+            await this.reloginPendingTask;
 
             return await fn();
         }
+    }
+
+    private rethrowLoginRequired(message: string, cause: unknown) {
+        const e = XH.exception({name: 'Login Required', message, cause});
+        XH.handleException(e, {showAlert: false});
+        throw e;
     }
 
     @action

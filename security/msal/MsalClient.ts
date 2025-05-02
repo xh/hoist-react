@@ -105,7 +105,7 @@ export interface MsalTokenSpec extends AccessTokenSpec {
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
  *
  * Important note: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this
- *    library equire 3rd party cookies to be enabled in the browser so that MSAL can load contact
+ *    library require 3rd party cookies to be enabled in the browser so that MSAL can load contact
  *    in a hidden iFrame.
  */
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
