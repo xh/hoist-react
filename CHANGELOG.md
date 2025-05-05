@@ -4,8 +4,14 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab
-and new properties on `TrackLog`.
+* Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients"
+  tab and new properties on `TrackLog`.
+* Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
+  ensure they call `super.initAsync()` within their override of that lifecycle method, if
+  applicable. This did not previously have any effect, but is required now for the superclass to
+  initialize a new `ViewManagerModel`.
+  * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+
 
 ### 🎁 New Features
 
@@ -41,7 +47,7 @@ and new properties on `TrackLog`.
     * The two versions *should* be the same, but in cases where a browser "restores" a tab and
       re-inits an app without reloading the code itself, the upgrade check would miss the fact that
       the client remained on an older version.
-    * Note that a misconfigured build - where the client build version is not set to the same value
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
       as the server - would result in a false positive for an upgrade. The two should always match.
 * Calls to `Promise.track()` that are rejected with an exception will be tracked with new
   severity level of `TrackSeverity.ERROR`
