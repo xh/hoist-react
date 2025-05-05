@@ -31,6 +31,25 @@
       margin-right: var(--xh-pad-half-px);
     }
   }
+
+  &__data-fields-editor {
+    width: 50vw;
+    min-width: 700px;
+    max-width: 1000px;
+    min-height: 200px;
+
+    &__row {
+      align-items: flex-start;
+      flex: none;
+      margin-left: 5px;
+      margin-right: 5px;
+      gap: 5px;
+
+      &:first-child {
+        margin-top: 5px;
+      }
+    }
+  }
 }
 
 .xh-admin-activity-detail {
@@ -54,14 +73,6 @@
       font-size: var(--xh-font-size-small-px);
       padding: 0;
     }
-  }
-
-  &__message {
-    background-color: var(--xh-grid-bg-odd);
-    padding: var(--xh-pad-px);
-    overflow: auto;
-    width: 100%;
-    height: 100%;
   }
 
   h3 {

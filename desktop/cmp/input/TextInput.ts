@@ -7,13 +7,14 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
@@ -63,7 +64,7 @@ export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /** True to allow browser spell check, default false. */
     spellCheck?: boolean;

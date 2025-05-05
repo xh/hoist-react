@@ -23,16 +23,19 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
     if (!selectedRecord) return null;
 
     return panel({
-        className: 'xh-admin-activity-detail',
+        className: 'xh-admin-client-errors-detail',
+        collapsedTitle: 'Error Details',
+        collapsedIcon: Icon.info(),
+        compactHeader: true,
         modelConfig: {
             side: 'bottom',
-            defaultSize: 370
+            defaultSize: 400
         },
         item: form({
             fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
             item: hframe(
                 div({
-                    className: 'xh-admin-activity-detail__form',
+                    className: 'xh-admin-client-errors-detail__form',
                     style: {width: '400px'},
                     items: [
                         h3(Icon.info(), 'Error Info'),
@@ -89,12 +92,13 @@ export const clientErrorDetail = hoistCmp.factory<ClientErrorsModel>(({model}) =
                     className: 'xh-border-left',
                     items: [
                         panel({
-                            height: 100,
+                            flex: 0.5,
                             className: 'xh-border-bottom',
                             items: [
                                 h3(Icon.comment(), 'User Message'),
                                 div({
-                                    className: `xh-admin-activity-detail__message`,
+                                    className: `xh-pad`,
+                                    style: {overflowY: 'auto'},
                                     item: userMsg
                                 })
                             ],

@@ -2,9 +2,128 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-* Requires `hoist-core >= 28.1` with new APIs to support JSON searching in the Admin Console.
+* Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients"
+  tab and new properties on `TrackLog`.
+* Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
+  ensure they call `super.initAsync()` within their override of that lifecycle method, if
+  applicable. This did not previously have any effect, but is required now for the superclass to
+  initialize a new `ViewManagerModel`.
+  * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+
+
+### 🎁 New Features
+
+* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
+  across all instances in the cluster.
+* Significantly upgraded the Admin Console "User Activity" tab with:
+    * Persisted custom views via `ViewManager`.
+    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
+    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
+      users with multiple browser tabs and multiple full refreshes/restarts of a client app within
+      the same tab.
+    * Improved charting, with a column chart used for both timeseries and category data and fixes to
+      the "skip weekends" option.
+* Updated `FormModel` to support `persistWith` for storing and recalling its values, including
+  developer options to persist all or a provided subset of fields.
+
+### 🐞 Bug Fixes
+
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+* Disable `dashCanvasAddViewButton` if there are no `menuItems` to show.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `GridGroupSortFn` param types.
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `textAlign` type in `DateInputProps`, `NumberInputProps` `SearchInputProps` and
+  `TextInputProps`.
+
+### ⚙️ Technical
+
+* Updated the background version checking performed by `EnvironmentService` to use the app version
+  and build information baked into the client build when comparing against the latest values from
+  the server. Previously the versions loaded from the server on init were used as the baseline.
+    * The two versions *should* be the same, but in cases where a browser "restores" a tab and
+      re-inits an app without reloading the code itself, the upgrade check would miss the fact that
+      the client remained on an older version.
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
+      as the server - would result in a false positive for an upgrade. The two should always match.
+* Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+  severity level of `TrackSeverity.ERROR`
+
+## v72.5.1 - 2025-04-15
+
+### 🐞 Bug Fixes
+
+* Allow the display of very long log lines in Admin log viewer.
+
+## v72.5.0 - 2025-04-14
+
+### 🎁 New Features
+
+* Added option from the Admin Console > Websockets tab to request a client health report from any
+  connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
+* Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
+* Support for reporting App Build, Tab Id, and Load Id in websocket admin page.
+
+## v72.4.0 - 2025-04-09
+
+### 🎁 New Features
+
+* Added new methods for formatting timestamps within JSON objects. See `withFormattedTimestamps`
+  and `timestampReplacer` in the `@xh/hoist/format` package.
+* Added new `ViewManagerConfig.viewMenuItemFn` option to support custom rendering of pinned views in
+  the drop-down menu.
+
+### ⚙️ Technical
+
+* Added dedicated `ClientHealthService` for managing client health report. Additional enhancements
+  to health report to include information about web sockets, idle time, and page state.
+
+## v72.3.0 - 2025-04-08
+
+### 🎁 New Features
+
+* Added support for posting a "Client Health Report" track message on a configurable interval. This
+  message will include basic client information, and can be extended to include any other desired
+  data via `XH.clientHealthService.addSource()`. Enable by updating your app's
+  `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
+* Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
+  timing and success/failure count for all events emitted by the library.
+* Added the reported client app version as a column in the Admin Console WebSockets tab.
+
+### 🐞 Bug Fixes
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.28 → 4.8.0`
+
+## v72.2.0 - 2025-03-13
+
+### 🎁 New Features
+
+* Modified `TabContainerModel` to make more methods `protected`, improving extensibility for
+  advanced use-cases.
+* Enhanced `XH.reloadApp` with new argument to clear query parameters before loading.
+* Enhanced exception handling in `FetchService` to capture messages returned as raw strings, or
+  without explicit names.
+* Added dedicated columns to the Admin Console "Client Errors" tab for error names and messages.
+* `BaseOAuthClient` has been enhanced to allow `lazy` loading of Access Tokens, and also made more
+  robust such that Access Tokens that fail to load will never prevent the client from
+  initialization.
+
+### 🐞 Bug Fixes
+
+* Prevented native browser context menu from showing on `DashCanvas` surfaces and obscuring the
+  `DashCanvas` custom context menu.
+
+## v72.1.0 - 2025-02-13
 
 ### 🎁 New Features
 
@@ -15,12 +134,16 @@
 * Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
   User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
   to filter and match data using JSON Path expressions.
-* New aliases `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` provide a more
- consistent API in the data package.
+    * ⚠️Requires `hoist-core >= 28.1` with new APIs for this (optional) feature to function.
+* Added new getters `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` to provide a
+  more consistent API in the data package. The pre-existing `isModified` getters are retained as
+  aliases, with the same semantics.
 
 ### 🐞 Bug Fixes
 
-* Fixed Role grid losing view state on refresh.
+* Tuned mobile swipe handling to prevent horizontal swipes on a scrolling grid view from triggering
+  the Navigator's back gesture.
+* Prevented the Admin Console Roles grid from losing its expand/collapse/scroll state on refresh.
 * Fixed bug when merging `PersistOptions` with conflicting implicit provider types.
 * Fixed bug where explicit `persistGrouping` options were not being respected by `GridModel`.
 

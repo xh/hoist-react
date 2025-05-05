@@ -13,6 +13,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
 import download from 'downloadjs';
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -119,7 +120,13 @@ export class LogViewerModel extends BaseInstanceModel {
             if (!count) return;
 
             const confirmed = await XH.confirm({
-                message: `Delete ${count} log files on the server? This cannot be undone.`
+                message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
+                confirmProps: {
+                    text: `Yes, delete the ${pluralize('file', count)}`,
+                    intent: 'danger',
+                    outlined: true,
+                    autoFocus: false
+                }
             });
             if (!confirmed) return;
 

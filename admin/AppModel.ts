@@ -7,20 +7,21 @@
 import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed, XH} from '@xh/hoist/core';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {HoistAppModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
-import {activityTab} from './tabs/activity/ActivityTab';
+import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
+import {clientTab} from './tabs/client/ClientTab';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
-    static instance: AppModel;
-
-    @managed
     tabModel: TabContainerModel;
+
+    viewManagerModels: Record<string, ViewManagerModel> = {};
 
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
@@ -37,6 +38,11 @@ export class AppModel extends HoistAppModel {
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+    }
+
+    override async initAsync() {
+        await this.initViewManagerModelsAsync();
+        await super.initAsync();
     }
 
     override getRoutes(): Route[] {
@@ -64,6 +70,7 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
+                    {name: 'feedback', path: '/feedback'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
@@ -79,13 +86,18 @@ export class AppModel extends HoistAppModel {
                             {name: 'memory', path: '/memory'},
                             {name: 'jdbcPool', path: '/jdbcPool'},
                             {name: 'environment', path: '/environment'},
-                            {name: 'services', path: '/services'},
-                            {name: 'hibernate', path: '/hibernate'},
-                            {name: 'consistency', path: '/consistency'},
-                            {name: 'webSockets', path: '/webSockets'}
+                            {name: 'services', path: '/services'}
                         ]
                     },
                     {name: 'objects', path: '/objects'}
+                ]
+            },
+            {
+                name: 'clients',
+                path: '/clients',
+                children: [
+                    {name: 'connections', path: '/connections'},
+                    {name: 'errors', path: '/errors'}
                 ]
             },
             {
@@ -94,12 +106,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'activity',
-                path: '/activity',
-                children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
+                path: '/activity'
             },
             {
                 name: 'userData',
@@ -127,6 +134,11 @@ export class AppModel extends HoistAppModel {
                 content: clusterTab
             },
             {
+                id: 'clients',
+                icon: Icon.desktop(),
+                content: clientTab
+            },
+            {
                 id: 'monitors',
                 icon: Icon.shieldCheck(),
                 content: monitorTab
@@ -140,7 +152,7 @@ export class AppModel extends HoistAppModel {
                 id: 'activity',
                 title: 'User Activity',
                 icon: Icon.analytics(),
-                content: activityTab
+                content: activityTrackingPanel
             }
         ];
     }
@@ -153,5 +165,13 @@ export class AppModel extends HoistAppModel {
     getPrimaryAppCode() {
         const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
         return appCodes.find(it => it === 'app') ?? appCodes[0];
+    }
+
+    async initViewManagerModelsAsync() {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
+            type: 'xhAdminActivityTrackingView',
+            typeDisplayName: 'View',
+            manageGlobal: XH.getUser().isHoistAdmin
+        });
     }
 }

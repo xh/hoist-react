@@ -28,7 +28,8 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
-    WebSocketService
+    WebSocketService,
+    ClientHealthService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
@@ -54,6 +55,7 @@ import {
     MessageSpec,
     PageState,
     PlainObject,
+    ReloadAppOptions,
     SizingMode,
     TaskObserver,
     Theme,
@@ -63,8 +65,9 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '21.0';
+export const MIN_HOIST_CORE_VERSION = '28.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -83,6 +86,15 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
+    /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
+    loadId: string = this.genLoadId();
+
+    /**
+     * Unique id for this browser tab/window on this domain.
+     * Corresponds to the scope of the built-in sessionStorage object.
+     */
+    tabId: string = this.genTabId();
+
     //--------------------------
     // Implementation Delegates
     //--------------------------
@@ -130,6 +142,7 @@ export class XHApi {
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
     changelogService: ChangelogService;
+    clientHealthService: ClientHealthService;
     configService: ConfigService;
     environmentService: EnvironmentService;
     fetchService: FetchService;
@@ -392,18 +405,25 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
-     * @param path - relative path to reload (e.g. 'mobile/').  Defaults to the
-     * existing location pathname.
+     * @param opts - options to govern reload. To support legacy usages, a provided
+     *       string will be treated as `ReloadAppOptions.path`.
      *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp(path?: string) {
+    reloadApp(opts?: ReloadAppOptions | string) {
         never().linkTo(this.appLoadModel);
+
+        opts = isString(opts) ? {path: opts} : (opts ?? {});
+
         const {location} = window,
-            href = path ? `${location.origin}/${path.replace(/^\/+/, '')}` : location.href,
+            href = opts.path
+                ? `${location.origin}/${opts.path.replace(/^\/+/, '')}`
+                : location.href,
             url = new URL(href);
+
+        if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
         document.location.assign(url);
@@ -785,6 +805,19 @@ export class XHApi {
     //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
+    }
+
+    private genLoadId(): string {
+        return new ShortUniqueId({length: 8}).rnd();
+    }
+
+    private genTabId(): string {
+        let ret = window.sessionStorage?.getItem('xhTabId');
+        if (!ret) {
+            ret = new ShortUniqueId({length: 8}).rnd();
+            window.sessionStorage?.setItem('xhTabId', ret);
+        }
+        return ret;
     }
 }
 

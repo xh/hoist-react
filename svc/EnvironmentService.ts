@@ -113,7 +113,9 @@ export class EnvironmentService extends HoistService {
     }
 
     /**
-     * Update critical environment information from server.
+     * Update critical environment information from server, including current app version + build,
+     * upgrade prompt mode, and alert banner.
+     *
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
@@ -125,15 +127,15 @@ export class EnvironmentService extends HoistService {
             return;
         }
 
-        // Update config/interval, and server info
+        // Update config/interval, server info, and alert banner.
         const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
         this.pollConfig = pollConfig;
         this.pollTimer.setInterval(this.pollIntervalMs);
         this.setServerInfo(instanceName, appVersion, appBuild);
         XH.alertBannerService.updateBanner(alertBanner);
 
-        // Handle version change
-        if (appVersion != XH.getEnv('appVersion') || appBuild != XH.getEnv('appBuild')) {
+        // Handle version change - compare to constants baked into client build.
+        if (appVersion != XH.appVersion || appBuild != XH.appBuild) {
             // force the user to refresh or prompt the user to refresh via the banner according to config
             // build checked to trigger refresh across SNAPSHOT updates in lower environments
             const {onVersionChange} = pollConfig;

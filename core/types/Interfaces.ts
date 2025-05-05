@@ -6,7 +6,7 @@
  */
 
 import {RuleLike} from '@xh/hoist/data';
-import {ReactElement, ReactNode} from 'react';
+import {MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
@@ -26,6 +26,17 @@ export interface HoistUser {
     isHoistRoleManager: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
+}
+
+/**
+ * Options governing XH.reloadApp().
+ */
+export interface ReloadAppOptions {
+    /** Relative path to reload (e.g. 'mobile/').  Defaults to the existing location pathname. */
+    path?: string;
+
+    /** Should the query parameters be removed from the url before reload.  Default false. */
+    removeQueryParams?: boolean;
 }
 
 /**
@@ -196,7 +207,7 @@ export interface AppOptionSpec {
 /**
  * Severity levels for tracking.  Default is 'INFO'.
  */
-export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN';
+export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 /**
  * Options for tracking activity on the server via TrackService.
@@ -273,7 +284,7 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: () => void;
+    actionFn?: (e: MouseEvent | PointerEvent) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
     prepareFn?: (me: MenuItem) => void;

@@ -44,7 +44,7 @@ export class RoleDetailsModel extends HoistModel {
                 );
 
                 this.setTabTitle('users', 'Users', role?.effectiveUsers);
-                this.setTabTitle('directories', 'Directories', role?.effectiveDirectoryGroups);
+                this.setTabTitle('directories', 'Dir. Groups', role?.effectiveDirectoryGroups);
                 this.setTabTitle('effectiveRoles', 'Granted To', role?.effectiveRoles);
                 this.setTabTitle('inheritedRoles', 'Inheriting From', role?.inheritedRoles);
             },
@@ -77,6 +77,7 @@ export class RoleDetailsModel extends HoistModel {
                 },
                 {
                     id: 'directories',
+                    title: 'Dir. Groups',
                     omit: !this.roleModel.moduleConfig.directoryGroupsSupported,
                     content: directoryMembers
                 },

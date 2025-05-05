@@ -9,16 +9,17 @@ import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, isObject, keys, pickBy, union} from 'lodash';
+import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
-export interface BaseOAuthClientConfig<S> {
+export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -45,25 +46,16 @@ export interface BaseOAuthClientConfig<S> {
      * Governs an optional refresh timer that will work to keep the tokens fresh.
      *
      * A typical refresh will use the underlying provider cache, and should not result in
-     * network activity. However, if any token lifetime falls below`autoRefreshSkipCacheSecs`,
+     * network activity. However, if any token would expire before the next autoRefresh,
      * this client will force a call to the underlying provider to get the token.
      *
      * In order to allow aging tokens to be replaced in a timely manner, this value should be
      * significantly shorter than both the minimum token lifetime that will be
-     * returned by the underlying API and `autoRefreshSkipCacheSecs`.
+     * returned by the underlying API.
      *
      * Default is -1, disabling this behavior.
      */
     autoRefreshSecs?: number;
-
-    /**
-     * During auto-refresh, if the remaining lifetime for any token is below this threshold,
-     * force the provider to skip the local cache and go directly to the underlying provider for
-     * new tokens and refresh tokens.
-     *
-     * Default is -1, disabling this behavior.
-     */
-    autoRefreshSkipCacheSecs?: number;
 
     /**
      * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
@@ -72,14 +64,13 @@ export interface BaseOAuthClientConfig<S> {
     idScopes?: string[];
 
     /**
-     * Optional map of access tokens to be loaded and maintained.
+     * Optional spec for access tokens to be loaded and maintained to support access to one or more
+     * different back-end resources, distinct from the core Hoist auth flow via ID token.
      *
-     * Map of code to a spec for an access token.  The code is app-determined and
-     * will simply be used to get the loaded token via tha getAccessToken() method. The
-     * spec is implementation specific, but will typically include scopes to be loaded
-     * for the access token and potentially other meta-data required by the underlying provider.
-     *
-     * Use this map to gain targeted access tokens for different back-end resources.
+     * Map of key to a spec for an access token. The key is an arbitrary, app-determined string
+     * used to retrieve the loaded token via {@link getAccessTokenAsync}. The spec is implementation
+     * specific, but will typically include scopes to be loaded for the access token and potentially
+     * other metadata required by the underlying provider.
      */
     accessTokens?: Record<string, S>;
 }
@@ -89,13 +80,15 @@ export interface BaseOAuthClientConfig<S> {
  * suitable concrete implementation to power a client-side OauthService. See `MsalClient` and
  * `AuthZeroClient`
  *
- * Initialize such a service and this client within the `preAuthInitAsync()` lifecycle method of
- * `AppModel` to use the tokens it acquires to authenticate with the Hoist server. (Note this
- * requires a suitable server-side `AuthenticationService` implementation to validate the token and
- * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
- * flow as necessary.
+ * Initialize such a service and this client within an app's primary {@link HoistAuthModel} to use
+ * the tokens it acquires to authenticate with the Hoist server. (Note this requires a suitable
+ * server-side `AuthenticationService` implementation to validate the token and actually resolve
+ * the user.) On init, the client impl will initiate a pop-up or redirect flow as necessary.
  */
-export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> extends HoistBase {
+export abstract class BaseOAuthClient<
+    C extends BaseOAuthClientConfig<S>,
+    S extends AccessTokenSpec
+> extends HoistBase {
     /** Config loaded from UI server + init method. */
     protected config: C;
 
@@ -121,13 +114,12 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
-            autoRefreshSkipCacheSecs: -1,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
-        this.accessSpecs = this.config.accessTokens;
+        this.accessSpecs = this.config.accessTokens ?? {};
     }
 
     /**
@@ -171,14 +163,17 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+        const spec = this.accessSpecs[key];
+        if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
+
+        return this.fetchAccessTokenAsync(spec, true);
     }
 
     /**
-     * Get all available tokens.
+     * Get all configured tokens.
      */
-    async getAllTokensAsync(): Promise<TokenMap> {
-        return this.fetchAllTokensAsync(true);
+    async getAllTokensAsync(opts?: {eagerOnly?: boolean; useCache?: boolean}): Promise<TokenMap> {
+        return this.fetchAllTokensAsync(opts);
     }
 
     /**
@@ -314,12 +309,27 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         await never();
     }
 
-    protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {
-        const ret: TokenMap = {},
-            {accessSpecs} = this;
-        for (const key of keys(accessSpecs)) {
-            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
-        }
+    protected async fetchAllTokensAsync(opts?: {
+        eagerOnly?: boolean;
+        useCache?: boolean;
+    }): Promise<TokenMap> {
+        const eagerOnly = opts?.eagerOnly ?? false,
+            useCache = opts?.useCache ?? true,
+            accessSpecs = eagerOnly
+                ? pickBy(this.accessSpecs, spec => spec.fetchMode !== 'lazy') // specs are eager by default - opt-in to lazy
+                : this.accessSpecs,
+            ret: TokenMap = {};
+
+        await Promise.allSettled(
+            map(accessSpecs, async (spec, key) => {
+                try {
+                    ret[key] = await this.fetchAccessTokenAsync(spec, useCache);
+                } catch (e) {
+                    XH.handleException(e, {logOnServer: true, showAlert: false});
+                }
+            })
+        );
+
         // Do this after getting any access tokens --which can also populate the idToken cache!
         ret.id = await this.fetchIdTokenSafeAsync(useCache);
 
@@ -361,22 +371,19 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     private async onTimerAsync(): Promise<void> {
         const {config, lastRefreshAttempt} = this,
             refreshSecs = config.autoRefreshSecs * SECONDS,
-            skipCacheSecs = config.autoRefreshSkipCacheSecs * SECONDS;
+            skipCacheSecs = refreshSecs + 5 * SECONDS;
 
         if (olderThan(lastRefreshAttempt, refreshSecs)) {
             this.lastRefreshAttempt = Date.now();
             try {
                 this.logDebug('Refreshing all tokens:');
                 let tokens = await this.fetchAllTokensAsync(),
-                    aging = pickBy(
-                        tokens,
-                        v => skipCacheSecs > 0 && v.expiresWithin(skipCacheSecs)
-                    );
+                    aging = pickBy(tokens, v => v.expiresWithin(skipCacheSecs));
                 if (!isEmpty(aging)) {
                     this.logDebug(
                         `Tokens [${keys(aging).join(', ')}] have < ${skipCacheSecs}s remaining, reloading without cache.`
                     );
-                    tokens = await this.fetchAllTokensAsync(false);
+                    tokens = await this.fetchAllTokensAsync({useCache: false});
                 }
                 this.logTokensDebug(tokens);
             } catch (e) {

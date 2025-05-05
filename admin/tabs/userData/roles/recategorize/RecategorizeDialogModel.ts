@@ -65,8 +65,8 @@ export class RecategorizeDialogModel extends HoistModel {
                     }
                 })
                 .linkTo(this.savingTask);
-            await this.parent.refreshAsync();
             this.close();
+            await this.parent.refreshAsync();
         } catch (e) {
             XH.handleException(e);
         }

@@ -118,6 +118,11 @@ body.xh-app.xh-mobile {
     color: var(--xh-text-color);
   }
 
+  // Toast - ensure z-index exceeds dialogs
+  ons-toast {
+    z-index: 30001 !important;
+  }
+
   // Remove outlines
   .tabbar__button:focus {
     outline: none;

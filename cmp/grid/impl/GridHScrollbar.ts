@@ -7,10 +7,9 @@
 import {GridLocalModel, GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, useLocalModel} from '@xh/hoist/core';
-import {makeObservable} from '@xh/hoist/mobx';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
 import {sumBy} from 'lodash';
-import {action, observable} from 'mobx';
 import {createRef, RefObject} from 'react';
 
 /**

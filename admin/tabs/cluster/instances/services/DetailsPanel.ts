@@ -11,6 +11,8 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
+import {isEmpty} from 'lodash';
+import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export const detailsPanel = hoistCmp.factory({
     model: creates(DetailsModel),
@@ -18,7 +20,7 @@ export const detailsPanel = hoistCmp.factory({
     render({model}) {
         const {svcName} = model;
         return panel({
-            title: svcName ? `Stats: ${svcName}` : 'Stats',
+            title: svcName ?? 'Stats',
             mask: 'onLoad',
             icon: Icon.info(),
             compactHeader: true,
@@ -42,18 +44,22 @@ const stats = hoistCmp.factory<DetailsModel>({
             });
         }
 
-        if (stats == null) return null;
-
-        return panel(
-            jsonInput({
-                readonly: true,
-                width: '100%',
-                height: '100%',
-                enableSearch: true,
-                showFullscreenButton: false,
-                editorProps: {lineNumbers: false},
-                value: model.parent.fmtStats(stats)
-            })
-        );
+        return isEmpty(stats)
+            ? placeholder(
+                  ...(loadModel.isPending
+                      ? []
+                      : [Icon.questionCircle(), 'This service does not report any admin stats.'])
+              )
+            : panel(
+                  jsonInput({
+                      readonly: true,
+                      width: '100%',
+                      height: '100%',
+                      enableSearch: true,
+                      showFullscreenButton: false,
+                      editorProps: {lineNumbers: false},
+                      value: fmtJson(stats, {replacer: timestampReplacer()})
+                  })
+              );
     }
 });

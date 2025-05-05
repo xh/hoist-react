@@ -4,14 +4,23 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
-import {badge} from '@xh/hoist/cmp/badge';
-import {XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
-import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-import copy from 'clipboard-copy';
+import {TrackSeverity} from '@xh/hoist/core';
+import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
+import {ReactElement} from 'react';
+
+export const appBuild: ColumnSpec = {
+    field: {
+        name: 'appBuild',
+        displayName: 'Build',
+        type: 'string'
+    },
+    width: 120
+};
 
 export const appEnvironment: ColumnSpec = {
     field: {
@@ -23,8 +32,12 @@ export const appEnvironment: ColumnSpec = {
 };
 
 export const appVersion: ColumnSpec = {
-    field: {name: 'appVersion', type: 'string'},
-    width: 130
+    field: {
+        name: 'appVersion',
+        displayName: 'Version',
+        type: 'string'
+    },
+    width: 120
 };
 
 export const browser: ColumnSpec = {
@@ -37,16 +50,6 @@ export const browser: ColumnSpec = {
     width: 100
 };
 
-export const severity: ColumnSpec = {
-    field: {
-        name: 'severity',
-        type: 'string',
-        isDimension: true,
-        aggregator: 'UNIQUE'
-    },
-    width: 80
-};
-
 export const category: ColumnSpec = {
     field: {
         name: 'category',
@@ -55,6 +58,17 @@ export const category: ColumnSpec = {
         aggregator: 'UNIQUE'
     },
     width: 100
+};
+
+export const correlationId: ColumnSpec = {
+    field: {
+        name: 'correlationId',
+        type: 'string',
+        displayName: 'Correlation ID'
+    },
+    renderer: badgeRenderer,
+    width: 180,
+    autosizeBufferPx: 20
 };
 
 export const data: ColumnSpec = {
@@ -73,6 +87,20 @@ export const day: ColumnSpec = {
     displayName: 'App Day'
 };
 
+export const dayRange: ColumnSpec = {
+    field: {
+        name: 'dayRange',
+        type: 'json',
+        aggregator: new RangeAggregator(),
+        displayName: 'App Day Range'
+    },
+    align: 'right',
+    width: 200,
+    renderer: dayRangeRenderer,
+    exportValue: dayRangeRenderer,
+    comparator: dayRangeComparator
+};
+
 export const device: ColumnSpec = {
     field: {
         name: 'device',
@@ -81,6 +109,32 @@ export const device: ColumnSpec = {
         aggregator: 'UNIQUE'
     },
     width: 100
+};
+
+export const deviceIcon: ColumnSpec = {
+    field: device.field,
+    headerName: Icon.desktop(),
+    headerTooltip: 'Device',
+    tooltip: true,
+    resizable: false,
+    align: 'center',
+    width: 50,
+    renderer: v => {
+        // See Hoist Core `Device.groovy` for enumeration
+        switch (v) {
+            case 'ANDROID':
+            case 'IPAD':
+            case 'IPHONE':
+            case 'IPOD':
+                return Icon.phone();
+            case 'LINUX':
+            case 'MAC':
+            case 'WINDOWS':
+                return Icon.desktop();
+            default:
+                return Icon.questionCircle();
+        }
+    }
 };
 
 export const elapsed: ColumnSpec = {
@@ -119,16 +173,6 @@ export const entryId: ColumnSpec = {
     align: 'right'
 };
 
-export const correlationId: ColumnSpec = {
-    field: {
-        name: 'correlationId',
-        type: 'string',
-        displayName: 'Correlation ID'
-    },
-    renderer: badgeRenderer,
-    width: 100
-};
-
 export const error: ColumnSpec = {
     field: {
         name: 'error',
@@ -137,6 +181,25 @@ export const error: ColumnSpec = {
     width: 250,
     autosizeMaxWidth: 400,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+};
+
+export const instance: ColumnSpec = {
+    field: {
+        name: 'instance',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    renderer: badgeRenderer,
+    width: 100
+};
+
+export const loadId: ColumnSpec = {
+    field: {
+        name: 'loadId',
+        type: 'string'
+    },
+    ...badgeCol
 };
 
 export const msg: ColumnSpec = {
@@ -151,6 +214,52 @@ export const msg: ColumnSpec = {
     autosizeMaxWidth: 400
 };
 
+export const severity: ColumnSpec = {
+    field: {
+        name: 'severity',
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
+    },
+    width: 80
+};
+
+export const severityIcon: ColumnSpec = {
+    field: severity.field,
+    headerName: Icon.info(),
+    headerTooltip: 'Severity',
+    tooltip: true,
+    resizable: false,
+    align: 'center',
+    width: 50,
+    renderer: v => getSeverityIcon(v)
+};
+
+export function getSeverityIcon(severity: TrackSeverity): ReactElement {
+    if (!severity) return null;
+
+    switch (severity) {
+        case 'DEBUG':
+            return Icon.code();
+        case 'INFO':
+            return Icon.infoCircle({className: 'xh-text-color-muted'});
+        case 'WARN':
+            return Icon.warning({intent: 'warning'});
+        case 'ERROR':
+            return Icon.error({intent: 'danger'});
+        default:
+            return Icon.questionCircle();
+    }
+}
+
+export const tabId: ColumnSpec = {
+    field: {
+        name: 'tabId',
+        type: 'string'
+    },
+    ...badgeCol
+};
+
 export const url: ColumnSpec = {
     field: {
         name: 'url',
@@ -161,15 +270,20 @@ export const url: ColumnSpec = {
     autosizeMaxWidth: 400
 };
 
-export const instance: ColumnSpec = {
-    field: {
-        name: 'instance',
-        type: 'string',
-        isDimension: true,
-        aggregator: 'UNIQUE'
-    },
-    renderer: badgeRenderer,
-    width: 100
+export const urlPathOnly: ColumnSpec = {
+    field: url.field,
+    width: 250,
+    autosizeMaxWidth: 400,
+    tooltip: true,
+    renderer: v => {
+        if (!v) return null;
+        try {
+            const urlObj = new URL(v);
+            return urlObj.pathname;
+        } catch (ignored) {
+            return v;
+        }
+    }
 };
 
 export const userAgent: ColumnSpec = {
@@ -209,20 +323,6 @@ export const userMessageFlag: ColumnSpec = {
     }
 };
 
-export const dayRange: ColumnSpec = {
-    field: {
-        name: 'dayRange',
-        type: 'json',
-        aggregator: new RangeAggregator(),
-        displayName: 'App Day Range'
-    },
-    align: 'right',
-    width: 200,
-    renderer: dayRangeRenderer,
-    exportValue: dayRangeRenderer,
-    comparator: dayRangeComparator
-};
-
 //-----------------------
 // Implementation
 //-----------------------
@@ -242,22 +342,4 @@ function dayRangeComparator(rangeA, rangeB, sortDir, abs, {defaultComparator}) {
         maxB = rangeB?.max;
 
     return defaultComparator(maxA, maxB);
-}
-
-function badgeRenderer(v) {
-    return v
-        ? badge({
-              item: v,
-              className: 'xh-font-family-mono',
-              style: {cursor: 'copy'},
-              title: 'Double-click to copy',
-              onDoubleClick: () => {
-                  copy(v);
-                  XH.toast({
-                      icon: Icon.copy(),
-                      message: `Copied ${v}`
-                  });
-              }
-          })
-        : '-';
 }

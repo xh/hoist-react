@@ -6,10 +6,18 @@
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {dateTimeRenderer} from '@xh/hoist/format';
 
 export const dateCreated: ColumnSpec = {
     field: {name: 'dateCreated', type: 'date'},
     ...Col.dateTime
+};
+
+export const dateCreatedNoYear: ColumnSpec = {
+    ...Col.dateTimeSec,
+    field: {name: 'dateCreated', type: 'date'},
+    tooltip: true,
+    renderer: dateTimeRenderer({fmt: 'MMM DD HH:mm:ss'})
 };
 
 export const dateCreatedWithSec: ColumnSpec = {

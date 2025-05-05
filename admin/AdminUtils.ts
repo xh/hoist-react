@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
@@ -20,4 +21,8 @@ export function exportFilename(moduleName: string): string {
  */
 export function exportFilenameWithDate(moduleName: string): () => string {
     return () => `${XH.appCode}-${moduleName}-${LocalDate.today()}`;
+}
+
+export function getAppModel<T extends AppModel>() {
+    return XH.appModel as T;
 }
