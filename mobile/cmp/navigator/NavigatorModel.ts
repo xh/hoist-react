@@ -217,7 +217,6 @@ export class NavigatorModel extends HoistModel {
     /** @internal */
     @action
     onPageChange = () => {
-        console.log('onPageChange');
         // 1) Clear any pages after the active page. These can be left over from a back swipe.
         this.stack = this.stack.slice(0, this._swiper.activeIndex + 1);
 
@@ -225,7 +224,6 @@ export class NavigatorModel extends HoistModel {
         const newRouteName = this.routePrefix + this.stack.map(it => it.id).join('.'),
             newRouteParams = mergeDeep({}, ...this.stack.map(it => it.props));
 
-        console.log('newRouteName', newRouteName);
         XH.navigate(newRouteName, newRouteParams);
 
         // 3) Update state according to the active page and trigger optional callback
