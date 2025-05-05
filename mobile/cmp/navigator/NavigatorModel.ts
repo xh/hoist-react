@@ -112,7 +112,6 @@ export class NavigatorModel extends HoistModel {
 
         this.route = route ?? '';
         this.routePrefix = route ? route.substring(0, route.lastIndexOf('.') + 1) : '';
-        console.log(this.route, this.routePrefix);
 
         this.pages = pages;
         this.track = track;
@@ -212,7 +211,6 @@ export class NavigatorModel extends HoistModel {
             swiper.allowTouchMove = false;
         });
 
-        console.log('swiper change');
         this.onRouteChange(true);
     }
 
@@ -243,7 +241,6 @@ export class NavigatorModel extends HoistModel {
 
     private onRouteChange(init: boolean = false) {
         const {route: myRoute, routePrefix: myRoutePrefix, _swiper} = this;
-        console.log('onRouteChange', XH.router.isActive(myRoute));
         if (!XH.routerState || (myRoute && !XH.router.isActive(myRoute)) || !_swiper) return;
 
         // Break the current route name into parts, only looking at our part of it (myRoute and below).
@@ -263,7 +260,6 @@ export class NavigatorModel extends HoistModel {
 
             return {id, props};
         });
-        console.log(myRoutePrefix, XH.routerState, parts, routeParts);
 
         // Loop through the route parts, rebuilding the page stack to match.
         const stack = [];

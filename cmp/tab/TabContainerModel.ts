@@ -356,11 +356,8 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             {router} = XH,
             state = router.getState();
 
-        console.log('syncWithRouter', state, router.isActive(route));
-
         if (state && router.isActive(route)) {
             const tab = tabs.find(t => router.isActive(route + '.' + t.id, state.params));
-            console.log('activating', tab);
             if (tab && !tab.isActive && !tab.disabled) {
                 this.setActiveTabIdInternal(tab.id);
             }
