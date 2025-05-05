@@ -398,9 +398,7 @@ export abstract class BaseOAuthClient<
         } catch (e) {
             if (!this.interactiveLoginNeeded(e)) throw e;
 
-            if (this.reloginCount >= reloginMaxAttempts) {
-                this.rethrowLoginRequired('Re-login disallowed or no attempts remaining.', e);
-            }
+            if (this.reloginCount >= reloginMaxAttempts) this.rethrowLoginRequired(e);
 
             // Create and start a login task if needed (otherwise we will just join it)
             if (!this.reloginPendingTask) {
@@ -413,7 +411,7 @@ export abstract class BaseOAuthClient<
                         message: 'Interactive re-login attempt.',
                         data: {attempt: this.reloginCount, maxAttempts: reloginMaxAttempts}
                     })
-                    .catch(e => this.rethrowLoginRequired('Re-login attempt failed', e))
+                    .catch(e => this.rethrowLoginRequired(e))
                     .finally(() => {
                         appContainerModel.lastInteractiveLogin = {started, completed: Date.now()};
                     });
@@ -426,8 +424,15 @@ export abstract class BaseOAuthClient<
         }
     }
 
-    private rethrowLoginRequired(message: string, cause: unknown) {
-        const e = XH.exception({name: 'Login Required', message, cause});
+    private rethrowLoginRequired(cause: unknown) {
+        const {reloginMaxAttempts} = this.config,
+            attemptsRemaining = reloginMaxAttempts - this.reloginCount,
+            message =
+                attemptsRemaining <= 0
+                    ? 'Re-login disallowed or no attempts remaining.'
+                    : 'Re-login attempt failed';
+
+        const e = XH.exception({name: 'Login Required', attemptsRemaining, message, cause});
         XH.handleException(e, {showAlert: false});
         throw e;
     }

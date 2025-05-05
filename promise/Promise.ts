@@ -208,10 +208,17 @@ const enhancePromise = promisePrototype => {
                     opts.timestamp = startTime;
                     opts.elapsed = endTime - startTime;
 
-                    // Remove any time spent during interactive login, if it was within the period!
+                    // Null out any time spent during "interactive" login, if it took longer than
+                    // 2 seconds (e.g. user input required).  This avoids stats being blown out.
+                    // Could also try to correct, but this seems safer.
                     const login = XH.appContainerModel.lastInteractiveLogin;
-                    if (login && login.completed <= endTime) {
-                        // opts.elapsed -= (login.completed - max(login.started, startTime);
+                    if (
+                        login &&
+                        startTime <= login.completed &&
+                        endTime >= login.completed &&
+                        login.completed - login.started > 2 * SECONDS
+                    ) {
+                        opts.elapsed = null;
                     }
                     if (isError) opts.severity = 'ERROR';
 
