@@ -114,7 +114,7 @@ export class AppContainerModel extends HoistModel {
      * for the app.
      * @internal
      */
-    lastInteractiveLogin: {started: number; completed: number} = null;
+    lastRelogin: {started: number; completed: number} = null;
 
     /**
      * Main entry point. Initialize and render application code.

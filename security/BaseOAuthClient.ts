@@ -13,7 +13,7 @@ import {Token} from '@xh/hoist/security/Token';
 import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, throwIf} from '@xh/hoist/utils/js';
+import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
 import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
@@ -75,12 +75,13 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     accessTokens?: Record<string, S>;
 
     /**
-     * Maximum number of times this client will try to re-login interactively if tokens begin
-     * failing to load due to provider-specific exceptions indicating a problem with the user's
-     * auth.  This can happen, for example, if a refresh token is expired or invalidated during
-     * the lifetime of the client.  Default is 0 and no retries will be attempted.
+     * True to allow this client to try to re-login interactively (via pop-up) if tokens begin
+     * failing to load due to specific provider exceptions indicating user interaction is required.
+     * This can happen, for example, if a token expires and the refresh token is expired or
+     * invalidated during the lifetime of the client.  Default is false and retry will not be
+     * attempted.
      */
-    reloginMaxAttempts?: number;
+    reloginEnabled?: number;
 
     /**
      * Maximum time for (interactive) re-login.
@@ -118,8 +119,8 @@ export abstract class BaseOAuthClient<
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
-    private reloginPendingTask: Promise<void> = null;
-    private reloginCount: number = 0;
+    private pendingRelogin: Promise<void> = null;
+    private lastRelogin: {started: number; completed: number};
 
     //------------------------
     // Public API
@@ -133,7 +134,7 @@ export abstract class BaseOAuthClient<
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
-            reloginMaxAttempts: 0,
+            reloginEnabled: false,
             reloginTimeoutSecs: 60,
             ...config
         };
@@ -231,6 +232,7 @@ export abstract class BaseOAuthClient<
     protected abstract doLogoutAsync(): Promise<void>;
 
     protected abstract interactiveLoginNeeded(exception: unknown): boolean;
+
     //---------------------------------------
     // Implementation
     //---------------------------------------
@@ -390,51 +392,58 @@ export abstract class BaseOAuthClient<
     }
 
     private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
-        const {reloginMaxAttempts, reloginTimeoutSecs} = this.config,
-            {appContainerModel} = XH;
+        const {reloginEnabled} = this.config,
+            {lastRelogin, pendingRelogin} = this;
 
+        // 0) Simple case: either no relogin possible, OR we are already working on a relogin,
+        // and will take just a single shot when it completes.
+        if (!reloginEnabled || !olderThan(lastRelogin?.completed, 1 * MINUTES) || pendingRelogin) {
+            await pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
+        }
+
+        // 1) Complex case:  Take potentially two tries.
         try {
             return await fn();
         } catch (e) {
             if (!this.interactiveLoginNeeded(e)) throw e;
-
-            if (this.reloginCount >= reloginMaxAttempts) this.rethrowLoginRequired(e);
-
-            // Create and start a login task if needed (otherwise we will just join it)
-            if (!this.reloginPendingTask) {
-                this.reloginCount++;
-                const started = Date.now();
-                this.reloginPendingTask = this.doLoginPopupAsync()
-                    .timeout(reloginTimeoutSecs * SECONDS)
-                    .tap(() => (this.reloginCount = 0))
-                    .track({
-                        message: 'Interactive re-login attempt.',
-                        data: {attempt: this.reloginCount, maxAttempts: reloginMaxAttempts}
-                    })
-                    .catch(e => this.rethrowLoginRequired(e))
-                    .finally(() => {
-                        appContainerModel.lastInteractiveLogin = {started, completed: Date.now()};
-                    });
-            }
-
-            // ...but always wait for it to complete
-            await this.reloginPendingTask;
-
-            return await fn();
+            // Be sure to create and join on just a single shared loginTask.
+            this.pendingRelogin ??= this.getLoginTask().finally(() => (this.pendingRelogin = null));
+            await this.pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
         }
     }
 
-    private rethrowLoginRequired(cause: unknown) {
-        const {reloginMaxAttempts} = this.config,
-            attemptsRemaining = reloginMaxAttempts - this.reloginCount,
-            message =
-                attemptsRemaining <= 0
-                    ? 'Re-login disallowed or no attempts remaining.'
-                    : 'Re-login attempt failed';
+    private rethrowWrapped(e: unknown): never {
+        if (!this.interactiveLoginNeeded(e)) throw e;
 
-        const e = XH.exception({name: 'Login Required', attemptsRemaining, message, cause});
-        XH.handleException(e, {showAlert: false});
-        throw e;
+        throw XH.exception({
+            name: 'Auth Expired',
+            message: 'Your authentication has expired. Please reload the app to login again.',
+            cause: e
+        });
+    }
+
+    // Return a highly managed task that will attempt to relogin the user, and never throw.
+    private getLoginTask(): Promise<void> {
+        let started: number = Date.now(),
+            completed: number;
+        return this.doLoginPopupAsync()
+            .timeout(this.config.reloginTimeoutSecs * SECONDS)
+            .finally(() => {
+                completed = Date.now();
+                this.lastRelogin = XH.appContainerModel.lastRelogin = {started, completed};
+            })
+            .then(() => {
+                XH.track({
+                    message: 'Interactive re-login succeeded.',
+                    elapsed: completed - started
+                });
+            })
+            .catch(e => {
+                // Should there be a non-auth requiring way to communicate this to server?
+                logError('Failed to re-login', e);
+            });
     }
 
     @action

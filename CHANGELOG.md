@@ -20,11 +20,10 @@ and new properties on `TrackLog`.
     the same tab.
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
-* `BaseOAuthClientConfig` now supports a new `reloginMaxAttempts` property. Use this property to
-   allow the client to do a selected number of (potentially interactive) popup logins during the
-   session.  This is especially useful to allow recovery from expired or invalidated refresh tokens,
-   or for browser profiles that do not support the third-party cookies needed for non-interactive
-   token refresh.
+* `BaseOAuthClientConfig` now supports a new `reloginEnabled` property. Use this property to
+   allow the client to do a potentially interactive popup login during the session to re-establish
+   the login.  This is especially useful to allow recovery from expired or invalidated refresh
+   tokens.
 
 ### 🐞 Bug Fixes
 

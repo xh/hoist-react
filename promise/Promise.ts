@@ -211,7 +211,7 @@ const enhancePromise = promisePrototype => {
                     // Null out any time spent during "interactive" login, if it took longer than
                     // 2 seconds (e.g. user input required).  This avoids stats being blown out.
                     // Could also try to correct, but this seems safer.
-                    const login = XH.appContainerModel.lastInteractiveLogin;
+                    const login = XH.appContainerModel.lastRelogin;
                     if (
                         login &&
                         startTime <= login.completed &&
