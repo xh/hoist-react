@@ -15,14 +15,15 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec, StoreRecord} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, fmtNumber, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
+import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
-export class ActivityTrackingModel extends HoistModel {
+export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -38,6 +39,17 @@ export class ActivityTrackingModel extends HoistModel {
      * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
      */
     @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
+
+    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
+    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
+    //        underlying field.
+    get dataFieldCols(): ColumnSpec[] {
+        return this.dataFields.map(df => ({
+            field: df,
+            renderer: this.getDfRenderer(df),
+            appData: {showInAggGrid: !!df.aggregator}
+        }));
+    }
 
     @observable showFilterChooser: boolean = false;
 
@@ -77,20 +89,17 @@ export class ActivityTrackingModel extends HoistModel {
         return this.maxRows === this.cube.store.allCount;
     }
 
-    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
-    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
-    //        underlying field.
-    get dataFieldCols(): ColumnSpec[] {
-        return this.dataFields.map(df => ({
-            field: df,
-            renderer: this.getDfRenderer(df),
-            appData: {showInAggGrid: !!df.aggregator}
-        }));
-    }
-
     get viewManagerModel() {
         return getAppModel().viewManagerModels.activityTracking;
     }
+
+    //-----------------------
+    // ActivityDetailProvider
+    //-----------------------
+    readonly isActivityDetailProvider = true;
+
+    /** Raw leaf-level log entries for the selected aggregate record, for detail. */
+    @observable.ref trackLogs: PlainObject[] = [];
 
     private _monthFormat = 'MMM YYYY';
 
@@ -120,6 +129,11 @@ export class ActivityTrackingModel extends HoistModel {
             {
                 track: () => [this.cube.records, this.dimensions],
                 run: () => this.loadGridAsync(),
+                debounce: 100
+            },
+            {
+                track: () => this.gridModel.selectedRecords,
+                run: recs => (this.trackLogs = this.getAllLeafRows(recs)),
                 debounce: 100
             }
         );
@@ -273,6 +287,23 @@ export class ActivityTrackingModel extends HoistModel {
         };
     }
 
+    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
+    private getAllLeafRows(aggRecs: StoreRecord[], ret = []): PlainObject[] {
+        if (isEmpty(aggRecs)) return [];
+
+        aggRecs.forEach(aggRec => {
+            if (aggRec.children.length) {
+                this.getAllLeafRows(aggRec.children, ret);
+            } else if (aggRec.raw.leafRows) {
+                aggRec.raw.leafRows.forEach(leaf => {
+                    ret.push({...leaf});
+                });
+            }
+        });
+
+        return ret;
+    }
+
     //------------------------
     // Impl - core data models
     //------------------------
@@ -382,11 +413,12 @@ export class ActivityTrackingModel extends HoistModel {
         const hidden = true;
         return new GridModel({
             persistWith: {...this.persistWith, path: 'aggGrid'},
+            selModel: 'multiple',
             enableExport: true,
             colChooserModel: true,
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            autosizeOptions: {mode: 'managed'},
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
@@ -398,6 +430,7 @@ export class ActivityTrackingModel extends HoistModel {
                         displayName: 'Group'
                     },
                     minWidth: 100,
+                    autosizeMaxWidth: 400,
                     isTreeColumn: true,
                     comparator: this.cubeLabelComparator.bind(this)
                 },

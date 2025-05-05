@@ -1,0 +1,24 @@
+.xh-admin-client-detail {
+  &__header {
+    align-items: center;
+    background-color: var(--xh-grid-bg-odd);
+    border-bottom: var(--xh-border-solid);
+    padding: var(--xh-pad-px);
+
+    h2 {
+      flex: 1;
+      font-weight: normal;
+      margin: 0;
+
+      .xh-icon {
+        font-size: 0.8em;
+        margin-right: 0.3em;
+      }
+    }
+
+    &__meta {
+      flex: none;
+      align-items: flex-end;
+    }
+  }
+}

@@ -37,11 +37,12 @@ export const activityDetailView = hoistCmp.factory({
 const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     const {gridModel} = model;
     return toolbar({
+        compact: true,
         items: [
             filler(),
             gridCountLabel({unit: 'entry'}),
             '-',
-            gridFindField({gridModel, key: gridModel.xhId}),
+            gridFindField({gridModel, key: gridModel.xhId, width: 250}),
             colChooserButton({gridModel}),
             exportButton()
         ]
@@ -50,6 +51,8 @@ const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
 
 // Discrete outer panel to retain sizing across master/detail selection changes.
 const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
+    const {persistWith} = model;
+
     return panel({
         collapsedTitle: 'Activity Details',
         collapsedIcon: Icon.info(),
@@ -57,10 +60,9 @@ const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
         modelConfig: {
             side: 'bottom',
             defaultSize: 400,
-            persistWith: {
-                ...model.activityTrackingModel.persistWith,
-                path: 'singleActivityDetailPanel'
-            }
+            persistWith: persistWith
+                ? {...persistWith, path: `${persistWith.path}.singleActivityDetailPanel`}
+                : null
         },
         item: detailRecForm()
     });
