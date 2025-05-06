@@ -18,9 +18,11 @@ const autosizeMaxWidth = 400;
 export const appBuild: ColumnSpec = {
     field: {
         name: 'appBuild',
-        displayName: 'Build',
+        displayName: 'App Build',
         type: 'string'
     },
+    headerName: 'Build',
+    chooserGroup: 'Client App / Browser',
     width: 120
 };
 
@@ -30,15 +32,18 @@ export const appEnvironment: ColumnSpec = {
         type: 'string',
         displayName: 'Environment'
     },
+    chooserGroup: 'Core Data',
     width: 130
 };
 
 export const appVersion: ColumnSpec = {
     field: {
         name: 'appVersion',
-        displayName: 'Version',
+        displayName: 'App Version',
         type: 'string'
     },
+    headerName: 'Version',
+    chooserGroup: 'Client App / Browser',
     width: 120
 };
 
@@ -49,6 +54,7 @@ export const browser: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Client App / Browser',
     width: 100
 };
 
@@ -59,6 +65,7 @@ export const category: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Core Data',
     width: 100
 };
 
@@ -68,6 +75,7 @@ export const correlationId: ColumnSpec = {
         type: 'string',
         displayName: 'Correlation ID'
     },
+    chooserGroup: 'Core Data',
     renderer: badgeRenderer,
     width: 180,
     autosizeBufferPx: 20
@@ -75,6 +83,7 @@ export const correlationId: ColumnSpec = {
 
 export const data: ColumnSpec = {
     field: {name: 'data', type: 'json'},
+    chooserGroup: 'Core Data',
     width: 250,
     autosizeMaxWidth
 };
@@ -86,6 +95,7 @@ export const day: ColumnSpec = {
         isDimension: true
     },
     ...Col.localDate,
+    chooserGroup: 'Core Data',
     displayName: 'App Day'
 };
 
@@ -96,6 +106,7 @@ export const dayRange: ColumnSpec = {
         aggregator: new RangeAggregator(),
         displayName: 'App Day Range'
     },
+    chooserGroup: 'Core Data',
     align: 'right',
     width: 200,
     renderer: dayRangeRenderer,
@@ -110,11 +121,13 @@ export const device: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Client App / Browser',
     width: 100
 };
 
 export const deviceIcon: ColumnSpec = {
     field: device.field,
+    chooserGroup: 'Client App / Browser',
     headerName: Icon.desktop(),
     headerTooltip: 'Device',
     tooltip: true,
@@ -151,6 +164,7 @@ export const elapsed: ColumnSpec = {
         type: 'int',
         aggregator: 'AVG'
     },
+    chooserGroup: 'Core Data',
     width: 130,
     renderer: elapsedRenderer
 };
@@ -161,6 +175,7 @@ export const elapsedMax: ColumnSpec = {
         type: 'int',
         aggregator: 'MAX'
     },
+    chooserGroup: 'Core Data',
     width: 130,
     renderer: elapsedRenderer
 };
@@ -172,6 +187,7 @@ export const entryCount: ColumnSpec = {
         displayName: 'Entries',
         aggregator: 'LEAF_COUNT'
     },
+    chooserGroup: 'Core Data',
     width: 80,
     align: 'right'
 };
@@ -182,6 +198,7 @@ export const entryId: ColumnSpec = {
         type: 'int',
         displayName: 'Entry ID'
     },
+    chooserGroup: 'Core Data',
     width: 100,
     align: 'right'
 };
@@ -191,9 +208,30 @@ export const error: ColumnSpec = {
         name: 'error',
         type: 'string'
     },
+    chooserGroup: 'Errors',
     width: 250,
     autosizeMaxWidth,
     renderer: e => fmtSpan(e, {className: 'xh-font-family-mono xh-font-size-small'})
+};
+
+export const errorMessage: ColumnSpec = {
+    field: {
+        name: 'errorMessage',
+        type: 'string'
+    },
+    chooserGroup: 'Errors',
+    width: 250,
+    autosizeMaxWidth
+};
+
+export const errorName: ColumnSpec = {
+    field: {
+        name: 'errorName',
+        type: 'string'
+    },
+    chooserGroup: 'Errors',
+    width: 150,
+    autosizeMaxWidth
 };
 
 export const instance: ColumnSpec = {
@@ -203,6 +241,7 @@ export const instance: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Session IDs',
     renderer: badgeRenderer,
     width: 100
 };
@@ -212,6 +251,7 @@ export const loadId: ColumnSpec = {
         name: 'loadId',
         type: 'string'
     },
+    chooserGroup: 'Session IDs',
     ...badgeCol
 };
 
@@ -223,6 +263,7 @@ export const msg: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Core Data',
     width: 250,
     autosizeMaxWidth
 };
@@ -234,6 +275,7 @@ export const severity: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Core Data',
     width: 80
 };
 
@@ -270,6 +312,7 @@ export const tabId: ColumnSpec = {
         name: 'tabId',
         type: 'string'
     },
+    chooserGroup: 'Session IDs',
     ...badgeCol
 };
 
@@ -279,12 +322,14 @@ export const url: ColumnSpec = {
         type: 'string',
         displayName: 'URL'
     },
+    chooserGroup: 'Client App / Browser',
     width: 250,
     autosizeMaxWidth
 };
 
 export const urlPathOnly: ColumnSpec = {
     field: url.field,
+    chooserGroup: 'Client App / Browser',
     width: 250,
     autosizeMaxWidth,
     tooltip: true,
@@ -306,6 +351,7 @@ export const userAgent: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'Client App / Browser',
     width: 130,
     autosizeMaxWidth
 };
@@ -315,6 +361,7 @@ export const userAlertedFlag: ColumnSpec = {
     headerName: Icon.window(),
     headerTooltip:
         'Indicates if the user was shown an interactive alert when this error was triggered.',
+    chooserGroup: 'Errors',
     resizable: false,
     align: 'center',
     width: 50,
@@ -327,6 +374,7 @@ export const userMessageFlag: ColumnSpec = {
     headerName: Icon.comment(),
     headerTooltip:
         'Indicates if the user provided a message along with the automated error report.',
+    chooserGroup: 'Errors',
     excludeFromExport: true,
     resizable: false,
     align: 'center',

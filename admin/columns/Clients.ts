@@ -14,11 +14,13 @@ export const createdTime: ColumnSpec = {
         type: 'date',
         displayName: 'Created'
     },
+    chooserGroup: 'Connection',
     ...Col.compactDate
 };
 
 export const isOpen: ColumnSpec = {
     field: {name: 'isOpen', type: 'bool'},
+    chooserGroup: 'Connection',
     headerName: '',
     align: 'center',
     width: 40,
@@ -34,6 +36,7 @@ export const key: ColumnSpec = {
         type: 'string',
         displayName: 'Channel Key'
     },
+    chooserGroup: 'Connection',
     width: 160
 };
 
@@ -43,6 +46,7 @@ export const lastReceivedTime: ColumnSpec = {
         type: 'date',
         displayName: 'Last Received'
     },
+    chooserGroup: 'Send/Receive',
     ...Col.compactDate,
     width: 140
 };
@@ -53,6 +57,7 @@ export const lastSentTime: ColumnSpec = {
         type: 'date',
         displayName: 'Last Sent'
     },
+    chooserGroup: 'Send/Receive',
     ...Col.compactDate,
     width: 140
 };
@@ -63,6 +68,7 @@ export const receivedMessageCount: ColumnSpec = {
         type: 'int',
         displayName: 'Received'
     },
+    chooserGroup: 'Send/Receive',
     ...Col.number,
     width: 90
 };
@@ -73,6 +79,7 @@ export const sentMessageCount: ColumnSpec = {
         type: 'int',
         displayName: 'Sent'
     },
+    chooserGroup: 'Send/Receive',
     ...Col.number,
     width: 90
 };

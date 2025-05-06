@@ -38,7 +38,9 @@ export class ClientErrorsModel extends HoistModel {
         this.startDay = this.defaultStartDay;
         this.endDay = this.defaultEndDay;
 
-        const hidden = true;
+        const hidden = true,
+            pinned = true;
+
         this.gridModel = new GridModel({
             persistWith: this.persistWith,
             colChooserModel: true,
@@ -50,11 +52,11 @@ export class ClientErrorsModel extends HoistModel {
             emptyText: 'No errors reported...',
             sortBy: 'dateCreated|desc',
             columns: [
-                {...Col.userMessageFlag},
-                {...Col.userAlertedFlag},
-                {...Col.impersonatingFlag},
                 {...Col.entryId, hidden},
-                {...Col.username},
+                {...Col.userMessageFlag, pinned},
+                {...Col.userAlertedFlag, pinned},
+                {...Col.impersonatingFlag, pinned},
+                {...Col.username, pinned},
                 {...Col.impersonating, hidden},
                 {...Col.browser},
                 {...Col.device},
@@ -62,14 +64,8 @@ export class ClientErrorsModel extends HoistModel {
                 {...Col.appVersion},
                 {...Col.appEnvironment},
                 {...Col.msg, displayName: 'User Message', hidden},
-                {
-                    field: {name: 'errorName', type: 'string'},
-                    autosizeMaxWidth: 400
-                },
-                {
-                    field: {name: 'errorMessage', type: 'string'},
-                    autosizeMaxWidth: 400
-                },
+                {...Col.errorName},
+                {...Col.errorMessage},
                 {...Col.error, hidden},
                 {...Col.url},
                 {...Col.correlationId},

@@ -47,6 +47,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     get dataFieldCols(): ColumnSpec[] {
         return this.dataFields.map(df => ({
             field: df,
+            chooserGroup: 'Data Fields',
             renderer: this.getDfRenderer(df),
             appData: {showInAggGrid: !!df.aggregator}
         }));
@@ -445,7 +446,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {...Col.elapsedMax, displayName: 'Elapsed (max)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
-                {field: 'count', hidden},
+                {field: 'count', chooserGroup: 'Core Data', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
                 {...Col.loadId, hidden},
