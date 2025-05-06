@@ -216,11 +216,11 @@ const enhancePromise = promisePrototype => {
 
             return this.then(
                 (v: T) => {
-                    doTrack(true);
+                    doTrack(false);
                     return v;
                 },
                 (t: unknown) => {
-                    doTrack(false);
+                    doTrack(true);
                     throw t;
                 }
             );

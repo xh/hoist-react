@@ -145,6 +145,7 @@ const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
 });
 
 const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
+    const {gridModel} = model;
     return panel({
         collapsedTitle: 'Aggregate Activity',
         collapsedIcon: Icon.users(),
@@ -155,12 +156,12 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             persistWith: {...model.persistWith, path: 'aggPanel'}
         },
         tbar: toolbar({
-            // compact: true,
+            compact: true,
             items: [
                 groupingChooser({flex: 10, maxWidth: 300}),
                 filler(),
-                colChooserButton(),
-                exportButton()
+                colChooserButton({gridModel}),
+                exportButton({gridModel})
             ]
         }),
         items: [
