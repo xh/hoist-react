@@ -45,14 +45,9 @@ export class AggChartModel extends HoistModel {
         if (!activityTrackingModel) return [];
 
         const ret: SelectOption[] = [
-            {
-                label: 'Entries [count]',
-                value: 'entryCount'
-            },
-            {
-                label: 'Elapsed ms [avg]',
-                value: 'elapsed'
-            }
+            {label: 'Entries [count]', value: 'entryCount'},
+            {label: 'Elapsed [avg]', value: 'elapsed'},
+            {label: 'Elapsed [max]', value: 'elapsedMax'}
         ];
 
         if (secondaryDim) {
@@ -88,10 +83,16 @@ export class AggChartModel extends HoistModel {
         this.markPersist('metric', {...persistWith, path: 'chartMetric'});
         this.markPersist('incWeekends', {...persistWith, path: 'chartIncWeekends'});
 
-        this.addReaction({
-            track: () => [this.data, this.metric, this.incWeekends],
-            run: () => this.loadChart()
-        });
+        this.addReaction(
+            {
+                track: () => [this.data, this.metric, this.incWeekends],
+                run: () => this.loadChart()
+            },
+            {
+                track: () => this.selectableMetrics,
+                run: () => this.onSelectableMetricsChange()
+            }
+        );
     }
 
     //-----------------
@@ -214,5 +215,12 @@ export class AggChartModel extends HoistModel {
 
     private getDisplayName(fieldName: string) {
         return this.activityTrackingModel?.getDisplayName(fieldName) ?? fieldName;
+    }
+
+    private onSelectableMetricsChange(): void {
+        const {metric} = this;
+        if (!this.selectableMetrics.some(it => it.value === metric)) {
+            this.metric = this.selectableMetrics[0]?.value;
+        }
     }
 }

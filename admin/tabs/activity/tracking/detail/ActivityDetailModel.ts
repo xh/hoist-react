@@ -158,7 +158,7 @@ export class ActivityDetailModel extends HoistModel {
         return new GridModel({
             persistWith: persistWith ? {...persistWith, path: `${persistWith.path}.grid`} : null,
             sortBy: 'dateCreated|desc',
-            colChooserModel: true,
+            colChooserModel: {height: 450},
             enableExport: true,
             filterModel: false,
             exportOptions: {
@@ -186,7 +186,7 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.instance, hidden},
                 {...Col.urlPathOnly},
                 {...Col.data, hidden},
-                {...Col.dateCreatedNoYear, displayName: 'Timestamp'},
+                {...Col.dateCreatedNoYear, displayName: 'Timestamp', chooserGroup: 'Core Data'},
                 ...dataFieldCols
             ].map(it => {
                 const fieldName = isString(it.field) ? it.field : it.field.name;

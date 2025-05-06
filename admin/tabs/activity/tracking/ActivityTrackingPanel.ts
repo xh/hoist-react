@@ -26,6 +26,7 @@ import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
 
 export const activityTrackingPanel = hoistCmp.factory({
+    displayName: 'ActivityTrackingPanel',
     model: creates(ActivityTrackingModel),
 
     render({model}) {

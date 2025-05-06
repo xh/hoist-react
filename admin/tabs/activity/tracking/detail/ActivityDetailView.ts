@@ -22,6 +22,7 @@ import {isNil} from 'lodash';
 import {ActivityDetailModel} from './ActivityDetailModel';
 
 export const activityDetailView = hoistCmp.factory({
+    displayName: 'ActivityDetailView',
     model: creates(ActivityDetailModel),
 
     render({model, ...props}) {
