@@ -47,8 +47,10 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
  * @see GroupingChooserModel
  */
 export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingChooserProps>({
+    displayName: 'GroupingChooser',
     model: uses(GroupingChooserModel),
     className: 'xh-grouping-chooser',
+
     render(
         {
             model,
@@ -103,15 +105,13 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu({testId: favoritesMenuTestId})
-                    : editorIsOpen
-                      ? editor({
-                            popoverWidth,
-                            popoverMinHeight,
-                            popoverTitle,
-                            emptyText,
-                            testId: editorTestId
-                        })
-                      : null,
+                    : editor({
+                          popoverWidth,
+                          popoverMinHeight,
+                          popoverTitle,
+                          emptyText,
+                          testId: editorTestId
+                      }),
                 onInteraction: (nextOpenState, e) => {
                     if (
                         isOpen &&

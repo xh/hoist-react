@@ -137,6 +137,10 @@
       color: var(--xh-text-color);
     }
 
+    .xh-toolbar--compact & {
+      height: 15px;
+    }
+
     // Matched to FilterChooser equivalent.
     & > .svg-inline--fa {
       width: 12px;
