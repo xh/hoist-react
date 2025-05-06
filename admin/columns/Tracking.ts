@@ -241,6 +241,8 @@ export const instance: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserDescription:
+        'The unique ID of the back-end Hoist cluster member instance to which the client app is connected.',
     chooserGroup: 'Session IDs',
     renderer: badgeRenderer,
     width: 100
@@ -251,6 +253,8 @@ export const loadId: ColumnSpec = {
         name: 'loadId',
         type: 'string'
     },
+    chooserDescription:
+        'A unique ID assigned to each load/init of the application. Refreshing the tab within your browser will result in a new Load ID.',
     chooserGroup: 'Session IDs',
     ...badgeCol
 };
@@ -312,6 +316,8 @@ export const tabId: ColumnSpec = {
         name: 'tabId',
         type: 'string'
     },
+    chooserDescription:
+        'A new Tab ID is established within browser session storage and maintained for the lifetime of the tab. Refreshing the app within your browser will maintain the existing Tab ID',
     chooserGroup: 'Session IDs',
     ...badgeCol
 };
