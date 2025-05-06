@@ -6,6 +6,7 @@
  */
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {elapsedRenderer} from '@xh/hoist/admin/columns';
 import {
     ActivityTrackingDataFieldSpec,
     DataFieldsEditorModel
@@ -16,7 +17,7 @@ import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/gr
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec, StoreRecord} from '@xh/hoist/data';
-import {dateRenderer, dateTimeSecRenderer, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
@@ -329,6 +330,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.dayRange.field,
             Col.device.field,
             Col.elapsed.field,
+            Col.elapsedMax.field,
             Col.entryCount.field,
             Col.impersonating.field,
             Col.instance.field,
@@ -349,7 +351,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     private createFilterChooserModel(): FilterChooserModel {
         // TODO - data fields?
         const ret = new FilterChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: false},
+            persistWith: {
+                ...this.persistWith,
+                // Faves persisted to local storage (vs trapped within a single VM view)
+                persistFavorites: {localStorageKey: 'xhAdminActivityTabState'}
+            },
             fieldSpecs: [
                 {field: 'appEnvironment', displayName: 'Environment'},
                 {field: 'appVersion'},
@@ -358,16 +364,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'correlationId'},
                 {field: 'data'},
                 {field: 'device'},
-                {
-                    field: 'elapsed',
-                    valueRenderer: v => {
-                        return fmtNumber(v, {
-                            label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
-                        });
-                    },
-                    fieldType: 'number'
-                },
+                {field: 'elapsed', fieldType: 'number', valueRenderer: elapsedRenderer},
                 {field: 'instance'},
                 {field: 'loadId'},
                 {field: 'msg', displayName: 'Message'},
@@ -403,7 +400,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     private createGroupingChooserModel(): GroupingChooserModel {
         return new GroupingChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: false},
+            persistWith: {
+                ...this.persistWith,
+                // Faves persisted to local storage (vs trapped within a single VM view)
+                persistFavorites: {localStorageKey: 'xhAdminActivityTabState'}
+            },
             dimensions: this.cube.dimensions,
             initialValue: ['username', 'category']
         });
@@ -440,7 +441,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {...Col.browser, hidden},
                 {...Col.userAgent, hidden},
                 {...Col.impersonating, hidden},
-                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
+                {...Col.elapsed, displayName: 'Elapsed (avg)', hidden},
+                {...Col.elapsedMax, displayName: 'Elapsed (max)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
                 {field: 'count', hidden},
@@ -463,6 +465,9 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             raw.day = LocalDate.from(raw.day);
             raw.month = raw.day.format(this._monthFormat);
             raw.dayRange = {min: raw.day, max: raw.day};
+
+            // Workaround lack of support for multiple aggregations on the same field.
+            raw.elapsedMax = raw.elapsed;
 
             const data = JSON.parse(raw.data);
             if (isEmpty(data)) return;

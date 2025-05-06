@@ -12,6 +12,7 @@ import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 
 export const dataFieldsEditor = hoistCmp.factory({
+    displayName: 'DataFieldsEditor',
     model: uses(DataFieldsEditorModel),
 
     render({model}) {

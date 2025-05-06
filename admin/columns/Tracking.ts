@@ -139,6 +139,12 @@ export const deviceIcon: ColumnSpec = {
     }
 };
 
+export const elapsedRenderer = numberRenderer({
+    label: 'ms',
+    nullDisplay: '-',
+    formatConfig: {thousandSeparated: false, mantissa: 0}
+});
+
 export const elapsed: ColumnSpec = {
     field: {
         name: 'elapsed',
@@ -146,12 +152,17 @@ export const elapsed: ColumnSpec = {
         aggregator: 'AVG'
     },
     width: 130,
-    align: 'right',
-    renderer: numberRenderer({
-        label: 'ms',
-        nullDisplay: '-',
-        formatConfig: {thousandSeparated: false, mantissa: 0}
-    })
+    renderer: elapsedRenderer
+};
+
+export const elapsedMax: ColumnSpec = {
+    field: {
+        name: 'elapsedMax',
+        type: 'int',
+        aggregator: 'MAX'
+    },
+    width: 130,
+    renderer: elapsedRenderer
 };
 
 export const entryCount: ColumnSpec = {
