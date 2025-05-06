@@ -32,11 +32,10 @@ export const valuesTab = hoistCmp.factory({
     }
 });
 
-const tbar = hoistCmp.factory<ValuesTabModel>(({model}) => {
+const tbar = hoistCmp.factory(() => {
     return toolbar(
         storeFilterField({
             bind: 'filterText',
-            model,
             leftIcon: Icon.search(),
             placeholder: 'Search...',
             flex: 1,
