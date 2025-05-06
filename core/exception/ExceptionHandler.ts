@@ -197,12 +197,15 @@ export class ExceptionHandler {
                 url: 'xh/submitError',
                 body: {
                     error,
-                    msg: userMessage ? stripTags(userMessage) : '',
+                    name: exception.name,
+                    userMessage: userMessage ? stripTags(userMessage) : '',
                     appVersion: XH.getEnv('clientVersion'),
                     url: window.location.href,
                     userAlerted,
                     clientUsername: username,
-                    correlationId: exception.correlationId
+                    correlationId: exception.correlationId,
+                    tabId: XH.tabId,
+                    loadId: XH.loadId
                 },
                 // Post clientUsername as a parameter to ensure client username matches session.
                 params: {
