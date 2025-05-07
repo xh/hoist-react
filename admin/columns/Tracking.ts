@@ -227,7 +227,8 @@ export const errorMessage: ColumnSpec = {
 export const errorName: ColumnSpec = {
     field: {
         name: 'errorName',
-        type: 'string'
+        type: 'string',
+        isDimension: true
     },
     chooserGroup: 'Errors',
     width: 150,
@@ -237,6 +238,7 @@ export const errorName: ColumnSpec = {
 export const instance: ColumnSpec = {
     field: {
         name: 'instance',
+        displayName: 'Server',
         type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
@@ -376,7 +378,7 @@ export const userAlertedFlag: ColumnSpec = {
 };
 
 export const userMessageFlag: ColumnSpec = {
-    field: {name: 'userMessageFlag', type: 'bool'},
+    field: {name: 'userMessage', type: 'string'},
     headerName: Icon.comment(),
     headerTooltip:
         'Indicates if the user provided a message along with the automated error report.',
@@ -385,10 +387,7 @@ export const userMessageFlag: ColumnSpec = {
     resizable: false,
     align: 'center',
     width: 50,
-    renderer: (v, {record}) => {
-        const {msg} = record.data;
-        return msg ? Icon.comment() : null;
-    }
+    renderer: v => (v ? Icon.comment() : null)
 };
 
 //-----------------------

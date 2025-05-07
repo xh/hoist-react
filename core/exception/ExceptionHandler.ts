@@ -193,25 +193,21 @@ export class ExceptionHandler {
                 return false;
             }
 
-            await XH.fetchService.postJson({
-                url: 'xh/submitError',
-                body: {
-                    error,
-                    name: exception.name,
-                    userMessage: userMessage ? stripTags(userMessage) : '',
-                    appVersion: XH.getEnv('clientVersion'),
-                    url: window.location.href,
-                    userAlerted,
-                    clientUsername: username,
-                    correlationId: exception.correlationId,
-                    tabId: XH.tabId,
-                    loadId: XH.loadId
-                },
-                // Post clientUsername as a parameter to ensure client username matches session.
-                params: {
-                    clientUsername: username
-                }
+            const data: PlainObject = {
+                error: JSON.parse(error),
+                userAlerted
+            };
+            if (userMessage) data.userMessage = stripTags(userMessage);
+
+            XH.track({
+                category: 'Client Error',
+                severity: exception.isRoutine ? 'INFO' : 'ERROR',
+                message: exception.message ?? 'Client Error',
+                correlationId: exception.correlationId,
+                data,
+                logData: ['userAlerted']
             });
+            await XH.trackService.pushPendingAsync();
             return true;
         } catch (e) {
             logError(['Exception while submitting error report to UI server', e], this);

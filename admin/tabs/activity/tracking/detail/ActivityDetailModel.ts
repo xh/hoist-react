@@ -187,6 +187,9 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.urlPathOnly},
                 {...Col.data, hidden},
                 {...Col.dateCreatedNoYear, displayName: 'Timestamp', chooserGroup: 'Core Data'},
+                {...Col.errorName, hidden},
+                {...Col.userAlertedFlag, hidden},
+                {...Col.userMessageFlag, hidden},
                 ...dataFieldCols
             ].map(it => {
                 const fieldName = isString(it.field) ? it.field : it.field.name;

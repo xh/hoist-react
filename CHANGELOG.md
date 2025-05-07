@@ -4,7 +4,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-* Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients"
+* Requires `hoist-core >= 30.1.0` with new APIs to support the consolidated Admin Console "Clients"
   tab and new properties on `TrackLog`.
 * Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
   ensure they call `super.initAsync()` within their override of that lifecycle method, if
@@ -25,6 +25,9 @@
       the same tab.
     * Improved charting, with a column chart used for both timeseries and category data and fixes to
       the "skip weekends" option.
+    * Client Error reports and user feedback have also been consolidated into the new tracking
+      system for more integrated and powerful reporting.
+
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
 

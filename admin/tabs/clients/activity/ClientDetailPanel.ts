@@ -1,6 +1,6 @@
 import {isOpen} from '@xh/hoist/admin/columns';
 import {activityDetailView} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailView';
-import {ClientDetailModel} from '@xh/hoist/admin/tabs/client/clients/activity/ClientDetailModel';
+import {ClientDetailModel} from './ClientDetailModel';
 import {h2, hbox, placeholder, vbox} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
