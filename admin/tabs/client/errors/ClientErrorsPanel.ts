@@ -8,7 +8,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -76,7 +76,7 @@ const tbar = hoistCmp.factory<ClientErrorsModel>(({model}) => {
             })
         ),
         hspacer(),
-        filterChooser({
+        popoverFilterChooser({
             flex: 1,
             enableClear: true
         }),
