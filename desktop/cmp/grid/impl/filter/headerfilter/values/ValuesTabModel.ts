@@ -94,9 +94,13 @@ export class ValuesTabModel extends HoistModel {
                 fireImmediately: true
             },
             {
-                track: () => [this.filterText, this.combineCurrentFilters],
-                run: () => this.setPendingValues(),
+                track: () => this.filterText,
+                run: () => this.filterTextReaction(),
                 debounce: 300
+            },
+            {
+                track: () => this.combineCurrentFilters,
+                run: () => this.combineCurrentFiltersToggleReaction()
             }
         );
     }
@@ -129,10 +133,10 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    setPendingValues() {
+    filterTextReaction() {
         if (!this.filterText) {
+            this.combineCurrentFilters = false;
             this.doSyncWithFilter();
-            this.syncGrid();
             return;
         }
 
@@ -144,6 +148,19 @@ export class ValuesTabModel extends HoistModel {
                     currentFilterValues.length ||
                     it.get('isChecked')
             ),
+            values = map(checkedRecs, it => it.get('value'));
+
+        this.pendingValues = uniq(
+            this.combineCurrentFilters ? [...currentFilterValues, ...values] : values
+        );
+    }
+
+    @action combineCurrentFiltersToggleReaction() {
+        if (!this.filterText) return;
+
+        const {records} = this.gridModel.store,
+            currentFilterValues = flatten(map(this.columnFilters, 'value')),
+            checkedRecs = records.filter(it => it.get('isChecked')),
             values = map(checkedRecs, it => it.get('value'));
 
         this.pendingValues = uniq(

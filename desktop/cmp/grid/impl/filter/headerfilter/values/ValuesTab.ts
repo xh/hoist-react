@@ -55,6 +55,7 @@ const body = hoistCmp.factory<ValuesTabModel>(({model}) => {
 const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
     const {gridModel, allVisibleRecsChecked, filterText, headerFilterModel} = model,
         {store} = gridModel;
+
     return vbox({
         className: 'store-filter-header',
         items: [
@@ -68,7 +69,11 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
                 span(`(Select All${filterText ? ' Search Results' : ''})`)
             ),
             hframe({
-                omit: !filterText || store.empty || headerFilterModel.commitOnChange,
+                omit:
+                    !filterText ||
+                    !model.columnFilters.length ||
+                    store.empty ||
+                    headerFilterModel.commitOnChange,
                 items: [
                     checkbox({bind: 'combineCurrentFilters'}),
                     span(`Add current selection to filter`)
