@@ -138,7 +138,13 @@ export class ValuesTabModel extends HoistModel {
 
         const {records} = this.gridModel.store,
             currentFilterValues = flatten(map(this.columnFilters, 'value')),
-            values = map(records, it => it.get('value'));
+            checkedRecs = records.filter(
+                it =>
+                    this.headerFilterModel.commitOnChange ||
+                    currentFilterValues.length ||
+                    it.get('isChecked')
+            ),
+            values = map(checkedRecs, it => it.get('value'));
 
         this.pendingValues = uniq(
             this.combineCurrentFilters ? [...currentFilterValues, ...values] : values
