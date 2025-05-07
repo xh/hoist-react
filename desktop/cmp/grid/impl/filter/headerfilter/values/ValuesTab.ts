@@ -40,7 +40,8 @@ const tbar = hoistCmp.factory(() => {
             placeholder: 'Search...',
             flex: 1,
             autoFocus: true,
-            matchMode: 'any'
+            matchMode: 'any',
+            includeFields: ['value']
         })
     );
 });
