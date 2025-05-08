@@ -293,21 +293,22 @@ export const severityIcon: ColumnSpec = {
     resizable: false,
     align: 'center',
     width: 50,
+    cellClass: v => (v ? `xh-admin-activity-cell--${v.toLowerCase()}` : ''),
     renderer: v => getSeverityIcon(v)
 };
 
-export function getSeverityIcon(severity: TrackSeverity): ReactElement {
+function getSeverityIcon(severity: TrackSeverity): ReactElement {
     if (!severity) return null;
 
     switch (severity) {
         case 'DEBUG':
             return Icon.code();
         case 'INFO':
-            return Icon.infoCircle({className: 'xh-text-color-muted'});
+            return Icon.infoCircle();
         case 'WARN':
-            return Icon.warning({intent: 'warning'});
+            return Icon.warning();
         case 'ERROR':
-            return Icon.error({intent: 'danger'});
+            return Icon.error();
         default:
             return Icon.questionCircle();
     }

@@ -476,16 +476,16 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             raw.elapsedMax = raw.elapsed;
 
             const data = JSON.parse(raw.data);
-            if (isEmpty(data)) return;
+            if (!isEmpty(data)) {
+                raw.userMessage = get(data, 'userMessage');
+                raw.userAlerted = get(data, 'userAlerted');
+                raw.errorName = get(data, 'error.name');
 
-            raw.userMessage = get(data, 'userMessage');
-            raw.userAlerted = get(data, 'userAlerted');
-            raw.errorName = get(data, 'error.name');
-
-            this.dataFields.forEach(df => {
-                const path = df.path;
-                raw[df.name] = get(data, path);
-            });
+                this.dataFields.forEach(df => {
+                    const path = df.path;
+                    raw[df.name] = get(data, path);
+                });
+            }
         } catch (e) {
             this.logError(`Error processing raw track log`, e);
         }
