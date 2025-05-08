@@ -141,7 +141,7 @@ export const deviceIcon: ColumnSpec = {
             case 'IPAD':
             case 'IPHONE':
             case 'IPOD':
-                return Icon.phone();
+                return Icon.mobile();
             case 'LINUX':
             case 'MAC':
             case 'WINDOWS':
