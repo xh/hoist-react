@@ -128,6 +128,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                           }),
                           formField({
                               field: 'instance',
+                              label: 'Server',
                               readonlyRenderer: badgeRenderer,
                               omit: !formModel.values.instance
                           }),

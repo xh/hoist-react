@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {configPanel} from '@xh/hoist/admin/tabs/general/config/ConfigPanel';
-import {feedbackPanel} from '@xh/hoist/admin/tabs/general/feedback/FeedbackPanel';
 import {tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -20,7 +19,6 @@ export const generalTab = hoistCmp.factory(() =>
             tabs: [
                 {id: 'about', icon: Icon.info(), content: aboutPanel},
                 {id: 'config', icon: Icon.settings(), content: configPanel},
-                {id: 'feedback', icon: Icon.comment(), content: feedbackPanel},
                 {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
             ]
         }

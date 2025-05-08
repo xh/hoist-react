@@ -330,6 +330,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.day.field,
             Col.dayRange.field,
             Col.device.field,
+            Col.errorName.field,
             Col.elapsed.field,
             Col.elapsedMax.field,
             Col.entryCount.field,
@@ -343,6 +344,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.userAgent.field,
             Col.username.field,
             Col.url.field,
+            Col.userAlertedFlag.field,
+            Col.userMessageFlag.field,
             ...this.dataFields
         ] as CubeFieldSpec[];
 
@@ -453,6 +456,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {...Col.tabId, hidden},
                 {...Col.url, hidden},
                 {...Col.instance, hidden},
+                {...Col.errorName, hidden},
+                {...Col.userAlertedFlag, hidden},
                 ...this.dataFieldCols.map(it => ({...it, hidden: !it.appData.showInAggGrid}))
             ]
         });
@@ -471,12 +476,16 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             raw.elapsedMax = raw.elapsed;
 
             const data = JSON.parse(raw.data);
-            if (isEmpty(data)) return;
+            if (!isEmpty(data)) {
+                raw.userMessage = get(data, 'userMessage');
+                raw.userAlerted = get(data, 'userAlerted');
+                raw.errorName = get(data, 'error.name');
 
-            this.dataFields.forEach(df => {
-                const path = df.path;
-                raw[df.name] = get(data, path);
-            });
+                this.dataFields.forEach(df => {
+                    const path = df.path;
+                    raw[df.name] = get(data, path);
+                });
+            }
         } catch (e) {
             this.logError(`Error processing raw track log`, e);
         }
