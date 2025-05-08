@@ -170,10 +170,13 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.entryId, hidden, pinned},
                 {...Col.severityIcon, pinned},
                 {...Col.impersonatingFlag, pinned},
+                {...Col.userAlertedFlag, hidden, pinned},
+                {...Col.userMessageFlag, hidden, pinned},
                 {...Col.username, pinned},
                 {...Col.impersonating, hidden},
                 {...Col.category},
                 {...Col.msg},
+                {...Col.errorName, hidden},
                 {...Col.elapsed},
                 {...Col.deviceIcon},
                 {...Col.browser, hidden},
@@ -187,9 +190,6 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.urlPathOnly},
                 {...Col.data, hidden},
                 {...Col.dateCreatedNoYear, displayName: 'Timestamp', chooserGroup: 'Core Data'},
-                {...Col.errorName, hidden},
-                {...Col.userAlertedFlag, hidden},
-                {...Col.userMessageFlag, hidden},
                 ...dataFieldCols
             ].map(it => {
                 const fieldName = isString(it.field) ? it.field : it.field.name;
