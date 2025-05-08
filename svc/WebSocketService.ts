@@ -8,7 +8,7 @@ import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {find, pull} from 'lodash';
 
@@ -39,6 +39,13 @@ export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
+    /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
+    readonly HEARTBEAT_INTERVAL_MS = 10 * SECONDS;
+    /**  If no heartbeat ack (or other msg) received for past 30s, force a reconnect attempt. */
+    readonly HEARTBEAT_ACK_TIMEOUT_MS = 30 * SECONDS;
+    /** But wait at least 30s after a heartbeat-driven reconnect attempt before trying again. */
+    readonly HEARTBEAT_MIN_RECONNECT_INTERVAL_MS = 30 * SECONDS;
+
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
@@ -66,6 +73,7 @@ export class WebSocketService extends HoistService {
     private _timer: Timer;
     private _socket: WebSocket;
     private _subsByTopic: Record<string, WebSocketSubscription[]> = {};
+    private _lastHeartbeatReconnectAttempt: Date = null;
 
     constructor() {
         super();
@@ -93,7 +101,7 @@ export class WebSocketService extends HoistService {
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
-            interval: 10 * SECONDS,
+            interval: this.HEARTBEAT_INTERVAL_MS,
             delay: true
         });
     }
@@ -122,7 +130,6 @@ export class WebSocketService extends HoistService {
 
     /**
      * Cancel a subscription for a given topic/handler.
-     *
      * @param subscription - WebSocketSubscription returned when the subscription was established.
      */
     unsubscribe(subscription: WebSocketSubscription) {
@@ -193,13 +200,42 @@ export class WebSocketService extends HoistService {
     private heartbeatOrReconnect() {
         this.updateConnectedStatus();
         if (this.connected) {
-            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+            // We have a channel key, so we successfully registered with the server and have not
+            // received a disconnect message. We should be receiving at least heartbeat messages,
+            // but have observed cases where "something" interrupted connectivity in a surprising
+            // way and no new inbound messages were arriving, even with the socket reporting open
+            // and accepting outbound messages to send. Detect that case here.
+            if (olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT_MS)) {
+                this.attemptHeartbeatReconnect(
+                    `no messages received over past ${this.HEARTBEAT_ACK_TIMEOUT_MS / 1000}s`
+                );
+            } else {
+                // Happy path - connected+receiving. Send a new heartbeat for server to ack.
+                this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+                this.noteTelemetryEvent('heartbeatSent');
+            }
         } else {
-            this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
-            this.noteTelemetryEvent('heartbeatReconnectAttempt');
-            this.disconnect();
-            this.connect();
+            this.attemptHeartbeatReconnect('websocket not connected');
         }
+    }
+
+    private attemptHeartbeatReconnect(reason: string) {
+        if (
+            this._lastHeartbeatReconnectAttempt &&
+            !olderThan(
+                this._lastHeartbeatReconnectAttempt,
+                this.HEARTBEAT_MIN_RECONNECT_INTERVAL_MS
+            )
+        ) {
+            this.logDebug(`Last heartbeat reconnect attempt too recent - will not try again now.`);
+            return;
+        }
+
+        this.logWarn(`Heartbeat found ${reason} - attempting to reconnect...`);
+        this._lastHeartbeatReconnectAttempt = new Date();
+        this.noteTelemetryEvent('heartbeatReconnectAttempt');
+        this.disconnect();
+        this.connect();
     }
 
     private onServerInstanceChange() {
@@ -251,6 +287,9 @@ export class WebSocketService extends HoistService {
                     break;
                 case this.REQ_CLIENT_HEALTH_RPT_TOPIC:
                     XH.clientHealthService.sendReportAsync();
+                    break;
+                case this.HEARTBEAT_TOPIC:
+                    this.noteTelemetryEvent('heartbeatReceived');
                     break;
             }
 
@@ -361,6 +400,8 @@ export interface WebSocketTelemetry {
         connError?: WebSocketEventTelemetry;
         msgReceived?: WebSocketEventTelemetry;
         msgSent?: WebSocketEventTelemetry;
+        heartbeatReceived?: WebSocketEventTelemetry;
+        heartbeatSent?: WebSocketEventTelemetry;
         heartbeatReconnectAttempt?: WebSocketEventTelemetry;
         instanceChangeReconnectAttempt?: WebSocketEventTelemetry;
     };
