@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {waitFor} from '@xh/hoist/promise';
+import {wait} from '@xh/hoist/promise';
 import {observable} from 'mobx';
 import {logError, throwIf} from '../utils/js';
 import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
@@ -105,7 +105,8 @@ function createPersistDescriptor(
             }
         });
 
-        waitFor(() => this.hasOwnProperty(property)).thenAction(() => propertyAvailable.set(true));
+        // Wait for next tick to ensure property is available on the instance before observing.
+        wait().then(() => propertyAvailable.set(true));
 
         hasInitialized = true;
         return ret;
