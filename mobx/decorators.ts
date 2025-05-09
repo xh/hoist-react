@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
-import {getOrCreate} from '../utils/js';
 
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
@@ -40,7 +39,12 @@ function createBindable(target, name, descriptor, isRef) {
     }
 
     // 2) Record on class, so we can later create on *instance* in makeObservable.
-    getOrCreate(target, '_xhBindableProperties', () => ({}))[name] = isRef;
+    // (Be sure to create cloned list since this will exist on prototype superclasses of this class)
+    const key = '_xhBindableProperties';
+    if (!target.hasOwnProperty(key)) {
+        target[key] = {...target[key]};
+    }
+    target[key][name] = isRef;
 
     // 3) Return original descriptor.
     return descriptor;

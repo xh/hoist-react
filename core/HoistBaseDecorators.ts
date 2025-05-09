@@ -100,7 +100,8 @@ function createPersistDescriptor(
                 }
             });
 
-            // Wait for next tick to ensure property is available on the instance before observing.
+            // Wait for next tick to ensure construction has completed and property has been made
+            // observable via makeObservable.
             wait().thenAction(() => propertyAvailable.set(true));
 
             return ret;

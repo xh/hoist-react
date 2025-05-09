@@ -36,9 +36,9 @@
 * Fixed drag-and-drop usability issues with the mobile `ColChooser`.
 * Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
 * Disable `dashCanvasAddViewButton` if there are no `menuItems` to show.
-* Fixed `@persist` decorator.
-* Fixed bug where `@bindable` decorator would initialize lazily. Note that applications must
-  call `makeObservable()` on the decorated class to ensure that the decorator is applied correctly.
+* Improvements to `@bindable` and `@persist` to handle lifecycle-related bugs. Note that previously
+  `@bindable` would work even if `makeObservable()` was not called, but this is no longer the case.
+  Please ensure that `makeObservable()` is called in your model's constructor when using `@bindable`.
 
 ### ⚙️ Typescript API Adjustments
 
