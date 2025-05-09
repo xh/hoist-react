@@ -21,9 +21,8 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
 
     /**
      * Field on optional model to which this component should bind its raw (text) value to persist
-     * across renders. Specify this field to control the state of this component directly or if
-     * deliberately not connecting this component to a Store/GridModel. These are both advanced
-     * use-cases - this prop is typically left unset.
+     * across renders. Specify this field to control the state of this component directly from a model.
+     * These are both advanced use-cases - this prop is typically left unset.
      */
     bind?: string;
 

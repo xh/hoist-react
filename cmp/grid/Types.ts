@@ -90,7 +90,10 @@ export interface GridFilterModelConfig {
      */
     bind?: Store | View;
 
-    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    /**
+     * True to update filters immediately after each change made in the column-based filter UI.
+     * Defaults to False.
+     */
     commitOnChange?: boolean;
 
     /**
