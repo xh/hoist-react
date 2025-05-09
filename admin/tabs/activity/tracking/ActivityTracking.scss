@@ -97,3 +97,21 @@
     }
   }
 }
+
+.xh-admin-activity-cell {
+  &--debug {
+    color: var(--xh-intent-primary) !important;
+    background-color: var(--xh-intent-primary-trans2);
+  }
+  &--error {
+    color: var(--xh-intent-danger) !important;
+    background-color: var(--xh-intent-danger-trans2);
+  }
+  &--info {
+    color: var(--xh-text-color-muted);
+  }
+  &--warn {
+    color: var(--xh-intent-warning) !important;
+    background-color: var(--xh-intent-warning-trans2);
+  }
+}

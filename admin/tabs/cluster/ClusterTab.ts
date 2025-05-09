@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 export const clusterTab = hoistCmp.factory(() =>
     tabContainer({
         modelConfig: {
-            route: 'default.cluster',
+            route: 'default.servers',
             switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
             tabs: [
                 {id: 'instances', icon: Icon.server(), content: instancesTab},
