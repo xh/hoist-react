@@ -9,7 +9,9 @@ import {
     AnnotationsMap,
     CreateObservableOptions,
     makeObservable as baseMakeObservable,
-    isObservableProp as baseIsObservableProp
+    isObservableProp as baseIsObservableProp,
+    observable,
+    runInAction
 } from 'mobx';
 
 /**
@@ -21,10 +23,21 @@ export function makeObservable(
     options?: CreateObservableOptions
 ) {
     // Finish creating 'bindable' properties for this instance.
-    // Do here to ensure it's enumerable on *instance*
     const bindables = target._xhBindableProperties;
-    forEach(bindables, (descriptor, name) => {
-        Object.defineProperty(target, name, descriptor);
+    forEach(bindables, (isRef, name) => {
+        const propName = `_${name}_bindable`,
+            initVal = target[name];
+        target[propName] = isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
+        Object.defineProperty(target, name, {
+            get() {
+                return this[propName].get();
+            },
+            set(v) {
+                runInAction(() => this[propName].set(v));
+            },
+            enumerable: true,
+            configurable: true
+        });
     });
 
     return baseMakeObservable(target, annotations, options);

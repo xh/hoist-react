@@ -37,6 +37,8 @@
 * Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
 * Disable `dashCanvasAddViewButton` if there are no `menuItems` to show.
 * Fixed `@persist` decorator.
+* Fixed bug where `@bindable` decorator would initialize lazily. Note that applications must
+  call `makeObservable()` on the decorated class to ensure that the decorator is applied correctly.
 
 ### ⚙️ Typescript API Adjustments
 

@@ -74,42 +74,36 @@ function createPersistDescriptor(
         return descriptor;
     }
     const codeValue = descriptor.initializer,
-        // True once the property is available on the instance (after other decorators have run).
-        propertyAvailable = observable.box(false);
-    let hasInitialized = false,
-        ret;
-    const initializer = function () {
-        // Initializer can be called multiple times when stacking decorators.
-        if (hasInitialized) return ret;
+        initializer = function () {
+            // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
+            let ret = codeValue?.call(this);
 
-        // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
-        ret = codeValue?.call(this);
-
-        const persistOptions = {
-            path: property,
-            ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-        };
-        PersistenceProvider.create({
-            persistOptions,
-            owner: this,
-            target: {
-                getPersistableState: () =>
-                    new PersistableState(propertyAvailable.get() ? this[property] : ret),
-                setPersistableState: state => {
-                    if (!hasInitialized) {
-                        ret = state.value;
-                    } else {
-                        this[property] = state.value;
+            // Property is not available on the instance until after the next tick.
+            const propertyAvailable = observable.box(false),
+                persistOptions = {
+                    path: property,
+                    ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
+                };
+            PersistenceProvider.create({
+                persistOptions,
+                owner: this,
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(propertyAvailable.get() ? this[property] : ret),
+                    setPersistableState: state => {
+                        if (!propertyAvailable.get()) {
+                            ret = state.value;
+                        } else {
+                            this[property] = state.value;
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        // Wait for next tick to ensure property is available on the instance before observing.
-        wait().then(() => propertyAvailable.set(true));
+            // Wait for next tick to ensure property is available on the instance before observing.
+            wait().thenAction(() => propertyAvailable.set(true));
 
-        hasInitialized = true;
-        return ret;
-    };
+            return ret;
+        };
     return {...descriptor, initializer};
 }
