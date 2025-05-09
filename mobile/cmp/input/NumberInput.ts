@@ -5,13 +5,14 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
@@ -60,7 +61,7 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /**
      * Text appended to the rendered value within control when not editing.

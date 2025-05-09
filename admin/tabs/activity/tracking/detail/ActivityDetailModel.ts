@@ -6,17 +6,32 @@
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, lookup, managed, PersistOptions, PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {timestampReplacer} from '@xh/hoist/format';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {get} from 'lodash';
-import {ActivityTrackingModel} from '../ActivityTrackingModel';
+import {get, isString} from 'lodash';
+
+/**
+ * Interface to cover the two usages of this component - {@link ActivityTrackingModel} and {@link ClientDetailModel}
+ */
+export interface ActivityDetailProvider {
+    isActivityDetailProvider: true;
+    trackLogs: PlainObject[];
+    persistWith?: PersistOptions;
+    colDefaults?: Record<string, Partial<ColumnSpec>>;
+    dataFields?: ActivityTrackingDataFieldSpec[];
+    dataFieldCols?: ColumnSpec[];
+}
 
 export class ActivityDetailModel extends HoistModel {
-    @lookup(ActivityTrackingModel) activityTrackingModel: ActivityTrackingModel;
+    @lookup(model => {
+        return model.isActivityDetailProvider ?? false;
+    })
+    parentModel: ActivityDetailProvider;
 
     @managed @observable.ref gridModel: GridModel;
     @managed @observable.ref formModel: FormModel;
@@ -31,14 +46,22 @@ export class ActivityDetailModel extends HoistModel {
     /** Stringified, pretty-printed, optionally path-filtered `data` payload. */
     @observable formattedData: string;
 
+    get dataFields(): ActivityTrackingDataFieldSpec[] {
+        return this.parentModel?.dataFields ?? [];
+    }
+
+    get dataFieldCols(): ColumnSpec[] {
+        return this.parentModel?.dataFieldCols ?? [];
+    }
+
     @computed
     get hasExtraTrackData(): boolean {
-        return this.gridModel.selectedRecord?.data.data != null;
+        return this.gridModel?.selectedRecord?.data.data != null;
     }
 
     @computed
     get hasSelection() {
-        return this.gridModel.selectedRecord != null;
+        return this.gridModel?.selectedRecord != null;
     }
 
     constructor() {
@@ -47,17 +70,22 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     override onLinked() {
-        this.markPersist('formattedDataFilterPath', this.activityTrackingModel.persistWith);
+        if (this.parentModel.persistWith) {
+            this.persistWith = {...this.parentModel.persistWith, path: 'activityDetail'};
+            this.markPersist('formattedDataFilterPath', {
+                path: `${this.persistWith.path}.formattedDataFilterPath`
+            });
+        }
 
         this.addReaction(
             {
-                track: () => this.activityTrackingModel.dataFields,
+                track: () => this.dataFields,
                 run: () => this.createAndSetCoreModels(),
                 fireImmediately: true
             },
             {
-                track: () => this.activityTrackingModel.gridModel.selectedRecord,
-                run: aggRec => this.showActivityEntriesAsync(aggRec)
+                track: () => this.parentModel.trackLogs,
+                run: trackLogs => this.showTrackLogsAsync(trackLogs)
             },
             {
                 track: () => this.gridModel.selectedRecord,
@@ -73,27 +101,10 @@ export class ActivityDetailModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private async showActivityEntriesAsync(aggRec: StoreRecord) {
-        const {gridModel} = this,
-            leaves = this.getAllLeafRows(aggRec);
-
-        gridModel.loadData(leaves);
+    private async showTrackLogsAsync(trackLogs: PlainObject[]) {
+        const {gridModel} = this;
+        gridModel.loadData(trackLogs);
         await gridModel.preSelectFirstAsync();
-    }
-
-    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
-    private getAllLeafRows(aggRec: StoreRecord, ret = []) {
-        if (!aggRec) return [];
-
-        if (aggRec.children.length) {
-            aggRec.children.forEach(childRec => this.getAllLeafRows(childRec, ret));
-        } else if (aggRec.raw.leafRows) {
-            aggRec.raw.leafRows.forEach(leaf => {
-                ret.push({...leaf});
-            });
-        }
-
-        return ret;
     }
 
     /** Extract data from a (detail) grid record and flush it into our form for display. */
@@ -139,13 +150,15 @@ export class ActivityDetailModel extends HoistModel {
     }
 
     private createGridModel(): GridModel {
-        const hidden = true,
+        const {persistWith, parentModel, dataFieldCols} = this,
+            colDefaults = parentModel.colDefaults ?? {},
+            hidden = true,
             pinned = true;
 
         return new GridModel({
-            persistWith: {...this.activityTrackingModel.persistWith, path: 'detailGrid'},
+            persistWith: persistWith ? {...persistWith, path: `${persistWith.path}.grid`} : null,
             sortBy: 'dateCreated|desc',
-            colChooserModel: true,
+            colChooserModel: {height: 450},
             enableExport: true,
             filterModel: false,
             exportOptions: {
@@ -157,10 +170,13 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.entryId, hidden, pinned},
                 {...Col.severityIcon, pinned},
                 {...Col.impersonatingFlag, pinned},
+                {...Col.userAlertedFlag, hidden, pinned},
+                {...Col.userMessageFlag, hidden, pinned},
                 {...Col.username, pinned},
                 {...Col.impersonating, hidden},
                 {...Col.category},
                 {...Col.msg},
+                {...Col.errorName, hidden},
                 {...Col.elapsed},
                 {...Col.deviceIcon},
                 {...Col.browser, hidden},
@@ -173,9 +189,12 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.instance, hidden},
                 {...Col.urlPathOnly},
                 {...Col.data, hidden},
-                {...Col.dateCreatedNoYear, displayName: 'Timestamp'},
-                ...this.activityTrackingModel.dataFieldCols
-            ]
+                {...Col.dateCreatedNoYear, displayName: 'Timestamp', chooserGroup: 'Core Data'},
+                ...dataFieldCols
+            ].map(it => {
+                const fieldName = isString(it.field) ? it.field : it.field.name;
+                return {...it, ...colDefaults[fieldName]};
+            })
         });
     }
 

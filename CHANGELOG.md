@@ -4,20 +4,30 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab
-and new properties on `TrackLog`.
+* Requires `hoist-core >= 30.1.0` with new APIs to support the consolidated Admin Console "Clients"
+  tab and new properties on `TrackLog`.
+* Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
+  ensure they call `super.initAsync()` within their override of that lifecycle method, if
+  applicable. This did not previously have any effect, but is required now for the superclass to
+  initialize a new `ViewManagerModel`.
+  * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+
 
 ### 🎁 New Features
 
-* Added a new "Clients" Admin Console tab- a consolidated view of all websocket-connected clients
+* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
   across all instances in the cluster.
-* Major Enhancements to Admin 'User Activity' tab:
-  * Provide user customizable persisted views via ViewManager.
-  * Provide the ability to promote data in `data` block to grids for aggregation, reporting and charting.
-  * Improved charting.
-  * Enhanced all messages with new `tabId` and `loadId` properties, to disambiguate activity for
-    users with multiple browser tabs and multiple full refreshes/restarts of a client app within
-    the same tab.
+* Significantly upgraded the Admin Console "User Activity" tab with:
+    * Persisted custom views via `ViewManager`.
+    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
+    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
+      users with multiple browser tabs and multiple full refreshes/restarts of a client app within
+      the same tab.
+    * Improved charting, with a column chart used for both timeseries and category data and fixes to
+      the "skip weekends" option.
+    * Client Error reports and user feedback have also been consolidated into the new tracking
+      system for more integrated and powerful reporting.
+
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
 * `BaseOAuthClientConfig` now supports a new `reloginEnabled` property. Use this property to
@@ -33,8 +43,10 @@ and new properties on `TrackLog`.
 
 ### ⚙️ Typescript API Adjustments
 
-* Corrected `StoreCountLabelProps` interface.
 * Corrected `GridGroupSortFn` param types.
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `textAlign` type in `DateInputProps`, `NumberInputProps` `SearchInputProps` and
+  `TextInputProps`.
 
 ### ⚙️ Technical
 
@@ -44,10 +56,10 @@ and new properties on `TrackLog`.
     * The two versions *should* be the same, but in cases where a browser "restores" a tab and
       re-inits an app without reloading the code itself, the upgrade check would miss the fact that
       the client remained on an older version.
-    * Note that a misconfigured build - where the client build version is not set to the same value
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
       as the server - would result in a false positive for an upgrade. The two should always match.
-*  Calls to `Promise.track()` that are rejected with an exception will be tracked with new
-   severity level of `TrackSeverity.ERROR`
+* Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+  severity level of `TrackSeverity.ERROR`
 
 ## v72.5.1 - 2025-04-15
 

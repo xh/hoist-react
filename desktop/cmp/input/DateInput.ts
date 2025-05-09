@@ -9,7 +9,7 @@ import {TimePickerProps} from '@blueprintjs/datetime';
 import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, LayoutProps, Some} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput, TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -22,6 +22,7 @@ import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import type {Property} from 'csstype';
 import {assign, castArray, clone, isEmpty, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
@@ -128,7 +129,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     strictInputParsing?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /**
      * Props passed to the TimePicker, as per Blueprint docs.

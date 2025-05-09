@@ -13,7 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
-import {clientTab} from './tabs/client/ClientTab';
+import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
 import {userDataTab} from './tabs/userData/UserDataTab';
@@ -75,8 +75,8 @@ export class AppModel extends HoistAppModel {
                 ]
             },
             {
-                name: 'cluster',
-                path: '/cluster',
+                name: 'servers',
+                path: '/servers',
                 children: [
                     {
                         name: 'instances',
@@ -94,11 +94,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'clients',
-                path: '/clients',
-                children: [
-                    {name: 'connections', path: '/connections'},
-                    {name: 'errors', path: '/errors'}
-                ]
+                path: '/clients'
             },
             {
                 name: 'monitors',
@@ -129,14 +125,14 @@ export class AppModel extends HoistAppModel {
                 content: generalTab
             },
             {
-                id: 'cluster',
+                id: 'servers',
                 icon: Icon.server(),
                 content: clusterTab
             },
             {
                 id: 'clients',
                 icon: Icon.desktop(),
-                content: clientTab
+                content: clientsPanel
             },
             {
                 id: 'monitors',

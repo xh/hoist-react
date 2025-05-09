@@ -22,7 +22,7 @@ import './MonitorTab.scss';
 
 export const monitorTab = hoistCmp.factory({
     model: creates(MonitorTabModel),
-    render() {
+    render({model}) {
         const enabled = XH.getConf('xhEnableMonitoring', true);
         if (!enabled)
             return errorMessage({error: 'Monitoring disabled via xhEnableMonitor config.'});
@@ -31,7 +31,8 @@ export const monitorTab = hoistCmp.factory({
             mask: 'onLoad',
             className: 'xh-monitor-tab',
             tbar: tbar(),
-            items: [body(), monitorEditorDialog()]
+            items: [body(), monitorEditorDialog()],
+            ref: model.viewRef
         });
     }
 });

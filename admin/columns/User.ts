@@ -11,6 +11,7 @@ import * as Col from '@xh/hoist/cmp/grid/columns';
 
 export const user: ColumnSpec = {
     field: {name: 'user', type: 'string'},
+    chooserGroup: 'User',
     width: 250
 };
 
@@ -22,16 +23,19 @@ export const username: ColumnSpec = {
         isDimension: true,
         aggregator: 'UNIQUE'
     },
+    chooserGroup: 'User',
     width: 160
 };
 
 export const email: ColumnSpec = {
     field: {name: 'email', type: 'string'},
+    chooserGroup: 'User',
     width: 200
 };
 
 export const displayName: ColumnSpec = {
     field: {name: 'displayName', type: 'string'},
+    chooserGroup: 'User',
     width: 200
 };
 
@@ -45,11 +49,13 @@ export const roles: ColumnSpec = {
 
 export const impersonating: ColumnSpec = {
     field: {name: 'impersonating', type: 'string'},
+    chooserGroup: 'User',
     width: 140
 };
 
 export const impersonatingFlag: ColumnSpec = {
     field: {name: 'impersonatingFlag', type: 'bool'},
+    chooserGroup: 'User',
     headerName: Icon.impersonate(),
     headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
     excludeFromExport: true,
