@@ -24,7 +24,7 @@ export function makeObservable(
 ) {
     // Finish creating 'bindable' properties for this instance.
     const bindables = target._xhBindableProperties;
-    forEach(bindables, (isRef, name) => {
+    forEach(bindables, ({isRef}, name) => {
         const propName = `_${name}_bindable`,
             initVal = target[name];
         target[propName] = isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
@@ -46,8 +46,8 @@ export function makeObservable(
 /**
  * An enhanced version of the native mobx isObservableProp
  */
-export function isObservableProp(target: any, propertyKey: PropertyKey) {
+export function isObservableProp(target: any, propertyKey: PropertyKey): boolean {
     return (
-        baseIsObservableProp(target, propertyKey) || target?._xhBindableProperties?.[propertyKey]
+        baseIsObservableProp(target, propertyKey) || !!target?._xhBindableProperties?.[propertyKey]
     );
 }

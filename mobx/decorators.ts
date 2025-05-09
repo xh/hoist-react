@@ -44,7 +44,7 @@ function createBindable(target, name, descriptor, isRef) {
     if (!target.hasOwnProperty(key)) {
         target[key] = {...target[key]};
     }
-    target[key][name] = isRef;
+    target[key][name] = {isRef};
 
     // 3) Return original descriptor.
     return descriptor;
