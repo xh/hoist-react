@@ -42,7 +42,6 @@ function createBindable(target, name, descriptor, isRef) {
     // 2) Record on class, so we can later create on *instance* in makeObservable.
     getOrCreate(target, '_xhBindableProperties', () => ({}))[name] = isRef;
 
-    // 5) Return the get/set to be placed on prototype.  (If makeObservable() never called, or called
-    // late, the non-enumerable property will still be available.)
+    // 3) Return original descriptor.
     return descriptor;
 }
