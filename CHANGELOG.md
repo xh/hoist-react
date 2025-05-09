@@ -57,7 +57,8 @@
 * Calls to `Promise.track()` that are rejected with an exception will be tracked with new
   severity level of `TrackSeverity.ERROR`.
 * Improved client `WebSocketService` heartbeat to check that it has been receiving inbound messages
-  from the server, not just successfully sending outbound heartbeats. Attempt reconnect if not.
+  from the server, not just successfully sending outbound heartbeats.
+* Improved client `WebSocketService` to throttle its reconnect attempts.
 
 ## v72.5.1 - 2025-04-15
 

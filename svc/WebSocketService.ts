@@ -40,11 +40,11 @@ export class WebSocketService extends HoistService {
 
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
-    readonly HEARTBEAT_INTERVAL_MS = 10 * SECONDS;
+    readonly HEARTBEAT_INTERVAL = 10 * SECONDS;
     /**  If no heartbeat ack (or other msg) received for past 30s, assume we are disconnected. */
-    readonly HEARTBEAT_ACK_TIMEOUT_MS = 30 * SECONDS;
+    readonly HEARTBEAT_ACK_TIMEOUT = 30 * SECONDS;
     /** Wait a well-defined interval before trying to reconnect again. */
-    readonly HEARTBEAT_MIN_RECONNECT_INTERVAL_MS = 30 * SECONDS;
+    readonly HEARTBEAT_RECONNECT_INTERVAL = 30 * SECONDS;
 
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
@@ -101,7 +101,7 @@ export class WebSocketService extends HoistService {
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
-            interval: this.HEARTBEAT_INTERVAL_MS,
+            interval: this.HEARTBEAT_INTERVAL,
             delay: true
         });
     }
@@ -206,7 +206,7 @@ export class WebSocketService extends HoistService {
         // but have observed cases where "something" interrupted connectivity in a surprising
         // way and no new inbound messages were arriving, even with the socket reporting open
         // and accepting outbound messages to send. Detect that case here.
-        if (this.connected && olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT_MS)) {
+        if (this.connected && olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT)) {
             this.logWarn('Heartbeat response failing - disconnecting');
             this.noteTelemetryEvent('heartbeatFailed');
             this.disconnect();
@@ -220,15 +220,11 @@ export class WebSocketService extends HoistService {
         }
 
         // 3) Unhappy path -- attempt a (throttled) reconnect.
-        if (
-            !olderThan(
-                this._lastHeartbeatReconnectAttempt,
-                this.HEARTBEAT_MIN_RECONNECT_INTERVAL_MS
-            )
-        ) {
+        if (!olderThan(this._lastHeartbeatReconnectAttempt, this.HEARTBEAT_RECONNECT_INTERVAL)) {
             this._lastHeartbeatReconnectAttempt = new Date();
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.noteTelemetryEvent('heartbeatReconnectAttempt');
+            this.disconnect();
             this.connect();
         }
     }
