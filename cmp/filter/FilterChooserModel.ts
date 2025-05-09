@@ -145,6 +145,10 @@ export class FilterChooserModel extends HoistModel {
     @observable unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
 
+    get tagCount(): number {
+        return this.selectValue?.length ?? 0;
+    }
+
     constructor({
         fieldSpecs,
         fieldSpecDefaults,

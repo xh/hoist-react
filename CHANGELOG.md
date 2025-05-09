@@ -2,6 +2,11 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `PopoverFilterChooser`, which wraps `FilterChooser` in a `Popover` to allow it to expand
+  vertically when used in a `Toolbar`.
+
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
 * Requires `hoist-core >= 30.1.0` with new APIs to support the consolidated Admin Console "Clients"
