@@ -4,6 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {waitFor} from '@xh/hoist/promise';
+import {observable} from 'mobx';
 import {logError, throwIf} from '../utils/js';
 import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
 
@@ -71,7 +73,9 @@ function createPersistDescriptor(
         );
         return descriptor;
     }
-    const codeValue = descriptor.initializer;
+    const codeValue = descriptor.initializer,
+        // True once the property is available on the instance (after other decorators have run).
+        propertyAvailable = observable.box(false);
     let hasInitialized = false,
         ret;
     const initializer = function () {
@@ -90,7 +94,7 @@ function createPersistDescriptor(
             owner: this,
             target: {
                 getPersistableState: () =>
-                    new PersistableState(hasInitialized ? this[property] : ret),
+                    new PersistableState(propertyAvailable.get() ? this[property] : ret),
                 setPersistableState: state => {
                     if (!hasInitialized) {
                         ret = state.value;
@@ -100,6 +104,8 @@ function createPersistDescriptor(
                 }
             }
         });
+
+        waitFor(() => this.hasOwnProperty(property)).thenAction(() => propertyAvailable.set(true));
 
         hasInitialized = true;
         return ret;
