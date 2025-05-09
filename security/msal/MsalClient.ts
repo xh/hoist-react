@@ -9,6 +9,7 @@ import {
     AccountInfo,
     BrowserPerformanceClient,
     Configuration,
+    InteractionRequiredAuthError,
     IPublicClientApplication,
     LogLevel,
     PopupRequest,
@@ -103,10 +104,9 @@ export interface MsalTokenSpec extends AccessTokenSpec {
  * Also see this doc re. use of blankUrl as redirectUri for all "silent" token requests:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
  *
- * TODO: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this library
- *   require 3rd party cookies to be enabled in the browser so that MSAL can load contact in a
- *   hidden iFrame  If its *not* enabled, we may be doing extra work.  Consider checking 3rd party
- *   cookie support and adding conditional behavior?
+ * Important note: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this
+ *    library require 3rd party cookies to be enabled in the browser so that MSAL can load contact
+ *    in a hidden iFrame.
  */
 export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec> {
     private client: IPublicClientApplication;
@@ -261,6 +261,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         loginMethod == 'REDIRECT'
             ? await client.logoutRedirect(opts)
             : await client.logoutPopup(opts);
+    }
+
+    protected override interactiveLoginNeeded(exception: unknown): boolean {
+        return exception instanceof InteractionRequiredAuthError;
     }
 
     //------------------------

@@ -203,12 +203,23 @@ const enhancePromise = promisePrototype => {
 
             const startTime = Date.now(),
                 doTrack = (isError: boolean) => {
-                    const opts: TrackOptions = isString(options)
-                        ? {message: options}
-                        : {...options};
-
+                    const endTime = Date.now(),
+                        opts: TrackOptions = isString(options) ? {message: options} : {...options};
                     opts.timestamp = startTime;
-                    opts.elapsed = Date.now() - startTime;
+                    opts.elapsed = endTime - startTime;
+
+                    // Null out any time spent during "interactive" login, if it took longer than
+                    // 2 seconds (e.g. user input required).  This avoids stats being blown out.
+                    // Could also try to correct, but this seems safer.
+                    const login = XH.appContainerModel.lastRelogin;
+                    if (
+                        login &&
+                        startTime <= login.completed &&
+                        endTime >= login.completed &&
+                        login.completed - login.started > 2 * SECONDS
+                    ) {
+                        opts.elapsed = null;
+                    }
                     if (isError) opts.severity = 'ERROR';
 
                     XH.track(opts);

@@ -35,6 +35,10 @@
 
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
+* `BaseOAuthClientConfig` now supports a new `reloginEnabled` property. Use this property to
+   allow the client to do a potentially interactive popup login during the session to re-establish
+   the login.  This is especially useful to allow recovery from expired or invalidated refresh
+   tokens.
 
 ### 🐞 Bug Fixes
 

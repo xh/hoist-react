@@ -178,6 +178,12 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await wait(10 * SECONDS);
     }
 
+    protected override interactiveLoginNeeded(exception: unknown): boolean {
+        return ['login_required', 'interaction_required', 'consent_required'].includes(
+            exception['error']
+        );
+    }
+
     //------------------------
     // Private implementation
     //------------------------

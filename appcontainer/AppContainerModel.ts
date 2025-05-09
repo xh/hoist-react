@@ -107,6 +107,16 @@ export class AppContainerModel extends HoistModel {
     @bindable initializingLoadMaskMessage: ReactNode;
 
     /**
+     * The last interactive login in the app. Hoist's security package will mark the last
+     * time spent during user interactive login.
+     *
+     * Used by `Promise.track`, to ensure this time is not counted in any elapsed time tracking
+     * for the app.
+     * @internal
+     */
+    lastRelogin: {started: number; completed: number} = null;
+
+    /**
      * Main entry point. Initialize and render application code.
      */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
