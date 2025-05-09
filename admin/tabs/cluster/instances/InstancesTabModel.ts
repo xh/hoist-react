@@ -192,7 +192,7 @@ export class InstancesTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.cluster.instances',
+            route: 'default.servers.instances',
             switcher: false,
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},

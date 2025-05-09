@@ -141,7 +141,7 @@ export const deviceIcon: ColumnSpec = {
             case 'IPAD':
             case 'IPHONE':
             case 'IPOD':
-                return Icon.phone();
+                return Icon.mobile();
             case 'LINUX':
             case 'MAC':
             case 'WINDOWS':
@@ -227,7 +227,8 @@ export const errorMessage: ColumnSpec = {
 export const errorName: ColumnSpec = {
     field: {
         name: 'errorName',
-        type: 'string'
+        type: 'string',
+        isDimension: true
     },
     chooserGroup: 'Errors',
     width: 150,
@@ -237,6 +238,7 @@ export const errorName: ColumnSpec = {
 export const instance: ColumnSpec = {
     field: {
         name: 'instance',
+        displayName: 'Server',
         type: 'string',
         isDimension: true,
         aggregator: 'UNIQUE'
@@ -291,21 +293,22 @@ export const severityIcon: ColumnSpec = {
     resizable: false,
     align: 'center',
     width: 50,
+    cellClass: v => (v ? `xh-admin-activity-cell--${v.toLowerCase()}` : ''),
     renderer: v => getSeverityIcon(v)
 };
 
-export function getSeverityIcon(severity: TrackSeverity): ReactElement {
+function getSeverityIcon(severity: TrackSeverity): ReactElement {
     if (!severity) return null;
 
     switch (severity) {
         case 'DEBUG':
             return Icon.code();
         case 'INFO':
-            return Icon.infoCircle({className: 'xh-text-color-muted'});
+            return Icon.infoCircle();
         case 'WARN':
-            return Icon.warning({intent: 'warning'});
+            return Icon.warning();
         case 'ERROR':
-            return Icon.error({intent: 'danger'});
+            return Icon.error();
         default:
             return Icon.questionCircle();
     }
@@ -376,7 +379,7 @@ export const userAlertedFlag: ColumnSpec = {
 };
 
 export const userMessageFlag: ColumnSpec = {
-    field: {name: 'userMessageFlag', type: 'bool'},
+    field: {name: 'userMessage', type: 'string'},
     headerName: Icon.comment(),
     headerTooltip:
         'Indicates if the user provided a message along with the automated error report.',
@@ -385,10 +388,7 @@ export const userMessageFlag: ColumnSpec = {
     resizable: false,
     align: 'center',
     width: 50,
-    renderer: (v, {record}) => {
-        const {msg} = record.data;
-        return msg ? Icon.comment() : null;
-    }
+    renderer: v => (v ? Icon.comment() : null)
 };
 
 //-----------------------
