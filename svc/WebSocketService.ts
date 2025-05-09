@@ -41,9 +41,9 @@ export class WebSocketService extends HoistService {
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
     readonly HEARTBEAT_INTERVAL_MS = 10 * SECONDS;
-    /**  If no heartbeat ack (or other msg) received for past 30s, force a reconnect attempt. */
+    /**  If no heartbeat ack (or other msg) received for past 30s, assume we are disconnected. */
     readonly HEARTBEAT_ACK_TIMEOUT_MS = 30 * SECONDS;
-    /** But wait at least 30s after a heartbeat-driven reconnect attempt before trying again. */
+    /** Wait a well-defined interval before trying to reconnect again. */
     readonly HEARTBEAT_MIN_RECONNECT_INTERVAL_MS = 30 * SECONDS;
 
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
@@ -199,43 +199,38 @@ export class WebSocketService extends HoistService {
 
     private heartbeatOrReconnect() {
         this.updateConnectedStatus();
-        if (this.connected) {
-            // We have a channel key, so we successfully registered with the server and have not
-            // received a disconnect message. We should be receiving at least heartbeat messages,
-            // but have observed cases where "something" interrupted connectivity in a surprising
-            // way and no new inbound messages were arriving, even with the socket reporting open
-            // and accepting outbound messages to send. Detect that case here.
-            if (olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT_MS)) {
-                this.attemptHeartbeatReconnect(
-                    `no messages received over past ${this.HEARTBEAT_ACK_TIMEOUT_MS / 1000}s`
-                );
-            } else {
-                // Happy path - connected+receiving. Send a new heartbeat for server to ack.
-                this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
-                this.noteTelemetryEvent('heartbeatSent');
-            }
-        } else {
-            this.attemptHeartbeatReconnect('websocket not connected');
-        }
-    }
 
-    private attemptHeartbeatReconnect(reason: string) {
+        // 1) Detect 'stale' connection.  For some reason, not receiving heartbeat.
+        // We have a channel key, so we successfully registered with the server and have not
+        // received a disconnect message. We should be receiving at least heartbeat messages,
+        // but have observed cases where "something" interrupted connectivity in a surprising
+        // way and no new inbound messages were arriving, even with the socket reporting open
+        // and accepting outbound messages to send. Detect that case here.
+        if (this.connected && olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT_MS)) {
+            this.logWarn('Heartbeat response failing - disconnecting');
+            this.noteTelemetryEvent('heartbeatFailed');
+            this.disconnect();
+        }
+
+        // 2) Happy path - connected+receiving. Send a new heartbeat for server to ack.
+        if (this.connected) {
+            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+            this.noteTelemetryEvent('heartbeatSent');
+            return;
+        }
+
+        // 3) Unhappy path -- attempt a (throttled) reconnect.
         if (
-            this._lastHeartbeatReconnectAttempt &&
             !olderThan(
                 this._lastHeartbeatReconnectAttempt,
                 this.HEARTBEAT_MIN_RECONNECT_INTERVAL_MS
             )
         ) {
-            this.logDebug(`Last heartbeat reconnect attempt too recent - will not try again now.`);
-            return;
+            this._lastHeartbeatReconnectAttempt = new Date();
+            this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
+            this.noteTelemetryEvent('heartbeatReconnectAttempt');
+            this.connect();
         }
-
-        this.logWarn(`Heartbeat found ${reason} - attempting to reconnect...`);
-        this._lastHeartbeatReconnectAttempt = new Date();
-        this.noteTelemetryEvent('heartbeatReconnectAttempt');
-        this.disconnect();
-        this.connect();
     }
 
     private onServerInstanceChange() {
@@ -402,6 +397,7 @@ export interface WebSocketTelemetry {
         msgSent?: WebSocketEventTelemetry;
         heartbeatReceived?: WebSocketEventTelemetry;
         heartbeatSent?: WebSocketEventTelemetry;
+        heartbeatFailed?: WebSocketEventTelemetry;
         heartbeatReconnectAttempt?: WebSocketEventTelemetry;
         instanceChangeReconnectAttempt?: WebSocketEventTelemetry;
     };
