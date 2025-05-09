@@ -40,10 +40,10 @@ export const [PopoverFilterChooser, popoverFilterChooser] =
                             model,
                             // Omit when popover is open to force update the inputRef
                             omit: impl.popoverIsOpen,
-                            disabled: true,
                             className: 'xh-popover-filter-chooser__filter-chooser',
                             displayCount: true,
-                            ...props
+                            ...props,
+                            disabled: true
                         })
                     ),
                     content: filterChooser({
