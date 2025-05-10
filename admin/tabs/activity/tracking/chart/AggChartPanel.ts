@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon/Icon';
 import {AggChartModel} from './AggChartModel';
 
 export const aggChartPanel = hoistCmp.factory({
+    displayName: 'AggChartPanel',
     model: creates(AggChartModel),
 
     render({model, ...props}) {

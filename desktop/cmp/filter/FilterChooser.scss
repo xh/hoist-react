@@ -10,6 +10,11 @@
     display: flex;
     flex: 1;
   }
+
+  &__count {
+    margin: 7px 4px;
+    align-self: start;
+  }
 }
 
 .xh-filter-chooser-option {

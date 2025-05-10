@@ -2,10 +2,21 @@
 
 ## v73.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `PopoverFilterChooser`, which wraps `FilterChooser` in a `Popover` to allow it to expand
+  vertically when used in a `Toolbar`.
+
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-Requires `hoist-core >= 30.0` with new APIs to support the consolidated Admin Console "Clients" tab
-and new properties on `TrackLog`.
+* Requires `hoist-core >= 30.1.0` with new APIs to support the consolidated Admin Console "Clients"
+  tab and new properties on `TrackLog`.
+* Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
+  ensure they call `super.initAsync()` within their override of that lifecycle method, if
+  applicable. This did not previously have any effect, but is required now for the superclass to
+  initialize a new `ViewManagerModel`.
+  * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+
 
 ### 🎁 New Features
 
@@ -19,6 +30,9 @@ and new properties on `TrackLog`.
       the same tab.
     * Improved charting, with a column chart used for both timeseries and category data and fixes to
       the "skip weekends" option.
+    * Client Error reports and user feedback have also been consolidated into the new tracking
+      system for more integrated and powerful reporting.
+
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
   developer options to persist all or a provided subset of fields.
 
@@ -27,11 +41,16 @@ and new properties on `TrackLog`.
 * Fixed drag-and-drop usability issues with the mobile `ColChooser`.
 * Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
 * Disable `dashCanvasAddViewButton` if there are no `menuItems` to show.
+* Improvements to `@bindable` and `@persist` to handle lifecycle-related bugs. Note that previously
+  `@bindable` would work even if `makeObservable()` was not called, but this is no longer the case.
+  Please ensure that `makeObservable()` is called in your model's constructor when using `@bindable`.
 
 ### ⚙️ Typescript API Adjustments
 
 * Corrected `GridGroupSortFn` param types.
 * Corrected `StoreCountLabelProps` interface.
+* Corrected `textAlign` type in `DateInputProps`, `NumberInputProps` `SearchInputProps` and
+  `TextInputProps`.
 
 ### ⚙️ Technical
 
@@ -41,10 +60,13 @@ and new properties on `TrackLog`.
     * The two versions *should* be the same, but in cases where a browser "restores" a tab and
       re-inits an app without reloading the code itself, the upgrade check would miss the fact that
       the client remained on an older version.
-    * Note that a misconfigured build - where the client build version is not set to the same value
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
       as the server - would result in a false positive for an upgrade. The two should always match.
 * Calls to `Promise.track()` that are rejected with an exception will be tracked with new
-  severity level of `TrackSeverity.ERROR`
+  severity level of `TrackSeverity.ERROR`.
+* Improved client `WebSocketService` heartbeat to check that it has been receiving inbound messages
+  from the server, not just successfully sending outbound heartbeats.
+* Improved client `WebSocketService` to throttle its reconnect attempts.
 
 ## v72.5.1 - 2025-04-15
 

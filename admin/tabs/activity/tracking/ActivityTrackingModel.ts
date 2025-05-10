@@ -6,6 +6,7 @@
  */
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
+import {elapsedRenderer} from '@xh/hoist/admin/columns';
 import {
     ActivityTrackingDataFieldSpec,
     DataFieldsEditorModel
@@ -15,14 +16,15 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec} from '@xh/hoist/data';
-import {dateRenderer, dateTimeSecRenderer, fmtNumber, numberRenderer} from '@xh/hoist/format';
+import {Cube, CubeFieldSpec, FieldSpec, StoreRecord} from '@xh/hoist/data';
+import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
+import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
-export class ActivityTrackingModel extends HoistModel {
+export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -38,6 +40,18 @@ export class ActivityTrackingModel extends HoistModel {
      * and promoted to top-level columns in the grids. Supports dot-delimited paths as names.
      */
     @observable.ref dataFields: ActivityTrackingDataFieldSpec[] = [];
+
+    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
+    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
+    //        underlying field.
+    get dataFieldCols(): ColumnSpec[] {
+        return this.dataFields.map(df => ({
+            field: df,
+            chooserGroup: 'Data Fields',
+            renderer: this.getDfRenderer(df),
+            appData: {showInAggGrid: !!df.aggregator}
+        }));
+    }
 
     @observable showFilterChooser: boolean = false;
 
@@ -77,20 +91,17 @@ export class ActivityTrackingModel extends HoistModel {
         return this.maxRows === this.cube.store.allCount;
     }
 
-    // TODO - process two collections - one for agg grid with _agg fields left as-is, another for
-    //        detail grid and filter that replaces (potentially multiple) agg fields with a single
-    //        underlying field.
-    get dataFieldCols(): ColumnSpec[] {
-        return this.dataFields.map(df => ({
-            field: df,
-            renderer: this.getDfRenderer(df),
-            appData: {showInAggGrid: !!df.aggregator}
-        }));
-    }
-
     get viewManagerModel() {
         return getAppModel().viewManagerModels.activityTracking;
     }
+
+    //-----------------------
+    // ActivityDetailProvider
+    //-----------------------
+    readonly isActivityDetailProvider = true;
+
+    /** Raw leaf-level log entries for the selected aggregate record, for detail. */
+    @observable.ref trackLogs: PlainObject[] = [];
 
     private _monthFormat = 'MMM YYYY';
 
@@ -120,6 +131,11 @@ export class ActivityTrackingModel extends HoistModel {
             {
                 track: () => [this.cube.records, this.dimensions],
                 run: () => this.loadGridAsync(),
+                debounce: 100
+            },
+            {
+                track: () => this.gridModel.selectedRecords,
+                run: recs => (this.trackLogs = this.getAllLeafRows(recs)),
                 debounce: 100
             }
         );
@@ -273,6 +289,23 @@ export class ActivityTrackingModel extends HoistModel {
         };
     }
 
+    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
+    private getAllLeafRows(aggRecs: StoreRecord[], ret = []): PlainObject[] {
+        if (isEmpty(aggRecs)) return [];
+
+        aggRecs.forEach(aggRec => {
+            if (aggRec.children.length) {
+                this.getAllLeafRows(aggRec.children, ret);
+            } else if (aggRec.raw.leafRows) {
+                aggRec.raw.leafRows.forEach(leaf => {
+                    ret.push({...leaf});
+                });
+            }
+        });
+
+        return ret;
+    }
+
     //------------------------
     // Impl - core data models
     //------------------------
@@ -297,7 +330,9 @@ export class ActivityTrackingModel extends HoistModel {
             Col.day.field,
             Col.dayRange.field,
             Col.device.field,
+            Col.errorName.field,
             Col.elapsed.field,
+            Col.elapsedMax.field,
             Col.entryCount.field,
             Col.impersonating.field,
             Col.instance.field,
@@ -309,6 +344,8 @@ export class ActivityTrackingModel extends HoistModel {
             Col.userAgent.field,
             Col.username.field,
             Col.url.field,
+            Col.userAlertedFlag.field,
+            Col.userMessageFlag.field,
             ...this.dataFields
         ] as CubeFieldSpec[];
 
@@ -318,7 +355,11 @@ export class ActivityTrackingModel extends HoistModel {
     private createFilterChooserModel(): FilterChooserModel {
         // TODO - data fields?
         const ret = new FilterChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: false},
+            persistWith: {
+                ...this.persistWith,
+                // Faves persisted to local storage (vs trapped within a single VM view)
+                persistFavorites: {localStorageKey: 'xhAdminActivityTabState'}
+            },
             fieldSpecs: [
                 {field: 'appEnvironment', displayName: 'Environment'},
                 {field: 'appVersion'},
@@ -327,16 +368,7 @@ export class ActivityTrackingModel extends HoistModel {
                 {field: 'correlationId'},
                 {field: 'data'},
                 {field: 'device'},
-                {
-                    field: 'elapsed',
-                    valueRenderer: v => {
-                        return fmtNumber(v, {
-                            label: 'ms',
-                            formatConfig: {thousandSeparated: false, mantissa: 0}
-                        });
-                    },
-                    fieldType: 'number'
-                },
+                {field: 'elapsed', fieldType: 'number', valueRenderer: elapsedRenderer},
                 {field: 'instance'},
                 {field: 'loadId'},
                 {field: 'msg', displayName: 'Message'},
@@ -372,7 +404,11 @@ export class ActivityTrackingModel extends HoistModel {
 
     private createGroupingChooserModel(): GroupingChooserModel {
         return new GroupingChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: false},
+            persistWith: {
+                ...this.persistWith,
+                // Faves persisted to local storage (vs trapped within a single VM view)
+                persistFavorites: {localStorageKey: 'xhAdminActivityTabState'}
+            },
             dimensions: this.cube.dimensions,
             initialValue: ['username', 'category']
         });
@@ -382,11 +418,12 @@ export class ActivityTrackingModel extends HoistModel {
         const hidden = true;
         return new GridModel({
             persistWith: {...this.persistWith, path: 'aggGrid'},
+            selModel: 'multiple',
             enableExport: true,
-            colChooserModel: true,
             treeMode: true,
+            colChooserModel: {height: 450},
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            autosizeOptions: {mode: 'managed'},
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
@@ -398,6 +435,7 @@ export class ActivityTrackingModel extends HoistModel {
                         displayName: 'Group'
                     },
                     minWidth: 100,
+                    autosizeMaxWidth: 400,
                     isTreeColumn: true,
                     comparator: this.cubeLabelComparator.bind(this)
                 },
@@ -407,16 +445,19 @@ export class ActivityTrackingModel extends HoistModel {
                 {...Col.browser, hidden},
                 {...Col.userAgent, hidden},
                 {...Col.impersonating, hidden},
-                {...Col.elapsed, headerName: 'Elapsed (avg)', hidden},
+                {...Col.elapsed, displayName: 'Elapsed (avg)', hidden},
+                {...Col.elapsedMax, displayName: 'Elapsed (max)', hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
-                {field: 'count', hidden},
+                {field: 'count', chooserGroup: 'Core Data', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
                 {...Col.loadId, hidden},
                 {...Col.tabId, hidden},
                 {...Col.url, hidden},
                 {...Col.instance, hidden},
+                {...Col.errorName, hidden},
+                {...Col.userAlertedFlag, hidden},
                 ...this.dataFieldCols.map(it => ({...it, hidden: !it.appData.showInAggGrid}))
             ]
         });
@@ -431,13 +472,20 @@ export class ActivityTrackingModel extends HoistModel {
             raw.month = raw.day.format(this._monthFormat);
             raw.dayRange = {min: raw.day, max: raw.day};
 
-            const data = JSON.parse(raw.data);
-            if (isEmpty(data)) return;
+            // Workaround lack of support for multiple aggregations on the same field.
+            raw.elapsedMax = raw.elapsed;
 
-            this.dataFields.forEach(df => {
-                const path = df.path;
-                raw[df.name] = get(data, path);
-            });
+            const data = JSON.parse(raw.data);
+            if (!isEmpty(data)) {
+                raw.userMessage = get(data, 'userMessage');
+                raw.userAlerted = get(data, 'userAlerted');
+                raw.errorName = get(data, 'error.name');
+
+                this.dataFields.forEach(df => {
+                    const path = df.path;
+                    raw[df.name] = get(data, path);
+                });
+            }
         } catch (e) {
             this.logError(`Error processing raw track log`, e);
         }

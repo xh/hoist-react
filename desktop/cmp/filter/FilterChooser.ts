@@ -16,6 +16,7 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
+import {badge} from '@xh/hoist/cmp/badge';
 import {ReactElement} from 'react';
 import './FilterChooser.scss';
 
@@ -26,6 +27,8 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     disabled?: boolean;
     /** True to show a "clear" button at the right of the control.  Defaults to true. */
     enableClear?: boolean;
+    /** True to show count of filter tags next to the left icon. */
+    displayCount?: boolean;
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
     /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
@@ -47,10 +50,23 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} =
-                model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} =
-                chooserProps,
+            {
+                inputRef,
+                suggestFieldsWhenEmpty,
+                selectOptions,
+                unsupportedFilter,
+                favoritesIsOpen,
+                tagCount
+            } = model,
+            {
+                autoFocus,
+                enableClear,
+                displayCount,
+                leftIcon,
+                maxMenuHeight,
+                menuPlacement,
+                menuWidth
+            } = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter
                 ? 'Unsupported filter (click to clear)'
@@ -61,42 +77,49 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
             className,
             ...layoutProps,
             item: popover({
-                item: select({
-                    flex: 1,
-                    height: layoutProps?.height,
-                    bind: 'selectValue',
-                    ref: inputRef,
+                item: hframe(
+                    badge({
+                        omit: !displayCount || tagCount < 1,
+                        className: 'xh-filter-chooser__count',
+                        item: tagCount
+                    }),
+                    select({
+                        flex: 1,
+                        height: layoutProps?.height,
+                        bind: 'selectValue',
+                        ref: inputRef,
 
-                    autoFocus,
-                    disabled,
-                    menuPlacement,
-                    menuWidth,
-                    placeholder,
-                    leftIcon: withDefault(leftIcon, Icon.filter()),
-                    enableClear: withDefault(enableClear, true),
+                        autoFocus,
+                        disabled,
+                        menuPlacement,
+                        menuWidth,
+                        placeholder,
+                        leftIcon: withDefault(leftIcon, Icon.filter()),
+                        enableClear: withDefault(enableClear, true),
 
-                    enableMulti: true,
-                    queryFn: q => model.queryAsync(q),
-                    options: selectOptions,
-                    optionRenderer,
-                    rsOptions: {
-                        defaultOptions: suggestFieldsWhenEmpty,
-                        openMenuOnClick: suggestFieldsWhenEmpty,
-                        openMenuOnFocus: false,
-                        isOptionDisabled: opt => opt.type === 'msg',
-                        noOptionsMessage: () => null,
-                        loadingMessage: () => null,
-                        styles: {
-                            menuList: base => ({
-                                ...base,
-                                maxHeight: withDefault(maxMenuHeight, '50vh')
-                            })
-                        },
-                        components: {
-                            DropdownIndicator: () => favoritesIcon(model)
+                        enableMulti: true,
+                        queryFn: q => model.queryAsync(q),
+                        options: selectOptions,
+                        optionRenderer,
+                        rsOptions: {
+                            defaultOptions: suggestFieldsWhenEmpty,
+                            openMenuOnClick: suggestFieldsWhenEmpty,
+                            openMenuOnFocus: false,
+                            isOptionDisabled: opt => opt.type === 'msg',
+                            noOptionsMessage: () => null,
+                            loadingMessage: () => null,
+                            styles: {
+                                menuList: base => ({
+                                    ...base,
+                                    maxHeight: withDefault(maxMenuHeight, '50vh')
+                                })
+                            },
+                            components: {
+                                DropdownIndicator: () => favoritesIcon(model)
+                            }
                         }
-                    }
-                }),
+                    })
+                ),
                 content: favoritesMenu(),
                 isOpen: favoritesIsOpen,
                 position: 'bottom-right',
