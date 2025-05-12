@@ -16,7 +16,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import numbro from 'numbro';
 import {ReactNode} from 'react';
@@ -115,6 +115,11 @@ export class AppContainerModel extends HoistModel {
      * @internal
      */
     lastRelogin: {started: number; completed: number} = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     /**
      * Main entry point. Initialize and render application code.

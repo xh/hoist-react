@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
@@ -20,6 +20,11 @@ export class DetailsModel extends HoistModel {
 
     get selectedRecord() {
         return this.parent.gridModel.selectedRecord;
+    }
+
+    constructor() {
+        super();
+        makeObservable(this);
     }
 
     override onLinked() {
