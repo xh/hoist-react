@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 export interface LeftRightChooserConfig {
@@ -135,6 +135,7 @@ export class LeftRightChooserModel extends HoistModel {
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
+        makeObservable(this);
         this.xhImpl = xhImpl;
 
         this.onChange = onChange;

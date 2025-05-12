@@ -11,7 +11,7 @@ import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, buttonGroup, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
 import {dateInput, DateInputProps, select} from '@xh/hoist/desktop/cmp/input';
@@ -137,7 +137,7 @@ const filterChooserToggleButton = hoistCmp.factory<ActivityTrackingModel>(({mode
 const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
     return model.showFilterChooser
         ? toolbar(
-              filterChooser({
+              popoverFilterChooser({
                   flex: 1,
                   enableClear: true
               })

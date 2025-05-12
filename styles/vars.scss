@@ -47,6 +47,7 @@ body {
   --xh-purple: var(--purple, #{mc('purple', '800')});
   --xh-red: var(--red, #{mc('red', '900')});
   --xh-red-muted: var(--red-muted, #{mc-muted('red', '900', 40%, 20%)});
+  --xh-white: var(--white, hsl(0, 0%, 100%));
   --xh-yellow: var(--yellow, #{mc('yellow', '800')});
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 

@@ -10,7 +10,7 @@ import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/cmp/error';
-import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
@@ -44,7 +44,7 @@ export const rolePanel = hoistCmp.factory({
                         selModel: gridModel.selModel
                     }),
                     '-',
-                    filterChooser({flex: 1}),
+                    popoverFilterChooser({flex: 1}),
                     '-',
                     switchInput({
                         bind: 'showInGroups',

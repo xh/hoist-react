@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {clientDetailPanel} from '@xh/hoist/admin/tabs/client/clients/activity/ClientDetailPanel';
+import {clientDetailPanel} from './activity/ClientDetailPanel';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, p} from '@xh/hoist/cmp/layout';
@@ -30,7 +30,7 @@ export const clientsPanel = hoistCmp.factory<ClientsModel>({
                     placeholder: 'Ungrouped',
                     options: [
                         {value: 'user', label: 'By User'},
-                        {value: 'instance', label: 'By Instance'}
+                        {value: 'instance', label: 'By Server'}
                     ],
                     enableClear: true,
                     enableFilter: false

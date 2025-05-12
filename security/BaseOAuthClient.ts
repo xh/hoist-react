@@ -13,7 +13,7 @@ import {Token} from '@xh/hoist/security/Token';
 import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, throwIf} from '@xh/hoist/utils/js';
+import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
 import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
@@ -73,6 +73,24 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
      * other metadata required by the underlying provider.
      */
     accessTokens?: Record<string, S>;
+
+    /**
+     * True to allow this client to try to re-login interactively (via pop-up) if tokens begin
+     * failing to load due to specific provider exceptions indicating user interaction is required.
+     * This can happen, for example, if a token expires and the refresh token is expired or
+     * invalidated during the lifetime of the client.  Default is false and retry will not be
+     * attempted.
+     */
+    reloginEnabled?: boolean;
+
+    /**
+     * Maximum time for (interactive) re-login.
+     *
+     * Set to a reasonably fixed amount of time, to allow user to type in password and complete
+     * MFA, but not so long as to allow a problematic build-up of application requests.
+     * Default 60 seconds;
+     */
+    reloginTimeoutSecs?: number;
 }
 
 /**
@@ -101,6 +119,8 @@ export abstract class BaseOAuthClient<
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
+    private pendingRelogin: Promise<void> = null;
+    private lastRelogin: {started: number; completed: number};
 
     //------------------------
     // Public API
@@ -114,6 +134,8 @@ export abstract class BaseOAuthClient<
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
+            reloginEnabled: false,
+            reloginTimeoutSecs: 60,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
@@ -156,7 +178,7 @@ export abstract class BaseOAuthClient<
      * Get an ID token.
      */
     async getIdTokenAsync(): Promise<Token> {
-        return this.fetchIdTokenSafeAsync(true);
+        return this.getWithRetry(() => this.fetchIdTokenSafeAsync(true));
     }
 
     /**
@@ -166,14 +188,14 @@ export abstract class BaseOAuthClient<
         const spec = this.accessSpecs[key];
         if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
 
-        return this.fetchAccessTokenAsync(spec, true);
+        return this.getWithRetry(() => this.fetchAccessTokenAsync(spec, true));
     }
 
     /**
      * Get all configured tokens.
      */
     async getAllTokensAsync(opts?: {eagerOnly?: boolean; useCache?: boolean}): Promise<TokenMap> {
-        return this.fetchAllTokensAsync(opts);
+        return this.getWithRetry(() => this.fetchAllTokensAsync(opts));
     }
 
     /**
@@ -208,6 +230,8 @@ export abstract class BaseOAuthClient<
     protected abstract fetchAccessTokenAsync(spec: S, useCache: boolean): Promise<Token>;
 
     protected abstract doLogoutAsync(): Promise<void>;
+
+    protected abstract interactiveLoginNeeded(exception: unknown): boolean;
 
     //---------------------------------------
     // Implementation
@@ -357,7 +381,7 @@ export abstract class BaseOAuthClient<
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(ONE_MINUTE)) {
+        if (useCache && ret.expiresWithin(1 * MINUTES)) {
             this.logDebug('Stale ID Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
@@ -365,6 +389,62 @@ export abstract class BaseOAuthClient<
         // Paranoia -- we don't expect this after workaround above to skip cache
         throwIf(ret.expiresWithin(ONE_MINUTE), 'Cannot get valid ID Token from provider.');
         return ret;
+    }
+
+    private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
+        const {reloginEnabled} = this.config,
+            {lastRelogin, pendingRelogin} = this;
+
+        // 0) Simple case: either no relogin possible, OR we are already working on a relogin,
+        // and will take just a single shot when it completes.
+        if (!reloginEnabled || !olderThan(lastRelogin?.completed, 1 * MINUTES) || pendingRelogin) {
+            await pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
+        }
+
+        // 1) Complex case:  Take potentially two tries.
+        try {
+            return await fn();
+        } catch (e) {
+            if (!this.interactiveLoginNeeded(e)) throw e;
+            // Be sure to create and join on just a single shared loginTask.
+            this.pendingRelogin ??= this.getLoginTask().finally(() => (this.pendingRelogin = null));
+            await this.pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
+        }
+    }
+
+    private rethrowWrapped(e: unknown): never {
+        if (!this.interactiveLoginNeeded(e)) throw e;
+
+        throw XH.exception({
+            name: 'Auth Expired',
+            message: 'Your authentication has expired. Please reload the app to login again.',
+            cause: e
+        });
+    }
+
+    // Return a highly managed task that will attempt to relogin the user, and never throw.
+    private getLoginTask(): Promise<void> {
+        let started: number = Date.now(),
+            completed: number;
+        return this.doLoginPopupAsync()
+            .timeout(this.config.reloginTimeoutSecs * SECONDS)
+            .finally(() => {
+                completed = Date.now();
+                this.lastRelogin = XH.appContainerModel.lastRelogin = {started, completed};
+            })
+            .then(() => {
+                XH.track({
+                    category: 'App',
+                    message: 'Interactive reauthentication succeeded',
+                    elapsed: completed - started
+                });
+            })
+            .catch(e => {
+                // Should there be a non-auth requiring way to communicate this to server?
+                logError('Failed to reauthenticate', e);
+            });
     }
 
     @action
