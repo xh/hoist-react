@@ -35,6 +35,10 @@
    allow the client to do a potentially interactive popup login during the session to re-establish
    the login.  This is especially useful to allow recovery from expired or invalidated refresh
    tokens.
+* Improvements to  Grid columns `HeaderFilter` component:
+    * `GridFilterModel` `commitOnChage` now set to `false` by default
+    * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
+    * Grid column header filtering functionality now similar to Excel on Windows
 
 ### 🐞 Bug Fixes
 
@@ -140,10 +144,6 @@
 
 ### 🎁 New Features
 
-* Improvements to  Grid columns `HeaderFilter` component:
-    * `GridFilterModel` `commitOnChage` now set to `false` by default
-    * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
-    * Column header filtering functionality now similar to Excel on Windows
 * Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
   User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
   to filter and match data using JSON Path expressions.
