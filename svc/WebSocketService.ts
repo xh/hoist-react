@@ -220,7 +220,7 @@ export class WebSocketService extends HoistService {
         }
 
         // 3) Unhappy path -- attempt a (throttled) reconnect.
-        if (!olderThan(this._lastHeartbeatReconnectAttempt, this.HEARTBEAT_RECONNECT_INTERVAL)) {
+        if (olderThan(this._lastHeartbeatReconnectAttempt, this.HEARTBEAT_RECONNECT_INTERVAL)) {
             this._lastHeartbeatReconnectAttempt = new Date();
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.noteTelemetryEvent('heartbeatReconnectAttempt');
