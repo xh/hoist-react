@@ -6,9 +6,10 @@
     .bp5-control-indicator {
       font-size: 1em;
     }
-    span {
+    label {
       font-size: var(--xh-grid-compact-header-font-size-px);
       color: var(--xh-grid-header-text-color);
+      cursor: pointer;
     }
   }
 
