@@ -449,7 +449,7 @@ export class XHApi {
      * new window is null. This ensures that the new page will not share sessionState with
      * this page.  See https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
      */
-    openInTab(url: string, target: string) {
+    openInTab(url: string, target?: string) {
         window.open(url, target ?? '_blank', 'noopener=true');
     }
 
