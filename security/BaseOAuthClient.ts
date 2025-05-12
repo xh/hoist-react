@@ -81,14 +81,14 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
      * invalidated during the lifetime of the client.  Default is false and retry will not be
      * attempted.
      */
-    reloginEnabled?: number;
+    reloginEnabled?: boolean;
 
     /**
      * Maximum time for (interactive) re-login.
      *
      * Set to a reasonably fixed amount of time, to allow user to type in password and complete
      * MFA, but not so long as to allow a problematic build-up of application requests.
-     * Default 60secs;
+     * Default 60 seconds;
      */
     reloginTimeoutSecs?: number;
 }
@@ -436,13 +436,14 @@ export abstract class BaseOAuthClient<
             })
             .then(() => {
                 XH.track({
-                    message: 'Interactive re-login succeeded.',
+                    category: 'App',
+                    message: 'Interactive reauthentication succeeded',
                     elapsed: completed - started
                 });
             })
             .catch(e => {
                 // Should there be a non-auth requiring way to communicate this to server?
-                logError('Failed to re-login', e);
+                logError('Failed to reauthenticate', e);
             });
     }
 
