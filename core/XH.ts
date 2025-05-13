@@ -443,13 +443,13 @@ export class XHApi {
     }
 
     /**
-     * Open a url in an external browser tab.
+     * Open a url in an external browser window/tab.
      *
      * Unlike a simple call to `open`, this method ensures the "opener" method on the
      * new window is null. This ensures that the new page will not share sessionState with
      * this page.  See https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
      */
-    openInTab(url: string, target?: string) {
+    openWindow(url: string, target?: string) {
         window.open(url, target ?? '_blank', 'noopener=true');
     }
 

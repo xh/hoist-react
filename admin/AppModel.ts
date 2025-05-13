@@ -155,7 +155,8 @@ export class AppModel extends HoistAppModel {
 
     /** Open the primary business-facing application, typically 'app'. */
     openPrimaryApp() {
-        XH.openInTab(`/${this.getPrimaryAppCode()}`, this.getPrimaryAppCode());
+        const appCode = this.getPrimaryAppCode();
+        XH.openWindow(`/${appCode}`, appCode);
     }
 
     getPrimaryAppCode() {
