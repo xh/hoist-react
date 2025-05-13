@@ -27,8 +27,8 @@ export class ValuesTabModel extends HoistModel {
     @bindable filterText: string = null;
 
     /*
-     * Available only when commit on change is false merge
-     * current filter with pendingValues on commit
+     * Merge current filter with pendingValues on commit.
+     * Used when commitOnChange is false.
      */
     @bindable combineCurrentFilters: boolean = false;
 
@@ -95,12 +95,12 @@ export class ValuesTabModel extends HoistModel {
             },
             {
                 track: () => this.filterText,
-                run: () => this.filterTextReaction(),
+                run: () => this.onFilterTextChange(),
                 debounce: 300
             },
             {
                 track: () => this.combineCurrentFilters,
-                run: () => this.combineCurrentFiltersToggleReaction()
+                run: () => this.onCombineCurrentFiltersToggle()
             }
         );
     }
@@ -133,7 +133,7 @@ export class ValuesTabModel extends HoistModel {
     // Implementation
     //-------------------
     @action
-    filterTextReaction() {
+    private onFilterTextChange() {
         if (!this.filterText) {
             this.combineCurrentFilters = false;
             this.doSyncWithFilter();
@@ -145,7 +145,7 @@ export class ValuesTabModel extends HoistModel {
             checkedRecs = records.filter(
                 it =>
                     this.headerFilterModel.commitOnChange ||
-                    currentFilterValues.length ||
+                    !isEmpty(currentFilterValues) ||
                     it.get('isChecked')
             ),
             values = map(checkedRecs, it => it.get('value'));
@@ -155,7 +155,8 @@ export class ValuesTabModel extends HoistModel {
         );
     }
 
-    @action combineCurrentFiltersToggleReaction() {
+    @action
+    private onCombineCurrentFiltersToggle() {
         if (!this.filterText) return;
 
         const {records} = this.gridModel.store,

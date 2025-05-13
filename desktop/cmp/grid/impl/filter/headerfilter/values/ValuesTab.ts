@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {isEmpty} from 'lodash';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hframe, placeholder, label, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
@@ -77,7 +78,7 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
             hframe({
                 omit:
                     !filterText ||
-                    !model.columnFilters.length ||
+                    isEmpty(model.columnFilters) ||
                     store.empty ||
                     headerFilterModel.commitOnChange,
                 items: [
