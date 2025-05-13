@@ -92,14 +92,11 @@ export class AppStateModel extends HoistModel {
                     timestamp: loadStarted,
                     elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
                     data: {
-                        loadId: XH.loadId,
-                        tabId: XH.tabId,
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
                         clientHealth: XH.clientHealthService.getReport(),
                         window: this.getWindowData(),
                         screen: this.getScreenData()
                     },
-                    logData: ['loadId', 'tabId'],
                     omit: !XH.appSpec.trackAppLoad
                 })
         });
