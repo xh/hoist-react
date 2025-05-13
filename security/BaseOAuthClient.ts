@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {HoistBase, isHoistException, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -148,13 +148,22 @@ export abstract class BaseOAuthClient<
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const tokens = await this.doInitAsync();
-        this.logDebug('Successfully initialized with following tokens:');
-        this.logTokensDebug(tokens);
-        if (this.config.autoRefreshSecs > 0) {
-            this.timer = Timer.create({
-                runFn: async () => this.onTimerAsync(),
-                interval: this.TIMER_INTERVAL
+        try {
+            const tokens = await this.doInitAsync();
+            this.logDebug('Successfully initialized with following tokens:');
+            this.logTokensDebug(tokens);
+            if (this.config.autoRefreshSecs > 0) {
+                this.timer = Timer.create({
+                    runFn: async () => this.onTimerAsync(),
+                    interval: this.TIMER_INTERVAL
+                });
+            }
+        } catch (e) {
+            if (isHoistException(e)) throw e;
+            throw XH.exception({
+                name: 'Auth Failed',
+                message: 'Authentication has failed.',
+                cause: e
             });
         }
     }
