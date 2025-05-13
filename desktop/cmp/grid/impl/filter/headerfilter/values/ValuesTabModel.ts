@@ -257,7 +257,7 @@ export class ValuesTabModel extends HoistModel {
                     {name: 'isChecked', type: 'bool'}
                 ]
             },
-            selModel: 'disabled',
+            selModel: 'single',
             emptyText: 'No records found...',
             contextMenu: null,
             // Autosize enabled to ensure that long values don't get clipped and user can scroll
@@ -269,6 +269,12 @@ export class ValuesTabModel extends HoistModel {
             sortBy: 'value',
             onRowClicked: ({data: record}) => {
                 this.setRecsChecked(!record.get('isChecked'), record.get('value'));
+            },
+            onKeyDown: evt => {
+                if (evt.key === ' ' || evt.code.toUpperCase() === 'SPACE') {
+                    const record = this.gridModel.selectedRecord;
+                    this.setRecsChecked(!record.get('isChecked'), record.get('value'));
+                }
             },
             hideHeaders: true,
             columns: [
