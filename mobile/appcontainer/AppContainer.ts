@@ -24,13 +24,12 @@ import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
-import {suspendPanel} from './SuspendPanel';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
@@ -157,16 +156,4 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));
