@@ -35,6 +35,8 @@
    allow the client to do a potentially interactive popup login during the session to re-establish
    the login.  This is especially useful to allow recovery from expired or invalidated refresh
    tokens.
+*  New utility method `XH.openWindow()` for ensuring that new windows/tabs are opened without
+   an unintended `opener` relationship with the original window.
 * Improvements to  Grid columns `HeaderFilter` component:
     * `GridFilterModel` `commitOnChage` now set to `false` by default
     * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
