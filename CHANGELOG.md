@@ -37,6 +37,10 @@
    tokens.
 *  New utility method `XH.openWindow()` for ensuring that new windows/tabs are opened without
    an unintended `opener` relationship with the original window.
+* Improvements to  Grid columns `HeaderFilter` component:
+    * `GridFilterModel` `commitOnChage` now set to `false` by default
+    * Addition of ability to append terms to active filter **only** when `commitOnChage:false`
+    * Grid column header filtering functionality now similar to Excel on Windows
 
 ### 🐞 Bug Fixes
 

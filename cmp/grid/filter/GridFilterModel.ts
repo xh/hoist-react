@@ -46,7 +46,7 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor(
-        {bind, commitOnChange = true, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        {bind, commitOnChange = false, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
