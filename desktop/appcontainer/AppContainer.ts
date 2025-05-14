@@ -9,7 +9,7 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
-import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
@@ -34,7 +34,6 @@ import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -172,19 +171,7 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {
