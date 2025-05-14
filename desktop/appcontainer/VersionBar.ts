@@ -55,7 +55,7 @@ export const versionBar = hoistCmp.factory({
                 Icon.wrench({
                     omit: isAdminApp || !XH.getUser().isHoistAdminReader,
                     title: 'Open Admin Console',
-                    onClick: () => XH.openWindow('/admin', 'xhAdmin')
+                    onClick: () => XH.appContainerModel.openAdmin()
                 })
             ]
         });

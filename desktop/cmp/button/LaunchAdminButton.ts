@@ -25,7 +25,7 @@ export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory<Launc
             ref,
             icon: Icon.wrench(),
             title: 'Launch admin client...',
-            onClick: () => XH.openWindow('/admin', 'xhAdmin'),
+            onClick: () => XH.appContainerModel.openAdmin(),
             ...props
         });
     }

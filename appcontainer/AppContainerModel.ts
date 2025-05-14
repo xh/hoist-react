@@ -343,6 +343,10 @@ export class AppContainerModel extends HoistModel {
         return !isEmpty(this.aboutDialogModel.getItems());
     }
 
+    openAdmin() {
+        XH.openWindow('/admin', XH.appCode + '_xhAdmin');
+    }
+
     //----------------------------
     // Implementation
     //-----------------------------
