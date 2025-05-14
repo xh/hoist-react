@@ -23,10 +23,16 @@ export function makeObservable(
     options?: CreateObservableOptions
 ) {
     // Finish creating 'bindable' properties for this instance.
-    const bindables = target._xhBindableProperties;
-    forEach(bindables, ({isRef}, name) => {
-        const propName = `_${name}_bindable`,
-            initVal = target[name];
+    forEach(target._xhBindableProperties, ({isRef}, name) => {
+        const propName = `_${name}_bindable`;
+
+        // makeObservable is called by each constructor in the class hierarchy.
+        // Don't process the property before initialized...or if its already processed
+        if (!target.hasOwnProperty(name) || target.hasOwnProperty(propName)) {
+            return;
+        }
+
+        const initVal = target[name];
         target[propName] = isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
         Object.defineProperty(target, name, {
             get() {
