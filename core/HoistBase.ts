@@ -37,6 +37,8 @@ import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
 import {wait} from '@xh/hoist/promise';
 
+declare const xhIsDevelopmentMode: boolean;
+
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
     isHoistBase: boolean;
@@ -61,7 +63,7 @@ export abstract class HoistBase {
     }
 
     constructor() {
-        if (XH.isDevelopmentMode) {
+        if (xhIsDevelopmentMode) {
             wait().then(() => checkMakeObservable(this));
         }
     }
