@@ -15,7 +15,8 @@
   Note that there is a new runtime check on all instances of `HoistBase` to warn if this call has not
   been made.
 * Requires @xh/hoist-dev-utils >= 11.0
-* Apps must also rename their .eslintrc file to eslint.client.cjs and copy the configuration found in Toolbox.
+* Apps must also rename their `.eslintrc` file to `eslint.config.js` and use the configuration
+  found in Toolbox's `eslint.config.js` as the new base example `eslint` configuration.
 
 ### 🎁 New Features
 
