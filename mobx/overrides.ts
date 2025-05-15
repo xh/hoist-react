@@ -57,7 +57,7 @@ export function isObservableProp(target: any, propertyKey: string): boolean {
 }
 
 /**
- * Check that if a class property was annotated with \@bindable or \@observable that
+ * Check that if a class property was annotated with `@bindable` or `@observable` that
  * makeObservable was actually called on the instance.  Log error on fail.
  */
 export function checkMakeObservable(target: any) {
