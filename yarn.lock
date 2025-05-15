@@ -2099,10 +2099,10 @@
   resolved "https://registry.yarnpkg.com/@webpack-cli/serve/-/serve-3.0.1.tgz#bd8b1f824d57e30faa19eb78e4c0951056f72f00"
   integrity sha512-sbgw03xQaCLiT6gcY/6u3qBDn01CWw/nbaXl3gTdTFuJJ75Gffv3E3DBpgvY2fkkrdS1fpjaXNOmJlnbtKauKg==
 
-"@xh/eslint-config@7.0.0-SNAPSHOT.1747322577234":
-  version "7.0.0-SNAPSHOT.1747322577234"
-  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-7.0.0-SNAPSHOT.1747322577234.tgz#9cc1652bf7d744f52aafd51d342b40ae870c5c2a"
-  integrity sha512-OQuaaCwBXXrh0/YjjTpvoQcxq2zTFJR63RkRlWIo7k8iOuAizgJLfllhLh6g+7vXcZZzr5KnbioYpPPL7Sayew==
+"@xh/eslint-config@7.0.0-SNAPSHOT.1747333108200":
+  version "7.0.0-SNAPSHOT.1747333108200"
+  resolved "https://registry.yarnpkg.com/@xh/eslint-config/-/eslint-config-7.0.0-SNAPSHOT.1747333108200.tgz#7ad846268b2f34bbedce4cfb4060f0d23e0a7b9e"
+  integrity sha512-tBPuvAUfTiL4y2c0Io1jGz/3sjFvddoWwk1obPlKAhtCQm9mUKX8io6efTS9qGKMqG3iGrJGyD5vbEqmFKIWWw==
   dependencies:
     "@babel/core" "^7.27"
     "@babel/eslint-parser" "^7.27"
@@ -2116,10 +2116,10 @@
     typescript "5.x"
     typescript-eslint "^8.32"
 
-"@xh/hoist-dev-utils@11.0.0-SNAPSHOT.1747323244863":
-  version "11.0.0-SNAPSHOT.1747323244863"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-11.0.0-SNAPSHOT.1747323244863.tgz#616dd52953227a0991f0e49a2501478a41b61dd3"
-  integrity sha512-JEU677+/tEDmGuKVKAn6jpGUQtKWOJwsVzrOVSoXTq8l4X8ySpChUzN40GePA9UzDQF5/CJ+GdXNRBO789x34A==
+"@xh/hoist-dev-utils@11.0.0-SNAPSHOT.1747333512169":
+  version "11.0.0-SNAPSHOT.1747333512169"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-11.0.0-SNAPSHOT.1747333512169.tgz#bf0cd2a7e1e02cd9f3627d8e74d445b906572c14"
+  integrity sha512-z7gKw4T8dXx/d6LPsjWP/gsJKpTfSkpkGF2UWdltvG3p2n/XfUqn5wqGMPBF+28ww2wUTmP6CLyo5Ze3IFsybw==
   dependencies:
     "@babel/core" "^7.27.1"
     "@babel/plugin-proposal-decorators" "^7.27.1"
@@ -2130,7 +2130,7 @@
     "@types/lodash" "4.x"
     "@types/react" "18.x"
     "@types/react-dom" "18.x"
-    "@xh/eslint-config" "7.0.0-SNAPSHOT.1747322577234"
+    "@xh/eslint-config" "7.0.0-SNAPSHOT.1747333108200"
     autoprefixer "~10.4.18"
     babel-loader "~10.0.0"
     babel-plugin-transform-imports "~2.0.0"
