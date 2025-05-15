@@ -61,7 +61,9 @@ export abstract class HoistBase {
     }
 
     constructor() {
-        wait().then(() => checkMakeObservable(this));
+        if (XH.isDevelopmentMode) {
+            wait().then(() => checkMakeObservable(this));
+        }
     }
 
     /**
