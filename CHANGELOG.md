@@ -12,6 +12,8 @@
   initialize a new `ViewManagerModel`.
   * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
 * Requires call to `makeObservable(this)` in model constructors with `@bindable` (see below).
+* Requires @xh/hoist-dev-utils >= 11.0
+* Apps must also rename their .eslintrc file to eslint.client.cjs and copy the configuration found in Toolbox.
 
 ### 🎁 New Features
 
