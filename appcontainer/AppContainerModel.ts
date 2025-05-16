@@ -18,7 +18,6 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import numbro from 'numbro';
 import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
@@ -237,10 +236,6 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
-
-            if (XH.flags.applyBigNumberWorkaround) {
-                numbro['BigNumber'].clone();
-            }
 
             // Confirm hoist-core version after environment service loaded.
             const hcVersion = XH.getEnv('hoistCoreVersion');
