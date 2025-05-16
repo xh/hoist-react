@@ -1,10 +1,10 @@
 # Changelog
 
-## v73.0.0-SNAPSHOT - unreleased
+## v73.0.0 - 2025-05-16
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
 
-* Requires `hoist-core >= 30.1` with new APIs to support the consolidated Admin Console "Clients"
+* Requires `hoist-core >= 31` with new APIs to support the consolidated Admin Console "Clients"
   tab and new properties on `TrackLog`.
 * Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
   ensure they call `super.initAsync()` within their override of that lifecycle method, if
