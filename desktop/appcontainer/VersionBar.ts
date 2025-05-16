@@ -19,30 +19,18 @@ export const versionBar = hoistCmp.factory({
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
             version = envSvc.get('clientVersion'),
-            instance = envSvc.serverInstance,
             isAdminApp = window.location.pathname?.startsWith('/admin/');
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
                 [XH.appName, env, version].join(' • '),
-                divider(),
-                span({
-                    className: 'xh-version-bar__uuid',
-                    title: 'Tab ID',
-                    items: [Icon.desktop(), ' ', XH.tabId]
-                }),
+                ' • ',
                 hspacer(5),
                 span({
                     className: 'xh-version-bar__uuid',
-                    title: 'Load ID',
-                    item:  XH.loadId
-                }),
-                divider(),
-                span({
-                    className: 'xh-version-bar__uuid',
-                    title: 'Server',
-                    items: [Icon.server(), ' ', instance]
+                    title: 'Tab ID',
+                    item: XH.tabId
                 }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
@@ -63,13 +51,6 @@ export const versionBar = hoistCmp.factory({
         });
     }
 });
-
-export const divider = hoistCmp.factory(() =>
-    span({
-        className: 'xh-version-bar__spacer',
-        items: '|'
-    })
-);
 
 //----------------------
 // Implementation
