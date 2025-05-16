@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {box, span} from '@xh/hoist/cmp/layout';
+import {box, hspacer, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
@@ -19,28 +19,30 @@ export const versionBar = hoistCmp.factory({
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
             version = envSvc.get('clientVersion'),
-            build = envSvc.get('clientBuild'),
             instance = envSvc.serverInstance,
-            isAdminApp = window.location.pathname?.startsWith('/admin/'),
-            versionAndBuild =
-                !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
+            isAdminApp = window.location.pathname?.startsWith('/admin/');
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, versionAndBuild].join(' • '),
+                [XH.appName, env, version].join(' • '),
+                divider(),
                 span({
-                    className: 'xh-version-bar__spacer',
-                    items: '|'
+                    className: 'xh-version-bar__uuid',
+                    title: 'Tab ID',
+                    items: [Icon.desktop(), ' ', XH.tabId]
                 }),
+                hspacer(5),
                 span({
-                    className: 'xh-version-bar__instance',
-                    title: 'Currently Connected Server Instance',
-                    items: [Icon.server(), instance]
+                    className: 'xh-version-bar__uuid',
+                    title: 'Load ID',
+                    item:  XH.loadId
                 }),
+                divider(),
                 span({
-                    className: 'xh-version-bar__spacer',
-                    items: '|'
+                    className: 'xh-version-bar__uuid',
+                    title: 'Server',
+                    items: [Icon.server(), ' ', instance]
                 }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
@@ -61,6 +63,13 @@ export const versionBar = hoistCmp.factory({
         });
     }
 });
+
+export const divider = hoistCmp.factory(() =>
+    span({
+        className: 'xh-version-bar__spacer',
+        items: '|'
+    })
+);
 
 //----------------------
 // Implementation
