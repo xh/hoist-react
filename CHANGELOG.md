@@ -1,5 +1,7 @@
 # Changelog
 
+## v74.0.0-SNAPSHOT - unreleased
+
 ## v73.0.0 - 2025-05-16
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
