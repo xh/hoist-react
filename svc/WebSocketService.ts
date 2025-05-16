@@ -8,7 +8,7 @@ import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {find, pull} from 'lodash';
 
@@ -41,10 +41,6 @@ export class WebSocketService extends HoistService {
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
     readonly HEARTBEAT_INTERVAL = 10 * SECONDS;
-    /**  If no heartbeat ack (or other msg) received for past 30s, assume we are disconnected. */
-    readonly HEARTBEAT_ACK_TIMEOUT = 30 * SECONDS;
-    /** Wait a well-defined interval before trying to reconnect again. */
-    readonly HEARTBEAT_RECONNECT_INTERVAL = 30 * SECONDS;
 
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
@@ -73,7 +69,6 @@ export class WebSocketService extends HoistService {
     private _timer: Timer;
     private _socket: WebSocket;
     private _subsByTopic: Record<string, WebSocketSubscription[]> = {};
-    private _lastHeartbeatReconnectAttempt: Date = null;
 
     constructor() {
         super();
@@ -199,29 +194,10 @@ export class WebSocketService extends HoistService {
 
     private heartbeatOrReconnect() {
         this.updateConnectedStatus();
-
-        // 1) Detect 'stale' connection.  For some reason, not receiving heartbeat.
-        // We have a channel key, so we successfully registered with the server and have not
-        // received a disconnect message. We should be receiving at least heartbeat messages,
-        // but have observed cases where "something" interrupted connectivity in a surprising
-        // way and no new inbound messages were arriving, even with the socket reporting open
-        // and accepting outbound messages to send. Detect that case here.
-        if (this.connected && olderThan(this.lastMessageTime, this.HEARTBEAT_ACK_TIMEOUT)) {
-            this.logWarn('Heartbeat response failing - disconnecting');
-            this.noteTelemetryEvent('heartbeatFailed');
-            this.disconnect();
-        }
-
-        // 2) Happy path - connected+receiving. Send a new heartbeat for server to ack.
         if (this.connected) {
             this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
             this.noteTelemetryEvent('heartbeatSent');
-            return;
-        }
-
-        // 3) Unhappy path -- attempt a (throttled) reconnect.
-        if (olderThan(this._lastHeartbeatReconnectAttempt, this.HEARTBEAT_RECONNECT_INTERVAL)) {
-            this._lastHeartbeatReconnectAttempt = new Date();
+        } else {
             this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
             this.noteTelemetryEvent('heartbeatReconnectAttempt');
             this.disconnect();
