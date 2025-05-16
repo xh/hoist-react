@@ -25,12 +25,18 @@ export const versionBar = hoistCmp.factory({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
                 [XH.appName, env, version].join(' • '),
-                ' • ',
-                hspacer(5),
                 span({
-                    className: 'xh-version-bar__uuid',
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
+                }),
+                span({
+                    className: 'xh-version-bar__tabid',
                     title: 'Tab ID',
                     item: XH.tabId
+                }),
+                span({
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
                 }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
