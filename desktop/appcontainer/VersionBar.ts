@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {box, hspacer, span} from '@xh/hoist/cmp/layout';
+import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
