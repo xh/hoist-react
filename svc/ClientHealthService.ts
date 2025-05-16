@@ -141,11 +141,7 @@ export class ClientHealthService extends HoistService {
             message: 'Submitted health report',
             ...rest,
             ...opts,
-            data: {
-                loadId: XH.loadId,
-                tabId: XH.tabId,
-                ...this.getReport()
-            }
+            data: this.getReport()
         });
     }
 }

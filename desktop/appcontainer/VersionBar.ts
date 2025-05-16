@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {box, span} from '@xh/hoist/cmp/layout';
+import {box, hspacer, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
@@ -19,24 +19,20 @@ export const versionBar = hoistCmp.factory({
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
             version = envSvc.get('clientVersion'),
-            build = envSvc.get('clientBuild'),
-            instance = envSvc.serverInstance,
-            isAdminApp = window.location.pathname?.startsWith('/admin/'),
-            versionAndBuild =
-                !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
+            isAdminApp = window.location.pathname?.startsWith('/admin/');
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, versionAndBuild].join(' • '),
+                [XH.appName, env, version].join(' • '),
                 span({
                     className: 'xh-version-bar__spacer',
                     items: '|'
                 }),
                 span({
-                    className: 'xh-version-bar__instance',
-                    title: 'Currently Connected Server Instance',
-                    items: [Icon.server(), instance]
+                    className: 'xh-version-bar__tabid',
+                    title: 'Tab ID',
+                    item: XH.tabId
                 }),
                 span({
                     className: 'xh-version-bar__spacer',
