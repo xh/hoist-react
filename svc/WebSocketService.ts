@@ -369,7 +369,6 @@ export interface WebSocketTelemetry {
         msgSent?: WebSocketEventTelemetry;
         heartbeatReceived?: WebSocketEventTelemetry;
         heartbeatSent?: WebSocketEventTelemetry;
-        heartbeatFailed?: WebSocketEventTelemetry;
         heartbeatReconnectAttempt?: WebSocketEventTelemetry;
         instanceChangeReconnectAttempt?: WebSocketEventTelemetry;
     };
