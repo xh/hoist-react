@@ -46,8 +46,7 @@
   `@bindable` would work even if `makeObservable()` was not called, but this is no longer the case.
   Please ensure you call `makeObservable(this)` in your model's constructor when using `@bindable`!
 * Improved client `WebSocketService` heartbeat to check that it has been receiving inbound messages
-  from the server, not just successfully sending outbound heartbeats. Will auto-reconnect if needed
-  in a newly throttled/managed manner.
+  from the server, not just successfully sending outbound heartbeats.
 
 ### ⚙️ Technical
 
