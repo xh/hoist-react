@@ -70,6 +70,8 @@
 
 ### 📚 Libraries
 
+* @azure/msal-browser `4.8 → 4.12`
+
 Note that all of the below are `devDependencies`, so they will not directly affect your application
 build. That said, we *strongly* recommend taking these same changes into your app if you can.
 
