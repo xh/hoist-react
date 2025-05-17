@@ -81,7 +81,7 @@ export function checkMakeObservable(target: any) {
     if (!isEmpty(missing)) {
         logError(
             `Observable properties [${missing.join(', ')}] not initialized properly. ` +
-                'Ensure you call makeObservable() in your constructor',
+                'Ensure you call makeObservable(this) in your constructor',
             target
         );
     }
