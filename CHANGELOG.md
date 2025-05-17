@@ -4,7 +4,7 @@
 
 ## v73.0.0 - 2025-05-16
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
 
 * Requires `hoist-core >= 31` with new APIs to support the consolidated Admin Console "Clients"
   tab and new properties on `TrackLog`.
