@@ -11,7 +11,7 @@ import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from 
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
 import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
@@ -72,6 +72,8 @@ export class RoleFormModel extends HoistModel {
 
     constructor(roleModel: RoleModel) {
         super();
+        makeObservable(this);
+
         this.roleModel = roleModel;
         this.addReaction(
             this.clearDegenerateRowReaction(this.usersGridModel),
