@@ -27,6 +27,7 @@ export const AppState = Object.freeze({
 export type AppState = (typeof AppState)[keyof typeof AppState];
 
 export interface AppSuspendData {
+    reason: 'IDLE' | 'SERVER_FORCE' | 'APP_UPDATE' | 'AUTH_EXPIRED';
     message?: string;
-    reason: 'IDLE' | 'SERVER_FORCE' | 'APP_UPDATE';
+    exception?: unknown;
 }

@@ -1,36 +1,43 @@
 # Changelog
 
-## v73.0.0-SNAPSHOT - unreleased
+## v74.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor upgrade to Hoist Core)
+## v73.0.0 - 2025-05-16
 
-* Requires `hoist-core >= 30.1.0` with new APIs to support the consolidated Admin Console "Clients"
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
+
+* Requires `hoist-core >= 31` with new APIs to support the consolidated Admin Console "Clients"
   tab and new properties on `TrackLog`.
 * Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
   ensure they call `super.initAsync()` within their override of that lifecycle method, if
   applicable. This did not previously have any effect, but is required now for the superclass to
   initialize a new `ViewManagerModel`.
-  * For clarity, [here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
-* Requires call to `makeObservable(this)` in model constructors with `@bindable` (see below).
+    * [Here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+* Requires call to `makeObservable(this)` in model constructors with `@bindable`. Note that there
+  is a new dev-only runtime check on `HoistBase` to warn if this call has not been made.
 
 ### 🎁 New Features
 
-* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
-  across all instances in the cluster.
-* Significantly upgraded the Admin Console "User Activity" tab with:
-    * Persisted custom views via `ViewManager`.
-    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
-    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
-      users with multiple browser tabs and multiple full refreshes/restarts of a client app within
-      the same tab.
-    * Improved charting, with a column chart used for both timeseries and category data and fixes to
-      the "skip weekends" option.
-    * Client Error reports and user feedback have also been consolidated into the new tracking
-      system for more integrated and powerful reporting.
+* Updated and improved Grid column based filtering to better match the behavior of Excel.
+    * `GridFilterModel.commitOnChage` now `false` by default
+    * Added ability to append terms to active filter *only* when `commitOnChage:false`
 * Added new `PopoverFilterChooser` component - wraps `FilterChooser` in a `Popover` to allow it to
   expand vertically when used in a `Toolbar` or other space-constrained, single-line layout.
+ * Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
+  potentially interactive popup login mid-session to re-establish auth if its refresh token has
+  expired or been invalidated. Strongly recommended for all OAuth usages.
+* Significantly upgraded the Admin Console "User Activity" tab:
+    * Consolidated client error reports and user feedback into Activity Tracking.
+    * Added support for custom views via `ViewManager`.
+    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
+    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
+      users across multiple browser tabs + loads of the app.
+* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
+  across all instances in the cluster, with integrated activity detail viewer.
 * Updated `FormModel` to support `persistWith` for storing and recalling its values, including
-  developer options to persist all or a provided subset of fields.
+  developer options to persist only a subset of fields.
+* Added new `XH.openWindow()` util to ensure that new windows/tabs are opened without an unintended
+  `opener` relationship with the original window.
 
 ### 🐞 Bug Fixes
 
@@ -41,8 +48,7 @@
   `@bindable` would work even if `makeObservable()` was not called, but this is no longer the case.
   Please ensure you call `makeObservable(this)` in your model's constructor when using `@bindable`!
 * Improved client `WebSocketService` heartbeat to check that it has been receiving inbound messages
-  from the server, not just successfully sending outbound heartbeats. Will auto-reconnect if needed
-  in a newly throttled/managed manner.
+  from the server, not just successfully sending outbound heartbeats.
 
 ### ⚙️ Technical
 
@@ -62,6 +68,20 @@
 * Corrected `GridGroupSortFn` param types.
 * Corrected `StoreCountLabelProps` interface.
 * Corrected `textAlign` type across several `HoistInput` prop interfaces.
+
+### 📚 Libraries
+
+* @azure/msal-browser `4.8 → 4.12`
+
+Note that all of the below are `devDependencies`, so they will not directly affect your application
+build. That said, we *strongly* recommend taking these same changes into your app if you can.
+
+* @xh/hoist-dev-utils `10.x → 11.x`
+* eslint `8.x → 9.x`
+  * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
+    configuration found in Toolbox's `eslint.config.js` as your new baseline.
+* eslint-config-prettier `9.x → 10.x`
+* typescript `5.1 → 5.8`
 
 ## v72.5.1 - 2025-04-15
 
@@ -111,7 +131,7 @@
 
 ### 📚 Libraries
 
-* @azure/msal-browser `3.28 → 4.8.0`
+* @azure/msal-browser `3.28 → 4.8`
 
 ## v72.2.0 - 2025-03-13
 

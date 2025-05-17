@@ -16,9 +16,8 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import numbro from 'numbro';
 import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
@@ -105,6 +104,21 @@ export class AppContainerModel extends HoistModel {
      * Update within `AppModel.initAsync()` to relay app-specific initialization status.
      */
     @bindable initializingLoadMaskMessage: ReactNode;
+
+    /**
+     * The last interactive login in the app. Hoist's security package will mark the last
+     * time spent during user interactive login.
+     *
+     * Used by `Promise.track`, to ensure this time is not counted in any elapsed time tracking
+     * for the app.
+     * @internal
+     */
+    lastRelogin: {started: number; completed: number} = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     /**
      * Main entry point. Initialize and render application code.
@@ -223,10 +237,6 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
-            if (XH.flags.applyBigNumberWorkaround) {
-                numbro['BigNumber'].clone();
-            }
-
             // Confirm hoist-core version after environment service loaded.
             const hcVersion = XH.getEnv('hoistCoreVersion');
             throwIf(
@@ -326,6 +336,10 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
+    }
+
+    openAdmin() {
+        XH.openWindow('/admin', XH.appCode + '_xhAdmin');
     }
 
     //----------------------------

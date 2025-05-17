@@ -11,7 +11,7 @@ import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
-import {bindable} from '@xh/hoist/mobx';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
@@ -23,7 +23,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
 
     constructor() {
         super();
-
+        makeObservable(this);
         this.gridModel = new GridModel({
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('conn-pool-monitor')},

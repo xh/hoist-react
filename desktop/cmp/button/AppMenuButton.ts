@@ -143,7 +143,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             omit: hideAdminItem,
             text: 'Admin',
             icon: Icon.wrench(),
-            actionFn: () => window.open('/admin')
+            actionFn: () => XH.appContainerModel.openAdmin()
         },
         {
             omit: hideImpersonateItem,

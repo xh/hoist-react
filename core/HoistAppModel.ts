@@ -66,21 +66,20 @@ export class HoistAppModel extends HoistModel {
      */
     getAboutDialogItems(): AboutDialogItem[] {
         const XH = window['XH'],
-            svc = XH.environmentService;
-
+            svc = XH.environmentService,
+            clientVersionBuild = `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`,
+            serverVersionBuild = `${svc.get('appVersion')} (build ${svc.get('appBuild')})`;
         return [
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
-            {label: 'Instance', value: svc.serverInstance},
-            {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
-            {
-                label: 'Client',
-                value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`
-            },
+            {label: 'Server', value: serverVersionBuild},
+            {label: 'Client', value: clientVersionBuild},
             {label: 'Hoist Core', value: svc.get('hoistCoreVersion')},
             {label: 'Hoist React', value: svc.get('hoistReactVersion')},
             {label: 'User Agent', value: window.navigator.userAgent},
+            {label: 'Tab/Load IDs', value: XH.tabId + ' / ' +  XH.loadId},
+            {label: 'Server', value: svc.serverInstance},
             {label: 'WebSockets', value: webSocketIndicator()}
         ];
     }

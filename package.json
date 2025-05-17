@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "73.0.0-SNAPSHOT",
+  "version": "74.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -9,9 +9,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "lint": "yarn lint:all",
-    "lint:all": "yarn lint:ts && yarn lint:js && yarn lint:styles",
-    "lint:js": "eslint --ext .js,.jsx .",
-    "lint:ts": "eslint --ext .ts,.tsx .",
+    "lint:all": "yarn lint:code && yarn lint:styles",
+    "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "prepare": "husky"
   },
@@ -30,7 +29,7 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.1.3",
-    "@azure/msal-browser": "~4.8.0",
+    "@azure/msal-browser": "~4.12.0",
     "@blueprintjs/core": "^5.10.5",
     "@blueprintjs/datetime": "^5.3.7",
     "@blueprintjs/datetime2": "^2.3.7",
@@ -97,10 +96,10 @@
     "@ag-grid-community/react": "31.x",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
-    "@xh/hoist-dev-utils": "10.x",
+    "@xh/hoist-dev-utils": "11.x",
     "csstype": "3.x",
-    "eslint": "8.x",
-    "eslint-config-prettier": "9.x",
+    "eslint": "9.x",
+    "eslint-config-prettier": "10.x",
     "eslint-plugin-tsdoc": "0.x",
     "husky": "9.x",
     "lint-staged": "15.x",
@@ -111,7 +110,7 @@
     "stylelint": "16.x",
     "stylelint-config-standard-scss": "14.x",
     "type-fest": "4.x",
-    "typescript": "~5.1.6"
+    "typescript": "~5.8.3"
   },
   "resolutions": {
     "core-js": "3.x",
