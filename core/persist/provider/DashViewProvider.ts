@@ -20,6 +20,7 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
         const {dashViewModel} = cfg.persistOptions;
         throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
         this.dashViewModel = dashViewModel;
+        dashViewModel.registerProvider(this);
     }
 
     //----------------
@@ -32,5 +33,10 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
 
     override writeRaw(data) {
         this.dashViewModel.viewState = data;
+    }
+
+    override destroy() {
+        this.dashViewModel?.unregisterProvider(this);
+        super.destroy();
     }
 }

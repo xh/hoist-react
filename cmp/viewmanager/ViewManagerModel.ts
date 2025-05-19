@@ -216,12 +216,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private pendingValue: PendingValue<T> = null;
 
     /**
-     * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
-     * push themselves onto this array when constructed with a reference to this model. Used to
-     * proactively push state to the target components when the model's selected `value` changes.
-     * @internal
+     * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
+     * state to the target components when the model's selected `value` changes.
      */
-    providers: ViewManagerProvider<any>[] = [];
+    private providers: ViewManagerProvider<any>[] = [];
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -501,6 +499,25 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     //------------------
+    // Persistence
+    //------------------
+    /**
+     * Called by {@link ViewManagerProvider} to receive state changes from this model.
+     * @internal
+     */
+    registerProvider(provider: ViewManagerProvider<any>) {
+        this.providers.push(provider);
+    }
+
+    /**
+     * Called by {@link ViewManagerProvider} to stop receiving state changes.
+     * @internal
+     */
+    unregisterProvider(provider: ViewManagerProvider<any>) {
+        this.providers = this.providers.filter(it => it !== provider);
+    }
+
+    //------------------
     // Implementation
     //------------------
     private async initAsync() {
@@ -622,6 +639,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (!view.isDefault) {
             this.views = uniqBy([view.info, ...this.views], 'token');
         }
+
+        // Ensure providers have a clean reference of the current view state.
+        this.providers.forEach(it => it.pushStateToTarget());
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

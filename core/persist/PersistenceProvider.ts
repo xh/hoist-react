@@ -62,6 +62,7 @@ export abstract class PersistenceProvider<S = any> {
 
     protected target: Persistable<S>;
     protected defaultState: PersistableState<S>;
+    private lastRead: PersistableState<S>;
 
     private disposer: IReactionDisposer;
 
@@ -126,7 +127,9 @@ export abstract class PersistenceProvider<S = any> {
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
         logDebug(['Reading state', state], this.owner);
-        return !isUndefined(state) ? new PersistableState(state) : null;
+        const ret = !isUndefined(state) ? new PersistableState(state) : null;
+        this.lastRead = ret;
+        return ret;
     }
 
     /** Persist JSON-serializable state to this provider's path. */
@@ -151,6 +154,12 @@ export abstract class PersistenceProvider<S = any> {
 
     destroy() {
         this.disposer?.();
+    }
+
+    /** Push the current state of this provider to its target. */
+    pushStateToTarget() {
+        const state = this.read();
+        this.target.setPersistableState(state ? state : this.defaultState);
     }
 
     //----------------
@@ -190,7 +199,14 @@ export abstract class PersistenceProvider<S = any> {
                 if (state.equals(this.defaultState)) {
                     this.clear();
                 } else {
-                    this.write(state.value);
+                    const {lastRead} = this;
+                    // If the last read state is equal to the current state, use the last read state
+                    // to avoid dirtying the target.
+                    if (lastRead && state.equals(lastRead)) {
+                        this.write(lastRead.value);
+                    } else {
+                        this.write(state.value);
+                    }
                 }
             }
         );
