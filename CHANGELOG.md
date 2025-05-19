@@ -1,5 +1,7 @@
 # Changelog
 
+## 74.0.0-SNAPSHOT - unreleased
+
 ## v73.0.1 - 2025-05-19
 
 ### 🐞 Bug Fixes
