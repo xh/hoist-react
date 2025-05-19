@@ -6,10 +6,12 @@
  */
 import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {AboutDialogItem, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isOmitted} from '@xh/hoist/utils/impl';
+import {warnIf} from '@xh/hoist/utils/js';
+import copy from 'clipboard-copy';
 import {isNull} from 'lodash';
+import {Icon} from '../icon';
 
 /**
  * @internal
@@ -50,7 +52,24 @@ export class AboutDialogModel extends HoistModel {
     }
 
     getTable() {
-        const rows = this.getItems().map(it => tr(th(it.label), td(it.value)));
+        const rows = this.getItems().map(it =>
+            tr(
+                th(it.label),
+                td({
+                    item: it.value,
+                    onClick: () => {
+                        const val = it.value?.toString();
+                        if (val === 'null' || val === '[object Object]') return;
+
+                        copy(val);
+                        XH.toast({
+                            icon: Icon.clipboard(),
+                            message: `Copied ${val} to clipboard`
+                        });
+                    }
+                })
+            )
+        );
         return table(tbody(rows));
     }
 

@@ -78,8 +78,9 @@ export class HoistAppModel extends HoistModel {
             {label: 'Hoist Core', value: svc.get('hoistCoreVersion')},
             {label: 'Hoist React', value: svc.get('hoistReactVersion')},
             {label: 'User Agent', value: window.navigator.userAgent},
-            {label: 'Tab/Load IDs', value: XH.tabId + ' / ' +  XH.loadId},
-            {label: 'Server', value: svc.serverInstance},
+            {label: 'Tab ID', value: XH.tabId},
+            {label: 'Load ID', value: XH.loadId},
+            {label: 'Server Instance', value: svc.serverInstance},
             {label: 'WebSockets', value: webSocketIndicator()}
         ];
     }
