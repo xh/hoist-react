@@ -1,6 +1,10 @@
 # Changelog
 
-## v74.0.0-SNAPSHOT - unreleased
+## v73.0.1 - 2025-05-19
+
+### 🐞 Bug Fixes
+
+* Fixed a minor issue with Admin Console Role Management.
 
 ## v73.0.0 - 2025-05-16
 
@@ -23,7 +27,7 @@
     * Added ability to append terms to active filter *only* when `commitOnChage:false`
 * Added new `PopoverFilterChooser` component - wraps `FilterChooser` in a `Popover` to allow it to
   expand vertically when used in a `Toolbar` or other space-constrained, single-line layout.
- * Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
+* Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
   potentially interactive popup login mid-session to re-establish auth if its refresh token has
   expired or been invalidated. Strongly recommended for all OAuth usages.
 * Significantly upgraded the Admin Console "User Activity" tab:
@@ -78,8 +82,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 * @xh/hoist-dev-utils `10.x → 11.x`
 * eslint `8.x → 9.x`
-  * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
-    configuration found in Toolbox's `eslint.config.js` as your new baseline.
+    * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
+      configuration found in Toolbox's `eslint.config.js` as your new baseline.
 * eslint-config-prettier `9.x → 10.x`
 * typescript `5.1 → 5.8`
 
