@@ -8,6 +8,12 @@
 
 * Fixed a minor issue with Admin Console Role Management.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Improved `DashCanvas` persistence such that individual `ViewModel` state can be updated without
+  reloading the entire canvas.
+
 ## v73.0.0 - 2025-05-16
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
