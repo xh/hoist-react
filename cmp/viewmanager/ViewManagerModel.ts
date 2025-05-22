@@ -421,13 +421,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     setValue(value: Partial<T>) {
+        value = this.cleanState(value);
+
         const {view, pendingValue, lastPushed, settleTime} = this;
         if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
-            return;
+            this.view.settledValue = value;
         }
 
-        value = this.cleanState(value);
-        if (!isEqual(value, view.value)) {
+        if (!isEqual(value, view.settledValue)) {
             this.pendingValue = {
                 token: pendingValue ? pendingValue.token : view.token,
                 baseUpdated: pendingValue ? pendingValue.baseUpdated : view.lastUpdated,
