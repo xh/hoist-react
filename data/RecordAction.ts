@@ -83,7 +83,7 @@ export interface ActionFnData {
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
- * a Grid Context Menu nd RecordActionBar (aka grid context menus and action columns).
+ * a Grid Context Menu and RecordActionBar (aka grid context menus and action columns).
  *
  * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
