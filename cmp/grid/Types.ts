@@ -81,6 +81,8 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean | PersistOptions;
+    /** True (default) to include last requested expanded level state provide expanded level-specific PersistOptions.  */
+    persistLastExpandToLevel?: boolean | PersistOptions;
 }
 
 export interface GridFilterModelConfig {

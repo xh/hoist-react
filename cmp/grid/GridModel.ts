@@ -408,8 +408,7 @@ export class GridModel extends HoistModel {
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
-
-    // TODO add observerable state here WRT group level last requested from the menu item. Is this where that belongs.
+    @observable lastExpandToLevel: number = null;
 
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
@@ -995,6 +994,7 @@ export class GridModel extends HoistModel {
         if (agApi) {
             agApi.expandAll();
             this.noteAgExpandStateChange();
+            this.setLastExpandToLevel(this.store.maxDepth);
         }
     }
 
@@ -1004,7 +1004,22 @@ export class GridModel extends HoistModel {
         if (agApi) {
             agApi.collapseAll();
             this.noteAgExpandStateChange();
+            this.setLastExpandToLevel(0);
         }
+    }
+
+    async applyExpandToLevel() {
+        await when(() => this.isReady && this.store.allCount > 1, {timeout: 3 * SECONDS});
+
+        this.agApi.forEachNode(node => {
+            node.setExpanded(node.level < this.lastExpandToLevel);
+        });
+        this.noteAgExpandStateChange();
+    }
+
+    @action
+    setLastExpandToLevel(level: number) {
+        this.lastExpandToLevel = level;
     }
 
     /**

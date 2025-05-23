@@ -63,21 +63,16 @@ export function createGridOpenToDepthMenuItem(
                 items = nodeLevelLabels.map((label, idx) => {
                     return {
                         text: label,
-                        actionFn: () => openTo(gridModel, idx)
+                        actionFn: () => {
+                            gridModel.setLastExpandToLevel(idx);
+                            gridModel.applyExpandToLevel();
+                        }
                     };
                 });
 
             return {items};
         }
     };
-}
-
-function openTo(gridModel, level) {
-    gridModel.agApi.forEachNode(node => {
-        node.setExpanded(node.level < level);
-    });
-
-    gridModel.noteAgExpandStateChange();
 }
 
 function defaultNodeLevelLabels(maxDepth: number): string[] {
