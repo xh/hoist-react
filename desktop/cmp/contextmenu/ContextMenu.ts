@@ -42,10 +42,7 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     }
 });
 
-//---------------------------
-// Implementation
-//---------------------------
-function parseItems(items: MenuItemLike[]): ReactNode[] {
+export function parseItems(items: MenuItemLike[]): ReactNode[] {
     items = items.map(item => {
         if (!isMenuItem(item)) return item;
 

@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
+import {isEmpty, isFunction} from 'lodash';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -18,8 +19,8 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
+import {ChartContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ChartContextMenu';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
-import {Icon} from '@xh/hoist/icon';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {logError, mergeDeep} from '@xh/hoist/utils/js';
@@ -382,41 +383,14 @@ class ChartLocalModel extends HoistModel {
     onSetExtremes = () => {};
 
     getContextMenu() {
-        if (!this.model.showContextMenu || !XH.isDesktop) return null;
-        return [
-            {
-                text: 'View in full screen',
-                icon: Icon.expand(),
-                actionFn: () => this.chart.fullscreen.toggle()
-            },
-            '-',
-            {
-                text: 'Copy to clipboard',
-                icon: Icon.copy(),
-                hidden: !Highcharts.isWebKit,
-                actionFn: () => this.chart.copyToClipboardAsync()
-            },
-            {
-                text: 'Print chart',
-                icon: Icon.print(),
-                actionFn: () => this.chart.print()
-            },
-            '-',
-            {
-                text: 'Download PNG image',
-                icon: Icon.fileImage(),
-                actionFn: () => this.chart.exportChartLocal()
-            },
-            {
-                text: 'Download SVG vector image',
-                icon: Icon.fileImage(),
-                actionFn: () => this.chart.exportChartLocal({type: 'image/svg+xml'})
-            },
-            {
-                text: 'Export Data',
-                icon: Icon.fileCsv(),
-                actionFn: () => this.chart.downloadCSV()
-            }
-        ];
+        if (!this.model.contextMenu || isEmpty(this.model.contextMenu) || !XH.isDesktop)
+            return null;
+
+        return new ChartContextMenu({
+            items: isFunction(this.model.contextMenu)
+                ? this.model.contextMenu(this.model)
+                : this.model.contextMenu,
+            chartModel: this.model
+        }).items;
     }
 }

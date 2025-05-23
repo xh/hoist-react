@@ -5,9 +5,10 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
+import {ChartContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/ChartContextMenu';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep} from 'lodash';
-import {mergeDeep} from '@xh/hoist/utils/js';
+import {mergeDeep, withDefault} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -16,8 +17,8 @@ interface ChartConfig {
     /** The initial data series to be displayed. */
     series?: Some<any>;
 
-    /** True to showContextMenu.  Defaults to true.  Desktop only. */
-    showContextMenu?: boolean;
+    /** True to show default ContextMenu.  Defaults to true.  Desktop only. */
+    contextMenu?: ChartContextMenuSpec;
 
     /** @internal */
     xhImpl?: boolean;
@@ -33,7 +34,18 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    showContextMenu: boolean;
+    contextMenu: ChartContextMenuSpec;
+
+    static defaultContextMenu = [
+        'viewFullscreen',
+        '-',
+        'copyToClipboard',
+        'printChart',
+        '-',
+        'downloadPNG',
+        'downloadSVG',
+        'downloadCSV'
+    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -47,17 +59,13 @@ export class ChartModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {
-            highchartsConfig,
-            series = [],
-            showContextMenu = true,
-            xhImpl = false
-        } = config ?? {};
+        const {highchartsConfig, series = [], contextMenu, xhImpl = false} = config ?? {};
 
         this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
-        this.showContextMenu = showContextMenu;
+        this.contextMenu =
+            contextMenu === false ? [] : withDefault(contextMenu, ChartModel.defaultContextMenu);
     }
 
     /**
