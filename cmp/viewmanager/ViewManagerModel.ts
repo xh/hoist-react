@@ -75,6 +75,12 @@ export interface ViewManagerConfig {
     enableSharing?: boolean;
 
     /**
+     * True (default) to save pending state to SessionStorage so that it can be restored across
+     * browser refreshes. Unlike auto-save, this does not write to the database.
+     */
+    preserveUnsavedChanges?: boolean;
+
+    /**
      * Function to determine the initial view for a user, when no view has already been persisted.
      * Will be passed a list of views available to the current user.  Implementations where
      * enableDefault is set false should typically return some view, if any views are
@@ -176,6 +182,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
+    readonly preserveUnsavedChanges: boolean;
     readonly manageGlobal: boolean;
     readonly settleTime: number;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
@@ -296,6 +303,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableDefault = true,
         enableGlobal = true,
         enableSharing = true,
+        preserveUnsavedChanges = true,
         settleTime = 1000,
         initialViewSpec = null
     }: ViewManagerConfig) {
@@ -317,6 +325,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
+        this.preserveUnsavedChanges = preserveUnsavedChanges;
         this.settleTime = settleTime;
         this.initialViewSpec = initialViewSpec;
 
@@ -428,6 +437,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.view.settledValue = value;
         }
 
+        // Todo: Consider how this interacts with the localStorage pending state
         if (!isEqual(value, view.settledValue)) {
             this.pendingValue = {
                 token: pendingValue ? pendingValue.token : view.token,
@@ -516,7 +526,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 this.views = views;
                 this.userPinned = state.userPinned;
                 this.autoSave = state.autoSave;
-                this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                if (this.preserveUnsavedChanges) {
+                    this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                }
             });
 
             // 2) Initialize/choose initial view.  Null is ok, and will yield default.
@@ -547,7 +559,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private pendingValueReaction(): ReactionSpec {
         return {
             track: () => this.pendingValue,
-            run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)
+            run: v => {
+                if (!this.preserveUnsavedChanges) return;
+                XH.sessionStorageService.set(this.pendingValueStorageKey, v);
+            }
         };
     }
 
