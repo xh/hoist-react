@@ -437,7 +437,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.view.settledValue = value;
         }
 
-        // Todo: Consider how this interacts with the localStorage pending state
         if (!isEqual(value, view.settledValue)) {
             this.pendingValue = {
                 token: pendingValue ? pendingValue.token : view.token,
