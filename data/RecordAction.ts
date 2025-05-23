@@ -81,6 +81,11 @@ export interface ActionFnData {
     [x: string]: any;
 }
 
+export interface DisplayFnData extends ActionFnData {
+    /** Default display config for the action */
+    defaultConfig?: PlainObject;
+}
+
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
  * a Grid Context Menu and RecordActionBar (aka grid context menus and action columns).
@@ -206,9 +211,4 @@ export class RecordAction {
             (isNumber(required) && count === required)
         );
     }
-}
-
-interface DisplayFnData extends ActionFnData {
-    /** Default display config for the action */
-    defaultConfig?: PlainObject;
 }

@@ -7,6 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {RecordActionLike} from '@xh/hoist/data';
 import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
+import {DisplayFnData} from '../../data';
 
 /**
  * If a String, value can be '-' for a separator, or a token supported by ag-Grid
@@ -47,3 +48,44 @@ export type GridContextMenuToken =
 export type GridContextMenuSpec =
     | GridContextMenuItemLike[]
     | ((agParams: GetContextMenuItemsParams, gridModel: GridModel) => GridContextMenuItemLike[]);
+
+export function createGridOpenToDepthMenuItem(
+    nodeLevelLabelFn: (params: DisplayFnData) => string[] = null
+): GridContextMenuItemLike {
+    return {
+        text: 'Expand to Level',
+        displayFn: (params: DisplayFnData) => {
+            const {gridModel} = params,
+                {maxDepth} = gridModel.store,
+                nodeLevelLabels = nodeLevelLabelFn
+                    ? nodeLevelLabelFn(params)
+                    : defaultNodeLevelLabels(maxDepth),
+                items = nodeLevelLabels.map((label, idx) => {
+                    return {
+                        text: label,
+                        actionFn: () => openTo(gridModel, idx)
+                    };
+                });
+
+            return {items};
+        }
+    };
+}
+
+function openTo(gridModel, level) {
+    gridModel.agApi.forEachNode(node => {
+        node.setExpanded(node.level < level);
+    });
+
+    gridModel.noteAgExpandStateChange();
+}
+
+function defaultNodeLevelLabels(maxDepth: number): string[] {
+    const ret = [];
+
+    for (let i = 0; i <= maxDepth; i++) {
+        ret.push(`Level ${i + 1}`);
+    }
+
+    return ret;
+}

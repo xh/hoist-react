@@ -409,6 +409,8 @@ export class GridModel extends HoistModel {
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
 
+    // TODO add observerable state here WRT group level last requested from the menu item. Is this where that belongs.
+
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
