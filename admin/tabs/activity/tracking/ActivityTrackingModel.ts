@@ -372,7 +372,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'instance'},
                 {field: 'loadId'},
                 {field: 'msg', displayName: 'Message'},
-                {field: 'severity'},
+                {field: 'severity', values: ['DEBUG', 'INFO', 'WARN', 'ERROR']},
                 {field: 'tabId'},
                 {field: 'userAgent'},
                 {field: 'username', displayName: 'User'},
