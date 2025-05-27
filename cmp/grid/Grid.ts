@@ -67,7 +67,7 @@ export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSuppo
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
-     * event after running its internal handler to associate the ag-Grid APIs with its model.`
+     * event after running its internal handler to associate the ag-Grid APIs with its model.
      */
     onGridReady?: (e: GridReadyEvent) => void;
 }

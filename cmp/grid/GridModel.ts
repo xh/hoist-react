@@ -275,7 +275,7 @@ export interface GridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /** Array of strings or function that returns an array of strings to describe the individual
-     * groups in a tree grid heirarchy. Used to label the expand/collapse affordance on context menu.
+     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
      */
     levelLabels?: (e: DisplayFnData) => string[] | string[];
 
