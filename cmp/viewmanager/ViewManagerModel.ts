@@ -448,6 +448,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
     }
 
+    noteStatePushed() {
+        this.lastPushed = Date.now();
+    }
+
     //------------------
     // Pinning
     //------------------
@@ -603,7 +607,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
-                this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
     }

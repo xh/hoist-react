@@ -19,11 +19,13 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
         this.viewManagerModel = viewManagerModel;
         viewManagerModel.providers.push(this);
+        viewManagerModel.noteStatePushed();
     }
 
     pushStateToTarget() {
         const state = this.read();
         this.target.setPersistableState(state ? state : this.defaultState);
+        this.viewManagerModel.noteStatePushed();
     }
 
     //----------------
