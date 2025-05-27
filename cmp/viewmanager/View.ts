@@ -27,12 +27,6 @@ export class View<T extends PlainObject = PlainObject> {
      */
     readonly value: Partial<T> = null;
 
-    /**
-     * Defaulted to value, but may be updated during ViewManagerModel's settleTime to be
-     * the "settled" state after loading. Used for comparison to determine dirtiness.
-     */
-    settledValue: Partial<T> = null;
-
     private readonly model: ViewManagerModel;
 
     get name(): string {
@@ -98,7 +92,6 @@ export class View<T extends PlainObject = PlainObject> {
     constructor(info: ViewInfo, value: Partial<T>, model: ViewManagerModel) {
         this.info = info;
         this.value = value;
-        this.settledValue = value;
         this.model = model;
     }
 }
