@@ -6,6 +6,7 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, RecordActionLike} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
 import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 import {isFunction} from 'lodash';
 import {DisplayFnData} from '../../data';
@@ -56,18 +57,28 @@ export function createGridOpenToDepthMenuItem(): RecordAction {
         displayFn: (params: DisplayFnData) => {
             const {gridModel} = params,
                 {levelLabels, store} = gridModel,
-                {maxDepth} = store,
-                nodeLevelLabels = levelLabels
-                    ? isFunction(levelLabels)
-                        ? levelLabels(params)
-                        : levelLabels
-                    : defaultNodeLevelLabels(maxDepth),
-                items = nodeLevelLabels.map((label, idx) => {
-                    return {
-                        text: label, // TODO: Selected indicator by looking at the grid models level. If ExpandToLevel is greater than maxDepth, the last item is checked.
-                        actionFn: () => gridModel.setExpandToLevel(idx)
-                    };
-                });
+                {maxDepth} = store;
+
+            let nodeLevelLabels = isFunction(levelLabels) ? levelLabels(params) : levelLabels;
+
+            if (!levelLabels || nodeLevelLabels.length < maxDepth + 1) {
+                console.warn(
+                    'GridContextMenu: `levelLabels` not provided or of insufficient length. Using default labels.'
+                );
+                nodeLevelLabels = defaultNodeLevelLabels(maxDepth);
+            }
+
+            const items = nodeLevelLabels.map((label, idx) => {
+                return {
+                    icon:
+                        gridModel.expandToLevel === idx ||
+                        (gridModel.expandToLevel > maxDepth && idx === nodeLevelLabels.length - 1)
+                            ? Icon.check()
+                            : null,
+                    text: label,
+                    actionFn: () => gridModel.setExpandToLevel(idx)
+                };
+            });
 
             return {items};
         }

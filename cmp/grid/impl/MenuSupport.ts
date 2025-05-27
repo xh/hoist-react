@@ -136,21 +136,21 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 hidden: !gridModel?.colChooserModel,
                 actionFn: () => (gridModel.colChooserModel as any)?.open()
             });
-        case 'expandCollapseAll': // For legacy apps
+        case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':
-            return gridModel.treeMode
+            return gridModel?.treeMode
                 ? createGridOpenToDepthMenuItem()
                 : [
                       new RecordAction({
                           text: 'Expand All',
                           icon: Icon.groupRowExpanded(),
-                          hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                          hidden: isEmpty(gridModel?.groupBy),
                           actionFn: () => gridModel.expandAll()
                       }),
                       new RecordAction({
                           text: 'Collapse All',
                           icon: Icon.groupRowCollapsed(),
-                          hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                          hidden: isEmpty(gridModel?.groupBy),
                           actionFn: () => gridModel.collapseAll()
                       })
                   ];
