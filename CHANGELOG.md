@@ -2,6 +2,13 @@
 
 ## 74.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
++ Add `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+
+### 🐞 Bug Fixes
++ Improves `ViewManagerModel.settleTime` by comparing to when the view is pushed to components
+  rather than when view is loaded from the server.
+
 ## v73.0.1 - 2025-05-19
 
 ### 🐞 Bug Fixes
