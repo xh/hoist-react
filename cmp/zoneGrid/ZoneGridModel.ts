@@ -419,7 +419,7 @@ export class ZoneGridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'restoreDefaults',
         '-',

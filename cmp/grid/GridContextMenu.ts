@@ -5,8 +5,9 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {RecordActionLike} from '@xh/hoist/data';
+import {RecordAction, RecordActionLike} from '@xh/hoist/data';
 import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
+import {isFunction} from 'lodash';
 import {DisplayFnData} from '../../data';
 
 /**
@@ -34,7 +35,7 @@ export type GridContextMenuToken =
     | 'autosizeColumns'
     | 'copyCell'
     | 'colChooser'
-    | 'expandCollapseAll'
+    | 'expandCollapse'
     | 'export'
     | 'exportExcel'
     | 'exportCsv'
@@ -49,30 +50,28 @@ export type GridContextMenuSpec =
     | GridContextMenuItemLike[]
     | ((agParams: GetContextMenuItemsParams, gridModel: GridModel) => GridContextMenuItemLike[]);
 
-export function createGridOpenToDepthMenuItem(
-    nodeLevelLabelFn: (params: DisplayFnData) => string[] = null
-): GridContextMenuItemLike {
-    return {
+export function createGridOpenToDepthMenuItem(): RecordAction {
+    return new RecordAction({
         text: 'Expand to Level',
         displayFn: (params: DisplayFnData) => {
             const {gridModel} = params,
-                {maxDepth} = gridModel.store,
-                nodeLevelLabels = nodeLevelLabelFn
-                    ? nodeLevelLabelFn(params)
+                {levelLabels, store} = gridModel,
+                {maxDepth} = store,
+                nodeLevelLabels = levelLabels
+                    ? isFunction(levelLabels)
+                        ? levelLabels(params)
+                        : levelLabels
                     : defaultNodeLevelLabels(maxDepth),
                 items = nodeLevelLabels.map((label, idx) => {
                     return {
-                        text: label,
-                        actionFn: () => {
-                            gridModel.setLastExpandToLevel(idx);
-                            gridModel.applyExpandToLevel();
-                        }
+                        text: label, // TODO: Selected indicator by looking at the grid models level. If ExpandToLevel is greater than maxDepth, the last item is checked.
+                        actionFn: () => gridModel.setExpandToLevel(idx)
                     };
                 });
 
             return {items};
         }
-    };
+    });
 }
 
 function defaultNodeLevelLabels(maxDepth: number): string[] {

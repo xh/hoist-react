@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {Column, createGridOpenToDepthMenuItem, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
@@ -136,21 +136,24 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 hidden: !gridModel?.colChooserModel,
                 actionFn: () => (gridModel.colChooserModel as any)?.open()
             });
-        case 'expandCollapseAll':
-            return [
-                new RecordAction({
-                    text: 'Expand All',
-                    icon: Icon.groupRowExpanded(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.expandAll()
-                }),
-                new RecordAction({
-                    text: 'Collapse All',
-                    icon: Icon.groupRowCollapsed(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.collapseAll()
-                })
-            ];
+        case 'expandCollapseAll': // For legacy apps
+        case 'expandCollapse':
+            return gridModel.treeMode
+                ? createGridOpenToDepthMenuItem()
+                : [
+                      new RecordAction({
+                          text: 'Expand All',
+                          icon: Icon.groupRowExpanded(),
+                          hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                          actionFn: () => gridModel.expandAll()
+                      }),
+                      new RecordAction({
+                          text: 'Collapse All',
+                          icon: Icon.groupRowCollapsed(),
+                          hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
+                          actionFn: () => gridModel.collapseAll()
+                      })
+                  ];
         case 'export':
         case 'exportExcel':
             return new RecordAction({

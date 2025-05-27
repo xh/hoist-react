@@ -19,7 +19,7 @@ export function initPersist(
         persistColumns = true,
         persistGrouping = true,
         persistSort = true,
-        persistLastExpandToLevel = true,
+        persistExpandToLevel = true,
         path = 'grid',
         ...rootPersistWith
     }: GridModelPersistOptions
@@ -76,9 +76,9 @@ export function initPersist(
         });
     }
 
-    if (persistLastExpandToLevel) {
-        const persistWith = isObject(persistLastExpandToLevel)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistLastExpandToLevel)
+    if (persistExpandToLevel) {
+        const persistWith = isObject(persistExpandToLevel)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistExpandToLevel)
             : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
@@ -86,11 +86,8 @@ export function initPersist(
                 ...persistWith
             },
             target: {
-                getPersistableState: () => new PersistableState(gridModel.lastExpandToLevel),
-                setPersistableState: ({value}) => {
-                    gridModel.setLastExpandToLevel(value);
-                    gridModel.applyExpandToLevel();
-                }
+                getPersistableState: () => new PersistableState(gridModel.expandToLevel),
+                setPersistableState: ({value}) => gridModel.setExpandToLevel(value)
             },
             owner: gridModel
         });
