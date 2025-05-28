@@ -19,8 +19,8 @@ interface ChartConfig {
 
     /**
      * True to show default ContextMenu.  Defaults to true.  Desktop only.
-     * Can also take custom list of `@ChartContextMenuToken` strings or `@ChartMenuItem` configuration
-     * objects.
+     * Can also take custom list of `@ChartContextMenuToken` strings, `@ChartMenuItem` configuration
+     * objects, or a function returning same.
      */
     contextMenu?: ChartContextMenuSpec;
 
