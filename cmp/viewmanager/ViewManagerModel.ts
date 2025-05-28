@@ -552,7 +552,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         this.addReaction(
-            this.pendingValueReaction(),
+            this.preserveUnsavedChanges ? this.pendingValueReaction() : null,
             this.autoSaveReaction(),
             ...this.stateReactions(initialState)
         );
@@ -561,10 +561,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private pendingValueReaction(): ReactionSpec {
         return {
             track: () => this.pendingValue,
-            run: v => {
-                if (!this.preserveUnsavedChanges) return;
-                XH.sessionStorageService.set(this.pendingValueStorageKey, v);
-            }
+            run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)
         };
     }
 

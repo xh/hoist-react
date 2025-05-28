@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {Persistable} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {pull} from 'lodash';
 import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
@@ -19,7 +20,6 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
         this.viewManagerModel = viewManagerModel;
         viewManagerModel.providers.push(this);
-        viewManagerModel.noteStatePushed();
     }
 
     pushStateToTarget() {
@@ -31,6 +31,11 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     //----------------
     // Implementation
     //----------------
+    override bindToTarget(target: Persistable<S>) {
+        super.bindToTarget(target);
+        this.viewManagerModel.noteStatePushed();
+    }
+
     override readRaw() {
         return this.viewManagerModel.getValue();
     }
