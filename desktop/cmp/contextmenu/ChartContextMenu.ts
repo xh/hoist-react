@@ -100,7 +100,7 @@ export class ChartContextMenu {
         return item;
     }
 
-    parseToken(token): MenuItem {
+    parseToken(token): ChartMenuItem {
         const {chartModel} = this;
 
         // Chart contextMenus are currently only supported on desktop devices.
