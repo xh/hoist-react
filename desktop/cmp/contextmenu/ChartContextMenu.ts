@@ -13,8 +13,9 @@ import {Icon} from '@xh/hoist/icon';
 
 export type ChartContextMenuToken =
     | 'viewFullscreen'
-    | 'copyCell'
+    | 'copyToClipboard'
     | 'printChart'
+    | 'downloadJPEG'
     | 'downloadPNG'
     | 'downloadSVG'
     | 'downloadCSV'
@@ -63,11 +64,11 @@ export class ChartContextMenu {
      *      or a token supported by HighCharts for its native menu items:
      *           `viewFullscreen`
      *           `printChart`
-     *           `downloadCSV`
-     *           `downloadJPEG`
      *           `downloadPDF`
+     *           `downloadJPEG`
      *           `downloadPNG`
      *           `downloadSVG`
+     *           `downloadCSV`
      *           `downloadXLS`
      *
      * @param {ChartModel} [c.chartModel] - ChartModel to bind to this contextMenu, used to enable

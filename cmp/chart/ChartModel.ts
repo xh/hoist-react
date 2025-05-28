@@ -17,7 +17,11 @@ interface ChartConfig {
     /** The initial data series to be displayed. */
     series?: Some<any>;
 
-    /** True to show default ContextMenu.  Defaults to true.  Desktop only. */
+    /**
+     * True to show default ContextMenu.  Defaults to true.  Desktop only.
+     * Can also take custom list of `@ChartContextMenuToken` strings or `@ChartMenuItem` configuration
+     * objects.
+     */
     contextMenu?: ChartContextMenuSpec;
 
     /** @internal */

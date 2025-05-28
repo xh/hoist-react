@@ -2,6 +2,12 @@
 
 ## 74.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Chart context menu is now fully customizable.
+  ⚠️ NOTE: if a chart's context menu is turned off with `showContextMenu: false`,
+  update to `contextMenu: false`.
+
 ## v73.0.1 - 2025-05-19
 
 ### 🐞 Bug Fixes

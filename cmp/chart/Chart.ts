@@ -13,6 +13,7 @@ import {
     HoistProps,
     LayoutProps,
     lookup,
+    MenuItemLike,
     PlainObject,
     TestSupportProps,
     useLocalModel,
@@ -107,7 +108,7 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu: any;
+    contextMenu: MenuItemLike[];
     prevSeriesConfig;
 
     override onLinked() {
@@ -382,14 +383,14 @@ class ChartLocalModel extends HoistModel {
     //---------------------------
     onSetExtremes = () => {};
 
-    getContextMenu() {
-        if (!this.model.contextMenu || isEmpty(this.model.contextMenu) || !XH.isDesktop)
-            return null;
+    getContextMenu(): MenuItemLike[] {
+        const {contextMenu} = this.model;
+        if (!contextMenu || isEmpty(contextMenu) || !XH.isDesktop) return null;
+
+        const items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
 
         return new ChartContextMenu({
-            items: isFunction(this.model.contextMenu)
-                ? this.model.contextMenu(this.model)
-                : this.model.contextMenu,
+            items,
             chartModel: this.model
         }).items;
     }
