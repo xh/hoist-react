@@ -75,10 +75,10 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
     @observable favoritesIsOpen: boolean = false;
-    @observable.ref dimensions: Record<string, DimensionSpec>;
     popoverRef = createObservableRef<HTMLElement>();
 
     // Internal state
+    @observable.ref private dimensions: Record<string, DimensionSpec>;
     @observable.ref private dimensionNames: string[];
 
     @computed
@@ -235,6 +235,10 @@ export class GroupingChooserModel extends HoistModel {
 
     getValueLabel(value: string[]): string {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
+    }
+
+    getLevelLabels(): string[] {
+        return this.value.map(dimName => this.getDimDisplayName(dimName));
     }
 
     getDimDisplayName(dimName: string) {

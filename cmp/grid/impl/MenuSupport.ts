@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
-import {Column, createGridOpenToDepthMenuItem, GridModel} from '@xh/hoist/cmp/grid';
+import {Column, GridModel, createGridOpenToDepthMenuItem} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';

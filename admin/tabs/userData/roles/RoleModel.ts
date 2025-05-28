@@ -288,6 +288,7 @@ export class RoleModel extends HoistModel {
             },
             headerMenuDisplay: 'hover',
             persistWith: {...this.persistWith, path: 'mainGrid'},
+            levelLabels: () => (this.showInGroups ? ['Category', 'Inherited Roles'] : ['Roles']),
             store: {
                 idSpec: ({id, name}) => {
                     return id ?? name;

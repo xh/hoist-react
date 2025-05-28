@@ -277,7 +277,7 @@ export interface GridConfig {
     /** Array of strings or function that returns an array of strings to describe the individual
      * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
      */
-    levelLabels?: (e: DisplayFnData) => string[] | string[];
+    levelLabels?: ((e: DisplayFnData) => string[]) | string[];
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -404,7 +404,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: CellClickedEvent) => void;
     onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
     onCellContextMenu: (e: CellContextMenuEvent) => void;
-    levelLabels: (e: DisplayFnData) => string[] | string[];
+    levelLabels: ((e: DisplayFnData) => string[]) | string[];
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;

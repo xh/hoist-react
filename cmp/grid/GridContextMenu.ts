@@ -9,6 +9,7 @@ import {RecordAction, RecordActionLike} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 import {isFunction} from 'lodash';
+
 import {DisplayFnData} from '../../data';
 
 /**
