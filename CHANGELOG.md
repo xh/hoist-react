@@ -2,6 +2,12 @@
 
 ## 74.0.0-SNAPSHOT - unreleased
 
+### New Features
+
+* Add "Expand to Level" grid context menu item allowing users to expand grouped and tree grids to specified level.
+  * Most recently chosen level is persistable
+  * Existing "Expand All" and "Collapse All" actions will participate in the same persistence.
+
 ## v73.0.1 - 2025-05-19
 
 ### 🐞 Bug Fixes
