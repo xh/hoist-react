@@ -19,7 +19,7 @@ import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
@@ -224,9 +224,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
 
-    /** Last time changes were pushed to linked persistence providers */
-    private lastPushed: number = null;
-
     //---------------
     // Getters
     //---------------
@@ -419,10 +416,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     setValue(value: Partial<T>) {
-        const {view, pendingValue, lastPushed, settleTime} = this;
-        if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
-            return;
-        }
+        const {view, pendingValue} = this;
 
         value = this.cleanState(value);
         if (!isEqual(value, view.value)) {
@@ -605,7 +599,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
-                this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
     }
