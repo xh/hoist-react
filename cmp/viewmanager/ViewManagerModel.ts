@@ -447,6 +447,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
     }
 
+    /** @internal Called by ViewManagerProvider. */
     noteStatePushed() {
         this.lastPushed = Date.now();
     }
