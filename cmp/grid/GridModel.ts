@@ -36,11 +36,11 @@ import {
     SizingMode,
     Some,
     TaskObserver,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
 import {
-    DisplayFnData,
     FieldSpec,
     Store,
     StoreConfig,
@@ -277,7 +277,7 @@ export interface GridConfig {
     /** Array of strings or function that returns an array of strings to describe the individual
      * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
      */
-    levelLabels?: ((e: DisplayFnData) => string[]) | string[];
+    levelLabels?: Thunkable<string[]>;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -404,7 +404,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: CellClickedEvent) => void;
     onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
     onCellContextMenu: (e: CellContextMenuEvent) => void;
-    levelLabels: ((e: DisplayFnData) => string[]) | string[];
+    levelLabels: Thunkable<string[]>;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -468,6 +468,10 @@ export class GridModel extends HoistModel {
      */
     get autosizeEnabled(): boolean {
         return this.autosizeOptions.mode !== 'disabled';
+    }
+
+    get maxDepth(): number {
+        return this.treeMode ? this.store.maxDepth : this.groupBy ? this.groupBy.length : 0;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -1009,7 +1013,7 @@ export class GridModel extends HoistModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        this.setExpandToLevel(this.store.maxDepth);
+        this.setExpandToLevel(this.maxDepth);
     }
 
     /** Collapse all parent rows in grouped or tree grid. */

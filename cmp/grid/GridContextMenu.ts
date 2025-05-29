@@ -5,12 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, RecordActionLike} from '@xh/hoist/data';
-import {Icon} from '@xh/hoist/icon';
+import {RecordActionLike} from '@xh/hoist/data';
 import {GetContextMenuItemsParams} from '@xh/hoist/kit/ag-grid';
-import {isFunction} from 'lodash';
-
-import {DisplayFnData} from '../../data';
 
 /**
  * If a String, value can be '-' for a separator, or a token supported by ag-Grid
@@ -51,47 +47,3 @@ export type GridContextMenuToken =
 export type GridContextMenuSpec =
     | GridContextMenuItemLike[]
     | ((agParams: GetContextMenuItemsParams, gridModel: GridModel) => GridContextMenuItemLike[]);
-
-export function createGridOpenToDepthMenuItem(): RecordAction {
-    return new RecordAction({
-        text: 'Expand to Level',
-        displayFn: (params: DisplayFnData) => {
-            const {gridModel} = params,
-                {levelLabels, store} = gridModel,
-                {maxDepth} = store;
-
-            let nodeLevelLabels = isFunction(levelLabels) ? levelLabels(params) : levelLabels;
-
-            if (!levelLabels || nodeLevelLabels.length < maxDepth + 1) {
-                console.warn(
-                    'GridContextMenu: `levelLabels` not provided or of insufficient length. Using default labels.'
-                );
-                nodeLevelLabels = defaultNodeLevelLabels(maxDepth);
-            }
-
-            const items = nodeLevelLabels.map((label, idx) => {
-                return {
-                    icon:
-                        gridModel.expandToLevel === idx ||
-                        (gridModel.expandToLevel > maxDepth && idx === nodeLevelLabels.length - 1)
-                            ? Icon.check()
-                            : null,
-                    text: label,
-                    actionFn: () => gridModel.setExpandToLevel(idx)
-                };
-            });
-
-            return {items};
-        }
-    });
-}
-
-function defaultNodeLevelLabels(maxDepth: number): string[] {
-    const ret = [];
-
-    for (let i = 0; i <= maxDepth; i++) {
-        ret.push(`Level ${i + 1}`);
-    }
-
-    return ret;
-}

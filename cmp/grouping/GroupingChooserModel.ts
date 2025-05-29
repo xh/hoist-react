@@ -237,7 +237,7 @@ export class GroupingChooserModel extends HoistModel {
         return value.map(dimName => this.getDimDisplayName(dimName)).join(' › ');
     }
 
-    getLevelLabels(): string[] {
+    getValueDisplayNames(): string[] {
         return this.value.map(dimName => this.getDimDisplayName(dimName));
     }
 

@@ -82,7 +82,7 @@ export function initPersist(
             : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
-                path: `${path}.lastExpandToLevel`,
+                path: `${path}.expandToLevel`,
                 ...persistWith
             },
             target: {

@@ -5,12 +5,13 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
-import {Column, GridModel, createGridOpenToDepthMenuItem} from '@xh/hoist/cmp/grid';
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {executeIfFunction} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
-import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
+import {isEmpty, isFunction, isNil, isString, uniq, times} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
@@ -138,22 +139,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':
-            return gridModel?.treeMode
-                ? createGridOpenToDepthMenuItem()
-                : [
-                      new RecordAction({
-                          text: 'Expand All',
-                          icon: Icon.groupRowExpanded(),
-                          hidden: isEmpty(gridModel?.groupBy),
-                          actionFn: () => gridModel.expandAll()
-                      }),
-                      new RecordAction({
-                          text: 'Collapse All',
-                          icon: Icon.groupRowCollapsed(),
-                          hidden: isEmpty(gridModel?.groupBy),
-                          actionFn: () => gridModel.collapseAll()
-                      })
-                  ];
+            return createExpandCollapseItem(gridModel);
         case 'export':
         case 'exportExcel':
             return new RecordAction({
@@ -272,4 +258,60 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
         default:
             return token;
     }
+}
+
+function createExpandCollapseItem(gridModel) {
+    if (!gridModel || gridModel.maxDepth === 0) return null;
+
+    return gridModel.maxDepth > 1
+        ? createTreeExpandCollapseItems(gridModel)
+        : createStandardExpandCollapseItems(gridModel);
+}
+
+function createTreeExpandCollapseItems(gridModel: GridModel): RecordAction[] {
+    return [
+        new RecordAction({
+            text: 'Expand to Level',
+            displayFn: () => {
+                let {levelLabels, maxDepth} = gridModel;
+
+                levelLabels = executeIfFunction(levelLabels);
+                if (!levelLabels || levelLabels.length < maxDepth + 1) {
+                    gridModel.logWarn(
+                        '"levelLabels" not provided or of insufficient length. Using default labels.'
+                    );
+                    levelLabels = times(maxDepth + 1, idx => `Level ${idx + 1}`);
+                }
+
+                const items = levelLabels.map((label, idx) => {
+                    return {
+                        icon:
+                            gridModel.expandToLevel === idx ||
+                            (gridModel.expandToLevel > maxDepth && idx === levelLabels.length - 1)
+                                ? Icon.check()
+                                : null,
+                        text: label,
+                        actionFn: () => gridModel.setExpandToLevel(idx)
+                    };
+                });
+
+                return {items}; // TODO: make a Changelog entry for this change.
+            }
+        })
+    ];
+}
+
+function createStandardExpandCollapseItems(gridModel: GridModel): RecordAction[] {
+    return [
+        new RecordAction({
+            text: 'Expand All',
+            icon: Icon.groupRowExpanded(),
+            actionFn: () => gridModel.expandAll()
+        }),
+        new RecordAction({
+            text: 'Collapse All',
+            icon: Icon.groupRowCollapsed(),
+            actionFn: () => gridModel.collapseAll()
+        })
+    ];
 }
