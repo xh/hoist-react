@@ -108,7 +108,7 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu: MenuItemLike[];
+    contextMenu: (e) => MenuItemLike[];
     prevSeriesConfig;
 
     override onLinked() {
@@ -383,15 +383,21 @@ class ChartLocalModel extends HoistModel {
     //---------------------------
     onSetExtremes = () => {};
 
-    getContextMenu(): MenuItemLike[] {
+    getContextMenu() {
         const {contextMenu} = this.model;
         if (!contextMenu || isEmpty(contextMenu) || !XH.isDesktop) return null;
 
-        const items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
+        return e => {
+            const hoverPoint = this.model.highchart.hoverPoint,
+                point = hoverPoint ? hoverPoint.series?.points[hoverPoint.index] : null,
+                items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
 
-        return new ChartContextMenu({
-            items,
-            chartModel: this.model
-        }).items;
+            return new ChartContextMenu({
+                items,
+                chartModel: this.model,
+                contextMenuClickEvt: e,
+                point
+            }).items;
+        };
     }
 }
