@@ -36,6 +36,7 @@ import {
     SizingMode,
     Some,
     TaskObserver,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -167,6 +168,9 @@ export interface GridConfig {
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
 
+    /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
+    expandToLevel?: number;
+
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
 
@@ -269,6 +273,11 @@ export interface GridConfig {
      * triggered via a long press (aka tap and hold) on mobile devices.
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
+
+    /** Array of strings or function that returns an array of strings to describe the individual
+     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -395,6 +404,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: CellClickedEvent) => void;
     onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
     onCellContextMenu: (e: CellContextMenuEvent) => void;
+    levelLabels: Thunkable<string[]>;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -408,6 +418,7 @@ export class GridModel extends HoistModel {
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
+    @observable expandToLevel: number = 0;
 
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
@@ -438,7 +449,7 @@ export class GridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'exportExcel',
         'exportCsv',
@@ -457,6 +468,10 @@ export class GridModel extends HoistModel {
      */
     get autosizeEnabled(): boolean {
         return this.autosizeOptions.mode !== 'disabled';
+    }
+
+    get maxDepth(): number {
+        return this.treeMode ? this.store.maxDepth : this.groupBy ? this.groupBy.length : 0;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -519,6 +534,8 @@ export class GridModel extends HoistModel {
             restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             fullRowEditing = false,
             clicksToEdit = 2,
+            expandToLevel = 0,
+            levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
             appData,
@@ -566,6 +583,8 @@ export class GridModel extends HoistModel {
         this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
         this.highlightRowOnClick = highlightRowOnClick;
+        this.expandToLevel = expandToLevel;
+        this.levelLabels = levelLabels;
 
         throwIf(
             autosizeOptions.fillMode &&
@@ -617,6 +636,11 @@ export class GridModel extends HoistModel {
             track: () => this.isEditing,
             run: isEditing => (this.isInEditingMode = isEditing),
             debounce: 500
+        });
+
+        this.addReaction({
+            track: () => [this.expandToLevel, this.isReady],
+            run: () => this.applyExpandToLevel()
         });
 
         if (!isEmpty(rest)) {
@@ -989,20 +1013,18 @@ export class GridModel extends HoistModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.expandAll();
-            this.noteAgExpandStateChange();
-        }
+        this.setExpandToLevel(this.maxDepth);
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.collapseAll();
-            this.noteAgExpandStateChange();
-        }
+        this.setExpandToLevel(0);
+    }
+
+    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    @action
+    setExpandToLevel(level: number) {
+        this.expandToLevel = level;
     }
 
     /**
@@ -1529,6 +1551,24 @@ export class GridModel extends HoistModel {
         } else {
             return value;
         }
+    }
+
+    private applyExpandToLevel() {
+        if (!this.isReady) return;
+
+        const {agApi} = this;
+        if (this.expandToLevel === 0) {
+            agApi.collapseAll();
+        } else if (this.expandToLevel === this.store.maxDepth) {
+            agApi.expandAll();
+        } else {
+            agApi.forEachNode(node => {
+                node.setExpanded(node.level < this.expandToLevel);
+            });
+        }
+
+        this.agApi.setGridOption('groupDefaultExpanded', this.expandToLevel);
+        this.noteAgExpandStateChange();
     }
 
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
