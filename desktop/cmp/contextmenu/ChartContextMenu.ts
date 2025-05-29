@@ -11,16 +11,20 @@ import {MenuItem, XH} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
+/**
+ * Highcharts supported tokens (@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems)
+ * plus Hoist's `copyToClipboard`.
+ */
 export type ChartContextMenuToken =
     | 'viewFullscreen'
-    | 'copyToClipboard'
     | 'printChart'
     | 'downloadJPEG'
     | 'downloadPNG'
     | 'downloadSVG'
     | 'downloadCSV'
     | 'downloadXLS'
-    | 'downloadPDF';
+    | 'downloadPDF'
+    | 'copyToClipboard';
 
 export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
     items?: ChartMenuItemLike[];
@@ -31,15 +35,6 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
         point
     ) => void;
 }
-
-/**
- * An item that can exist in a Menu.
- *
- * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
- * an appropriate default display, with '-' providing a standard textless divider that will also
- * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
- */
-export type ChartMenuItemLike = ChartMenuItem | ReactNode;
 
 /**
  * If a String, value can be '-' for a separator, or a token supported by HighCharts
@@ -55,10 +50,6 @@ export type ChartContextMenuSpec =
     | ChartContextMenuItemLike[]
     | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
 
-function isMenuItem(item: ChartMenuItemLike): item is MenuItem {
-    return !isString(item) && !isValidElement(item);
-}
-
 /**
  * Model for ContextMenus interacting with data used by Highcharts charts.
  * @see ChartModel.contextMenu
@@ -69,27 +60,6 @@ export class ChartContextMenu {
     contextMenuClickEvt;
     point;
 
-    /**
-     * @param {Object} c - ChartContextMenu configuration.
-     * @param {(ContextMenuItem[]|Object[]|string[])} c.items - ContextMenuItems/configs or string
-     *     tokens.
-     *      If a String, value can be '-' for a separator,
-     *      a Hoist token (`copyToClipboard`),
-     *      or a token supported by HighCharts for its native menu items:
-     *           `viewFullscreen`
-     *           `printChart`
-     *           `downloadPDF`
-     *           `downloadJPEG`
-     *           `downloadPNG`
-     *           `downloadSVG`
-     *           `downloadCSV`
-     *           `downloadXLS`
-     *
-     * @param {ChartModel} [c.chartModel] - ChartModel to bind to this contextMenu, used to enable
-     *      implementation of menu items / tokens above.
-     *
-     * @link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems
-     */
     constructor({items, chartModel, contextMenuClickEvt, point}) {
         this.chartModel = chartModel;
         this.contextMenuClickEvt = contextMenuClickEvt;
@@ -209,3 +179,16 @@ export class ChartContextMenu {
         }
     }
 }
+
+function isMenuItem(item: ChartMenuItemLike): item is MenuItem {
+    return !isString(item) && !isValidElement(item);
+}
+
+/**
+ * An item that can exist in a Menu.
+ *
+ * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
+ * an appropriate default display, with '-' providing a standard textless divider that will also
+ * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
+ */
+type ChartMenuItemLike = ChartMenuItem | ReactNode;
