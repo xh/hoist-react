@@ -146,16 +146,18 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         if (!enabled) return;
 
         try {
-            const data = await XH.postJson({
+            const data: PlainObject[] = await XH.postJson({
                 url: 'trackLogAdmin',
                 body: query,
                 loadSpec
             });
 
-            data.forEach(it => this.processRawTrackLog(it));
+            if (loadSpec.isStale) return;
 
+            data.forEach(it => this.processRawTrackLog(it));
             await cube.loadDataAsync(data);
         } catch (e) {
+            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
             await cube.clearAsync();
             XH.handleException(e);
         }
