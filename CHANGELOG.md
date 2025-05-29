@@ -4,10 +4,10 @@
 
 ### 🎁 New Features
 + Add `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
++ Add `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
 
 ### 🐞 Bug Fixes
-+ Improves `ViewManagerModel.settleTime` by comparing to when the view is pushed to components
-  rather than when view is loaded from the server.
++ Improves `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
 
 ## v73.0.1 - 2025-05-19
 

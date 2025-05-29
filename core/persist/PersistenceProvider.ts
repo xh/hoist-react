@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {olderThan} from '@xh/hoist/utils/datetime';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -59,11 +60,13 @@ export abstract class PersistenceProvider<S = any> {
     readonly path: string;
     readonly debounce: DebounceSpec;
     readonly owner: HoistBase;
+    readonly settleTime: number;
 
     protected target: Persistable<S>;
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
+    private lastReadTime: number;
 
     /**
      * Construct an instance of this class.
@@ -126,11 +129,13 @@ export abstract class PersistenceProvider<S = any> {
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
         logDebug(['Reading state', state], this.owner);
+        this.lastReadTime = Date.now();
         return !isUndefined(state) ? new PersistableState(state) : null;
     }
 
     /** Persist JSON-serializable state to this provider's path. */
     write(state: S) {
+        if (this.settleTime && !olderThan(this.lastReadTime, this.settleTime)) return;
         logDebug(['Writing state', state], this.owner);
         this.writeInternal(state);
     }
@@ -161,11 +166,12 @@ export abstract class PersistenceProvider<S = any> {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
 
-        const {path, debounce = 250} = persistOptions;
+        const {path, debounce = 250, settleTime} = persistOptions;
         throwIf(!path, 'Path not specified in PersistenceProvider.');
 
         this.path = path;
         this.debounce = debounce;
+        this.settleTime = settleTime;
         this.owner.markManaged(this);
 
         if (debounce) {

@@ -29,6 +29,11 @@ export interface PersistOptions {
     debounce?: DebounceSpec;
 
     /**
+     * Delay (in ms) to wait after state has been read before listening for further state changes.
+     */
+    settleTime?: number;
+
+    /**
      * Type of PersistenceProvider to create. Specify as one of the built-in string types,
      * or a subclass of PersistenceProvider.
      *
