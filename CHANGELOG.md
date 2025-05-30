@@ -9,6 +9,9 @@
 ### 🎁 New Features
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Chart context menu is now fully customizable.
+  ⚠️ NOTE: if a chart's context menu is turned off with `showContextMenu: false`,
+  update to `contextMenu: false`.
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
