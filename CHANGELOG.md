@@ -9,6 +9,7 @@
 ### 🎁 New Features
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for gridcolumn level `onCellClicked` events.
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
