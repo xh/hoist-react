@@ -8,6 +8,7 @@
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
+* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
 
 ## v73.0.1 - 2025-05-19
 

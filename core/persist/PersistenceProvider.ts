@@ -66,6 +66,7 @@ export abstract class PersistenceProvider<S = any> {
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
+    private lastReadState: PersistableState<S>;
     private lastReadTime = 0;
 
     /**
@@ -129,13 +130,14 @@ export abstract class PersistenceProvider<S = any> {
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
         logDebug(['Reading state', state], this.owner);
+        const ret = !isUndefined(state) ? new PersistableState(state) : null;
+        this.lastReadState = ret;
         this.lastReadTime = Date.now();
-        return !isUndefined(state) ? new PersistableState(state) : null;
+        return ret;
     }
 
     /** Persist JSON-serializable state to this provider's path. */
     write(state: S) {
-        if (this.settleTime && !olderThan(this.lastReadTime, this.settleTime)) return;
         logDebug(['Writing state', state], this.owner);
         this.writeInternal(state);
     }
@@ -193,8 +195,14 @@ export abstract class PersistenceProvider<S = any> {
         this.disposer = reaction(
             () => this.target.getPersistableState(),
             state => {
-                if (state.equals(this.defaultState)) {
+                if (this.settleTime && !olderThan(this.lastReadTime, this.settleTime)) {
+                    return;
+                } else if (state.equals(this.defaultState)) {
                     this.clear();
+                } else if (this.lastReadState && state.equals(this.lastReadState)) {
+                    // If the last read state is equal to the current state, use the last read state
+                    // to avoid dirtying the target.
+                    this.write(this.lastReadState.value);
                 } else {
                     this.write(state.value);
                 }

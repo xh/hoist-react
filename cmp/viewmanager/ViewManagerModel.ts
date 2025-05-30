@@ -625,6 +625,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (!view.isDefault) {
             this.views = uniqBy([view.info, ...this.views], 'token');
         }
+
+        // Ensure providers have a clean reference of the current view state.
+        this.providers.forEach(it => it.read());
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {
