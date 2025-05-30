@@ -19,7 +19,7 @@ import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
@@ -216,18 +216,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private pendingValue: PendingValue<T> = null;
 
     /**
-     * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
-     * push themselves onto this array when constructed with a reference to this model. Used to
-     * proactively push state to the target components when the model's selected `value` changes.
-     * @internal
+     * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
+     * state to the target components when the model's selected `value` changes.
      */
-    providers: ViewManagerProvider<any>[] = [];
+    private providers: ViewManagerProvider<any>[] = [];
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
-
-    /** Last time changes were pushed to linked persistence providers */
-    private lastPushed: number = null;
 
     //---------------
     // Getters
@@ -421,10 +416,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     setValue(value: Partial<T>) {
-        const {view, pendingValue, lastPushed, settleTime} = this;
-        if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
-            return;
-        }
+        const {view, pendingValue} = this;
 
         value = this.cleanState(value);
         if (!isEqual(value, view.value)) {
@@ -498,6 +490,25 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         if (exception) throw exception;
+    }
+
+    //------------------
+    // Persistence
+    //------------------
+    /**
+     * Called by {@link ViewManagerProvider} to receive state changes from this model.
+     * @internal
+     */
+    registerProvider(provider: ViewManagerProvider<any>) {
+        this.providers.push(provider);
+    }
+
+    /**
+     * Called by {@link ViewManagerProvider} to stop receiving state changes.
+     * @internal
+     */
+    unregisterProvider(provider: ViewManagerProvider<any>) {
+        this.providers = this.providers.filter(it => it !== provider);
     }
 
     //------------------
@@ -588,7 +599,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
-                this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
     }
@@ -622,6 +632,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (!view.isDefault) {
             this.views = uniqBy([view.info, ...this.views], 'token');
         }
+
+        // Ensure providers have a clean reference of the current view state.
+        this.providers.forEach(it => it.pushStateToTarget());
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

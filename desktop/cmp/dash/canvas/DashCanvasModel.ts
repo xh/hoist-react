@@ -23,7 +23,10 @@ import {
     sortBy,
     pick,
     isEqual,
-    startCase
+    startCase,
+    partition,
+    keyBy,
+    compact
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
@@ -53,6 +56,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 }
 
 export interface DashCanvasItemState {
+    id: string;
     layout: DashCanvasItemLayout;
     title?: string;
     viewSpecId: string;
@@ -402,16 +406,41 @@ export class DashCanvasModel
     private loadState(state: DashCanvasItemState[]) {
         this.isLoadingState = true;
         try {
-            this.clear();
-            state.forEach(state => {
-                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-                const {viewSpecId} = state;
-                if (this.hasSpec(viewSpecId)) {
-                    this.addViewInternal(viewSpecId, state);
-                } else {
-                    this.logWarn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
-                }
-            });
+            state = state.map(it => ({id: this.genViewId(), ...it}));
+            const stateById = keyBy(state, 'id'),
+                [keep, remove] = partition(this.viewModels, viewModel => viewModel.id in stateById),
+                existingViewModelsById = keyBy(keep, 'id');
+
+            XH.safeDestroy(remove);
+
+            this.viewModels = compact(
+                state.map(it => {
+                    const existingViewModel = existingViewModelsById[it.id];
+                    if (existingViewModel) {
+                        existingViewModel.setViewState(it.state);
+                        existingViewModel.title = it.title;
+                        return existingViewModel;
+                    }
+
+                    // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                    if (!this.hasSpec(it.viewSpecId)) {
+                        this.logWarn(
+                            `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
+                        );
+                        return null;
+                    }
+
+                    return new DashCanvasViewModel({
+                        id: it.id,
+                        viewSpec: this.getSpec(it.viewSpecId),
+                        title: it.title,
+                        viewState: it.state,
+                        containerModel: this
+                    });
+                })
+            );
+
+            this.setLayout(state.map(it => ({i: it.id, ...it.layout})));
         } finally {
             this.isLoadingState = false;
         }
@@ -425,6 +454,7 @@ export class DashCanvasModel
                 state = viewState[viewId];
 
             return {
+                id: viewId,
                 layout: {x, y, w, h},
                 ...state
             };
