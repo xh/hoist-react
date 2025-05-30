@@ -278,7 +278,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
             PersistenceProvider.create({
                 persistOptions: {
                     path: 'panel',
-                    settleTime: 300,
                     ...persistWith
                 },
                 target: this

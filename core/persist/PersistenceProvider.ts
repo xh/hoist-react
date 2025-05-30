@@ -66,7 +66,7 @@ export abstract class PersistenceProvider<S = any> {
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
-    private lastReadTime: number;
+    private lastReadTime = 0;
 
     /**
      * Construct an instance of this class.
