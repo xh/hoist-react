@@ -13,16 +13,9 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;
 
     constructor(cfg: PersistenceProviderConfig<S>) {
-        const {persistOptions} = cfg,
-            {viewManagerModel} = persistOptions;
+        super(cfg);
+        const {viewManagerModel} = cfg.persistOptions;
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
-        super({
-            ...cfg,
-            persistOptions: {
-                ...persistOptions,
-                settleTime: persistOptions.settleTime ?? viewManagerModel.settleTime
-            }
-        });
         this.viewManagerModel = viewManagerModel;
         viewManagerModel.registerProvider(this);
     }

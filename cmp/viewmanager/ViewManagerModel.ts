@@ -91,13 +91,6 @@ export interface ViewManagerConfig {
     initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
 
     /**
-     * Delay (in ms) to wait after state has been set on associated components before listening for
-     * further state changes. Can be overridden by `PersistOptions.settleTime` on registered
-     * `PersistenceProvider` instances.
-     */
-    settleTime?: number;
-
-    /**
      * True to allow the user to publish or edit the global views. Apps are expected to
      * commonly set this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
      */
@@ -183,7 +176,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableSharing: boolean;
     readonly preserveUnsavedChanges: boolean;
     readonly manageGlobal: boolean;
-    readonly settleTime: number;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
@@ -298,7 +290,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableGlobal = true,
         enableSharing = true,
         preserveUnsavedChanges = true,
-        settleTime,
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
@@ -320,7 +311,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
         this.preserveUnsavedChanges = preserveUnsavedChanges;
-        this.settleTime = settleTime;
         this.initialViewSpec = initialViewSpec;
 
         this.selectTask = TaskObserver.trackLast({
@@ -558,13 +548,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         this.addReaction(
-            this.preserveUnsavedChanges ? this.pendingValueReaction() : null,
+            this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
             ...this.stateReactions(initialState)
         );
     }
 
-    private pendingValueReaction(): ReactionSpec {
+    private unsavedChangesReaction(): ReactionSpec {
         return {
             track: () => this.pendingValue,
             run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)

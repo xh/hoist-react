@@ -67,7 +67,7 @@ export abstract class PersistenceProvider<S = any> {
 
     private disposer: IReactionDisposer;
     private lastReadState: PersistableState<S>;
-    private lastReadTime = 0;
+    private lastReadTime: number;
 
     /**
      * Construct an instance of this class.
@@ -201,7 +201,7 @@ export abstract class PersistenceProvider<S = any> {
                     this.clear();
                 } else if (this.lastReadState && state.equals(this.lastReadState)) {
                     // If the last read state is equal to the current state, use the last read state
-                    // to avoid dirtying the target.
+                    // to avoid appearing "dirty"
                     this.write(this.lastReadState.value);
                 } else {
                     this.write(state.value);
