@@ -203,7 +203,7 @@ const enhancePromise = promisePrototype => {
 
             const startTime = Date.now(),
                 doTrack = (exception: unknown = null) => {
-                    if (exception['isRoutine']) return;
+                    if (exception && exception['isRoutine']) return;
 
                     const endTime = Date.now(),
                         opts: TrackOptions = isString(options) ? {message: options} : {...options};
