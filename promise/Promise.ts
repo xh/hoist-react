@@ -202,7 +202,9 @@ const enhancePromise = promisePrototype => {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (isError: boolean) => {
+                doTrack = (exception: unknown = null) => {
+                    if (exception['isRoutine']) return;
+
                     const endTime = Date.now(),
                         opts: TrackOptions = isString(options) ? {message: options} : {...options};
                     opts.timestamp = startTime;
@@ -220,18 +222,18 @@ const enhancePromise = promisePrototype => {
                     ) {
                         opts.elapsed = null;
                     }
-                    if (isError) opts.severity = 'ERROR';
+                    if (exception) opts.severity = 'ERROR';
 
                     XH.track(opts);
                 };
 
             return this.then(
                 (v: T) => {
-                    doTrack(false);
+                    doTrack();
                     return v;
                 },
                 (t: unknown) => {
-                    doTrack(true);
+                    doTrack(t);
                     throw t;
                 }
             );
