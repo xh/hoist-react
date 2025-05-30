@@ -215,6 +215,7 @@ export class DashContainerModel
             PersistenceProvider.create({
                 persistOptions: {
                     path: 'dashContainer',
+                    settleTime: 1000,
                     ...persistWith
                 },
                 target: this

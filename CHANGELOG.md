@@ -2,6 +2,18 @@
 
 ## 74.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor change to ViewManagerModel)
+
+* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+
+### 🎁 New Features
+* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+
+### 🐞 Bug Fixes
+* Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
+* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+
 ## v73.0.1 - 2025-05-19
 
 ### 🐞 Bug Fixes
