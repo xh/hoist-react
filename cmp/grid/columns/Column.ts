@@ -71,6 +71,7 @@ import type {
     ValueGetterParams,
     ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
+import {CellClickedEvent} from '@ag-grid-community/core';
 
 export interface ColumnSpec {
     /**
@@ -375,6 +376,13 @@ export interface ColumnSpec {
     actionsShowOnHoverOnly?: boolean;
 
     /**
+     * Callback when a cell is clicked.
+     * This use can tracks clicks on an individual cell, as opposed to the grid level
+     * onGridCellClicked which will fire when any cell on the grid is clicked
+     */
+    onCellClicked?: (e: CellClickedEvent) => void;
+
+    /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
      * options may be used / overwritten by the framework itself, and are not all guaranteed to be
      * compatible with its usages of Ag-Grid.
@@ -479,6 +487,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     omit: Thunkable<boolean>;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     gridModel: GridModel;
     agOptions: ColDef;
@@ -551,6 +560,7 @@ export class Column {
             actionsShowOnHoverOnly,
             actions,
             omit,
+            onCellClicked,
             agOptions,
             appData,
             ...rest
@@ -657,6 +667,7 @@ export class Column {
 
         this.actions = actions;
         this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
+        this.onCellClicked = onCellClicked;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -758,7 +769,8 @@ export class Column {
                     if (event.shiftKey && event.key === 'Enter') return true;
 
                     return false;
-                }
+                },
+                onCellClicked: this.onCellClicked
             };
 
         // We will change this setter as needed to install the renderer in the proper location
