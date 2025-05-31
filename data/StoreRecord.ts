@@ -6,7 +6,7 @@
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch} from 'lodash';
+import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
@@ -145,6 +145,22 @@ export class StoreRecord {
     /** The current validation state of the record. */
     get validationState(): ValidationState {
         return this.validator?.validationState ?? 'Unknown';
+    }
+
+    get modifiedValues(): PlainObject {
+        const ret = this.fields.reduce((acc, {name}) => {
+            if (isNil(this.committedData) || this.data[name] !== this.committedData[name]) {
+                acc[name] = this.data[name];
+            }
+            return acc;
+        }, {});
+
+        return isEmpty(ret)
+            ? ret
+            : {
+                  id: this.id,
+                  ...ret
+              };
     }
 
     /** Map of field names to list of errors. */
