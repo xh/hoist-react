@@ -295,7 +295,7 @@ function createTreeExpandCollapseItems(gridModel: GridModel): RecordAction[] {
                     };
                 });
 
-                return {items}; // TODO: make a Changelog entry for this change.
+                return {items};
             }
         })
     ];
