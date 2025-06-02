@@ -5,9 +5,9 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
-import {isObject} from 'lodash';
+import {isEqual, isObject} from 'lodash';
 import {GridModel} from '../GridModel';
-import {GridModelPersistOptions} from '../Types';
+import {ColumnState, GridModelPersistOptions} from '../Types';
 
 /**
  * Initialize persistence for a {@link GridModel} by applying its `persistWith` config.
@@ -34,7 +34,8 @@ export function initPersist(
                 ...persistWith
             },
             target: {
-                getPersistableState: () => new PersistableState(gridModel.persistableColumnState),
+                getPersistableState: () =>
+                    new PersistableColumnState(gridModel.persistableColumnState),
                 setPersistableState: ({value}) => gridModel.setColumnState(value)
             },
             owner: gridModel
@@ -91,5 +92,14 @@ export function initPersist(
             },
             owner: gridModel
         });
+    }
+}
+
+class PersistableColumnState extends PersistableState<ColumnState[]> {
+    override equals(other: PersistableState<ColumnState[]>): boolean {
+        return isEqual(
+            this.value.filter(it => !it.hidden),
+            other.value.filter(it => !it.hidden)
+        );
     }
 }

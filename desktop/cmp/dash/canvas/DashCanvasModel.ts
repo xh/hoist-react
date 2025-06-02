@@ -195,6 +195,7 @@ export class DashCanvasModel
             PersistenceProvider.create({
                 persistOptions: {
                     path: 'dashCanvas',
+                    settleTime: 1000,
                     ...persistWith
                 },
                 target: this

@@ -6,7 +6,6 @@
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
-import {pull} from 'lodash';
 import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager/ViewManagerModel';
 
@@ -18,7 +17,7 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
         const {viewManagerModel} = cfg.persistOptions;
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
         this.viewManagerModel = viewManagerModel;
-        viewManagerModel.providers.push(this);
+        viewManagerModel.registerProvider(this);
     }
 
     pushStateToTarget() {
@@ -38,10 +37,7 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     }
 
     override destroy() {
-        if (this.viewManagerModel) {
-            pull(this.viewManagerModel.providers, this);
-        }
-
+        this.viewManagerModel?.unregisterProvider(this);
         super.destroy();
     }
 }

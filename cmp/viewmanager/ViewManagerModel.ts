@@ -19,7 +19,7 @@ import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
@@ -75,6 +75,12 @@ export interface ViewManagerConfig {
     enableSharing?: boolean;
 
     /**
+     * True (default) to save pending state to SessionStorage so that it can be restored across
+     * browser refreshes. Unlike auto-save, this does not write to the database.
+     */
+    preserveUnsavedChanges?: boolean;
+
+    /**
      * Function to determine the initial view for a user, when no view has already been persisted.
      * Will be passed a list of views available to the current user.  Implementations where
      * enableDefault is set false should typically return some view, if any views are
@@ -83,14 +89,6 @@ export interface ViewManagerConfig {
      * Must be set when enableDefault is false.
      */
     initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
-
-    /**
-     * Delay (in ms) to wait after state has been set on associated components before listening for
-     * further state changes. The long default wait 1000ms is intended to avoid a false positive
-     * dirty indicator when linking to complex components such as dashboards or grids that can
-     * report immediate changes to state due to internal processing or rendering.
-     */
-    settleTime?: number;
 
     /**
      * True to allow the user to publish or edit the global views. Apps are expected to
@@ -176,8 +174,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
+    readonly preserveUnsavedChanges: boolean;
     readonly manageGlobal: boolean;
-    readonly settleTime: number;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
@@ -216,18 +214,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private pendingValue: PendingValue<T> = null;
 
     /**
-     * Array of {@link ViewManagerProvider} instances bound to this model. Providers will
-     * push themselves onto this array when constructed with a reference to this model. Used to
-     * proactively push state to the target components when the model's selected `value` changes.
-     * @internal
+     * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
+     * state to the target components when the model's selected `value` changes.
      */
-    providers: ViewManagerProvider<any>[] = [];
+    private providers: ViewManagerProvider<any>[] = [];
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
-
-    /** Last time changes were pushed to linked persistence providers */
-    private lastPushed: number = null;
 
     //---------------
     // Getters
@@ -296,7 +289,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableDefault = true,
         enableGlobal = true,
         enableSharing = true,
-        settleTime = 1000,
+        preserveUnsavedChanges = true,
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
@@ -317,7 +310,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
-        this.settleTime = settleTime;
+        this.preserveUnsavedChanges = preserveUnsavedChanges;
         this.initialViewSpec = initialViewSpec;
 
         this.selectTask = TaskObserver.trackLast({
@@ -421,10 +414,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     @action
     setValue(value: Partial<T>) {
-        const {view, pendingValue, lastPushed, settleTime} = this;
-        if (!pendingValue && settleTime && !olderThan(lastPushed, settleTime)) {
-            return;
-        }
+        const {view, pendingValue} = this;
 
         value = this.cleanState(value);
         if (!isEqual(value, view.value)) {
@@ -501,6 +491,25 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     //------------------
+    // Internal
+    //------------------
+    /**
+     * Called by {@link ViewManagerProvider} to receive state changes from this model.
+     * @internal
+     */
+    registerProvider(provider: ViewManagerProvider<any>) {
+        this.providers.push(provider);
+    }
+
+    /**
+     * Called by {@link ViewManagerProvider} to stop receiving state changes.
+     * @internal
+     */
+    unregisterProvider(provider: ViewManagerProvider<any>) {
+        this.providers = this.providers.filter(it => it !== provider);
+    }
+
+    //------------------
     // Implementation
     //------------------
     private async initAsync() {
@@ -515,7 +524,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 this.views = views;
                 this.userPinned = state.userPinned;
                 this.autoSave = state.autoSave;
-                this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                if (this.preserveUnsavedChanges) {
+                    this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                }
             });
 
             // 2) Initialize/choose initial view.  Null is ok, and will yield default.
@@ -537,13 +548,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         this.addReaction(
-            this.pendingValueReaction(),
+            this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
             ...this.stateReactions(initialState)
         );
     }
 
-    private pendingValueReaction(): ReactionSpec {
+    private unsavedChangesReaction(): ReactionSpec {
         return {
             track: () => this.pendingValue,
             run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)
@@ -588,7 +599,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
-                this.lastPushed = Date.now();
             })
             .linkTo(this.selectTask);
     }
@@ -622,6 +632,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         if (!view.isDefault) {
             this.views = uniqBy([view.info, ...this.views], 'token');
         }
+
+        // Ensure providers have a clean reference of the current view state.
+        this.providers.forEach(it => it.read());
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {

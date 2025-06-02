@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {olderThan} from '@xh/hoist/utils/datetime';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
@@ -59,11 +60,14 @@ export abstract class PersistenceProvider<S = any> {
     readonly path: string;
     readonly debounce: DebounceSpec;
     readonly owner: HoistBase;
+    readonly settleTime: number;
 
     protected target: Persistable<S>;
     protected defaultState: PersistableState<S>;
 
     private disposer: IReactionDisposer;
+    private lastReadState: PersistableState<S>;
+    private lastReadTime: number;
 
     /**
      * Construct an instance of this class.
@@ -126,7 +130,10 @@ export abstract class PersistenceProvider<S = any> {
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
         logDebug(['Reading state', state], this.owner);
-        return !isUndefined(state) ? new PersistableState(state) : null;
+        const ret = !isUndefined(state) ? new PersistableState(state) : null;
+        this.lastReadState = ret;
+        this.lastReadTime = Date.now();
+        return ret;
     }
 
     /** Persist JSON-serializable state to this provider's path. */
@@ -161,11 +168,12 @@ export abstract class PersistenceProvider<S = any> {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
 
-        const {path, debounce = 250} = persistOptions;
+        const {path, debounce = 250, settleTime} = persistOptions;
         throwIf(!path, 'Path not specified in PersistenceProvider.');
 
         this.path = path;
         this.debounce = debounce;
+        this.settleTime = settleTime;
         this.owner.markManaged(this);
 
         if (debounce) {
@@ -187,8 +195,14 @@ export abstract class PersistenceProvider<S = any> {
         this.disposer = reaction(
             () => this.target.getPersistableState(),
             state => {
-                if (state.equals(this.defaultState)) {
+                if (this.settleTime && !olderThan(this.lastReadTime, this.settleTime)) {
+                    return;
+                } else if (state.equals(this.defaultState)) {
                     this.clear();
+                } else if (this.lastReadState && state.equals(this.lastReadState)) {
+                    // If the last read state is equal to the current state, use the last read state
+                    // to avoid appearing "dirty"
+                    this.write(this.lastReadState.value);
                 } else {
                     this.write(state.value);
                 }
