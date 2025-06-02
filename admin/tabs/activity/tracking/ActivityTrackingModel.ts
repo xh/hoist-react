@@ -418,6 +418,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     private createGridModel(): GridModel {
         const hidden = true;
+        // Done
         return new GridModel({
             persistWith: {...this.persistWith, path: 'aggGrid'},
             selModel: 'multiple',
