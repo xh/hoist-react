@@ -62,6 +62,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverPosition = 'bottom',
             styleButtonAsInput = true,
             testId,
+            icon,
             ...rest
         },
         ref
@@ -101,7 +102,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         onClick: () => model.toggleEditor(),
                         testId
                     }),
-                    favoritesIcon({testId: favoritesIconTestId})
+                    favoritesIcon({testId: favoritesIconTestId, icon})
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu({testId: favoritesMenuTestId})
@@ -316,10 +317,10 @@ function getDimOptions(dims, model) {
 // Favorites
 //------------------
 const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
-    render({model, testId}) {
+    render({model, testId, icon}) {
         if (!model.persistFavorites) return null;
         return div({
-            item: Icon.favorite(),
+            item: icon ?? Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             [TEST_ID]: testId,
             onClick: e => {
