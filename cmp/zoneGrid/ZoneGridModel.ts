@@ -39,6 +39,7 @@ import {
     managed,
     PlainObject,
     Some,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -230,6 +231,11 @@ export interface ZoneGridConfig {
      * triggered via a long press (aka tap and hold) on mobile devices.
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
+
+    /** Array of strings or function that returns an array of strings to describe the individual
+     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults

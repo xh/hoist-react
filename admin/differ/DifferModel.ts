@@ -84,7 +84,6 @@ export class DifferModel extends HoistModel {
         this.url = entityName + 'DiffAdmin';
 
         const rendererIsComplex = true;
-        // Done
         this.gridModel = new GridModel({
             store: {
                 idSpec: data => {

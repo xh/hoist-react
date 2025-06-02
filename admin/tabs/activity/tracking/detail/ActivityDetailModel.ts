@@ -155,7 +155,6 @@ export class ActivityDetailModel extends HoistModel {
             hidden = true,
             pinned = true;
 
-        // Done
         return new GridModel({
             persistWith: persistWith ? {...persistWith, path: `${persistWith.path}.grid`} : null,
             sortBy: 'dateCreated|desc',
