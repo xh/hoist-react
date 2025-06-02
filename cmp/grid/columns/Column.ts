@@ -376,9 +376,8 @@ export interface ColumnSpec {
     actionsShowOnHoverOnly?: boolean;
 
     /**
-     * Callback when a cell is clicked.
-     * This use can tracks clicks on an individual cell, as opposed to the grid level
-     * onGridCellClicked which will fire when any cell on the grid is clicked
+     * Callback when a cell within this column clicked.
+     * See also {@link GridConfig.onCellClicked}, called when any cell within the grid is clicked.
      */
     onCellClicked?: (e: CellClickedEvent) => void;
 

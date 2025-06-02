@@ -255,7 +255,9 @@ export interface GridConfig {
     onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
-     * Callback when a cell is clicked.
+     * Callback when any cell on the grid is clicked - inspect the event to determine the column.
+     * Note that {@link ColumnSpec.onCellClicked} is a more targeted handler scoped to a single
+     * column, which might be more convenient when clicks on only one column are of interest.
      */
     onCellClicked?: (e: CellClickedEvent) => void;
 
