@@ -1559,7 +1559,7 @@ export class GridModel extends HoistModel {
         const {agApi} = this;
         if (this.expandToLevel === 0) {
             agApi.collapseAll();
-        } else if (this.expandToLevel === this.store.maxDepth) {
+        } else if (this.expandToLevel === this.maxDepth) {
             agApi.expandAll();
         } else {
             agApi.forEachNode(node => {
