@@ -19,7 +19,6 @@ import {addAction, deleteAction, editAction, viewAction} from './Actions';
 import {RestStore, RestStoreConfig} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
-// TODO: add level labels to rest grids
 export interface RestGridConfig extends GridConfig {
     store?: RestStore | RestStoreConfig;
 
