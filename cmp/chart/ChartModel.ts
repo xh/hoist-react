@@ -4,10 +4,13 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
-import {ChartContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/ChartContextMenu';
+import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    ChartContextMenuItemLike,
+    ChartContextMenuSpec
+} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep} from 'lodash';
+import {castArray, cloneDeep, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
@@ -38,7 +41,9 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu: ChartContextMenuSpec;
+    contextMenu:
+        | ChartContextMenuItemLike[]
+        | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
 
     static defaultContextMenu = [
         'viewFullscreen',
@@ -68,7 +73,7 @@ export class ChartModel extends HoistModel {
         this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
-        this.contextMenu = contextMenu ?? ChartModel.defaultContextMenu;
+        this.contextMenu = this.parseContextMenu(contextMenu);
     }
 
     /**
@@ -105,5 +110,14 @@ export class ChartModel extends HoistModel {
     /** Remove all series from this chart. */
     clear() {
         this.setSeries([]);
+    }
+
+    private parseContextMenu(
+        spec: ChartContextMenuSpec
+    ): ChartContextMenuItemLike[] | ((chartModel: ChartModel) => ChartContextMenuItemLike[]) {
+        if (spec === false || !XH.isDesktop) return null;
+        if (isNil(spec) || spec === true) return ChartModel.defaultContextMenu;
+
+        return spec;
     }
 }

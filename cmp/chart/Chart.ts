@@ -20,7 +20,6 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import {ChartContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ChartContextMenu';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
@@ -35,6 +34,7 @@ import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, omit} from
 import {placeholder} from '../layout';
 import './Chart.scss';
 import {ChartModel} from './ChartModel';
+import {getChartContextMenuItems} from './impl/ChartContextMenuItems';
 import {installCopyToClipboard} from './impl/copyToClipboard';
 import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
@@ -138,7 +138,7 @@ class ChartLocalModel extends HoistModel {
         return this.model.highchart;
     }
 
-    updateSeries() {
+    private updateSeries() {
         const newSeries = this.model.series,
             seriesConfig = newSeries.map(it => omit(it, 'data')),
             {prevSeriesConfig, chart} = this,
@@ -158,7 +158,7 @@ class ChartLocalModel extends HoistModel {
         this.prevSeriesConfig = seriesConfig;
     }
 
-    renderHighChart() {
+    private renderHighChart() {
         // Chart does not re-render well in fullscreen mode
         // so just close fullscreen mode if it's open.
         if (this.chart?.fullscreen?.isOpen) {
@@ -202,7 +202,7 @@ class ChartLocalModel extends HoistModel {
         }
     };
 
-    getChartDims({width, height}) {
+    private getChartDims({width, height}) {
         const {aspectRatio} = this.componentProps;
 
         if (!aspectRatio || aspectRatio <= 0) return {width, height};
@@ -210,7 +210,7 @@ class ChartLocalModel extends HoistModel {
         return this.applyAspectRatio(width, height, aspectRatio);
     }
 
-    applyAspectRatio(width, height, aspectRatio) {
+    private applyAspectRatio(width, height, aspectRatio) {
         const adjWidth = height * aspectRatio,
             adjHeight = width / aspectRatio;
 
@@ -238,7 +238,7 @@ class ChartLocalModel extends HoistModel {
         super.destroy();
     }
 
-    destroyHighChart() {
+    private destroyHighChart() {
         if (this.chart) {
             this.chart.destroy();
             this.chart = null;
@@ -248,7 +248,7 @@ class ChartLocalModel extends HoistModel {
     //----------------------
     // Highcharts Config
     //----------------------
-    getMergedConfig(): PlainObject {
+    private getMergedConfig(): PlainObject {
         const propsConf = this.getModelConfig(),
             themeConf = this.getThemeConfig(),
             defaultConf = this.getDefaultConfig();
@@ -257,7 +257,7 @@ class ChartLocalModel extends HoistModel {
         return mergeDeep(defaultConf, themeConf, propsConf);
     }
 
-    getDefaultConfig() {
+    private getDefaultConfig() {
         const exporting = {
             enabled: false,
             fallbackToExportServer: false,
@@ -331,7 +331,7 @@ class ChartLocalModel extends HoistModel {
         };
     }
 
-    mergeAxisConfigs(theme, conf) {
+    private mergeAxisConfigs(theme, conf) {
         const axisLabels = ['x', 'y', 'z'];
         axisLabels.forEach(lbl => {
             const axis = lbl + 'Axis',
@@ -343,7 +343,7 @@ class ChartLocalModel extends HoistModel {
         });
     }
 
-    getDefaultAxisConfig(axis) {
+    private getDefaultAxisConfig(axis) {
         const defaults = {
             xAxis: {
                 // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming.
@@ -367,14 +367,27 @@ class ChartLocalModel extends HoistModel {
         return defaults[axis];
     }
 
-    getThemeConfig() {
+    private getThemeConfig() {
         return XH.darkTheme ? cloneDeep(DarkTheme) : cloneDeep(LightTheme);
     }
 
-    getModelConfig() {
+    private getModelConfig() {
         return {
             ...this.model.highchartsConfig,
             series: this.model.series
+        };
+    }
+
+    private getContextMenu() {
+        const {contextMenu} = this.model;
+        if (!contextMenu) return null;
+
+        return e => {
+            const hoverPoint = this.model.highchart.hoverPoint,
+                point = hoverPoint ? hoverPoint.series?.points[hoverPoint.index] : null,
+                items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
+
+            return getChartContextMenuItems(items, e, this.model, point);
         };
     }
 
@@ -382,22 +395,4 @@ class ChartLocalModel extends HoistModel {
     // Handlers
     //---------------------------
     onSetExtremes = () => {};
-
-    private getContextMenu() {
-        const {contextMenu} = this.model;
-        if (!contextMenu || !XH.isDesktop) return null;
-
-        return e => {
-            const hoverPoint = this.model.highchart.hoverPoint,
-                point = hoverPoint ? hoverPoint.series?.points[hoverPoint.index] : null,
-                items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
-
-            return new ChartContextMenu({
-                items,
-                chartModel: this.model,
-                contextMenuEvent: e,
-                point
-            }).items;
-        };
-    }
 }
