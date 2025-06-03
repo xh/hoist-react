@@ -8,7 +8,7 @@ import {contextMenu, ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/Co
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {logError} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFunction, isUndefined} from 'lodash';
-import {cloneElement, isValidElement, ReactElement} from 'react';
+import {cloneElement, isValidElement, MouseEvent, ReactElement} from 'react';
 
 /**
  * Hook to add a right-click context menu to a component.
@@ -21,7 +21,7 @@ import {cloneElement, isValidElement, ReactElement} from 'react';
 export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): ReactElement {
     if (!child || isUndefined(spec)) return child;
 
-    const onContextMenu = (e: MouseEvent) => {
+    const onContextMenu = (e: MouseEvent | PointerEvent) => {
         let contextMenuOutput: any = spec;
 
         // 0) Skip if already consumed, otherwise consume (adapted from BP `ContextMenuTarget`).
@@ -34,7 +34,7 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
         }
         if (isArray(contextMenuOutput)) {
             contextMenuOutput = !isEmpty(contextMenuOutput)
-                ? contextMenu({menuItems: contextMenuOutput})
+                ? contextMenu({menuItems: contextMenuOutput, contextMenuEvent: e})
                 : null;
         }
         if (contextMenuOutput && !isValidElement(contextMenuOutput)) {

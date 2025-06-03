@@ -10,7 +10,7 @@ import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, ReactElement, ReactNode} from 'react';
+import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 
 /**
  * A context menu is specified as an array of items, a function to generate one from a click, or
@@ -20,6 +20,12 @@ export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[
 
 export interface ContextMenuProps extends HoistProps {
     menuItems: MenuItemLike[];
+    /**
+     * Optional event because this component is sometimes used as the content in popovers, to
+     * create menu buttons.  In those cases, it is not expected that the click event contains any
+     * important contextual information.
+     */
+    contextMenuEvent?: MouseEvent | PointerEvent;
 }
 
 /**
@@ -36,8 +42,8 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     model: false,
     observer: false,
 
-    render({menuItems}) {
-        const items = parseItems(menuItems);
+    render({menuItems, contextMenuEvent}) {
+        const items = parseItems(menuItems, contextMenuEvent);
         return isEmpty(items) ? null : menu(items);
     }
 });
@@ -45,13 +51,16 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 //---------------------------
 // Implementation
 //---------------------------
-function parseItems(items: MenuItemLike[]): ReactNode[] {
+function parseItems(
+    items: MenuItemLike[],
+    contextMenuEvent: MouseEvent | PointerEvent
+): ReactNode[] {
     items = items.map(item => {
         if (!isMenuItem(item)) return item;
 
         item = clone(item);
         item.items = clone(item.items);
-        item.prepareFn?.(item);
+        item.prepareFn?.(item, contextMenuEvent);
         return item;
     });
 
@@ -64,13 +73,15 @@ function parseItems(items: MenuItemLike[]): ReactNode[] {
             if (!isMenuItem(item)) return item;
 
             // Process items
-            const items = item.items ? parseItems(item.items) : null;
+            const items = item.items ? parseItems(item.items, contextMenuEvent) : null;
             return menuItem({
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
                 className: item.className,
-                onClick: item.actionFn ? e => wait().then(() => item.actionFn(e)) : null, // do async to allow menu to close
+                onClick: item.actionFn
+                    ? e => wait().then(() => item.actionFn(e, contextMenuEvent))
+                    : null, // do async to allow menu to close
                 popoverProps: {usePortal: true},
                 disabled: item.disabled,
                 items

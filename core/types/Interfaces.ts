@@ -284,10 +284,10 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: (e: MouseEvent | PointerEvent) => void;
+    actionFn?: (e: MouseEvent | PointerEvent, contextMenuEvent?: MouseEvent | PointerEvent) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
-    prepareFn?: (me: MenuItem) => void;
+    prepareFn?: (me: MenuItem, contextMenuEvent?: MouseEvent | PointerEvent) => void;
 
     /** Child menu items. */
     items?: MenuItemLike[];
