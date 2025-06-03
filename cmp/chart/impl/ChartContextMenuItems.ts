@@ -33,7 +33,15 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
         contextMenuEvent: MouseEvent | PointerEvent,
         params: {
             chartModel: ChartModel;
+            /**
+             * Single point is the active series point the mouse is closest to
+             */
             point: any;
+            /**
+             * Points array is the list of points hovered over in each series. When
+             * there are multiple series and tooltip.shared = true, points.length > 1.
+             */
+            points: any[];
         }
     ) => void;
 }
@@ -56,9 +64,12 @@ export function getChartContextMenuItems(
     items: ChartContextMenuItemLike[],
     contextMenuEvent: MouseEvent | PointerEvent,
     chartModel: ChartModel,
-    point
+    point,
+    points
 ) {
-    return cloneDeep(items).map(it => buildMenuItemConfig(it, contextMenuEvent, chartModel, point));
+    return cloneDeep(items).map(it =>
+        buildMenuItemConfig(it, contextMenuEvent, chartModel, point, points)
+    );
 }
 
 //---------------------------
@@ -68,7 +79,8 @@ function buildMenuItemConfig(
     item: ChartContextMenuItemLike,
     contextMenuEvent: MouseEvent | PointerEvent,
     chartModel: ChartModel,
-    point
+    point,
+    points
 ): MenuItem | string {
     if (isString(item)) return parseToken(item, chartModel);
 
@@ -80,14 +92,15 @@ function buildMenuItemConfig(
                     it as ChartContextMenuItemLike,
                     contextMenuEvent,
                     chartModel,
-                    point
+                    point,
+                    points
                 )
             );
         }
         if (item.actionFn) {
             const fn = item.actionFn as ChartMenuItem['actionFn'];
             item.actionFn = e => {
-                fn(e, contextMenuEvent, {chartModel, point});
+                fn(e, contextMenuEvent, {chartModel, point, points});
             };
         }
     }

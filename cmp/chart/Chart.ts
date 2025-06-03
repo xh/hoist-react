@@ -383,11 +383,15 @@ class ChartLocalModel extends HoistModel {
         if (!contextMenu) return null;
 
         return e => {
-            const hoverPoint = this.model.highchart.hoverPoint,
-                point = hoverPoint ? hoverPoint.series?.points[hoverPoint.index] : null,
+            // Convert hoverpoints to points for use in actionFn.
+            // Hoverpoints are transient, and change/disappear as mouse moves.
+            const getPoint = it => it.series?.points[it.index];
+            const {hoverPoint, hoverPoints} = this.model.highchart,
+                point = hoverPoint ? getPoint(hoverPoint) : null,
+                points = hoverPoints ? hoverPoints.map(getPoint) : [],
                 items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
 
-            return getChartContextMenuItems(items, e, this.model, point);
+            return getChartContextMenuItems(items, e, this.model, point, points);
         };
     }
 
