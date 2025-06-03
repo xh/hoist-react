@@ -30,7 +30,7 @@ export function installZoomoutGesture(Highcharts) {
 
         Highcharts.addEvent(this, 'selection', e => {
             if (pixelDiff < 0) {
-                this.zoom(); // call w/o arguments resets zoom
+                this.xAxis?.forEach(it => it.setExtremes());
                 e.preventDefault();
             }
         });
