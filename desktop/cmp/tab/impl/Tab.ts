@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
+import {TabModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
@@ -27,7 +27,7 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className, testId}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+        let {content, isActive, renderMode, refreshContextModel, switcher, children} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -37,6 +37,19 @@ export const tab = hoistCmp.factory({
             (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
             return null;
+        }
+
+        if (switcher && children) {
+            return errorBoundary(
+                tabContainer({
+                    className,
+                    modelConfig: {
+                        route: `${model.containerModel.route}.${model.id}`,
+                        switcher,
+                        tabs: children
+                    }
+                })
+            );
         }
 
         return frame({

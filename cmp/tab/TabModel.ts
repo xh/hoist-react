@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {TabSwitcherProps} from '@xh/hoist/cmp/tab/TabSwitcherProps';
 import {
     XH,
     HoistModel,
@@ -72,6 +73,12 @@ export interface TabConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    children?: TabConfig[];
+
+    switcher?: boolean | TabSwitcherProps;
+
+    className?: string;
 }
 
 /**
@@ -83,6 +90,7 @@ export interface TabConfig {
  */
 export class TabModel extends HoistModel {
     id: string;
+    className: string;
     @bindable.ref title: ReactNode;
     @bindable.ref icon: ReactElement;
     @bindable.ref tooltip: ReactNode;
@@ -90,6 +98,8 @@ export class TabModel extends HoistModel {
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
+    children: TabConfig[];
+    switcher: TabSwitcherProps;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
@@ -113,7 +123,10 @@ export class TabModel extends HoistModel {
         content,
         refreshMode,
         renderMode,
-        xhImpl = false
+        xhImpl = false,
+        children,
+        switcher,
+        className
     }: TabConfig) {
         super();
         makeObservable(this);
@@ -126,6 +139,7 @@ export class TabModel extends HoistModel {
 
         this.id = id.toString();
         this.containerModel = containerModel;
+        this.className = className;
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
@@ -133,6 +147,13 @@ export class TabModel extends HoistModel {
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
         this.content = content;
+        this.children = children;
+
+        // Create default switcher props
+        if (switcher === true) switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};
+        if (switcher === false) switcher = null;
+
+        this.switcher = switcher as TabSwitcherProps;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
