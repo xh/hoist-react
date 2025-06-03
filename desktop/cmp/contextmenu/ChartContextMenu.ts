@@ -29,10 +29,12 @@ export type ChartContextMenuToken =
 export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
     items?: ChartMenuItemLike[];
     actionFn?: (
-        menuItemClickEvt: MouseEvent | PointerEvent,
-        contextMenuClickEvt: MouseEvent | PointerEvent,
-        chartModel: ChartModel,
-        point
+        menuItemEvent: MouseEvent | PointerEvent,
+        contextMenuEvent: MouseEvent | PointerEvent,
+        params: {
+            chartModel: ChartModel;
+            point: any;
+        }
     ) => void;
 }
 
@@ -43,7 +45,7 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
 export type ChartContextMenuItemLike = ChartMenuItem | ChartContextMenuToken | string;
 
 /**
- * Specification for a ChartContextMenu.  Either a list of items, or a function to produce one.
+ * Specification for a ChartContextMenu.  Either a list of items or a function to produce one.
  */
 export type ChartContextMenuSpec =
     | boolean
@@ -80,7 +82,7 @@ export class ChartContextMenu {
             if (item.actionFn) {
                 const fn = item.actionFn as ChartMenuItem['actionFn'];
                 item.actionFn = e => {
-                    fn(e, this.contextMenuEvent, this.chartModel, this.point);
+                    fn(e, this.contextMenuEvent, {chartModel: this.chartModel, point: this.point});
                 };
             }
         }
