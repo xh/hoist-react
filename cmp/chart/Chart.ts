@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
-import {isEmpty, isFunction} from 'lodash';
+import {isFunction} from 'lodash';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -97,7 +97,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return !XH.isMobileApp ? useContextMenu(coreContents, impl.contextMenu) : coreContents;
+        return impl.contextMenu ? useContextMenu(coreContents, impl.contextMenu) : coreContents;
     }
 });
 
@@ -347,7 +347,7 @@ class ChartLocalModel extends HoistModel {
         const defaults = {
             xAxis: {
                 // Padding is ignored by setExtremes, so we default to 0 to make things less jumpy when zooming.
-                // This is especially important when Navigator shown; first reload of data can cause a surprising tiny rezoom.
+                // This is especially important when the Navigator is shown. The first reload of data can cause a surprising tiny re-zoom.
                 minPadding: 0,
                 maxPadding: 0,
                 dateTimeLabelFormats: {
@@ -383,9 +383,9 @@ class ChartLocalModel extends HoistModel {
     //---------------------------
     onSetExtremes = () => {};
 
-    getContextMenu() {
+    private getContextMenu() {
         const {contextMenu} = this.model;
-        if (!contextMenu || isEmpty(contextMenu) || !XH.isDesktop) return null;
+        if (!contextMenu || !XH.isDesktop) return null;
 
         return e => {
             const hoverPoint = this.model.highchart.hoverPoint,
@@ -395,7 +395,7 @@ class ChartLocalModel extends HoistModel {
             return new ChartContextMenu({
                 items,
                 chartModel: this.model,
-                contextMenuClickEvt: e,
+                contextMenuEvent: e,
                 point
             }).items;
         };

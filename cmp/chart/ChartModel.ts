@@ -8,7 +8,7 @@ import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
 import {ChartContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/ChartContextMenu';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep} from 'lodash';
-import {mergeDeep, withDefault} from '@xh/hoist/utils/js';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -19,8 +19,8 @@ interface ChartConfig {
 
     /**
      * True to show default ContextMenu.  Defaults to true.  Desktop only.
-     * Can also take custom list of `@ChartContextMenuToken` strings, `@ChartMenuItem` configuration
-     * objects, or a function returning same.
+     * Can also take a custom list of {@link ChartContextMenuToken} strings, {@link ChartMenuItem} configuration
+     * objects, or a function returning the same.
      */
     contextMenu?: ChartContextMenuSpec;
 
@@ -68,8 +68,7 @@ export class ChartModel extends HoistModel {
         this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
-        this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, ChartModel.defaultContextMenu);
+        this.contextMenu = contextMenu ?? ChartModel.defaultContextMenu;
     }
 
     /**

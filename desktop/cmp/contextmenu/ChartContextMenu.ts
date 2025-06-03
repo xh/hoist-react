@@ -7,12 +7,12 @@
 import {isValidElement, MouseEvent, ReactNode} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {MenuItem, XH} from '@xh/hoist/core';
+import {MenuItem} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
 /**
- * Highcharts supported tokens (@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems)
+ * Highcharts supported tokens {@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems}
  * plus Hoist's `copyToClipboard`.
  */
 export type ChartContextMenuToken =
@@ -57,17 +57,17 @@ export type ChartContextMenuSpec =
 export class ChartContextMenu {
     items: MenuItem[] = [];
     chartModel: ChartModel = null;
-    contextMenuClickEvt;
+    contextMenuEvent;
     point;
 
-    constructor({items, chartModel, contextMenuClickEvt, point}) {
+    constructor({items, chartModel, contextMenuEvent, point}) {
         this.chartModel = chartModel;
-        this.contextMenuClickEvt = contextMenuClickEvt;
+        this.contextMenuEvent = contextMenuEvent;
         this.point = point;
         this.items = cloneDeep(items).map(it => this.buildMenuItemConfig(it));
     }
 
-    buildMenuItemConfig(item: ChartContextMenuItemLike): MenuItem {
+    buildMenuItemConfig(item: ChartContextMenuItemLike): MenuItem | string {
         if (isString(item)) return this.parseToken(item);
 
         // build nested menu item configs
@@ -78,16 +78,9 @@ export class ChartContextMenu {
                 );
             }
             if (item.actionFn) {
-                // dereference by destructuring
-                // to prevent stack overflow recursion
-                const {actionFn: fn} = item;
+                const fn = item.actionFn as ChartMenuItem['actionFn'];
                 item.actionFn = e => {
-                    (fn as ChartMenuItem['actionFn'])(
-                        e,
-                        this.contextMenuClickEvt,
-                        this.chartModel,
-                        this.point
-                    );
+                    fn(e, this.contextMenuEvent, this.chartModel, this.point);
                 };
             }
         }
@@ -95,11 +88,8 @@ export class ChartContextMenu {
         return item as MenuItem;
     }
 
-    parseToken(token): MenuItem {
+    private parseToken(token: string): MenuItem | string {
         const {chartModel} = this;
-
-        // Chart contextMenus are currently only supported on desktop devices.
-        if (!XH.isDesktop) return;
 
         switch (token) {
             case 'viewFullscreen':
