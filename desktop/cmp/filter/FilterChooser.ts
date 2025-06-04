@@ -10,14 +10,14 @@ import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
-import {ReactElement} from 'react';
+import {cloneElement, ReactElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
@@ -39,8 +39,8 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     menuWidth?: number;
     /** Text to display when control is empty. */
     placeholder?: string;
-    /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite) */
-    favoritesIcon?: (p?: IconProps) => any;
+    /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite()) */
+    favoritesIcon?: ReactElement;
 }
 
 /**
@@ -224,7 +224,7 @@ function favoritesIconCmp(model, favoritesIcon) {
         }
     };
 
-    return favoritesIcon ? favoritesIcon(iconProps) : Icon.favorite(iconProps);
+    return favoritesIcon ? cloneElement(favoritesIcon, iconProps) : Icon.favorite(iconProps);
 }
 
 const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
