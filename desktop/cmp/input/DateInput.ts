@@ -86,7 +86,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     maxDate?: Date | LocalDate;
 
     /**
-     * Maximum (inclusive) valid date that can be entered by the user via the calendar picker or
+     * Minimum (inclusive) valid date that can be entered by the user via the calendar picker or
      * keyboard.  Will reset any out-of-bounds manually entered input to `null`.
      *
      * See note re. validation on maxDate, above.
