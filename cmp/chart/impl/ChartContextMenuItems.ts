@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {logWarn} from '@xh/hoist/utils/js';
 import {isValidElement, MouseEvent, ReactNode} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
@@ -50,7 +51,7 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
  * If a String, value can be '-' for a separator, or a token supported by HighCharts
  * for its native menu items, or a Hoist specific token.
  */
-export type ChartContextMenuItemLike = ChartMenuItem | ChartContextMenuToken | string;
+export type ChartContextMenuItemLike = ChartMenuItem | ChartContextMenuToken | '-';
 
 /**
  * Specification for a ChartContextMenu.  Either a list of items or a function to produce one.
@@ -108,34 +109,31 @@ function buildMenuItemConfig(
     return item as MenuItem;
 }
 
-function parseToken(token: string, chartModel: ChartModel): MenuItem | string {
+function parseToken(token: string, chartModel: ChartModel): MenuItem | '-' {
     switch (token) {
         case 'viewFullscreen':
             return {
                 text: 'View in full screen',
                 icon: Icon.expand(),
-                hidden: !chartModel,
                 actionFn: () => chartModel.highchart.fullscreen.toggle()
             };
         case 'copyToClipboard':
             return {
                 text: 'Copy to clipboard',
                 icon: Icon.copy(),
-                hidden: !chartModel || !Highcharts.isWebKit,
+                hidden: !Highcharts.isWebKit,
                 actionFn: () => chartModel.highchart.copyToClipboardAsync()
             };
         case 'printChart':
             return {
                 text: 'Print chart',
                 icon: Icon.print(),
-                hidden: !chartModel,
                 actionFn: () => chartModel.highchart.print()
             };
         case 'downloadJPEG':
             return {
                 text: 'Download JPEG image',
                 icon: Icon.fileImage(),
-                hidden: !chartModel,
                 actionFn: () =>
                     chartModel.highchart.exportChartLocal({
                         type: 'image/jpeg'
@@ -145,14 +143,12 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | string {
             return {
                 text: 'Download PNG image',
                 icon: Icon.fileImage(),
-                hidden: !chartModel,
                 actionFn: () => chartModel.highchart.exportChartLocal()
             };
         case 'downloadSVG':
             return {
                 text: 'Download SVG vector image',
                 icon: Icon.fileImage(),
-                hidden: !chartModel,
                 actionFn: () =>
                     chartModel.highchart.exportChartLocal({
                         type: 'image/svg+xml'
@@ -162,7 +158,6 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | string {
             return {
                 text: 'Download PDF',
                 icon: Icon.fileImage(),
-                hidden: !chartModel,
                 actionFn: () =>
                     chartModel.highchart.exportChartLocal({
                         type: 'application/pdf'
@@ -172,18 +167,21 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | string {
             return {
                 text: 'Download CSV',
                 icon: Icon.fileCsv(),
-                hidden: !chartModel,
                 actionFn: () => chartModel.highchart.downloadCSV()
             };
         case 'downloadXLS':
             return {
                 text: 'Download Excel',
                 icon: Icon.fileExcel(),
-                hidden: !chartModel,
                 actionFn: () => chartModel.highchart.downloadXLS()
             };
+        case '-':
+            return '-';
         default:
-            return token;
+            logWarn(
+                `Invalid ChartContextMenuToken "${token}" will not be used.`,
+                'ChartContextMenuItem.ts:parseToken'
+            );
     }
 }
 

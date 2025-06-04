@@ -45,7 +45,7 @@ export class ChartModel extends HoistModel {
         | ChartContextMenuItemLike[]
         | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
 
-    static defaultContextMenu = [
+    static defaultContextMenu: ChartContextMenuItemLike[] = [
         'viewFullscreen',
         '-',
         'copyToClipboard',
