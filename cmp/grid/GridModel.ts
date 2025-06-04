@@ -1565,7 +1565,7 @@ export class GridModel extends HoistModel {
             agApi.expandAll();
         } else {
             agApi.forEachNode(node => {
-                node.setExpanded(node.level < this.expandToLevel);
+                node.expanded = node.level < this.expandToLevel;
             });
         }
 
