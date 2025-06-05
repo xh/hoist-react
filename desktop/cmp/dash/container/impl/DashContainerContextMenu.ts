@@ -23,9 +23,9 @@ import {DashContainerModel} from '../DashContainerModel';
 export const dashContainerContextMenu = hoistCmp.factory({
     model: null,
     observer: null,
-    render(props) {
-        const menuItems = createMenuItems(props);
-        return contextMenu({menuItems});
+    render({e, ...rest}) {
+        const menuItems = createMenuItems(rest);
+        return contextMenu({menuItems, contextMenuEvent: e});
     }
 });
 
