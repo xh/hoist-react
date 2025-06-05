@@ -31,11 +31,11 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
         ...layoutProps,
         className,
         testId,
-        item: getChildren(model, testId, className)
+        item: getChildren(model, testId)
     });
 }
 
-function getChildren(model: TabContainerModel, testId: string, className: string) {
+function getChildren(model: TabContainerModel, testId: string) {
     const {tabs} = model;
     if (isEmpty(tabs)) {
         return div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)});
@@ -62,7 +62,7 @@ function getChildren(model: TabContainerModel, testId: string, className: string
                 className: 'xh-tab-wrapper',
                 style,
                 key: tabId,
-                item: tab({model: tabModel, testId: getTestId(testId, tabId), className})
+                item: tab({model: tabModel, testId: getTestId(testId, tabId)})
             });
         }),
         switcherAfter ? switcherCmp : null

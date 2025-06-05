@@ -338,15 +338,6 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.activateTab(state.value.activeTabId);
     }
 
-    get tabRoutes() {
-        const buildRoute = (tab: TabModel) => ({
-            name: tab.id,
-            path: `/${tab.id}`,
-            children: tab.children?.map(buildRoute)
-        });
-        return this.tabs.map(buildRoute);
-    }
-
     //-------------------------
     // Implementation
     //-------------------------
