@@ -9,10 +9,13 @@
 ### 🎁 New Features
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for gridcolumn level `onCellClicked` events.
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
 * Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
+  and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
 
 ## v73.0.1 - 2025-05-19
 
