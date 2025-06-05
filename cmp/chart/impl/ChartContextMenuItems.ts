@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {logWarn} from '@xh/hoist/utils/js';
-import {isValidElement, MouseEvent, ReactNode} from 'react';
+import {isValidElement, MouseEvent} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {MenuItem} from '@xh/hoist/core';
@@ -28,7 +28,7 @@ export type ChartMenuToken =
     | 'copyToClipboard';
 
 export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
-    items?: ChartMenuItemLike[];
+    items?: (ChartMenuItem | '-')[];
     actionFn?: (
         menuItemEvent: MouseEvent | PointerEvent,
         contextMenuEvent: MouseEvent | PointerEvent,
@@ -68,7 +68,7 @@ export function getChartContextMenuItems(
     chartModel: ChartModel,
     point,
     points
-) {
+): (MenuItem | '-')[] {
     return cloneDeep(items).map(it =>
         buildMenuItemConfig(it, contextMenuEvent, chartModel, point, points)
     );
@@ -83,13 +83,13 @@ function buildMenuItemConfig(
     chartModel: ChartModel,
     point,
     points
-): MenuItem | string {
+): MenuItem | '-' {
     if (isString(item)) return parseToken(item, chartModel);
 
     // build nested menu item configs
     if (!isValidElement(item)) {
         if (!isEmpty(item.items)) {
-            item.items = item.items.map(it =>
+            (item.items as (MenuItem | '-')[]) = item.items.map(it =>
                 buildMenuItemConfig(
                     it as ChartContextMenuItemLike,
                     contextMenuEvent,
@@ -185,12 +185,3 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | '-' {
             );
     }
 }
-
-/**
- * An item that can exist in a Menu.
- *
- * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
- * an appropriate default display, with '-' providing a standard textless divider that will also
- * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
- */
-type ChartMenuItemLike = ChartMenuItem | ReactNode;

@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {MouseEvent} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
 import {isFunction} from 'lodash';
 import {box, div} from '@xh/hoist/cmp/layout';
@@ -13,7 +14,7 @@ import {
     HoistProps,
     LayoutProps,
     lookup,
-    MenuItemLike,
+    MenuItem,
     PlainObject,
     TestSupportProps,
     useLocalModel,
@@ -108,7 +109,7 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu: (e) => MenuItemLike[];
+    contextMenu: (e: MouseEvent | PointerEvent) => (MenuItem | '-')[];
     prevSeriesConfig;
 
     override onLinked() {
@@ -382,7 +383,7 @@ class ChartLocalModel extends HoistModel {
         const {contextMenu} = this.model;
         if (!contextMenu) return null;
 
-        return e => {
+        return (e: MouseEvent | PointerEvent) => {
             // Convert hoverpoints to points for use in actionFn.
             // Hoverpoints are transient, and change/disappear as mouse moves.
             const getPoint = it => it.series?.points[it.index];
