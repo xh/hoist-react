@@ -148,7 +148,9 @@ export class StoreRecord {
         return this.validator?.validationState ?? 'Unknown';
     }
 
-    get modifiedValues(): PlainObject {
+    get modifiedData(): PlainObject {
+        if (!this.isDirty) return {};
+
         const ret = this.fields.reduce((acc, {name}) => {
             if (isNil(this.committedData) || this.data[name] !== this.committedData[name]) {
                 acc[name] = this.data[name];
