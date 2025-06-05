@@ -61,6 +61,7 @@ export type ChartContextMenuSpec =
     | ChartContextMenuItemLike[]
     | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
 
+/** @internal */
 export function getChartContextMenuItems(
     items: ChartContextMenuItemLike[],
     contextMenuEvent: MouseEvent | PointerEvent,
