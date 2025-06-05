@@ -45,7 +45,11 @@ function getChildren(model: TabContainerModel, testId: string, className: string
         switcherBefore = ['left', 'top'].includes(switcher?.orientation),
         switcherAfter = ['right', 'bottom'].includes(switcher?.orientation),
         switcherCmp = switcher
-            ? tabSwitcher({key: 'switcher', testId: getTestId(testId, 'switcher'), ...switcher})
+            ? tabSwitcher({
+                  key: 'switcher',
+                  testId: getTestId(testId, 'switcher'),
+                  ...switcher
+              })
             : null;
 
     return [

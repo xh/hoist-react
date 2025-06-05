@@ -9,10 +9,10 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {appBar, appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import {Icon} from '@xh/hoist/icon';
 import './App.scss';
 import {AppModel} from './AppModel';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 
 export const AppComponent = hoistCmp({
     displayName: 'App',
@@ -31,7 +31,13 @@ const tbar = hoistCmp.factory<AppModel>(({model}) => {
     const primaryApp = model.getPrimaryAppCode();
     return appBar({
         icon: Icon.gears({size: '2x', prefix: 'fal'}),
-        leftItems: [tabSwitcher({testId: 'tab-switcher', enableOverflow: true})],
+        leftItems: [
+            tabSwitcher({
+                testId: 'tab-switcher',
+                enableOverflow: true,
+                enableMenuNavigation: true
+            })
+        ],
         rightItems: [
             button({
                 icon: Icon.openExternal(),

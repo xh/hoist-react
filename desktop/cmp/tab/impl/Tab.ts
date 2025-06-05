@@ -8,6 +8,7 @@ import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
+import {isEmpty} from 'lodash';
 import {useRef} from 'react';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
@@ -39,7 +40,7 @@ export const tab = hoistCmp.factory({
             return null;
         }
 
-        if (switcher && children) {
+        if (!isEmpty(children)) {
             return errorBoundary(
                 tabContainer({
                     className,

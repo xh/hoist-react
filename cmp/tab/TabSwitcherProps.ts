@@ -25,4 +25,7 @@ export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProp
 
     /** Maximum width (in px) to render tabs. Only applies to horizontal orientations */
     tabMaxWidth?: number;
+
+    /** Enable ability to navigate tabs in a dropdown nested menu format. Defaults to false.*/
+    enableMenuNavigation?: boolean;
 }

@@ -74,11 +74,11 @@ export interface TabConfig {
     /** @internal */
     xhImpl?: boolean;
 
+    /** Child tab configs for nested rendering. */
     children?: TabConfig[];
 
+    /** Switcher props to specify how to navigate present child tabs. */
     switcher?: boolean | TabSwitcherProps;
-
-    className?: string;
 }
 
 /**
@@ -90,7 +90,6 @@ export interface TabConfig {
  */
 export class TabModel extends HoistModel {
     id: string;
-    className: string;
     @bindable.ref title: ReactNode;
     @bindable.ref icon: ReactElement;
     @bindable.ref tooltip: ReactNode;
@@ -125,8 +124,7 @@ export class TabModel extends HoistModel {
         renderMode,
         xhImpl = false,
         children,
-        switcher,
-        className
+        switcher = false
     }: TabConfig) {
         super();
         makeObservable(this);
@@ -139,7 +137,6 @@ export class TabModel extends HoistModel {
 
         this.id = id.toString();
         this.containerModel = containerModel;
-        this.className = className;
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
