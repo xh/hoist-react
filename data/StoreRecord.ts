@@ -11,6 +11,7 @@ import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
+import equal from 'fast-deep-equal';
 
 /**
  * Wrapper object for each data element within a {@link Store}. Records must be assigned a unique ID
@@ -72,7 +73,7 @@ export class StoreRecord {
 
     /** True if the StoreRecord has been modified since it was last committed. */
     get isDirty(): boolean {
-        return this.committedData && this.committedData !== this.data;
+        return this.committedData && !equal(this.committedData, this.data);
     }
 
     /** Alias for {@link StoreRecord.isDirty} */

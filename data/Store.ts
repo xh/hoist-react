@@ -705,7 +705,10 @@ export class Store extends HoistBase {
     /** True if the store has changes which need to be committed. */
     @computed
     get isDirty(): boolean {
-        return this._current !== this._committed;
+        return this._current.store.records.some(it => {
+            const committed = this._committed.getById(it.id);
+            return committed && !equal(committed.data, it.data);
+        });
     }
 
     /** Alias for {@link Store.isDirty} */
