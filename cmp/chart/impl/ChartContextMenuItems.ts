@@ -87,7 +87,7 @@ function buildMenuItemConfig(
     if (isString(item)) return parseToken(item, chartModel);
 
     // build nested menu item configs
-    if (isMenuItem(item)) {
+    if (!isValidElement(item)) {
         if (!isEmpty(item.items)) {
             item.items = item.items.map(it =>
                 buildMenuItemConfig(
@@ -184,10 +184,6 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | '-' {
                 'ChartContextMenuItem.ts:parseToken'
             );
     }
-}
-
-function isMenuItem(item: ChartMenuItemLike): item is MenuItem {
-    return !isString(item) && !isValidElement(item);
 }
 
 /**
