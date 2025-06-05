@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel, Thunkable} from './';
+import {AppOptionSpec, HoistModel, Thunkable, XH} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
@@ -33,7 +33,9 @@ export class HoistAppModel extends HoistModel {
      * Applications will typically use this method to install and initialize app-specific
      * services using one or more phased calls to XH.installServicesAsync().
      */
-    async initAsync() {}
+    async initAsync() {
+        this.setupNavigationManager();
+    }
 
     /**
      * Should the version bar be shown in this application?.
@@ -48,8 +50,13 @@ export class HoistAppModel extends HoistModel {
      * Provide the initial set of Router5 Routes to be used by this application.
      */
     getRoutes(): Route[] {
-        return [];
+        return XH.navigationManager.routes;
     }
+
+    /**
+     * Provide app routes and tab content to `XH.navigationManager`.
+     */
+    setupNavigationManager() {}
 
     /**
      * Provide a list of app-wide options to be displayed in the App's built-in Options
