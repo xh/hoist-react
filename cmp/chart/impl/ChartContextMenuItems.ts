@@ -16,7 +16,7 @@ import {Icon} from '@xh/hoist/icon';
  * Highcharts supported tokens {@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems}
  * plus Hoist's `copyToClipboard`.
  */
-export type ChartContextMenuToken =
+export type ChartMenuToken =
     | 'viewFullscreen'
     | 'printChart'
     | 'downloadJPEG'
@@ -51,7 +51,7 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
  * If a String, value can be '-' for a separator, or a token supported by HighCharts
  * for its native menu items, or a Hoist specific token.
  */
-export type ChartContextMenuItemLike = ChartMenuItem | ChartContextMenuToken | '-';
+export type ChartContextMenuItemLike = ChartMenuItem | ChartMenuToken | '-';
 
 /**
  * Specification for a ChartContextMenu.  Either a list of items or a function to produce one.
@@ -180,7 +180,7 @@ function parseToken(token: string, chartModel: ChartModel): MenuItem | '-' {
             return '-';
         default:
             logWarn(
-                `Invalid ChartContextMenuToken "${token}" will not be used.`,
+                `Invalid ChartMenuToken "${token}" will not be used.`,
                 'ChartContextMenuItem.ts:parseToken'
             );
     }

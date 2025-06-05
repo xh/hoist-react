@@ -22,7 +22,7 @@ interface ChartConfig {
 
     /**
      * True (default) to show default ContextMenu. Supported on desktop only.
-     * Can also take a custom list of {@link ChartContextMenuToken} strings, {@link ChartMenuItem} configuration
+     * Can also take a custom list of {@link ChartMenuToken} strings, {@link ChartMenuItem} configuration
      * objects, or a function returning the same.
      */
     contextMenu?: ChartContextMenuSpec;
