@@ -19,6 +19,7 @@ export function initPersist(
         persistColumns = true,
         persistGrouping = true,
         persistSort = true,
+        persistExpandToLevel = true,
         path = 'grid',
         ...rootPersistWith
     }: GridModelPersistOptions
@@ -71,6 +72,23 @@ export function initPersist(
             target: {
                 getPersistableState: () => new PersistableState(gridModel.groupBy),
                 setPersistableState: ({value}) => gridModel.setGroupBy(value)
+            },
+            owner: gridModel
+        });
+    }
+
+    if (persistExpandToLevel) {
+        const persistWith = isObject(persistExpandToLevel)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistExpandToLevel)
+            : rootPersistWith;
+        PersistenceProvider.create({
+            persistOptions: {
+                path: `${path}.expandToLevel`,
+                ...persistWith
+            },
+            target: {
+                getPersistableState: () => new PersistableState(gridModel.expandToLevel),
+                setPersistableState: ({value}) => gridModel.setExpandToLevel(value)
             },
             owner: gridModel
         });

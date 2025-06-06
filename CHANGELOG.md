@@ -10,6 +10,9 @@
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
 * Support for gridcolumn level `onCellClicked` events.
+* Add "Expand to Level" grid context menu item allowing users to expand grouped and tree grids to specified level.
+    * Most recently chosen level is persistable.
+    * Existing "Expand All" and "Collapse All" actions will participate in the same persistence.
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
