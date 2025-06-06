@@ -34,7 +34,7 @@ export interface RecordActionSpec extends TestSupportProps {
     actionFn?: (data: ActionFnData) => void;
 
     /** Function called prior to showing this item. */
-    displayFn?: (data: DisplayFnData) => PlainObject;
+    displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
     items?: RecordActionLike[];
@@ -81,11 +81,6 @@ export interface ActionFnData {
     [x: string]: any;
 }
 
-export interface DisplayFnData extends ActionFnData {
-    /** Default display config for the action */
-    defaultConfig?: PlainObject;
-}
-
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
  * a Grid Context Menu and RecordActionBar (aka grid context menus and action columns).
@@ -112,7 +107,7 @@ export class RecordAction {
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: DisplayFnData) => PlainObject;
+    displayFn: (data: ActionFnData) => PlainObject;
     items: Array<RecordAction | string>;
     disabled: boolean;
     hidden: boolean;

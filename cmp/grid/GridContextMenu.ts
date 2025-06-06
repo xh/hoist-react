@@ -33,6 +33,7 @@ export type GridContextMenuToken =
     | 'autosizeColumns'
     | 'copyCell'
     | 'colChooser'
+    | 'expandCollapseAll'
     | 'expandCollapse'
     | 'export'
     | 'exportExcel'
