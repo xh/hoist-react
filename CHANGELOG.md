@@ -19,6 +19,7 @@
 * Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
 * Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
   and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
+* Restored zoom out with mouse right-to-left drag on Charts.
 
 ## v73.0.1 - 2025-05-19
 
