@@ -44,11 +44,10 @@ export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
 export type ChartMenuItemLike = ChartMenuItem | ChartMenuToken | '-';
 
 /**
- * Specification for a ChartContextMenu.
+ * Specification for a Chart ContextMenu.
  * Can also take a custom list of {@link ChartMenuToken} strings, {@link ChartMenuItem} configuration
  * objects, or a function returning the same. Set to `true` for a default ContextMenu.
  */
 export type ChartContextMenuSpec =
-    | boolean
     | ChartMenuItemLike[]
-    | ((chartModel: ChartModel) => ChartMenuItemLike[]);
+    | ((e: MouseEvent | PointerEvent, chartModel: ChartModel) => ChartMenuItemLike[]);

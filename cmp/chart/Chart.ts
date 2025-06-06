@@ -94,7 +94,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return model.contextMenu ? useContextMenu(coreContents, model.contextMenu) : coreContents;
+        return useContextMenu(coreContents, model.contextMenu);
     }
 });
 

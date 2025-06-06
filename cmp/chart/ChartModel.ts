@@ -4,9 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu';
 import {type MouseEvent} from 'react';
 import {getChartContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
-import {HoistModel, MenuItem, PlainObject, Some, XH} from '@xh/hoist/core';
+import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
 import {ChartMenuItemLike, ChartContextMenuSpec} from '@xh/hoist/cmp/chart/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
@@ -22,7 +23,7 @@ interface ChartConfig {
     /**
      * True (default) to show default ContextMenu. Supported on desktop only.
      */
-    contextMenu?: ChartContextMenuSpec;
+    contextMenu?: boolean | ChartContextMenuSpec;
 
     /** @internal */
     xhImpl?: boolean;
@@ -38,7 +39,7 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu: (e: MouseEvent | PointerEvent) => (MenuItem | '-')[];
+    contextMenu: ContextMenuSpec;
 
     static defaultContextMenu: ChartMenuItemLike[] = [
         'viewFullscreen',
@@ -107,9 +108,7 @@ export class ChartModel extends HoistModel {
         this.setSeries([]);
     }
 
-    private parseContextMenu(
-        spec: ChartContextMenuSpec
-    ): (e: MouseEvent | PointerEvent) => (MenuItem | '-')[] {
+    private parseContextMenu(spec: boolean | ChartContextMenuSpec): ContextMenuSpec {
         if (spec === false || !XH.isDesktop) return null;
         if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
 
@@ -120,7 +119,7 @@ export class ChartModel extends HoistModel {
             const {hoverPoint, hoverPoints} = this.highchart,
                 point = hoverPoint ? getPoint(hoverPoint) : null,
                 points = hoverPoints ? hoverPoints.map(getPoint) : [],
-                items = isFunction(spec) ? spec(this) : spec;
+                items = isFunction(spec) ? spec(e, this) : spec;
 
             return getChartContextMenuItems(items, e, this, point, points);
         };
