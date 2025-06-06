@@ -18,7 +18,7 @@ export type ChartMenuToken =
     | 'copyToClipboard';
 
 export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
-    items?: (ChartMenuItem | '-')[];
+    items?: ChartMenuItemLike[];
     actionFn?: (
         menuItemEvent: MouseEvent | PointerEvent,
         contextMenuEvent: MouseEvent | PointerEvent,
