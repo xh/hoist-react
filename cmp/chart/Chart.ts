@@ -4,9 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {MouseEvent} from 'react';
 import composeRefs from '@seznam/compose-react-refs';
-import {isFunction} from 'lodash';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -14,7 +12,6 @@ import {
     HoistProps,
     LayoutProps,
     lookup,
-    MenuItem,
     PlainObject,
     TestSupportProps,
     useLocalModel,
@@ -35,7 +32,6 @@ import {assign, castArray, cloneDeep, forOwn, isEqual, isPlainObject, omit} from
 import {placeholder} from '../layout';
 import './Chart.scss';
 import {ChartModel} from './ChartModel';
-import {getChartContextMenuItems} from './impl/ChartContextMenuItems';
 import {installCopyToClipboard} from './impl/copyToClipboard';
 import {installZoomoutGesture} from './impl/zoomout';
 import {DarkTheme} from './theme/Dark';
@@ -98,7 +94,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return impl.contextMenu ? useContextMenu(coreContents, impl.contextMenu) : coreContents;
+        return model.contextMenu ? useContextMenu(coreContents, model.contextMenu) : coreContents;
     }
 });
 
@@ -109,12 +105,9 @@ class ChartLocalModel extends HoistModel {
     model: ChartModel;
 
     chartRef = createObservableRef<HTMLElement>();
-    contextMenu: (e: MouseEvent | PointerEvent) => (MenuItem | '-')[];
     prevSeriesConfig;
 
     override onLinked() {
-        this.contextMenu = this.getContextMenu();
-
         this.addReaction({
             track: () => [
                 this.componentProps.aspectRatio,
@@ -376,23 +369,6 @@ class ChartLocalModel extends HoistModel {
         return {
             ...this.model.highchartsConfig,
             series: this.model.series
-        };
-    }
-
-    private getContextMenu() {
-        const {contextMenu} = this.model;
-        if (!contextMenu) return null;
-
-        return (e: MouseEvent | PointerEvent) => {
-            // Convert hoverpoints to points for use in actionFn.
-            // Hoverpoints are transient, and change/disappear as mouse moves.
-            const getPoint = it => it.series?.points[it.index];
-            const {hoverPoint, hoverPoints} = this.model.highchart,
-                point = hoverPoint ? getPoint(hoverPoint) : null,
-                points = hoverPoints ? hoverPoints.map(getPoint) : [],
-                items = isFunction(contextMenu) ? contextMenu(this.model) : contextMenu;
-
-            return getChartContextMenuItems(items, e, this.model, point, points);
         };
     }
 

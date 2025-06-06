@@ -4,10 +4,12 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
+import {type MouseEvent} from 'react';
+import {getChartContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
+import {HoistModel, MenuItem, PlainObject, Some, XH} from '@xh/hoist/core';
 import {ChartMenuItemLike, ChartContextMenuSpec} from '@xh/hoist/cmp/chart/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, isNil} from 'lodash';
+import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
@@ -36,7 +38,7 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu: ChartMenuItemLike[] | ((chartModel: ChartModel) => ChartMenuItemLike[]);
+    contextMenu: (e: MouseEvent | PointerEvent) => (MenuItem | '-')[];
 
     static defaultContextMenu: ChartMenuItemLike[] = [
         'viewFullscreen',
@@ -107,10 +109,20 @@ export class ChartModel extends HoistModel {
 
     private parseContextMenu(
         spec: ChartContextMenuSpec
-    ): ChartMenuItemLike[] | ((chartModel: ChartModel) => ChartMenuItemLike[]) {
+    ): (e: MouseEvent | PointerEvent) => (MenuItem | '-')[] {
         if (spec === false || !XH.isDesktop) return null;
-        if (isNil(spec) || spec === true) return ChartModel.defaultContextMenu;
+        if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
 
-        return spec;
+        return (e: MouseEvent | PointerEvent) => {
+            // Convert hoverpoints to points for use in actionFn.
+            // Hoverpoints are transient, and change/disappear as mouse moves.
+            const getPoint = it => it.series?.points[it.index];
+            const {hoverPoint, hoverPoints} = this.highchart,
+                point = hoverPoint ? getPoint(hoverPoint) : null,
+                points = hoverPoints ? hoverPoints.map(getPoint) : [],
+                items = isFunction(spec) ? spec(this) : spec;
+
+            return getChartContextMenuItems(items, e, this, point, points);
+        };
     }
 }
