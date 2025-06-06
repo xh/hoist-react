@@ -130,7 +130,7 @@ const onContextMenu = (e, model) => {
             dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y},
-                e
+                contextMenuEvent: e
             }),
             {left: clientX, top: clientY}
         );

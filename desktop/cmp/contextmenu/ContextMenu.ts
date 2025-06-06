@@ -20,10 +20,9 @@ export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[
 
 export interface ContextMenuProps extends HoistProps {
     menuItems: MenuItemLike[];
+
     /**
-     * Optional event because this component is sometimes used as the content in popovers, to
-     * create menu buttons.  In those cases, it is not expected that the click event contains any
-     * important contextual information.
+     * Original right click event from opening this menu (if available)
      */
     contextMenuEvent?: MouseEvent | PointerEvent;
 }
@@ -53,7 +52,7 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 //---------------------------
 function parseItems(
     items: MenuItemLike[],
-    contextMenuEvent: MouseEvent | PointerEvent
+    contextMenuEvent?: MouseEvent | PointerEvent
 ): ReactNode[] {
     items = items.map(item => {
         if (!isMenuItem(item)) return item;

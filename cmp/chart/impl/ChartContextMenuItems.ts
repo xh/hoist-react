@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {ChartMenuItem, ChartMenuItemLike} from '@xh/hoist/cmp/chart/Types';
 import {logWarn} from '@xh/hoist/utils/js';
 import {isValidElement, MouseEvent} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
@@ -12,58 +13,9 @@ import {MenuItem} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
-/**
- * Highcharts supported tokens {@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems}
- * plus Hoist's `copyToClipboard`.
- */
-export type ChartMenuToken =
-    | 'viewFullscreen'
-    | 'printChart'
-    | 'downloadJPEG'
-    | 'downloadPNG'
-    | 'downloadSVG'
-    | 'downloadCSV'
-    | 'downloadXLS'
-    | 'downloadPDF'
-    | 'copyToClipboard';
-
-export interface ChartMenuItem extends Omit<MenuItem, 'actionFn' | 'items'> {
-    items?: (ChartMenuItem | '-')[];
-    actionFn?: (
-        menuItemEvent: MouseEvent | PointerEvent,
-        contextMenuEvent: MouseEvent | PointerEvent,
-        params: {
-            chartModel: ChartModel;
-            /**
-             * Single point is the active series point the mouse is closest to
-             */
-            point: any;
-            /**
-             * Points array is the list of points hovered over in each series. When
-             * there are multiple series and tooltip.shared = true, points.length > 1.
-             */
-            points: any[];
-        }
-    ) => void;
-}
-
-/**
- * If a String, value can be '-' for a separator, or a token supported by HighCharts
- * for its native menu items, or a Hoist specific token.
- */
-export type ChartContextMenuItemLike = ChartMenuItem | ChartMenuToken | '-';
-
-/**
- * Specification for a ChartContextMenu.  Either a list of items or a function to produce one.
- */
-export type ChartContextMenuSpec =
-    | boolean
-    | ChartContextMenuItemLike[]
-    | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
-
 /** @internal */
 export function getChartContextMenuItems(
-    items: ChartContextMenuItemLike[],
+    items: ChartMenuItemLike[],
     contextMenuEvent: MouseEvent | PointerEvent,
     chartModel: ChartModel,
     point,
@@ -78,7 +30,7 @@ export function getChartContextMenuItems(
 // Implementation
 //---------------------------
 function buildMenuItemConfig(
-    item: ChartContextMenuItemLike,
+    item: ChartMenuItemLike,
     contextMenuEvent: MouseEvent | PointerEvent,
     chartModel: ChartModel,
     point,
@@ -91,7 +43,7 @@ function buildMenuItemConfig(
         if (!isEmpty(item.items)) {
             (item.items as (MenuItem | '-')[]) = item.items.map(it =>
                 buildMenuItemConfig(
-                    it as ChartContextMenuItemLike,
+                    it as ChartMenuItemLike,
                     contextMenuEvent,
                     chartModel,
                     point,

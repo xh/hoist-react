@@ -5,10 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
-import {
-    ChartContextMenuItemLike,
-    ChartContextMenuSpec
-} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
+import {ChartMenuItemLike, ChartContextMenuSpec} from '@xh/hoist/cmp/chart/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -22,8 +19,6 @@ interface ChartConfig {
 
     /**
      * True (default) to show default ContextMenu. Supported on desktop only.
-     * Can also take a custom list of {@link ChartMenuToken} strings, {@link ChartMenuItem} configuration
-     * objects, or a function returning the same.
      */
     contextMenu?: ChartContextMenuSpec;
 
@@ -41,11 +36,9 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu:
-        | ChartContextMenuItemLike[]
-        | ((chartModel: ChartModel) => ChartContextMenuItemLike[]);
+    contextMenu: ChartMenuItemLike[] | ((chartModel: ChartModel) => ChartMenuItemLike[]);
 
-    static defaultContextMenu: ChartContextMenuItemLike[] = [
+    static defaultContextMenu: ChartMenuItemLike[] = [
         'viewFullscreen',
         '-',
         'copyToClipboard',
@@ -114,7 +107,7 @@ export class ChartModel extends HoistModel {
 
     private parseContextMenu(
         spec: ChartContextMenuSpec
-    ): ChartContextMenuItemLike[] | ((chartModel: ChartModel) => ChartContextMenuItemLike[]) {
+    ): ChartMenuItemLike[] | ((chartModel: ChartModel) => ChartMenuItemLike[]) {
         if (spec === false || !XH.isDesktop) return null;
         if (isNil(spec) || spec === true) return ChartModel.defaultContextMenu;
 

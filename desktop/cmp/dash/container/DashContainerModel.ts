@@ -487,7 +487,7 @@ export class DashContainerModel
             viewModel,
             index,
             dashContainerModel: this,
-            e
+            contextMenuEvent: e
         });
 
         showContextMenu(menu, offset);
