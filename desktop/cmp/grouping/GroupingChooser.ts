@@ -16,6 +16,7 @@ import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {elemWithin, getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {ReactElement} from 'react';
 import classNames from 'classnames';
 import {compact, isEmpty, sortBy} from 'lodash';
 import './GroupingChooser.scss';
@@ -38,6 +39,9 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
 
     /** True (default) to style target button as an input field - blends better in toolbars. */
     styleButtonAsInput?: boolean;
+
+    /** Icon clicked to launch favorites menu. Defaults to Icon.favorite() */
+    favoritesIcon?: ReactElement;
 }
 
 /**
@@ -62,6 +66,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverPosition = 'bottom',
             styleButtonAsInput = true,
             testId,
+            favoritesIcon,
             ...rest
         },
         ref
@@ -101,7 +106,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                         onClick: () => model.toggleEditor(),
                         testId
                     }),
-                    favoritesIcon({testId: favoritesIconTestId})
+                    favoritesIconCmp({testId: favoritesIconTestId, favoritesIcon})
                 ),
                 content: favoritesIsOpen
                     ? favoritesMenu({testId: favoritesMenuTestId})
@@ -315,11 +320,11 @@ function getDimOptions(dims, model) {
 //------------------
 // Favorites
 //------------------
-const favoritesIcon = hoistCmp.factory<GroupingChooserModel>({
-    render({model, testId}) {
+const favoritesIconCmp = hoistCmp.factory<GroupingChooserModel>({
+    render({model, testId, favoritesIcon}) {
         if (!model.persistFavorites) return null;
         return div({
-            item: Icon.favorite(),
+            item: favoritesIcon ?? Icon.favorite(),
             className: 'xh-grouping-chooser__favorite-icon',
             [TEST_ID]: testId,
             onClick: e => {

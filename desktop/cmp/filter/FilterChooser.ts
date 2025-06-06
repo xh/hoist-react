@@ -17,7 +17,7 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
-import {ReactElement} from 'react';
+import {cloneElement, ReactElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
@@ -39,6 +39,8 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     menuWidth?: number;
     /** Text to display when control is empty. */
     placeholder?: string;
+    /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite()) */
+    favoritesIcon?: ReactElement;
 }
 
 /**
@@ -65,7 +67,8 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                 leftIcon,
                 maxMenuHeight,
                 menuPlacement,
-                menuWidth
+                menuWidth,
+                favoritesIcon
             } = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter
@@ -115,7 +118,7 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                                 })
                             },
                             components: {
-                                DropdownIndicator: () => favoritesIcon(model)
+                                DropdownIndicator: () => favoritesIconCmp(model, favoritesIcon)
                             }
                         }
                     })
@@ -210,15 +213,18 @@ const messageOption = hoistCmp.factory({
 //-----------------
 // Favorites
 //------------------
-function favoritesIcon(model) {
+function favoritesIconCmp(model, favoritesIcon) {
     if (!model.persistFavorites) return null;
-    return Icon.favorite({
+
+    const iconProps = {
         className: classNames('xh-select__indicator', 'xh-filter-chooser-favorite-icon'),
         onMouseDown: e => {
             model.openFavoritesMenu();
             e.stopPropagation();
         }
-    });
+    };
+
+    return favoritesIcon ? cloneElement(favoritesIcon, iconProps) : Icon.favorite(iconProps);
 }
 
 const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
