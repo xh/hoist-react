@@ -34,7 +34,7 @@ export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): Re
         }
         if (isArray(contextMenuOutput)) {
             contextMenuOutput = !isEmpty(contextMenuOutput)
-                ? contextMenu({menuItems: contextMenuOutput, contextMenuEvent: e})
+                ? contextMenu({menuItems: contextMenuOutput, context: {contextMenuEvent: e}})
                 : null;
         }
         if (contextMenuOutput && !isValidElement(contextMenuOutput)) {

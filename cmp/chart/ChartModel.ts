@@ -4,11 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu';
 import {type MouseEvent} from 'react';
-import {getChartContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
-import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
-import {ChartMenuItemLike, ChartContextMenuSpec} from '@xh/hoist/cmp/chart/Types';
+import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
+import {HoistModel, MenuItemLike, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -23,7 +23,7 @@ interface ChartConfig {
     /**
      * True (default) to show default ContextMenu. Supported on desktop only.
      */
-    contextMenu?: boolean | ChartContextMenuSpec;
+    contextMenu?: ContextMenuSpec<ChartMenuToken>;
 
     /** @internal */
     xhImpl?: boolean;
@@ -39,9 +39,9 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu: ContextMenuSpec;
+    contextMenu: ContextMenuSpec<ChartMenuToken>;
 
-    static defaultContextMenu: ChartMenuItemLike[] = [
+    static defaultContextMenu: MenuItemLike<ChartMenuToken>[] = [
         'viewFullscreen',
         '-',
         'copyToClipboard',
@@ -108,20 +108,26 @@ export class ChartModel extends HoistModel {
         this.setSeries([]);
     }
 
-    private parseContextMenu(spec: boolean | ChartContextMenuSpec): ContextMenuSpec {
+    private parseContextMenu(
+        spec: ContextMenuSpec<ChartMenuToken>
+    ): ContextMenuSpec<ChartMenuToken> {
         if (spec === false || !XH.isDesktop) return null;
         if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
 
         return (e: MouseEvent | PointerEvent) => {
             // Convert hoverpoints to points for use in actionFn.
             // Hoverpoints are transient, and change/disappear as mouse moves.
-            const getPoint = it => it.series?.points[it.index];
+            const getPoint = pt => pt.series?.points.find(it => it.index === pt.index);
             const {hoverPoint, hoverPoints} = this.highchart,
-                point = hoverPoint ? getPoint(hoverPoint) : null,
-                points = hoverPoints ? hoverPoints.map(getPoint) : [],
-                items = isFunction(spec) ? spec(e, this) : spec;
+                context = {
+                    contextMenuEvent: e,
+                    chartModel: this,
+                    point: hoverPoint ? getPoint(hoverPoint) : null,
+                    points: hoverPoints ? hoverPoints.map(getPoint) : []
+                },
+                items = isFunction(spec) ? spec(e, context) : spec;
 
-            return getChartContextMenuItems(items, e, this, point, points);
+            return getContextMenuItems(items, context);
         };
     }
 }

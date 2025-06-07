@@ -4,65 +4,49 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ChartMenuItem, ChartMenuItemLike} from '@xh/hoist/cmp/chart/Types';
+import {ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {logWarn} from '@xh/hoist/utils/js';
-import {isValidElement, MouseEvent} from 'react';
+import {isValidElement} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {MenuItem} from '@xh/hoist/core';
+import {MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
 /** @internal */
-export function getChartContextMenuItems(
-    items: ChartMenuItemLike[],
-    contextMenuEvent: MouseEvent | PointerEvent,
-    chartModel: ChartModel,
-    point,
-    points
-): (MenuItem | '-')[] {
-    return cloneDeep(items).map(it =>
-        buildMenuItemConfig(it, contextMenuEvent, chartModel, point, points)
-    );
+export function getContextMenuItems(
+    items: MenuItemLike<ChartMenuToken>[],
+    context: MenuContext
+): (MenuItem<ChartMenuToken> | '-')[] {
+    return cloneDeep(items).map(it => buildMenuItemConfig(it, context));
 }
 
 //---------------------------
 // Implementation
 //---------------------------
 function buildMenuItemConfig(
-    item: ChartMenuItemLike,
-    contextMenuEvent: MouseEvent | PointerEvent,
-    chartModel: ChartModel,
-    point,
-    points
-): MenuItem | '-' {
-    if (isString(item)) return parseToken(item, chartModel);
+    item: MenuItemLike<ChartMenuToken>,
+    context: MenuContext
+): MenuItem<ChartMenuToken> | '-' {
+    if (isString(item)) return parseToken(item, context.chartModel);
 
     // build nested menu item configs
     if (!isValidElement(item)) {
         if (!isEmpty(item.items)) {
-            (item.items as (MenuItem | '-')[]) = item.items.map(it =>
-                buildMenuItemConfig(
-                    it as ChartMenuItemLike,
-                    contextMenuEvent,
-                    chartModel,
-                    point,
-                    points
-                )
+            (item.items as (MenuItem<ChartMenuToken> | '-')[]) = item.items.map(it =>
+                buildMenuItemConfig(it as MenuItemLike, context)
             );
         }
         if (item.actionFn) {
-            const fn = item.actionFn as ChartMenuItem['actionFn'];
-            item.actionFn = e => {
-                fn(e, contextMenuEvent, {chartModel, point, points});
-            };
+            const fn = item.actionFn as MenuItem<ChartMenuToken>['actionFn'];
+            item.actionFn = e => fn(e, context);
         }
     }
 
-    return item as MenuItem;
+    return item as MenuItem<ChartMenuToken>;
 }
 
-function parseToken(token: string, chartModel: ChartModel): MenuItem | '-' {
+function parseToken(token: string, chartModel: ChartModel): MenuItem<ChartMenuToken> | '-' {
     switch (token) {
         case 'viewFullscreen':
             return {

@@ -4,27 +4,26 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, MenuItem, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
+import {isValidElement, MouseEvent, ReactNode} from 'react';
 
 /**
  * A context menu is specified as an array of items, a function to generate one from a click, or
  * a full element representing a contextMenu Component.
  */
-export type ContextMenuSpec = MenuItemLike[] | ((e: MouseEvent) => MenuItemLike[]) | ReactElement;
+export type ContextMenuSpec<T = null> =
+    | MenuItemLike<T>[]
+    | ((e: MouseEvent | PointerEvent, context: MenuContext) => MenuItemLike<T>[])
+    | boolean;
 
 export interface ContextMenuProps extends HoistProps {
     menuItems: MenuItemLike[];
-
-    /**
-     * Original right click event from opening this menu (if available)
-     */
-    contextMenuEvent?: MouseEvent | PointerEvent;
+    context?: MenuContext;
 }
 
 /**
@@ -41,8 +40,8 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     model: false,
     observer: false,
 
-    render({menuItems, contextMenuEvent}) {
-        const items = parseItems(menuItems, contextMenuEvent);
+    render({menuItems, context}) {
+        const items = parseItems(menuItems, context);
         return isEmpty(items) ? null : menu(items);
     }
 });
@@ -50,16 +49,13 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 //---------------------------
 // Implementation
 //---------------------------
-function parseItems(
-    items: MenuItemLike[],
-    contextMenuEvent?: MouseEvent | PointerEvent
-): ReactNode[] {
+function parseItems(items: MenuItemLike[], context: MenuContext): ReactNode[] {
     items = items.map(item => {
         if (!isMenuItem(item)) return item;
 
         item = clone(item);
         item.items = clone(item.items);
-        item.prepareFn?.(item, contextMenuEvent);
+        item.prepareFn?.(item, context);
         return item;
     });
 
@@ -72,15 +68,13 @@ function parseItems(
             if (!isMenuItem(item)) return item;
 
             // Process items
-            const items = item.items ? parseItems(item.items, contextMenuEvent) : null;
+            const items = item.items ? parseItems(item.items, context) : null;
             return menuItem({
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
                 className: item.className,
-                onClick: item.actionFn
-                    ? e => wait().then(() => item.actionFn(e, contextMenuEvent))
-                    : null, // do async to allow menu to close
+                onClick: item.actionFn ? e => wait().then(() => item.actionFn(e, context)) : null, // do async to allow menu to close
                 popoverProps: {usePortal: true},
                 disabled: item.disabled,
                 items
@@ -88,6 +82,6 @@ function parseItems(
         });
 }
 
-function isMenuItem(item: MenuItemLike): item is MenuItem {
+function isMenuItem<T>(item: MenuItemLike<T>): item is MenuItem<T> {
     return !isString(item) && !isValidElement(item);
 }

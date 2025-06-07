@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {MenuItemProps} from '@blueprintjs/core';
-import {hoistCmp, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
+import {hoistCmp, isMenuItem, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -13,8 +13,8 @@ import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import {clone, isEmpty} from 'lodash';
+import {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -214,8 +214,4 @@ function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
 
             return menuItem(cfg);
         });
-}
-
-function isMenuItem(item: MenuItemLike): item is MenuItem {
-    return !isString(item) && !isValidElement(item);
 }

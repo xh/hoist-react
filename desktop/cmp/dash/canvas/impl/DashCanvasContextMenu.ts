@@ -23,7 +23,7 @@ export const dashCanvasContextMenu = hoistCmp.factory({
     observer: null,
     render({dashCanvasModel, position, contextMenuEvent}) {
         const menuItems = createMenuItems({dashCanvasModel, position});
-        return contextMenu({menuItems, contextMenuEvent});
+        return contextMenu({menuItems, context: {contextMenuEvent}});
     }
 });
 
