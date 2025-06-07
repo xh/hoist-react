@@ -4,11 +4,17 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
-import {ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu';
 import {type MouseEvent} from 'react';
+import type {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
-import {HoistModel, MenuItemLike, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    HoistModel,
+    MenuItemLike,
+    PlainObject,
+    Some,
+    XH,
+    type ContextMenuSpec
+} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
@@ -109,8 +115,8 @@ export class ChartModel extends HoistModel {
     }
 
     private parseContextMenu(
-        spec: ContextMenuSpec<ChartMenuToken>
-    ): ContextMenuSpec<ChartMenuToken> {
+        spec: ContextMenuSpec<ChartMenuToken, ChartMenuContext>
+    ): ContextMenuSpec<ChartMenuToken, ChartMenuContext> {
         if (spec === false || !XH.isDesktop) return null;
         if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
 

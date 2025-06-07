@@ -273,6 +273,15 @@ export interface MenuContext {
 }
 
 /**
+ * A context menu is specified as an array of items, a function to generate one from a click, or
+ * a full element representing a contextMenu Component.
+ */
+export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
+    | MenuItemLike<T, C>[]
+    | ((e: MouseEvent | PointerEvent, context: C) => MenuItemLike<T, C>[])
+    | boolean;
+
+/**
  *  Basic interface for a MenuItem to appear in a menu.
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.

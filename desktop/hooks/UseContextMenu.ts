@@ -4,7 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {contextMenu, ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
+import type {ContextMenuSpec} from '@xh/hoist/core';
+import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {logError} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFunction, isUndefined} from 'lodash';
