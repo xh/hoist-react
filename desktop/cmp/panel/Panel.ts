@@ -15,7 +15,8 @@ import {
     Some,
     TaskObserver,
     useContextModel,
-    uses
+    uses,
+    type ContextMenuSpec
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
@@ -27,7 +28,6 @@ import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
-import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';

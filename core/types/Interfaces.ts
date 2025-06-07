@@ -6,7 +6,8 @@
  */
 
 import {RuleLike} from '@xh/hoist/data';
-import {MouseEvent, ReactElement, ReactNode} from 'react';
+import {MouseEvent, ReactElement, ReactNode, isValidElement} from 'react';
+import {isString} from 'lodash';
 import {LoadSpec} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
@@ -265,12 +266,27 @@ export interface TrackOptions {
     omit?: Thunkable<boolean>;
 }
 
+export type MenuToken = '-';
+
+export interface MenuContext {
+    contextMenuEvent?: MouseEvent | PointerEvent;
+}
+
+/**
+ * A context menu is specified as an array of items, a function to generate one from a click, or
+ * a full element representing a contextMenu Component.
+ */
+export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
+    | MenuItemLike<T, C>[]
+    | ((e: MouseEvent | PointerEvent, context: C) => MenuItemLike<T, C>[])
+    | boolean;
+
 /**
  *  Basic interface for a MenuItem to appear in a menu.
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
-export interface MenuItem {
+export interface MenuItem<T, C> {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -284,13 +300,13 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: (e: MouseEvent | PointerEvent) => void;
+    actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
-    prepareFn?: (me: MenuItem) => void;
+    prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
     /** Child menu items. */
-    items?: MenuItemLike[];
+    items?: MenuItemLike<T, C>[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -304,12 +320,15 @@ export interface MenuItem {
 
 /**
  * An item that can exist in a Menu.
- *
- * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
- * an appropriate default display, with '-' providing a standard textless divider that will also
- * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
+ * Components may accept token strings, in addition, '-' will be interpreted as the standard
+ * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
+ * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike = MenuItem | ReactNode;
+export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
+
+export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
+    return !isString(item) && !isValidElement(item);
+}
 
 /**
  * An option to be passed to Select controls
