@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, type MenuItemLike} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {Icon} from '@xh/hoist/icon';
@@ -30,7 +30,7 @@ export const dashCanvasContextMenu = hoistCmp.factory({
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems({dashCanvasModel, position}) {
+function createMenuItems({dashCanvasModel, position}): MenuItemLike[] {
     const addMenuItems = createViewMenuItems({dashCanvasModel, position}),
         {extraMenuItems, contentLocked, refreshContextModel} = dashCanvasModel;
     return [

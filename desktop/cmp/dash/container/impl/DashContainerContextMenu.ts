@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import {hoistCmp, type MenuItemLike} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
@@ -48,7 +48,7 @@ export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
 //---------------------------
 // Implementation
 //---------------------------
-function createMenuItems(props) {
+function createMenuItems(props): MenuItemLike[] {
     const {dashContainerModel, viewModel} = props,
         {renameLocked} = dashContainerModel,
         ret = [];

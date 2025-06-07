@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {type MenuItemLike} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {DashCanvasModel} from '../DashCanvasModel';
 
@@ -17,7 +18,7 @@ export function createViewMenuItems({
     position = null,
     viewId = null,
     replaceExisting = false
-}) {
+}): MenuItemLike[] {
     if (!dashCanvasModel.ref.current) return [];
 
     const groupedItems = {},
