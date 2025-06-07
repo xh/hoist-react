@@ -4,21 +4,28 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, MenuContext, MenuItem, MenuItemLike, MenuToken} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistProps,
+    isMenuItem,
+    MenuContext,
+    MenuItemLike,
+    MenuToken
+} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
-import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, MouseEvent, ReactNode} from 'react';
+import {clone, isEmpty} from 'lodash';
+import {MouseEvent, ReactNode} from 'react';
 
 /**
  * A context menu is specified as an array of items, a function to generate one from a click, or
  * a full element representing a contextMenu Component.
  */
-export type ContextMenuSpec<T = MenuToken> =
-    | MenuItemLike<T>[]
-    | ((e: MouseEvent | PointerEvent, context: MenuContext) => MenuItemLike<T>[])
+export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
+    | MenuItemLike<T, C>[]
+    | ((e: MouseEvent | PointerEvent, context: C) => MenuItemLike<T, C>[])
     | boolean;
 
 export interface ContextMenuProps extends HoistProps {
@@ -80,8 +87,4 @@ function parseItems(items: MenuItemLike[], context: MenuContext): ReactNode[] {
                 items
             });
         });
-}
-
-function isMenuItem<T>(item: MenuItemLike<T>): item is MenuItem<T> {
-    return !isString(item) && !isValidElement(item);
 }

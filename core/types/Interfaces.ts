@@ -268,7 +268,7 @@ export interface TrackOptions {
 
 export type MenuToken = '-';
 
-export interface MenuContext extends PlainObject {
+export interface MenuContext {
     contextMenuEvent?: MouseEvent | PointerEvent;
 }
 
@@ -277,7 +277,7 @@ export interface MenuContext extends PlainObject {
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
-export interface MenuItem<T> {
+export interface MenuItem<T, C> {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -291,13 +291,13 @@ export interface MenuItem<T> {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: (e: MouseEvent | PointerEvent, context?: MenuContext) => void;
+    actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
-    prepareFn?: (me: MenuItem<T>, context?: MenuContext) => void;
+    prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
     /** Child menu items. */
-    items?: MenuItemLike<T>[];
+    items?: MenuItemLike<T, C>[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -315,9 +315,9 @@ export interface MenuItem<T> {
  * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
  * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike<T = MenuToken> = MenuItem<T> | T | ReactElement;
+export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
 
-export function isMenuItem<T>(item: MenuItemLike<T>): item is MenuItem<T> {
+export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
     return !isString(item) && !isValidElement(item);
 }
 

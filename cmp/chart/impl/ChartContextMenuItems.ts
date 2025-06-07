@@ -4,19 +4,19 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
+import {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {logWarn} from '@xh/hoist/utils/js';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {isMenuItem, MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
+import {isMenuItem, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
 /** @internal */
 export function getContextMenuItems(
     items: MenuItemLike<ChartMenuToken>[],
-    context: MenuContext
-): (MenuItem<ChartMenuToken> | '-')[] {
+    context: ChartMenuContext
+): (MenuItem<ChartMenuToken, ChartMenuContext> | '-')[] {
     return cloneDeep(items).map(it => buildMenuItemConfig(it, context));
 }
 
@@ -24,16 +24,16 @@ export function getContextMenuItems(
 // Implementation
 //---------------------------
 function buildMenuItemConfig(
-    item: MenuItemLike<ChartMenuToken>,
-    context: MenuContext
-): MenuItem<ChartMenuToken> | '-' {
+    item: MenuItemLike<ChartMenuToken, ChartMenuContext>,
+    context: ChartMenuContext
+): MenuItem<ChartMenuToken, ChartMenuContext> | '-' {
     if (isString(item)) return parseToken(item, context.chartModel);
 
     // build nested menu item configs
     if (isMenuItem(item)) {
         if (!isEmpty(item.items)) {
-            (item.items as (MenuItem<ChartMenuToken> | '-')[]) = item.items.map(it =>
-                buildMenuItemConfig(it as MenuItemLike, context)
+            (item.items as (MenuItem<ChartMenuToken, ChartMenuContext> | '-')[]) = item.items.map(
+                it => buildMenuItemConfig(it as MenuItemLike, context)
             );
         }
         if (item.actionFn) {
@@ -46,10 +46,13 @@ function buildMenuItemConfig(
         }
     }
 
-    return item as MenuItem<ChartMenuToken>;
+    return item as MenuItem<ChartMenuToken, ChartMenuContext>;
 }
 
-function parseToken(token: string, chartModel: ChartModel): MenuItem<ChartMenuToken> | '-' {
+function parseToken(
+    token: string,
+    chartModel: ChartModel
+): MenuItem<ChartMenuToken, ChartMenuContext> | '-' {
     switch (token) {
         case 'viewFullscreen':
             return {

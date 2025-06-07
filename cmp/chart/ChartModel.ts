@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
+import {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {ContextMenuSpec} from '@xh/hoist/desktop/cmp/contextmenu';
 import {type MouseEvent} from 'react';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
@@ -23,7 +23,7 @@ interface ChartConfig {
     /**
      * True (default) to show default ContextMenu. Supported on desktop only.
      */
-    contextMenu?: ContextMenuSpec<ChartMenuToken>;
+    contextMenu?: ContextMenuSpec<ChartMenuToken, ChartMenuContext>;
 
     /** @internal */
     xhImpl?: boolean;
@@ -39,7 +39,7 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    contextMenu: ContextMenuSpec<ChartMenuToken>;
+    contextMenu: ContextMenuSpec<ChartMenuToken, ChartMenuContext>;
 
     static defaultContextMenu: MenuItemLike<ChartMenuToken>[] = [
         'viewFullscreen',
