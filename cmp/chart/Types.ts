@@ -25,7 +25,7 @@ export interface ChartMenuContext extends MenuContext {
     point: any;
     /**
      * Points array is the list of points hovered over in each series. When
-     * there are multiple series and tooltip.shared = true, points.length > 1.
+     * there are multiple series and tooltip.shared = true, points.length less than 1.
      */
     points: any[];
 }
