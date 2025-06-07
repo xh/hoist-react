@@ -94,7 +94,8 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             })
         });
 
-        return useContextMenu(coreContents, model.contextMenu);
+        // Must check isMobileApp here because `useContextMenu` is not defined in mobile
+        return !XH.isMobileApp ? useContextMenu(coreContents, model.contextMenu) : coreContents;
     }
 });
 
