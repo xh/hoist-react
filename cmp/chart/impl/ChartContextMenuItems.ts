@@ -6,10 +6,9 @@
  */
 import {ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {logWarn} from '@xh/hoist/utils/js';
-import {isValidElement} from 'react';
 import {cloneDeep, isEmpty, isString} from 'lodash';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
+import {isMenuItem, MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';
 
@@ -31,7 +30,7 @@ function buildMenuItemConfig(
     if (isString(item)) return parseToken(item, context.chartModel);
 
     // build nested menu item configs
-    if (!isValidElement(item)) {
+    if (isMenuItem(item)) {
         if (!isEmpty(item.items)) {
             (item.items as (MenuItem<ChartMenuToken> | '-')[]) = item.items.map(it =>
                 buildMenuItemConfig(it as MenuItemLike, context)

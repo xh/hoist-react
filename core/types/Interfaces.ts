@@ -315,7 +315,7 @@ export interface MenuItem<T> {
  * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
  * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike<T = MenuToken> = MenuItem<T> | T;
+export type MenuItemLike<T = MenuToken> = MenuItem<T> | T | ReactElement;
 
 export function isMenuItem<T>(item: MenuItemLike<T>): item is MenuItem<T> {
     return !isString(item) && !isValidElement(item);
