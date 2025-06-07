@@ -38,8 +38,12 @@ function buildMenuItemConfig(
             );
         }
         if (item.actionFn) {
-            const fn = item.actionFn as MenuItem<ChartMenuToken>['actionFn'];
+            const fn = item.actionFn;
             item.actionFn = e => fn(e, context);
+        }
+        if (item.prepareFn) {
+            const fn = item.prepareFn;
+            item.prepareFn = item => fn(item, context);
         }
     }
 
