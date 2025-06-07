@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, MenuContext, MenuItem, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, MenuContext, MenuItem, MenuItemLike, MenuToken} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
@@ -16,7 +16,7 @@ import {isValidElement, MouseEvent, ReactNode} from 'react';
  * A context menu is specified as an array of items, a function to generate one from a click, or
  * a full element representing a contextMenu Component.
  */
-export type ContextMenuSpec<T = null> =
+export type ContextMenuSpec<T = MenuToken> =
     | MenuItemLike<T>[]
     | ((e: MouseEvent | PointerEvent, context: MenuContext) => MenuItemLike<T>[])
     | boolean;
