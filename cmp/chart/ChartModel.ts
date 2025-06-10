@@ -68,7 +68,7 @@ export class ChartModel extends HoistModel {
         this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
-        this.contextMenu = this.parseContextMenu(contextMenu ?? ChartModel.defaultContextMenu);
+        this.contextMenu = this.parseContextMenu(contextMenu);
     }
 
     /**
