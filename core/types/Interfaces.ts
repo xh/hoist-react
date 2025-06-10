@@ -267,20 +267,20 @@ export interface TrackOptions {
 }
 
 /**
- * The base `MenuToken` type.  '-' is converted to a menu item separator.
+ * The base `MenuToken` type.  '-' is interpreted as the standard textless divider.
  * Components will likely extend this type to support other strings like 'copyToClipboard',
- * 'print', etc. which the component then converts into a `MenuItem`.
+ * 'print', etc. which the component then converts into a {@link MenuItem}.
  */
 export type MenuToken = '-';
 
 /**
- * `MenuContext` is the set of contextual arguments passed to a MenuItem's `actionFn` and `prepareFn`.
- * `contextMenuEvent` is the right click event that opened the context menu.  It is optional
- * because the `contextMenu` component can also be used on popover buttons, where there is no
- * `contextMenuEvent`.
+ * `MenuContext` is the set of contextual arguments passed to a {@link MenuItem}'s
+ * `actionFn` and `prepareFn`. `contextMenuEvent` is the right click event that opened the
+ * context menu.  It is optional because the `contextMenu` component can also be used on
+ * popover buttons, where there is no `contextMenuEvent`.
  *
- * Components offering a built-in `contextMenu` can extend `MenuContext` to add values relevant to the
- * component.  See for example`ChartMenuContext`.
+ * Components offering a built-in {@link contextMenu} can extend `MenuContext` to add values
+ * relevant to the component.  See for example {@link ChartMenuContext}.
  */
 export interface MenuContext {
     contextMenuEvent?: MouseEvent | PointerEvent;
