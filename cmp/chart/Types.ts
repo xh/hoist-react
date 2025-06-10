@@ -1,5 +1,5 @@
 import {ChartModel} from '@xh/hoist/cmp/chart/ChartModel';
-import {MenuContext, MenuToken} from '@xh/hoist/core';
+import type {ContextMenuSpec, MenuContext, MenuToken} from '@xh/hoist/core';
 
 /**
  * Highcharts supported tokens {@link https://api.highcharts.com/highcharts/exporting.buttons.contextButton.menuItems}
@@ -29,3 +29,5 @@ export interface ChartMenuContext extends MenuContext {
      */
     points: any[];
 }
+
+export type ChartContextMenuSpec = ContextMenuSpec<ChartMenuToken, ChartMenuContext>;

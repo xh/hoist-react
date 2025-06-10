@@ -266,8 +266,22 @@ export interface TrackOptions {
     omit?: Thunkable<boolean>;
 }
 
+/**
+ * The base `MenuToken` type.  '-' is converted to a menu item separator.
+ * Components will likely extend this type to support other strings like 'copyToClipboard',
+ * 'print', etc. which the component then converts into a `MenuItem`.
+ */
 export type MenuToken = '-';
 
+/**
+ * `MenuContext` is the set of contextual arguments passed to a MenuItem's `actionFn` and `prepareFn`.
+ * `contextMenuEvent` is the right click event that opened the context menu.  It is optional
+ * because the `contextMenu` component can also be used on popover buttons, where there is no
+ * `contextMenuEvent`.
+ *
+ * Components offering a built-in `contextMenu` can extend `MenuContext` to add values relevant to the
+ * component.  See for example`ChartMenuContext`.
+ */
 export interface MenuContext {
     contextMenuEvent?: MouseEvent | PointerEvent;
 }
@@ -286,7 +300,7 @@ export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
-export interface MenuItem<T, C> {
+export interface MenuItem<T = MenuToken, C = MenuContext> {
     /** Label to be displayed. */
     text: ReactNode;
 
