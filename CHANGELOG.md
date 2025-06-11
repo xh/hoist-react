@@ -1,5 +1,7 @@
 # Changelog
 
+## v75.0.0-SNAPSHOT - unreleased
+
 ## v74.0.0 - 2025-06-11
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
