@@ -1,20 +1,20 @@
 # Changelog
 
-## 74.0.0-SNAPSHOT - unreleased
+## v74.0.0 - 2025-06-11
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor change to ViewManagerModel)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
 
 * Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+* ️Removed `ChartModel.showContextMenu`.  Use a setting of `false` for the new `ChartModel.contextMenu`
+property instead.
 
 ### 🎁 New Features
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
-* Support for gridcolumn level `onCellClicked` events.
+* Support for grid column level `onCellClicked` events.
 * General improvements to `MenuItem` api
   * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
-  * Chart context menu is now fully customizable.
-    ⚠️ NOTE: if a chart's context menu is turned off with `showContextMenu: false`,
-    update to `contextMenu: false`.
+  * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
 
 ### 🐞 Bug Fixes
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
