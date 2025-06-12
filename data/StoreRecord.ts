@@ -6,11 +6,12 @@
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch} from 'lodash';
+import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
+import equal from 'fast-deep-equal';
 
 /**
  * Wrapper object for each data element within a {@link Store}. Records must be assigned a unique ID
@@ -72,7 +73,7 @@ export class StoreRecord {
 
     /** True if the StoreRecord has been modified since it was last committed. */
     get isDirty(): boolean {
-        return this.committedData && this.committedData !== this.data;
+        return this.committedData && !equal(this.committedData, this.data);
     }
 
     /** Alias for {@link StoreRecord.isDirty} */
@@ -145,6 +146,24 @@ export class StoreRecord {
     /** The current validation state of the record. */
     get validationState(): ValidationState {
         return this.validator?.validationState ?? 'Unknown';
+    }
+
+    get modifiedData(): PlainObject {
+        if (!this.isDirty) return {};
+
+        const ret = this.fields.reduce((acc, {name}) => {
+            if (isNil(this.committedData) || this.data[name] !== this.committedData[name]) {
+                acc[name] = this.data[name];
+            }
+            return acc;
+        }, {});
+
+        return isEmpty(ret)
+            ? ret
+            : {
+                  id: this.id,
+                  ...ret
+              };
     }
 
     /** Map of field names to list of errors. */
