@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {TabSwitcherProps} from '@xh/hoist/cmp/tab/TabSwitcherProps';
 import {
     XH,
     HoistModel,
@@ -72,6 +73,12 @@ export interface TabConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** Child tab configs for nested rendering. */
+    children?: TabConfig[];
+
+    /** Switcher props to specify how to navigate present child tabs. */
+    switcher?: boolean | TabSwitcherProps;
 }
 
 /**
@@ -90,6 +97,8 @@ export class TabModel extends HoistModel {
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
+    children: TabConfig[];
+    switcher: TabSwitcherProps;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
@@ -113,7 +122,9 @@ export class TabModel extends HoistModel {
         content,
         refreshMode,
         renderMode,
-        xhImpl = false
+        xhImpl = false,
+        children,
+        switcher = false
     }: TabConfig) {
         super();
         makeObservable(this);
@@ -133,6 +144,13 @@ export class TabModel extends HoistModel {
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
         this.content = content;
+        this.children = children;
+
+        // Create default switcher props
+        if (switcher === true) switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};
+        if (switcher === false) switcher = null;
+
+        this.switcher = switcher as TabSwitcherProps;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;

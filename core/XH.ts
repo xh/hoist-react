@@ -6,6 +6,7 @@
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
+import {NavigationManager} from '@xh/hoist/core/impl/NavigationManager';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -103,6 +104,10 @@ export class XHApi {
 
     /** Provider of centralized exception handling for the app. */
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
+
+    navigationManager: NavigationManager = new NavigationManager();
+
+    adminNavigationManager: NavigationManager = new NavigationManager();
 
     //----------------------------------------------------------------------------------------------
     // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build

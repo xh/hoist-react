@@ -4,19 +4,26 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
+import {instancesTab} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTab';
+import {clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterObjectsPanel';
+import {aboutPanel} from '@xh/hoist/admin/tabs/general/about/AboutPanel';
+import {alertBannerPanel} from '@xh/hoist/admin/tabs/general/alertBanner/AlertBannerPanel';
+import {configPanel} from '@xh/hoist/admin/tabs/general/config/ConfigPanel';
+import {jsonBlobPanel} from '@xh/hoist/admin/tabs/userData/jsonblob/JsonBlobPanel';
+import {userPreferencePanel} from '@xh/hoist/admin/tabs/userData/prefs/UserPreferencePanel';
+import {rolePanel} from '@xh/hoist/admin/tabs/userData/roles/RolePanel';
+import {userPanel} from '@xh/hoist/admin/tabs/userData/users/UserPanel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistAppModel, XH} from '@xh/hoist/core';
+import {NavigationEntry} from '@xh/hoist/core/impl/NavigationManager';
 import {Icon} from '@xh/hoist/icon';
-import {without} from 'lodash';
+import {isEmpty, without} from 'lodash';
 import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
-import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {userDataTab} from './tabs/userData/UserDataTab';
 
 export class AppModel extends HoistAppModel {
     tabModel: TabContainerModel;
@@ -29,13 +36,6 @@ export class AppModel extends HoistAppModel {
 
     constructor() {
         super();
-
-        this.tabModel = new TabContainerModel({
-            route: 'default',
-            switcher: false,
-            tabs: this.createTabs()
-        });
-
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
     }
@@ -43,21 +43,27 @@ export class AppModel extends HoistAppModel {
     override async initAsync() {
         await this.initViewManagerModelsAsync();
         await super.initAsync();
+        this.tabModel = new TabContainerModel(
+            XH.adminNavigationManager.getTabContainerConfig({switcher: false})
+        );
     }
 
     override getRoutes(): Route[] {
-        return [
-            {
-                name: 'default',
-                path: '/admin',
-                children: this.getTabRoutes()
-            }
-        ];
+        return XH.adminNavigationManager.routes;
+    }
+
+    override setupNavigationManager() {
+        XH.adminNavigationManager.setNavigationData({
+            id: 'default',
+            path: '/admin',
+            children: this.getNavigationManagerConfiguration()
+        });
     }
 
     //------------------------
     // For override / extension
     //------------------------
+
     getAppMenuButtonExtraItems() {
         return [];
     }
@@ -118,16 +124,32 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
+        const conf = XH.getConf('xhAdminAppConfig', {});
         return [
             {
                 id: 'general',
                 icon: Icon.info(),
-                content: generalTab
+                children: [
+                    {id: 'about', icon: Icon.info(), content: aboutPanel},
+                    {id: 'config', icon: Icon.settings(), content: configPanel},
+                    {
+                        id: 'alertBanner',
+                        icon: Icon.bullhorn(),
+                        content: alertBannerPanel
+                    }
+                ]
             },
             {
                 id: 'servers',
                 icon: Icon.server(),
-                content: clusterTab
+                children: [
+                    {
+                        id: 'instances',
+                        icon: Icon.server(),
+                        content: instancesTab
+                    },
+                    {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
+                ]
             },
             {
                 id: 'clients',
@@ -142,7 +164,31 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                content: userDataTab
+                children: [
+                    {
+                        id: 'users',
+                        icon: Icon.users(),
+                        content: userPanel,
+                        omit: conf['hideUsersTab']
+                    },
+                    {
+                        id: 'roles',
+                        icon: Icon.idBadge(),
+                        content: rolePanel
+                    },
+                    {
+                        id: 'prefs',
+                        title: 'Preferences',
+                        icon: Icon.bookmark(),
+                        content: userPreferencePanel
+                    },
+                    {
+                        id: 'jsonBlobs',
+                        title: 'JSON Blobs',
+                        icon: Icon.json(),
+                        content: jsonBlobPanel
+                    }
+                ]
             },
             {
                 id: 'activity',
@@ -151,6 +197,10 @@ export class AppModel extends HoistAppModel {
                 content: activityTrackingPanel
             }
         ];
+    }
+
+    getNavigationManagerConfiguration(): NavigationEntry[] {
+        return this.constructNavigationConfiguration(this.getTabRoutes(), this.createTabs());
     }
 
     /** Open the primary business-facing application, typically 'app'. */
@@ -169,6 +219,56 @@ export class AppModel extends HoistAppModel {
             type: 'xhAdminActivityTrackingView',
             typeDisplayName: 'View',
             manageGlobal: XH.getUser().isHoistAdmin
+        });
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+
+    /** Construct our Navigation Configuration object using the overridable
+     * `getTabRoutes` and `createTabs` methods to support backwards compatibility.*/
+    private constructNavigationConfiguration(
+        routes: Route[],
+        tabs: TabConfig[]
+    ): NavigationEntry[] {
+        const tabMap = new Map(tabs.map(tab => [tab.id, tab]));
+
+        return routes.map(route => {
+            const tab = tabMap.get(route.name);
+
+            const merged: NavigationEntry = {
+                id: route.name,
+                path: route.path,
+                ...(route.canActivate && {canActivate: route.canActivate}),
+                ...(route.forwardTo && {forwardTo: route.forwardTo}),
+                ...(route.encodeParams && {encodeParams: route.encodeParams}),
+                ...(route.decodeParams && {decodeParams: route.decodeParams}),
+                ...(route.defaultParams && {defaultParams: route.defaultParams}),
+                ...(tab && {
+                    icon: tab.icon,
+                    title: tab.title,
+                    tooltip: tab.tooltip,
+                    disabled: tab.disabled,
+                    excludeFromSwitcher: tab.excludeFromSwitcher,
+                    showRemoveAction: tab.showRemoveAction,
+                    content: tab.content,
+                    renderMode: tab.renderMode,
+                    refreshMode: tab.refreshMode,
+                    omit: tab.omit,
+                    xhImpl: tab.xhImpl,
+                    switcher: tab.switcher
+                })
+            };
+
+            if (!isEmpty(route.children) || !isEmpty(tab?.children)) {
+                merged.children = this.constructNavigationConfiguration(
+                    route.children ?? [],
+                    tab?.children ?? []
+                );
+            }
+
+            return merged;
         });
     }
 }

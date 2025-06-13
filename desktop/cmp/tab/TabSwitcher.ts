@@ -4,10 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {MenuItemProps} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {TabConfig, TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
+import {hoistCmp, HoistModel, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -29,7 +30,7 @@ import {
     useOnVisibleChange
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, isFinite} from 'lodash';
+import {compact, isEmpty, isFinite, startCase} from 'lodash';
 import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
 
 /**
@@ -58,6 +59,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             tabWidth,
             tabMinWidth,
             tabMaxWidth,
+            enableMenuNavigation = false,
             ...props
         },
         ref
@@ -67,10 +69,12 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             'Unsupported value for orientation.'
         );
 
-        const {tabs, activeTabId} = model,
+        const {tabs, activeTabId, route} = model,
             layoutProps = getLayoutProps(props),
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
+
+        console.log(route);
 
         // Implement overflow
         ref = impl.enableOverflow
@@ -94,33 +98,76 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 testId = getTestId(props, id);
 
             if (excludeFromSwitcher) return null;
-            return bpTab({
-                id,
-                disabled,
-                style: tabStyle,
-                item: bpTooltip({
-                    content: tooltip as ReactElement,
-                    disabled: !tooltip,
-                    hoverOpenDelay: 1000,
-                    position: flipOrientation(orientation),
-                    item: hframe({
-                        className: 'xh-tab-switcher__tab',
-                        tabIndex: -1,
-                        testId,
-                        items: [
-                            icon,
-                            span(title),
-                            button({
-                                testId: getTestId(testId, 'remove-btn'),
-                                omit: !showRemoveAction,
-                                tabIndex: -1,
-                                icon: Icon.x(),
-                                onClick: () => tab.containerModel.removeTab(tab)
-                            })
-                        ]
-                    })
-                })
-            });
+
+            return !enableMenuNavigation || isEmpty(tab.children ?? [])
+                ? bpTab({
+                      id,
+                      disabled,
+                      style: tabStyle,
+                      item: bpTooltip({
+                          content: tooltip as ReactElement,
+                          disabled: !tooltip,
+                          hoverOpenDelay: 1000,
+                          position: flipOrientation(orientation),
+                          item: hframe({
+                              className: 'xh-tab-switcher__tab',
+                              tabIndex: -1,
+                              testId,
+                              items: [
+                                  icon,
+                                  span(title),
+                                  button({
+                                      testId: getTestId(testId, 'remove-btn'),
+                                      omit: !showRemoveAction,
+                                      tabIndex: -1,
+                                      icon: Icon.x(),
+                                      onClick: () => tab.containerModel.removeTab(tab)
+                                  })
+                              ]
+                          })
+                      })
+                  })
+                : popover({
+                      position: (() => {
+                          switch (orientation) {
+                              case 'bottom':
+                                  return 'top-left';
+                              case 'left':
+                                  return 'right-top';
+                              case 'right':
+                                  return 'left-top';
+                              case 'top':
+                              default:
+                                  return 'bottom-left';
+                          }
+                      })(),
+                      minimal: true,
+                      item: button({
+                          style: tabStyle,
+                          text: span(title),
+                          icon: orientation === 'right' ? Icon.chevronLeft() : icon,
+                          rightIcon: (() => {
+                              switch (orientation) {
+                                  case 'bottom':
+                                      return Icon.chevronUp();
+                                  case 'left':
+                                      return Icon.chevronRight();
+                                  case 'top':
+                                      return Icon.chevronDown();
+                                  default:
+                                      return icon;
+                              }
+                          })(),
+                          active: XH.routerState.path.startsWith(
+                              XH.router.buildPath(`${route}.${tab.id}`)
+                          )
+                      }),
+                      content: menu(
+                          tab.children?.map(child =>
+                              createMenuItemFromTabConfig(child, `${route}.${tab.id}`)
+                          )
+                      )
+                  });
         });
 
         return box({
@@ -157,6 +204,32 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 //-----------------
 // Implementation
 //-----------------
+const createMenuItemFromTabConfig = (
+    tabConfig: TabConfig,
+    partialPath: string
+): ReactElement<MenuItemProps, any> => {
+    const key = tabConfig.id,
+        text = span(tabConfig.title ?? startCase(key)),
+        active = XH.routerState.path.startsWith(XH.router.buildPath(`${partialPath}.${key}`));
+    if (!tabConfig.children || isEmpty(tabConfig.children)) {
+        return menuItem({
+            key,
+            text,
+            active,
+            onClick: () => XH.navigate(`${partialPath}.${key}`)
+        });
+    } else {
+        return menuItem({
+            key,
+            text,
+            active,
+            children: tabConfig.children.map(child =>
+                createMenuItemFromTabConfig(child, `${partialPath}.${key}`)
+            )
+        });
+    }
+};
+
 const overflowMenu = hoistCmp.factory<TabContainerModel>({
     render({model, tabs, vertical}) {
         if (isEmpty(tabs)) return null;
