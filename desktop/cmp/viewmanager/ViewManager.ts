@@ -14,6 +14,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import {startCase} from 'lodash';
+import {ReactElement} from 'react';
 import {viewMenu} from './ViewMenu';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 import {manageDialog} from './dialog/ManageDialog';
@@ -34,6 +35,15 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     menuButtonProps?: Partial<ButtonProps>;
     saveButtonProps?: Partial<ButtonProps>;
     revertButtonProps?: Partial<ButtonProps>;
+
+    /** Button icon to display when on the default view. If not provided, defaults to Icon.bookmark. */
+    defaultViewIcon?: ReactElement;
+    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.bookmark. */
+    ownedViewIcon?: ReactElement;
+    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.users. */
+    sharedViewIcon?: ReactElement;
+    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.globe. */
+    globalViewIcon?: ReactElement;
 
     /** Default 'whenDirty' */
     showSaveButton?: ViewManagerStateButtonMode;
@@ -60,6 +70,10 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         menuButtonProps,
         saveButtonProps,
         revertButtonProps,
+        defaultViewIcon = Icon.bookmark(),
+        ownedViewIcon = Icon.bookmark(),
+        sharedViewIcon = Icon.users(),
+        globalViewIcon = Icon.globe(),
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
         buttonSide = 'right'
@@ -70,7 +84,17 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
             menu = popover({
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
-                item: menuButton({model: locModel, ...menuButtonProps}),
+                item: menuButton({
+                    model: locModel,
+                    icon: buttonIcon({
+                        model: locModel,
+                        defaultViewIcon,
+                        ownedViewIcon,
+                        sharedViewIcon,
+                        globalViewIcon
+                    }),
+                    ...menuButtonProps
+                }),
                 content: loadModel.isPending
                     ? box({
                           item: spinner({compact: true}),
@@ -97,13 +121,13 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 });
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, ...rest}) {
+    render({model, icon, ...rest}) {
         const {view, typeDisplayName, isLoading} = model.parent;
         return button({
             className: 'xh-view-manager__menu-button',
             text: view.isDefault ? `Default ${startCase(typeDisplayName)}` : view.name,
             icon: !isLoading
-                ? Icon.bookmark()
+                ? icon
                 : box({
                       item: spinner({width: 13, height: 13, style: {margin: 'auto'}}),
                       width: 16.25
@@ -112,6 +136,16 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
             outlined: true,
             ...rest
         });
+    }
+});
+
+const buttonIcon = hoistCmp.factory<ViewManagerLocalModel>({
+    render({model, ownedViewIcon, sharedViewIcon, globalViewIcon, defaultViewIcon}) {
+        const {view} = model.parent;
+        if (view.isOwned) return ownedViewIcon;
+        if (view.isShared) return sharedViewIcon;
+        if (view.isGlobal) return globalViewIcon;
+        return defaultViewIcon;
     }
 });
 

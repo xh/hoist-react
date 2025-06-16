@@ -2,6 +2,10 @@
 
 ## v75.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
+
 ## v74.0.0 - 2025-06-11
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
