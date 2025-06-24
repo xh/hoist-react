@@ -13,16 +13,16 @@ export interface NavigationEntry {
     /** Path as it will appear in url for this tab when routing. */
     path?: string;
 
-    /** Display title for the Tab in the container's TabSwitcher. */
+    /** Display title for the tab. */
     title?: ReactNode;
 
-    /** Display icon for the Tab in the container's TabSwitcher. */
+    /** Display icon for the tab. */
     icon?: ReactElement;
 
-    /** Tooltip for the Tab in the container's TabSwitcher. */
+    /** Tooltip for the tab. */
     tooltip?: ReactNode;
 
-    /** True to disable this tab in the TabSwitcher and block routing. */
+    /** True to disable this tab and block routing. */
     disabled?: boolean;
 
     /**
@@ -109,7 +109,8 @@ export class NavigationManager {
 
         return {
             name: id,
-            path: path ?? `/${id}`,
+            // If path not manually specified, set to id in kabob-case.
+            path: path ?? `/${id.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}`,
             canActivate,
             forwardTo,
             encodeParams,
