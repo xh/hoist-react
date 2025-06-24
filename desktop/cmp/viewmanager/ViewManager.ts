@@ -7,7 +7,7 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
-import {hoistCmp, HoistProps, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, MenuItemLike, useLocalModel, uses} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -41,6 +41,13 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     showRevertButton?: ViewManagerStateButtonMode;
     /** Side the save and revert buttons should appear on (default 'right') */
     buttonSide?: 'left' | 'right';
+    /**
+     * Array of extra menu items. Can contain:
+     *  + `MenuItems` or configs to create them.
+     *  + `MenuDividers` or the special string token '-'.
+     *  + React Elements or strings, which will be interpreted as the `text` property for a MenuItem.
+     */
+    extraMenuItems?: MenuItemLike[];
 }
 
 /**
@@ -62,7 +69,8 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         revertButtonProps,
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
-        buttonSide = 'right'
+        buttonSide = 'right',
+        extraMenuItems = []
     }: ViewManagerProps) {
         const {loadModel} = model,
             locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
@@ -79,7 +87,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                           height: 30,
                           width: 30
                       })
-                    : viewMenu({model: locModel}),
+                    : viewMenu({model: locModel, extraMenuItems}),
                 onOpening: () => model.refreshAsync(),
                 placement: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'

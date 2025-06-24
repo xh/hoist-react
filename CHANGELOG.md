@@ -2,6 +2,9 @@
 
 ## v75.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Added `extraMenuItems` prop to `ViewManager` to extend the menu with additional items.
+
 ## v74.0.0 - 2025-06-11
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
