@@ -15,6 +15,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
+import {NavigationManager} from '@xh/hoist/core/impl/NavigationManager';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -73,6 +74,7 @@ export class AppContainerModel extends HoistModel {
     //--------------------------------
     appSpec: AppSpec = null;
     appModel: HoistAppModel = null;
+    navigationManager: NavigationManager = null;
 
     //------------
     // Sub-models
@@ -289,6 +291,7 @@ export class AppContainerModel extends HoistModel {
             this.setAppState('INITIALIZING_APP');
             const modelClass: any = this.appSpec.modelClass;
             this.appModel = modelClass.instance = new modelClass();
+            this.navigationManager = new NavigationManager(this.appModel.getNavSpec());
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -352,7 +355,9 @@ export class AppContainerModel extends HoistModel {
     }
 
     private startRouter() {
-        const routes = this.appModel.getRoutes(),
+        const routes = this.navigationManager.isEnabled
+                ? this.navigationManager.routes
+                : this.appModel.getRoutes(),
             defaultRoute = routes.length ? routes[0].name : null;
 
         this.routerModel.addRoutes(routes);

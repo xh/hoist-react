@@ -43,21 +43,18 @@ export class AppModel extends HoistAppModel {
     override async initAsync() {
         await this.initViewManagerModelsAsync();
         await super.initAsync();
-        this.tabModel = new TabContainerModel(
-            XH.adminNavigationManager.getTabContainerConfig({switcher: false})
-        );
+        this.tabModel = new TabContainerModel({
+            ...XH.appContainerModel.navigationManager.tabContainerConfig,
+            switcher: false
+        });
     }
 
-    override getRoutes(): Route[] {
-        return XH.adminNavigationManager.routes;
-    }
-
-    override setupNavigationManager() {
-        XH.adminNavigationManager.setNavigationData({
+    override getNavSpec() {
+        return {
             id: 'default',
             path: '/admin',
             children: this.getNavigationManagerConfiguration()
-        });
+        };
     }
 
     //------------------------
