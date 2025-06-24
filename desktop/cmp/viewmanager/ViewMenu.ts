@@ -27,9 +27,9 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
             items: [
                 ...getNavMenuItems(model.parent),
                 menuDivider(),
-                ...getOtherMenuItems(model),
+                ...parseMenuItems(extraMenuItems),
                 menuDivider(),
-                ...parseMenuItems(extraMenuItems)
+                ...getOtherMenuItems(model)
             ].filter(filterConsecutiveMenuSeparators())
         });
     }
