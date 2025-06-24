@@ -22,36 +22,36 @@ import {saveAsDialog} from './dialog/SaveAsDialog';
 
 import './ViewManager.scss';
 
-/**
- * Visibility options for save/revert button.
- *
- * 'never' to hide button.
- * 'whenDirty' to only show when persistence state is dirty and button is therefore enabled.
- * 'always' will always show button.
- */
-export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
-
 export interface ViewManagerProps extends HoistProps<ViewManagerModel> {
     menuButtonProps?: Partial<ButtonProps>;
     saveButtonProps?: Partial<ButtonProps>;
     revertButtonProps?: Partial<ButtonProps>;
 
-    /** Button icon to display when on the default view. If not provided, defaults to Icon.bookmark. */
+    /** Button icon when on the default (in-code state) view. Default `Icon.bookmark`. */
     defaultViewIcon?: ReactElement;
-    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.bookmark. */
+    /** Button icon when the selected view is owned by the current user. Default `Icon.bookmark`. */
     ownedViewIcon?: ReactElement;
-    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.users. */
+    /** Button icon when the selected view is shared by another user. Default `Icon.users`. */
     sharedViewIcon?: ReactElement;
-    /** Button icon to display when the selected view is owned. If not provided, defaults to Icon.globe. */
+    /** Button icon when the selected view is globally shared. Default `Icon.globe`. */
     globalViewIcon?: ReactElement;
 
     /** Default 'whenDirty' */
     showSaveButton?: ViewManagerStateButtonMode;
     /** Default 'never' */
     showRevertButton?: ViewManagerStateButtonMode;
-    /** Side the save and revert buttons should appear on (default 'right') */
+    /** Side relative to the menu on which save/revert buttons should render. Default 'right'. */
     buttonSide?: 'left' | 'right';
 }
+
+/**
+ * Visibility options for save/revert buttons inlined next to the ViewManager menu:
+ *      'never' to always hide - user must save/revert via menu.
+ *      'whenDirty' (default) to show only when view state is dirty and the button is enabled.
+ *      'always' to always show, including when view not dirty and the button is disabled.
+ *          Useful to avoid jumpiness in toolbar layouts.
+ */
+export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
 
 /**
  * Desktop ViewManager component - a button-based menu for saving and swapping between named
