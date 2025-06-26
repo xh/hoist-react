@@ -29,7 +29,10 @@ export class ViewInfo {
     /** User owning this view. Null if the view is global.*/
     readonly owner: string;
 
-    /** Is the owner making this view accessible to others? Always true for global views. */
+    /**
+     * True if the owner (which can be the current user) has made this view accessible to all other
+     * users. Note always `false` for global views, to better distinguish the two sharing models.
+     */
     readonly isShared: boolean;
 
     /** True if this view is global and visible to all users. */
@@ -39,8 +42,9 @@ export class ViewInfo {
     readonly group: string;
 
     /**
-     * Should this view be pinned by users by default?
-     * This value is intended to be used for global views only.
+     * True if this view should be pinned by default to all users' menus, where it will appear
+     * unless the user has explicitly unpinned it. Only applicable for global views, can be enabled
+     * by view managers to promote especially important global views and ensure users see them.
      */
     readonly isDefaultPinned: boolean;
 
