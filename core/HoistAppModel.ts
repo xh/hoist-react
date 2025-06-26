@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
+import {NavigationEntry} from '@xh/hoist/core/impl/NavigationManager';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
@@ -49,6 +50,13 @@ export class HoistAppModel extends HoistModel {
      */
     getRoutes(): Route[] {
         return [];
+    }
+
+    /**
+     * Provide app routes and tab content to `NavigationManager`.
+     */
+    getNavSpec(): NavigationEntry {
+        return null;
     }
 
     /**
