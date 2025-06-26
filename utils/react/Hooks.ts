@@ -74,9 +74,17 @@ export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) =
  * @returns callback ref to be placed on target component
  */
 export function useOnScroll(fn: (ev: Event) => any): (node: any) => void {
-    return useCallback(node => {
-        node?.addEventListener('scroll', fn);
-    }, []);
+    const elRef = useRef<Element | null>(null);
+    useOnUnmount(() => elRef.current?.removeEventListener('scroll', fn));
+
+    return useCallback(
+        node => {
+            elRef.current?.removeEventListener('scroll', fn);
+            elRef.current = node;
+            node?.addEventListener('scroll', fn);
+        },
+        [fn]
+    );
 }
 
 /**
