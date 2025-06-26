@@ -6,25 +6,28 @@
 
 * Added props to `ViewManager` to customize icons used for different types of views, and modified
   default icons for Global and Shared views.
-* Added `extraMenuItems` prop to `ViewManager` to extend the menu with additional items.
+* Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the
+  component's standard menu.
 
 ## v74.0.0 - 2025-06-11
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
 
 * Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
-* ️Removed `ChartModel.showContextMenu`.  Use a setting of `false` for the new `ChartModel.contextMenu`
-property instead.
+* ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
+  `ChartModel.contextMenu` property instead.
 
 ### 🎁 New Features
+
 * Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
 * Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
 * Support for grid column level `onCellClicked` events.
 * General improvements to `MenuItem` api
-  * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
-  * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
+    * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
+    * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
 
 ### 🐞 Bug Fixes
+
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
 * Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
 * Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
