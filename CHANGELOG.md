@@ -4,6 +4,9 @@
 
 ### 🎁 New Features
 
+* Add "Expand to Level" grid context menu item allowing users to expand grouped and tree grids to specified level.
+    * Most recently chosen level is persistable.
+    * Existing "Expand All" and "Collapse All" actions will participate in the same persistence.
 * Added props to `ViewManager` to customize icons used for different types of views, and modified
   default icons for Global and Shared views.
 * Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the

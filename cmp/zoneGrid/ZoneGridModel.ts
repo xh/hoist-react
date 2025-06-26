@@ -39,6 +39,7 @@ import {
     managed,
     PlainObject,
     Some,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -146,6 +147,9 @@ export interface ZoneGridConfig {
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
 
+    /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
+    expandToLevel?: number;
+
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
 
@@ -230,6 +234,11 @@ export interface ZoneGridConfig {
      * triggered via a long press (aka tap and hold) on mobile devices.
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
+
+    /** Array of strings or function that returns an array of strings to describe the individual
+     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -419,7 +428,7 @@ export class ZoneGridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'restoreDefaults',
         '-',
