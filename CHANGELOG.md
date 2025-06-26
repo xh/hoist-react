@@ -3,6 +3,9 @@
 ## v75.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
 * Added `extraMenuItems` prop to `ViewManager` to extend the menu with additional items.
 
 ## v74.0.0 - 2025-06-11
