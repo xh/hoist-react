@@ -1,24 +1,41 @@
 # Changelog
 
-## 74.0.0-SNAPSHOT - unreleased
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor change to ViewManagerModel)
-
-* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+## v75.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
-* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
-* Support for gridcolumn level `onCellClicked` events.
+
 * Add "Expand to Level" grid context menu item allowing users to expand grouped and tree grids to specified level.
     * Most recently chosen level is persistable.
     * Existing "Expand All" and "Collapse All" actions will participate in the same persistence.
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
+* Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the
+  component's standard menu.
+
+## v74.0.0 - 2025-06-11
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
+
+* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+* ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
+  `ChartModel.contextMenu` property instead.
+
+### 🎁 New Features
+
+* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for grid column level `onCellClicked` events.
+* General improvements to `MenuItem` api
+    * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
+    * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
 
 ### 🐞 Bug Fixes
+
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
 * Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
 * Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
   and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
+* Restored zoom out with mouse right-to-left drag on Charts.
 
 ## v73.0.1 - 2025-05-19
 
