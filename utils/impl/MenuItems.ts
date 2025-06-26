@@ -9,6 +9,12 @@ import {ReactNode} from 'react';
 
 /**
  * Parse MenuItem configs into Blueprint MenuItems.
+ *
+ * Note this is currently used in a few limited places and is not generally applied to all menu-
+ * like components in Hoist. In particular, it is not used by the `menu` component re-exported from
+ * Blueprint. See https://github.com/xh/hoist-react/issues/2400 covering TBD work to more fully
+ * standardize a Hoist menu component that might then incorporate this processing.
+ *
  * @internal
  */
 export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
