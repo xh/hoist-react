@@ -11,6 +11,7 @@ import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators, parseMenuItems} from '@xh/hoist/utils/impl';
 import {Dictionary} from 'express-serve-static-core';
 import {each, filter, groupBy, isEmpty, isFunction, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
@@ -20,10 +21,16 @@ import {ViewManagerLocalModel} from './ViewManagerLocalModel';
  * Default Menu used by ViewManager.
  */
 export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model}) {
+    render({model, extraMenuItems}) {
         return menu({
             className: 'xh-view-manager__menu',
-            items: [...getNavMenuItems(model.parent), menuDivider(), ...getOtherMenuItems(model)]
+            items: [
+                ...getNavMenuItems(model.parent),
+                menuDivider(),
+                ...parseMenuItems(extraMenuItems),
+                menuDivider(),
+                ...getOtherMenuItems(model)
+            ].filter(filterConsecutiveMenuSeparators())
         });
     }
 });
