@@ -4,6 +4,13 @@
 
 ### 🎁 New Features
 
+* Updated the `GroupingChooser` UI to use a single popover for both updating the value and
+  selecting/managing favorite groupings (if enabled).
+    * Adjusted `GroupingChooserModel` API and some CSS class names and testIds of `GroupingChooser`
+      internals, although those changes are very unlikely to require app-level adjustments.
+    * Adjusted/removed (rarely used) desktop and mobile `GroupingChooser` props related to popover
+      sizing and titling.
+    * Updated the mobile UI to use a full-screen dialog, similar to `ColumnChooser`.
 * Added props to `ViewManager` to customize icons used for different types of views, and modified
   default icons for Global and Shared views.
 * Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the

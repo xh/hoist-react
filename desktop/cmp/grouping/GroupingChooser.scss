@@ -22,11 +22,6 @@
         color: var(--xh-text-color-muted);
       }
     }
-
-    // We must account for the favorites icon when eliding text
-    &--with-favorites {
-      padding-right: 30px !important;
-    }
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
@@ -37,6 +32,10 @@
 
   .bp5-popover-target span {
     position: relative;
+  }
+
+  &__editor {
+    flex: 1;
   }
 
   &__list {
@@ -121,48 +120,38 @@
     padding: 2px var(--xh-tbar-item-pad-px);
   }
 
-  &__favorite-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 20px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    cursor: pointer;
-    color: var(--xh-text-color-muted);
+  &__favorites {
+    flex: 1;
+    border-left: 1px solid var(--xh-popup-border-color);
 
-    &:hover {
-      color: var(--xh-text-color);
+    --xh-menu-border: none;
+
+    .bp5-menu {
+      padding: 0;
     }
 
-    .xh-toolbar--compact & {
-      height: 15px;
+    &__add-btn {
+      flex: none;
+      margin: var(--xh-pad-px) auto;
     }
 
-    // Matched to FilterChooser equivalent.
-    & > .svg-inline--fa {
-      width: 12px;
-    }
-  }
-
-  &__favorite {
-    align-items: center;
-    max-width: 50vw;
-
-    .xh-button {
-      padding: 0 !important;
-      min-width: 20px !important;
-      min-height: 20px !important;
-      visibility: hidden;
-    }
-
-    &:hover {
-      background-color: var(--xh-bg-highlight);
+    &__favorite {
+      align-items: center;
+      max-width: 50vw;
 
       .xh-button {
-        visibility: unset;
+        padding: 0 !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+        visibility: hidden;
+      }
+
+      &:hover {
+        background-color: var(--xh-bg-highlight);
+
+        .xh-button {
+          visibility: unset;
+        }
       }
     }
   }

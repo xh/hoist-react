@@ -23,7 +23,10 @@ export interface GroupingChooserConfig {
     /** Initial value as an array of dimension names, or a function to produce such an array. */
     initialValue?: string[] | (() => string[]);
 
-    /** Initial favorites as an array of dim name arrays, or a function to produce such an array. */
+    /**
+     * Initial favorites as an array of dim name arrays, or a function to produce such an array.
+     * Ignored if `persistWith.persistFavorites: false`.
+     */
     initialFavorites?: string[][] | (() => string[][]);
 
     /** Options governing persistence. */
@@ -74,7 +77,6 @@ export class GroupingChooserModel extends HoistModel {
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
     @observable editorIsOpen: boolean = false;
-    @observable favoritesIsOpen: boolean = false;
     popoverRef = createObservableRef<HTMLElement>();
 
     // Internal state
@@ -103,6 +105,15 @@ export class GroupingChooserModel extends HoistModel {
                 maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
             atMaxDepth = pendingValue.length === limit;
         return !atMaxDepth && !isEmpty(availableDims);
+    }
+
+    @computed
+    get isAddFavoriteEnabled(): boolean {
+        return (
+            this.persistFavorites &&
+            !isEmpty(this.pendingValue) &&
+            !this.isFavorite(this.pendingValue)
+        );
     }
 
     constructor({
@@ -169,19 +180,11 @@ export class GroupingChooserModel extends HoistModel {
     toggleEditor() {
         this.pendingValue = this.value;
         this.editorIsOpen = !this.editorIsOpen;
-        this.favoritesIsOpen = false;
     }
 
     @action
-    toggleFavoritesMenu() {
-        this.favoritesIsOpen = !this.favoritesIsOpen;
+    closeEditor() {
         this.editorIsOpen = false;
-    }
-
-    @action
-    closePopover() {
-        this.editorIsOpen = false;
-        this.favoritesIsOpen = false;
     }
 
     //-------------------------
@@ -224,7 +227,7 @@ export class GroupingChooserModel extends HoistModel {
         if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
             this.setValue(pendingValue);
         }
-        this.closePopover();
+        this.closeEditor();
     }
 
     validateValue(value: string[]) {
@@ -272,6 +275,11 @@ export class GroupingChooserModel extends HoistModel {
     addFavorite(value: string[]) {
         if (isEmpty(value) || this.isFavorite(value)) return;
         this.favorites = [...this.favorites, value];
+    }
+
+    @action
+    addPendingAsFavorite() {
+        this.addFavorite(this.pendingValue);
     }
 
     @action

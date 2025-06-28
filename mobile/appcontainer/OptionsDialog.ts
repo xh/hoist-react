@@ -57,8 +57,10 @@ export const optionsDialog = hoistCmp.factory({
                     onClick: () => model.hide()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Apply',
                     icon: reloadRequired ? Icon.refresh() : Icon.check(),
+                    intent: 'primary',
+                    outlined: true,
                     disabled: !formModel.isDirty,
                     onClick: () => model.saveAsync()
                 })
