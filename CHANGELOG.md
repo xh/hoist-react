@@ -2,6 +2,11 @@
 
 ## v75.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a bug where `TrackService` was not properly verifying that the track data being sent was within
+  the configured `maxDataLength` limit.
+
 ## v74.1.0 - 2025-06-30
 
 ### 🎁 New Features
