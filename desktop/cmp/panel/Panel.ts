@@ -84,7 +84,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     tbar?: Some<ReactNode>;
 
     /**
-     * A toolbar to be docked at the top of the panel.
+     * A toolbar to be docked at the bottom of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
     bbar?: Some<ReactNode>;
