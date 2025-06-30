@@ -133,7 +133,7 @@ export class TrackService extends HoistService {
         if (options.elapsed !== undefined) ret.elapsed = options.elapsed;
 
         const {maxDataLength} = this.conf;
-        if (ret.data?.length > maxDataLength) {
+        if (JSON.stringify(ret.data)?.length > maxDataLength) {
             this.logWarn(
                 `Track log includes ${ret.data.length} chars of JSON data`,
                 `exceeds limit of ${maxDataLength}`,
