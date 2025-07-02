@@ -178,7 +178,7 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
 
     const v = opts.v ?? 'a future release',
         msg = opts.msg ? ` ${opts.msg}.` : '',
-        warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
+        warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
     if (!_seenWarnings[warn]) {
         console.warn(warn);
         _seenWarnings[warn] = true;

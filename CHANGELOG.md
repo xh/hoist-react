@@ -1,6 +1,13 @@
 # Changelog
 
-## v75.0.0-SNAPSHOT - unreleased
+## v74.1.1 - 2025-07-02
+
+### 🎁 New Features
+
+* Further refinements to the `GroupingChooser` desktop UI.
+  * Added new props `favoritesSide` and `favoritesTitle`.
+  * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+  * Moved "Save as Favorite" button to a new compact toolbar within the popover.
 
 ## v74.1.0 - 2025-06-30
 
