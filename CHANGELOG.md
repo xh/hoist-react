@@ -11,8 +11,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed a bug where `TrackService` was not properly verifying that the track data being sent was within
-  the configured `maxDataLength` limit.
+* Fixed a bug where `TrackService` was not properly verifying that tracked `data` was below the
+  configured `maxDataLength` limit.
 
 ## v74.1.0 - 2025-06-30
 
