@@ -266,6 +266,11 @@ export class GroupingChooserModel extends HoistModel {
         );
     }
 
+    @computed
+    get hasFavorites() {
+        return !isEmpty(this.favorites);
+    }
+
     @action
     setFavorites(favorites: string[][]) {
         this.favorites = favorites.filter(v => this.validateValue(v));

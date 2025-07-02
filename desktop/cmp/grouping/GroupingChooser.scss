@@ -121,8 +121,23 @@
   }
 
   &__favorites {
-    flex: 1;
-    border-left: 1px solid var(--xh-popup-border-color);
+    &--top {
+      border-bottom: 1px solid var(--xh-popup-border-color);
+    }
+
+    &--right {
+      flex: 1;
+      border-left: 1px solid var(--xh-popup-border-color);
+    }
+
+    &--bottom {
+      border-top: 1px solid var(--xh-popup-border-color);
+    }
+
+    &--left {
+      flex: 1;
+      border-right: 1px solid var(--xh-popup-border-color);
+    }
 
     --xh-menu-border: none;
 
@@ -130,14 +145,8 @@
       padding: 0;
     }
 
-    &__add-btn {
-      flex: none;
-      margin: var(--xh-pad-px) auto;
-    }
-
     &__favorite {
       align-items: center;
-      max-width: 50vw;
 
       .xh-button {
         padding: 0 !important;
