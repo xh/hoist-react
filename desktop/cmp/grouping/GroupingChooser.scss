@@ -34,8 +34,14 @@
     position: relative;
   }
 
-  &__editor {
-    flex: 1;
+  &-popover {
+    // 60/40 split in favor of favorites in left/right orientation
+    &--faves-right,
+    &--faves-left {
+      .xh-grouping-chooser__editor {
+        width: 40%;
+      }
+    }
   }
 
   &__list {
