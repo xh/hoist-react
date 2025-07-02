@@ -121,11 +121,6 @@
     }
   }
 
-  &__btn-row {
-    min-height: unset !important;
-    padding: 2px var(--xh-tbar-item-pad-px);
-  }
-
   &__favorites {
     &--top {
       border-bottom: 1px solid var(--xh-popup-border-color);
