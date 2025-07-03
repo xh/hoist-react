@@ -10,6 +10,7 @@ import {
     div,
     filler,
     fragment,
+    frame,
     hbox,
     hframe,
     placeholder,
@@ -176,7 +177,8 @@ const popoverCmp = hoistCmp.factory<Partial<GroupingChooserProps>>({
         popoverMinHeight,
         testId
     }) {
-        const favesTB = isTB(favoritesSide),
+        const {persistFavorites} = model,
+            favesTB = isTB(favoritesSide),
             isFavesFirst = favoritesSide === 'left' || favoritesSide === 'top',
             items = [
                 editor({
@@ -194,7 +196,7 @@ const popoverCmp = hoistCmp.factory<Partial<GroupingChooserProps>>({
                     testId: getTestId(testId, 'favorites')
                 })
             ],
-            itemsContainer = favesTB ? vframe : hframe;
+            itemsContainer = !persistFavorites ? frame : favesTB ? vframe : hframe;
 
         if (isFavesFirst) {
             items.reverse();

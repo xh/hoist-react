@@ -42,6 +42,12 @@
         width: 40%;
       }
     }
+
+    &--faves-disabled {
+      .xh-grouping-chooser__editor {
+        flex: 1;
+      }
+    }
   }
 
   &__list {

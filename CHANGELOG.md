@@ -1,5 +1,11 @@
 # Changelog
 
+## v74.1.2 - 2025-07-03
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` layout issue, visible only when favorites are disabled.
+
 ## v74.1.1 - 2025-07-02
 
 ### 🎁 New Features
