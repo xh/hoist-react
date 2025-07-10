@@ -6,6 +6,8 @@
 
 * DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
   and hide `Add` context menu item in views in if `allowAdd=false`
+* DashCanvas: style with `position: relative;` to ensure that the empty state overlay is positioned
+  within the canvas, not the next parent container up that has `position: relative;`.
 
 ## v74.1.2 - 2025-07-03
 
