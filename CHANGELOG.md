@@ -1,5 +1,12 @@
 # Changelog
 
+## 75.0-SNAPSHOT - NOT YET RELEASED
+
+### 🐞 Bug Fixes
+
+* DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
+  and hide `Add` context menu item in views in if `allowAdd=false`
+
 ## v74.1.2 - 2025-07-03
 
 ### 🐞 Bug Fixes
