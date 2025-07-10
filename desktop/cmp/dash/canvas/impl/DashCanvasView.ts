@@ -4,6 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {isEmpty} from 'lodash';
+import {ReactElement} from 'react';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -15,7 +17,6 @@ import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
-import {ReactElement} from 'react';
 
 /**
  * Implementation component to show an item within a DashCanvas.  This component
@@ -77,7 +78,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                     text: 'Add',
                     icon: Icon.add(),
                     items: addMenuItems,
-                    hidden: contentLocked
+                    hidden: contentLocked || isEmpty(addMenuItems)
                 },
                 {
                     text: 'Remove',
