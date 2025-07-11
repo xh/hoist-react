@@ -1,11 +1,14 @@
 # Changelog
 
-## 75.0-SNAPSHOT - NOT YET RELEASED
+## 75.0-SNAPSHOT - Unreleased
 
 ### 🐞 Bug Fixes
 
 * DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
   and hide `Add` context menu item in views in if `allowAdd=false`
+
+* `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
+Previously this value was cached on first render.
 
 ## v74.1.2 - 2025-07-03
 
