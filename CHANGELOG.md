@@ -11,7 +11,7 @@
 Previously this value was cached on first render.
 
 * Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
-  `GridFindField`) to rebind to a change to the observable GridModel available via context.
+  `GridFindField`) to rebind to a new observable GridModel available via context.
 
 ## v74.1.2 - 2025-07-03
 
