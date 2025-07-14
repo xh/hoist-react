@@ -10,6 +10,9 @@
 * `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
 Previously this value was cached on first render.
 
+* Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`) to rebind to a change to the observable GridModel available via context.
+
 ## v74.1.2 - 2025-07-03
 
 ### 🐞 Bug Fixes
