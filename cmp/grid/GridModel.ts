@@ -169,7 +169,7 @@ export interface GridConfig {
     groupBy?: Some<string>;
 
     /**
-     * Depth level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded, etc
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded etc.
      */
     expandToLevel?: number;
 

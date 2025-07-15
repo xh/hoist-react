@@ -4,10 +4,10 @@
 
 
 ### 🎁 New Features
-
-* Add new property `GridModel.expandToLevel` to govern expansion state of grid.
+* Add new property `GridModel.expandToLevel` to govern default expansion state of grid.
     * Most recently chosen level is persistable.
-    * New menu affordances to do bulk expand/collapse to particular level.
+    * New default menu item to trigger bulk expand/collapse to particular depth level for
+     multi-level (e.g. depth > 2) tree and grouping grids.
 
 ### 🐞 Bug Fixes
 
