@@ -14,7 +14,7 @@ import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
+import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
@@ -260,7 +260,9 @@ export abstract class BaseOAuthClient<
     }
 
     protected get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
+        const {origin, pathname} = window.location,
+            firstSegment = head(compact(pathname.split('/')));
+        return firstSegment ? `${origin}/${firstSegment}/` : `${origin}/`;
     }
 
     protected get blankUrl() {

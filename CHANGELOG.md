@@ -1,12 +1,52 @@
 # Changelog
 
-## v75.0.0-SNAPSHOT - unreleased
+## 75.0-SNAPSHOT - NOT YET RELEASED
+
 
 ### 🎁 New Features
 
-* Add "Expand to Level" grid context menu item allowing users to expand grouped and tree grids to specified level.
+* Add new property `GridModel.expandToLevel` to govern expansion state of grid.
     * Most recently chosen level is persistable.
-    * Existing "Expand All" and "Collapse All" actions will participate in the same persistence.
+    * New menu affordances to do bulk expand/collapse to particular level.
+
+### 🐞 Bug Fixes
+
+* DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
+  and hide `Add` context menu item in views in if `allowAdd=false`
+* DashCanvas: style with `position: relative;` to ensure that the empty state overlay is positioned
+  within the canvas, not the next parent container up that has `position: relative;`.
+
+## v74.1.2 - 2025-07-03
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` layout issue, visible only when favorites are disabled.
+
+## v74.1.1 - 2025-07-02
+
+### 🎁 New Features
+
+* Further refinements to the `GroupingChooser` desktop UI.
+  * Added new props `favoritesSide` and `favoritesTitle`.
+  * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+  * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where `TrackService` was not properly verifying that tracked `data` was below the
+  configured `maxDataLength` limit.
+
+## v74.1.0 - 2025-06-30
+
+### 🎁 New Features
+
+* Updated the `GroupingChooser` UI to use a single popover for both updating the value and
+  selecting/managing favorite groupings (if enabled).
+    * Adjusted `GroupingChooserModel` API and some CSS class names and testIds of `GroupingChooser`
+      internals, although those changes are very unlikely to require app-level adjustments.
+    * Adjusted/removed (rarely used) desktop and mobile `GroupingChooser` props related to popover
+      sizing and titling.
+    * Updated the mobile UI to use a full-screen dialog, similar to `ColumnChooser`.
 * Added props to `ViewManager` to customize icons used for different types of views, and modified
   default icons for Global and Shared views.
 * Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the

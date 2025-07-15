@@ -99,6 +99,7 @@ export class HoistAppModel extends HoistModel {
         const XH = window['XH'];
         await XH.prefService.clearAllAsync();
         XH.localStorageService.clear();
+        XH.sessionStorageService.clear();
     }
 }
 

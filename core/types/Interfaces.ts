@@ -6,8 +6,8 @@
  */
 
 import {RuleLike} from '@xh/hoist/data';
-import {MouseEvent, ReactElement, ReactNode, isValidElement} from 'react';
 import {isString} from 'lodash';
+import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
@@ -224,7 +224,7 @@ export interface TrackOptions {
     correlationId?: string;
 
     /** App-supplied data to save along with track log.*/
-    data?: PlainObject | PlainObject[];
+    data?: PlainObject | Array<unknown>;
 
     /**
      * Set true to log on the server all primitive values in the 'data' property.
