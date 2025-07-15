@@ -168,7 +168,9 @@ export interface GridConfig {
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
 
-    /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
+    /**
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded, etc
+     */
     expandToLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
@@ -276,8 +278,10 @@ export interface GridConfig {
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
-    /** Array of strings or function that returns an array of strings to describe the individual
-     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
+    /**
+     * Array of labels (or a function returning one) that describes the individual depth
+     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
+     * options in the default context menu.
      */
     levelLabels?: Thunkable<string[]>;
 
@@ -473,7 +477,8 @@ export class GridModel extends HoistModel {
     }
 
     get maxDepth(): number {
-        return this.treeMode ? this.store.maxDepth : this.groupBy ? this.groupBy.length : 0;
+        const {groupBy, store, treeMode} = this;
+        return treeMode ? store.maxDepth : groupBy ? groupBy.length : 0;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -1558,19 +1563,19 @@ export class GridModel extends HoistModel {
     private applyExpandToLevel() {
         if (!this.isReady) return;
 
-        const {agApi} = this;
-        if (this.expandToLevel === 0) {
+        const {agApi, expandToLevel, maxDepth} = this;
+        if (expandToLevel <= 0) {
             agApi.collapseAll();
-        } else if (this.expandToLevel === this.maxDepth) {
+        } else if (expandToLevel >= maxDepth) {
             agApi.expandAll();
         } else {
             agApi.forEachNode(node => {
-                node.expanded = node.level < this.expandToLevel;
+                node.expanded = node.level < expandToLevel;
             });
+            this.noteAgExpandStateChange();
         }
 
-        this.agApi.setGridOption('groupDefaultExpanded', this.expandToLevel);
-        this.noteAgExpandStateChange();
+        agApi.setGridOption('groupDefaultExpanded', expandToLevel);
     }
 
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,

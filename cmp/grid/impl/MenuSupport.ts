@@ -11,7 +11,7 @@ import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {executeIfFunction} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
-import {isEmpty, isFunction, isNil, isString, uniq, times} from 'lodash';
+import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
@@ -260,48 +260,9 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
     }
 }
 
-function createExpandCollapseItem(gridModel) {
+function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
     if (!gridModel || gridModel.maxDepth === 0) return null;
 
-    return gridModel.maxDepth > 1
-        ? createTreeExpandCollapseItems(gridModel)
-        : createStandardExpandCollapseItems(gridModel);
-}
-
-function createTreeExpandCollapseItems(gridModel: GridModel): RecordAction[] {
-    return [
-        new RecordAction({
-            text: 'Expand to Level',
-            displayFn: () => {
-                let {levelLabels, maxDepth} = gridModel;
-
-                levelLabels = executeIfFunction(levelLabels);
-                if (!levelLabels || levelLabels.length < maxDepth + 1) {
-                    gridModel.logWarn(
-                        '"levelLabels" not provided or of insufficient length. Using default labels.'
-                    );
-                    levelLabels = times(maxDepth + 1, idx => `Level ${idx + 1}`);
-                }
-
-                const items = levelLabels.map((label, idx) => {
-                    return {
-                        icon:
-                            gridModel.expandToLevel === idx ||
-                            (gridModel.expandToLevel > maxDepth && idx === levelLabels.length - 1)
-                                ? Icon.check()
-                                : null,
-                        text: label,
-                        actionFn: () => gridModel.setExpandToLevel(idx)
-                    };
-                });
-
-                return {items};
-            }
-        })
-    ];
-}
-
-function createStandardExpandCollapseItems(gridModel: GridModel): RecordAction[] {
     return [
         new RecordAction({
             text: 'Expand All',
@@ -312,6 +273,39 @@ function createStandardExpandCollapseItems(gridModel: GridModel): RecordAction[]
             text: 'Collapse All',
             icon: Icon.groupRowCollapsed(),
             actionFn: () => gridModel.collapseAll()
-        })
+        }),
+        levelExpandAction(gridModel)
     ];
+}
+
+function levelExpandAction(gridModel: GridModel): RecordAction {
+    return new RecordAction({
+        text: 'Expand to ...',
+        displayFn: () => {
+            // Don't show for degenerate shallow grid models, or if we don't have labels
+            const {maxDepth, expandToLevel} = gridModel;
+            if (maxDepth <= 1) return {hidden: true};
+
+            const levelLabels = executeIfFunction(gridModel.levelLabels);
+            if (!levelLabels || levelLabels.length < maxDepth + 1) {
+                gridModel.logDebug(
+                    '"levelLabels" not provided or of insufficient length. No menu items shown.'
+                );
+                return {hidden: true};
+            }
+
+            const items = levelLabels.map((label, idx) => {
+                const isCurrLevel =
+                    expandToLevel === idx ||
+                    (expandToLevel > maxDepth && idx === levelLabels.length - 1);
+
+                return {
+                    icon: isCurrLevel ? Icon.check() : null,
+                    text: label,
+                    actionFn: () => gridModel.setExpandToLevel(idx)
+                };
+            });
+            return {items};
+        }
+    });
 }

@@ -235,8 +235,10 @@ export interface ZoneGridConfig {
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
-    /** Array of strings or function that returns an array of strings to describe the individual
-     * groups in a tree grid hierarchy. Used to label the expand/collapse affordance in context menu.
+    /**
+     * Array of labels (or a function returning one) that describes the individual depth
+     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
+     * options in the default context menu.
      */
     levelLabels?: Thunkable<string[]>;
 
