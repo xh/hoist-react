@@ -1,19 +1,80 @@
 # Changelog
 
-## 74.0.0-SNAPSHOT - unreleased
-
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor change to ViewManagerModel)
-
-* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
-
-### 🎁 New Features
-* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
-* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
-* Support for gridcolumn level `onCellClicked` events.
+## 75.0-SNAPSHOT - Unreleased
 
 ### 🐞 Bug Fixes
+
+* DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
+  and hide `Add` context menu item in views in if `allowAdd=false`
+* DashCanvas: style with `position: relative;` to ensure that the empty state overlay is positioned
+  within the canvas, not the next parent container up that has `position: relative;`.
+
+* `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
+Previously this value was cached on first render.
+
+* Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`) to rebind to a new observable GridModel available via context.
+
+## v74.1.2 - 2025-07-03
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` layout issue, visible only when favorites are disabled.
+
+## v74.1.1 - 2025-07-02
+
+### 🎁 New Features
+
+* Further refinements to the `GroupingChooser` desktop UI.
+  * Added new props `favoritesSide` and `favoritesTitle`.
+  * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+  * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where `TrackService` was not properly verifying that tracked `data` was below the
+  configured `maxDataLength` limit.
+
+## v74.1.0 - 2025-06-30
+
+### 🎁 New Features
+
+* Updated the `GroupingChooser` UI to use a single popover for both updating the value and
+  selecting/managing favorite groupings (if enabled).
+    * Adjusted `GroupingChooserModel` API and some CSS class names and testIds of `GroupingChooser`
+      internals, although those changes are very unlikely to require app-level adjustments.
+    * Adjusted/removed (rarely used) desktop and mobile `GroupingChooser` props related to popover
+      sizing and titling.
+    * Updated the mobile UI to use a full-screen dialog, similar to `ColumnChooser`.
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
+* Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the
+  component's standard menu.
+
+## v74.0.0 - 2025-06-11
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
+
+* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+* ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
+  `ChartModel.contextMenu` property instead.
+
+### 🎁 New Features
+
+* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for grid column level `onCellClicked` events.
+* General improvements to `MenuItem` api
+    * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
+    * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
+
+### 🐞 Bug Fixes
+
 * Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
 * Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
+  and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
+* Restored zoom out with mouse right-to-left drag on Charts.
 
 ## v73.0.1 - 2025-05-19
 

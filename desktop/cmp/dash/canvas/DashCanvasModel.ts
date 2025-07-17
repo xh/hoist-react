@@ -357,7 +357,7 @@ export class DashCanvasModel
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
         throwIf(
-            !viewSpec.allowAdd,
+            !this.isLoadingState && !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
         throwIf(

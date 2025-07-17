@@ -202,7 +202,7 @@ export class ExceptionHandler {
             XH.track({
                 category: 'Client Error',
                 severity: exception.isRoutine ? 'INFO' : 'ERROR',
-                message: exception.message ?? 'Client Error',
+                message: exception.message || 'Client Error',
                 correlationId: exception.correlationId,
                 data,
                 logData: ['userAlerted']
