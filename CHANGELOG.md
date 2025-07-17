@@ -2,6 +2,11 @@
 
 ## 75.0-SNAPSHOT - Unreleased
 
+### 🎁 New Features
+
+* Added new `GroupingChooserModel.sortDimensions` config - can be set to false to respect the order
+  in which dimensions are provided to the model.
+
 ### 🐞 Bug Fixes
 
 * DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
@@ -10,7 +15,7 @@
   within the canvas, not the next parent container up that has `position: relative;`.
 
 * `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
-Previously this value was cached on first render.
+  Previously this value was cached on first render.
 
 * Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`) to rebind to a new observable GridModel available via context.
@@ -26,9 +31,9 @@ Previously this value was cached on first render.
 ### 🎁 New Features
 
 * Further refinements to the `GroupingChooser` desktop UI.
-  * Added new props `favoritesSide` and `favoritesTitle`.
-  * Deprecated `popoverTitle` prop - use `editorTitle` instead.
-  * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+    * Added new props `favoritesSide` and `favoritesTitle`.
+    * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+    * Moved "Save as Favorite" button to a new compact toolbar within the popover.
 
 ### 🐞 Bug Fixes
 

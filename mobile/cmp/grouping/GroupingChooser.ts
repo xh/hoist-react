@@ -15,7 +15,7 @@ import '@xh/hoist/mobile/register';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, sortBy} from 'lodash';
+import {isEmpty} from 'lodash';
 
 import './GroupingChooser.scss';
 
@@ -134,7 +134,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
 const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
     render({model, dimension, idx}) {
         // The options for this select include its current value
-        const options = getDimOptions([...model.availableDims, dimension], model);
+        const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
         return draggable({
             key: dimension,
@@ -182,7 +182,8 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
 const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
     render({model}) {
         if (!model.isAddEnabled) return null;
-        const options = getDimOptions(model.availableDims, model);
+
+        const options = model.getDimSelectOpts();
         return div({
             className: 'xh-grouping-chooser__add-control',
             items: [
@@ -202,16 +203,6 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
         });
     }
 });
-
-/**
- * Convert a list of dim names into select options
- */
-function getDimOptions(dims, model) {
-    const ret = compact(dims).map(dimName => {
-        return {value: dimName, label: model.getDimDisplayName(dimName)};
-    });
-    return sortBy(ret, 'label');
-}
 
 //------------------
 // Favorites
