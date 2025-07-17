@@ -166,10 +166,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             ]
         }),
         items: [
-            grid({
-                flex: 1,
-                agOptions: {groupDefaultExpanded: 1}
-            }),
+            grid({flex: 1}),
             div({
                 className: 'xh-admin-activity-panel__max-rows-alert',
                 items: [

@@ -4,10 +4,13 @@
 
 
 ### 🎁 New Features
-* Add new property `GridModel.expandToLevel` to govern default expansion state of grid.
-    * Most recently chosen level is persistable.
-    * New default menu item to trigger bulk expand/collapse to particular depth level for
-     multi-level (e.g. depth > 2) tree and grouping grids.
+
+* New property `GridModel.expandToLevel` governs the expansion state of tree and grouped grids.
+  Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
+    * Most recently chosen level is persistable with other grid state.
+    * Default grid context menu has a menu item to trigger bulk expand/collapse to particular depth
+     level for multi-level (e.g. depth > 2) grids.  To enable, implement the `GridModel.levelLabels`
+     property for your grid.
 
 ### 🐞 Bug Fixes
 

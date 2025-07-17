@@ -186,6 +186,7 @@ export class LeftRightChooserModel extends HoistModel {
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol],
             contextMenu: false,
+            expandToLevel: leftGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 
@@ -197,6 +198,7 @@ export class LeftRightChooserModel extends HoistModel {
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol],
             contextMenu: false,
+            expandToLevel: rightGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 
