@@ -74,8 +74,6 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
 
-        console.log(route);
-
         // Implement overflow
         ref = impl.enableOverflow
             ? composeRefs(
@@ -99,7 +97,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
             if (excludeFromSwitcher) return null;
 
-            return !enableMenuNavigation || isEmpty(tab.children ?? [])
+            return !enableMenuNavigation || isEmpty(tab.childTabConfigs ?? [])
                 ? bpTab({
                       id,
                       disabled,
@@ -163,7 +161,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                           )
                       }),
                       content: menu(
-                          tab.children?.map(child =>
+                          tab.childTabConfigs?.map(child =>
                               createMenuItemFromTabConfig(child, `${route}.${tab.id}`)
                           )
                       )
@@ -211,7 +209,7 @@ const createMenuItemFromTabConfig = (
     const key = tabConfig.id,
         text = span(tabConfig.title ?? startCase(key)),
         active = XH.routerState.path.startsWith(XH.router.buildPath(`${partialPath}.${key}`));
-    if (!tabConfig.children || isEmpty(tabConfig.children)) {
+    if (!tabConfig.childTabConfigs || isEmpty(tabConfig.childTabConfigs)) {
         return menuItem({
             key,
             text,
@@ -223,7 +221,7 @@ const createMenuItemFromTabConfig = (
             key,
             text,
             active,
-            children: tabConfig.children.map(child =>
+            children: tabConfig.childTabConfigs.map(child =>
                 createMenuItemFromTabConfig(child, `${partialPath}.${key}`)
             )
         });

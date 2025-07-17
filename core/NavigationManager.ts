@@ -1,5 +1,5 @@
 import {TabConfig, TabContainerConfig, TabSwitcherProps} from '@xh/hoist/cmp/tab';
-import {Content, RefreshMode, RenderMode, Thunkable} from '@xh/hoist/core';
+import {Content, RefreshMode, RenderMode, Thunkable} from '@xh/hoist/core/index';
 import {isEmpty, isNil} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {Route} from 'router5';
@@ -52,8 +52,11 @@ export interface NavigationEntry {
     /** True to skip this tab.  */
     omit?: Thunkable<boolean>;
 
-    /** @internal */
-    xhImpl?: boolean;
+    /** Switcher props to specify how to navigate present child tabs. */
+    switcher?: boolean | TabSwitcherProps;
+
+    /** Child navigation entry specs. */
+    children?: NavigationEntry[];
 
     /** Routing properties. */
     canActivate?: ActivationFnFactory;
@@ -61,15 +64,10 @@ export interface NavigationEntry {
     encodeParams?(stateParams: Params): Params;
     decodeParams?(pathParams: Params): Params;
     defaultParams?: Params;
-
-    /** Switcher props to specify how to navigate present child tabs. */
-    switcher?: boolean | TabSwitcherProps;
-
-    /** Child navigation entry specs. */
-    children?: NavigationEntry[];
 }
 
 export class NavigationManager {
+    /** Managing the underlying navigation config as a tree data structure. */
     private readonly navTreeRoot: NavigationEntry = null;
 
     constructor(navTreeRoot: NavigationEntry) {
@@ -134,7 +132,6 @@ export class NavigationManager {
             renderMode,
             refreshMode,
             omit,
-            xhImpl,
             children,
             switcher
         } = entry;
@@ -150,11 +147,12 @@ export class NavigationManager {
             renderMode,
             refreshMode,
             omit,
-            xhImpl,
             switcher,
-            children: children
+            childTabConfigs: children
                 ?.map(entry => this.buildTabConfigFromNavigationEntry(entry))
                 .filter(child => !isNil(child))
         };
     }
+
+    private generatePathFromId(id: string) {}
 }

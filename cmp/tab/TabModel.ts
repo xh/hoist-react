@@ -75,7 +75,7 @@ export interface TabConfig {
     xhImpl?: boolean;
 
     /** Child tab configs for nested rendering. */
-    children?: TabConfig[];
+    childTabConfigs?: TabConfig[];
 
     /** Switcher props to specify how to navigate present child tabs. */
     switcher?: boolean | TabSwitcherProps;
@@ -97,7 +97,7 @@ export class TabModel extends HoistModel {
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
-    children: TabConfig[];
+    childTabConfigs: TabConfig[];
     switcher: TabSwitcherProps;
 
     private _renderMode: RenderMode;
@@ -123,7 +123,7 @@ export class TabModel extends HoistModel {
         refreshMode,
         renderMode,
         xhImpl = false,
-        children,
+        childTabConfigs,
         switcher = false
     }: TabConfig) {
         super();
@@ -144,7 +144,7 @@ export class TabModel extends HoistModel {
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
         this.content = content;
-        this.children = children;
+        this.childTabConfigs = childTabConfigs;
 
         // Create default switcher props
         if (switcher === true) switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};

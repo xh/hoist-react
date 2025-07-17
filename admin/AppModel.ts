@@ -17,7 +17,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistAppModel, XH} from '@xh/hoist/core';
-import {NavigationEntry} from '@xh/hoist/core/impl/NavigationManager';
+import {NavigationEntry} from '@xh/hoist/core/NavigationManager';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty, without} from 'lodash';
 import {Route} from 'router5';
@@ -126,7 +126,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'general',
                 icon: Icon.info(),
-                children: [
+                childTabConfigs: [
                     {id: 'about', icon: Icon.info(), content: aboutPanel},
                     {id: 'config', icon: Icon.settings(), content: configPanel},
                     {
@@ -139,7 +139,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'servers',
                 icon: Icon.server(),
-                children: [
+                childTabConfigs: [
                     {
                         id: 'instances',
                         icon: Icon.server(),
@@ -161,7 +161,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                children: [
+                childTabConfigs: [
                     {
                         id: 'users',
                         icon: Icon.users(),
@@ -258,10 +258,10 @@ export class AppModel extends HoistAppModel {
                 })
             };
 
-            if (!isEmpty(route.children) || !isEmpty(tab?.children)) {
+            if (!isEmpty(route.children) || !isEmpty(tab?.childTabConfigs)) {
                 merged.children = this.constructNavigationConfiguration(
                     route.children ?? [],
-                    tab?.children ?? []
+                    tab?.childTabConfigs ?? []
                 );
             }
 

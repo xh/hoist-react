@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {frame} from '@xh/hoist/cmp/layout';
 import {TabModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
@@ -28,7 +29,8 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className, testId}) {
-        let {content, isActive, renderMode, refreshContextModel, switcher, children} = model,
+        let {content, isActive, renderMode, refreshContextModel, switcher, childTabConfigs, id} =
+                model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -40,17 +42,22 @@ export const tab = hoistCmp.factory({
             return null;
         }
 
-        if (!isEmpty(children)) {
-            return errorBoundary(
-                tabContainer({
-                    className,
-                    modelConfig: {
-                        route: `${model.containerModel.route}.${model.id}`,
-                        switcher,
-                        tabs: children
-                    }
-                })
-            );
+        if (content && !isEmpty(childTabConfigs)) {
+            content = errorMessage({
+                error:
+                    `Invalid tab configuration for id '${id}':` +
+                    'A tab with children cannot also define a component. ' +
+                    'Please move the content into a child tab or remove the children array.'
+            });
+        } else if (!isEmpty(childTabConfigs)) {
+            content = tabContainer({
+                className,
+                modelConfig: {
+                    route: `${model.containerModel.route}.${model.id}`,
+                    switcher,
+                    tabs: childTabConfigs
+                }
+            });
         }
 
         return frame({

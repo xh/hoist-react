@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {NavigationEntry} from '@xh/hoist/core/impl/NavigationManager';
+import {NavigationEntry} from '@xh/hoist/core/NavigationManager';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';

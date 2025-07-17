@@ -15,7 +15,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {NavigationManager} from '@xh/hoist/core/impl/NavigationManager';
+import {NavigationManager} from '@xh/hoist/core/NavigationManager';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
