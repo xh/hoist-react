@@ -97,75 +97,65 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
             if (excludeFromSwitcher) return null;
 
-            return !enableMenuNavigation || isEmpty(tab.childTabConfigs ?? [])
-                ? bpTab({
-                      id,
-                      disabled,
-                      style: tabStyle,
-                      item: bpTooltip({
-                          content: tooltip as ReactElement,
-                          disabled: !tooltip,
-                          hoverOpenDelay: 1000,
-                          position: flipOrientation(orientation),
-                          item: hframe({
-                              className: 'xh-tab-switcher__tab',
-                              tabIndex: -1,
-                              testId,
-                              items: [
-                                  icon,
-                                  span(title),
-                                  button({
-                                      testId: getTestId(testId, 'remove-btn'),
-                                      omit: !showRemoveAction,
-                                      tabIndex: -1,
-                                      icon: Icon.x(),
-                                      onClick: () => tab.containerModel.removeTab(tab)
-                                  })
-                              ]
-                          })
-                      })
-                  })
-                : popover({
-                      position: (() => {
-                          switch (orientation) {
-                              case 'bottom':
-                                  return 'top-left';
-                              case 'left':
-                                  return 'right-top';
-                              case 'right':
-                                  return 'left-top';
-                              case 'top':
-                              default:
-                                  return 'bottom-left';
-                          }
-                      })(),
-                      minimal: true,
-                      item: button({
-                          style: tabStyle,
-                          text: span(title),
-                          icon: orientation === 'right' ? Icon.chevronLeft() : icon,
-                          rightIcon: (() => {
-                              switch (orientation) {
-                                  case 'bottom':
-                                      return Icon.chevronUp();
-                                  case 'left':
-                                      return Icon.chevronRight();
-                                  case 'top':
-                                      return Icon.chevronDown();
-                                  default:
-                                      return icon;
-                              }
-                          })(),
-                          active: XH.routerState.path.startsWith(
-                              XH.router.buildPath(`${route}.${tab.id}`)
-                          )
-                      }),
-                      content: menu(
-                          tab.childTabConfigs?.map(child =>
-                              createMenuItemFromTabConfig(child, `${route}.${tab.id}`)
-                          )
-                      )
-                  });
+            return bpTab({
+                id,
+                disabled,
+                style: tabStyle,
+                items: [
+                    bpTooltip({
+                        content: tooltip as ReactElement,
+                        disabled: !tooltip,
+                        hoverOpenDelay: 1000,
+                        position: flipOrientation(orientation),
+                        items: hframe({
+                            className: 'xh-tab-switcher__tab',
+                            tabIndex: -1,
+                            testId,
+                            items: [
+                                icon,
+                                span(title),
+                                button({
+                                    testId: getTestId(testId, 'remove-btn'),
+                                    omit: !showRemoveAction,
+                                    tabIndex: -1,
+                                    icon: Icon.x(),
+                                    onClick: () => tab.containerModel.removeTab(tab)
+                                })
+                            ]
+                        })
+                    }),
+                    popover({
+                        omit: !enableMenuNavigation || isEmpty(tab.childTabConfigs),
+                        position: (() => {
+                            switch (orientation) {
+                                case 'bottom':
+                                    return 'top-left';
+                                case 'top':
+                                default:
+                                    return 'bottom-left';
+                            }
+                        })(),
+                        minimal: true,
+                        item: button({
+                            icon: (() => {
+                                switch (orientation) {
+                                    case 'bottom':
+                                        return Icon.chevronUp({size: 'sm'});
+                                    case 'top':
+                                        return Icon.chevronDown({size: 'sm'});
+                                    default:
+                                        return icon;
+                                }
+                            })()
+                        }),
+                        content: menu(
+                            tab.childTabConfigs?.map(child =>
+                                createMenuItemFromTabConfig(child, `${route}.${tab.id}`)
+                            )
+                        )
+                    })
+                ]
+            });
         });
 
         return box({
