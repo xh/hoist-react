@@ -13,7 +13,8 @@ import {
     XH,
     Some,
     Awaitable,
-    TimeoutExceptionConfig
+    TimeoutExceptionConfig,
+    HoistException
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -202,8 +203,8 @@ const enhancePromise = promisePrototype => {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (exception: unknown = null) => {
-                    if (exception && exception['isRoutine']) return;
+                doTrack = (exception: HoistException = null) => {
+                    if (exception?.isRoutine) return;
 
                     const endTime = Date.now(),
                         opts: TrackOptions = isString(options) ? {message: options} : {...options};
@@ -222,7 +223,14 @@ const enhancePromise = promisePrototype => {
                     ) {
                         opts.elapsed = null;
                     }
-                    if (exception) opts.severity = 'ERROR';
+                    if (exception) {
+                        opts.severity = 'ERROR';
+                        opts.data = {
+                            error: XH.exceptionHandler.sanitizeException(exception),
+                            data: opts.data
+                        };
+                        opts.correlationId = opts.correlationId ?? exception.correlationId;
+                    }
 
                     XH.track(opts);
                 };
@@ -233,8 +241,9 @@ const enhancePromise = promisePrototype => {
                     return v;
                 },
                 (t: unknown) => {
-                    doTrack(t);
-                    throw t;
+                    const e = Exception.create(t);
+                    doTrack(e);
+                    throw e;
                 }
             );
         },
