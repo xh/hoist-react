@@ -41,11 +41,11 @@ const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
         compact: true,
         items: [
             filler(),
-            gridCountLabel({gridModel, unit: 'entry'}),
+            gridCountLabel({unit: 'entry'}),
             '-',
-            gridFindField({gridModel, key: gridModel.xhId, width: 250}),
-            colChooserButton({gridModel}),
-            exportButton({gridModel})
+            gridFindField({width: 250}),
+            colChooserButton(),
+            exportButton()
         ]
     });
 });

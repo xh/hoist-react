@@ -1,6 +1,6 @@
 # Changelog
 
-## 75.0-SNAPSHOT - NOT YET RELEASED
+## 75.0-SNAPSHOT - Unreleased
 
 
 ### 🎁 New Features
@@ -18,6 +18,12 @@
   and hide `Add` context menu item in views in if `allowAdd=false`
 * DashCanvas: style with `position: relative;` to ensure that the empty state overlay is positioned
   within the canvas, not the next parent container up that has `position: relative;`.
+
+* `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
+Previously this value was cached on first render.
+
+* Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`) to rebind to a new observable GridModel available via context.
 
 ## v74.1.2 - 2025-07-03
 

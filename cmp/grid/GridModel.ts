@@ -488,9 +488,6 @@ export class GridModel extends HoistModel {
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
 
-    /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery: string = null;
-
     constructor(config: GridConfig) {
         super();
         makeObservable(this);
