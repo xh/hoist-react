@@ -94,65 +94,25 @@ export class NavigationManager {
     }
 
     private buildRouteFromNavigationEntry(entry: NavigationEntry): Route {
-        const {
-            id,
-            path,
-            canActivate,
-            forwardTo,
-            children,
-            encodeParams,
-            decodeParams,
-            defaultParams
-        } = entry;
+        const {id, path, children} = entry;
 
         return {
+            ...entry,
             name: id,
             // If path not manually specified, set to id in kabob-case.
             path: path ?? `/${id.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}`,
-            canActivate,
-            forwardTo,
-            encodeParams,
-            decodeParams,
-            defaultParams,
             children: children?.map(entry => this.buildRouteFromNavigationEntry(entry))
         };
     }
 
     private buildTabConfigFromNavigationEntry(entry: NavigationEntry): TabConfig {
         if ((!entry.children || isEmpty(entry.children)) && !entry.content) return null;
-        const {
-            id,
-            title,
-            icon,
-            tooltip,
-            disabled,
-            excludeFromSwitcher,
-            showRemoveAction,
-            content,
-            renderMode,
-            refreshMode,
-            omit,
-            children,
-            switcher
-        } = entry;
+        const {children} = entry;
         return {
-            id,
-            title,
-            icon,
-            tooltip,
-            disabled,
-            excludeFromSwitcher,
-            showRemoveAction,
-            content,
-            renderMode,
-            refreshMode,
-            omit,
-            switcher,
+            ...entry,
             childTabConfigs: children
                 ?.map(entry => this.buildTabConfigFromNavigationEntry(entry))
                 .filter(child => !isNil(child))
         };
     }
-
-    private generatePathFromId(id: string) {}
 }
