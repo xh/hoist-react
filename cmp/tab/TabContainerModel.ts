@@ -232,7 +232,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
     /**
      * Remove a single tab from the container.
-     * Can only remove tabs that are immediate children of this container.
+     * Supported for tabs that are immediate children of this container.
      **/
     @action
     removeTab(tab: TabModel | string) {
@@ -257,7 +257,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
     /**
      * Update the title of an existing tab.
-     * Can only be applied to tabs that are immediate children of this container.
+     * Supported for tabs that are immediate children of this container.
      * Logs failures quietly on debug if not found.
      * */
     setTabTitle(tabId: string, title: ReactNode) {
@@ -297,7 +297,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
      * will only be updated once the router state changes. Otherwise, the active Tab will be updated
      * immediately.
      *
-     * Can only activate tabs that are immediate children of this container.
+     * Supported for tabs that are immediate children of this container.
      *
      * @param tab - TabModel or id of TabModel to be activated.
      */

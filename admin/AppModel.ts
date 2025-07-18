@@ -129,7 +129,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'general',
                 icon: Icon.info(),
-                subTabContainer: {
+                childTabs: {
                     modelConfig: {
                         switcher: {orientation: 'left', testId: 'general-tab-switcher'},
                         tabs: [
@@ -143,7 +143,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'servers',
                 icon: Icon.server(),
-                subTabContainer: {
+                childTabs: {
                     modelConfig: {
                         switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
                         tabs: [
@@ -166,7 +166,7 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                subTabContainer: {
+                childTabs: {
                     modelConfig: {
                         switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
                         refreshMode: 'onShowAlways',

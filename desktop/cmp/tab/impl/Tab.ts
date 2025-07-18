@@ -30,8 +30,8 @@ export const tab = hoistCmp.factory({
     render({model, className, testId}) {
         let {
                 content,
-                subTabContainerModel,
-                subTabContainerProps,
+                childContainerModel,
+                childContainerProps,
                 isActive,
                 renderMode,
                 refreshContextModel,
@@ -49,14 +49,14 @@ export const tab = hoistCmp.factory({
         }
 
         // Auto-write content for sub-container.
-        if (subTabContainerModel) {
+        if (childContainerModel) {
             content = !content
-                ? tabContainer({model: subTabContainerModel, ...subTabContainerProps})
+                ? tabContainer({model: childContainerModel, ...childContainerProps})
                 : errorMessage({
                       error:
                           `Invalid tab configuration for id '${id}': ` +
-                          "A tab cannot define both 'content' and 'subTabContainer'. " +
-                          'Please move the content into a child tab or remove the subTabContainer.'
+                          "A tab cannot define both 'content' and 'childTabs'. " +
+                          'Please move the content into a child tab or remove the childTabs.'
                   });
         }
 

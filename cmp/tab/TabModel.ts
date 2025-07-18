@@ -47,14 +47,15 @@ export interface TabConfig {
     /** Display an affordance to allow the user to remove this tab from its container.*/
     showRemoveAction?: boolean;
 
-    /**
-     * Child TabContainerConfig. When this is defined, will construct a TabContainerModel
-     * that will be used by a TabContainer rendered instead of the defined content.
-     * */
-    subTabContainer?: TabContainerProps;
-
-    /** Item to be rendered by this tab if subTabContainer property is not also defined.*/
+    /** Item to be rendered by this tab. */
     content?: Content;
+
+    /**
+     * Child TabContainerProps. When this is defined, will construct a TabContainerModel
+     * that will be used by a TabContainer rendered instead of the defined content.
+     * An error will be rendered if both `content` and `childTabs` are defined.
+     * */
+    childTabs?: TabContainerProps;
 
     /**
      * Strategy for rendering this tab. If null, will default to its container's mode. See enum
@@ -91,13 +92,13 @@ export class TabModel extends HoistModel {
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
-    subTabContainerModel: TabContainerModel;
-    subTabContainerProps: TabContainerProps;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
 
-    readonly parentContainerModel: TabContainerModel;
+    parentContainerModel: TabContainerModel;
+    @managed childContainerModel: TabContainerModel;
+    childContainerProps: TabContainerProps;
 
     @managed refreshContextModel: RefreshContextModel;
 
@@ -114,7 +115,7 @@ export class TabModel extends HoistModel {
             disabled = false,
             excludeFromSwitcher = false,
             showRemoveAction = false,
-            subTabContainer,
+            childTabs,
             content,
             refreshMode,
             renderMode,
@@ -141,11 +142,11 @@ export class TabModel extends HoistModel {
         this.content = content;
         this.parentContainerModel = parentContainerModel;
 
-        this.subTabContainerModel = subTabContainer?.modelConfig
-            ? this.createSubTabContainerModel(subTabContainer.modelConfig)
+        this.childContainerModel = childTabs?.modelConfig
+            ? this.createChildContainerModel(childTabs.modelConfig)
             : null;
 
-        this.subTabContainerProps = omitBy(subTabContainer, ['modelConfig']);
+        this.childContainerProps = omitBy(childTabs, ['modelConfig']);
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -203,7 +204,7 @@ export class TabModel extends HoistModel {
      * @param config - The configuration object for the sub-tab container.
      * @returns A fully constructed TabContainerModel instance.
      */
-    private createSubTabContainerModel(config: TabContainerConfig): TabContainerModel {
+    private createChildContainerModel(config: TabContainerConfig): TabContainerModel {
         return new TabContainerModel({
             ...config,
             route: config.route ?? `${this.parentContainerModel?.route}.${this.id}`

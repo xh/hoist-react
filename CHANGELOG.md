@@ -2,11 +2,15 @@
 
 ## 75.0-SNAPSHOT - Unreleased
 
+### 💥 Breaking Changes
+
+* Renamed `TabModel.containerModel` prop to `parentContainerModel` for clarity.
+
 ### 🎁 New Features
 
 * Added new `GroupingChooserModel.sortDimensions` config - can be set to false to respect the order
   in which dimensions are provided to the model.
-* Added new `subTabContainer` property of type `TabContainerProps` to `TabConfig`. This enables tabs to render
+* Added new `childTabs` property of type `TabContainerProps` to `TabConfig`. This enables tabs to render
   their own nested tab containers as content.
 
 ### 🐞 Bug Fixes
