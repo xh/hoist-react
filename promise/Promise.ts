@@ -202,8 +202,10 @@ const enhancePromise = promisePrototype => {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (exception: unknown = null) => {
-                    if (exception && exception['isRoutine']) return;
+                doTrack = (rejectReason: unknown = null) => {
+                    const exception = rejectReason != null ? Exception.create(rejectReason) : null;
+
+                    if (exception?.isRoutine) return;
 
                     const endTime = Date.now(),
                         opts: TrackOptions = isString(options) ? {message: options} : {...options};
@@ -222,7 +224,14 @@ const enhancePromise = promisePrototype => {
                     ) {
                         opts.elapsed = null;
                     }
-                    if (exception) opts.severity = 'ERROR';
+                    if (exception) {
+                        opts.severity = 'ERROR';
+                        opts.data = {
+                            error: XH.exceptionHandler.sanitizeException(exception),
+                            data: opts.data
+                        };
+                        opts.correlationId = opts.correlationId ?? exception.correlationId;
+                    }
 
                     XH.track(opts);
                 };
