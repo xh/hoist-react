@@ -4,8 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
+import {tabContainer, TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
@@ -27,7 +28,15 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className, testId}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+        let {
+                content,
+                childContainerModel,
+                childContainerProps,
+                isActive,
+                renderMode,
+                refreshContextModel,
+                id
+            } = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -39,6 +48,19 @@ export const tab = hoistCmp.factory({
             return null;
         }
 
+        // Auto-write content for sub-container.
+        if (childContainerModel) {
+            content = !content
+                ? tabContainer({model: childContainerModel, ...childContainerProps})
+                : errorMessage({
+                      error:
+                          `Invalid tab configuration for id '${id}': ` +
+                          "A tab cannot define both 'content' and 'childTabs'. " +
+                          'Please move the content into a child tab or remove the childTabs.'
+                  });
+        }
+
+        // Wrap content and return
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
