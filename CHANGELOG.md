@@ -2,15 +2,16 @@
 
 ## 75.0-SNAPSHOT - Unreleased
 
-
 ### 🎁 New Features
 
 * New property `GridModel.expandToLevel` governs the expansion state of tree and grouped grids.
   Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
     * Most recently chosen level is persistable with other grid state.
     * Default grid context menu has a menu item to trigger bulk expand/collapse to particular depth
-     level for multi-level (e.g. depth > 2) grids.  To enable, implement the `GridModel.levelLabels`
-     property for your grid.
+      level for multi-level (e.g. depth > 2) grids.  To enable, implement the `GridModel.levelLabels`
+      property for your grid.
+* Added new `GroupingChooserModel.sortDimensions` config - can be set to false to respect the order
+  in which dimensions are provided to the model.
 
 ### 🐞 Bug Fixes
 
@@ -20,7 +21,7 @@
   within the canvas, not the next parent container up that has `position: relative;`.
 
 * `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
-Previously this value was cached on first render.
+  Previously this value was cached on first render.
 
 * Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`) to rebind to a new observable GridModel available via context.
@@ -36,9 +37,9 @@ Previously this value was cached on first render.
 ### 🎁 New Features
 
 * Further refinements to the `GroupingChooser` desktop UI.
-  * Added new props `favoritesSide` and `favoritesTitle`.
-  * Deprecated `popoverTitle` prop - use `editorTitle` instead.
-  * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+    * Added new props `favoritesSide` and `favoritesTitle`.
+    * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+    * Moved "Save as Favorite" button to a new compact toolbar within the popover.
 
 ### 🐞 Bug Fixes
 

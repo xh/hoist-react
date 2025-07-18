@@ -36,7 +36,6 @@ export const activityDetailView = hoistCmp.factory({
 });
 
 const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
-    const {gridModel} = model;
     return toolbar({
         compact: true,
         items: [

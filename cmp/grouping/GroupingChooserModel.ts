@@ -5,14 +5,39 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
+import {
+    HoistModel,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    SelectOption
+} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {difference, isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
+import {
+    compact,
+    difference,
+    isArray,
+    isEmpty,
+    isEqual,
+    isObject,
+    isString,
+    keys,
+    sortBy
+} from 'lodash';
 
 export interface GroupingChooserConfig {
+    /** True to accept an empty list as a valid value. */
+    allowEmpty?: boolean;
+
+    /**
+     * False (default) waits for the user to dismiss the popover before updating the
+     * external/observable value.
+     */
+    commitOnChange?: boolean;
+
     /**
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
      * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
@@ -20,29 +45,26 @@ export interface GroupingChooserConfig {
      */
     dimensions?: (DimensionSpec | string)[];
 
-    /** Initial value as an array of dimension names, or a function to produce such an array. */
-    initialValue?: string[] | (() => string[]);
-
     /**
      * Initial favorites as an array of dim name arrays, or a function to produce such an array.
      * Ignored if `persistWith.persistFavorites: false`.
      */
     initialFavorites?: string[][] | (() => string[][]);
 
-    /** Options governing persistence. */
-    persistWith?: GroupingChooserPersistOptions;
-
-    /** True to accept an empty list as a valid value. */
-    allowEmpty?: boolean;
+    /** Initial value as an array of dimension names, or a function to produce such an array. */
+    initialValue?: string[] | (() => string[]);
 
     /** Maximum number of dimensions allowed in a single grouping. */
     maxDepth?: number;
 
+    /** Options governing persistence. */
+    persistWith?: GroupingChooserPersistOptions;
+
     /**
-     * False (default) waits for the user to dismiss the popover before updating the
-     * external/observable value.
+     * True (default) to auto-sort dimensions by label. Set to false to show them in the order
+     * provided in the `dimensions` config.
      */
-    commitOnChange?: boolean;
+    sortDimensions?: boolean;
 }
 
 /**
@@ -70,9 +92,10 @@ export class GroupingChooserModel extends HoistModel {
     @observable.ref favorites: string[][] = [];
 
     allowEmpty: boolean;
-    maxDepth: number;
     commitOnChange: boolean;
+    maxDepth: number;
     persistFavorites: boolean = false;
+    sortDimensions: boolean;
 
     // Implementation fields for Control
     @observable.ref pendingValue: string[] = [];
@@ -117,20 +140,22 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     constructor({
-        dimensions,
-        initialValue = [],
-        initialFavorites = [],
-        persistWith = null,
         allowEmpty = false,
+        commitOnChange = false,
+        dimensions,
+        initialFavorites = [],
+        initialValue = [],
         maxDepth = null,
-        commitOnChange = false
+        persistWith = null,
+        sortDimensions = true
     }: GroupingChooserConfig) {
         super();
         makeObservable(this);
 
         this.allowEmpty = allowEmpty;
-        this.maxDepth = maxDepth;
         this.commitOnChange = commitOnChange;
+        this.maxDepth = maxDepth;
+        this.sortDimensions = sortDimensions;
 
         this.setDimensions(dimensions);
 
@@ -185,6 +210,15 @@ export class GroupingChooserModel extends HoistModel {
     @action
     closeEditor() {
         this.editorIsOpen = false;
+    }
+
+    /** Transform dimension names into SelectOptions, with displayName and optional sort. */
+    getDimSelectOpts(dims: string[] = this.availableDims): SelectOption[] {
+        const ret = compact(dims).map(dimName => ({
+            value: dimName,
+            label: this.getDimDisplayName(dimName)
+        }));
+        return this.sortDimensions ? sortBy(ret, 'label') : ret;
     }
 
     //-------------------------

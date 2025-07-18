@@ -5,11 +5,10 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, useContextModel, useLocalModel, XH} from '@xh/hoist/core';
-import {GridFindField} from '@xh/hoist/desktop/cmp/grid';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {errorIf, logError, stripTags, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     escapeRegExp,

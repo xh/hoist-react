@@ -210,7 +210,7 @@ export class Exception {
 
     private static createInternal(attributes: PlainObject, baseError?: Error) {
         const {message, ...rest} = attributes;
-        return Object.assign(
+        const ret = Object.assign(
             baseError ?? new Error(message),
             {
                 isRoutine: false,
@@ -218,6 +218,11 @@ export class Exception {
             },
             rest
         ) as HoistException;
+
+        // statuses of 0, 4XX, 5XX are server errors, so stack irrelevant and potentially misleading
+        if (ret.stack == null || /^[045]/.test(ret.httpStatus)) delete ret.stack;
+
+        return ret;
     }
 }
 

@@ -185,8 +185,7 @@ export class ExceptionHandler {
     async logOnServerAsync(options: ExceptionHandlerLoggingOptions): Promise<boolean> {
         const {exception, userAlerted, userMessage} = options;
         try {
-            const error = this.stringifyErrorSafely(exception),
-                username = XH.getUsername();
+            const username = XH.getUsername();
 
             if (!username) {
                 logWarn('Error report cannot be submitted to UI server - user unknown', this);
@@ -194,7 +193,7 @@ export class ExceptionHandler {
             }
 
             const data: PlainObject = {
-                error: JSON.parse(error),
+                error: this.sanitizeException(exception),
                 userAlerted
             };
             if (userMessage) data.userMessage = stripTags(userMessage);
@@ -216,8 +215,16 @@ export class ExceptionHandler {
     }
 
     /**
-     * Serialize an error object safely for submission to server, or user display.
-     * This method will avoid circular references and will trim the depth of the object.
+     * Sanitize an exception for submission to server. This method will avoid circular references
+     * trim the depth of the object, and redact sensitive info (e.g. passwords).
+     */
+    sanitizeException(exception: HoistException): PlainObject {
+        return JSON.parse(this.stringifyErrorSafely(exception));
+    }
+
+    /**
+     * Serialize an error object safely for user display.  This method will avoid circular
+     * references, trim the depth of the object, and redact sensitive info (e.g. passwords).
      */
     stringifyErrorSafely(exception: HoistException): string {
         try {
@@ -287,8 +294,6 @@ export class ExceptionHandler {
             this.hideParams(e, opts);
         }
 
-        this.cleanStack(e);
-
         return {e, opts};
     }
 
@@ -340,12 +345,6 @@ export class ExceptionHandler {
 
     private sessionMismatch(e: HoistException): boolean {
         return e.name === 'SessionMismatchException';
-    }
-
-    private cleanStack(e: HoistException) {
-        // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
-        // is irrelevant and potentially misleading
-        if (/^[045]/.test(e.httpStatus)) delete e.stack;
     }
 
     private cloneAndTrim(obj, depth = 5) {
