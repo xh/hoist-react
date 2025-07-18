@@ -246,7 +246,7 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: 1,
+            groupDefaultExpanded: model.expandToLevel,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -285,7 +285,6 @@ export class GridLocalModel extends HoistModel {
         if (model.treeMode) {
             ret = {
                 ...ret,
-                groupDefaultExpanded: 0,
                 groupDisplayType: 'custom',
                 treeData: true,
                 getDataPath: this.getDataPath

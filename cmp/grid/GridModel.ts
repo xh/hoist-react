@@ -36,6 +36,7 @@ import {
     SizingMode,
     Some,
     TaskObserver,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -167,6 +168,12 @@ export interface GridConfig {
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
 
+    /**
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
+     * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
+     */
+    expandToLevel?: number;
+
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
 
@@ -271,6 +278,13 @@ export interface GridConfig {
      * triggered via a long press (aka tap and hold) on mobile devices.
      */
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
+
+    /**
+     * Array of labels (or a function returning one) that describes the individual depth
+     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
+     * options in the default context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
 
     /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
@@ -397,6 +411,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: CellClickedEvent) => void;
     onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
     onCellContextMenu: (e: CellContextMenuEvent) => void;
+    levelLabels: Thunkable<string[]>;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -410,6 +425,7 @@ export class GridModel extends HoistModel {
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
+    @observable expandToLevel: number = 0;
 
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
@@ -440,7 +456,7 @@ export class GridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'exportExcel',
         'exportCsv',
@@ -459,6 +475,11 @@ export class GridModel extends HoistModel {
      */
     get autosizeEnabled(): boolean {
         return this.autosizeOptions.mode !== 'disabled';
+    }
+
+    get maxDepth(): number {
+        const {groupBy, store, treeMode} = this;
+        return treeMode ? store.maxDepth : groupBy ? groupBy.length : 0;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -518,6 +539,8 @@ export class GridModel extends HoistModel {
             restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             fullRowEditing = false,
             clicksToEdit = 2,
+            expandToLevel = treeMode ? 0 : 1,
+            levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
             appData,
@@ -532,7 +555,6 @@ export class GridModel extends HoistModel {
         this.treeMode = treeMode;
         this.treeStyle = treeStyle;
         this.showSummary = showSummary;
-
         this.emptyText = emptyText;
         this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.headerMenuDisplay = headerMenuDisplay;
@@ -565,6 +587,8 @@ export class GridModel extends HoistModel {
         this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
         this.highlightRowOnClick = highlightRowOnClick;
+        this.expandToLevel = expandToLevel;
+        this.levelLabels = levelLabels;
 
         throwIf(
             autosizeOptions.fillMode &&
@@ -616,6 +640,13 @@ export class GridModel extends HoistModel {
             track: () => this.isEditing,
             run: isEditing => (this.isInEditingMode = isEditing),
             debounce: 500
+        });
+
+        this.addReaction({
+            track: () => [this.expandToLevel, this.isReady],
+            run: () => {
+                this.agApi?.setGridOption('groupDefaultExpanded', this.expandToLevel);
+            }
         });
 
         if (!isEmpty(rest)) {
@@ -725,21 +756,29 @@ export class GridModel extends HoistModel {
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
-     * @param opts - set key 'ensureVisible' to true to make selection visible if it is within a
-     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param opts -
+     *      expandParentGroups - set to true to expand nodes to allow selection when the
+     *          first selectable node is in a collapsed group. Default true.
+     *      ensureVisible - set to to true to scroll to the selected row if it is outside of the
+     *      visible scroll window. Default true.
+     *
      */
-    async selectFirstAsync(opts?: {ensureVisible?: boolean}) {
-        const {ensureVisible = true} = opts ?? {};
+    async selectFirstAsync(opts?: {expandParentGroups?: boolean; ensureVisible?: boolean}) {
+        const {expandParentGroups = true, ensureVisible = true} = opts ?? {};
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
+        // Get first visible row with data - i.e. backed by a record, not a full-width group row.
         const {selModel} = this,
-            id = this.agGridModel.getFirstSelectableRowNode()?.data.id;
+            row = this.agGridModel.getFirstSelectableRowNode();
 
-        if (id != null) {
-            selModel.select(id);
-            if (ensureVisible) await this.ensureSelectionVisibleAsync();
+        // If displayed select it -- we never want to auto-expand parent rows
+        if (row && (expandParentGroups || row.displayed)) {
+            const id = row.data.id;
+            if (id != null) {
+                selModel.select(id);
+                if (ensureVisible) await this.ensureSelectionVisibleAsync();
+            }
         }
     }
 
@@ -749,7 +788,7 @@ export class GridModel extends HoistModel {
      * This method delegates to {@link selectFirstAsync}.
      */
     async preSelectFirstAsync() {
-        if (!this.hasSelection) return this.selectFirstAsync();
+        if (!this.hasSelection) return this.selectFirstAsync({expandParentGroups: false});
     }
 
     /** Deselect all rows. */
@@ -988,20 +1027,18 @@ export class GridModel extends HoistModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.expandAll();
-            this.noteAgExpandStateChange();
-        }
+        this.setExpandToLevel(this.maxDepth);
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.collapseAll();
-            this.noteAgExpandStateChange();
-        }
+        this.setExpandToLevel(0);
+    }
+
+    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    @action
+    setExpandToLevel(level: number) {
+        this.expandToLevel = level;
     }
 
     /**

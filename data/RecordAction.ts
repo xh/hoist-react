@@ -34,7 +34,7 @@ export interface RecordActionSpec extends TestSupportProps {
     actionFn?: (data: ActionFnData) => void;
 
     /** Function called prior to showing this item. */
-    displayFn?: (data: DisplayFnData) => PlainObject;
+    displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
     items?: RecordActionLike[];
@@ -107,7 +107,7 @@ export class RecordAction {
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: DisplayFnData) => PlainObject;
+    displayFn: (data: ActionFnData) => PlainObject;
     items: Array<RecordAction | string>;
     disabled: boolean;
     hidden: boolean;
@@ -206,9 +206,4 @@ export class RecordAction {
             (isNumber(required) && count === required)
         );
     }
-}
-
-interface DisplayFnData extends ActionFnData {
-    /** Default display config for the action */
-    defaultConfig?: PlainObject;
 }

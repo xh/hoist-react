@@ -9,6 +9,7 @@ import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {executeIfFunction} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
@@ -136,21 +137,9 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 hidden: !gridModel?.colChooserModel,
                 actionFn: () => (gridModel.colChooserModel as any)?.open()
             });
-        case 'expandCollapseAll':
-            return [
-                new RecordAction({
-                    text: 'Expand All',
-                    icon: Icon.groupRowExpanded(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.expandAll()
-                }),
-                new RecordAction({
-                    text: 'Collapse All',
-                    icon: Icon.groupRowCollapsed(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.collapseAll()
-                })
-            ];
+        case 'expandCollapseAll': // For backward compatibility
+        case 'expandCollapse':
+            return createExpandCollapseItem(gridModel);
         case 'export':
         case 'exportExcel':
             return new RecordAction({
@@ -269,4 +258,54 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
         default:
             return token;
     }
+}
+
+function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
+    if (!gridModel || gridModel.maxDepth === 0) return null;
+
+    return [
+        new RecordAction({
+            text: 'Expand All',
+            icon: Icon.groupRowExpanded(),
+            actionFn: () => gridModel.expandAll()
+        }),
+        new RecordAction({
+            text: 'Collapse All',
+            icon: Icon.groupRowCollapsed(),
+            actionFn: () => gridModel.collapseAll()
+        }),
+        levelExpandAction(gridModel)
+    ];
+}
+
+function levelExpandAction(gridModel: GridModel): RecordAction {
+    return new RecordAction({
+        text: 'Expand to ...',
+        displayFn: () => {
+            // Don't show for degenerate shallow grid models, or if we don't have labels
+            const {maxDepth, expandToLevel} = gridModel;
+            if (maxDepth <= 1) return {hidden: true};
+
+            const levelLabels = executeIfFunction(gridModel.levelLabels);
+            if (!levelLabels || levelLabels.length < maxDepth + 1) {
+                gridModel.logDebug(
+                    '"levelLabels" not provided or of insufficient length. No menu items shown.'
+                );
+                return {hidden: true};
+            }
+
+            const items = levelLabels.map((label, idx) => {
+                const isCurrLevel =
+                    expandToLevel === idx ||
+                    (expandToLevel > maxDepth && idx === levelLabels.length - 1);
+
+                return {
+                    icon: isCurrLevel ? Icon.check() : null,
+                    text: label,
+                    actionFn: () => gridModel.setExpandToLevel(idx)
+                };
+            });
+            return {items};
+        }
+    });
 }
