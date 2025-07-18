@@ -4,8 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
+import {tabContainer, TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
@@ -27,7 +28,15 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className, testId}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+        let {
+                content,
+                subTabContainer,
+                subTabContainerClass,
+                isActive,
+                renderMode,
+                refreshContextModel,
+                id
+            } = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -37,6 +46,17 @@ export const tab = hoistCmp.factory({
             (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
             return null;
+        }
+
+        if (content && subTabContainer) {
+            content = errorMessage({
+                error:
+                    `Invalid tab configuration for id '${id}':` +
+                    "A tab cannot define both 'content' and 'subTabContainer'. " +
+                    'Please move the content into a child tab or remove the subTabContainer.'
+            });
+        } else if (subTabContainer) {
+            content = tabContainer({className: subTabContainerClass, model: subTabContainer});
         }
 
         return frame({

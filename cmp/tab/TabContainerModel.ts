@@ -204,11 +204,13 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.tabs = tabs.map(t =>
             t instanceof TabModel
                 ? t
-                : new TabModel({
-                      ...t,
-                      containerModel: this,
-                      xhImpl: this.xhImpl
-                  })
+                : new TabModel(
+                      {
+                          ...t,
+                          xhImpl: this.xhImpl
+                      },
+                      this
+                  )
         );
 
         if (oldTabs) {
@@ -228,7 +230,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         return this.findTab(tab.id);
     }
 
-    /** Remove a single tab from the container. */
+    /**
+     * Remove a single tab from the container.
+     * Can only remove tabs that are immediate children of this container.
+     **/
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
@@ -250,7 +255,11 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.setTabs(without(tabs, toRemove));
     }
 
-    /** Update the title of an existing tab. Logs failures quietly on debug if not found.  */
+    /**
+     * Update the title of an existing tab.
+     * Can only be applied to tabs that are immediate children of this container.
+     * Logs failures quietly on debug if not found.
+     * */
     setTabTitle(tabId: string, title: ReactNode) {
         const tab = this.findTab(tabId);
         if (tab) {
@@ -260,6 +269,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         }
     }
 
+    /** Find a tab that is an immediate child of this container. */
     findTab(id: string): TabModel {
         return find(this.tabs, {id});
     }
@@ -284,8 +294,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
      * Set the currently active Tab.
      *
      * If using routing, this method will navigate to the new tab via the router and the active Tab
-     * will only be updated once the router state changes. Otherwise the active Tab will be updated
+     * will only be updated once the router state changes. Otherwise, the active Tab will be updated
      * immediately.
+     *
+     * Can only activate tabs that are immediate children of this container.
      *
      * @param tab - TabModel or id of TabModel to be activated.
      */
