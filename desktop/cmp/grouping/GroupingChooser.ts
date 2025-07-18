@@ -29,7 +29,7 @@ import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautif
 import {apiDeprecated, elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, isNil, isUndefined, sortBy} from 'lodash';
+import {isEmpty, isNil, isUndefined} from 'lodash';
 import './GroupingChooser.scss';
 import {ReactNode} from 'react';
 
@@ -264,7 +264,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
 const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
     render({model, dimension, idx}) {
         // The options for this select include its current value
-        const options = getDimOptions([...model.availableDims, dimension], model);
+        const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
         return draggable({
             key: dimension,
@@ -346,7 +346,8 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
 const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
     render({model}) {
         if (!model.isAddEnabled) return null;
-        const options = getDimOptions(model.availableDims, model);
+
+        const options = model.getDimSelectOpts();
         return div({
             className: 'xh-grouping-chooser__add-control',
             items: [
@@ -372,25 +373,14 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
 });
 
 /**
- * Extract integer values from CSS transform string.
- * Works for both `translate` and `translate3d`
- * e.g. `translate3d(250px, 150px, 0px)` is equivalent to [250, 150, 0]
+ * Extract integer values from CSS transform string. Works for both `translate` and `translate3d`.
+ * e.g. `translate3d(250px, 150px, 0px) -> [250, 150, 0]`
  */
 function parseTransform(transformStr: string): number[] {
     return transformStr
         ?.replace('3d', '')
         .match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g)
         ?.map(it => parseInt(it));
-}
-
-/**
- * Convert a list of dim names into select options
- */
-function getDimOptions(dims, model) {
-    const ret = compact(dims).map(dimName => {
-        return {value: dimName, label: model.getDimDisplayName(dimName)};
-    });
-    return sortBy(ret, 'label');
 }
 
 //------------------
