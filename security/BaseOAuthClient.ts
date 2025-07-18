@@ -14,7 +14,7 @@ import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
-import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
+import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
@@ -58,8 +58,7 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     autoRefreshSecs?: number;
 
     /**
-     * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
-     * this client will always request.
+     * Scopes to request for id token.  Defaults to `['openid', 'email', 'profile']` scopes.
      */
     idScopes?: string[];
 
@@ -140,7 +139,7 @@ export abstract class BaseOAuthClient<
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
-        this.idScopes = union(['openid', 'email'], config.idScopes);
+        this.idScopes = config.idScopes ?? ['openid', 'email', 'profile'];
         this.accessSpecs = this.config.accessTokens ?? {};
     }
 

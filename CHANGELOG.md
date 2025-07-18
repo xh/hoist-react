@@ -20,6 +20,12 @@
 * Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`) to rebind to a new observable GridModel available via context.
 
+### Technical
+* `BaseOAuthClient.idScopes` now defaults to `['openid','email', 'profile']`.  The existing
+   implementation had an empty default, but would always include `openid` and `email`.  Clients
+   should not typically need to change this default, but if they should now be sure to include all
+   scopes needed.
+
 ## v74.1.2 - 2025-07-03
 
 ### 🐞 Bug Fixes
