@@ -13,8 +13,7 @@ import {
     XH,
     Some,
     Awaitable,
-    TimeoutExceptionConfig,
-    HoistException
+    TimeoutExceptionConfig
 } from '@xh/hoist/core';
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -203,7 +202,9 @@ const enhancePromise = promisePrototype => {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (exception: HoistException = null) => {
+                doTrack = (rejectReason: unknown = null) => {
+                    const exception = rejectReason != null ? Exception.create(rejectReason) : null;
+
                     if (exception?.isRoutine) return;
 
                     const endTime = Date.now(),
@@ -241,9 +242,8 @@ const enhancePromise = promisePrototype => {
                     return v;
                 },
                 (t: unknown) => {
-                    const e = Exception.create(t);
-                    doTrack(e);
-                    throw e;
+                    doTrack(t);
+                    throw t;
                 }
             );
         },
