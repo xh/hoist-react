@@ -17,8 +17,9 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {startCase} from 'lodash';
+import {omitBy, startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
+import {TabContainerProps} from '@xh/hoist/cmp/tab/TabContainer';
 import {ReactElement, ReactNode} from 'react';
 
 export interface TabConfig {
@@ -50,10 +51,7 @@ export interface TabConfig {
      * Child TabContainerConfig. When this is defined, will construct a TabContainerModel
      * that will be used by a TabContainer rendered instead of the defined content.
      * */
-    subTabContainer?: TabContainerConfig;
-
-    /** Css class to be added when rendering the tab container. */
-    subTabContainerClass?: string;
+    subTabContainer?: TabContainerProps;
 
     /** Item to be rendered by this tab if subTabContainer property is not also defined.*/
     content?: Content;
@@ -93,8 +91,8 @@ export class TabModel extends HoistModel {
     @bindable excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
     content: Content;
-    subTabContainer: TabContainerModel;
-    subTabContainerClass: string;
+    subTabContainerModel: TabContainerModel;
+    subTabContainerProps: TabContainerProps;
 
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
@@ -117,7 +115,6 @@ export class TabModel extends HoistModel {
             excludeFromSwitcher = false,
             showRemoveAction = false,
             subTabContainer,
-            subTabContainerClass,
             content,
             refreshMode,
             renderMode,
@@ -144,8 +141,11 @@ export class TabModel extends HoistModel {
         this.content = content;
         this.parentContainerModel = parentContainerModel;
 
-        this.subTabContainer = this.createSubTabContainerModel(subTabContainer);
-        this.subTabContainerClass = subTabContainerClass;
+        this.subTabContainerModel = subTabContainer?.modelConfig
+            ? this.createSubTabContainerModel(subTabContainer.modelConfig)
+            : null;
+
+        this.subTabContainerProps = omitBy(subTabContainer, ['modelConfig']);
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -203,12 +203,10 @@ export class TabModel extends HoistModel {
      * @param config - The configuration object for the sub-tab container.
      * @returns A fully constructed TabContainerModel instance.
      */
-    createSubTabContainerModel(config: TabContainerConfig) {
-        if (config) {
-            return new TabContainerModel({
-                ...config,
-                route: config.route ?? `${this.parentContainerModel?.route}.${this.id}`
-            });
-        }
+    private createSubTabContainerModel(config: TabContainerConfig): TabContainerModel {
+        return new TabContainerModel({
+            ...config,
+            route: config.route ?? `${this.parentContainerModel?.route}.${this.id}`
+        });
     }
 }
