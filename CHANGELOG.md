@@ -4,27 +4,24 @@
 
 ### 🎁 New Features
 
-* New property `GridModel.expandToLevel` governs the expansion state of tree and grouped grids.
-  Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
-    * Most recently chosen level is persistable with other grid state.
-    * Default grid context menu has a menu item to trigger bulk expand/collapse to particular depth
-      level for multi-level (e.g. depth > 2) grids.  To enable, implement the `GridModel.levelLabels`
-      property for your grid.
-* Added new `GroupingChooserModel.sortDimensions` config - can be set to false to respect the order
-  in which dimensions are provided to the model.
+* Added new `GridModel.expandToLevel` config to control the expansion state of tree/grouped grids.
+    * Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
+    * The most recently expanded level is persistable with other grid state.
+    * The default grid context menu now supports a new item to allow users to expand/collapse out to
+      a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
+* Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
+  which `dimensions` are provided to the model.
 
 ### 🐞 Bug Fixes
 
-* DashCanvas: ensure `allowAdd=false` is not enforced if loadingState
-  and hide `Add` context menu item in views in if `allowAdd=false`
-* DashCanvas: style with `position: relative;` to ensure that the empty state overlay is positioned
-  within the canvas, not the next parent container up that has `position: relative;`.
-
-* `useContextModel` is now reactive to a change of an (observable) resolved model when it is set.
-  Previously this value was cached on first render.
-
-* Fixes to framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
-  `GridFindField`) to rebind to a new observable GridModel available via context.
+* Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
+  via `loadState()` and hiding the `Add` context menu item in views as intended.
+* Updated `DashCanvas` CSS to set `position: relative;`, ensuring that the empty state overlay is
+  positioned as intended and does not extend beyond the canvas.
+* Improved the core `useContextModel` hook to make it reactive to a change of an (observable)
+  resolved model. Previously this value was cached on first render.
+* Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
 
 ## v74.1.2 - 2025-07-03
 

@@ -280,9 +280,10 @@ export interface GridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
-     * Array of labels (or a function returning one) that describes the individual depth
-     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
-     * options in the default context menu.
+     * Array of strings (or a function returning one) providing user-facing labels for each depth
+     * level in a tree or grouped grid - e.g. `['Country', 'State', 'City']`. If set, the
+     * expand/collapse options in the default context menu will be enhanced to allow users to
+     * expand/collapse to a specific level.
      */
     levelLabels?: Thunkable<string[]>;
 
