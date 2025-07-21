@@ -148,7 +148,7 @@ export interface ZoneGridConfig {
     groupBy?: Some<string>;
 
     /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
-    expandToLevel?: number;
+    expandLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;

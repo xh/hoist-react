@@ -83,12 +83,12 @@ export function initPersist(
             : rootPersistWith;
         PersistenceProvider.create({
             persistOptions: {
-                path: `${path}.expandToLevel`,
+                path: `${path}.expandLevel`,
                 ...persistWith
             },
             target: {
-                getPersistableState: () => new PersistableState(gridModel.expandToLevel),
-                setPersistableState: ({value}) => gridModel.setExpandToLevel(value)
+                getPersistableState: () => new PersistableState(gridModel.expandLevel),
+                setPersistableState: ({value}) => gridModel.expandToLevel(value)
             },
             owner: gridModel
         });

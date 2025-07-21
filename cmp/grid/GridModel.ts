@@ -172,7 +172,7 @@ export interface GridConfig {
      * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
      * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
      */
-    expandToLevel?: number;
+    expandLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
@@ -426,7 +426,7 @@ export class GridModel extends HoistModel {
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
-    @observable expandToLevel: number = 0;
+    @observable expandLevel: number = 0;
 
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
@@ -540,7 +540,7 @@ export class GridModel extends HoistModel {
             restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             fullRowEditing = false,
             clicksToEdit = 2,
-            expandToLevel = treeMode ? 0 : 1,
+            expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
@@ -588,7 +588,7 @@ export class GridModel extends HoistModel {
         this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
         this.highlightRowOnClick = highlightRowOnClick;
-        this.expandToLevel = expandToLevel;
+        this.expandLevel = expandLevel;
         this.levelLabels = levelLabels;
 
         throwIf(
@@ -644,9 +644,9 @@ export class GridModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => [this.expandToLevel, this.isReady],
+            track: () => [this.expandLevel, this.isReady],
             run: () => {
-                this.agApi?.setGridOption('groupDefaultExpanded', this.expandToLevel);
+                this.agApi?.setGridOption('groupDefaultExpanded', this.expandLevel);
             }
         });
 
@@ -1028,18 +1028,18 @@ export class GridModel extends HoistModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        this.setExpandToLevel(this.maxDepth);
+        this.expandToLevel(this.maxDepth);
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        this.setExpandToLevel(0);
+        this.expandToLevel(0);
     }
 
     /** Expand all parent rows in grouped or tree grid to the specified level. */
     @action
-    setExpandToLevel(level: number) {
-        this.expandToLevel = level;
+    expandToLevel(level: number) {
+        this.expandLevel = level;
     }
 
     /**

@@ -43,7 +43,7 @@ export class ClusterObjectsModel extends HoistModel {
     @managed gridModel = new GridModel({
         selModel: 'multiple',
         treeMode: true,
-        expandToLevel: 2,
+        expandLevel: 2,
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('cluster-objects'), columns: 'ALL'},

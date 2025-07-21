@@ -283,7 +283,7 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         text: 'Expand to ...',
         displayFn: () => {
             // Don't show for degenerate shallow grid models, or if we don't have labels
-            const {maxDepth, expandToLevel} = gridModel;
+            const {maxDepth, expandLevel} = gridModel;
             if (maxDepth <= 1) return {hidden: true};
 
             // Validate level labels.
@@ -300,13 +300,13 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
 
             const items = levelLabels.map((label, idx) => {
                 const isCurrLevel =
-                    expandToLevel === idx ||
-                    (expandToLevel > maxDepth && idx === levelLabels.length - 1);
+                    expandLevel === idx ||
+                    (expandLevel > maxDepth && idx === levelLabels.length - 1);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : null,
                     text: label,
-                    actionFn: () => gridModel.setExpandToLevel(idx)
+                    actionFn: () => gridModel.expandToLevel(idx)
                 };
             });
             return {items};

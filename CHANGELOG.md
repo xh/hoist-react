@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Added new `GridModel.expandToLevel` config to control the expansion state of tree/grouped grids.
+* Added new `GridModel.expandLevel` config to control the expansion state of tree/grouped grids.
     * Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
     * The most recently expanded level is persistable with other grid state.
     * The default grid context menu now supports a new item to allow users to expand/collapse out to
