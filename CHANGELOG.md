@@ -11,6 +11,8 @@
       a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
+* Added new `childTabs` property to `TabConfig`.  Apps should use this property for a declarative
+  way to create nested tabs within a `TabContainer`.
 
 ### 🐞 Bug Fixes
 
