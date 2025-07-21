@@ -429,6 +429,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             exportOptions: {filename: exportFilename('activity-summary')},
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
+            expandLevel: 1,
+            levelLabels: () => ['Total', ...this.groupingChooserModel.valueDisplayNames],
             columns: [
                 {
                     field: {

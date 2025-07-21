@@ -12,8 +12,10 @@ import {
     compact,
     debounce as lodashDebounce,
     get,
+    isArray,
     isEmpty,
     isNumber,
+    isObject,
     isString,
     isUndefined,
     omit,
@@ -88,6 +90,7 @@ export abstract class PersistenceProvider<S = any> {
 
             const providerClass = this.parseProviderClass<S>(cfg.persistOptions);
             ret = new providerClass(cfg);
+            ret.ensureValid();
             ret.bindToTarget(cfg.target);
             return ret;
         } catch (e) {
@@ -251,5 +254,14 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    private ensureValid() {
+        const data = this.readRaw();
+        throwIf(
+            !(isObject(data) && !isArray(data)),
+            `PersistenceProvider for ${this.path} may not be configured correctly.  The provider ` +
+                'should produce a javascript object for reading property values.'
+        );
     }
 }

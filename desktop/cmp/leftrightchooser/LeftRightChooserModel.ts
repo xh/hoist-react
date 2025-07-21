@@ -158,16 +158,19 @@ export class LeftRightChooserModel extends HoistModel {
             ]
         };
 
-        const leftTextCol = {
+        const colSpec = {
                 field: 'text',
                 flex: true,
+                resizable: true
+            },
+            leftTextCol = {
+                ...colSpec,
                 headerName: () =>
                     leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
-                field: 'text',
-                flex: true,
+                ...colSpec,
                 headerName: () =>
                     rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
@@ -186,6 +189,7 @@ export class LeftRightChooserModel extends HoistModel {
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol],
             contextMenu: false,
+            expandLevel: leftGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 
@@ -197,6 +201,7 @@ export class LeftRightChooserModel extends HoistModel {
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol],
             contextMenu: false,
+            expandLevel: rightGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 

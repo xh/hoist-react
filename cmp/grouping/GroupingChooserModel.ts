@@ -122,6 +122,11 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
+    get valueDisplayNames(): string[] {
+        return this.value.map(dimName => this.getDimDisplayName(dimName));
+    }
+
+    @computed
     get isAddEnabled(): boolean {
         const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
             limit =
