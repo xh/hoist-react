@@ -17,10 +17,11 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {omitBy, startCase} from 'lodash';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
 import {TabContainerProps} from '@xh/hoist/cmp/tab/TabContainer';
-import {ReactElement, ReactNode} from 'react';
+import {ReactElement, ReactNode, RefObject} from 'react';
 
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
@@ -51,9 +52,9 @@ export interface TabConfig {
     content?: Content;
 
     /**
-     * Child TabContainerProps. When this is defined, will construct a TabContainerModel
-     * that will be used by a TabContainer rendered instead of the defined content.
-     * An error will be rendered if both `content` and `childTabs` are defined.
+     * Specification for a child tab container for this tab.  Specify as an alternative to
+     * content.  The associated model for this container will be available via the
+     * `TabModel.childTabs` property.  It is an error to define both `content` and `childTabs`.
      * */
     childTabs?: TabContainerProps;
 
@@ -93,17 +94,23 @@ export class TabModel extends HoistModel {
     showRemoveAction: boolean;
     content: Content;
 
+    containerModel: TabContainerModel;
+    @managed refreshContextModel: RefreshContextModel;
+
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
+    private _childTabsRef: RefObject<TabContainerModel> = createObservableRef();
 
-    parentContainerModel: TabContainerModel;
-    @managed childContainerModel: TabContainerModel;
-    childContainerProps: TabContainerProps;
-
-    @managed refreshContextModel: RefreshContextModel;
+    /** Internal.  For use by Tab component. */
+    _childTabsProps: TabContainerProps;
 
     get isTabModel() {
         return true;
+    }
+
+    /** Child TabContainerModel. For nested TabContainers only. */
+    get childTabs(): TabContainerModel {
+        return this._childTabsRef.current;
     }
 
     constructor(
@@ -121,7 +128,7 @@ export class TabModel extends HoistModel {
             renderMode,
             xhImpl = false
         }: TabConfig,
-        parentContainerModel?: TabContainerModel
+        containerModel: TabContainerModel
     ) {
         super();
         makeObservable(this);
@@ -131,6 +138,7 @@ export class TabModel extends HoistModel {
             showRemoveAction && XH.isMobileApp,
             'Removable Tabs not supported in Mobile toolkit.'
         );
+        throwIf(childTabs && content, "A tab cannot define both 'content' and 'childTabs'. ");
 
         this.id = id.toString();
         this.title = title;
@@ -140,13 +148,9 @@ export class TabModel extends HoistModel {
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
         this.content = content;
-        this.parentContainerModel = parentContainerModel;
+        this.containerModel = containerModel;
 
-        this.childContainerModel = childTabs?.modelConfig
-            ? this.createChildContainerModel(childTabs.modelConfig)
-            : null;
-
-        this.childContainerProps = omitBy(childTabs, ['modelConfig']);
+        this._childTabsProps = childTabs ? {modelRef: this._childTabsRef, ...childTabs} : null;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -156,30 +160,30 @@ export class TabModel extends HoistModel {
     }
 
     activate() {
-        this.parentContainerModel.activateTab(this.id);
+        this.containerModel.activateTab(this.id);
     }
 
     get renderMode(): RenderMode {
-        return this._renderMode ?? this.parentContainerModel?.renderMode;
+        return this._renderMode ?? this.containerModel?.renderMode;
     }
 
     get refreshMode(): RefreshMode {
-        return this._refreshMode ?? this.parentContainerModel?.refreshMode;
+        return this._refreshMode ?? this.containerModel?.refreshMode;
     }
 
     @computed
     get isActive(): boolean {
-        return this.parentContainerModel?.activeTabId === this.id;
+        return this.containerModel?.activeTabId === this.id;
     }
 
     @action
     setDisabled(disabled: boolean) {
         if (disabled && this.isActive) {
-            const {parentContainerModel} = this,
-                tab = parentContainerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
+            const {containerModel} = this,
+                tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
 
             throwIf(!tab, 'Cannot disable last enabled tab.');
-            parentContainerModel.activateTab(tab.id);
+            containerModel.activateTab(tab.id);
         }
 
         this.disabled = disabled;
@@ -207,7 +211,7 @@ export class TabModel extends HoistModel {
     private createChildContainerModel(config: TabContainerConfig): TabContainerModel {
         return new TabContainerModel({
             ...config,
-            route: config.route ?? `${this.parentContainerModel?.route}.${this.id}`
+            route: config.route ?? `${this.containerModel?.route}.${this.id}`
         });
     }
 }
