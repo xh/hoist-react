@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {GridOptions} from '@ag-grid-community/core';
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
@@ -28,21 +27,15 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
     className: 'xh-lr-chooser',
 
     render({model, ...props}, ref) {
-        const agOptions: GridOptions = {
-            defaultColDef: {
-                resizable: false
-            }
-        };
-
         return vbox({
             ref,
             items: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
                     items: [
-                        grid({model: model.leftModel, agOptions}),
+                        grid({model: model.leftModel}),
                         chooserToolbar(),
-                        grid({model: model.rightModel, agOptions})
+                        grid({model: model.rightModel})
                     ]
                 }),
                 description()

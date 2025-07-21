@@ -773,7 +773,7 @@ export class GridModel extends HoistModel {
         const {selModel} = this,
             row = this.agGridModel.getFirstSelectableRowNode();
 
-        // If displayed select it -- we never want to auto-expand parent rows
+        // If displayed, or potentially expandable to display, select it.
         if (row && (expandParentGroups || row.displayed)) {
             const id = row.data.id;
             if (id != null) {

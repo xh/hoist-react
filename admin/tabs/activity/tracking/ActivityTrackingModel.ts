@@ -430,7 +430,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             emptyText: 'No activity reported...',
             sortBy: ['cubeLabel'],
             expandToLevel: 1,
-            levelLabels: () => ['Total', ...this.groupingChooserModel.getValueDisplayNames()],
+            levelLabels: () => ['Total', ...this.groupingChooserModel.valueDisplayNames],
             columns: [
                 {
                     field: {

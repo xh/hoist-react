@@ -286,10 +286,14 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
             const {maxDepth, expandToLevel} = gridModel;
             if (maxDepth <= 1) return {hidden: true};
 
+            // Validate level labels.
             const levelLabels = executeIfFunction(gridModel.levelLabels);
-            if (!levelLabels || levelLabels.length < maxDepth + 1) {
+            if (!levelLabels) {
+                return {hidden: true};
+            }
+            if (levelLabels.length < maxDepth + 1) {
                 gridModel.logDebug(
-                    '"levelLabels" not provided or of insufficient length. No menu items shown.'
+                    'Value produced by `GridModel.levelLabels` has insufficient length. No menu items shown.'
                 );
                 return {hidden: true};
             }

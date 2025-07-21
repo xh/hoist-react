@@ -158,16 +158,19 @@ export class LeftRightChooserModel extends HoistModel {
             ]
         };
 
-        const leftTextCol = {
+        const colSpec = {
                 field: 'text',
                 flex: true,
+                resizable: true
+            },
+            leftTextCol = {
+                ...colSpec,
                 headerName: () =>
                     leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
-                field: 'text',
-                flex: true,
+                ...colSpec,
                 headerName: () =>
                     rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
