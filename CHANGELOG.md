@@ -11,6 +11,8 @@
       a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
+* The usage of the `RelativeTimestamp` component has been streamlined by deprecating the `options`
+  prop.  All `RelativeTimestampOptions` are now supported by this component as top-level props.
 
 ### 🐞 Bug Fixes
 
