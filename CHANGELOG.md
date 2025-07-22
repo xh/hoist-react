@@ -9,6 +9,9 @@
     * The most recently expanded level is persistable with other grid state.
     * The default grid context menu now supports a new item to allow users to expand/collapse out to
       a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
+    * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
+      Provides easier discoverability on desktop and supports this feature on mobile, where we
+      don't have context menus.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
 * The usage of the `RelativeTimestamp` component has been streamlined by deprecating the `options`

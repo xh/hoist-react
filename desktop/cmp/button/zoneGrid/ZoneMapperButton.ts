@@ -13,10 +13,10 @@ import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from './Button';
+import {button, ButtonProps} from '../Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
-    /** ZoneGridModel of the grid for which this button should show a chooser. */
+    /** ZoneGridModel to which this button should bind. Will find nearest in context if not provided. */
     zoneGridModel?: ZoneGridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
@@ -25,28 +25,27 @@ export interface ZoneMapperButtonProps extends ButtonProps {
 
 /**
  * A convenience button to trigger the display of a ZoneMapper UI for ZoneGrid configuration.
- *
- * Requires a `ZoneGridModel.zoneMapperModel` config option, set to true for default implementation.
+ * Requires {@link ZoneGridConfig.zoneMapperModel} to be configured on the bound ZoneGridModel.
  */
 export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMapperButtonProps>({
     displayName: 'ZoneMapperButton',
+    className: 'xh-zone-mapper-button',
     model: false,
-    render({icon, title, zoneGridModel, popoverPosition, disabled, ...rest}, ref) {
-        zoneGridModel = withDefault(zoneGridModel, useContextModel(ZoneGridModel));
 
+    render({className, icon, title, zoneGridModel, popoverPosition, disabled, ...rest}, ref) {
+        zoneGridModel = withDefault(zoneGridModel, useContextModel(ZoneGridModel));
         const mapperModel = zoneGridModel?.mapperModel as ZoneMapperModel;
 
+        // Validate bound model available and suitable for use.
         if (!zoneGridModel) {
             logError(
-                "No ZoneGridModel available. Provide via a 'zoneGridModel' prop, or context.",
+                'No ZoneGridModel available - provide via `zoneGridModel` prop or context - button will be disabled',
                 ZoneMapperButton
             );
             disabled = true;
-        }
-
-        if (!mapperModel) {
+        } else if (!mapperModel) {
             logError(
-                'No ZoneMapperModel available on bound ZoneGridModel - enable via ZoneGridModel.zoneMapperModel config.',
+                'ZoneMapper not enabled on bound ZoneGridModel - button will be disabled.',
                 ZoneMapperButton
             );
             disabled = true;
@@ -60,6 +59,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             item: button({
                 icon: withDefault(icon, Icon.gridLarge()),
                 title: withDefault(title, 'Customize fields...'),
+                className,
                 disabled,
                 ...rest
             }),
