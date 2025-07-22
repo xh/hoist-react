@@ -148,11 +148,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                             field: 'expires',
                             info: relativeTimestamp({
                                 timestamp: formModel.values.expires,
-                                options: {
-                                    allowFuture: true,
-                                    emptyResult:
-                                        'Set a date & time to automatically hide this banner.'
-                                }
+                                allowFuture: true,
+                                emptyResult: 'Set a date & time to automatically hide this banner.'
                             }),
                             item: dateInput({
                                 enableClear: true,
