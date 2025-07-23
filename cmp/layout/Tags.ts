@@ -51,3 +51,5 @@ export const th = elementFactory('th');
 export const thead = elementFactory('thead');
 export const tr = elementFactory('tr');
 export const ul = elementFactory('ul');
+export const details = elementFactory('details');
+export const summary = elementFactory('summary');
