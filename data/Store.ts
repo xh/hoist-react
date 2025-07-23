@@ -705,7 +705,7 @@ export class Store extends HoistBase {
     /** True if the store has changes which need to be committed. */
     @computed
     get isDirty(): boolean {
-        return this._current !== this._committed;
+        return !equal(this._current, this._committed);
     }
 
     /** Alias for {@link Store.isDirty} */
