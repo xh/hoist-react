@@ -416,7 +416,7 @@ export class FilterChooserModel extends HoistModel {
     // Transfer the value filter to the canonical set of individual filters for display.
     // See toValueFilter() for the inverse of this operation.
     private toDisplayFilters(filter: Filter): Filter[] {
-        const includeLikeOps = FieldFilter.INCLUDE_LIKE_OPERATORS;
+        const {INCLUDE_LIKE_OPERATORS, ARRAY_OPERATORS} = FieldFilter;
 
         if (!filter) return [];
         const unsupported = s => {
@@ -437,7 +437,8 @@ export class FilterChooserModel extends HoistModel {
                 (f.op == 'AND' ||
                     (f.field &&
                         f.filters.every(
-                            it => it instanceof FieldFilter && includeLikeOps.includes(it.op)
+                            it =>
+                                it instanceof FieldFilter && INCLUDE_LIKE_OPERATORS.includes(it.op)
                         )))
                 ? f.filters
                 : f;
@@ -451,7 +452,7 @@ export class FilterChooserModel extends HoistModel {
         const groupMap = groupBy(fieldFilters, ({op, field}) => `${op}|${field}`);
         forEach(groupMap, filters => {
             const {op} = filters[0];
-            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
+            if (filters.length > 1 && ARRAY_OPERATORS.includes(op)) {
                 unsupported(`Multiple filters cannot be provided with ${op} operator`);
             }
         });
