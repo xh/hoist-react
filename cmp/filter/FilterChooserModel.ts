@@ -458,7 +458,6 @@ export class FilterChooserModel extends HoistModel {
         });
 
         // 3) Finally unroll multi-value filters to one filter per value.
-        // The multiple values will later be restored.
         return flatMap(ret, f => {
             return f instanceof FieldFilter && isArray(f.value)
                 ? f.value.map(value => new FieldFilter({...f, value}))
