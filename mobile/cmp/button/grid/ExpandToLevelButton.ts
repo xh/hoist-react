@@ -52,7 +52,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
 
             // Render a disabled button if requested or if we have a flat grid, or no level labels
             const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
-            if (disabled || maxDepth <= 1 || resolvedLevelLabels) return disabledButton();
+            if (disabled || maxDepth <= 1 || !resolvedLevelLabels) return disabledButton();
 
             const menuItems: MenuItemLike[] = resolvedLevelLabels.map((label, idx) => {
                 const isCurrLevel =
