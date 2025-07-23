@@ -15,7 +15,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
-    combineValueFilters,
     CompoundFilter,
     FieldFilter,
     Filter,
@@ -32,6 +31,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
     compact,
+    first,
     flatMap,
     flatten,
     forEach,
@@ -41,6 +41,7 @@ import {
     isFinite,
     isObject,
     isString,
+    map,
     partition,
     sortBy,
     uniq,
@@ -222,46 +223,10 @@ export class FilterChooserModel extends HoistModel {
         const [filters, suggestions] = partition(parsedValues, 'op');
 
         // Round-trip actual filters through main value setter above.
-        this.setValue(combineValueFilters(filters));
+        this.setValue(this.toValueFilter(filters));
 
         // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
-    }
-
-    // Transfer the value filter to the canonical set of individual filters for display.
-    // Filters with arrays values will be split.
-    toDisplayFilters(filter: Filter) {
-        if (!filter) return [];
-
-        let ret;
-        const unsupported = s => {
-            throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
-        };
-
-        // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
-        if (filter instanceof CompoundFilter && !filter.field) {
-            ret = filter.filters;
-        } else {
-            ret = [filter];
-        }
-        if (ret.some(f => !(f instanceof FieldFilter) && !(f instanceof CompoundFilter))) {
-            unsupported('Filters must be FieldFilters or CompoundFilters.');
-        }
-
-        // 2) Recognize unsupported multiple filters for array-based filters.
-        const groupMap = groupBy(ret, ({op, field}) => `${op}|${field}`);
-        forEach(groupMap, filters => {
-            const {op} = filters[0];
-            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
-                unsupported(`Multiple filters cannot be provided with ${op} operator`);
-            }
-        });
-
-        // 3) Finally unroll multi-value filters to one value per filter.
-        // The multiple values will later be restored.
-        return flatMap(ret, f => {
-            return isArray(f.value) ? f.value.map(value => new FieldFilter({...f, value})) : f;
-        });
     }
 
     //-------------
@@ -411,6 +376,95 @@ export class FilterChooserModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+
+    // Take the raw flat displayed FieldFilter specs and combine them with appropriate semantics
+    // into a proper Filter for the value of ths model.  Field Filters on the same field are going
+    // to be combined into a FieldFilter with array values as well as potentially appropriate
+    // compound filters to combine different ops.  See toDisplayFilters() for the inverse of this
+    // operation.
+    private toValueFilter(specs: FieldFilterSpec[] = []): FilterLike {
+        const {ARRAY_OPERATORS, INCLUDE_LIKE_OPERATORS} = FieldFilter,
+            ret: FilterLike[] = [];
+
+        // group filters by field -- we'll produce up to two ANDable filters per field
+        const fieldMap = groupBy(specs, 'field');
+        forEach(fieldMap, specs => {
+            // a) combine filters with SAME operator in to a single FieldFilter
+            const opMap = groupBy(specs, 'op');
+            specs = flatMap(opMap, specs => {
+                const firstSpec = first(specs);
+                return specs.length > 1 && ARRAY_OPERATORS.includes(firstSpec.op)
+                    ? {...firstSpec, value: map(specs, 'value')}
+                    : specs;
+            });
+
+            // b) combine any INCLUDE_LIKE ops as a single OR, EXCLUDE_LIKE as a single AND
+            const [includeLike, excludeLike] = partition(specs, s =>
+                INCLUDE_LIKE_OPERATORS.includes(s.op)
+            );
+            if (!isEmpty(includeLike)) {
+                ret.push(includeLike.length > 1 ? {op: 'OR', filters: includeLike} : includeLike);
+            }
+            if (!isEmpty(excludeLike)) {
+                ret.push(excludeLike.length > 1 ? {op: 'AND', filters: excludeLike} : excludeLike);
+            }
+        });
+
+        return ret;
+    }
+
+    // Transfer the value filter to the canonical set of individual filters for display.
+    // See toValueFilter() for the inverse of this operation.
+    private toDisplayFilters(filter: Filter): Filter[] {
+        const includeLikeOps = FieldFilter.INCLUDE_LIKE_OPERATORS;
+
+        if (!filter) return [];
+        const unsupported = s => {
+            throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
+        };
+
+        let ret: Filter[] = [filter];
+
+        // 0) Can always unwind the top level AND -- its implicit.
+        if (filter instanceof CompoundFilter && filter.op == 'AND') {
+            ret = filter.filters;
+        }
+
+        // 1) Further flatten 2nd-Level CompoundFilters to FieldFilters.
+        // OR'ed filters on the same field can be decomposed and will later be treated as OR'ed
+        ret = ret.flatMap(f => {
+            return f instanceof CompoundFilter &&
+                (f.op == 'AND' ||
+                    (f.field &&
+                        f.filters.every(
+                            it => it instanceof FieldFilter && includeLikeOps.includes(it.op)
+                        )))
+                ? f.filters
+                : f;
+        });
+
+        // 2) Recognize misc unsupported filters.
+        if (!ret.every(f => f instanceof FieldFilter || f instanceof CompoundFilter)) {
+            unsupported('Filters must be FieldFilters or CompoundFilters.');
+        }
+        const fieldFilters = ret.filter(it => it instanceof FieldFilter) as FieldFilter[];
+        const groupMap = groupBy(fieldFilters, ({op, field}) => `${op}|${field}`);
+        forEach(groupMap, filters => {
+            const {op} = filters[0];
+            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
+                unsupported(`Multiple filters cannot be provided with ${op} operator`);
+            }
+        });
+
+        // 3) Finally unroll multi-value filters to one filter per value.
+        // The multiple values will later be restored.
+        return flatMap(ret, f => {
+            return f instanceof FieldFilter && isArray(f.value)
+                ? f.value.map(value => new FieldFilter({...f, value}))
+                : f;
+        });
+    }
+
     private initPersist({
         persistValue = true,
         persistFavorites = true,
