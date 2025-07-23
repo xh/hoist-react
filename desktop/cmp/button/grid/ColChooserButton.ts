@@ -13,10 +13,10 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from './Button';
+import {button, ButtonProps} from '../Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
-    /** GridModel of the grid for which this button should show a chooser. */
+    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
     gridModel?: GridModel;
 
     /** Position for chooser popover, as per Blueprint docs. */
@@ -28,28 +28,27 @@ export interface ColChooserButtonProps extends ButtonProps {
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires the `GridModel.colChooserModel` config option. Set to true for default implementation.
+ * Requires {@link GridConfig.colChooserModel} to be configured on the bound GridModel.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
+    className: 'xh-col-chooser-button',
     model: false,
 
-    render({icon, title, gridModel, popoverPosition, disabled, ...rest}, ref) {
+    render({className, icon, title, gridModel, popoverPosition, disabled, ...rest}, ref) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
-
         const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
 
+        // Validate bound model available and suitable for use.
         if (!gridModel) {
             logError(
-                "No GridModel available.  Provide via a 'gridModel' prop, or context.",
+                'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.',
                 ColChooserButton
             );
             disabled = true;
-        }
-
-        if (!colChooserModel) {
+        } else if (!colChooserModel) {
             logError(
-                'No ColChooserModel available on bound GridModel - enable via GridModel.colChooserModel config.',
+                'ColChooser not enabled on bound GridModel - button will be disabled.',
                 ColChooserButton
             );
             disabled = true;
@@ -62,6 +61,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             item: button({
                 icon: withDefault(icon, Icon.gridPanel()),
                 title: withDefault(title, 'Choose grid columns...'),
+                className,
                 disabled,
                 ...rest
             }),

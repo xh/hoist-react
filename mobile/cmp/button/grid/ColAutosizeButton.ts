@@ -13,10 +13,10 @@ import '@xh/hoist/mobile/register';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
-    /** GridModel of the grid for which this button should autosize columns. */
+    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
     gridModel?: GridModel;
 
-    /** Options for the grid autosize. */
+    /** Options to override grid's default or configured autosize settings. */
     autosizeOptions?: Omit<GridAutosizeOptions, 'mode'>;
 }
 
@@ -25,17 +25,27 @@ export interface ColAutosizeButtonProps extends ButtonProps {
  */
 export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAutosizeButtonProps>({
     displayName: 'ColAutosizeButton',
+    className: 'xh-col-autosize-button',
     model: false,
 
-    render({gridModel, icon = Icon.arrowsLeftRight(), onClick, autosizeOptions = {}, ...props}) {
+    render({className, gridModel, icon, onClick, disabled, autosizeOptions = {}, ...props}) {
         gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-        if (!gridModel?.autosizeEnabled) {
-            logError(
-                "No GridModel available with autosize enabled. Provide via a 'gridModel' prop, or context.",
-                ColAutosizeButton
-            );
-            return button({icon, disabled: true, ...props});
+        // Validate bound model available and suitable for use.
+        if (!onClick) {
+            if (!gridModel) {
+                logError(
+                    'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.',
+                    ColAutosizeButton
+                );
+                disabled = true;
+            } else if (!gridModel.autosizeEnabled) {
+                logError(
+                    'Autosize not enabled on bound GridModel - button will be disabled.',
+                    ColAutosizeButton
+                );
+                disabled = true;
+            }
         }
 
         onClick =
@@ -46,6 +56,12 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
                     ...autosizeOptions
                 }));
 
-        return button({icon, onClick, ...props});
+        return button({
+            icon: withDefault(icon, Icon.arrowsLeftRight()),
+            disabled: withDefault(disabled, gridModel?.empty),
+            className,
+            onClick,
+            ...props
+        });
     }
 });
