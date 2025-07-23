@@ -553,7 +553,7 @@ export class GridModel extends HoistModel {
 
         this.xhImpl = xhImpl;
 
-        this._defaultState = {columns, sortBy, groupBy};
+        this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
         this.treeMode = treeMode;
         this.treeStyle = treeStyle;
@@ -680,10 +680,11 @@ export class GridModel extends HoistModel {
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy, filter} = this._defaultState;
+        const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
+        this.expandToLevel(expandLevel);
 
         this.filterModel?.setFilter(filter);
 
@@ -1047,7 +1048,7 @@ export class GridModel extends HoistModel {
     /**
      * Get the resolved level labels for the current state of the grid.
      */
-    get resolvedLevelLabels(): String[] {
+    get resolvedLevelLabels(): string[] {
         const {maxDepth, levelLabels} = this,
             ret = executeIfFunction(levelLabels);
         if (ret && ret.length < maxDepth + 1) {
