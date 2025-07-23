@@ -92,7 +92,8 @@ import {
     min,
     omit,
     pick,
-    pull
+    pull,
+    take
 } from 'lodash';
 import {ReactNode} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
@@ -1041,6 +1042,19 @@ export class GridModel extends HoistModel {
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;
+    }
+
+    /**
+     * Get the resolved level labels for the current state of the grid.
+     */
+    get resolvedLevelLabels(): String[] {
+        const {maxDepth, levelLabels} = this,
+            ret = executeIfFunction(levelLabels);
+        if (ret && ret.length < maxDepth + 1) {
+            this.logError('Value produced by `GridModel.levelLabels` has insufficient length.');
+            return null;
+        }
+        return ret ? take(ret, maxDepth + 1) : null;
     }
 
     /**

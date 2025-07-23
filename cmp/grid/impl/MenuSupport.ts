@@ -9,7 +9,6 @@ import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {executeIfFunction} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
@@ -282,26 +281,15 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
     return new RecordAction({
         text: 'Expand to ...',
         displayFn: () => {
-            // Don't show for degenerate shallow grid models, or if we don't have labels
-            const {maxDepth, expandLevel} = gridModel;
-            if (maxDepth <= 1) return {hidden: true};
+            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
 
-            // Validate level labels.
-            const levelLabels = executeIfFunction(gridModel.levelLabels);
-            if (!levelLabels) {
-                return {hidden: true};
-            }
-            if (levelLabels.length < maxDepth + 1) {
-                gridModel.logDebug(
-                    'Value produced by `GridModel.levelLabels` has insufficient length. No menu items shown.'
-                );
-                return {hidden: true};
-            }
+            // Don't show for flat grid models or if we don't have labels
+            if (maxDepth <= 1 || !resolvedLevelLabels) return {hidden: true};
 
-            const items = levelLabels.map((label, idx) => {
+            const items = resolvedLevelLabels.map((label, idx) => {
                 const isCurrLevel =
                     expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === levelLabels.length - 1);
+                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : null,

@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover, Position} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/utils/impl';
-import {executeIfFunction, logDebug, logError, withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {button, ButtonProps} from '../Button';
 
@@ -52,25 +52,14 @@ export const [ExpandToLevelButton, expandToLevelButton] =
                 return disabledButton();
             }
 
-            // Render a disabled button if requested or if we have a flat grid.
-            const {maxDepth, expandLevel} = gridModel;
-            if (disabled || !maxDepth) return disabledButton();
+            // Render a disabled button if requested, if we have a flat grid, or no level labels
+            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+            if (disabled || maxDepth <= 1 || !resolvedLevelLabels) return disabledButton();
 
-            // Validate level labels - disable quietly if unspecified or w/log if mismatched to grid depth.
-            const levelLabels = executeIfFunction(gridModel.levelLabels);
-            if (!levelLabels) return disabledButton();
-            if (levelLabels.length < maxDepth + 1) {
-                logDebug(
-                    'Value produced by `GridModel.levelLabels` has insufficient length - button will be disabled.',
-                    ExpandToLevelButton
-                );
-                return disabledButton();
-            }
-
-            const menuItems: MenuItemLike[] = levelLabels.map((label, idx) => {
+            const menuItems: MenuItemLike[] = resolvedLevelLabels.map((label, idx) => {
                 const isCurrLevel =
                     expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === levelLabels.length - 1);
+                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : Icon.placeholder(),

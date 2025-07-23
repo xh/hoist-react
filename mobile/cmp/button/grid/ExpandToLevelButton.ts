@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, MenuItemLike, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import '@xh/hoist/mobile/register';
-import {executeIfFunction, logDebug, logError, withDefault} from '@xh/hoist/utils/js';
+import {logError, withDefault} from '@xh/hoist/utils/js';
 import {menuButton, MenuButtonProps} from '../../menu';
 
 export interface ExpandToLevelButtonProps extends MenuButtonProps {
@@ -29,7 +29,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
         className: 'xh-expand-to-level-button',
         model: false,
 
-        render({gridModel, className, icon, ...rest}) {
+        render({gridModel, className, icon, disabled, ...rest}) {
             gridModel = withDefault(gridModel, useContextModel(GridModel));
             icon = withDefault(icon, Icon.treeList());
 
@@ -50,28 +50,14 @@ export const [ExpandToLevelButton, expandToLevelButton] =
                 return disabledButton();
             }
 
-            // Disable for flat grids. Still show for grids with a single grouping level, although
-            // in this case we're effectively a less efficient way to expand/collapse all.
-            const {maxDepth, expandLevel} = gridModel;
-            if (!maxDepth) return disabledButton();
+            // Render a disabled button if requested or if we have a flat grid, or no level labels
+            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+            if (disabled || maxDepth <= 1 || resolvedLevelLabels) return disabledButton();
 
-            // Validate level labels - disable if unspecified or mismatched to grid depth.
-            const levelLabels = executeIfFunction(gridModel.levelLabels);
-            if (!levelLabels) {
-                return disabledButton();
-            }
-            if (levelLabels.length < maxDepth + 1) {
-                logDebug(
-                    'Value produced by `GridModel.levelLabels` has insufficient length. No menu items shown.',
-                    ExpandToLevelButton
-                );
-                return disabledButton();
-            }
-
-            const menuItems: MenuItemLike[] = levelLabels.map((label, idx) => {
+            const menuItems: MenuItemLike[] = resolvedLevelLabels.map((label, idx) => {
                 const isCurrLevel =
                     expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === levelLabels.length - 1);
+                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : Icon.placeholder(),
