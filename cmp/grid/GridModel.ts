@@ -283,7 +283,8 @@ export interface GridConfig {
      * Array of strings (or a function returning one) providing user-facing labels for each depth
      * level in a tree or grouped grid - e.g. `['Country', 'State', 'City']`. If set, the
      * expand/collapse options in the default context menu will be enhanced to allow users to
-     * expand/collapse to a specific level.
+     * expand/collapse to a specific level. See {@link GroupingChooserModel.valueDisplayNames}
+     * for a convenient getter that will satisfy this API when a GroupingChooser is in play.
      */
     levelLabels?: Thunkable<string[]>;
 
