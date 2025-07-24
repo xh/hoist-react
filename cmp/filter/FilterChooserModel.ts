@@ -31,6 +31,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
     compact,
+    every,
     first,
     flatMap,
     flatten,
@@ -383,8 +384,7 @@ export class FilterChooserModel extends HoistModel {
     // compound filters to combine different ops.  See toDisplayFilters() for the inverse of this
     // operation.
     private toValueFilter(specs: FieldFilterSpec[] = []): FilterLike {
-        const {ARRAY_OPERATORS, INCLUDE_LIKE_OPERATORS} = FieldFilter,
-            ret: FilterLike[] = [];
+        const ret: FilterLike[] = [];
 
         // group filters by field -- we'll produce up to two ANDable filters per field
         const fieldMap = groupBy(specs, 'field');
@@ -393,21 +393,24 @@ export class FilterChooserModel extends HoistModel {
             const opMap = groupBy(specs, 'op');
             specs = flatMap(opMap, specs => {
                 const firstSpec = first(specs);
-                return specs.length > 1 && ARRAY_OPERATORS.includes(firstSpec.op)
+                return specs.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(firstSpec.op)
                     ? {...firstSpec, value: map(specs, 'value')}
                     : specs;
             });
 
-            // b) combine any INCLUDE_LIKE ops as a single OR, EXCLUDE_LIKE as a single AND
-            const [includeLike, excludeLike] = partition(specs, s =>
-                INCLUDE_LIKE_OPERATORS.includes(s.op)
-            );
-            if (!isEmpty(includeLike)) {
-                ret.push(includeLike.length > 1 ? {op: 'OR', filters: includeLike} : includeLike);
-            }
-            if (!isEmpty(excludeLike)) {
-                ret.push(excludeLike.length > 1 ? {op: 'AND', filters: excludeLike} : excludeLike);
-            }
+            // Process like operators together, potentially creating sub-OR clauses.
+            [
+                FieldFilter.INCLUDE_LIKE_OPERATORS,
+                FieldFilter.EXCLUDE_LIKE_OPERATORS,
+                FieldFilter.RANGE_LIKE_OPERATORS
+            ].forEach(type => {
+                const filters = specs.filter(s => type.includes(s.op));
+                if (this.implicitOrFieldFilters(filters)) {
+                    ret.push([{op: 'OR', filters}]);
+                } else {
+                    ret.push(...filters);
+                }
+            });
         });
 
         return ret;
@@ -416,8 +419,6 @@ export class FilterChooserModel extends HoistModel {
     // Transfer the value filter to the canonical set of individual filters for display.
     // See toValueFilter() for the inverse of this operation.
     private toDisplayFilters(filter: Filter): Filter[] {
-        const {INCLUDE_LIKE_OPERATORS, ARRAY_OPERATORS} = FieldFilter;
-
         if (!filter) return [];
         const unsupported = s => {
             throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
@@ -431,15 +432,11 @@ export class FilterChooserModel extends HoistModel {
         }
 
         // 1) Further flatten 2nd-Level CompoundFilters to FieldFilters.
-        // OR'ed filters on the same field can be decomposed and will later be treated as OR'ed
+        // OR'ed filters on the same field can be decomposed if they will later be re-combined
         ret = ret.flatMap(f => {
             return f instanceof CompoundFilter &&
                 (f.op == 'AND' ||
-                    (f.field &&
-                        f.filters.every(
-                            it =>
-                                it instanceof FieldFilter && INCLUDE_LIKE_OPERATORS.includes(it.op)
-                        )))
+                    (f.field && this.implicitOrFieldFilters(f.filters as FieldFilter[])))
                 ? f.filters
                 : f;
         });
@@ -452,7 +449,7 @@ export class FilterChooserModel extends HoistModel {
         const groupMap = groupBy(fieldFilters, ({op, field}) => `${op}|${field}`);
         forEach(groupMap, filters => {
             const {op} = filters[0];
-            if (filters.length > 1 && ARRAY_OPERATORS.includes(op)) {
+            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
                 unsupported(`Multiple filters cannot be provided with ${op} operator`);
             }
         });
@@ -463,6 +460,23 @@ export class FilterChooserModel extends HoistModel {
                 ? f.value.map(value => new FieldFilter({...f, value}))
                 : f;
         });
+    }
+
+    // Should Field Filters on a particular Field be implicitly OR'ed together?
+    private implicitOrFieldFilters(filters: Array<FieldFilterSpec | FieldFilter>): boolean {
+        const {INCLUDE_LIKE_OPERATORS, RANGE_LIKE_OPERATORS} = FieldFilter;
+        if (filters.length < 2) return false;
+
+        // For INCLUDE_LIKE, treat them like "equals" and OR them
+        if (every(filters, f => INCLUDE_LIKE_OPERATORS.includes(f.op))) return true;
+
+        // For RANGE_LIKE, recognize simple "exterior" bifurcated range as an OR, otherwise AND
+        if (filters.length == 2 && every(filters, f => RANGE_LIKE_OPERATORS.includes(f.op))) {
+            const [a, b] = sortBy(filters, 'op');
+            return a.op.startsWith('<') && b.op.startsWith('>') && a.value <= b.value;
+        }
+
+        return false;
     }
 
     private initPersist({
