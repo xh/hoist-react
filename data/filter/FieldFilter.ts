@@ -69,6 +69,10 @@ export class FieldFilter extends Filter {
         'excludes'
     ];
 
+    static INCLUDE_LIKE_OPERATORS = ['=', 'like', 'begins', 'ends', 'includes'];
+    static EXCLUDE_LIKE_OPERATORS = ['!=', 'not like', 'excludes'];
+    static RANGE_LIKE_OPERATORS = ['>', '>=', '<', '<='];
+
     /**
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
      * @internal

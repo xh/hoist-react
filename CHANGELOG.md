@@ -16,6 +16,12 @@
   which `dimensions` are provided to the model.
 * The usage of the `RelativeTimestamp` component has been streamlined by deprecating the `options`
   prop.  All `RelativeTimestampOptions` are now supported by this component as top-level props.
+* `FilterChooserModel` has been enhanced to better handle multiple simultaneous filters with
+  different `op`s on the same field.  "Inclusive" ops (e.g. `=`, `like`) will be OR'ed together,
+  "Exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together and range ops (e.g. `<`, `>` )
+  will use a heuristic to create a meaningful query that will actually return results.  This
+  behavior is consistent with current behavior and user intuition, and should maximize the ability
+  to create useful queries.
 
 ### 🐞 Bug Fixes
 
