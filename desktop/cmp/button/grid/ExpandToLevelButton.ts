@@ -23,7 +23,7 @@ export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
     popoverPosition?: Position;
 
     /** Title for the menu popover - defaults to "Expand To Level". */
-    title: ReactNode;
+    title?: ReactNode;
 }
 
 /**
