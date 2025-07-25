@@ -144,6 +144,19 @@ export function errorIf(condition: any, message: any) {
     }
 }
 
+/**
+ * Instantiate a singleton object of a class, and place a reference to the created
+ * object in a static property on the class.
+ *
+ * This pattern is useful to allow gaining typed references to the singleton via import
+ * and is used for creating the singleton HoistServices, AuthModel, and AppModel.
+ *
+ * @param clazz -- Class (i.e. Constructor) of singleton object to be created.
+ */
+export function createSingleton<T>(clazz: new () => T): T {
+    return (clazz['instance'] = new clazz());
+}
+
 export interface APIWarnOptions {
     /**
      * If provided and undefined, this method will be a no-op.
