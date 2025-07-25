@@ -645,13 +645,6 @@ export class GridModel extends HoistModel {
             debounce: 500
         });
 
-        this.addReaction({
-            track: () => [this.expandLevel, this.isReady],
-            run: () => {
-                this.agApi?.setGridOption('groupDefaultExpanded', this.expandLevel);
-            }
-        });
-
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
             throw XH.exception(
@@ -1043,6 +1036,28 @@ export class GridModel extends HoistModel {
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;
+
+        // 0) Not rendered, we are done.
+        const {agApi} = this;
+        if (!agApi) return;
+
+        // 1) Update rendered grid.
+        if (agApi.getGridOption('groupDefaultExpanded') != level) {
+            // If the ag default is *not* set to this level just set it.  This somewhat
+            // mysteriously (but efficiently) changes the currently rendered rows as well.
+            agApi.setGridOption('groupDefaultExpanded', level);
+        } else if (level == 0 || level >= this.maxDepth) {
+            // otherwise api methods available.
+            level == 0 ? agApi.collapseAll() : agApi.expandAll();
+        } else {
+            // Otherwise, *toggle* the default.
+            // Surprisingly, this appears to be the only efficient way to do the bulk operation.
+            agApi.setGridOption('groupDefaultExpanded', 0);
+            agApi.setGridOption('groupDefaultExpanded', level);
+        }
+
+        // 2) Finally, be sure to update our state snapshot.
+        this.noteAgExpandStateChange();
     }
 
     /**
