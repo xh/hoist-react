@@ -767,12 +767,9 @@ export class GridLocalModel extends HoistModel {
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };
 
-    doWithPreservedState({expansion, filters}: PlainObject, fn) {
-        const {agGridModel} = this.model,
-            expandState = expansion ? agGridModel.getExpandState() : null,
-            filterState = filters ? this.readFilterState() : null;
+    doWithPreservedState({filters}: PlainObject, fn) {
+        const filterState = filters ? this.readFilterState() : null;
         fn();
-        if (expandState) agGridModel.setExpandState(expandState);
         if (filterState) this.writeFilterState(filterState);
     }
 
