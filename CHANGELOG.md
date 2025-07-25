@@ -34,6 +34,15 @@
 * Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed deprecated `LoadSupport.isLoadSupport`
+* Removed deprecated `FileChooserModel.removeAllFiles`
+* Removed deprecated `FetchService.setDefaultHeaders`
+* Removed deprecated `FetchService.setDefaultTimeout`
+* Removed deprecated `IdentityService.logoutAsync`
+
+
 ## v74.1.2 - 2025-07-03
 
 ### 🐞 Bug Fixes

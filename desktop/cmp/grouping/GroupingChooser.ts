@@ -106,7 +106,9 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
 
         if (!isUndefined(popoverTitle)) {
             apiDeprecated('GroupingChooser.popoverTitle', {
-                msg: `Update to use 'editorTitle' instead`
+                msg: `Update to use 'editorTitle' instead`,
+                v: `v78`,
+                source: GroupingChooser
             });
             editorTitle = popoverTitle;
         }

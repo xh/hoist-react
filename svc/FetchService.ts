@@ -15,7 +15,7 @@ import {
 } from '@xh/hoist/core';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -184,32 +184,6 @@ export class FetchService extends HoistService {
         aborter.abort();
         delete autoAborters[autoAbortKey];
         return true;
-    }
-
-    //-------------
-    // Deprecations
-    //-------------
-    /**
-     * Set the timeout (default 30 seconds) to be used for all requests made via this service that
-     * do not themselves spec a custom timeout.
-     * @deprecated modify `defaultTimeout` directly instead.
-     */
-    setDefaultTimeout(timeout: PromiseTimeoutSpec) {
-        apiDeprecated('setDefaultTimeout', {
-            v: '68',
-            msg: 'Modify `defaultTimeout` directly instead.'
-        });
-        this.defaultTimeout = timeout;
-    }
-
-    /**
-     * Set default headers to be sent with all subsequent requests.
-     * @param headers - to be sent with all fetch requests, or a function to generate.
-     * @deprecated use addDefaultHeaders instead.
-     */
-    setDefaultHeaders(headers: DefaultHeaders) {
-        apiDeprecated('setDefaultHeaders', {v: '66', msg: 'Use addDefaultHeaders instead'});
-        this.addDefaultHeaders(headers);
     }
 
     //-----------------------
