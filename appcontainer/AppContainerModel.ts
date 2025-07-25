@@ -40,7 +40,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, throwIf} from '@xh/hoist/utils/js';
+import {checkMinVersion, createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -197,7 +197,7 @@ export class AppContainerModel extends HoistModel {
 
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
-            XH.authModel = new this.appSpec.authModelClass();
+            XH.authModel = createSingleton(this.appSpec.authModelClass);
             const isAuthenticated = await XH.authModel.completeAuthAsync();
             if (!isAuthenticated) {
                 throwIf(
@@ -287,8 +287,7 @@ export class AppContainerModel extends HoistModel {
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
             this.setAppState('INITIALIZING_APP');
-            const modelClass: any = this.appSpec.modelClass;
-            this.appModel = modelClass.instance = new modelClass();
+            this.appModel = createSingleton(this.appSpec.modelClass);
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();

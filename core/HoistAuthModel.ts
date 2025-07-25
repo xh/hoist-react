@@ -20,6 +20,8 @@ import {HoistModel, PlainObject, XH} from './';
  *  {@link XHApi#renderApp}.
  */
 export class HoistAuthModel extends HoistModel {
+    static instance: HoistAuthModel;
+
     /**
      * Main Entry Point.
      *
