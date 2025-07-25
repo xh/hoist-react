@@ -12,16 +12,15 @@
     * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
       Provides easier discoverability on desktop and supports this feature on mobile, where we
       don't have context menus.
+* Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
+  * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+  * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+  * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+  * This behavior is consistent with current behavior and user intuition and should maximize the
+    ability to create useful queries using this component.
+* Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
-* The usage of the `RelativeTimestamp` component has been streamlined by deprecating the `options`
-  prop.  All `RelativeTimestampOptions` are now supported by this component as top-level props.
-* `FilterChooserModel` has been enhanced to better handle multiple simultaneous filters with
-  different `op`s on the same field.  "Inclusive" ops (e.g. `=`, `like`) will be OR'ed together,
-  "Exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together and range ops (e.g. `<`, `>` )
-  will use a heuristic to create a meaningful query that will actually return results.  This
-  behavior is consistent with current behavior and user intuition, and should maximize the ability
-  to create useful queries.
 
 ### 🐞 Bug Fixes
 
@@ -33,6 +32,14 @@
   resolved model. Previously this value was cached on first render.
 * Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
+
+### ⚙️ Technical
+
+* Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
+  the app-specified class. App developers can declare a typed static `instance` property on their
+  model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
+  * The `XH.authModel` property is still set and available - this is a non-breaking change.
+  * This approach was already (and continues to be) used for services and the `AppModel` singleton.
 
 ## v74.1.2 - 2025-07-03
 
