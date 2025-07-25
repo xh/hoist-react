@@ -41,6 +41,15 @@
   * The `XH.authModel` property is still set and available - this is a non-breaking change.
   * This approach was already (and continues to be) used for services and the `AppModel` singleton.
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed deprecated `LoadSupport.isLoadSupport`
+* Removed deprecated `FileChooserModel.removeAllFiles`
+* Removed deprecated `FetchService.setDefaultHeaders`
+* Removed deprecated `FetchService.setDefaultTimeout`
+* Removed deprecated `IdentityService.logoutAsync`
+
+
 ## v74.1.2 - 2025-07-03
 
 ### 🐞 Bug Fixes

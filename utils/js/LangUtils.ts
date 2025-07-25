@@ -6,6 +6,7 @@
  */
 import {PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
+import {LogSource, logWarn} from '@xh/hoist/utils/js/LogUtils';
 import {
     flatMap,
     forOwn,
@@ -168,6 +169,9 @@ export interface APIWarnOptions {
 
     /** An additional message. Can contain suggestions for alternatives. */
     msg?: string;
+
+    /** Source of message for labelling log message.  */
+    source?: LogSource;
 }
 
 /**
@@ -176,8 +180,9 @@ export interface APIWarnOptions {
 export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
-    const msg = opts.msg ? ` ${opts.msg}.` : '';
-    throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
+    const src = opts.source ? `[${opts.source}] ` : '',
+        msg = opts.msg ? ` ${opts.msg}.` : '';
+    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
 }
 
 /**
@@ -193,7 +198,7 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
         msg = opts.msg ? ` ${opts.msg}.` : '',
         warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
     if (!_seenWarnings[warn]) {
-        console.warn(warn);
+        logWarn(warn, opts.source);
         _seenWarnings[warn] = true;
     }
 }

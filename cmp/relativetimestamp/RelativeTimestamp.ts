@@ -138,7 +138,8 @@ class RelativeTimestampLocalModel extends HoistModel {
         apiDeprecated('options', {
             test: componentProps.options,
             msg: 'Spread options directly in this object instead',
-            v: `77`
+            v: `v78`,
+            source: RelativeTimestamp
         });
 
         return componentProps.options ?? componentProps;
