@@ -36,7 +36,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
 });
 
 function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
-    const {enableDefault, view, typeDisplayName, globalDisplayName} = model,
+    const {enableDefault, view, defaultDisplayName, typeDisplayName, globalDisplayName} = model,
         ownedViews = groupBy(filter(model.ownedViews, 'isPinned'), 'group'),
         globalViews = groupBy(filter(model.globalViews, 'isPinned'), 'group'),
         sharedViews = groupBy(filter(model.sharedViews, 'isPinned'), 'owner'),
@@ -69,7 +69,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
             menuItem({
                 className: 'xh-view-manager__menu-item',
                 icon: view.isDefault ? Icon.check() : Icon.placeholder(),
-                text: `Default ${startCase(typeDisplayName)}`,
+                text: `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`,
                 onClick: () => model.selectViewAsync(null).catchDefault()
             })
         );

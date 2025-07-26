@@ -130,10 +130,12 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, icon, ...rest}) {
-        const {view, typeDisplayName, isLoading} = model.parent;
+        const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
         return button({
             className: 'xh-view-manager__menu-button',
-            text: view.isDefault ? `Default ${startCase(typeDisplayName)}` : view.name,
+            text: view.isDefault
+                ? `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`
+                : view.name,
             icon: !isLoading
                 ? icon
                 : box({
