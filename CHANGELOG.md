@@ -21,6 +21,8 @@
 * Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
+* Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
+  operation fails. Set to `false` to fail silently (the behavior prior to this change).
 
 ### 🐞 Bug Fixes
 
