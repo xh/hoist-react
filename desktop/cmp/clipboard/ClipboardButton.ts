@@ -47,7 +47,7 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<Clipboard
                     const copyText = await getCopyText();
                     await copy(copyText);
                     if (successMsg) {
-                        successMsg = isString(successMsg) ? successMsg : 'Text copied to clipboard';
+                        successMsg = isString(successMsg) ? successMsg : 'Copied to clipboard';
                         XH.toast({
                             icon: Icon.clipboard(),
                             message: successMsg
