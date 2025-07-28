@@ -386,7 +386,6 @@ export class XHApi {
             clientAppCode: 'admin',
             clientAppName: `${this.appName} Admin`,
             isMobileApp: false,
-            webSocketsEnabled: true,
             checkAccess: 'HOIST_ADMIN_READER',
             ...appSpec
         });
