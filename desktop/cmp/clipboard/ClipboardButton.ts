@@ -22,8 +22,11 @@ export interface ClipboardButtonProps extends ButtonProps {
      */
     errorMessage?: string | boolean;
 
-    /** Message to be displayed in a toast when copy is complete. */
-    successMessage?: string;
+    /**
+     * Message to be displayed in a toast when copy is complete, or `true` for a default success
+     * confirmation. Default `false`
+     */
+    successMessage?: string | boolean;
 }
 
 /**
@@ -35,32 +38,33 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<Clipboard
 
     render(props) {
         let {icon, onClick, text, getCopyText, errorMessage, successMessage, ...rest} = props;
-        errorMessage = withDefault(props.errorMessage, true);
+        let errMsg = withDefault(errorMessage, true),
+            successMsg = withDefault(successMessage, false);
 
         if (!onClick) {
             onClick = async () => {
                 try {
-                    const text = await getCopyText();
-                    await copy(text);
-                    if (successMessage) {
+                    const copyText = await getCopyText();
+                    await copy(copyText);
+                    if (successMsg) {
+                        successMsg = isString(successMsg) ? successMsg : 'Text copied to clipboard';
                         XH.toast({
                             icon: Icon.clipboard(),
-                            message: successMessage
+                            message: successMsg
                         });
                     }
                 } catch (e) {
-                    if (isString(errorMessage)) {
+                    if (errMsg) {
+                        errMsg = isString(errMsg) ? errMsg : 'Error copying to clipboard';
                         XH.dangerToast({
                             icon: Icon.clipboard(),
-                            message: errorMessage
-                        });
-                    } else {
-                        XH.handleException(e, {
-                            title: 'Error copying to clipboard',
-                            showAlert: !!errorMessage,
-                            alertType: 'toast'
+                            message: errMsg
                         });
                     }
+                    XH.handleException(e, {
+                        message: 'Error copying to clipboard',
+                        showAlert: false
+                    });
                 }
             };
         }
