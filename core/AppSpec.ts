@@ -10,20 +10,38 @@ import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
 
 /**
- * Specification for a client-side Hoist application.
- * Passed to XH.renderApp() to kick-off app rendering and available thereafter as `XH.appSpec`.
+ * Spec for a client-side Hoist application. A config matching this class's shape is provided
+ * to {@link XHApi.renderApp} to kick-off app rendering and is available thereafter as `XH.appSpec`.
  */
 export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /**
+     * AuthModel class for the application. Note this is a reference to the class itself, not an
+     * instance, and must extend {@link HoistAuthModel}. If not provided, Hoist will fallback to
+     * the superclass implementation, but note that class would only be suitable for fully
+     * transparent SSO based solutions such as NTLM. Common patterns such as OAuth will require an
+     * extended implementation.
+     */
+    authModelClass?: new () => HoistAuthModel;
+
+    /**
+     * Method for determining if user may access the app. If a string, will be interpreted as the
+     * role required for basic UI access. Return false to show a generated lockout message, or use
+     * the object form to provide a custom message.
+     */
+    checkAccess: string | ((user: object) => boolean | {hasAccess: boolean; message: string});
+
+    /**
      *  Short code for this particular JS client application.
+     *
      *  Will default to the `appCode` specified within the project's Webpack config, but can be
      *  set to a more specific value (e.g. 'myAppMobile') to identify the client app in common
-     *  code or configs.
+     *  code or configs that support distinct settings for different client apps.
      */
     clientAppCode?: string;
 
     /**
      * Display name for this particular JS client application.
+     *
      * As with `clientAppCode` above, this will default to the global `appName` specified by
      * the project's Webpack config, but can be set here to a more specific value (e.g.
      * 'MyApp Mobile').
@@ -31,63 +49,49 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     clientAppName?: string;
 
     /**
-     * Root Model class for the application. Note this is a reference to the class itself, not an
-     * instance, and must extend {@link HoistAppModel}.
-     */
-    modelClass: new () => T;
-
-    /**
-     * AuthModel class for the application.  Note this is a reference to the class itself, not an
-     * instance, and must extend {@link HoistAuthModel}.
-     */
-    authModelClass?: new () => HoistAuthModel;
-
-    /**
-     * Root HoistComponent for the application. Despite the name, functional components are fully
-     * supported and expected.
+     * Root HoistComponent for the application.
+     * Despite the name, functional components are fully supported and expected.
      */
     componentClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
 
     /**
      * Container component to be used to host this application.
-     * This class determines the platform used by Hoist. The value should be imported from
+     *
+     * This class determines the platform used by Hoist - almost all apps will import and specify
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
     containerClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
 
-    /** True if the app should use the Hoist mobile toolkit.*/
-    isMobileApp: boolean;
+    /**
+     * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
+     * For use with secure, internal apps that do not display arbitrary/external user input and
+     * have tight performance tolerances and/or load very large record sets.
+     * @see FieldSpec.disableXssProtection
+     */
+    disableXssProtection?: boolean;
 
-    /** True to show a login form on initialization when not authenticated. (default false) */
+    /**
+     * True to show a login form on initialization when not authenticated. Default is `false` as
+     * most Hoist applications are expected to use OAuth or SSO for authn.
+     */
     enableLoginForm?: boolean;
 
     /**
      * True to show logout options in the app, for apps with auth schemes that can support this
-     * operation (e.g. OAuth). (default false)
+     * operation (e.g. OAuth). Default is `false` as most Hoist applications are expected to use
+     * SSO or to run in internal environments where logout is not required / typical.
      */
     enableLogout?: boolean;
 
     /**
-     * Method for determining if user may access the app.
-     * If a string, will be interpreted as the role required for basic UI access.
-     */
-    checkAccess: string | ((user: object) => boolean | {hasAccess: boolean; message: string});
-
-    /**
-     *  Write a track log statement after the app has loaded and fully initialized?
-     *  Message will include elapsed time of asset loading and init.
-     */
-    trackAppLoad?: boolean;
-
-    /** True to enable Hoist websocket connectivity. (default false) */
-    webSocketsEnabled?: boolean;
-
-    /**
-     * Optional custom Component to display when App has been suspended. The component will
-     * receive a single prop -- onReactivate -- a callback called when the user has acknowledged
+     * Optional custom Component to display when the app has been suspended. The component will
+     * receive a single `onReactivate` prop, a no-arg callback fired when the user has acknowledged
      * the suspension and wishes to reload the app.
      */
     idlePanel?: ElementFactory | FunctionComponent | Component;
+
+    /** True if the app should use the Hoist mobile toolkit.*/
+    isMobileApp: boolean;
 
     /**
      * Optional custom Component to display when the user is denied access to app. Intended for
@@ -96,11 +100,17 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      */
     lockoutPanel?: ElementFactory | FunctionComponent | Component;
 
-    /** Optional message to show on login form (see showLoginForm). */
-    loginMessage?: string;
-
     /** Optional message to show users when denied access to app. */
     lockoutMessage?: string;
+
+    /** Optional message to show on login form, if `showLoginForm: true`. */
+    loginMessage?: string;
+
+    /**
+     * Root Model class for the application. Note this is a reference to the class itself, not an
+     * instance, and must extend {@link HoistAppModel}.
+     */
+    modelClass: new () => T;
 
     /**
      * True to show the built-in browser context menu when no app-specific menu would be shown
@@ -110,67 +120,67 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     showBrowserContextMenu?: boolean;
 
     /**
-     * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
-     * For use with secure, internal apps that do not display arbitrary/external user input and
-     * have tight performance tolerances and/or load very large record sets.
-     * @see FieldConfig.disableXssProtection
+     *  True (default) to write a track log statement after the app has loaded and fully
+     *  initialized, including a breakdown of elapsed time throughout the init process.
      */
-    disableXssProtection?: boolean;
+    trackAppLoad?: boolean;
+
+    /** True to enable Hoist websocket connectivity. */
+    webSocketsEnabled?: boolean;
 
     constructor({
+        authModelClass = HoistAuthModel,
+        checkAccess,
         clientAppCode = XH.appCode,
         clientAppName = XH.appName,
-        modelClass,
         componentClass,
         containerClass,
-        authModelClass = HoistAuthModel,
-        isMobileApp,
-        checkAccess,
+        disableXssProtection = false,
         enableLoginForm = false,
         enableLogout = false,
-        trackAppLoad = true,
-        webSocketsEnabled = false,
         idlePanel = null,
+        isMobileApp,
+        lockoutMessage = null,
         lockoutPanel = null,
         loginMessage = null,
-        lockoutMessage = null,
+        modelClass,
         showBrowserContextMenu = false,
-        disableXssProtection = false
+        trackAppLoad = true,
+        webSocketsEnabled = false
     }) {
-        throwIf(!modelClass, 'A Hoist App must define a modelClass.');
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
-        throwIf(isNil(isMobileApp), 'A Hoist App must define isMobileApp');
+
         throwIf(
             !containerClass,
-            `Please import and provide containerClass from "@xh/hoist/${
-                isMobileApp ? 'mobile' : 'desktop'
-            }/AppContainer".`
+            `Please import and provide containerClass from "@xh/hoist/${isMobileApp ? 'mobile' : 'desktop'}/AppContainer".`
         );
+
+        throwIf(!modelClass, 'A Hoist App must define a modelClass.');
+
+        throwIf(isNil(isMobileApp), 'A Hoist App must define isMobileApp');
 
         throwIf(
             !isString(checkAccess) && !isFunction(checkAccess),
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
 
+        this.authModelClass = authModelClass;
+        this.checkAccess = checkAccess;
         this.clientAppCode = clientAppCode;
         this.clientAppName = clientAppName;
-
-        this.modelClass = modelClass;
         this.componentClass = componentClass;
         this.containerClass = containerClass;
-        this.authModelClass = authModelClass;
+        this.disableXssProtection = disableXssProtection;
+        this.enableLoginForm = enableLoginForm;
+        this.enableLogout = enableLogout;
+        this.idlePanel = idlePanel;
         this.isMobileApp = isMobileApp;
-        this.checkAccess = checkAccess;
-
+        this.lockoutMessage = lockoutMessage;
+        this.lockoutPanel = lockoutPanel;
+        this.loginMessage = loginMessage;
+        this.modelClass = modelClass;
+        this.showBrowserContextMenu = showBrowserContextMenu;
         this.trackAppLoad = trackAppLoad;
         this.webSocketsEnabled = webSocketsEnabled;
-        this.idlePanel = idlePanel;
-        this.lockoutPanel = lockoutPanel;
-        this.enableLogout = enableLogout;
-        this.enableLoginForm = enableLoginForm;
-        this.loginMessage = loginMessage;
-        this.lockoutMessage = lockoutMessage;
-        this.showBrowserContextMenu = showBrowserContextMenu;
-        this.disableXssProtection = disableXssProtection;
     }
 }
