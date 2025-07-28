@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
-import filesize from 'filesize';
+import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {

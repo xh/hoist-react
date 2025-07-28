@@ -55,6 +55,18 @@
 * Removed deprecated `FetchService.setDefaultTimeout`
 * Removed deprecated `IdentityService.logoutAsync`
 
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.1 → 2.3`
+* @azure/msal-browser `4.12 → 4.16`
+* filesize `6.4 → 11.0`
+* mobx-react-lite `4.0 → 4.1`
+* qs `6.13 → 6.14`
+* react-markdown `9.0 → 10.1`
+* regenerator-runtime `0.13 → 0.14`
+* semver `7.6 → 7.7`
+* short-unique-id `5.2 → 5.3`
+* ua-parser-js `1.0 → 2.0`
 
 ## v74.1.2 - 2025-07-03
 
