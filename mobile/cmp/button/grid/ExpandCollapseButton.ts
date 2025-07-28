@@ -13,23 +13,29 @@ import {logError, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 
 export interface ExpandCollapseButtonProps extends ButtonProps {
-    /** GridModel of the grid for which this button should show a chooser. */
+    /**
+     * `GridModel` to which this button should bind.
+     * Optional, will find nearest GridModel in context if not provided.
+     */
     gridModel?: GridModel;
 }
 
 /**
- * A convenience button to expand / collapse all rows in grouped or tree grid.
+ * A convenience button to expand / collapse all rows in a grouped or tree Grid.
  */
 export const [ExpandCollapseButton, expandCollapseButton] =
     hoistCmp.withFactory<ExpandCollapseButtonProps>({
         displayName: 'ExpandCollapseButton',
+        className: 'xh-expand-collapse-button',
         model: false,
-        render({gridModel, onClick, ...props}) {
+
+        render({className, gridModel, onClick, ...props}) {
             gridModel = withDefault(gridModel, useContextModel(GridModel));
 
-            if (!gridModel) {
+            // Validate bound model available and suitable for use.
+            if (!onClick && !gridModel) {
                 logError(
-                    "No GridModel available. Provide via a 'gridModel' prop, or context.",
+                    'No GridModel available - provide via `gridModel` prop or context - button will be disabled.',
                     ExpandCollapseButton
                 );
                 return button({icon: Icon.expand(), disabled: true, ...props});
@@ -45,6 +51,6 @@ export const [ExpandCollapseButton, expandCollapseButton] =
                 onClick ??
                 (() => (shouldCollapse ? gridModel.collapseAll() : gridModel.expandAll()));
 
-            return button({disabled, icon, onClick, ...props});
+            return button({className, disabled, icon, onClick, ...props});
         }
     });

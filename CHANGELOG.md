@@ -9,10 +9,22 @@
     * The most recently expanded level is persistable with other grid state.
     * The default grid context menu now supports a new item to allow users to expand/collapse out to
       a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
+    * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
+      Provides easier discoverability on desktop and supports this feature on mobile, where we
+      don't have context menus.
+* Added new `childTabs` property to `TabConfig`. Apps should use this property for a declarative
+  way to create nested tabs within a `TabContainer`.
+* Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
+  * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+  * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+  * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+  * This behavior is consistent with current behavior and user intuition and should maximize the
+    ability to create useful queries using this component.
+* Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
-* Added new `childTabs` property to `TabConfig`.  Apps should use this property for a declarative
-  way to create nested tabs within a `TabContainer`.
+* Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
+  operation fails. Set to `false` to fail silently (the behavior prior to this change).
 
 ### 🐞 Bug Fixes
 
@@ -24,6 +36,48 @@
   resolved model. Previously this value was cached on first render.
 * Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
   `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
+
+### ⚙️ Technical
+
+* WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
+  Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
+  Console functionality and is recommended, but clients that must disable WebSockets can do so via
+  `AppSpec.disableWebSockets`. Note `AppSpec.enableWebSockets` is deprecated and can be removed.
+* Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
+  the app-specified class. App developers can declare a typed static `instance` property on their
+  model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
+  * The `XH.authModel` property is still set and available - this is a non-breaking change.
+  * This approach was already (and continues to be) used for services and the `AppModel` singleton.
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed deprecated `LoadSupport.isLoadSupport`
+* Removed deprecated `FileChooserModel.removeAllFiles`
+* Removed deprecated `FetchService.setDefaultHeaders`
+* Removed deprecated `FetchService.setDefaultTimeout`
+* Removed deprecated `IdentityService.logoutAsync`
+
+### ✨ Styles
+
+* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note
+  that this brings slight differences to the font's appearance, including tweaks to internal
+  spacing and letterforms for tabular numbers. The name of the font face has also changed, from
+  `Inter Var` to `InterVariable`. The default value of the `--xh-font-family` CSS variable has been
+  updated to match, making this change transparent for most applications.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.1 → 2.3`
+* @azure/msal-browser `4.12 → 4.16`
+* filesize `6.4 → 11.0`
+* inter-ui `3.19 → 4.1`
+* mobx-react-lite `4.0 → 4.1`
+* qs `6.13 → 6.14`
+* react-markdown `9.0 → 10.1`
+* regenerator-runtime `0.13 → 0.14`
+* semver `7.6 → 7.7`
+* short-unique-id `5.2 → 5.3`
+* ua-parser-js `1.0 → 2.0`
 
 ## v74.1.2 - 2025-07-03
 

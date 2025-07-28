@@ -92,7 +92,8 @@ import {
     min,
     omit,
     pick,
-    pull
+    pull,
+    take
 } from 'lodash';
 import {ReactNode} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
@@ -283,7 +284,8 @@ export interface GridConfig {
      * Array of strings (or a function returning one) providing user-facing labels for each depth
      * level in a tree or grouped grid - e.g. `['Country', 'State', 'City']`. If set, the
      * expand/collapse options in the default context menu will be enhanced to allow users to
-     * expand/collapse to a specific level.
+     * expand/collapse to a specific level. See {@link GroupingChooserModel.valueDisplayNames}
+     * for a convenient getter that will satisfy this API when a GroupingChooser is in play.
      */
     levelLabels?: Thunkable<string[]>;
 
@@ -551,7 +553,7 @@ export class GridModel extends HoistModel {
 
         this.xhImpl = xhImpl;
 
-        this._defaultState = {columns, sortBy, groupBy};
+        this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
         this.treeMode = treeMode;
         this.treeStyle = treeStyle;
@@ -643,13 +645,6 @@ export class GridModel extends HoistModel {
             debounce: 500
         });
 
-        this.addReaction({
-            track: () => [this.expandLevel, this.isReady],
-            run: () => {
-                this.agApi?.setGridOption('groupDefaultExpanded', this.expandLevel);
-            }
-        });
-
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
             throw XH.exception(
@@ -678,10 +673,11 @@ export class GridModel extends HoistModel {
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy, filter} = this._defaultState;
+        const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
+        this.expandToLevel(expandLevel);
 
         this.filterModel?.setFilter(filter);
 
@@ -1040,6 +1036,41 @@ export class GridModel extends HoistModel {
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;
+
+        // 0) Not rendered, we are done.
+        const {agApi} = this;
+        if (!agApi) return;
+
+        // 1) Update rendered grid.
+        if (agApi.getGridOption('groupDefaultExpanded') != level) {
+            // If the ag default is *not* set to this level just set it.  This somewhat
+            // mysteriously (but efficiently) changes the currently rendered rows as well.
+            agApi.setGridOption('groupDefaultExpanded', level);
+        } else if (level == 0 || level >= this.maxDepth) {
+            // otherwise api methods available.
+            level == 0 ? agApi.collapseAll() : agApi.expandAll();
+        } else {
+            // Otherwise, *toggle* the default.
+            // Surprisingly, this appears to be the only efficient way to do the bulk operation.
+            agApi.setGridOption('groupDefaultExpanded', 0);
+            agApi.setGridOption('groupDefaultExpanded', level);
+        }
+
+        // 2) Finally, be sure to update our state snapshot.
+        this.noteAgExpandStateChange();
+    }
+
+    /**
+     * Get the resolved level labels for the current state of the grid.
+     */
+    get resolvedLevelLabels(): string[] {
+        const {maxDepth, levelLabels} = this,
+            ret = executeIfFunction(levelLabels);
+        if (ret && ret.length < maxDepth + 1) {
+            this.logError('Value produced by `GridModel.levelLabels` has insufficient length.');
+            return null;
+        }
+        return ret ? take(ret, maxDepth + 1) : null;
     }
 
     /**

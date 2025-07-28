@@ -15,7 +15,7 @@
     border: 1px solid var(--xh-intent-danger);
     max-width: 50%;
     text-align: center;
-    word-break: break-word;
+    overflow-wrap: break-word;
 
     & > * {
       margin: 0 0 var(--xh-pad-px);

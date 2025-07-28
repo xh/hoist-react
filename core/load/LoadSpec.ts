@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {apiDeprecated} from '@xh/hoist/utils/js';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -94,11 +93,5 @@ export class LoadSpec {
         this.dateCreated = new Date();
 
         Object.freeze(this);
-    }
-
-    /** @deprecated Applications should use `instanceof` instead of this property. */
-    get isLoadSpec(): boolean {
-        apiDeprecated('isLoadSpec', {v: '68', msg: 'Use `instanceof` instead.'});
-        return true;
     }
 }

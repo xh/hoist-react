@@ -79,10 +79,12 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         formField({
                             field: 'isDefaultPinned',
-                            label: 'Pin by default?',
-                            labelWidth: 110,
+                            label: null,
                             inline: true,
-                            item: switchInput(),
+                            item: switchInput({
+                                label: `Pin to everyone's menu by default`,
+                                labelSide: 'left'
+                            }),
                             omit: !isGlobal || !isEditable
                         }),
                         vspacer(),

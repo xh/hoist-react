@@ -6,6 +6,7 @@
  */
 import {PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
+import {LogSource, logWarn} from '@xh/hoist/utils/js/LogUtils';
 import {
     flatMap,
     forOwn,
@@ -143,6 +144,19 @@ export function errorIf(condition: any, message: any) {
     }
 }
 
+/**
+ * Instantiate a singleton object of a class, and place a reference to the created
+ * object in a static property on the class.
+ *
+ * This pattern is useful to allow gaining typed references to the singleton via import
+ * and is used for creating the singleton HoistServices, AuthModel, and AppModel.
+ *
+ * @param clazz -- Class (i.e. Constructor) of singleton object to be created.
+ */
+export function createSingleton<T>(clazz: new () => T): T {
+    return (clazz['instance'] = new clazz());
+}
+
 export interface APIWarnOptions {
     /**
      * If provided and undefined, this method will be a no-op.
@@ -155,6 +169,9 @@ export interface APIWarnOptions {
 
     /** An additional message. Can contain suggestions for alternatives. */
     msg?: string;
+
+    /** Source of message for labelling log message.  */
+    source?: LogSource;
 }
 
 /**
@@ -163,8 +180,9 @@ export interface APIWarnOptions {
 export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
-    const msg = opts.msg ? ` ${opts.msg}.` : '';
-    throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
+    const src = opts.source ? `[${opts.source}] ` : '',
+        msg = opts.msg ? ` ${opts.msg}.` : '';
+    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
 }
 
 /**
@@ -177,10 +195,10 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
     if ('test' in opts && isUndefined(opts.test)) return;
 
     const v = opts.v ?? 'a future release',
-        msg = opts.msg ? ` ${opts.msg}.` : '',
+        msg = opts.msg ?? '',
         warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
     if (!_seenWarnings[warn]) {
-        console.warn(warn);
+        logWarn(warn, opts.source);
         _seenWarnings[warn] = true;
     }
 }
