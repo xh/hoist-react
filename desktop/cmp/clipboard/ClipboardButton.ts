@@ -10,12 +10,23 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import copy from 'clipboard-copy';
+import {isString} from 'lodash';
 
 export interface ClipboardButtonProps extends ButtonProps {
     /** Function returning the text to copy. May be async. */
     getCopyText: () => string | Promise<string>;
-    /** Message to be displayed in a toast when copy is complete. */
-    successMessage?: string;
+
+    /**
+     * Message to be displayed in a toast should the copy operation fail, or `true` (default) to
+     * show a toast-based alert from `XH.handleException`. Spec `false` to fail silently.
+     */
+    errorMessage?: string | boolean;
+
+    /**
+     * Message to be displayed in a toast when copy is complete, or `true` for a default success
+     * confirmation. Default `false`
+     */
+    successMessage?: string | boolean;
 }
 
 /**
@@ -24,24 +35,36 @@ export interface ClipboardButtonProps extends ButtonProps {
 export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<ClipboardButtonProps>({
     displayName: 'ClipboardButton',
     model: false,
+
     render(props) {
-        let {icon, onClick, text, getCopyText, successMessage, ...rest} = props;
+        let {icon, onClick, text, getCopyText, errorMessage, successMessage, ...rest} = props;
+        let errMsg = withDefault(errorMessage, true),
+            successMsg = withDefault(successMessage, false);
 
         if (!onClick) {
             onClick = async () => {
-                const {successMessage, getCopyText} = props;
-
                 try {
-                    const text = await getCopyText();
-                    await copy(text);
-                    if (successMessage) {
+                    const copyText = await getCopyText();
+                    await copy(copyText);
+                    if (successMsg) {
+                        successMsg = isString(successMsg) ? successMsg : 'Copied to clipboard';
                         XH.toast({
-                            message: successMessage,
-                            icon: Icon.clipboard()
+                            icon: Icon.clipboard(),
+                            message: successMsg
                         });
                     }
                 } catch (e) {
-                    XH.handleException(e, {showAlert: false});
+                    if (errMsg) {
+                        errMsg = isString(errMsg) ? errMsg : 'Error copying to clipboard';
+                        XH.dangerToast({
+                            icon: Icon.clipboard(),
+                            message: errMsg
+                        });
+                    }
+                    XH.handleException(e, {
+                        message: 'Error copying to clipboard',
+                        showAlert: false
+                    });
                 }
             };
         }
