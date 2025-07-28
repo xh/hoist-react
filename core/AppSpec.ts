@@ -4,9 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {XH, HoistAppModel, HoistAuthModel, ElementFactory, HoistProps} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isString} from 'lodash';
+import {ElementFactory, HoistAppModel, HoistAuthModel, HoistProps, XH} from '@xh/hoist/core';
+import {apiDeprecated, throwIf} from '@xh/hoist/utils/js';
+import {isFunction, isNil, isString, isUndefined} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
 
 /**
@@ -61,6 +61,14 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      * either `@xh/hoist/desktop/AppContainer` or `@xh/hoist/mobile/AppContainer`.
      */
     containerClass: ComponentClass<HoistProps> | FunctionComponent<HoistProps>;
+
+    /**
+     * True to disable Hoist's built-in WebSocket support for this client app. Even if the app
+     * itself is not using WebSockets for business data, the Hoist Admin Console's "Clients" tab and
+     * related functionality benefit from having them enabled, so disable only if there is a good
+     * reason to do so.
+     */
+    disableWebSockets?: boolean;
 
     /**
      * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
@@ -125,7 +133,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      */
     trackAppLoad?: boolean;
 
-    /** True to enable Hoist websocket connectivity. */
+    /** @deprecated - use {@link AppSpec.disableWebSockets} instead. */
     webSocketsEnabled?: boolean;
 
     constructor({
@@ -135,6 +143,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         clientAppName = XH.appName,
         componentClass,
         containerClass,
+        disableWebSockets = false,
         disableXssProtection = false,
         enableLoginForm = false,
         enableLogout = false,
@@ -146,7 +155,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         modelClass,
         showBrowserContextMenu = false,
         trackAppLoad = true,
-        webSocketsEnabled = false
+        webSocketsEnabled
     }) {
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
 
@@ -164,12 +173,24 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
 
+        if (!isUndefined(webSocketsEnabled)) {
+            let msg: string;
+            if (webSocketsEnabled === false) {
+                disableWebSockets = true;
+                msg = `Specify disableWebSockets: true to continue actively disabling WebSockets if required.`;
+            } else {
+                msg = `WebSockets are now enabled by default - this property can be safely removed from your appSpec.`;
+            }
+            apiDeprecated('webSocketsEnabled', {msg, v: 'v78'});
+        }
+
         this.authModelClass = authModelClass;
         this.checkAccess = checkAccess;
         this.clientAppCode = clientAppCode;
         this.clientAppName = clientAppName;
         this.componentClass = componentClass;
         this.containerClass = containerClass;
+        this.disableWebSockets = disableWebSockets;
         this.disableXssProtection = disableXssProtection;
         this.enableLoginForm = enableLoginForm;
         this.enableLogout = enableLogout;
@@ -181,6 +202,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.modelClass = modelClass;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.trackAppLoad = trackAppLoad;
-        this.webSocketsEnabled = webSocketsEnabled;
+        this.webSocketsEnabled = !disableWebSockets;
     }
 }
