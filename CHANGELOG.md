@@ -55,11 +55,20 @@
 * Removed deprecated `FetchService.setDefaultTimeout`
 * Removed deprecated `IdentityService.logoutAsync`
 
+### ✨ Styles
+
+* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note
+  that this brings slight differences to the font's appearance, including tweaks to internal
+  spacing and letterforms for tabular numbers. The name of the font face has also changed, from
+  `Inter Var` to `InterVariable`. The default value of the `--xh-font-family` CSS variable has been
+  updated to match, making this change transparent for most applications.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.1 → 2.3`
 * @azure/msal-browser `4.12 → 4.16`
 * filesize `6.4 → 11.0`
+* inter-ui `3.19 → 4.1`
 * mobx-react-lite `4.0 → 4.1`
 * qs `6.13 → 6.14`
 * react-markdown `9.0 → 10.1`
