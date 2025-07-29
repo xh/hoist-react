@@ -25,7 +25,9 @@ export class MessageSourceModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+    }
 
+    init() {
         // Message modals are automatically dismissed on app route changes to avoid navigating the
         // app underneath the dialog in an unsettling way.
         this.addReaction({
