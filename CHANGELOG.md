@@ -21,6 +21,9 @@
 * Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
+* Added new `suppressOpts` property to `MessageOptions`.  Use this option to allow users to suppress
+application warnings and dialogs for a specified amount of time.
+
 
 ### 🐞 Bug Fixes
 

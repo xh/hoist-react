@@ -83,12 +83,15 @@ export interface MessageSpec {
     className?: string;
 
     /**
-     * Unique key identifying the message. If subsequent messages.
-     * If subsequent messages are triggered with this key, they will replace this message.
-     * Useful for usages that may be producing messages recursively, or via timers and wish to
-     * avoid generating a large stack of duplicates.
+     * Unique key identifying the message.
+     *
+     * If subsequent messages are triggered with this key, they will replace this message.  Also
+     * used for suppressing subsequent copies of the message via suppressOpts.
+     *
+     * Required if suppressOpts is set. Also useful for usages that may be producing messages
+     * recursively, or via timers and wish to avoid generating a large stack of duplicates.
      */
-    messageKey?: string;
+    messageKey?: Thunkable<string>;
 
     /** Config for input to be displayed (as a prompt). */
     input?: {
@@ -109,6 +112,9 @@ export interface MessageSpec {
      */
     confirmProps?: any;
 
+    /** Spec to allow users to opt-out of confirmations for future messages. */
+    suppressOpts?: MessageSuppressOpts;
+
     /**
      * Props for secondary cancel button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured
@@ -123,16 +129,33 @@ export interface MessageSpec {
     cancelAlign?: any;
 
     /** Callback to execute when confirm is clicked.*/
-    onConfirm?();
+    onConfirm?: () => void;
 
     /** Callback to execute when cancel is clicked.*/
-    onCancel?();
+    onCancel?: () => void;
 
     /** Flag to specify whether a popup can be clicked out of or escaped.*/
     dismissable?: boolean;
 
     /** Flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
     cancelOnDismiss?: boolean;
+}
+
+/**
+ * Configuration object, governing user opt-in message suppression.
+ */
+export interface MessageSuppressOpts {
+    /** Optional label. Defaults to something appropriate for type. */
+    label?: Thunkable<string>;
+
+    /** Amount of time to skip message for.  Null (default) indicates no expiry. */
+    expiry?: number;
+
+    /** Units of expiry field. */
+    expiryUnits?: 'minutes' | 'hours' | 'days';
+
+    /** Pre-populated answer (default false). */
+    defaultValue: boolean;
 }
 
 /**

@@ -5,10 +5,19 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, XH, MessageSpec, managed} from '@xh/hoist/core';
+import {
+    HoistModel,
+    XH,
+    MessageSpec,
+    managed,
+    MessageSuppressOpts,
+    PlainObject
+} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
-import {isEmpty} from 'lodash';
+import {DAYS, HOURS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
+import {executeIfFunction, pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {isEmpty, isNil, isUndefined} from 'lodash';
+import {ReactElement, ReactNode} from 'react';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -19,29 +28,31 @@ import {isEmpty} from 'lodash';
 export class MessageModel extends HoistModel {
     override xhImpl = true;
 
-    // Immutable properties
-    title;
-    icon;
-    message;
-    messageKey;
-    className;
-    input;
-    confirmProps;
-    cancelProps;
-    cancelAlign;
-    onConfirm;
-    onCancel;
-    dismissable;
-    cancelOnDismiss;
+    //---------------------------------------
+    // Immutable properties from application
+    //----------------------------------------
+    title: string;
+    icon: ReactElement;
+    message: ReactNode;
+    messageKey: string;
+    className: string;
+    input: MessageSpec['input'];
+    suppressOpts: MessageSuppressOpts;
+    confirmProps: any;
+    cancelProps: any;
+    cancelAlign: any;
+    onConfirm: () => void;
+    onCancel: () => void;
+    dismissable: boolean;
+    cancelOnDismiss: boolean;
 
-    // Promise to be resolved when user has clicked on choice and its internal resolver
-    result;
-    _resolver;
+    @observable
+    isOpen = false;
 
     @managed
     formModel: FormModel;
 
-    @observable isOpen = true;
+    private resolver: (val: unknown) => void;
 
     constructor({
         title,
@@ -50,6 +61,7 @@ export class MessageModel extends HoistModel {
         messageKey,
         className,
         input,
+        suppressOpts = null,
         confirmProps = {},
         cancelProps = {},
         cancelAlign = 'right',
@@ -61,55 +73,78 @@ export class MessageModel extends HoistModel {
         super();
         makeObservable(this);
 
+        throwIf(
+            suppressOpts && !messageKey,
+            'Must specify "messageKey" if "suppressOpts" specified.'
+        );
+
         this.title = title;
         this.icon = icon;
         this.message = message;
-        this.messageKey = messageKey;
+        this.messageKey = executeIfFunction(messageKey);
         this.className = className;
         this.dismissable = dismissable;
         this.cancelOnDismiss = cancelOnDismiss;
+        this.suppressOpts = suppressOpts;
+        this.input = input;
+        this.formModel = this.createFormModel();
 
-        if (input) {
-            this.input = input;
-            const {initialValue, rules} = input;
-            this.formModel = new FormModel({fields: [{name: 'value', initialValue, rules}]});
+        // create buttons
+        if (confirmProps && isUndefined(cancelProps?.autoFocus) && !input) {
+            confirmProps = {autoFocus: true, ...confirmProps};
         }
-
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync());
         this.cancelProps = this.parseButtonProps(cancelProps, () => this.doCancel());
-        this.cancelAlign = cancelAlign;
 
+        this.cancelAlign = cancelAlign;
         this.onConfirm = onConfirm;
         this.onCancel = onCancel;
-        this.result = new Promise(resolve => (this._resolver = resolve));
-
-        // Message modals are automatically dismissed on app route changes to avoid navigating the
-        // app underneath the dialog in an unsettling way.
-        this.addReaction({
-            track: () => XH.routerState,
-            run: () => this.close()
-        });
     }
 
+    //--------------------------
+    // For MessageSourceModel
+    //--------------------------
+
+    @action
+    async getUserResponseAsync() {
+        this.isOpen = true;
+        return new Promise(resolve => (this.resolver = resolve));
+    }
+
+    getSuppressedValue(): PlainObject {
+        if (!this.suppressOpts) return null;
+
+        const {suppressKey, suppressExpiry} = this,
+            ret = XH.localStorageService.get(suppressKey);
+        return ret && (!suppressExpiry || !olderThan(ret.date, suppressExpiry)) ? ret : null;
+    }
+
+    //------------------------
+    // For component handlers
+    //-----------------------
     @action
     async doConfirmAsync() {
-        let resolvedVal = true;
+        let {formModel} = this,
+            value = true;
 
-        if (this.formModel) {
-            await this.formModel.validateAsync();
-            if (!this.formModel.isValid) return;
-            resolvedVal = this.formModel.getData().value;
+        if (formModel) {
+            await formModel.validateAsync();
+            if (!formModel.isValid) return;
+            value = formModel.values.value;
+            if (formModel.values.suppress) {
+                XH.localStorageService.set(this.suppressKey, {date: Date.now(), value});
+            }
         }
 
         this.onConfirm?.();
-        this._resolver(resolvedVal);
+        this.resolver(value);
         this.close();
     }
 
     @action
     doCancel() {
         this.onCancel?.();
-        this._resolver(false);
+        this.resolver(false);
         this.close();
     }
 
@@ -120,13 +155,44 @@ export class MessageModel extends HoistModel {
             this.doCancel();
             return;
         }
-        this._resolver(null);
+        this.resolver(null);
         this.close();
     }
 
     @action
     close() {
         this.isOpen = false;
+    }
+
+    get suppressExpiry(): number {
+        if (this.suppressOpts) return null;
+        const {expiry, expiryUnits} = this.suppressOpts;
+
+        if (isNil(expiry)) return null;
+        switch (expiryUnits ?? 'days') {
+            case 'minutes':
+                return expiry * MINUTES;
+            case 'hours':
+                return expiry * HOURS;
+            case 'days':
+                return expiry * DAYS;
+        }
+        return null;
+    }
+
+    get suppressExpiryLabel(): string {
+        if (this.suppressOpts) return null;
+        const {expiry, expiryUnits} = this.suppressOpts;
+        if (isNil(expiry)) return null;
+        switch (expiryUnits ?? 'days') {
+            case 'minutes':
+                return pluralize('minute', expiry, true);
+            case 'hours':
+                return pluralize('hour', expiry, true);
+            case 'days':
+                return pluralize('day', expiry, true);
+        }
+        return null;
     }
 
     //-----------------------
@@ -137,15 +203,28 @@ export class MessageModel extends HoistModel {
         super.destroy();
     }
 
-    // Merge handler and deprecated props into consolidated object.
-    // Return null if neither text nor icon provided - button should not be displayed.
+    private createFormModel(): FormModel {
+        const {input, suppressOpts} = this,
+            fields = [];
+        if (input) {
+            fields.push({name: 'value', initialValue: input.initialValue, rules: input.rules});
+        }
+        if (suppressOpts) {
+            fields.push({name: 'suppress', initialValue: suppressOpts.defaultValue});
+        }
+        return isEmpty(fields) ? null : new FormModel({fields});
+    }
+
     private parseButtonProps(props, handler) {
         warnIf(
             props.onClick,
             'Cannot specify "onClick" callback for default Message buttons - callback will be ignored.'
         );
-
         const ret = {...props, onClick: handler};
         return ret.text || ret.icon ? ret : null;
+    }
+
+    private get suppressKey(): string {
+        return `xhMessageResults.${this.messageKey}`;
     }
 }

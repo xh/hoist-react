@@ -7,7 +7,7 @@
 import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {filter, isUndefined, partition} from 'lodash';
+import {filter, partition} from 'lodash';
 import {MessageModel} from './MessageModel';
 
 /**
@@ -25,24 +25,35 @@ export class MessageSourceModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+
+        // Message modals are automatically dismissed on app route changes to avoid navigating the
+        // app underneath the dialog in an unsettling way.
+        this.addReaction({
+            track: () => XH.routerState,
+            run: () => this.msgModels.forEach(m => m.close())
+        });
     }
 
+    /**
+     * Display message to get input or confirmation from a user
+     *
+     * @returns Promise to be resolved with result.
+     * Typically, resolves to a user result after the user has interacted with the form.
+     * However, if `suppressOpts` have been specified, may immediately resolve
+     * to the result of the user's previous response.
+     */
     message(config: MessageSpec) {
-        // Default autoFocus on any confirm button, if no input control and developer has made no explicit request
-        const {confirmProps, cancelProps, input} = config;
-
-        if (
-            confirmProps &&
-            isUndefined(confirmProps.autoFocus) &&
-            (!cancelProps || isUndefined(cancelProps.autoFocus)) &&
-            !input
-        ) {
-            confirmProps.autoFocus = true;
+        const model = new MessageModel(config),
+            suppressVal = model.getSuppressedValue();
+        if (suppressVal) {
+            this.logDebug('Reusing saved user value for message', suppressVal);
+            XH.safeDestroy(model);
+            return Promise.resolve(suppressVal.value);
+        } else {
+            const ret = model.getUserResponseAsync();
+            this.addModel(model);
+            return ret;
         }
-
-        const ret = new MessageModel(config);
-        this.addModel(ret);
-        return ret.result;
     }
 
     alert(config: MessageSpec) {

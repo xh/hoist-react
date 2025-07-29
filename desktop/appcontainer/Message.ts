@@ -10,10 +10,10 @@ import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {textInput, checkbox} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
+import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import './Message.scss';
 
@@ -35,32 +35,50 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            items: [dialogBody(model.message, inputCmp()), bbar()],
+            items: [dialogBody(model.message, formCmp()), bbar()],
             onClose: () => model.doEscape(),
             ...props
         });
     }
 });
 
-const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
-    const {formModel, input} = model;
+const formCmp = hoistCmp.factory<MessageModel>(({model}) => {
+    const {formModel, input, suppressOpts} = model,
+        items = [];
+
     if (!formModel) return null;
+    if (input) {
+        items.push(
+            formField({
+                field: 'value',
+                label: null,
+                item: withDefault(
+                    input.item,
+                    textInput({
+                        autoFocus: true,
+                        selectOnFocus: true,
+                        onKeyDown: evt => {
+                            if (evt.key === 'Enter') model.doConfirmAsync();
+                        }
+                    })
+                )
+            })
+        );
+    }
+    if (suppressOpts) {
+        let {label} = suppressOpts,
+            {suppressExpiryLabel} = model;
+        label = executeIfFunction(label);
+        label ??= suppressExpiryLabel
+            ? `Don't show this again`
+            : `Don't show this again for ${suppressExpiryLabel}`;
+        items.push(formField({field: 'suppress', item: checkbox({label})}));
+    }
+
     return form({
         model: formModel,
-        fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        item: formField({
-            field: 'value',
-            item: withDefault(
-                input.item,
-                textInput({
-                    autoFocus: true,
-                    selectOnFocus: true,
-                    onKeyDown: evt => {
-                        if (evt.key === 'Enter') model.doConfirmAsync();
-                    }
-                })
-            )
-        })
+        fieldDefaults: {commitOnChange: true, minimal: true},
+        items
     });
 });
 
