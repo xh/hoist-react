@@ -5,17 +5,10 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {
-    HoistModel,
-    XH,
-    MessageSpec,
-    managed,
-    MessageSuppressOpts,
-    PlainObject
-} from '@xh/hoist/core';
+import {HoistModel, XH, MessageSpec, managed, MessageSuppressOpts} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
-import {DAYS, HOURS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {executeIfFunction, pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {DAYS, HOURS, MINUTES} from '@xh/hoist/utils/datetime';
+import {pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isEmpty, isNil, isUndefined} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 
@@ -81,7 +74,7 @@ export class MessageModel extends HoistModel {
         this.title = title;
         this.icon = icon;
         this.message = message;
-        this.messageKey = executeIfFunction(messageKey);
+        this.messageKey = messageKey;
         this.className = className;
         this.dismissable = dismissable;
         this.cancelOnDismiss = cancelOnDismiss;
@@ -104,19 +97,17 @@ export class MessageModel extends HoistModel {
     //--------------------------
     // For MessageSourceModel
     //--------------------------
-
     @action
-    async getUserResponseAsync() {
+    async triggerMessageAsync() {
+        if (this.suppressOpts) {
+            const ret = XH.localStorageService.get(this.suppressKey);
+            if (ret && (!ret.expiry || Date.now() <= ret.expiry)) {
+                this.logDebug('Suppressing message with previous response', this.messageKey, ret);
+                return Promise.resolve(ret.value);
+            }
+        }
         this.isOpen = true;
         return new Promise(resolve => (this.resolver = resolve));
-    }
-
-    getSuppressedValue(): PlainObject {
-        if (!this.suppressOpts) return null;
-
-        const {suppressKey, suppressExpiry} = this,
-            ret = XH.localStorageService.get(suppressKey);
-        return ret && (!suppressExpiry || !olderThan(ret.date, suppressExpiry)) ? ret : null;
     }
 
     //------------------------
@@ -132,7 +123,9 @@ export class MessageModel extends HoistModel {
             if (!formModel.isValid) return;
             value = formModel.values.value;
             if (formModel.values.suppress) {
-                XH.localStorageService.set(this.suppressKey, {date: Date.now(), value});
+                let {suppressExpiry} = this;
+                if (suppressExpiry) suppressExpiry += Date.now();
+                XH.localStorageService.set(this.suppressKey, {expiry: suppressExpiry, value});
             }
         }
 
@@ -165,7 +158,7 @@ export class MessageModel extends HoistModel {
     }
 
     get suppressExpiry(): number {
-        if (this.suppressOpts) return null;
+        if (!this.suppressOpts) return null;
         const {expiry, expiryUnits} = this.suppressOpts;
 
         if (isNil(expiry)) return null;
@@ -181,7 +174,7 @@ export class MessageModel extends HoistModel {
     }
 
     get suppressExpiryLabel(): string {
-        if (this.suppressOpts) return null;
+        if (!this.suppressOpts) return null;
         const {expiry, expiryUnits} = this.suppressOpts;
         if (isNil(expiry)) return null;
         switch (expiryUnits ?? 'days') {

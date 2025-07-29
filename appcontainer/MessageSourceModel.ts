@@ -44,16 +44,9 @@ export class MessageSourceModel extends HoistModel {
      */
     message(config: MessageSpec) {
         const model = new MessageModel(config),
-            suppressVal = model.getSuppressedValue();
-        if (suppressVal) {
-            this.logDebug('Reusing saved user value for message', suppressVal);
-            XH.safeDestroy(model);
-            return Promise.resolve(suppressVal.value);
-        } else {
-            const ret = model.getUserResponseAsync();
-            this.addModel(model);
-            return ret;
-        }
+            ret = model.triggerMessageAsync();
+        this.addModel(model);
+        return ret;
     }
 
     alert(config: MessageSpec) {

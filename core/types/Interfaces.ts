@@ -91,7 +91,7 @@ export interface MessageSpec {
      * Required if suppressOpts is set. Also useful for usages that may be producing messages
      * recursively, or via timers and wish to avoid generating a large stack of duplicates.
      */
-    messageKey?: Thunkable<string>;
+    messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
     input?: {
@@ -146,7 +146,7 @@ export interface MessageSpec {
  */
 export interface MessageSuppressOpts {
     /** Optional label. Defaults to something appropriate for type. */
-    label?: Thunkable<string>;
+    label?: string;
 
     /** Amount of time to skip message for.  Null (default) indicates no expiry. */
     expiry?: number;

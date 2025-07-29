@@ -6,7 +6,7 @@
  */
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {form} from '@xh/hoist/cmp/form';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -51,7 +51,6 @@ const formCmp = hoistCmp.factory<MessageModel>(({model}) => {
         items.push(
             formField({
                 field: 'value',
-                label: null,
                 item: withDefault(
                     input.item,
                     textInput({
@@ -69,15 +68,16 @@ const formCmp = hoistCmp.factory<MessageModel>(({model}) => {
         let {label} = suppressOpts,
             {suppressExpiryLabel} = model;
         label = executeIfFunction(label);
-        label ??= suppressExpiryLabel
-            ? `Don't show this again`
-            : `Don't show this again for ${suppressExpiryLabel}`;
+        label ??= !suppressExpiryLabel
+            ? `Don't show this message again`
+            : `Don't show this message again for ${suppressExpiryLabel}`;
+        items.push(vspacer(20));
         items.push(formField({field: 'suppress', item: checkbox({label})}));
     }
 
     return form({
         model: formModel,
-        fieldDefaults: {commitOnChange: true, minimal: true},
+        fieldDefaults: {commitOnChange: true, minimal: true, label: null},
         items
     });
 });
