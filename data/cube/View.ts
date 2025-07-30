@@ -86,10 +86,10 @@ export class View extends HoistBase {
 
     // Implementation
     private _rows: PlainObject[] = null;
-    private _rowCache: Map<string, BaseRow> = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     _aggContext: AggregationContext = null;
+    _rowCache: Map<string, BaseRow> = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {

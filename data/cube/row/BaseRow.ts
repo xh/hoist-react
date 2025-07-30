@@ -38,7 +38,7 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        this.data = {id, _meta: this};
+        this.data = {id};
     }
 
     //-----------------------
@@ -66,9 +66,10 @@ export abstract class BaseRow {
         // 3a) Before attaching examine that we don't have a chain of redundant nodes
         // (not sure if loop needed -- are these redundant relations transitive?)
         if (view.query.omitRedundantNodes) {
+            const rowCache = view._rowCache;
             while (dataChildren?.length === 1) {
-                const childRow = dataChildren[0]._meta;
-                if (this.isRedundantChild(this, childRow)) {
+                const childRow = rowCache.get(dataChildren[0].id);
+                if (childRow && this.isRedundantChild(this, childRow)) {
                     dataChildren = childRow.data.children;
                 } else {
                     break;
