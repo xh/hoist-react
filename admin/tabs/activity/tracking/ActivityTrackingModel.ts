@@ -136,7 +136,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             {
                 track: () => this.gridModel.selectedRecords,
                 run: recs =>
-                    (this.trackLogs = recs.flatMap(r => (r.data as ViewRowData).cubeLeaves)),
+                    (this.trackLogs = recs.flatMap(r => (r.raw as ViewRowData).cubeLeaves)),
                 debounce: 100
             }
         );

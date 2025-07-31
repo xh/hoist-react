@@ -130,6 +130,7 @@ export class Query {
         this.dimensions = this.parseDimensions(dimensions);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
+        this.provideLeaves = provideLeaves;
         this.omitRedundantNodes = omitRedundantNodes;
         this.filter = parseFilter(filter);
         this.lockFn = lockFn;
@@ -146,6 +147,7 @@ export class Query {
             filter: this.filter,
             includeRoot: this.includeRoot,
             includeLeaves: this.includeLeaves,
+            provideLeaves: this.provideLeaves,
             omitRedundantNodes: this.omitRedundantNodes,
             lockFn: this.lockFn,
             bucketSpecFn: this.bucketSpecFn,
@@ -183,6 +185,7 @@ export class Query {
             this.cube === other.cube &&
             this.includeRoot === other.includeRoot &&
             this.includeLeaves === other.includeLeaves &&
+            this.provideLeaves === other.provideLeaves &&
             this.omitRedundantNodes === other.omitRedundantNodes &&
             this.bucketSpecFn == other.bucketSpecFn &&
             this.omitFn == other.omitFn &&

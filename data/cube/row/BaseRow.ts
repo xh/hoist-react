@@ -58,8 +58,16 @@ export abstract class BaseRow {
             {query} = view,
             {omitRedundantNodes, provideLeaves, includeLeaves} = query;
 
-        // 1) Get visible children nodes recursively
-        let dataChildren = this.getVisibleChildrenDatas();
+        // 1) Get children nodes recursively
+        let dataChildren = this.getChildrenDatas();
+
+        // End hierarchy at cube leaves, if so configured. But be sure to hold on to them if needed
+        if (dataChildren && !includeLeaves && dataChildren[0]?.isCubeLeaf) {
+            if (provideLeaves) {
+                data._cubeLeafChildren = dataChildren;
+            }
+            dataChildren = null;
+        }
 
         // 2) If omitting ourselves, we are done, return visible children.
         if (!isLeaf && query.omitFn?.(this as any)) return dataChildren;
@@ -82,27 +90,13 @@ export abstract class BaseRow {
 
         // Wire up visible data children and leaves, as needed.
         data.children = dataChildren;
-        if (
-            provideLeaves &&
-            !includeLeaves &&
-            !isEmpty(dataChildren) &&
-            dataChildren[0].isCubeLeaf
-        ) {
-            data._cubeLeafChildren = dataChildren;
-        }
-
         return data;
     }
 
-    private getVisibleChildrenDatas(): ViewRowData[] {
+    private getChildrenDatas(): ViewRowData[] {
         let {children, view} = this;
 
         if (!children) return null;
-
-        // Skip all leaves from the data if the query is not configured to include leaves and
-        if (!view.query.includeLeaves && children[0]?.isLeaf) {
-            return null;
-        }
 
         // Skip all children in a locked node
         if (view.query.lockFn?.(this as any)) {
