@@ -8,7 +8,7 @@ import {json} from '@codemirror/lang-json';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {codeInput, CodeInputProps} from './CodeInput';
-import './NewCodeInput.scss';
+import './CodeInput.scss';
 
 export type JsonInputProps = CodeInputProps;
 

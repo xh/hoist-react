@@ -1,5 +1,6 @@
 export * from './ButtonGroupInput';
 export * from './Checkbox';
+export * from './CodeInput';
 export * from './DateInput';
 export * from './JsonInput';
 export * from './NumberInput';
@@ -9,4 +10,3 @@ export * from './Slider';
 export * from './SwitchInput';
 export * from './TextArea';
 export * from './TextInput';
-export * from './NewCodeInput';

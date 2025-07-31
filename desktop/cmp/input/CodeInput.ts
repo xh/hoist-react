@@ -1,13 +1,15 @@
 import {EditorView} from '@codemirror/view';
 import {EditorState, Extension} from '@codemirror/state';
+import {basicSetup} from 'codemirror';
+import {javascript} from '@codemirror/lang-javascript';
 import {observable} from 'mobx';
-import {hoistCmp, HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, XH} from '@xh/hoist/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {box, div} from '@xh/hoist/cmp/layout';
+import {oneDark} from '@codemirror/theme-one-dark';
+import {box} from '@xh/hoist/cmp/layout';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import {makeObservable} from '@xh/hoist/mobx';
 import './CodeInput.scss';
-import {basicSetup} from 'codemirror';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     value?: string;
@@ -33,7 +35,9 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, ...props}) => {
         width: 300,
         height: 100,
         ...getLayoutProps(props),
-        item: div({
+        item: box({
+            width: '100%',
+            height: '100%',
             className: 'xh-code-input__inner-wrapper',
             ref: model.parentDivRef
         })
@@ -46,7 +50,7 @@ class CodeInputModel extends HoistInputModel {
     @observable.ref
     state: EditorState;
 
-    @observable
+    @observable.ref
     view: EditorView;
 
     get editorValue() {
@@ -69,6 +73,13 @@ class CodeInputModel extends HoistInputModel {
                     console.log(val);
                 },
                 fireImmediately: true
+            },
+            {
+                track: () => XH.darkTheme,
+                run: () => {
+                    const newState = this.createEditorState();
+                    this.view.setState(newState);
+                }
             }
         );
     }
@@ -78,18 +89,25 @@ class CodeInputModel extends HoistInputModel {
     //----------------------
     private createCodeEditor() {
         this.state = this.createEditorState();
-        this.createEditorView(this.state);
+        this.view = this.createEditorView(this.state);
     }
 
-    private createEditorState() {
+    private createEditorState(): EditorState {
         const {readonly, extensions} = this.componentProps;
 
         let allExtensions = [
             basicSetup,
             EditorState.readOnly.of(readonly),
-            // javascript(),
-            EditorView.updateListener.of(update => console.log(update.state.doc.toString()))
+            javascript(),
+            EditorView.updateListener.of(update => console.log(update.state.doc.toString())),
+            EditorView.baseTheme({
+                '&light': {
+                    backgroundColor: 'white'
+                }
+            })
         ];
+
+        if (XH.darkTheme) allExtensions.push(oneDark);
 
         if (extensions) allExtensions.push(...extensions);
 
