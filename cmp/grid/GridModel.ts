@@ -1843,15 +1843,12 @@ export class GridModel extends HoistModel {
     }
 
     private parseChooserModel(chooserModel: ColChooserConfig | boolean): ColChooserModel {
+        if (!chooserModel) return null;
+
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
-
-        if (isPlainObject(chooserModel)) {
-            return this.markManaged(
-                new modelClass({...(chooserModel as ColChooserConfig), gridModel: this})
-            );
-        }
-
-        return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
+        return chooserModel === true
+            ? this.markManaged(new modelClass({gridModel: this}))
+            : this.markManaged(new modelClass({...chooserModel, gridModel: this}));
     }
 
     private isGroupSpec(col: ColumnGroupSpec | ColumnSpec): col is ColumnGroupSpec {
