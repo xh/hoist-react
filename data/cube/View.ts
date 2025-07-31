@@ -17,6 +17,7 @@ import {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
+import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
@@ -71,7 +72,7 @@ export class View extends HoistBase {
      * containing an array of hierarchical data objects.
      */
     @observable.ref
-    result: {rows: PlainObject[]; leafMap: Map<StoreRecordId, LeafRow>} = null;
+    result: {rows: ViewRowData[]; leafMap: Map<StoreRecordId, LeafRow>} = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
@@ -85,7 +86,7 @@ export class View extends HoistBase {
     lastUpdated: number;
 
     // Implementation
-    private _rows: PlainObject[] = null;
+    private _rows: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     _aggContext: AggregationContext = null;
@@ -229,6 +230,7 @@ export class View extends HoistBase {
         this.updateResults();
     }
 
+    @logWithDebug
     private dataOnlyUpdate(updates: StoreRecord[]) {
         const {_leafMap, _recordMap, stores} = this,
             updatedRowDatas = new Set<PlainObject>();

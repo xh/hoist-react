@@ -16,7 +16,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, StoreRecord} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -135,7 +135,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             },
             {
                 track: () => this.gridModel.selectedRecords,
-                run: recs => (this.trackLogs = this.getAllLeafRows(recs)),
+                run: recs =>
+                    (this.trackLogs = recs.flatMap(r => (r.data as ViewRowData).cubeLeaves)),
                 debounce: 100
             }
         );
@@ -231,27 +232,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             data = cube.executeQuery({
                 dimensions,
                 includeRoot: true,
-                includeLeaves: true
+                provideLeaves: true
             });
 
-        data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
         await gridModel.preSelectFirstAsync();
-    }
-
-    // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
-    // carry the leaves with the record, but deliberately not show them in the tree grid. We only
-    // want the tree grid to show aggregate records.
-    private separateLeafRows(node) {
-        if (isEmpty(node.children)) return;
-
-        const childrenAreLeaves = !node.children[0].children;
-        if (childrenAreLeaves) {
-            node.leafRows = node.children;
-            delete node.children;
-        } else {
-            node.children.forEach(child => this.separateLeafRows(child));
-        }
     }
 
     private cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
@@ -289,23 +274,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             maxRows: values.maxRows,
             filters: this.filterChooserModel.value
         };
-    }
-
-    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
-    private getAllLeafRows(aggRecs: StoreRecord[], ret = []): PlainObject[] {
-        if (isEmpty(aggRecs)) return [];
-
-        aggRecs.forEach(aggRec => {
-            if (aggRec.children.length) {
-                this.getAllLeafRows(aggRec.children, ret);
-            } else if (aggRec.raw.leafRows) {
-                aggRec.raw.leafRows.forEach(leaf => {
-                    ret.push({...leaf});
-                });
-            }
-        });
-
-        return ret;
     }
 
     //------------------------

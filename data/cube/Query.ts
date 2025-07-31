@@ -44,13 +44,31 @@ export interface QueryConfig {
     filter?: FilterLike;
 
     /**
-     * IncludeRoot?: True to include a synthetic root node in the return with grand total
+     * True to include a synthetic root node in the return with grand total
      * aggregate values.
      */
     includeRoot?: boolean;
 
-    /** True to include leaf nodes in return.*/
+    /**
+     * True to include leaf nodes as a regular dimensions in the returned data hierarchy.
+     *
+     * If true, leaf rows will be returned in the `children` property as an additional level of
+     * the main hierarchy. Default false.
+     *
+     * See also `provideLeaves` which will provide access to these nodes without showing in the main
+     * hierarchy.
+     */
     includeLeaves?: boolean;
+
+    /**
+     * True to provide leaf nodes in returned hierarchy.
+     *
+     * If true, leaf rows will be returned by the lowest level rows in a 'leaves' property.
+     * Default false.
+     *
+     * See also `includeLeaves` which will include leaves as a level in the main hierarchy
+     */
+    provideLeaves?: boolean;
 
     /**
      * True (default) to recursively omit single-child parents in the hierarchy.
@@ -85,6 +103,7 @@ export class Query {
     readonly filter: Filter;
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
+    readonly provideLeaves: boolean;
     readonly omitRedundantNodes: boolean;
     readonly cube: Cube;
     readonly lockFn: LockFn;
@@ -100,6 +119,7 @@ export class Query {
         filter = null,
         includeRoot = false,
         includeLeaves = false,
+        provideLeaves = false,
         omitRedundantNodes = true,
         lockFn = cube.lockFn,
         bucketSpecFn = cube.bucketSpecFn,

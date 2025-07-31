@@ -6,6 +6,7 @@
  */
 
 import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
+import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField, CubeFieldSpec} from './CubeField';
@@ -143,7 +144,7 @@ export class Cube extends HoistBase {
      * @param query - Config for query defining the shape of the view.
      * @returns data containing the results of the query as a hierarchical set of rows.
      */
-    executeQuery(query: QueryConfig): any {
+    executeQuery(query: QueryConfig): ViewRowData[] {
         const q = new Query({...query, cube: this});
         const view = new View({query: q}),
             rows = view.result.rows;
