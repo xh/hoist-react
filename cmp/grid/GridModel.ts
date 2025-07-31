@@ -15,6 +15,7 @@ import {
 } from '@ag-grid-community/core';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
+    ColChooserModel,
     Column,
     ColumnCellClassRuleFn,
     ColumnGroup,
@@ -383,7 +384,7 @@ export class GridModel extends HoistModel {
     store: Store;
     selModel: StoreSelectionModel;
     treeMode: boolean;
-    colChooserModel: HoistModel;
+    colChooserModel: ColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -1841,11 +1842,13 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parseChooserModel(chooserModel): HoistModel {
+    private parseChooserModel(chooserModel: ColChooserConfig | boolean): ColChooserModel {
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
 
         if (isPlainObject(chooserModel)) {
-            return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
+            return this.markManaged(
+                new modelClass({...(chooserModel as ColChooserConfig), gridModel: this})
+            );
         }
 
         return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;

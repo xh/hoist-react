@@ -134,7 +134,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 text: 'Columns...',
                 icon: Icon.gridPanel(),
                 hidden: !gridModel?.colChooserModel,
-                actionFn: () => (gridModel.colChooserModel as any)?.open()
+                actionFn: () => gridModel.colChooserModel?.open()
             });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':
