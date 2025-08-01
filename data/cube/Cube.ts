@@ -301,11 +301,15 @@ export type LockFn = (row: AggregateRow | BucketRow) => boolean;
 export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
 
 /**
- * Function to be called for each dimension to determine if children of said dimension should be
- * bucketed into additional dynamic dimensions.
+ * Function to be called for rows making up an aggregated dimension to determine if the children of
+ * that dimension should be dynamically bucketed into additional sub-groupings.
+ *
+ * An example use case would be a grouped collection of portfolio positions, where any closed
+ * positions are identified as such by this function and bucketed into a "Closed" sub-grouping,
+ * without having to add something like an "openClosed" dimension that would apply to all
+ * aggregations and create an unwanted "Open" grouping.
  *
  * @param rows - the rows being checked for bucketing
- * @returns a BucketSpec for configuring the bucket to place child rows into, or null to perform
- *          no bucketing
+ * @returns BucketSpec for configuring dynamic sub-aggregations, or null to perform no bucketing.
  */
 export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;

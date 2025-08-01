@@ -5,68 +5,87 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {BucketSpecFn, Filter, LockFn, OmitFn, parseFilter, StoreRecord} from '@xh/hoist/data';
-import {isEqual, find} from 'lodash';
-import {FilterLike, FilterTestFn} from '../filter/Types';
-import {CubeField} from './CubeField';
-import {Cube} from './Cube';
+import {
+    BucketSpecFn,
+    Filter,
+    FilterLike,
+    FilterTestFn,
+    LockFn,
+    OmitFn,
+    parseFilter,
+    StoreRecord
+} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
+import {find, isEqual} from 'lodash';
+import {Cube} from './Cube';
+import {CubeField} from './CubeField';
 
 /**
- * Queries determine what data is extracted from a cube and how it should be grouped + aggregated.
- *
- * Note that if no dimensions are provided, 'includeRoot' or 'includeLeaves' should be true -
- * otherwise no data will be returned!
+ * Queries determine what data is extracted, grouped, and aggregated from a {@link Cube}.
  */
 export interface QueryConfig {
     /**
-     * Associated Cube. Required, but note that `Cube.executeQuery()` will install a reference to
-     * itself on the query config (automatically)
+     * The Cube to query. Required, but note that the preferred {@link Cube.executeQuery} API will
+     * install a reference to itself on the query config (automatically).
      */
     cube?: Cube;
 
     /**
-     * Fields or field names. If unspecified will include all available fields
-     * from the source Cube, otherwise supply a subset to optimize aggregation performance.
+     * Fields or field names. If unspecified will include all available {@link Cube.fields}.
+     * Specify a subset to optimize aggregation performance.
      */
     fields?: string[] | CubeField[];
 
     /**
-     * Fields or field names to group on. Any fields provided must also be in fields config, above. If none
-     * given the resulting data will not be grouped.
+     * Fields or field names on which data should be grouped and aggregated. These are the ordered
+     * grouping levels in the resulting hierarchy - e.g. ['Country', 'State', 'City'].
+     *
+     * Any fields provided here must also be included in the `fields` array, if specified.
+     *
+     * If not provided or empty, the resulting data will not be grouped. Specify 'includeRoot' or
+     * 'includeLeaves' in that case, otherwise no data will be returned.
      */
     dimensions?: string[] | CubeField[];
 
     /**
-     * One or more filters or configs to create one.  If an array, a single 'AND' filter will
-     * be created.
+     * Filters to apply to leaf data, or configs to create. Note that leaf data will be filtered
+     * and then aggregated - i.e. the filters provided here will filter in/out the lowest level
+     * facts and _won't_ operate directly on any aggregates.
+     *
+     * Arrays will be combined into a single 'AND' CompoundFilter.
      */
     filter?: FilterLike;
 
     /**
-     * True to include a synthetic root node in the return with grand total
-     * aggregate values.
+     * True to include a synthetic root node in the return with grand totals (aggregations across
+     * all data returned by the query). Pairs well with {@link StoreConfig.loadRootAsSummary} and
+     * {@link GridConfig.showSummary} to display a docked grand total row for grids rendering
+     * Cube results.
      */
     includeRoot?: boolean;
 
     /**
-     * True to include leaf nodes as a regular dimensions in the returned data hierarchy.
+     * True to include leaf nodes (the "flat" facts originally loaded into the Cube) as the
+     * {@link ViewRowData.children} of the lowest level of aggregated `dimensions`.
      *
-     * If true, leaf rows will be returned in the `children` property as an additional level of
-     * the main hierarchy. Default false.
+     * False (the default) to only return aggregate rows based on requested `dimensions`.
      *
-     * See also `provideLeaves` which will provide access to these nodes without showing in the main
-     * hierarchy.
+     * Useful when you wish to e.g. load Cube results into a tree grid and allow users to expand
+     * aggregated groups all the way out to see the source data. See also `provideLeaves`, which
+     * will provide access to these nodes without exposing as `children`.
      */
     includeLeaves?: boolean;
 
     /**
-     * True to provide leaf nodes in returned hierarchy.
+     * True to provide access to leaf nodes via the {@link ViewRowData.cubeLeaves} getter on the
+     * lowest level of aggregated `dimensions`. This will allow programmatic access to the leaves
+     * used to produce a given aggregation, without exposing them as `children` in a way that would
+     * cause them to be rendered in a tree grid.
      *
-     * If true, leaf rows will be returned by the lowest level rows in a 'leaves' property.
-     * Default false.
+     * Useful when e.g. a full leaf-level drill-down is not desired, but the app still needs
+     * access to those leaves to display in a separate view or for further processing.
      *
-     * See also `includeLeaves` which will include leaves as a level in the main hierarchy
+     * See also the more common `includeLeaves`.
      */
     provideLeaves?: boolean;
 
@@ -78,14 +97,21 @@ export interface QueryConfig {
 
     /**
      * Optional function to be called for each aggregate node to determine if it should be "locked",
-     * preventing drill-down into its children.  Defaults to Cube.lockFn.
+     * preventing drill-down into its children.
+     *
+     * Defaults to {@link Cube.lockFn}.
      */
     lockFn?: LockFn;
 
     /**
      * Optional function to be called for each dimension during row generation to determine if the
      * children of that dimension should be bucketed into additional dynamic dimensions.
-     * Defaults to Cube.bucketSpecFn.
+     *
+     * This can be used to break selected aggregations into sub-groups dynamically, without having
+     * to define another dimension in the Cube and have it apply to all aggregations. See the
+     * {@link BucketSpec} interface for additional information.
+     *
+     * Defaults to {@link Cube.bucketSpecFn}.
      */
     bucketSpecFn?: BucketSpecFn;
 

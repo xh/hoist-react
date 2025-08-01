@@ -7,6 +7,9 @@
 
 import {BaseRow} from './row/BaseRow';
 
+/**
+ * @see BucketSpecFn
+ */
 export class BucketSpec {
     name: string;
     bucketFn: (row: BaseRow) => string;
