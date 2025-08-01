@@ -33,17 +33,22 @@ export interface ViewConfig {
     query: Query;
 
     /**
-     * Store(s) to be automatically (re)loaded with data from this view. Optional - read the View's
-     * observable `result` property directly to use without a Store.
+     * Store(s) to be automatically (re)loaded with data from this view.
+     * Optional - read {@link View.result} directly to use without a Store.
      */
     stores?: Store[] | Store;
 
     /**
-     * True to reactively update the View's `result` and any connected store(s) when data in the
-     * underlying Cube is changed. False (default) to have this view run its query once to capture
-     * a snapshot without further updates based on Cube changes.
+     * True to reactively update the View's {@link View.result} and any connected store(s) when data
+     * in the underlying Cube changes. False (default) to have this view run its query once to
+     * capture a snapshot without further (automatic) updates.
      */
     connect?: boolean;
+}
+
+export interface ViewResult {
+    rows: ViewRowData[];
+    leafMap: Map<StoreRecordId, LeafRow>;
 }
 
 export interface DimensionValue {
@@ -63,25 +68,25 @@ export class View extends HoistBase {
         return true;
     }
 
-    /** Query defining this View. Update via `updateQuery()`. */
+    /** Query defining this View. Update via {@link updateQuery}. */
     @observable.ref
     query: Query = null;
 
     /**
      * Results of this view, an observable object with a `rows` property
-     * containing an array of hierarchical data objects.
+     * containing an array of hierarchical {@link ViewRowData} objects.
      */
     @observable.ref
-    result: {rows: ViewRowData[]; leafMap: Map<StoreRecordId, LeafRow>} = null;
+    result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
-    /** Cube info associated with this View when last updated. */
+    /** The source {@link Cube.info} as of the last time this View was updated. */
     @observable.ref
     info: PlainObject = null;
 
-    /** timestamp (ms) of the last time this view's data was changed. */
+    /** Timestamp (ms) of the last time this view's data was changed. */
     @observable
     lastUpdated: number;
 
@@ -145,8 +150,7 @@ export class View extends HoistBase {
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
      * @param overrides - changes to be applied to the query. May include any arguments to the query
-     *      constructor except `cube`, which cannot be changed on a view once set
-     *      via the initial query.
+     *      constructor except `cube`, which cannot be changed once set via the initial query.
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
@@ -165,9 +169,7 @@ export class View extends HoistBase {
         this.fullUpdate();
     }
 
-    /**
-     * Gathers all unique values for each dimension field in the query
-     */
+    /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
         const {_leafMap} = this,
             fields = this.query.fields.filter(it => it.isDimension);

@@ -8,13 +8,8 @@ import {PlainObject, Some} from '@xh/hoist/core';
 import {flatMap} from 'lodash';
 
 /**
- * Grouped node data returned by query execution against cube,
- * and views.
- *
- * Designed for direct consumption by hierarchical stores and their associated
- * tree grids.
- * @see View.stores.
- * @see View.result.
+ * Grouped node data, as returned by {@link Cube.executeQuery} or exposed via {@link View.result}.
+ * Designed for direct consumption by hierarchical stores and their associated tree grids.
  */
 export class ViewRowData implements PlainObject {
     constructor(id: string) {
@@ -25,23 +20,16 @@ export class ViewRowData implements PlainObject {
     id: string;
 
     /**
-     * Label of the row.  The dimension value of the row, or the underlying cubeId in the
-     * case of a leaf row.
-     *
-     * Suitable for rendering, although applications may typically wish to customize the
-     * rendering of leaf rows.
+     * Label of the row. The dimension value or, for leaf rows. the underlying cubeId.
+     * Suitable for display, although apps will typically wish to customize leaf row rendering.
      */
     cubeLabel: string;
 
-    /**
-     * Dimension this row was computed on.
-     *
-     * Null for leaf rows.
-     */
+    /** Dimension on which this row was computed, or null for leaf rows. */
     cubeDimension: string;
 
     /**
-     * For Buckets this row appears in
+     * Buckets this row appears in
      */
     cubeBuckets: Record<string, any>;
 
@@ -55,19 +43,17 @@ export class ViewRowData implements PlainObject {
     children: ViewRowData[];
 
     /**
-     * Is this row a leaf row directly from the cube (i.e. not a grouped aggregation).
+     * True for leaf rows loaded into the cube (i.e. not a grouped aggregation).
      */
     get isCubeLeaf(): boolean {
         return this.cubeDimension == null;
     }
 
     /**
-     * Cube leaves for this row.
+     * All visible (i.e. non-locked) cube leaves associated with this row.
      *
-     * Will return all visible (i.e. non-locked) cube leaves associated with this row.
-     *
-     * To use this property, be sure to set the 'includeCubeLeaves' or 'provideCubeLeaves' property
-     * on the underlying Query.
+     * For this to be populated, either {@link Query.includeLeaves} or {@link Query.provideLeaves}
+     * must have been set on the underlying Query.
      */
     get cubeLeaves(): Some<ViewRowData> {
         if (this.isCubeLeaf) return this;
