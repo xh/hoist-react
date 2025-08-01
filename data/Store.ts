@@ -34,6 +34,7 @@ import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
 import {FilterLike} from './filter/Types';
+import type {Changelog, RsTransaction} from './Types';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -348,13 +349,13 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[] | StoreTransaction): PlainObject {
+    updateData(rawData: PlainObject[] | StoreTransaction): Changelog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: PlainObject = {};
+        const changeLog: Changelog = {};
 
         // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction;
+        let rawTransaction: StoreTransaction;
         if (isArray(rawData)) {
             const update = [],
                 add = [];
@@ -381,7 +382,7 @@ export class Store extends HoistBase {
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
-        let updateRecs, addRecs;
+        let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
             updateRecs = update.map(it => {
                 const recId = this.idSpec(it),
@@ -426,7 +427,7 @@ export class Store extends HoistBase {
         }
 
         // 3) Apply changes
-        let rsTransaction: any = {};
+        let rsTransaction: RsTransaction = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
@@ -545,13 +546,14 @@ export class Store extends HoistBase {
      *      Records in this Store. Each object in the list must have an `id` property identifying
      *      the StoreRecord to modify, plus any other properties with updated field values to apply,
      *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
+     * @returns changes applied, or null if no record changes were made.
      */
     @action
-    modifyRecords(modifications: Some<PlainObject>) {
+    modifyRecords(modifications: Some<PlainObject>): Changelog {
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
-        const updateRecs = new Map();
+        const updateRecs = new Map<StoreRecordId, StoreRecord>();
         let hadDupes = false;
         modifications.forEach(mod => {
             let {id} = mod;
@@ -581,16 +583,18 @@ export class Store extends HoistBase {
             }
         });
 
-        if (isEmpty(updateRecs)) return;
+        if (isEmpty(updateRecs)) return null;
 
         warnIf(
             hadDupes,
             'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.'
         );
 
-        this._current = this._current.withTransaction({update: Array.from(updateRecs.values())});
+        const update = Array.from(updateRecs.values());
+        this._current = this._current.withTransaction({update});
 
         this.rebuildFiltered();
+        return {update}; // TODO - Do we need special handling if summaryRecord(s) were modified?
     }
 
     /**

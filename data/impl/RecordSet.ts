@@ -11,6 +11,7 @@ import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
+import type {RsTransaction} from '@xh/hoist/data/Types';
 
 /**
  * Internal container for StoreRecord management within a Store.
@@ -176,11 +177,7 @@ export class RecordSet {
         return new RecordSet(this.store, recordMap);
     }
 
-    withTransaction(t: {
-        update?: StoreRecord[];
-        add?: StoreRecord[];
-        remove?: StoreRecordId[];
-    }): RecordSet {
+    withTransaction(t: RsTransaction): RecordSet {
         const {update, add, remove} = t;
 
         // Be sure to finalize any new records that are accepted.
