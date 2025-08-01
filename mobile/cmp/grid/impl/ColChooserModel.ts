@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {bindable, action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -17,7 +17,7 @@ import {clone, find, sortBy} from 'lodash';
  * It is not necessary to manually create instances of this class within an application.
  * @internal
  */
-export class ColChooserModel extends HoistModel {
+export class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
     gridModel: GridModel;

@@ -13,8 +13,6 @@ import {ReactElement, ReactNode} from 'react';
 import {Column} from './columns/Column';
 import {ColumnGroup} from './columns/ColumnGroup';
 import {GridModel} from './GridModel';
-import type {ColChooserModel as MobileColChooserModelType} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
-import type {ColChooserModel as DesktopColChooserModelType} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
 
 import type {
     CellClassParams,
@@ -118,8 +116,20 @@ export interface GridFilterModelConfig {
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
-/** Type-only union of desktop and mobile ColChooserModel classes. */
-export type ColChooserModel = DesktopColChooserModelType | MobileColChooserModelType;
+/** Cross-platform interface for desktop and mobile ColChooserModels. */
+export interface IColChooserModel {
+    /** The GridModel this chooser is bound to. */
+    readonly gridModel: GridModel;
+
+    /** True if the column chooser is currently open and visible. */
+    readonly isOpen: boolean;
+
+    /** Open the column chooser. */
+    open: () => void;
+
+    /** Close the column chooser. */
+    close: () => void;
+}
 
 export interface ColChooserConfig {
     /**
