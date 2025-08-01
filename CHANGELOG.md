@@ -23,6 +23,8 @@
   which `dimensions` are provided to the model.
 * Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
   operation fails. Set to `false` to fail silently (the behavior prior to this change).
+* Added new `Cube.modifyRecordsAsync` for modifying individual field values in a local uncommitted
+  state. Additionally enhanced `Store.modifyRecords` to return a `Changelog` of updates.
 
 ### 🐞 Bug Fixes
 
