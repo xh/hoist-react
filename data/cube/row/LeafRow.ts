@@ -34,7 +34,8 @@ export class LeafRow extends BaseRow {
         super(view, id);
 
         this.cubeRecordId = rawRecord.id;
-        this.data.cubeLabel = rawRecord.id;
+        this.data.cubeLabel = rawRecord.id.toString();
+        this.data.cubeDimension = null;
 
         view.fields.forEach(({name}) => {
             this.data[name] = rawRecord.data[name];
