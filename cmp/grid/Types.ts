@@ -118,16 +118,9 @@ export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
 /** Cross-platform interface for desktop and mobile ColChooserModels. */
 export interface IColChooserModel {
-    /** The GridModel this chooser is bound to. */
     readonly gridModel: GridModel;
-
-    /** True if the column chooser is currently open and visible. */
     readonly isOpen: boolean;
-
-    /** Open the column chooser. */
     open: () => void;
-
-    /** Close the column chooser. */
     close: () => void;
 }
 
