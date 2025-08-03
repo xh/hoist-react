@@ -42,9 +42,7 @@ export class ViewRowData implements PlainObject {
      */
     children: ViewRowData[];
 
-    /**
-     * True for leaf rows loaded into the cube (i.e. not a grouped aggregation).
-     */
+    /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
     get isCubeLeaf(): boolean {
         return this.cubeDimension == null;
     }

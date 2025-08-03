@@ -13,15 +13,16 @@ import {BaseRow} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 
 /**
- * Represents a leaf row returned by a {@link View} or call to {@link Cube.executeQuery}.
- *
- * These rows are 1-1 with the source records loaded into the Cube's internal store - i.e. they are
- * not computed aggregates - although the data they contain is a shallow copy of the original and
+ * Row within a dataset produced by a Cube or View representing leaf-level data. These rows have a
+ * 1-1 relationship with the source records loaded into the Cube's internal store - i.e. they are
+ * not computed aggregates, although the data they contain is a shallow copy of the original and
  * limited to the fields requested by the View / Query that produced them.
+ *
+ * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class LeafRow extends BaseRow {
     /**
-     * Id of the StoreRecord within the Cube that was used to construct this leaf row.
+     * ID of the `StoreRecord` within the Cube that was used to construct this leaf row.
      * Useful if you need to update this leaf's data via {@link Cube.updateDataAsync}.
      */
     readonly cubeRecordId: StoreRecordId;

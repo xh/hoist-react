@@ -201,8 +201,7 @@ export class Query {
     }
 
     /**
-     * True if the provided other Query is equivalent to this instance,
-     * not considering the filter.
+     * True if the provided other Query is equivalent to this instance, not considering the filter.
      */
     equalsExcludingFilter(other: Query): boolean {
         return (

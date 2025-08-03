@@ -13,7 +13,9 @@ import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
 
 /**
- * Base class for a view row.
+ * Base class for a row within a dataset produced by a Cube / View.
+ *
+ * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export abstract class BaseRow {
     readonly view: View = null;

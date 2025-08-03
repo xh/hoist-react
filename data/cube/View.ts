@@ -73,8 +73,8 @@ export class View extends HoistBase {
     query: Query = null;
 
     /**
-     * Results of this view, an observable object with a `rows` property
-     * containing an array of hierarchical {@link ViewRowData} objects.
+     * Results of this view, an observable object with a `rows` property containing an array of
+     * hierarchical {@link ViewRowData} objects.
      */
     @observable.ref
     result: ViewResult = null;
@@ -91,7 +91,7 @@ export class View extends HoistBase {
     lastUpdated: number;
 
     // Implementation
-    private _rows: ViewRowData[] = null;
+    private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     _aggContext: AggregationContext = null;
@@ -256,17 +256,17 @@ export class View extends HoistBase {
     }
 
     private loadStores() {
-        const {_leafMap, _rows} = this;
-        if (!_leafMap || !_rows) return;
+        const {_leafMap, _rowDatas} = this;
+        if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const storeRows = _leafMap.size !== 0 ? _rows : [];
+        const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
         this.stores.forEach(s => s.loadData(storeRows));
     }
 
     private updateResults() {
-        const {_leafMap, _rows} = this;
-        this.result = {rows: _rows, leafMap: _leafMap};
+        const {_leafMap, _rowDatas} = this;
+        this.result = {rows: _rowDatas, leafMap: _leafMap};
         this.info = this.cube.info;
         this.lastUpdated = Date.now();
     }
@@ -278,7 +278,7 @@ export class View extends HoistBase {
             rootId = 'root';
 
         const records = this._aggContext.filteredRecords;
-        const leafMap = new Map();
+        const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
         newRows = this.bucketRows(newRows, rootId, {});
 
@@ -296,10 +296,10 @@ export class View extends HoistBase {
 
         this._leafMap = leafMap;
 
-        // This is the magic.  We only actually reveal to API the network of *data* nodes.
+        // This is the magic. We only actually reveal to API the network of *data* nodes.
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
-        this._rows = newRows.flatMap(it => it.getVisibleDatas());
+        this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
     }
 
     private groupAndInsertRecords(
