@@ -34,7 +34,6 @@ import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
 import {FilterLike} from './filter/Types';
-import type {Changelog, RsTransaction} from './Types';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -152,6 +151,17 @@ export interface StoreTransaction {
      *  `update` property.
      */
     rawSummaryData?: Some<PlainObject>;
+}
+
+/**
+ * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
+ * specify changes, this object is used to report the actual changes made in a single transaction.
+ */
+export interface StoreChangeLog {
+    update?: StoreRecord[];
+    add?: StoreRecord[];
+    remove?: StoreRecordId[];
+    summaryRecords?: StoreRecord[];
 }
 
 export interface ChildRawData {
@@ -349,10 +359,10 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[] | StoreTransaction): Changelog {
+    updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: Changelog = {};
+        const changeLog: StoreChangeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
         let rawTransaction: StoreTransaction;
@@ -427,7 +437,11 @@ export class Store extends HoistBase {
         }
 
         // 3) Apply changes
-        let rsTransaction: RsTransaction = {};
+        let rsTransaction: {
+            update?: StoreRecord[];
+            add?: StoreRecord[];
+            remove?: StoreRecordId[];
+        } = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
@@ -549,11 +563,12 @@ export class Store extends HoistBase {
      * @returns changes applied, or null if no record changes were made.
      */
     @action
-    modifyRecords(modifications: Some<PlainObject>): Changelog {
+    modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
-        const updateRecs = new Map<StoreRecordId, StoreRecord>();
+        // 1) Pre-process modifications into Records
+        const updateMap = new Map<StoreRecordId, StoreRecord>();
         let hadDupes = false;
         modifications.forEach(mod => {
             let {id} = mod;
@@ -561,7 +576,7 @@ export class Store extends HoistBase {
             // Ignore multiple updates for the same record - we are updating this Store in a
             // transaction after processing all modifications, so this method is not currently setup
             // to process more than one update for a given rec at a time.
-            if (updateRecs.has(id)) {
+            if (updateMap.has(id)) {
                 hadDupes = true;
                 return;
             }
@@ -579,22 +594,41 @@ export class Store extends HoistBase {
             });
 
             if (!equal(currentRec.data, updatedRec.data)) {
-                updateRecs.set(id, updatedRec);
+                updateMap.set(id, updatedRec);
             }
         });
 
-        if (isEmpty(updateRecs)) return null;
+        if (isEmpty(updateMap)) return null;
 
         warnIf(
             hadDupes,
             'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.'
         );
 
-        const update = Array.from(updateRecs.values());
-        this._current = this._current.withTransaction({update});
+        const updateRecs = Array.from(updateMap.values()),
+            changeLog: StoreChangeLog = {};
+
+        // 2) Pre-process summary records, peeling them out of updates if needed
+        const {summaryRecords} = this;
+        let summaryUpdateRecs: StoreRecord[];
+        if (!isEmpty(summaryRecords)) {
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+        }
+
+        if (!isEmpty(summaryUpdateRecs)) {
+            this.summaryRecords = summaryUpdateRecs;
+            changeLog.summaryRecords = this.summaryRecords;
+        }
+
+        // 3) Apply changes
+        if (!isEmpty(updateRecs)) {
+            this._current = this._current.withTransaction({update: updateRecs});
+            changeLog.update = updateRecs;
+        }
 
         this.rebuildFiltered();
-        return {update}; // TODO - Do we need special handling if summaryRecord(s) were modified?
+
+        return changeLog;
     }
 
     /**
@@ -709,7 +743,7 @@ export class Store extends HoistBase {
     /** True if the store has changes which need to be committed. */
     @computed
     get isDirty(): boolean {
-        return this._current !== this._committed;
+        return this._current !== this._committed || this.summaryRecords?.some(it => it.isModified);
     }
 
     /** Alias for {@link Store.isDirty} */
