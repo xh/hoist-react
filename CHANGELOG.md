@@ -27,7 +27,8 @@
   state. Additionally enhanced `Store.modifyRecords` to return a `StoreChangeLog` of updates.
 
 ### 🐞 Bug Fixes
-* Fixed bug where `Store.modifyRecords` was not properly handling changes to `SummaryRecords`.
+* Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
+  handling changes to `SummaryRecords`.
 
 ### 🐞 Bug Fixes
 
