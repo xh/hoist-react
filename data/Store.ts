@@ -624,9 +624,8 @@ export class Store extends HoistBase {
         if (!isEmpty(updateRecs)) {
             this._current = this._current.withTransaction({update: updateRecs});
             changeLog.update = updateRecs;
+            this.rebuildFiltered();
         }
-
-        this.rebuildFiltered();
 
         return changeLog;
     }
