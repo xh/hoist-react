@@ -1552,7 +1552,7 @@ export class GridModel extends HoistModel {
             {showMask} = options;
 
         if (showMask) {
-            agApi.showLoadingOverlay();
+            agApi.updateGridOptions({loading: true});
         }
 
         try {
@@ -1564,6 +1564,7 @@ export class GridModel extends HoistModel {
                     agApi.showNoRowsOverlay();
                 } else {
                     agApi.hideOverlay();
+                    agApi.updateGridOptions({loading: false});
                 }
             }
         }
