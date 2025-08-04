@@ -48,8 +48,8 @@ export type {
     ColumnGroup as AgColumnGroup
 } from '@ag-grid-community/core';
 
-const MIN_VERSION = '31.2.0';
-const MAX_VERSION = '31.*.*';
+const MIN_VERSION = '32.0.0';
+const MAX_VERSION = '32.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

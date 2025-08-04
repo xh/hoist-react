@@ -2,25 +2,26 @@
 # yarn lockfile v1
 
 
-"@ag-grid-community/client-side-row-model@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-31.3.4.tgz#0827b8f832f49e266f90e01e6131830d4f8029e5"
-  integrity sha512-lbrbhwSoY1/N2CiOQBa322gVnrhyrbzyG7cvbOef3itAiaLUzQ03PWBw09d9mj+/0hnqMs386ZuGX15FWJaTqQ==
+"@ag-grid-community/client-side-row-model@32.3.8":
+  version "32.3.8"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-32.3.8.tgz#27ca5410d67ac452598092bbdc554609b27b74db"
+  integrity sha512-ippsCuj17b8oLPKkEtXNET+lfk5MT/h3X0aLSM7H9hTc9REDMRJvrXHvyo+33B4MU8AysOnfVm5H5Toj8z1c/Q==
   dependencies:
-    "@ag-grid-community/core" "31.3.4"
+    "@ag-grid-community/core" "32.3.8"
     tslib "^2.3.0"
 
-"@ag-grid-community/core@31.3.4", "@ag-grid-community/core@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-31.3.4.tgz#11572ab8415f3b1f3427f4e870d1cce13ae94008"
-  integrity sha512-Fz7P4lMAYDo9rG6jOA8OXlAXta/4E+PiCdjT7M9OloaXAJtU47oO4f3VKV7rdbVCC8SGSo0cBCateddQTAFCNQ==
+"@ag-grid-community/core@32.3.8":
+  version "32.3.8"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-32.3.8.tgz#a36cb54af5543af83921f5823ecd3e9826aa9b7d"
+  integrity sha512-pkr6puMldxyBX3/Pi4nrMKkgvBz5GCO3wiC0E5gr0HBimq21dJT6mbXJjkDo8J37E5fDO3E2XmBvG6Bm+nvmyw==
   dependencies:
+    ag-charts-types "10.3.8"
     tslib "^2.3.0"
 
-"@ag-grid-community/react@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-31.3.4.tgz#9e4e8c73fc7a015d3fea91631661bf71528ab6c6"
-  integrity sha512-mNkVEDiatxny6AeNIxkJe/oNsakV0RaP6qqyDla/bijKFX1cVR7t13SFYMujxdM3lF7j1s+HHJv1Z4dg9xRqSw==
+"@ag-grid-community/react@32.3.8":
+  version "32.3.8"
+  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-32.3.8.tgz#390044da6b782e4170d848c1b4d38973748b6f38"
+  integrity sha512-oVhBGavkaqWW0LzXwUJtO+KK9O3/sQKOlSa3AkbFI5r70Zc5nm2ocsg77j4/kbNs+Bc48B6R9KY4ADqWxB14xQ==
   dependencies:
     prop-types "^15.8.1"
 
@@ -2095,6 +2096,11 @@ acorn@^8.0.4, acorn@^8.11.0, acorn@^8.14.0, acorn@^8.15.0:
   version "8.15.0"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
+
+ag-charts-types@10.3.8:
+  version "10.3.8"
+  resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-10.3.8.tgz#1d031a530fd045138fa71f53282456ea386b8086"
+  integrity sha512-zlvnvtpJDRACXtMjrq09K//eXZEdybeAQmQ94TEOCcNkinrMGMuM0WJXS2pJ64f7ic5fGqT3EQliWXwoRNF7cg==
 
 airbnb-prop-types@^2.14.0, airbnb-prop-types@^2.15.0, airbnb-prop-types@^2.16.0:
   version "2.16.0"

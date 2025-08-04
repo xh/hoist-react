@@ -220,9 +220,6 @@ export class GridLocalModel extends HoistModel {
                 agColumnHeader: props => columnHeader({...props, gridModel: model}),
                 agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
-            rowSelection: selModel.mode == 'disabled' ? undefined : selModel.mode,
-            suppressRowClickSelection: !selModel.isEnabled,
-            isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
             getRowHeight: this.defaultGetRowHeight,
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
@@ -265,6 +262,17 @@ export class GridLocalModel extends HoistModel {
             // Override AG-Grid's default behavior of automatically unpinning columns to make the center viewport visible
             processUnpinnedColumns: () => []
         };
+
+        if (selModel.mode != 'disabled') {
+            ret.rowSelection = {
+                mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
+                enableClickSelection: selModel.isEnabled,
+                isRowSelectable: () => selModel.isEnabled,
+                checkboxes: false,
+                headerCheckbox: false
+            };
+        }
+
 
         // Platform specific defaults
         if (XH.isMobileApp) {
