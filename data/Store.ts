@@ -24,7 +24,8 @@ import {
     remove as lodashRemove,
     uniq,
     first,
-    some
+    some,
+    partition
 } from 'lodash';
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -590,7 +591,8 @@ export class Store extends HoistBase {
                 data: updatedData,
                 parent: currentRec.parent,
                 store: currentRec.store,
-                committedData: currentRec.committedData
+                committedData: currentRec.committedData,
+                isSummary: currentRec.isSummary
             });
 
             if (!equal(currentRec.data, updatedRec.data)) {
@@ -643,13 +645,20 @@ export class Store extends HoistBase {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it)));
+        const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it))),
+            [summaryRecsToRevert, recsToRevert] = partition(recs, 'isSummary');
 
-        this._current = this._current
-            .withTransaction({update: recs.map(r => this.getCommittedOrThrow(r.id))})
-            .normalize(this._committed);
+        if (!isEmpty(summaryRecsToRevert)) {
+            this.revertSummaryRecords(summaryRecsToRevert);
+        }
 
-        this.rebuildFiltered();
+        if (!isEmpty(recsToRevert)) {
+            this._current = this._current
+                .withTransaction({update: recsToRevert.map(r => this.getCommittedOrThrow(r.id))})
+                .normalize(this._committed);
+
+            this.rebuildFiltered();
+        }
     }
 
     /**
@@ -662,6 +671,7 @@ export class Store extends HoistBase {
     @action
     revert() {
         this._current = this._committed;
+        if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
     }
 
@@ -1118,6 +1128,24 @@ export class Store extends HoistBase {
         throw XH.exception(
             'idSpec should be either a name of a field, or a function to generate an id.'
         );
+    }
+
+    @action
+    private revertSummaryRecords(records: StoreRecord[]) {
+        this.summaryRecords = this.summaryRecords.map(summaryRec => {
+            const recToRevert = records.find(it => it.id === summaryRec.id);
+            if (!recToRevert) return summaryRec;
+
+            const ret = new StoreRecord({
+                id: recToRevert.id,
+                raw: recToRevert.raw,
+                data: {...recToRevert.committedData},
+                store: this,
+                isSummary: true
+            });
+            ret.finalize();
+            return ret;
+        });
     }
 }
 
