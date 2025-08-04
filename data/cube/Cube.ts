@@ -5,11 +5,11 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
-import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField, CubeFieldSpec} from './CubeField';
+import {ViewRowData} from './ViewRowData';
 import {Query, QueryConfig} from './Query';
 import {View} from './View';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
@@ -266,6 +266,26 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
+            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+        }
+    }
+
+    /**
+     * Similar to `updateDataAsync`, but intended for modifying individual field values in a local
+     * uncommitted state - i.e. when updating via an inline grid editor or similar control. Like
+     * `updateDataAsync`, this method will update its views asynchronously.
+     *
+     * This method largely delegates to {@link Store.modifyRecords} - see that method for more info.
+     *
+     * @param modifications - field-level modifications to apply to existing
+     *      Records in this Cube. Each object in the list must have an `id` property identifying
+     *      the StoreRecord to modify, plus any other properties with updated field values to apply,
+     *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
+     */
+    async modifyRecordsAsync(modifications: Some<PlainObject>): Promise<void> {
+        const changeLog = this.store.modifyRecords(modifications);
+
+        if (changeLog) {
             await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
         }
     }

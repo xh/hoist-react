@@ -23,10 +23,17 @@
   which `dimensions` are provided to the model.
 * Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
   operation fails. Set to `false` to fail silently (the behavior prior to this change).
+* Added new `Cube.modifyRecordsAsync` for modifying individual field values in a local uncommitted
+  state. Additionally enhanced `Store.modifyRecords` to return a `StoreChangeLog` of updates.
 * Cube Views now emit data objects of type `ViewRowData`, rather than an anonymous `PlainObject`.
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
 
+
+
+### 🐞 Bug Fixes
+* Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
+  handling changes to `SummaryRecords`.
 
 ### 🐞 Bug Fixes
 
@@ -58,8 +65,8 @@
 * Removed deprecated `FetchService.setDefaultHeaders`
 * Removed deprecated `FetchService.setDefaultTimeout`
 * Removed deprecated `IdentityService.logoutAsync`
-* Removed undocumented `_meta` pointer on row objects returned by `View`.  Use the documented
-  properties on the new `ViewRowData` class instead.
+* Change to the row objects returned by `View`: the undocumented `_meta` and `buckets` properties
+  have been removed. Use the documented properties on the new `ViewRowData` class instead.
 
 ### ✨ Styles
 
