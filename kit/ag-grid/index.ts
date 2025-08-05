@@ -48,6 +48,7 @@ export type {
     ColumnState as AgColumnState,
     Column as AgColumn,
     ColumnGroup as AgColumnGroup,
+    AgProvidedColumnGroup,
     RowDoubleClickedEvent,
     RowClickedEvent,
     RowHeightParams,
