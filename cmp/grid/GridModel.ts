@@ -95,7 +95,7 @@ import {
     pull,
     take
 } from 'lodash';
-import {ReactNode} from 'react';
+import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
@@ -419,6 +419,7 @@ export class GridModel extends HoistModel {
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
+    viewRef: RefObject<HTMLDivElement> = createRef();
 
     //------------------------
     // Observable API
@@ -1046,8 +1047,8 @@ export class GridModel extends HoistModel {
         if (level == 0 || level >= this.maxDepth) {
             level == 0 ? agApi.collapseAll() : agApi.expandAll();
         } else {
-            // Update raw nodes. This is an undocumented approach, but no performant
-            // approach for large datasets was found in documented API.
+            // Update raw nodes for efficiency
+            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
             store.records.forEach(rec => {
                 const node = agApi.getRowNode(rec.agId);
                 if (node) {

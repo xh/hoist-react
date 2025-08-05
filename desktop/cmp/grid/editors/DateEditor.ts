@@ -23,9 +23,9 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
         // We need to render the day picker popover inside the grid viewport in order for
         // `stopEditingWhenCellsLoseFocus` to work properly - otherwise the day picker becomes
         // unusable due to the grid losing focus and stopping editing when clicking inside picker
-        // @ts-ignore -- private
-        const portalContainer = props.gridModel.agApi.gridBodyCtrl?.eBodyViewport;
-
+        const portalContainer = props.gridModel.viewRef.current?.querySelector(
+            '.ag-body-viewport'
+        ) as HTMLElement;
         warnIf(
             !portalContainer,
             'Could not find the grid body viewport for rendering DateEditor picker popover.'

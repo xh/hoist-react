@@ -129,7 +129,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 ],
                 testId,
                 onKeyDown: impl.onKeyDown,
-                ref: composeRefs(impl.viewRef, ref)
+                ref: composeRefs(impl.viewRef, model.viewRef, ref)
             }),
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
