@@ -320,7 +320,7 @@ export class GridLocalModel extends HoistModel {
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
 
         // Manipulate selection if needed.
-        if (!agOptions.suppressRowClickSelection) {
+        if (model.selModel.isEnabled) {
             const record = params.node?.data,
                 {selModel} = model;
 

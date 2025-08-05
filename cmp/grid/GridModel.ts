@@ -71,7 +71,7 @@ import {
     castArray,
     clone,
     cloneDeep,
-    compact,
+    compact, debounce,
     defaults,
     defaultsDeep,
     every,
@@ -1038,25 +1038,24 @@ export class GridModel extends HoistModel {
         this.expandLevel = level;
 
         // 0) Not rendered, we are done.
-        const {agApi} = this;
+        const {agApi, store} = this;
         if (!agApi) return;
 
         // 1) Update rendered grid.
-        if (agApi.getGridOption('groupDefaultExpanded') != level) {
-            // If the ag default is *not* set to this level just set it.  This somewhat
-            // mysteriously (but efficiently) changes the currently rendered rows as well.
-            agApi.setGridOption('groupDefaultExpanded', level);
-        } else if (level == 0 || level >= this.maxDepth) {
-            // otherwise api methods available.
+        agApi.setGridOption('groupDefaultExpanded', level);
+        if (level == 0 || level >= this.maxDepth) {
             level == 0 ? agApi.collapseAll() : agApi.expandAll();
         } else {
-            // Otherwise, *toggle* the default.
-            // Surprisingly, this appears to be the only efficient way to do the bulk operation.
-            agApi.setGridOption('groupDefaultExpanded', 0);
-            agApi.setGridOption('groupDefaultExpanded', level);
+            // Update raw nodes. This is an undocumented approach, but no performant
+            // approach for large datasets was found in documented API.
+            store.records.forEach(rec => {
+                const node = agApi.getRowNode(rec.agId);
+                if (node) {
+                    node.expanded = rec.depth < level;
+                }
+            });
+            agApi.onGroupExpandedOrCollapsed();
         }
-
-        // 2) Finally, be sure to update our state snapshot.
         this.noteAgExpandStateChange();
     }
 

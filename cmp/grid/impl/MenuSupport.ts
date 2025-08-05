@@ -16,6 +16,7 @@ import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
+import {wait} from '@xh/hoist/promise';
 
 /**
  * @internal
@@ -294,7 +295,7 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
                 return {
                     icon: isCurrLevel ? Icon.check() : null,
                     text: label,
-                    actionFn: () => gridModel.expandToLevel(idx)
+                    actionFn: () => wait().then(() => gridModel.expandToLevel(idx))
                 };
             });
             return {items};

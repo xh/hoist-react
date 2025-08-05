@@ -56,7 +56,8 @@ export type {
     CellDoubleClickedEvent
 } from '@ag-grid-community/core';
 
-export {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+export type {CustomCellEditorProps} from '@ag-grid-community/react';
+export {useGridCellEditor} from '@ag-grid-community/react';
 
 const MIN_VERSION = '32.0.0';
 const MAX_VERSION = '32.*.*';
