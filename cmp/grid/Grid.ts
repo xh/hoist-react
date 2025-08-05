@@ -315,7 +315,7 @@ export class GridLocalModel extends HoistModel {
     }
 
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
-        const {model, agOptions} = this,
+        const {model} = this,
             {contextMenu} = model;
         if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
 
