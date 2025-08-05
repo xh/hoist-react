@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';

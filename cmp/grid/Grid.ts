@@ -4,7 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ColumnState as AgColumnState, GridApi} from '@ag-grid-community/core';
+import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
@@ -272,7 +273,6 @@ export class GridLocalModel extends HoistModel {
                 headerCheckbox: false
             };
         }
-
 
         // Platform specific defaults
         if (XH.isMobileApp) {

@@ -44,9 +44,19 @@ export type {
     MenuItemDef,
     CellPosition,
     NavigateToNextCellParams,
+    ColumnEvent,
+    ColumnState as AgColumnState,
     Column as AgColumn,
-    ColumnGroup as AgColumnGroup
+    ColumnGroup as AgColumnGroup,
+    RowDoubleClickedEvent,
+    RowClickedEvent,
+    RowHeightParams,
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent
 } from '@ag-grid-community/core';
+
+export {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
 
 const MIN_VERSION = '32.0.0';
 const MAX_VERSION = '32.*.*';

@@ -91,11 +91,11 @@ class ColumnGroupHeaderModel extends HoistModel {
 
     override onLinked() {
         this.syncIsExpanded();
-        this.agColumnGroup.addEventListener('expandedChanged', this.syncIsExpanded);
+        this.agColumnGroup.addEventListener('displayedChildrenChanged', this.syncIsExpanded);
     }
 
     override destroy() {
-        this.agColumnGroup.removeEventListener('expandedChanged', this.syncIsExpanded);
+        this.agColumnGroup.removeEventListener('displayedChildrenChanged', this.syncIsExpanded);
         super.destroy();
     }
 

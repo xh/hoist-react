@@ -332,11 +332,16 @@ export class AgGridModel extends HoistModel {
             // 2nd clear all pre-existing secondary column sorts
             agApi.getPivotResultColumns().forEach(col => {
                 if (col) {
-                    // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
-                    // But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
-                    // had ever been specified, `undefined` must be used.
-                    col.setSort(undefined, null);
-                    col.setSortIndex(undefined);
+                    agApi.applyColumnState({
+                        state: [
+                            {
+                                colId: col.getColId(),
+                                sort: null,
+                                sortIndex: null
+                            }
+                        ],
+                        defaultState
+                    });
                 }
             });
 
@@ -347,8 +352,15 @@ export class AgGridModel extends HoistModel {
                 // @ts-ignore
                 const col = agApi.getPivotResultColumn(state.colId[0], state.colId[1]);
                 if (col) {
-                    col.setSort(state.sort, null);
-                    col.setSortIndex(state.sortIndex);
+                    agApi.applyColumnState({
+                        state: [
+                            {
+                                colId: col.getColId(),
+                                sort: state.sort ?? null,
+                                sortIndex: state.sortIndex
+                            }
+                        ]
+                    });
                 } else {
                     this.logWarn(
                         'Could not find a secondary column to associate with the pivot column path',

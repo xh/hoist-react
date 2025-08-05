@@ -9,10 +9,10 @@ import {
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     ColumnEvent,
-    ColumnState as AgColumnState,
+    AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from '@xh/hoist/kit/ag-grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -898,7 +898,7 @@ export class GridModel extends HoistModel {
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@link selectedRecord} getter instead.
+     * selection should use the {@link selectedRecord} getter instead.
      */
     get selectedId(): StoreRecordId {
         return this.selModel.selectedId;
@@ -1217,7 +1217,7 @@ export class GridModel extends HoistModel {
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col = find(columnState, {colId: change.colId});
+            const col: ColumnState = find(columnState, {colId: change.colId});
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1355,7 +1355,7 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const options = {...this.autosizeOptions, ...overrideOpts};
+        const options: GridAutosizeOptions = {...this.autosizeOptions, ...overrideOpts};
 
         if (options.mode === 'disabled') {
             return;
