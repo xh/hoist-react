@@ -60,8 +60,8 @@ export type {
 export type {CustomCellEditorProps} from 'ag-grid-react';
 export {useGridCellEditor} from 'ag-grid-react';
 
-const MIN_VERSION = '33.0.0';
-const MAX_VERSION = '33.*.*';
+const MIN_VERSION = '34.0.0';
+const MAX_VERSION = '34.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
