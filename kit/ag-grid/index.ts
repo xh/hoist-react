@@ -55,13 +55,13 @@ export type {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from 'ag-grid-community';
 
-export type {CustomCellEditorProps} from '@ag-grid-community/react';
-export {useGridCellEditor} from '@ag-grid-community/react';
+export type {CustomCellEditorProps} from 'ag-grid-react';
+export {useGridCellEditor} from 'ag-grid-react';
 
-const MIN_VERSION = '32.0.0';
-const MAX_VERSION = '32.*.*';
+const MIN_VERSION = '33.0.0';
+const MAX_VERSION = '33.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
