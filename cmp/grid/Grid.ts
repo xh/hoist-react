@@ -285,7 +285,7 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems
+                getContextMenuItems: this.getContextMenuItems as any
             };
         }
 
