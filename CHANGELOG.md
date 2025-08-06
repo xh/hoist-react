@@ -42,7 +42,8 @@
   `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
 
 ### ⚙️ Technical
-
+* Hoist has been upgraded to AG Grid v34.  This version offers a number of performance benefits as
+  well as support reduced overall package size via tree shaking. See below for more details.
 * WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
   Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
   Console functionality and is recommended, but clients that must disable WebSockets can do so via
@@ -53,13 +54,29 @@
   * The `XH.authModel` property is still set and available - this is a non-breaking change.
   * This approach was already (and continues to be) used for services and the `AppModel` singleton.
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 Medium - removing deprecations, AG Grid upgrade)
 
 * Removed deprecated `LoadSupport.isLoadSupport`
 * Removed deprecated `FileChooserModel.removeAllFiles`
 * Removed deprecated `FetchService.setDefaultHeaders`
 * Removed deprecated `FetchService.setDefaultTimeout`
 * Removed deprecated `IdentityService.logoutAsync`
+
+#### AG Grid v34
+
+Hoist requires update to `@ag-grid >= 34.x`, a new major AG Grid release with its own breaking
+changes. Most applications will see minimal changes, although there are some important changes to
+the npm package names and module registrations that will be required in your `bootstrap.ts`.
+Please see toolbox's bootstrap.ts for a template for this change.
+
+Applications implementing `groupRowRenderer` should note that the `value` property passed to this
+function is no longer stringified, but is instead the raw field value for the group.
+
+See AG's upgrade guides for more details:
+* [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
+* [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
+* [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
+
 
 ### ✨ Styles
 
@@ -71,6 +88,7 @@
 
 ### 📚 Libraries
 
+*
 * @auth0/auth0-spa-js `2.1 → 2.3`
 * @azure/msal-browser `4.12 → 4.16`
 * filesize `6.4 → 11.0`
