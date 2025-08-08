@@ -898,7 +898,7 @@ export class GridModel extends HoistModel {
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@link selectedRecord} getter instead.
+     * selection should use the {@link selectedRecord} getter instead.
      */
     get selectedId(): StoreRecordId {
         return this.selModel.selectedId;
@@ -1038,25 +1038,24 @@ export class GridModel extends HoistModel {
         this.expandLevel = level;
 
         // 0) Not rendered, we are done.
-        const {agApi} = this;
+        const {agApi, store} = this;
         if (!agApi) return;
 
         // 1) Update rendered grid.
-        if (agApi.getGridOption('groupDefaultExpanded') != level) {
-            // If the ag default is *not* set to this level just set it.  This somewhat
-            // mysteriously (but efficiently) changes the currently rendered rows as well.
-            agApi.setGridOption('groupDefaultExpanded', level);
-        } else if (level == 0 || level >= this.maxDepth) {
-            // otherwise api methods available.
+        agApi.setGridOption('groupDefaultExpanded', level);
+        if (level == 0 || level >= this.maxDepth) {
             level == 0 ? agApi.collapseAll() : agApi.expandAll();
         } else {
-            // Otherwise, *toggle* the default.
-            // Surprisingly, this appears to be the only efficient way to do the bulk operation.
-            agApi.setGridOption('groupDefaultExpanded', 0);
-            agApi.setGridOption('groupDefaultExpanded', level);
+            // Update raw nodes for efficiency
+            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
+            store.records.forEach(rec => {
+                const node = agApi.getRowNode(rec.agId);
+                if (node) {
+                    node.expanded = rec.depth < level;
+                }
+            });
+            agApi.onGroupExpandedOrCollapsed();
         }
-
-        // 2) Finally, be sure to update our state snapshot.
         this.noteAgExpandStateChange();
     }
 

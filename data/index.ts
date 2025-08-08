@@ -36,6 +36,7 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+export * from './cube/ViewRowData';
 
 export * from './validation/constraints';
 export * from './validation/Rule';

@@ -5,10 +5,11 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
+import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField, CubeFieldSpec} from './CubeField';
+import {ViewRowData} from './ViewRowData';
 import {Query, QueryConfig} from './Query';
 import {View} from './View';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
@@ -57,6 +58,35 @@ export interface CubeConfig {
 }
 
 /**
+ * Function to be called for each node to aggregate to determine if it should be "locked",
+ * preventing drilldown into its children. If true returned for a node, no drilldown will be
+ * allowed, and the row will be marked with a boolean "locked" property.
+ */
+export type LockFn = (row: AggregateRow | BucketRow) => boolean;
+
+/**
+ * Function to be called for each node during row generation to determine if it should be
+ * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Note that skipping in this way has no effect on aggregations -- all children of this node are
+ * simply promoted to their parent node.
+ */
+export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
+
+/**
+ * Function to be called for rows making up an aggregated dimension to determine if the children of
+ * that dimension should be dynamically bucketed into additional sub-groupings.
+ *
+ * An example use case would be a grouped collection of portfolio positions, where any closed
+ * positions are identified as such by this function and bucketed into a "Closed" sub-grouping,
+ * without having to add something like an "openClosed" dimension that would apply to all
+ * aggregations and create an unwanted "Open" grouping.
+ *
+ * @param rows - the rows being checked for bucketing
+ * @returns BucketSpec for configuring dynamic sub-aggregations, or null to perform no bucketing.
+ */
+export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
+
+/**
  * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
  *
  * This object is a wrapper around a "flat" Store containing leaf-level facts. It supports creating
@@ -94,7 +124,7 @@ export class Cube extends HoistBase {
         this.store = new Store({
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData: processRawData as any,
+            processRawData: processRawData,
             freezeData: false,
             idEncodesTreePath: true
         });
@@ -143,9 +173,9 @@ export class Cube extends HoistBase {
      * @param query - Config for query defining the shape of the view.
      * @returns data containing the results of the query as a hierarchical set of rows.
      */
-    executeQuery(query: QueryConfig): any {
-        const q = new Query({...query, cube: this});
-        const view = new View({query: q}),
+    executeQuery(query: QueryConfig): ViewRowData[] {
+        const q = new Query({...query, cube: this}),
+            view = new View({query: q}),
             rows = view.result.rows;
 
         view.destroy();
@@ -153,19 +183,19 @@ export class Cube extends HoistBase {
     }
 
     /**
-     * Create a View on this data.
+     * Create a dynamic {@link View} of the cube data based on a query. Unlike the static snapshot
+     * returned by {@link Cube.executeQuery}, a View created with this method can be configured
+     * with `connect:true` to automatically update as the underlying data in the Cube changes.
      *
-     * Creates a dynamic View of the cube data, based on a query.  Useful for binding to grids a
-     * and efficiently displaying changing results in the Cube.
+     * Provide one or more `stores` to automatically populate them with the aggregated data returned
+     * by the query, or read the returned {@link View.result} directly.
      *
-     * Note: Applications should call {@link View.disconnect} or {@link View.destroy} on the View
-     * created by this method when appropriate to avoid unnecessary processing.
+     * When the returned View is no longer needed, call {@link View.destroy} (or save a reference
+     * via an `@managed` model property) to avoid unnecessary processing.
      *
      * @param query - query to be used to construct this view.
-     * @param stores - Stores to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'results' property of the returned View instead.
-     * @param connect - true to update View automatically when data in
-     *      the underlying cube is changed. Default false.
+     * @param stores - Stores to be automatically loaded/reloaded with View results.
+     * @param connect - true to update View automatically when data in the underlying Cube changes.
      */
     createView({
         query,
@@ -183,14 +213,12 @@ export class Cube extends HoistBase {
         });
     }
 
-    /**
-     * True if the provided view is connected to this Cube for live updates.
-     */
+    /** True if the provided view is connected to this Cube for live updates. */
     viewIsConnected(view: View): boolean {
         return this._connectedViews.has(view);
     }
 
-    /** @param view - view to disconnect from live updates. */
+    /** Cease pushing further updates to this Cube's data into a previously connected View. */
     disconnectView(view: View) {
         this._connectedViews.delete(view);
     }
@@ -200,12 +228,10 @@ export class Cube extends HoistBase {
     //-------------------
     /**
      * Populate this cube with a new dataset.
+     * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
-     * This method largely delegates to Store.loadData().  See that method for more
-     * information.
-     *
-     * Note that this method will update its views asynchronously, in order to avoid locking
-     * up the browser when attached to multiple expensive views.
+     * Note that this method will update its views asynchronously in order to avoid locking up the
+     * browser when attached to multiple expensive views.
      *
      * @param rawData - flat array of lowest/leaf level data rows.
      * @param info - optional metadata to associate with this cube/dataset.
@@ -240,6 +266,26 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
+            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+        }
+    }
+
+    /**
+     * Similar to `updateDataAsync`, but intended for modifying individual field values in a local
+     * uncommitted state - i.e. when updating via an inline grid editor or similar control. Like
+     * `updateDataAsync`, this method will update its views asynchronously.
+     *
+     * This method largely delegates to {@link Store.modifyRecords} - see that method for more info.
+     *
+     * @param modifications - field-level modifications to apply to existing
+     *      Records in this Cube. Each object in the list must have an `id` property identifying
+     *      the StoreRecord to modify, plus any other properties with updated field values to apply,
+     *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
+     */
+    async modifyRecordsAsync(modifications: Some<PlainObject>): Promise<void> {
+        const changeLog = this.store.modifyRecords(modifications);
+
+        if (changeLog) {
             await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
         }
     }
@@ -283,28 +329,3 @@ export class Cube extends HoistBase {
         super.destroy();
     }
 }
-
-/**
- * Function to be called for each node to aggregate to determine if it should be "locked",
- * preventing drilldown into its children. If true returned for a node, no drilldown will be
- * allowed, and the row will be marked with a boolean "locked" property.
- */
-export type LockFn = (row: AggregateRow | BucketRow) => boolean;
-
-/**
- * Function to be called for each node during row generation to determine if it should be
- * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
- * Note that skipping in this way has no effect on aggregations -- all children of this node are
- * simply promoted to their parent node.
- */
-export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
-
-/**
- * Function to be called for each dimension to determine if children of said dimension should be
- * bucketed into additional dynamic dimensions.
- *
- * @param rows - the rows being checked for bucketing
- * @returns a BucketSpec for configuring the bucket to place child rows into, or null to perform
- *          no bucketing
- */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
