@@ -1,6 +1,6 @@
 # Changelog
 
-## 75.0-SNAPSHOT - Unreleased
+## 75.0.0 - 2025-08-08
 
 ### 🎁 New Features
 
