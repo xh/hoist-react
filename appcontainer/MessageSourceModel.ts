@@ -4,7 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
+import {HoistModel, managed, MessageSpec, MessageSpecInput, XH} from '@xh/hoist/core';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {filter, isUndefined, partition} from 'lodash';
@@ -86,4 +88,16 @@ export class MessageSourceModel extends HoistModel {
         this.msgModels = keep;
         XH.safeDestroy(cull);
     }
+}
+
+export function confirmInputTypeToConfirm(target: string): MessageSpecInput {
+    return {
+        item: formField({
+            field: '',
+            label: `Type '${target}' to confirm:`,
+            inline: true,
+            item: textInput()
+        }),
+        rules: [({value}) => (value === target ? null : `You must type '${target}' to confirm.`)]
+    };
 }

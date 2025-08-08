@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {confirmInputTypeToConfirm} from '@xh/hoist/appcontainer/MessageSourceModel';
 import {badge} from '@xh/hoist/cmp/badge';
 import {dateTimeCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
@@ -207,6 +208,7 @@ export class ManageDialogModel extends HoistModel {
 
         const confirmed = await XH.confirm({
             message: fragment(msgs.map(m => p(m))),
+            input: confirmInputTypeToConfirm('DELETE'),
             confirmProps: {
                 text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
                 outlined: true,
