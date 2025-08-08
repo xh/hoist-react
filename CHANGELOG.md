@@ -28,7 +28,7 @@
 * Cube Views now emit data objects of type `ViewRowData`, rather than an anonymous `PlainObject`.
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
-
+* Added a typing prompt/check to the delete confirmation of sensitive admin objects.
 
 
 ### 🐞 Bug Fixes
