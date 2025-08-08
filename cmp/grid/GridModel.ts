@@ -9,10 +9,10 @@ import {
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     ColumnEvent,
-    ColumnState as AgColumnState,
+    AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from '@xh/hoist/kit/ag-grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -95,7 +95,7 @@ import {
     pull,
     take
 } from 'lodash';
-import {ReactNode} from 'react';
+import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
@@ -419,6 +419,7 @@ export class GridModel extends HoistModel {
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
+    viewRef: RefObject<HTMLDivElement> = createRef();
 
     //------------------------
     // Observable API
@@ -1216,7 +1217,7 @@ export class GridModel extends HoistModel {
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col = find(columnState, {colId: change.colId});
+            const col: ColumnState = find(columnState, {colId: change.colId});
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1354,7 +1355,7 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const options = {...this.autosizeOptions, ...overrideOpts};
+        const options: GridAutosizeOptions = {...this.autosizeOptions, ...overrideOpts};
 
         if (options.mode === 'disabled') {
             return;
@@ -1551,7 +1552,7 @@ export class GridModel extends HoistModel {
             {showMask} = options;
 
         if (showMask) {
-            agApi.showLoadingOverlay();
+            agApi.updateGridOptions({loading: true});
         }
 
         try {
@@ -1562,7 +1563,7 @@ export class GridModel extends HoistModel {
                 if (empty) {
                     agApi.showNoRowsOverlay();
                 } else {
-                    agApi.hideOverlay();
+                    agApi.updateGridOptions({loading: false});
                 }
             }
         }
