@@ -2,6 +2,10 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Updated Grid column filters to commit on close or on "enter" keydown and cancel on "esc" keydown.
+
 ## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features

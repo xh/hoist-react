@@ -29,6 +29,9 @@ export class HeaderFilterModel extends HoistModel {
     @managed valuesTabModel: ValuesTabModel;
     @managed customTabModel: CustomTabModel;
 
+    // Set to `false` when `esc` is pressed to close without committing.
+    shouldCommitOnClose = true;
+
     get filterModel() {
         return this.parent.filterModel;
     }
@@ -118,6 +121,13 @@ export class HeaderFilterModel extends HoistModel {
         });
 
         this.syncWithFilter();
+    }
+
+    override destroy() {
+        super.destroy();
+        if (this.shouldCommitOnClose && (this.hasFilter || this.hasPendingFilter)) {
+            this.commit(false);
+        }
     }
 
     @action
