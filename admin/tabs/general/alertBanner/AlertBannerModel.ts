@@ -6,7 +6,6 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
-import {confirmInputTypeToConfirm} from '@xh/hoist/appcontainer/MessageSourceModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
@@ -137,7 +136,7 @@ export class AlertBannerModel extends HoistModel {
     removePreset(preset: PlainObject) {
         XH.confirm({
             message: 'Are you sure you wish to delete this preset?',
-            input: confirmInputTypeToConfirm('DELETE'),
+            extraConfirmText: 'DELETE',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',

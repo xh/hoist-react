@@ -93,6 +93,16 @@ export interface MessageSpec {
     /** Config for input to be displayed (as a prompt). */
     input?: MessageSpecInput;
 
+    /** If specified, user will be required to type this text to be allowed to confirm. */
+    extraConfirmText?: string;
+
+    /**
+     * Text/label to inform the user of the text required to confirm.
+     * Only used if extraConfirmText is specified.
+     * Defaults to `Type '${extraConfirmText}' to confirm:`.
+     */
+    extraConfirmLabel?: ReactNode;
+
     /**
      * Props for primary confirm button.
      * Must provide either text or icon for button to be displayed, or use a preconfigured

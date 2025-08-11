@@ -35,32 +35,50 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            items: [dialogBody(model.message, inputCmp()), bbar()],
+            items: [dialogBody(model.message, inputsCmp()), bbar()],
             onClose: () => model.doEscape(),
             ...props
         });
     }
 });
 
-const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
-    const {formModel, input} = model;
+const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
+    const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
     return form({
         model: formModel,
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        item: formField({
-            field: 'value',
-            item: withDefault(
-                input.item,
-                textInput({
-                    autoFocus: true,
-                    selectOnFocus: true,
-                    onKeyDown: evt => {
-                        if (evt.key === 'Enter') model.doConfirmAsync();
-                    }
-                })
-            )
-        })
+        items: [
+            formModel.getField('value')
+                ? formField({
+                      field: 'value',
+                      item: withDefault(
+                          input.item,
+                          textInput({
+                              autoFocus: true,
+                              selectOnFocus: true,
+                              onKeyDown: evt => {
+                                  if (evt.key === 'Enter') model.doConfirmAsync();
+                              }
+                          })
+                      )
+                  })
+                : null,
+            formModel.getField('extraConfirm')
+                ? formField({
+                      label: extraConfirmLabel,
+                      inline: true,
+                      field: 'extraConfirm',
+                      item: textInput({
+                          autoFocus: true,
+                          selectOnFocus: true,
+                          onKeyDown: evt => {
+                              if (evt.key === 'Enter') model.doConfirmAsync();
+                          }
+                      })
+                  })
+                : null
+        ]
     });
 });
 

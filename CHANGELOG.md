@@ -28,8 +28,8 @@
 * Cube Views now emit data objects of type `ViewRowData`, rather than an anonymous `PlainObject`.
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
-* Added a typing prompt/check to the delete confirmation of sensitive admin objects.
-
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
+  to present the user with a typing prompt that must be typed out to confirm.
 
 ### 🐞 Bug Fixes
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly

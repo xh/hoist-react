@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
-import {confirmInputTypeToConfirm} from '@xh/hoist/appcontainer/MessageSourceModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
@@ -127,7 +126,7 @@ export class RoleModel extends HoistModel {
 
         const confirm = await XH.confirm({
             message: `Are you sure you want to delete "${role.name}"? This may affect access to this application.`,
-            input: confirmInputTypeToConfirm(role.name),
+            extraConfirmText: role.name,
             confirmProps: {
                 text: 'Yes, delete role',
                 intent: 'danger',

@@ -7,7 +7,6 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
-import {confirmInputTypeToConfirm} from '@xh/hoist/appcontainer/MessageSourceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
@@ -122,7 +121,7 @@ export class LogViewerModel extends BaseInstanceModel {
 
             const confirmed = await XH.confirm({
                 message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
-                input: confirmInputTypeToConfirm('DELETE'),
+                extraConfirmText: 'DELETE',
                 confirmProps: {
                     text: `Yes, delete the ${pluralize('file', count)}`,
                     intent: 'danger',

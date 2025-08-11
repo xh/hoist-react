@@ -15,7 +15,6 @@ import {
 } from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorModel';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
-import {confirmInputTypeToConfirm} from '@xh/hoist/appcontainer/MessageSourceModel';
 import {badge} from '@xh/hoist/cmp/badge';
 import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -214,7 +213,7 @@ export class InstancesTabModel extends HoistModel {
         if (
             !(await XH.confirm({
                 message: `Are you sure you wish to immediately terminate instance ${instance.name}?`,
-                input: confirmInputTypeToConfirm(instance.name),
+                extraConfirmText: instance.name,
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Yes, kill the instance',
