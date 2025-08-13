@@ -93,7 +93,7 @@ export interface MessageSpec {
     /** Config for input to be displayed (as a prompt). */
     input?: MessageSpecInput;
 
-    /** If specified, user will be required to type this text to be allowed to confirm. */
+    /** If specified, user will be required to type this text when confirming. */
     extraConfirmText?: string;
 
     /**
