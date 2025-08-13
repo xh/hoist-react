@@ -1560,11 +1560,8 @@ export class GridModel extends HoistModel {
         } finally {
             if (showMask) {
                 await wait();
-                if (empty) {
-                    agApi.showNoRowsOverlay();
-                } else {
-                    agApi.updateGridOptions({loading: false});
-                }
+                agApi.updateGridOptions({loading: false});
+                if (empty) agApi.showNoRowsOverlay();
             }
         }
     }
