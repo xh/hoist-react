@@ -96,12 +96,14 @@ export abstract class BaseRow {
     }
 
     private getChildrenDatas(): ViewRowData[] {
-        let {children, view} = this;
+        let {children, view} = this,
+            {query} = view;
 
-        if (!children) return null;
+        if (!children || (children[0].isLeaf && !query.includeLeaves && !query.provideLeaves))
+            return null;
 
         // Skip all children in a locked node
-        if (view.query.lockFn?.(this as any)) {
+        if (query.lockFn?.(this as any)) {
             this.locked = true;
             return null;
         }
