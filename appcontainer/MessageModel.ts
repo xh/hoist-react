@@ -82,15 +82,10 @@ export class MessageModel extends HoistModel {
         }
 
         if (extraConfirmText) {
-            this.extraConfirmLabel = extraConfirmLabel ?? `Type '${extraConfirmText}' to confirm:`;
+            this.extraConfirmLabel = extraConfirmLabel ?? `Enter '${extraConfirmText}' to confirm:`;
             fields.push({
                 name: 'extraConfirm',
-                rules: [
-                    ({value}) =>
-                        value === extraConfirmText
-                            ? null
-                            : `You must type '${extraConfirmText}' to confirm.`
-                ]
+                rules: [({value}) => (value === extraConfirmText ? null : `Confirmation required`)]
             });
         }
 

@@ -68,13 +68,24 @@ export const message = hoistCmp.factory({
 });
 
 const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
-    const {formModel, input} = model;
+    const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
     return form({
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        item: formField({
-            field: 'value',
-            item: withDefault(input.item, textInput())
-        })
+        items: [
+            formModel.getField('value')
+                ? formField({
+                      field: 'value',
+                      item: withDefault(input.item, textInput())
+                  })
+                : null,
+            formModel.getField('extraConfirm')
+                ? formField({
+                      label: extraConfirmLabel,
+                      field: 'extraConfirm',
+                      item: textInput()
+                  })
+                : null
+        ]
     });
 });

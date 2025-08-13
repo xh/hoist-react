@@ -121,7 +121,6 @@ export class LogViewerModel extends BaseInstanceModel {
 
             const confirmed = await XH.confirm({
                 message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
-                extraConfirmText: 'DELETE',
                 confirmProps: {
                     text: `Yes, delete the ${pluralize('file', count)}`,
                     intent: 'danger',

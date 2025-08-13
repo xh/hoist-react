@@ -136,7 +136,6 @@ export class AlertBannerModel extends HoistModel {
     removePreset(preset: PlainObject) {
         XH.confirm({
             message: 'Are you sure you wish to delete this preset?',
-            extraConfirmText: 'DELETE',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
