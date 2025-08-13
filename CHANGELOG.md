@@ -29,7 +29,7 @@
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
-  to present the user with a typing prompt that must be typed out to confirm.
+  to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
 
 ### 🐞 Bug Fixes
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
