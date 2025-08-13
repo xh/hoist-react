@@ -77,13 +77,14 @@ export class RoleEditorModel extends HoistModel {
             this.doCancel();
         } else {
             XH.confirm({
-                message: 'You have unsaved changes. Are you sure you wish to proceed?',
+                message: 'You have unsaved changes. Are you sure you want to proceed?',
                 cancelProps: {
                     text: 'Keep editing'
                 },
                 confirmProps: {
                     text: 'Discard Changes',
-                    intent: 'danger'
+                    intent: 'danger',
+                    outlined: true
                 },
                 onConfirm: () => this.doCancel()
             });

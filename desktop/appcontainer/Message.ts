@@ -6,7 +6,7 @@
  */
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {form} from '@xh/hoist/cmp/form';
-import {filler} from '@xh/hoist/cmp/layout';
+import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -51,6 +51,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         items.push(
             formField({
                 field: 'value',
+                label: null,
                 item: withDefault(
                     input.item,
                     textInput({
@@ -68,7 +69,6 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         items.push(
             formField({
                 label: extraConfirmLabel,
-                inline: true,
                 field: 'extraConfirm',
                 item: textInput({
                     autoFocus: true,
@@ -82,8 +82,11 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
     }
     return form({
         model: formModel,
-        fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        items
+        fieldDefaults: {commitOnChange: true, minimal: true},
+        item: div({
+            className: 'xh-pad',
+            items
+        })
     });
 });
 

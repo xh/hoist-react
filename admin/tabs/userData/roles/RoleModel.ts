@@ -8,6 +8,7 @@ import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recat
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
@@ -125,11 +126,15 @@ export class RoleModel extends HoistModel {
         if (this.readonly) return false;
 
         const confirm = await XH.confirm({
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this application.`,
+            message: fragment(
+                p(`Are you sure you want to delete the ${role.name} role?`),
+                p(`This may impact access to this application.`)
+            ),
             extraConfirmText: role.name,
             confirmProps: {
-                text: 'Yes, delete role',
+                text: 'Delete role',
                 intent: 'danger',
+                outlined: true,
                 autoFocus: false
             }
         });
