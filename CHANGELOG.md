@@ -6,6 +6,8 @@
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+* `GridCountLabel` supports a new `excludeParents` property to exclude parent records from the
+  count. This is useful for tree grids, where the parent record count is not always relevant.
 
 ## 75.0.1 - 2025-08-11
 
