@@ -203,7 +203,7 @@ export class GridLocalModel extends HoistModel {
                 suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
-            popupParent: document.querySelector('body'),
+            popupParent: null,
             suppressAggFuncInHeader: true,
             icons: {
                 groupExpanded: Icon.groupRowExpanded({
