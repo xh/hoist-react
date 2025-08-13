@@ -1,6 +1,8 @@
 # Changelog
 
-## 75.0-SNAPSHOT - Unreleased
+## 76.0.0-SNAPSHOT - unreleased
+
+## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features
 
@@ -29,14 +31,9 @@
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
 
-
-
 ### 🐞 Bug Fixes
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
   handling changes to `SummaryRecords`.
-
-### 🐞 Bug Fixes
-
 * Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
   via `loadState()` and hiding the `Add` context menu item in views as intended.
 * Updated `DashCanvas` CSS to set `position: relative;`, ensuring that the empty state overlay is
