@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Updated Grid column filters to commit on close or on "enter" keydown and cancel on "esc" keydown.
+* General improvements to Grid column filters.
 
 ## 75.0.1 - 2025-08-11
 

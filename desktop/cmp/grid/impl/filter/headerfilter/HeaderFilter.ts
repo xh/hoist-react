@@ -37,7 +37,7 @@ export const headerFilter = hoistCmp.factory({
                 {
                     allowInInput: true,
                     combo: 'enter',
-                    label: 'Apply',
+                    label: 'OK',
                     group: 'Column Filter',
                     onKeyDown: () =>
                         // Wait for debounced reaction in `ValuesTabModel` to run before committing
@@ -50,10 +50,7 @@ export const headerFilter = hoistCmp.factory({
                     combo: 'escape',
                     label: 'Cancel',
                     group: 'Column Filter',
-                    onKeyDown: () => {
-                        model.shouldCommitOnClose = false;
-                        model.parent.close();
-                    }
+                    onKeyDown: () => model.parent.close()
                 }
             ]
         });
@@ -62,25 +59,32 @@ export const headerFilter = hoistCmp.factory({
 
 const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
-        const {commitOnChange} = model;
+        const {commitOnChange, hasFilter, hasPendingFilter, isDirty} = model;
         return toolbar({
             compact: true,
             items: [
-                filler(),
                 button({
                     icon: Icon.delete(),
-                    text: 'Clear Filter',
+                    text: 'Clear',
                     intent: 'danger',
                     disabled: !model.hasFilter,
                     onClick: () => model.clear()
                 }),
+                filler(),
                 button({
                     omit: commitOnChange,
-                    icon: Icon.check(),
-                    text: 'Apply Filter',
-                    intent: 'success',
-                    disabled: !model.hasFilter && !model.hasPendingFilter,
+                    text: 'OK',
+                    disabled: !hasFilter && !hasPendingFilter,
+                    intent: isDirty ? 'primary' : null,
+                    minimal: !isDirty,
+                    outlined: !isDirty,
                     onClick: () => model.commit()
+                }),
+                button({
+                    omit: commitOnChange,
+                    text: 'Cancel',
+                    outlined: true,
+                    onClick: () => model.parent.close()
                 })
             ]
         });
