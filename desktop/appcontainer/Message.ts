@@ -45,40 +45,45 @@ export const message = hoistCmp.factory({
 const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
     const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
+
+    const items = [];
+    if (formModel.getField('value')) {
+        items.push(
+            formField({
+                field: 'value',
+                item: withDefault(
+                    input.item,
+                    textInput({
+                        autoFocus: true,
+                        selectOnFocus: true,
+                        onKeyDown: evt => {
+                            if (evt.key === 'Enter') model.doConfirmAsync();
+                        }
+                    })
+                )
+            })
+        );
+    }
+    if (formModel.getField('extraConfirm')) {
+        items.push(
+            formField({
+                label: extraConfirmLabel,
+                inline: true,
+                field: 'extraConfirm',
+                item: textInput({
+                    autoFocus: true,
+                    selectOnFocus: true,
+                    onKeyDown: evt => {
+                        if (evt.key === 'Enter') model.doConfirmAsync();
+                    }
+                })
+            })
+        );
+    }
     return form({
         model: formModel,
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        items: [
-            formModel.getField('value')
-                ? formField({
-                      field: 'value',
-                      item: withDefault(
-                          input.item,
-                          textInput({
-                              autoFocus: true,
-                              selectOnFocus: true,
-                              onKeyDown: evt => {
-                                  if (evt.key === 'Enter') model.doConfirmAsync();
-                              }
-                          })
-                      )
-                  })
-                : null,
-            formModel.getField('extraConfirm')
-                ? formField({
-                      label: extraConfirmLabel,
-                      inline: true,
-                      field: 'extraConfirm',
-                      item: textInput({
-                          autoFocus: true,
-                          selectOnFocus: true,
-                          onKeyDown: evt => {
-                              if (evt.key === 'Enter') model.doConfirmAsync();
-                          }
-                      })
-                  })
-                : null
-        ]
+        items
     });
 });
 

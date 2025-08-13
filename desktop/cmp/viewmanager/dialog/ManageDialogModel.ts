@@ -207,7 +207,6 @@ export class ManageDialogModel extends HoistModel {
 
         const confirmed = await XH.confirm({
             message: fragment(msgs.map(m => p(m))),
-            extraConfirmText: 'DELETE',
             confirmProps: {
                 text: `Yes, delete ${pluralize(typeDisplayName, count)}`,
                 outlined: true,

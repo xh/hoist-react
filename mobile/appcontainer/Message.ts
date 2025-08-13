@@ -70,22 +70,27 @@ export const message = hoistCmp.factory({
 const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
     const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
+
+    const items = [];
+    if (formModel.getField('value')) {
+        items.push(
+            formField({
+                field: 'value',
+                item: withDefault(input.item, textInput())
+            })
+        );
+    }
+    if (formModel.getField('extraConfirm')) {
+        items.push(
+            formField({
+                label: extraConfirmLabel,
+                field: 'extraConfirm',
+                item: textInput()
+            })
+        );
+    }
     return form({
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        items: [
-            formModel.getField('value')
-                ? formField({
-                      field: 'value',
-                      item: withDefault(input.item, textInput())
-                  })
-                : null,
-            formModel.getField('extraConfirm')
-                ? formField({
-                      label: extraConfirmLabel,
-                      field: 'extraConfirm',
-                      item: textInput()
-                  })
-                : null
-        ]
+        items
     });
 });
