@@ -2,6 +2,11 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
+  to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+
 ## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features
@@ -32,6 +37,7 @@
   which can be activated via the `Query.provideLeaves` property.
 
 ### 🐞 Bug Fixes
+
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
   handling changes to `SummaryRecords`.
 * Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
