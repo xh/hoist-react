@@ -21,6 +21,13 @@ export interface GridCountLabelProps extends HoistProps, BoxProps {
     includeChildren?: boolean;
 
     /**
+     * True to exclude parent records from the count.
+     * If false (default) parent records will be included in count.
+     * Ignored if `includeChildren` is false.
+     */
+    excludeParents?: boolean;
+
+    /**
      * Control display of selection count after overall records count: auto (default) to display
      * count when greater than 1, or always/never to show/hide regardless of current count.
      */
@@ -42,6 +49,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
     render({
         gridModel,
         includeChildren = false,
+        excludeParents = false,
         showSelectionCount = 'auto',
         unit = 'record',
         ...props
@@ -60,8 +68,11 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         const fmtCount = count => fmtNumber(count, {precision: 0, asHtml: true}),
             recCountString = () => {
-                const count = includeChildren ? store.count : store.rootCount,
-                    unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
+                let count = includeChildren ? store.count : store.rootCount;
+                if (excludeParents && includeChildren) {
+                    count = store.records.filter(it => !it.children.length).length;
+                }
+                const unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
 
                 return `${fmtCount(count)} ${unitLabel}`;
             },
