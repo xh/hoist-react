@@ -108,7 +108,7 @@ export class IdentityService extends HoistService {
     /** Exit any active impersonation, reloading the app to resume accessing it as yourself. */
     async endImpersonateAsync() {
         try {
-            await XH.prefService.pushPendingAsync();
+            await XH.prefService?.pushPendingAsync();
             await XH.fetchJson({url: 'xh/endImpersonate'});
             XH.reloadApp();
         } catch (e) {
