@@ -13,13 +13,12 @@ import {
     FieldType,
     Filter,
     FilterLike,
-    flattenFilter,
     parseFilter,
     Store
 } from '@xh/hoist/data';
 import {action, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {isEmpty, isEqual} from 'lodash';
+import {isEmpty} from 'lodash';
 import {GridFilterFieldSpec, GridFilterModel} from '@xh/hoist/cmp/grid';
 import {customTab} from './custom/CustomTab';
 import {CustomTabModel} from './custom/CustomTabModel';
@@ -77,7 +76,9 @@ export class HeaderFilterModel extends HoistModel {
 
     @computed
     get isDirty(): boolean {
-        return !isEqual(this.columnFilters, flattenFilter(parseFilter(this.pendingFilter)));
+        const current = parseFilter(this.columnFilters),
+            pending = parseFilter(this.pendingFilter);
+        return !(current?.equals(pending) ?? !pending);
     }
 
     get pendingFilter(): FilterLike {
