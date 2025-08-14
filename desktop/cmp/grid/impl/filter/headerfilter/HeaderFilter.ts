@@ -37,7 +37,7 @@ export const headerFilter = hoistCmp.factory({
                 {
                     allowInInput: true,
                     combo: 'enter',
-                    label: 'OK',
+                    label: 'Apply',
                     group: 'Column Filter',
                     onKeyDown: () =>
                         // Wait for debounced reaction in `ValuesTabModel` to run before committing
@@ -73,18 +73,16 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
                 filler(),
                 button({
                     omit: commitOnChange,
-                    text: 'OK',
-                    disabled: !hasFilter && !hasPendingFilter,
-                    intent: isDirty ? 'primary' : null,
-                    minimal: !isDirty,
-                    outlined: !isDirty,
-                    onClick: () => model.commit()
+                    text: 'Cancel',
+                    onClick: () => model.parent.close()
                 }),
                 button({
                     omit: commitOnChange,
-                    text: 'Cancel',
-                    outlined: true,
-                    onClick: () => model.parent.close()
+                    text: 'Apply',
+                    disabled: !hasFilter && !hasPendingFilter,
+                    intent: isDirty ? 'primary' : null,
+                    minimal: !isDirty,
+                    onClick: () => model.commit()
                 })
             ]
         });
