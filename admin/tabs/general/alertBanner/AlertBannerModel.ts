@@ -135,7 +135,7 @@ export class AlertBannerModel extends HoistModel {
     @action
     removePreset(preset: PlainObject) {
         XH.confirm({
-            message: 'Are you sure you wish to delete this preset?',
+            message: 'Are you sure you want to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
@@ -252,7 +252,7 @@ export class AlertBannerModel extends HoistModel {
             const finalConfirm = await XH.confirm({
                 message: fragment(
                     p('This change will modify a live banner for all users of this application.'),
-                    p('Are you sure you wish to do this?')
+                    p('Are you sure you want to do this?')
                 ),
                 confirmProps: {
                     text: 'Yes, modify the banner',
