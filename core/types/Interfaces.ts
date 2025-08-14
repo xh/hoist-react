@@ -91,16 +91,17 @@ export interface MessageSpec {
     messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
-    input?: {
-        /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
-        item?: ReactElement;
+    input?: MessageSpecInput;
 
-        /** Validation constraints to apply. */
-        rules?: RuleLike[];
+    /** If specified, user will be required to type this text when confirming. */
+    extraConfirmText?: string;
 
-        /** Initial value for the input. */
-        initialValue?: any;
-    };
+    /**
+     * Text/label to inform the user of the text required to confirm.
+     * Only used if extraConfirmText is specified.
+     * Defaults to `Type '${extraConfirmText}' to confirm:`.
+     */
+    extraConfirmLabel?: ReactNode;
 
     /**
      * Props for primary confirm button.
@@ -133,6 +134,17 @@ export interface MessageSpec {
 
     /** Flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
     cancelOnDismiss?: boolean;
+}
+
+export interface MessageSpecInput {
+    /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
+    item?: ReactElement;
+
+    /** Validation constraints to apply. */
+    rules?: RuleLike[];
+
+    /** Initial value for the input. */
+    initialValue?: any;
 }
 
 /**

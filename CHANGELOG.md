@@ -18,6 +18,10 @@ See AG's upgrade guides for more details:
 * [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
 * [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
 
+### 🎁 New Features
+
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
+  to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
 
 ## 75.0.1 - 2025-08-11
 
@@ -49,6 +53,7 @@ See AG's upgrade guides for more details:
   which can be activated via the `Query.provideLeaves` property.
 
 ### 🐞 Bug Fixes
+
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
   handling changes to `SummaryRecords`.
 * Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
