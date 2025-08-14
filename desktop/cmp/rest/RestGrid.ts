@@ -10,8 +10,10 @@ import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
 import {MaskProps} from '@xh/hoist/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import '@xh/hoist/desktop/register';
 import {getTestId} from '@xh/hoist/utils/js';
+import {isArray} from 'lodash';
 import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
 
 import {restForm} from './impl/RestForm';
@@ -30,6 +32,15 @@ export interface RestGridProps
 
     /** Optional components rendered adjacent to the top toolbar's action buttons */
     extraToolbarItems?: Some<ReactNode> | (() => Some<ReactNode>);
+
+    /**
+     * A custom toolbar to be docked above the grid. Note that this supersedes the default
+     * toolbar, meaning the `extraToolbarItems` prop will have no effect. Furthermore,
+     * `RestGridModel.toolbarActions`, `RestGridModel.filterFields` will `RestGridModel.showRefreshButton`
+     * will not be automatically applied to controls within this toolbar.
+     * If specified as an array, items will be passed as children to a Toolbar component.
+     */
+    tbar?: Some<ReactNode>;
 
     /**
      * Mask to render on this Component. Defaults to true, which renders a standard
@@ -51,6 +62,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
         const {
                 model,
                 extraToolbarItems,
+                tbar,
                 mask = true,
                 agOptions,
                 formClassName,
@@ -63,7 +75,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
             panel({
                 ref,
                 ...restProps,
-                tbar: restGridToolbar({model, extraToolbarItems, testId}),
+                tbar: innerToolbar({model, tbar, extraToolbarItems, testId}),
                 item: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
                 mask: getMaskFromProp(model, mask)
             }),
@@ -73,6 +85,14 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 testId: getTestId(testId, 'form')
             })
         );
+    }
+});
+
+const innerToolbar = hoistCmp.factory({
+    render({model, tbar, extraToolbarItems, testId}) {
+        if (isArray(tbar)) return toolbar(tbar);
+        if (tbar) return tbar;
+        return restGridToolbar({model, extraToolbarItems, testId});
     }
 });
 
