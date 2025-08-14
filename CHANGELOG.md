@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* General improvements to Grid column filters.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup toolbar for clarity.
 
 ## 75.0.1 - 2025-08-11
 
