@@ -6,6 +6,8 @@
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+* Added new `childTabs` property to `TabConfig`. Apps should use this property for a declarative
+  way to create nested tabs within a `TabContainer`.
 
 ## 75.0.1 - 2025-08-11
 
@@ -19,8 +21,6 @@
     * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
       Provides easier discoverability on desktop and supports this feature on mobile, where we
       don't have context menus.
-* Added new `childTabs` property to `TabConfig`. Apps should use this property for a declarative
-  way to create nested tabs within a `TabContainer`.
 * Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
   * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
   * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
