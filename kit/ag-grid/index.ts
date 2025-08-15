@@ -44,12 +44,24 @@ export type {
     MenuItemDef,
     CellPosition,
     NavigateToNextCellParams,
+    ColumnEvent,
+    ColumnState as AgColumnState,
     Column as AgColumn,
-    ColumnGroup as AgColumnGroup
-} from '@ag-grid-community/core';
+    ColumnGroup as AgColumnGroup,
+    AgProvidedColumnGroup,
+    RowDoubleClickedEvent,
+    RowClickedEvent,
+    RowHeightParams,
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent
+} from 'ag-grid-community';
 
-const MIN_VERSION = '31.2.0';
-const MAX_VERSION = '31.*.*';
+export type {CustomCellEditorProps} from 'ag-grid-react';
+export {useGridCellEditor} from 'ag-grid-react';
+
+const MIN_VERSION = '34.0.0';
+const MAX_VERSION = '34.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

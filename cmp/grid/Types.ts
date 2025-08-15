@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
@@ -22,7 +21,8 @@ import type {
     IRowNode,
     ITooltipParams,
     RowClassParams,
-    ValueSetterParams
+    ValueSetterParams,
+    CustomCellEditorProps
 } from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnState {

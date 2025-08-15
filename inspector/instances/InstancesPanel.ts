@@ -62,8 +62,7 @@ export const instancesPanel = hoistCmp.factory({
                     item: grid({
                         model: model.instancesGridModel,
                         agOptions: {
-                            suppressRowGroupHidesColumns: true,
-                            suppressMakeColumnVisibleAfterUnGroup: true
+                            suppressGroupChangesColumnVisibility: true
                         }
                     }),
                     bbar: instanceGridBar(),

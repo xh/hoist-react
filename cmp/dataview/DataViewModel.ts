@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@ag-grid-community/core';
+import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
 import {
     ColumnRenderer,
     ColumnSpec,

@@ -2,6 +2,22 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update)
+
+Hoist v76 upgrades AG Grid to v34 (from v31), covering three major AG Grid releases with their own
+potentially breaking changes. Fortunately, internal Hoist updates to our managed API wrappers mean
+that most apps will see very minimal changes, although there are required adjustments to app-level
+`package.json` to install updated grid dependencies and `Bootstrap.ts` to import and register
+your licensed grid modules at their new import paths.
+
+Applications implementing `groupRowRenderer` should note that the `value` property passed to this
+function is no longer stringified, but is instead the raw field value for the group.
+
+See AG's upgrade guides for more details:
+* [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
+* [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
+* [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
+
 ### 🎁 New Features
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
