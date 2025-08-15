@@ -17,6 +17,7 @@ import {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
+import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
@@ -32,17 +33,22 @@ export interface ViewConfig {
     query: Query;
 
     /**
-     * Store(s) to be automatically (re)loaded with data from this view. Optional - read the View's
-     * observable `result` property directly to use without a Store.
+     * Store(s) to be automatically (re)loaded with data from this view.
+     * Optional - read {@link View.result} directly to use without a Store.
      */
     stores?: Store[] | Store;
 
     /**
-     * True to reactively update the View's `result` and any connected store(s) when data in the
-     * underlying Cube is changed. False (default) to have this view run its query once to capture
-     * a snapshot without further updates based on Cube changes.
+     * True to reactively update the View's {@link View.result} and any connected store(s) when data
+     * in the underlying Cube changes. False (default) to have this view run its query once to
+     * capture a snapshot without further (automatic) updates.
      */
     connect?: boolean;
+}
+
+export interface ViewResult {
+    rows: ViewRowData[];
+    leafMap: Map<StoreRecordId, LeafRow>;
 }
 
 export interface DimensionValue {
@@ -62,34 +68,34 @@ export class View extends HoistBase {
         return true;
     }
 
-    /** Query defining this View. Update via `updateQuery()`. */
+    /** Query defining this View. Update via {@link updateQuery}. */
     @observable.ref
     query: Query = null;
 
     /**
-     * Results of this view, an observable object with a `rows` property
-     * containing an array of hierarchical data objects.
+     * Results of this view, an observable object with a `rows` property containing an array of
+     * hierarchical {@link ViewRowData} objects.
      */
     @observable.ref
-    result: {rows: PlainObject[]; leafMap: Map<StoreRecordId, LeafRow>} = null;
+    result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
-    /** Cube info associated with this View when last updated. */
+    /** The source {@link Cube.info} as of the last time this View was updated. */
     @observable.ref
     info: PlainObject = null;
 
-    /** timestamp (ms) of the last time this view's data was changed. */
+    /** Timestamp (ms) of the last time this view's data was changed. */
     @observable
     lastUpdated: number;
 
     // Implementation
-    private _rows: PlainObject[] = null;
-    private _rowCache: Map<string, BaseRow> = null;
+    private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
     _aggContext: AggregationContext = null;
+    _rowCache: Map<string, BaseRow> = null;
 
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
@@ -144,8 +150,7 @@ export class View extends HoistBase {
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
      * @param overrides - changes to be applied to the query. May include any arguments to the query
-     *      constructor except `cube`, which cannot be changed on a view once set
-     *      via the initial query.
+     *      constructor except `cube`, which cannot be changed once set via the initial query.
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
@@ -164,9 +169,7 @@ export class View extends HoistBase {
         this.fullUpdate();
     }
 
-    /**
-     * Gathers all unique values for each dimension field in the query
-     */
+    /** Gather all unique values for each dimension field in the query. */
     getDimensionValues(): DimensionValue[] {
         const {_leafMap} = this,
             fields = this.query.fields.filter(it => it.isDimension);
@@ -229,6 +232,7 @@ export class View extends HoistBase {
         this.updateResults();
     }
 
+    @logWithDebug
     private dataOnlyUpdate(updates: StoreRecord[]) {
         const {_leafMap, _recordMap, stores} = this,
             updatedRowDatas = new Set<PlainObject>();
@@ -252,17 +256,17 @@ export class View extends HoistBase {
     }
 
     private loadStores() {
-        const {_leafMap, _rows} = this;
-        if (!_leafMap || !_rows) return;
+        const {_leafMap, _rowDatas} = this;
+        if (!_leafMap || !_rowDatas) return;
 
         // Skip degenerate root in stores/grids, but preserve in object api.
-        const storeRows = _leafMap.size !== 0 ? _rows : [];
+        const storeRows = _leafMap.size !== 0 ? _rowDatas : [];
         this.stores.forEach(s => s.loadData(storeRows));
     }
 
     private updateResults() {
-        const {_leafMap, _rows} = this;
-        this.result = {rows: _rows, leafMap: _leafMap};
+        const {_leafMap, _rowDatas} = this;
+        this.result = {rows: _rowDatas, leafMap: _leafMap};
         this.info = this.cube.info;
         this.lastUpdated = Date.now();
     }
@@ -274,7 +278,7 @@ export class View extends HoistBase {
             rootId = 'root';
 
         const records = this._aggContext.filteredRecords;
-        const leafMap = new Map();
+        const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
         newRows = this.bucketRows(newRows, rootId, {});
 
@@ -292,10 +296,10 @@ export class View extends HoistBase {
 
         this._leafMap = leafMap;
 
-        // This is the magic.  We only actually reveal to API the network of *data* nodes.
+        // This is the magic. We only actually reveal to API the network of *data* nodes.
         // This hides all the meta information, as well as unwanted leaves and skipped rows.
         // Underlying network still there and updates will flow up through it via the leaves.
-        this._rows = newRows.flatMap(it => it.getVisibleDatas());
+        this._rowDatas = newRows.flatMap(it => it.getVisibleDatas());
     }
 
     private groupAndInsertRecords(

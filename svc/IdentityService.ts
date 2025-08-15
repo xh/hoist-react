@@ -95,27 +95,25 @@ export class IdentityService extends HoistService {
             !this.canAuthUserImpersonate,
             'User does not have right to impersonate or impersonation is disabled.'
         );
-        return XH.fetchJson({
+        await XH.prefService.pushPendingAsync();
+        await XH.fetchJson({
             url: 'xh/impersonate',
             params: {
                 username: username
             }
-        }).then(() => {
-            XH.reloadApp();
         });
+        XH.reloadApp();
     }
 
     /** Exit any active impersonation, reloading the app to resume accessing it as yourself. */
     async endImpersonateAsync() {
-        return XH.fetchJson({
-            url: 'xh/endImpersonate'
-        })
-            .then(() => {
-                XH.reloadApp();
-            })
-            .catchDefault({
-                message: 'Failed to end impersonation'
-            });
+        try {
+            await XH.prefService?.pushPendingAsync();
+            await XH.fetchJson({url: 'xh/endImpersonate'});
+            XH.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {message: 'Failed to end impersonation'});
+        }
     }
 
     //------------------------
