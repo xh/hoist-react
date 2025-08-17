@@ -6,6 +6,8 @@
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+* Added new `childTabs` property to `TabConfig`. Apps should use this property for a declarative
+  way to create nested tabs within a `TabContainer`.
 
 ## 75.0.1 - 2025-08-11
 

@@ -17,19 +17,15 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {startCase} from 'lodash';
-import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
-import {ReactElement, ReactNode} from 'react';
+import {TabContainerConfig, TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
+import {TabContainerProps} from '@xh/hoist/cmp/tab/TabContainer';
+import {ReactElement, ReactNode, RefObject} from 'react';
 
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
     id: string;
-
-    /**
-     *  Parent TabContainerModel. Provided by the container when constructing these models -
-     *  no need for application to specify directly.
-     */
-    containerModel?: TabContainerModel;
 
     /** Display title for the Tab in the container's TabSwitcher. */
     title?: ReactNode;
@@ -52,8 +48,15 @@ export interface TabConfig {
     /** Display an affordance to allow the user to remove this tab from its container.*/
     showRemoveAction?: boolean;
 
-    /** Item to be rendered by this tab.*/
+    /** Item to be rendered by this tab. */
     content?: Content;
+
+    /**
+     * Specification for a child tab container for this tab.  Specify as an alternative to
+     * content.  The associated model for this container will be available via the
+     * `TabModel.childTabs` property.  It is an error to define both `content` and `childTabs`.
+     * */
+    childTabs?: TabContainerProps;
 
     /**
      * Strategy for rendering this tab. If null, will default to its container's mode. See enum
@@ -91,30 +94,42 @@ export class TabModel extends HoistModel {
     showRemoveAction: boolean;
     content: Content;
 
-    private _renderMode: RenderMode;
-    private _refreshMode: RefreshMode;
-
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
+
+    private _renderMode: RenderMode;
+    private _refreshMode: RefreshMode;
+    private _childTabsRef: RefObject<TabContainerModel> = createObservableRef();
+
+    /** Internal.  For use by Tab component. */
+    _childTabsProps: TabContainerProps;
 
     get isTabModel() {
         return true;
     }
 
-    constructor({
-        id,
-        containerModel,
-        title = startCase(id),
-        icon = null,
-        tooltip = null,
-        disabled = false,
-        excludeFromSwitcher = false,
-        showRemoveAction = false,
-        content,
-        refreshMode,
-        renderMode,
-        xhImpl = false
-    }: TabConfig) {
+    /** Child TabContainerModel. For nested TabContainers only. */
+    get childTabs(): TabContainerModel {
+        return this._childTabsRef.current;
+    }
+
+    constructor(
+        {
+            id,
+            title = startCase(id),
+            icon = null,
+            tooltip = null,
+            disabled = false,
+            excludeFromSwitcher = false,
+            showRemoveAction = false,
+            childTabs,
+            content,
+            refreshMode,
+            renderMode,
+            xhImpl = false
+        }: TabConfig,
+        containerModel: TabContainerModel
+    ) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -123,9 +138,9 @@ export class TabModel extends HoistModel {
             showRemoveAction && XH.isMobileApp,
             'Removable Tabs not supported in Mobile toolkit.'
         );
+        throwIf(childTabs && content, "A tab cannot define both 'content' and 'childTabs'. ");
 
         this.id = id.toString();
-        this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
@@ -133,6 +148,9 @@ export class TabModel extends HoistModel {
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
         this.content = content;
+        this.containerModel = containerModel;
+
+        this._childTabsProps = childTabs ? {modelRef: this._childTabsRef, ...childTabs} : null;
 
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
@@ -146,16 +164,16 @@ export class TabModel extends HoistModel {
     }
 
     get renderMode(): RenderMode {
-        return this._renderMode ?? this.containerModel.renderMode;
+        return this._renderMode ?? this.containerModel?.renderMode;
     }
 
     get refreshMode(): RefreshMode {
-        return this._refreshMode ?? this.containerModel.refreshMode;
+        return this._refreshMode ?? this.containerModel?.refreshMode;
     }
 
     @computed
     get isActive(): boolean {
-        return this.containerModel.activeTabId === this.id;
+        return this.containerModel?.activeTabId === this.id;
     }
 
     @action
@@ -169,5 +187,31 @@ export class TabModel extends HoistModel {
         }
 
         this.disabled = disabled;
+    }
+
+    //-------------------------
+    // Implementation
+    //-------------------------
+    /**
+     * Creates a TabContainerModel for a nested (sub) tab configuration.
+     *
+     * This function is designed for use in tab structures where the route can be
+     * derived from the current navigation context, rather than being explicitly provided.
+     *
+     * If the config does not specify a `route`, the function will automatically generate one
+     * by appending this tab's `id` to the parent container's route, forming a fully qualified
+     * path (e.g., `parent.route.tabId`).
+     *
+     * This helps simplify sub-tab configuration and keeps routing declarative and consistent
+     * across the navigation tree.
+     *
+     * @param config - The configuration object for the sub-tab container.
+     * @returns A fully constructed TabContainerModel instance.
+     */
+    private createChildContainerModel(config: TabContainerConfig): TabContainerModel {
+        return new TabContainerModel({
+            ...config,
+            route: config.route ?? `${this.containerModel?.route}.${this.id}`
+        });
     }
 }
