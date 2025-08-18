@@ -5,7 +5,11 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
+import {
+    DragDropContext,
+    Draggable,
+    Droppable
+} from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 
 export {DragDropContext, Droppable, Draggable};
 
