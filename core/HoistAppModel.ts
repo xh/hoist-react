@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
 import {Route} from 'router5';
@@ -98,6 +99,7 @@ export class HoistAppModel extends HoistModel {
     async restoreDefaultsAsync() {
         const XH = window['XH'];
         await XH.prefService.clearAllAsync();
+        await ViewManagerModel.clearAllStateAsync()
         XH.localStorageService.clear();
         XH.sessionStorageService.clear();
     }
