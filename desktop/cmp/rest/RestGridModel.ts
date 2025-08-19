@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {RowDoubleClickedEvent} from '@ag-grid-community/core';
+import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';

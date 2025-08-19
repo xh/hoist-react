@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
-import {CustomCellEditorProps} from '@ag-grid-community/react';
+import {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {checkbox, CheckboxProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
