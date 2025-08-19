@@ -111,15 +111,16 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Reset *all* preferences, reverting their effective values back to defaults.
-     * @returns a Promise that resolves when preferences have been cleared and defaults reloaded.
+     *  Reset *all* preferences, reverting their effective values back to defaults.
+     *  Called by `HoistAppModel.restoreDefaultsAsync()` before reloading the app.
+     *
+     * @returns a Promise that resolves when preferences have been cleared.
      */
     async clearAllAsync() {
         await XH.fetchJson({
             url: 'xh/clearPrefs',
             params: {clientUsername: XH.getUsername()}
         });
-        return this.loadPrefsAsync();
     }
 
     /**

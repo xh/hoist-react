@@ -5,7 +5,14 @@
 ### 🎁 New Features
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
-  to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+  to require the specified text to be re-typed by a user when confirming a potentially destructive
+  or disruptive action.
+
+### 🐞 Bug Fixes
+
+* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
+  Requires hoist-core v32.0
+
 
 ### ⚙️ Technical
 * Provide support for triggering browser GC during development. Useful for troubleshooting memory
