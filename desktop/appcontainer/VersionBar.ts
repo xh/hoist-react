@@ -53,7 +53,7 @@ export const versionBar = hoistCmp.factory({
                     title: 'Open Admin Console',
                     onClick: () => XH.appContainerModel.openAdmin()
                 }),
-                // Force GC, available when V8/chromium run with --js-flags="--expose-gc"
+                // Force GC, available via V8/chromium and "start chrome --js-flags="--expose-gc"
                 Icon.memory({
                     omit: !window['gc'],
                     title: 'Force GC',

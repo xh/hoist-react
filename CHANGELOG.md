@@ -7,6 +7,11 @@
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
 
+### ⚙️ Technical
+* Provide support for triggering browser GC during development. Useful for troubleshooting memory
+  consumption issues.  Requires running chromium-based browser with flag, e.g.
+  "start chrome --js-flags="--expose-gc"
+
 ## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features
