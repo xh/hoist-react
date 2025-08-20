@@ -105,7 +105,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
                                         flex: 1,
                                         width: '100%',
                                         readonly: true,
-                                        showCopyButton: true
+                                        enableSearch: true
                                     })
                                 })
                             ]
