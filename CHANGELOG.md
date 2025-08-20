@@ -7,6 +7,8 @@
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive
   or disruptive action.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
+  toolbar for clarity.
 
 ### 🐞 Bug Fixes
 
