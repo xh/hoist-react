@@ -296,5 +296,14 @@ const queryExamples = [
     {
         query: '$..grid[?(@.version == 1)]',
         explanation: 'Find all nodes with a key of "grid" and a property "version" equal to 1'
+    },
+    {
+        query: '$.currentView[?(@.desktop == null && @.desktop)]',
+        explanation:
+            'Find all JSON documents with path "currentView.desktop" that is explicitly set to null'
+    },
+    {
+        query: '$.[?(@ == "someString")]',
+        explanation: 'Find all JSON documents with an array that contains the value "someString"'
     }
 ];
