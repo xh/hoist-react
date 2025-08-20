@@ -42,7 +42,7 @@ export const headerFilter = hoistCmp.factory({
                     onKeyDown: () =>
                         // Wait for debounced reaction in `ValuesTabModel` to run before committing
                         wait(400).then(() => {
-                            if (model.hasFilter || model.hasPendingFilter) model.commit();
+                            if (model.isDirty) model.commit();
                         })
                 }
             ]
@@ -52,7 +52,7 @@ export const headerFilter = hoistCmp.factory({
 
 const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
-        const {commitOnChange, hasFilter, hasPendingFilter, isDirty} = model;
+        const {commitOnChange, hasFilter, isDirty} = model;
         return toolbar({
             compact: true,
             items: [
@@ -72,9 +72,9 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
                 button({
                     omit: commitOnChange,
                     text: 'Apply',
-                    disabled: !hasFilter && !hasPendingFilter,
-                    intent: isDirty ? 'primary' : null,
-                    minimal: !isDirty,
+                    disabled: !isDirty,
+                    intent: 'primary',
+                    minimal: false,
                     onClick: () => model.commit()
                 })
             ]
