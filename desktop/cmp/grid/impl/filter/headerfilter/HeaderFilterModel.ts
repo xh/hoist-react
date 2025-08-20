@@ -70,6 +70,13 @@ export class HeaderFilterModel extends HoistModel {
         return !isEmpty(this.columnFilters);
     }
 
+    get pendingFilter(): FilterLike {
+        const {activeTabId} = this.tabContainerModel;
+        return activeTabId === 'valuesFilter'
+            ? this.valuesTabModel.filter
+            : this.customTabModel.filter;
+    }
+
     get hasPendingFilter(): boolean {
         return !!this.pendingFilter;
     }
@@ -78,14 +85,7 @@ export class HeaderFilterModel extends HoistModel {
     get isDirty(): boolean {
         const current = parseFilter(this.columnFilters),
             pending = parseFilter(this.pendingFilter);
-        return !(current?.equals(pending) ?? !pending);
-    }
-
-    get pendingFilter(): FilterLike {
-        const {activeTabId} = this.tabContainerModel;
-        return activeTabId === 'valuesFilter'
-            ? this.valuesTabModel.filter
-            : this.customTabModel.filter;
+        return current ? !current.equals(pending) : !!pending;
     }
 
     @computed

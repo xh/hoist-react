@@ -41,16 +41,9 @@ export const headerFilter = hoistCmp.factory({
                     group: 'Column Filter',
                     onKeyDown: () =>
                         // Wait for debounced reaction in `ValuesTabModel` to run before committing
-                        wait(400).then(
-                            () => (model.hasFilter || model.hasPendingFilter) && model.commit()
-                        )
-                },
-                {
-                    allowInInput: true,
-                    combo: 'escape',
-                    label: 'Cancel',
-                    group: 'Column Filter',
-                    onKeyDown: () => model.parent.close()
+                        wait(400).then(() => {
+                            if (model.hasFilter || model.hasPendingFilter) model.commit();
+                        })
                 }
             ]
         });
@@ -67,7 +60,7 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
                     icon: Icon.delete(),
                     text: 'Clear',
                     intent: 'danger',
-                    disabled: !model.hasFilter,
+                    disabled: !hasFilter,
                     onClick: () => model.clear()
                 }),
                 filler(),
