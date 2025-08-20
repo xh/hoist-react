@@ -772,11 +772,21 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     *
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.trackService.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**

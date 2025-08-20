@@ -2,6 +2,8 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v32)
+
 ### 🎁 New Features
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option

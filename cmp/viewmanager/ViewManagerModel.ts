@@ -178,21 +178,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return ret;
     }
 
-    /**
-     * Call to clear all state for all ViewManagers in this application.  Called by
-     * `HoistAppModel.restoreDefaultsAsync()` before reloading the app.
-     *
-     * Note that this method will clear transitory view management state like current view,
-     * the choice of "pinned" views and auto-save.  Actual View content will never be cleared by
-     * this method.  Applications wishing to clear views themselves should do so manually in an
-     * overridden implementation of `restoreDefaultsAsync()`
-     *
-     * @returns a Promise that resolves when all state has been cleared.
-     */
-    static async clearAllStateAsync() {
-        await XH.fetchJson({url: 'xhView/clearAllState'});
-    }
-
     /** Immutable configuration for this model. */
     readonly type: string;
     readonly instance: string;
