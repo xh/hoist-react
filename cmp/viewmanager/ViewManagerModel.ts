@@ -550,7 +550,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             // 2) Select the initial view.
             let initialView: ViewInfo,
                 initialTkn: string = initialState.currentView;
-            if (isUndefined(initialTkn) || isNull(initialTkn && !enableDefault)) {
+            if (isUndefined(initialTkn) || (isNull(initialTkn) && !enableDefault)) {
                 // Token undefined (no prior view) or null (in-code default *had* been loaded) but
                 // default no longer enabled - call initialViewSpec.
                 initialView = this.initialViewSpec?.(views);
