@@ -110,7 +110,14 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
                                 })
                             ]
                         })
-                    ]
+                    ],
+                    bbar: toolbar(
+                        filler(),
+                        button({
+                            text: 'Close',
+                            onClick: () => model.toggleSearchIsOpen()
+                        })
+                    )
                 })
             })
         });
@@ -120,6 +127,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
 const searchTbar = hoistCmp.factory<JsonSearchImplModel>({
     render({model}) {
         return toolbar(
+            helpButton({model}),
             pathField({model}),
             button({
                 text: `Search ${model.subjectName}`,
@@ -128,8 +136,6 @@ const searchTbar = hoistCmp.factory<JsonSearchImplModel>({
                 disabled: !model.path,
                 onClick: () => model.loadMatchingDocsAsync()
             }),
-            '-',
-            helpButton({model}),
             '-',
             span('Group by:'),
             select({
