@@ -47,7 +47,7 @@ export class DataAccess<T> {
         }
     }
 
-    /** Fetch the latest version of a view. */
+    /** Fetch the latest version of a view, or the in-code default if token null/undefined/empty. */
     async fetchViewAsync(token: string): Promise<View<T>> {
         const {model} = this;
         if (!token) return View.createDefault(model);
