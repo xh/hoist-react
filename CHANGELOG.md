@@ -2,7 +2,7 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v32)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
 
 ### 🎁 New Features
 
@@ -13,7 +13,7 @@
 ### 🐞 Bug Fixes
 
 * `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
-  Requires hoist-core v32.0
+  Requires hoist-core v31.2
 
 
 ### ⚙️ Technical
