@@ -773,13 +773,12 @@ export class XHApi {
 
     /**
      * Reset user state and then reload the app.
-     *
      * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
         try {
             await this.appModel.restoreDefaultsAsync();
-            XH.trackService.track({category: 'App', message: 'Restored app defaults'});
+            XH.track({category: 'App', message: 'Restored app defaults'});
             this.reloadApp();
         } catch (e) {
             XH.handleException(e, {
