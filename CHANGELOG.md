@@ -2,6 +2,8 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+
 ### 🎁 New Features
 
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
@@ -15,6 +17,9 @@
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
+  
+* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
+  Requires hoist-core v31.2
 
 ### ⚙️ Technical
 

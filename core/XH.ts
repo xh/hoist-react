@@ -67,7 +67,7 @@ import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '30.1';
+export const MIN_HOIST_CORE_VERSION = '31.2';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -772,11 +772,21 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     *
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.trackService.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**
