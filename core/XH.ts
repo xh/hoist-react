@@ -31,6 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
+import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -358,6 +359,23 @@ export class XHApi {
     async logoutAsync(): Promise<void> {
         await this.authModel?.logoutAsync();
         this.reloadApp();
+    }
+
+    /**
+     * Logging severity threshold for app.  Messages with less severity will be ignored.
+     * Default 'info'.
+     */
+    get logLevel(): LogLevel {
+        return getLogLevel();
+    }
+
+    /**
+     * Adjust severity level of logging for lifetime of page or browser tab session.
+     *
+     * Call this method from the console to adjust the log level for troubleshooting.
+     */
+    setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
+        setLogLevel(level, persistInSessionStorage);
     }
 
     //----------------------

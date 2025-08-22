@@ -261,7 +261,7 @@ export class FetchService extends HoistService {
         const {correlationIdHeaderKey} = this;
         if (opts.correlationId) {
             if (headers[correlationIdHeaderKey]) {
-                console.warn(
+                this.logWarn(
                     `Header ${correlationIdHeaderKey} value already set within FetchOptions.`
                 );
             } else {

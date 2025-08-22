@@ -6,9 +6,48 @@
  */
 import {Some} from '@xh/hoist/core';
 import {castArray, isString} from 'lodash';
+import store from 'store2';
 import {intersperse} from './LangUtils';
 
+/**
+ * Utility functions providing managed, structured logging to hoist apps.  Essentially a wrapper
+ * around the browser console supporting logging levels, timing, and miscellaneous hoist
+ * display conventions.
+ *
+ * Objects extending HoistBase need not import these functions directly, as they are available
+ * via delegates on `HoistBase`.
+ *
+ * Hoist sets its minimum severity level to 'info' by default.  This prevents performance or
+ * memory impacts that might result from verbose debug logging.  This can be adjusted by calling
+ * XH.logLevel from the console.
+ */
+
+/** Severity Level for log statement */
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+/** Object identifying the source of log statement.  Typically, a javascript class */
 export type LogSource = string | {displayName: string} | {constructor: {name: string}};
+
+/**
+ * Severity threshold for app.  Messages with less severity will be ignored. Default 'info'.
+ * @see XH.logLevel
+ */
+export function getLogLevel() {
+    return _logLevel;
+}
+
+/**
+ * Adjust severity level of logging for lifetime of page or browser tab.
+ *
+ * Call this method from the console to adjust the log level for troubleshooting.
+ * @see XH.setLogLevel
+ */
+export function setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
+    _logLevel = level.toLowerCase() as LogLevel;
+    if (persistInSessionStorage) {
+        _sessionStore.set('logLevel', level);
+    }
+}
 
 /**
  * Time and log execution of a function to `console.info()`.
@@ -72,19 +111,12 @@ export function logWarn(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'warn');
 }
 
-/** Parse a LogSource in to a canonical string label. */
-export function parseSource(source: LogSource): string {
-    if (!source) return null;
-    if (isString(source)) return source;
-    if (source['displayName']) return source['displayName'];
-    if (source.constructor) return source.constructor.name;
-    return null;
-}
-
 //----------------------------------
 // Implementation
 //----------------------------------
 function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel) {
+    if (_severity[level] < _severity[_logLevel]) return;
+
     let src = parseSource(source);
     let msgs = castArray(messages);
 
@@ -147,4 +179,25 @@ function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     }
 }
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+/** Parse a LogSource in to a canonical string label. */
+function parseSource(source: LogSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    if (source['displayName']) return source['displayName'];
+    if (source.constructor) return source.constructor.name;
+    return null;
+}
+
+//----------------------------------------------------------------
+// Initialization + Level/Severity support.
+// Initialize during parsing to make available immediately
+// Set level *after* initial message to ensure we always see it!
+//----------------------------------------------------------------
+let _logLevel: LogLevel = 'info';
+
+const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0},
+    _sessionStore = store.session.namespace('hoistClientLog'),
+    _initLevel = _sessionStore.get('logLevel', 'info');
+
+logInfo(`Initializing client logging at level '${_initLevel}'.`, 'LogUtils');
+_logLevel = _initLevel;
