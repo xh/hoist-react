@@ -11,13 +11,17 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* Hoist's client-side logging utilities are now governed by the new `XH.logLevel` property, defining
+  a logging severity threshold for the app.  Set at 'info' by default, this prevents memory and
+  performance impacts of verbose logging on level 'debug'.  This level can be changed at runtime
+  for troubleshooting. See docstrings in 'LogUtils.ts' for more info.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-  
+
 * `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
   Requires hoist-core v31.2
 
