@@ -370,7 +370,7 @@ export class XHApi {
     }
 
     /**
-     * Adjust severity level of logging for lifetime of page or browser tab session.
+     * Adjust severity threshold for app.
      *
      * Call this method from the console to adjust the log level for troubleshooting.
      */

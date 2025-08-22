@@ -30,7 +30,7 @@ export type LogSource = string | {displayName: string} | {constructor: {name: st
 
 /**
  * Severity threshold for app.  Messages with less severity will be ignored. Default 'info'.
- * @see XH.logLevel
+ * @internal Applications should typically use `XH.logLevel` instead.
  */
 export function getLogLevel() {
     return _logLevel;
@@ -40,12 +40,20 @@ export function getLogLevel() {
  * Adjust severity level of logging for lifetime of page or browser tab.
  *
  * Call this method from the console to adjust the log level for troubleshooting.
- * @see XH.setLogLevel
+ * @internal Applications should typically use `XH.setLogLevel()` instead.
  */
 export function setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
-    _logLevel = level.toLowerCase() as LogLevel;
+    level = level.toLowerCase() as LogLevel;
+    if (!['error', 'warn', 'info', 'debug'].includes(level)) {
+        console.error(`Invalid value for log level: '${level}'`);
+        return;
+    }
+    _logLevel = level;
     if (persistInSessionStorage) {
-        _sessionStore.set('logLevel', level);
+        store.session.set('xhLogLevel', level);
+    }
+    if (level != 'info') {
+        console.warn(`Client logging set to level '${level}'.`);
     }
 }
 
@@ -114,8 +122,10 @@ export function logWarn(msgs: Some<unknown>, source?: LogSource) {
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel) {
-    if (_severity[level] < _severity[_logLevel]) return;
+function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel): T {
+    if (_severity[level] < _severity[_logLevel]) {
+        return fn?.();
+    }
 
     let src = parseSource(source);
     let msgs = castArray(messages);
@@ -190,14 +200,9 @@ function parseSource(source: LogSource): string {
 
 //----------------------------------------------------------------
 // Initialization + Level/Severity support.
-// Initialize during parsing to make available immediately
-// Set level *after* initial message to ensure we always see it!
+// Initialize during parsing to make available immediately.
 //----------------------------------------------------------------
 let _logLevel: LogLevel = 'info';
+const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
-const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0},
-    _sessionStore = store.session.namespace('hoistClientLog'),
-    _initLevel = _sessionStore.get('logLevel', 'info');
-
-logInfo(`Initializing client logging at level '${_initLevel}'.`, 'LogUtils');
-_logLevel = _initLevel;
+setLogLevel(store.session.get('xhLogLevel', 'info'));
