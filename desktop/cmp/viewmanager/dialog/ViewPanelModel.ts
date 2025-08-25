@@ -102,8 +102,7 @@ export class ViewPanelModel extends HoistModel {
                 {name: 'owner'},
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isShared'},
-                {name: 'isDefaultPinned'}
+                {name: 'isShared'}
             ]
         });
     }

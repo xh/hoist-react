@@ -77,16 +77,6 @@ export const viewPanel = hoistCmp.factory({
                             readonlyRenderer: v => (v ? 'Yes' : 'No'),
                             omit: !enableSharing || isGlobal || !isEditable
                         }),
-                        formField({
-                            field: 'isDefaultPinned',
-                            label: null,
-                            inline: true,
-                            item: switchInput({
-                                label: `Pin to everyone's menu by default`,
-                                labelSide: 'left'
-                            }),
-                            omit: !isGlobal || !isEditable
-                        }),
                         vspacer(),
                         formButtons(),
                         filler(),

@@ -11,13 +11,18 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* Improvements to ViewManagement:
+   ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
+      views will be pinned by default.  This feature was deemed too confusing, and not useful in
+      practice.  App maintainers should ensure that all global views are appropriate and well
+      organized enough to be shown immediately to new users in the view menu.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-  
+
 * `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
   Requires hoist-core v31.2
 

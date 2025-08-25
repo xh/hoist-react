@@ -41,7 +41,6 @@ export interface ViewUpdateSpec {
     group?: string;
     description?: string;
     isShared?: boolean;
-    isDefaultPinned?: boolean;
 }
 
 export interface ViewUserState {
