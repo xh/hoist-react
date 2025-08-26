@@ -94,7 +94,8 @@ export class ViewPanelModel extends HoistModel {
                         async ({value}) => {
                             return this.parent.viewManagerModel.validateViewNameAsync(
                                 value,
-                                this.view
+                                this.view,
+                                this.view.isGlobal
                             );
                         }
                     ]
@@ -102,7 +103,7 @@ export class ViewPanelModel extends HoistModel {
                 {name: 'owner'},
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isShared'}
+                {name: 'visibility'}
             ]
         });
     }

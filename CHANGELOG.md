@@ -11,7 +11,8 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
-* Improvements to ViewManagement:
+* Improvements to View Management:
+   ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
    ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
       views will be pinned by default.  This feature was deemed too confusing, and not useful in
       practice.  App maintainers should ensure that all global views are appropriate and well

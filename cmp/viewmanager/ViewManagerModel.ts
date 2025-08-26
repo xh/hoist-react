@@ -33,6 +33,7 @@ export interface ViewCreateSpec {
     description: string;
     isShared: boolean;
     isPinned: boolean;
+    isGlobal: boolean;
     value: PlainObject;
 }
 
@@ -465,14 +466,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //-----------------
     // Management
     //-----------------
-    async validateViewNameAsync(name: string, existing: ViewInfo = null): Promise<string> {
+    /**
+     * Validate a name for a view.
+     * @param name - candidate name to validate
+     * @param existing - existing view that will have the name.  null if the name is for a new view.
+     * @param isGlobal - true if the name is for a global view.
+     */
+    async validateViewNameAsync(
+        name: string,
+        existing: ViewInfo,
+        isGlobal: boolean
+    ): Promise<string> {
         const maxLength = 50;
         name = name?.trim();
         if (!name) return 'Name is required';
         if (name.length > maxLength) {
             return `Name cannot be longer than ${maxLength} characters`;
         }
-        const views = existing?.isGlobal ? this.globalViews : this.ownedViews;
+        const views = isGlobal ? this.globalViews : this.ownedViews;
         if (views.some(view => view.name === name && view.token != existing?.token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }

@@ -6,11 +6,11 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, checkbox, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
@@ -43,6 +43,8 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
 
 const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
+        const {parent, formModel, visibilityOptions, visibilityInfo} = model,
+            {visibility} = formModel.values;
         return panel({
             item: form({
                 fieldDefaults: {
@@ -69,7 +71,10 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 enableCreate: true,
                                 enableClear: true,
                                 placeholder: 'Select optional group....',
-                                options: getGroupOptions(model.parent, 'owned')
+                                options: getGroupOptions(
+                                    parent,
+                                    visibility == 'global' ? 'global' : 'owned'
+                                )
                             })
                         }),
                         formField({
@@ -79,15 +84,23 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 height: 70
                             })
                         }),
-                        hbox(
-                            formField({
-                                field: 'isShared',
-                                label: 'Share?',
-                                labelTextAlign: 'left',
-                                omit: !model.parent.enableSharing,
-                                item: switchInput()
-                            })
-                        )
+                        formField({
+                            field: 'visibility',
+                            label: 'Visibility',
+                            labelTextAlign: 'left',
+                            omit: visibilityOptions.length == 1,
+                            item: select({
+                                options: visibilityOptions
+                            }),
+                            info: visibilityInfo
+                        }),
+                        formField({
+                            field: 'isPinned',
+                            label: 'Pinned?',
+                            labelTextAlign: 'left',
+                            info: 'Show in your default menu?',
+                            item: checkbox()
+                        })
                     ]
                 })
             }),

@@ -362,7 +362,7 @@ export class ManageDialogModel extends HoistModel {
                         Icon.globe(),
                         `This tab shows ${globalViews} available to everyone.`,
                         br(),
-                        `${capitalize(globalViews)} can be set to appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
+                        `${capitalize(globalViews)} can be set to appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
                     )
                 })
             });
