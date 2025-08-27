@@ -8,11 +8,11 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {capitalize, isUndefined} from 'lodash';
+import {capitalize} from 'lodash';
+import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
 import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
-import {ReactNode} from 'react';
 
 /**
  * Backing model for EditForm
@@ -44,6 +44,7 @@ export class ViewPanelModel extends HoistModel {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
+                        visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
                         owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName)
                     });
                     formModel.readonly = !view.isEditable;
@@ -57,20 +58,42 @@ export class ViewPanelModel extends HoistModel {
         const {parent, view, formModel} = this,
             updates = formModel.getData(true),
             isValid = await formModel.validateAsync(),
-            isDirty = formModel.isDirty;
+            isDirty = formModel.isDirty,
+            visibilityField = formModel.fields.visibility;
 
         if (!isValid || !isDirty) return;
 
-        if (view.isOwned && !isUndefined(updates.isShared)) {
-            const msg: ReactNode = !updates.isShared
-                ? `Your ${view.typedName} will no longer be visible to all other ${XH.appName} users.`
-                : `Your ${view.typedName} will become visible to all other ${XH.appName} users.`;
-            const msgs = [msg, strong('Are you sure you want to proceed?')];
+        if (visibilityField.isDirty) {
+            const visibility = visibilityField.value;
+            updates.isShared = visibility == 'shared';
+            updates.isGlobal = visibility == 'global';
+
+            const msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
+            switch (visibility) {
+                case 'private':
+                    msgs.unshift(
+                        `Your ${view.typedName} will no longer be available to all other ${XH.appName} users.`
+                    );
+                    break;
+                case 'global':
+                    msgs.unshift(
+                        `Your ${view.typedName} will become globally visible to all other ${XH.appName} users.`
+                    );
+                    break;
+                case 'shared':
+                    view.isGlobal
+                        ? msgs.unshift(
+                              `Your ${view.typedName} will no longer be globally visible to all other ${XH.appName} users.`
+                          )
+                        : msgs.unshift(
+                              `Your ${view.typedName} will become available to all other ${XH.appName} users.`
+                          );
+            }
 
             const confirmed = await XH.confirm({
                 message: fragment(msgs.map(m => p(m))),
                 confirmProps: {
-                    text: 'Yes, update sharing',
+                    text: 'Yes, update visibility',
                     outlined: true,
                     autoFocus: false,
                     intent: 'primary'
@@ -91,11 +114,11 @@ export class ViewPanelModel extends HoistModel {
                 {
                     name: 'name',
                     rules: [
-                        async ({value}) => {
+                        async ({value}, {visibility}) => {
                             return this.parent.viewManagerModel.validateViewNameAsync(
                                 value,
                                 this.view,
-                                this.view.isGlobal
+                                visibility === 'global'
                             );
                         }
                     ]

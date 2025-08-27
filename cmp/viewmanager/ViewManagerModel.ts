@@ -42,6 +42,7 @@ export interface ViewUpdateSpec {
     group?: string;
     description?: string;
     isShared?: boolean;
+    isGlobal?: boolean;
 }
 
 export interface ViewUserState {
@@ -493,11 +494,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         return this.dataAccess.updateViewInfoAsync(view, updates);
-    }
-
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        return this.dataAccess.makeViewGlobalAsync(view);
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {

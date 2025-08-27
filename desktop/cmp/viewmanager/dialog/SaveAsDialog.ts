@@ -16,7 +16,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupOptions} from './Utils';
+import {getGroupOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -43,8 +43,13 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
 
 const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
-        const {parent, formModel, visibilityOptions, visibilityInfo} = model,
-            {visibility} = formModel.values;
+        const {parent, formModel} = model,
+            {visibility} = formModel.values,
+            isGlobal = visibility == 'global',
+            groupOptions = getGroupOptions(parent, isGlobal),
+            visOptions = getVisibilityOptions(parent),
+            visInfo = getVisibilityInfo(parent, visibility);
+
         return panel({
             item: form({
                 fieldDefaults: {
@@ -71,10 +76,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 enableCreate: true,
                                 enableClear: true,
                                 placeholder: 'Select optional group....',
-                                options: getGroupOptions(
-                                    parent,
-                                    visibility == 'global' ? 'global' : 'owned'
-                                )
+                                options: groupOptions
                             })
                         }),
                         formField({
@@ -88,11 +90,9 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             field: 'visibility',
                             label: 'Visibility',
                             labelTextAlign: 'left',
-                            omit: visibilityOptions.length == 1,
-                            item: select({
-                                options: visibilityOptions
-                            }),
-                            info: visibilityInfo
+                            omit: visOptions.length == 1,
+                            item: select({options: visOptions}),
+                            info: visInfo
                         }),
                         formField({
                             field: 'isPinned',

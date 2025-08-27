@@ -7,10 +7,10 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {p, strong} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, SelectOption, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {some, startCase} from 'lodash';
+import {some} from 'lodash';
 
 /**
  * Backing model for ViewManagerModel's SaveAs
@@ -56,30 +56,6 @@ export class SaveAsDialogModel extends HoistModel {
         } catch (e) {
             XH.handleException(e);
         }
-    }
-
-    get visibilityOptions(): SelectOption[] {
-        const {parent} = this,
-            ret = [{value: 'private', label: 'Private'}];
-        if (parent.enableSharing) {
-            ret.push({value: 'shared', label: 'Shared'});
-        }
-        if (parent.enableGlobal && parent.manageGlobal) {
-            ret.push({value: 'global', label: startCase(parent.globalDisplayName)});
-        }
-        return ret;
-    }
-
-    get visibilityInfo(): string {
-        switch (this.formModel.values.visibility) {
-            case 'private':
-                return 'Visible to you only.';
-            case 'shared':
-                return 'Visible to ALL users, discoverable via "Shared" tab.';
-            case 'global':
-                return `Visible to ALL users, editable by other ${startCase(this.parent.globalDisplayName)} editors`;
-        }
-        return 'private';
     }
 
     //------------------------

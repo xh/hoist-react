@@ -10,13 +10,16 @@ import {div, filler, hbox, hspacer, span, vbox, vframe, vspacer} from '@xh/hoist
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {ViewPanelModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ViewPanelModel';
-import {getGroupOptions} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
+import {
+    getGroupOptions,
+    getVisibilityInfo,
+    getVisibilityOptions
+} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';
 import {fmtDateTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {capitalize, some} from 'lodash';
 
 /**
  * Form to edit or view details on a single saved view within the ViewManager manage dialog.
@@ -24,11 +27,17 @@ import {capitalize, some} from 'lodash';
 export const viewPanel = hoistCmp.factory({
     model: uses(ViewPanelModel),
     render({model}) {
-        const {view} = model;
+        const {view, parent, formModel} = model,
+            {viewManagerModel} = parent;
+
         if (!view) return null;
 
-        const {isGlobal, lastUpdated, lastUpdatedBy, isEditable} = view,
-            {enableSharing} = model.parent.viewManagerModel;
+        const {lastUpdated, lastUpdatedBy, isEditable} = view,
+            visibility = formModel.values.visibility,
+            isGlobal = visibility == 'global',
+            visOptions = getVisibilityOptions(viewManagerModel),
+            visInfo = getVisibilityInfo(viewManagerModel, visibility),
+            groupOptions = getGroupOptions(viewManagerModel, isGlobal);
 
         return panel({
             item: form({
@@ -52,10 +61,7 @@ export const viewPanel = hoistCmp.factory({
                             item: select({
                                 enableCreate: true,
                                 enableClear: true,
-                                options: getGroupOptions(
-                                    model.parent.viewManagerModel,
-                                    view.isOwned ? 'owned' : 'global'
-                                )
+                                options: groupOptions
                             }),
                             readonlyRenderer: v =>
                                 v || span({item: 'None provided', className: 'xh-text-color-muted'})
@@ -70,12 +76,11 @@ export const viewPanel = hoistCmp.factory({
                                 v || span({item: 'None provided', className: 'xh-text-color-muted'})
                         }),
                         formField({
-                            field: 'isShared',
-                            label: 'Shared?',
-                            inline: true,
-                            item: switchInput(),
-                            readonlyRenderer: v => (v ? 'Yes' : 'No'),
-                            omit: !enableSharing || isGlobal || !isEditable
+                            field: 'visibility',
+                            label: 'Visibility',
+                            item: select({options: visOptions}),
+                            omit: !isEditable || visOptions.length == 1,
+                            info: visInfo
                         }),
                         vspacer(),
                         formButtons(),
@@ -120,8 +125,6 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
             });
         }
 
-        const {enableGlobal, globalDisplayName, manageGlobal, globalViews} =
-            parent.viewManagerModel;
         return vbox({
             style: {gap: 10, alignItems: 'center'},
             items: [
@@ -134,15 +137,6 @@ const formButtons = hoistCmp.factory<ViewPanelModel>({
                     width: 200,
                     outlined: true,
                     onClick: () => parent.togglePinned([view])
-                }),
-                button({
-                    text: `Promote to ${capitalize(globalDisplayName)}`,
-                    icon: Icon.globe(),
-                    width: 200,
-                    outlined: true,
-                    disabled: some(globalViews, {name: view.name}),
-                    omit: readonly || view.isGlobal || !enableGlobal || !manageGlobal,
-                    onClick: () => parent.makeGlobalAsync(view)
                 }),
                 button({
                     text: 'Delete',
