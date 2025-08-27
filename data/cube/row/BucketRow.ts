@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
@@ -11,7 +11,11 @@ import {BucketSpec} from '../BucketSpec';
 import {View} from '../View';
 
 /**
- *  Object used by views to gather bucket rows.
+ *  Row within a dataset produced by a Cube / View representing aggregated data on a dimension that
+ *  has been further grouped into a dynamic child "bucket" - a subset of the dimension-level
+ *  {@link AggregateRow} produced as per a specified {@link Query.bucketSpecFn}.
+ *
+ * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class BucketRow extends BaseRow {
     override get isBucket() {

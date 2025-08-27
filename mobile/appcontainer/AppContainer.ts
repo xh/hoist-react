@@ -2,34 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {errorMessageImpl} from '@xh/hoist/mobile/cmp/error/impl/ErrorMessage';
+import {maskImpl} from '@xh/hoist/mobile/cmp/mask/impl/Mask';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
-import {mask} from '@xh/hoist/mobile/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
-import {suspendPanel} from './SuspendPanel';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
@@ -40,7 +40,8 @@ installMobileImpls({
     colChooser,
     ColChooserModel,
     zoneMapper,
-    errorMessage
+    errorMessageImpl,
+    maskImpl
 });
 
 /**
@@ -72,7 +73,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState()
+                item: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -86,11 +87,15 @@ export const AppContainer = hoistCmp({
 //-------------------
 // Implementation
 //-------------------
-function viewForState() {
+function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
-        case 'INITIALIZING':
-            return viewport(mask({spinner: true, isDisplayed: true}));
+        case 'AUTHENTICATING':
+        case 'INITIALIZING_HOIST':
+        case 'INITIALIZING_APP':
+            return viewport(
+                mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
+            );
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -151,16 +156,4 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -37,7 +37,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty} from 'lodash';
 import {ReactNode} from 'react';
 import {AlertBannerModel} from './AlertBannerModel';
@@ -72,15 +72,13 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                 labelWidth: 100
             },
             items: [
-                XH.alertBannerService.enabled
+                XH.getConf('xhAlertBannerConfig', {}).enabled
                     ? div({
                           className: `${baseClassName}__intro`,
                           items: [
                               p(`Show an alert banner to all ${XH.appName} users.`),
                               p(
-                                  `Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users within ${
-                                      XH.alertBannerService.interval / SECONDS
-                                  }s once marked Active and saved.`
+                                  'Configure and preview below. Presets can be saved and loaded via bottom bar menu. Banner will appear to all users once marked Active and saved.'
                               )
                           ]
                       })
@@ -150,11 +148,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                             field: 'expires',
                             info: relativeTimestamp({
                                 timestamp: formModel.values.expires,
-                                options: {
-                                    allowFuture: true,
-                                    emptyResult:
-                                        'Set a date & time to automatically hide this banner.'
-                                }
+                                allowFuture: true,
+                                emptyResult: 'Set a date & time to automatically hide this banner.'
                             }),
                             item: dateInput({
                                 enableClear: true,
@@ -227,9 +222,10 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                     onClick: () => model.resetForm()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Save Changes',
                     icon: Icon.check(),
                     intent: 'success',
+                    outlined: true,
                     disabled: !isValid || !isDirty,
                     onClick: () => model.saveAsync()
                 })

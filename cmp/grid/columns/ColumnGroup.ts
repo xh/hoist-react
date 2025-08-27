@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
 import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
@@ -27,6 +27,8 @@ export interface ColumnGroupSpec {
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
+    /** Tooltip text for grid header. */
+    headerTooltip?: string;
     /** True to render borders on column group edges. */
     borders?: boolean;
 
@@ -55,6 +57,7 @@ export class ColumnGroup {
     readonly headerName: ReactNode | ColumnHeaderNameFn;
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
+    readonly headerTooltip: string;
     readonly borders: boolean;
     readonly omit: Thunkable<boolean>;
 
@@ -87,6 +90,7 @@ export class ColumnGroup {
             headerName,
             headerClass,
             headerAlign,
+            headerTooltip,
             agOptions,
             borders,
             appData,
@@ -104,6 +108,7 @@ export class ColumnGroup {
         this.headerName = withDefault(headerName, genDisplayName(this.groupId));
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
+        this.headerTooltip = headerTooltip;
         this.borders = withDefault(borders, true);
         this.children = children;
         this.gridModel = gridModel;
@@ -133,6 +138,7 @@ export class ColumnGroup {
                 return isString(ret) ? ret : genDisplayName(this.groupId);
             },
             headerClass: getAgHeaderClassFn(this),
+            headerTooltip: this.headerTooltip,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -41,6 +41,7 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
                     ref,
                     icon: withDefault(icon, Icon.add()),
                     text: withDefault(text, dashCanvasModel.addViewButtonText),
+                    disabled: !menuItems.length,
                     ...rest
                 }),
                 content: contextMenu({menuItems})

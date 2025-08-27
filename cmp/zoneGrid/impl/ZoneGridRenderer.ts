@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -18,7 +18,7 @@ export interface ZoneGridColConfig {
     mainRenderer?: ColumnRenderer;
 
     /** Separator rendered between consecutive SubFields. */
-    delimiter?: string;
+    delimiter?: string | false;
 }
 
 export interface ZoneGridSubField {

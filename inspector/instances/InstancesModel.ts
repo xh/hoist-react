@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
@@ -264,9 +264,9 @@ export class InstancesModel extends HoistModel {
             showGroupRowCounts: false,
             groupRowRenderer: ({value, node}) => propsGridGroupRenderer({value, node, model: this}),
             groupSortFn: (a, b) => {
-                a = a === 'Watchlist' ? 0 : 1;
-                b = b === 'Watchlist' ? 0 : 1;
-                return a - b;
+                const sortValA = a === 'Watchlist' ? 0 : 1,
+                    sortValB = b === 'Watchlist' ? 0 : 1;
+                return sortValA - sortValB;
             },
             store: {
                 fields: [
@@ -465,7 +465,7 @@ export class InstancesModel extends HoistModel {
                 ? 'get(?)'
                 : isProxy
                   ? 'Proxy'
-                  : v?.constructor?.name ?? typeof v;
+                  : (v?.constructor?.name ?? typeof v);
 
         return {
             id: `${xhId}-${property}${fromWatchlistItem ? '-wl' : ''}`,

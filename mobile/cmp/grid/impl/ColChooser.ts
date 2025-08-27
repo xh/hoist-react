@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
@@ -60,14 +60,13 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                     onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
-                            title: 'Visible Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
-                                    item: dndProps =>
+                                    children: dndProps =>
                                         columnList({
                                             model: impl,
                                             cols: visibleColumns,
@@ -90,7 +89,8 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
-                                item: dndProps =>
+                                isDropDisabled: true,
+                                children: dndProps =>
                                     columnList({
                                         model: impl,
                                         cols: hiddenColumns,
@@ -118,8 +118,10 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                     onClick: () => model.close()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Apply',
                     icon: Icon.check(),
+                    intent: 'primary',
+                    outlined: true,
                     onClick: () => {
                         model.commit();
                         model.close();
@@ -155,7 +157,7 @@ const draggableRow = hoistCmp.factory({
             draggableId: colId,
             index: idx,
             isDragDisabled: !!pinned,
-            item: (dndProps, dndState) =>
+            children: (dndProps, dndState) =>
                 row({
                     key: colId,
                     col,

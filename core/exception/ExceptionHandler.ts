@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
@@ -95,7 +95,7 @@ export class ExceptionHandler {
      * logging back to the server for stateful error tracking in the Admin Console.
      *
      * Typical application entry points to this method are the {@link XH.handleException} alias and
-     * {@link Promise.catchDefault}.
+     * {@link Promise.prototype.catchDefault}.
      *
      * This handler provides the most value with HoistExceptions created by {@link Exception.create}.
      * Hoist automatically creates such exceptions in most instances, most notably in FetchService,
@@ -127,7 +127,7 @@ export class ExceptionHandler {
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
-                        onClick: () => exceptionDialogModel.show(e, opts)
+                        onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
                     ...ExceptionHandler.TOAST_PROPS
@@ -185,29 +185,28 @@ export class ExceptionHandler {
     async logOnServerAsync(options: ExceptionHandlerLoggingOptions): Promise<boolean> {
         const {exception, userAlerted, userMessage} = options;
         try {
-            const error = this.stringifyErrorSafely(exception),
-                username = XH.getUsername();
+            const username = XH.getUsername();
 
             if (!username) {
                 logWarn('Error report cannot be submitted to UI server - user unknown', this);
                 return false;
             }
 
-            await XH.fetchService.postJson({
-                url: 'xh/submitError',
-                body: {
-                    error,
-                    msg: userMessage ? stripTags(userMessage) : '',
-                    appVersion: XH.getEnv('clientVersion'),
-                    url: window.location.href,
-                    userAlerted,
-                    clientUsername: username
-                },
-                // Post clientUsername as a parameter to ensure client username matches session.
-                params: {
-                    clientUsername: username
-                }
+            const data: PlainObject = {
+                error: this.sanitizeException(exception),
+                userAlerted
+            };
+            if (userMessage) data.userMessage = stripTags(userMessage);
+
+            XH.track({
+                category: 'Client Error',
+                severity: exception.isRoutine ? 'INFO' : 'ERROR',
+                message: exception.message || 'Client Error',
+                correlationId: exception.correlationId,
+                data,
+                logData: ['userAlerted']
             });
+            await XH.trackService.pushPendingAsync();
             return true;
         } catch (e) {
             logError(['Exception while submitting error report to UI server', e], this);
@@ -216,8 +215,16 @@ export class ExceptionHandler {
     }
 
     /**
-     * Serialize an error object safely for submission to server, or user display.
-     * This method will avoid circular references and will trim the depth of the object.
+     * Sanitize an exception for submission to server. This method will avoid circular references
+     * trim the depth of the object, and redact sensitive info (e.g. passwords).
+     */
+    sanitizeException(exception: HoistException): PlainObject {
+        return JSON.parse(this.stringifyErrorSafely(exception));
+    }
+
+    /**
+     * Serialize an error object safely for user display.  This method will avoid circular
+     * references, trim the depth of the object, and redact sensitive info (e.g. passwords).
      */
     stringifyErrorSafely(exception: HoistException): string {
         try {
@@ -241,14 +248,17 @@ export class ExceptionHandler {
             ret = this.cloneAndTrim(ret);
 
             // 3) Additional ad-hoc cleanups
+            // Remove finger pointing at Hoist
+            delete ret.isHoistException;
+
             // Remove noisy grails exception wrapper info
-            // Remove verbose loadSpec from fetchOptions
             const {serverDetails} = ret;
             if (serverDetails?.className === 'GrailsCompressingFilter') {
                 delete serverDetails.className;
                 delete serverDetails.lineNumber;
             }
 
+            // Remove verbose loadSpec from fetchOptions
             const {fetchOptions} = ret;
             if (fetchOptions?.loadSpec) {
                 fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
@@ -283,8 +293,6 @@ export class ExceptionHandler {
         if (opts.hideParams) {
             this.hideParams(e, opts);
         }
-
-        this.cleanStack(e);
 
         return {e, opts};
     }
@@ -337,12 +345,6 @@ export class ExceptionHandler {
 
     private sessionMismatch(e: HoistException): boolean {
         return e.name === 'SessionMismatchException';
-    }
-
-    private cleanStack(e: HoistException) {
-        // statuses of 0, 4XX, 5XX are server errors, so the javascript stack
-        // is irrelevant and potentially misleading
-        if (/^[045]/.test(e.httpStatus)) delete e.stack;
     }
 
     private cloneAndTrim(obj, depth = 5) {

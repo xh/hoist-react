@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
 import {CustomCellEditorProps} from '@ag-grid-community/react';
@@ -49,11 +49,23 @@ export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditor
     }
 });
 
-function useInstantEditor({onValueChange, initialValue, stopEditing}: CustomCellEditorProps, ref) {
+function useInstantEditor(
+    {onValueChange, initialValue, stopEditing, eventKey, eGridCell}: CustomCellEditorProps,
+    ref
+) {
+    // Don't toggle if the user has tabbed into the editor. See https://github.com/xh/hoist-react/issues/3943.
+    // Fortunately, `eventKey` is null for tab, so we can use that to accept other keyboard events.
+    // Unfortunately, it is also null for mouse events, so we check if the grid cell is currently
+    // underneath the mouse position via `:hover` selector.
     useEffect(() => {
-        onValueChange(!initialValue);
+        const els = document.querySelectorAll(':hover'),
+            topEl = els[els.length - 1];
+
+        if (eventKey || topEl === eGridCell) {
+            onValueChange(!initialValue);
+        }
         stopEditing();
-    }, [stopEditing, initialValue, onValueChange]);
+    }, [stopEditing, initialValue, onValueChange, eventKey, eGridCell]);
 
     return null;
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
@@ -78,6 +78,7 @@ class TextAreaInputModel extends HoistInputModel {
     };
 }
 
+// Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
     const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
@@ -86,7 +87,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
 
         autoFocus: props.autoFocus,
         disabled: props.disabled,
-        inputRef: composeRefs(model.inputRef, props.inputRef),
+        inputRef: composeRefs(model.inputRef as Ref<HTMLTextAreaElement>, props.inputRef),
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,
@@ -103,7 +104,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onBlur: model.onBlur,
         onChange: model.onChange,
         onFocus: model.onFocus,
-        onKeyDown: model.onKeyDown,
-        ref
+        onKeyDown: model.onKeyDown
     });
 });

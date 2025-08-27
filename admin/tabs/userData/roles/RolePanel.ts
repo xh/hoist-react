@@ -2,14 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {recategorizeDialog} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialog';
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/desktop/cmp/error';
-import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
+import {errorMessage} from '@xh/hoist/cmp/error';
+import {popoverFilterChooser} from '@xh/hoist/desktop/cmp/filter';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {Icon} from '@xh/hoist/icon';
@@ -42,11 +44,20 @@ export const rolePanel = hoistCmp.factory({
                         selModel: gridModel.selModel
                     }),
                     '-',
-                    filterChooser({flex: 1})
+                    popoverFilterChooser({flex: 1}),
+                    '-',
+                    switchInput({
+                        bind: 'showInGroups',
+                        label: 'Group by Category',
+                        labelSide: 'left'
+                    }),
+                    '-',
+                    colChooserButton()
                 ],
                 item: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
-            roleEditor()
+            roleEditor(),
+            recategorizeDialog()
         );
     }
 });
@@ -56,14 +67,14 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
     return panel({
         compactHeader: true,
         icon: Icon.idBadge(),
-        title: selectedRole?.name ? `Details - ${selectedRole?.name}` : 'Details',
+        title: selectedRole?.name ? `Details - ${selectedRole.name}` : 'Details',
         item: roleDetails(),
         headerItems: [
             button({
                 icon: Icon.edit(),
                 minimal: true,
                 onClick: () => model.editAsync(selectedRole),
-                omit: !selectedRole
+                omit: !selectedRole || model.readonly
             })
         ],
         modelConfig: {

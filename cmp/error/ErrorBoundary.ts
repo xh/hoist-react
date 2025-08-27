@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {elementFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
-import {errorMessage as desktopErrorMessage} from '@xh/hoist/dynamics/desktop';
-import {errorMessage as mobileErrorMessage} from '@xh/hoist/dynamics/mobile';
+import {errorMessage} from '@xh/hoist/cmp/error';
 import {Component, ReactNode} from 'react';
 import {ErrorBoundaryModel} from './ErrorBoundaryModel';
 
@@ -28,14 +27,13 @@ export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundary
         publishMode: 'limited'
     }),
 
-    render({model, ...props}) {
+    render({model, children}) {
         let {error, errorRenderer} = model;
 
-        if (!error) return reactErrorBoundary({model, ...props});
+        if (!error) return reactErrorBoundary({model, children});
         if (errorRenderer) return errorRenderer(error);
 
-        const cmp = XH.isMobileApp ? mobileErrorMessage : desktopErrorMessage;
-        return cmp({
+        return errorMessage({
             error,
             title: 'Unexpected error while rendering this component',
             actionFn: () => model.clear(),

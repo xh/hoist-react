@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {ColumnState as AgColumnState, GridApi} from '@ag-grid-community/core';
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
@@ -17,6 +18,7 @@ import {
     LayoutProps,
     lookup,
     PlainObject,
+    ReactionSpec,
     TestSupportProps,
     useLocalModel,
     uses,
@@ -44,7 +46,7 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {debounce, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -163,6 +165,11 @@ export class GridLocalModel extends HoistModel {
         return emptyText;
     }
 
+    constructor() {
+        super();
+        GridLocalModel.addFocusFixListener();
+    }
+
     override onLinked() {
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
@@ -239,7 +246,7 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: 1,
+            groupDefaultExpanded: model.expandLevel,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -254,7 +261,9 @@ export class GridLocalModel extends HoistModel {
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
             stopEditingWhenCellsLoseFocus: true,
             suppressLastEmptyLineOnPaste: true,
-            suppressClipboardApi: true
+            suppressClipboardApi: true,
+            // Override AG-Grid's default behavior of automatically unpinning columns to make the center viewport visible
+            processUnpinnedColumns: () => []
         };
 
         // Platform specific defaults
@@ -276,7 +285,6 @@ export class GridLocalModel extends HoistModel {
         if (model.treeMode) {
             ret = {
                 ...ret,
-                groupDefaultExpanded: 0,
                 groupDisplayType: 'custom',
                 treeData: true,
                 getDataPath: this.getDataPath
@@ -456,7 +464,7 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
-    columnStateReaction() {
+    columnStateReaction(): ReactionSpec<[GridApi, ColumnState[]]> {
         const {model} = this;
         return {
             track: () => [model.agApi, model.columnState],
@@ -465,65 +473,57 @@ export class GridLocalModel extends HoistModel {
 
                 const agColState = api.getColumnState();
 
-                // 0) Insert the auto group col state if it exists, since we won't have it in our column state list
+                // Insert the auto group col state if it exists, since we won't have it in our column state list
                 const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
                 if (autoColState) {
-                    colState.splice(agColState.indexOf(autoColState), 0, autoColState);
-                }
-
-                // 1) Columns all in right place -- simply update incorrect props we maintain
-                if (
-                    isEqual(
-                        colState.map(c => c.colId),
-                        agColState.map(c => c.colId)
-                    )
-                ) {
-                    let hasChanges = false;
-                    colState.forEach((col, index) => {
-                        const agCol = agColState[index],
-                            id = col.colId;
-
-                        if (agCol.width !== col.width) {
-                            api.setColumnWidths([{key: id, newWidth: col.width}]);
-                            hasChanges = true;
-                        }
-                        if (agCol.hide !== col.hidden) {
-                            api.setColumnsVisible([id], !col.hidden);
-                            hasChanges = true;
-                        }
-                        if (agCol.pinned !== col.pinned) {
-                            api.setColumnsPinned([id], col.pinned);
-                            hasChanges = true;
-                        }
-                    });
-
-                    // We need to tell agGrid to refresh its flexed column sizes due to
-                    // a regression introduced in 25.1.0.  See #2341
-                    if (hasChanges) {
-                        api.columnModel.refreshFlexedColumns({
-                            updateBodyWidths: true,
-                            fireResizedEvent: true
-                        });
-                    }
-
-                    return;
-                }
-
-                // 2) Otherwise do an (expensive) full refresh of column state
-                // Merge our state onto the ag column state to get any state which we do not yet support
-                colState = colState.map(({colId, width, hidden, pinned}) => {
-                    const agCol = agColState.find(c => c.colId === colId) || {};
-                    return {
+                    const {colId, width, hide, pinned} = autoColState;
+                    colState.splice(agColState.indexOf(autoColState), 0, {
                         colId,
-                        ...agCol,
                         width,
-                        pinned,
-                        hide: hidden
-                    };
-                });
+                        hidden: hide,
+                        pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned
+                    });
+                }
+
+                // Determine if column order has changed
+                const applyOrder = !isEqual(
+                    colState.map(c => c.colId),
+                    agColState.map(c => c.colId)
+                );
+
+                // Build a list of column state changes
+                colState = compact(
+                    colState.map(({colId, width, hidden, pinned}) => {
+                        const agCol: AgColumnState = agColState.find(c => c.colId === colId) || {
+                                colId
+                            },
+                            ret: any = {colId};
+
+                        let hasChanges = applyOrder;
+
+                        if (agCol.width !== width) {
+                            ret.width = width;
+                            hasChanges = true;
+                        }
+
+                        if (agCol.hide !== hidden) {
+                            ret.hide = hidden;
+                            hasChanges = true;
+                        }
+
+                        if (agCol.pinned !== pinned) {
+                            ret.pinned = pinned;
+                            hasChanges = true;
+                        }
+
+                        return hasChanges ? ret : null;
+                    })
+                );
+
+                if (isEmpty(colState)) return;
 
                 this.doWithPreservedState({expansion: false}, () => {
-                    api.applyColumnState({state: colState, applyOrder: true});
+                    api.applyColumnState({state: colState, applyOrder});
                 });
             }
         };
@@ -674,16 +674,8 @@ export class GridLocalModel extends HoistModel {
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            // If sizingMode different to autosizeState, autosize all columns...
-            if (model.autosizeState.sizingMode !== model.sizingMode) {
-                model.autosizeAsync();
-            } else {
-                // ...otherwise, only autosize columns that are not manually sized
-                const columns = model.columnState
-                    .filter(it => !it.manuallySized)
-                    .map(it => it.colId);
-                model.autosizeAsync({columns});
-            }
+            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
+            model.autosizeAsync({columns});
         }
 
         model.noteAgExpandStateChange();
@@ -775,12 +767,9 @@ export class GridLocalModel extends HoistModel {
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };
 
-    doWithPreservedState({expansion, filters}: PlainObject, fn) {
-        const {agGridModel} = this.model,
-            expandState = expansion ? agGridModel.getExpandState() : null,
-            filterState = filters ? this.readFilterState() : null;
+    doWithPreservedState({filters}: PlainObject, fn) {
+        const filterState = filters ? this.readFilterState() : null;
         fn();
-        if (expandState) agGridModel.setExpandState(expandState);
         if (filterState) this.writeFilterState(filterState);
     }
 
@@ -864,4 +853,26 @@ export class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
+
+    /**
+     * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
+     * the context menu will lose focus, causing menu items not to highlight on hover. Prevent this
+     * by conditionally stopping the focus event from propagating.
+     */
+    private static didAddFocusFixListener = false;
+
+    static addFocusFixListener() {
+        if (this.didAddFocusFixListener) return;
+        document.addEventListener(
+            'focus',
+            (e: FocusEvent) => {
+                const {target} = e;
+                if (target instanceof HTMLElement && target.classList.contains('ag-menu-option')) {
+                    e.stopImmediatePropagation();
+                }
+            },
+            true
+        );
+        this.didAddFocusFixListener = true;
+    }
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 @use 'sass:math';
@@ -260,6 +260,11 @@
       border-color: var(--xh-grid-tree-group-border-color);
     }
   }
+}
+
+// TODO find better place to put this
+.xh-grid-clear-background-color:not(.ag-row-selected) {
+  background-color: unset !important;
 }
 
 // Suppress default indenting when grid is in tree mode but no root records have children.

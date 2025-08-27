@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
@@ -243,7 +243,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             openOnTargetFocus: false,
                             className: 'xh-form-field-error-msg',
                             item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors)
+                            content: getErrorTooltipContent(errors) as ReactElement
                         })
                     ]
                 })
@@ -359,7 +359,7 @@ function getValidChild(children) {
     return child;
 }
 
-function getErrorTooltipContent(errors: string[]): ReactNode {
+function getErrorTooltipContent(errors: string[]): ReactElement | string {
     // If no errors, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.

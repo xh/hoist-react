@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
@@ -72,7 +72,6 @@ export class HoistInputModel extends HoistModel {
      */
     get domEl(): HTMLElement {
         const current = this.domRef.current as ReactInstance;
-        // eslint-disable-next-line no-undef
         return (
             !current || current instanceof Element ? current : findDOMNode(current)
         ) as HTMLElement;

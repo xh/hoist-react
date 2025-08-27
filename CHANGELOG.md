@@ -1,6 +1,802 @@
 # Changelog
 
-## 65.0.0-SNAPSHOT - unreleased
+## 76.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+
+### 🎁 New Features
+
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
+  to require the specified text to be re-typed by a user when confirming a potentially destructive
+  or disruptive action.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
+  toolbar for clarity.
+
+### 🐞 Bug Fixes
+
+* Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
+  state had already been persisted w/users pointed at in-code default view. The manager now calls
+  its configured `initialViewSpec` function as expected in this case.
+  
+* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
+  Requires hoist-core v31.2
+
+### ⚙️ Technical
+
+* Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
+  Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
+
+## 75.0.1 - 2025-08-11
+
+### 🎁 New Features
+
+* Added new `GridModel.expandLevel` config to control the expansion state of tree/grouped grids.
+    * Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
+    * The most recently expanded level is persistable with other grid state.
+    * The default grid context menu now supports a new item to allow users to expand/collapse out to
+      a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
+    * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
+      Provides easier discoverability on desktop and supports this feature on mobile, where we
+      don't have context menus.
+* Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
+    * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+    * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+    * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+    * This behavior is consistent with current behavior and user intuition and should maximize the
+      ability to create useful queries using this component.
+* Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
+* Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
+  which `dimensions` are provided to the model.
+* Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
+  operation fails. Set to `false` to fail silently (the behavior prior to this change).
+* Added new `Cube.modifyRecordsAsync` for modifying individual field values in a local uncommitted
+  state. Additionally enhanced `Store.modifyRecords` to return a `StoreChangeLog` of updates.
+* Cube Views now emit data objects of type `ViewRowData`, rather than an anonymous `PlainObject`.
+  This new object supports several documented properties, including a useful `cubeLeaves` property,
+  which can be activated via the `Query.provideLeaves` property.
+
+### 🐞 Bug Fixes
+
+* Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
+  handling changes to `SummaryRecords`.
+* Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
+  via `loadState()` and hiding the `Add` context menu item in views as intended.
+* Updated `DashCanvas` CSS to set `position: relative;`, ensuring that the empty state overlay is
+  positioned as intended and does not extend beyond the canvas.
+* Improved the core `useContextModel` hook to make it reactive to a change of an (observable)
+  resolved model. Previously this value was cached on first render.
+* Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
+
+### ⚙️ Technical
+
+* WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
+  Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
+  Console functionality and is recommended, but clients that must disable WebSockets can do so via
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
+* Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
+  the app-specified class. App developers can declare a typed static `instance` property on their
+  model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
+    * The `XH.authModel` property is still set and available - this is a non-breaking change.
+    * This approach was already (and continues to be) used for services and the `AppModel`
+      singleton.
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed deprecated `LoadSupport.isLoadSupport`
+* Removed deprecated `FileChooserModel.removeAllFiles`
+* Removed deprecated `FetchService.setDefaultHeaders`
+* Removed deprecated `FetchService.setDefaultTimeout`
+* Removed deprecated `IdentityService.logoutAsync`
+* Change to the row objects returned by `View`: the undocumented `_meta` and `buckets` properties
+  have been removed. Use the documented properties on the new `ViewRowData` class instead.
+
+### ✨ Styles
+
+* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note
+  that this brings slight differences to the font's appearance, including tweaks to internal
+  spacing and letterforms for tabular numbers. The name of the font face has also changed, from
+  `Inter Var` to `InterVariable`. The default value of the `--xh-font-family` CSS variable has been
+  updated to match, making this change transparent for most applications.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.1 → 2.3`
+* @azure/msal-browser `4.12 → 4.16`
+* filesize `6.4 → 11.0`
+* inter-ui `3.19 → 4.1`
+* mobx-react-lite `4.0 → 4.1`
+* qs `6.13 → 6.14`
+* react-markdown `9.0 → 10.1`
+* regenerator-runtime `0.13 → 0.14`
+* semver `7.6 → 7.7`
+* short-unique-id `5.2 → 5.3`
+* ua-parser-js `1.0 → 2.0`
+
+## v74.1.2 - 2025-07-03
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` layout issue, visible only when favorites are disabled.
+
+## v74.1.1 - 2025-07-02
+
+### 🎁 New Features
+
+* Further refinements to the `GroupingChooser` desktop UI.
+    * Added new props `favoritesSide` and `favoritesTitle`.
+    * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+    * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where `TrackService` was not properly verifying that tracked `data` was below the
+  configured `maxDataLength` limit.
+
+## v74.1.0 - 2025-06-30
+
+### 🎁 New Features
+
+* Updated the `GroupingChooser` UI to use a single popover for both updating the value and
+  selecting/managing favorite groupings (if enabled).
+    * Adjusted `GroupingChooserModel` API and some CSS class names and testIds of `GroupingChooser`
+      internals, although those changes are very unlikely to require app-level adjustments.
+    * Adjusted/removed (rarely used) desktop and mobile `GroupingChooser` props related to popover
+      sizing and titling.
+    * Updated the mobile UI to use a full-screen dialog, similar to `ColumnChooser`.
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
+* Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the
+  component's standard menu.
+
+## v74.0.0 - 2025-06-11
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
+
+* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+* ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
+  `ChartModel.contextMenu` property instead.
+
+### 🎁 New Features
+
+* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for grid column level `onCellClicked` events.
+* General improvements to `MenuItem` api
+    * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
+    * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
+
+### 🐞 Bug Fixes
+
+* Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
+* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
+  and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
+* Restored zoom out with mouse right-to-left drag on Charts.
+
+## v73.0.1 - 2025-05-19
+
+### 🐞 Bug Fixes
+
+* Fixed a minor issue with Admin Console Role Management.
+
+## v73.0.0 - 2025-05-16
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
+
+* Requires `hoist-core >= 31` with new APIs to support the consolidated Admin Console "Clients"
+  tab and new properties on `TrackLog`.
+* Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
+  ensure they call `super.initAsync()` within their override of that lifecycle method, if
+  applicable. This did not previously have any effect, but is required now for the superclass to
+  initialize a new `ViewManagerModel`.
+    * [Here is where Toolbox makes that call](https://github.com/xh/toolbox/blob/f15a8018ce36c2ae998b45724b48a16320b88e49/client-app/src/admin/AppModel.ts#L12).
+* Requires call to `makeObservable(this)` in model constructors with `@bindable`. Note that there
+  is a new dev-only runtime check on `HoistBase` to warn if this call has not been made.
+
+### 🎁 New Features
+
+* Updated and improved Grid column based filtering to better match the behavior of Excel.
+    * `GridFilterModel.commitOnChage` now `false` by default
+    * Added ability to append terms to active filter *only* when `commitOnChage:false`
+* Added new `PopoverFilterChooser` component - wraps `FilterChooser` in a `Popover` to allow it to
+  expand vertically when used in a `Toolbar` or other space-constrained, single-line layout.
+* Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
+  potentially interactive popup login mid-session to re-establish auth if its refresh token has
+  expired or been invalidated. Strongly recommended for all OAuth usages.
+* Significantly upgraded the Admin Console "User Activity" tab:
+    * Consolidated client error reports and user feedback into Activity Tracking.
+    * Added support for custom views via `ViewManager`.
+    * New ability to promote data in `data` block to grids for aggregation, reporting and charting.
+    * Enhanced track messages with new `tabId` and `loadId` properties, to disambiguate activity for
+      users across multiple browser tabs + loads of the app.
+* Added a new Admin Console "Clients" tab - a consolidated view of all websocket-connected clients
+  across all instances in the cluster, with integrated activity detail viewer.
+* Updated `FormModel` to support `persistWith` for storing and recalling its values, including
+  developer options to persist only a subset of fields.
+* Added new `XH.openWindow()` util to ensure that new windows/tabs are opened without an unintended
+  `opener` relationship with the original window.
+
+### 🐞 Bug Fixes
+
+* Fixed drag-and-drop usability issues with the mobile `ColChooser`.
+* Made `GridModel.defaultGroupSortFn` null-safe and improved type signature.
+* Disabled `dashCanvasAddViewButton` if there are no `menuItems` to show.
+* Hardened `@bindable` and `@persist` to handle lifecycle-related bugs. Note that previously
+  `@bindable` would work even if `makeObservable()` was not called, but this is no longer the case.
+  Please ensure you call `makeObservable(this)` in your model's constructor when using `@bindable`!
+* Improved client `WebSocketService` heartbeat to check that it has been receiving inbound messages
+  from the server, not just successfully sending outbound heartbeats.
+
+### ⚙️ Technical
+
+* Updated the background version checking performed by `EnvironmentService` to use the app version
+  and build information baked into the client build when comparing against the latest values from
+  the server. Previously the versions loaded from the server on init were used as the baseline.
+    * The two versions *should* be the same, but in cases where a browser "restores" a tab and
+      re-inits an app without reloading the code itself, the upgrade check would miss the fact that
+      the client remained on an older version.
+    * ⚠️ NOTE that a misconfigured build - where the client version is not set to the same value
+      as the server - would result in a false positive for an upgrade. The two should always match.
+* Calls to `Promise.track()` that are rejected with an exception will be tracked with new
+  severity level of `TrackSeverity.ERROR`.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `GridGroupSortFn` param types.
+* Corrected `StoreCountLabelProps` interface.
+* Corrected `textAlign` type across several `HoistInput` prop interfaces.
+
+### 📚 Libraries
+
+* @azure/msal-browser `4.8 → 4.12`
+
+Note that all of the below are `devDependencies`, so they will not directly affect your application
+build. That said, we *strongly* recommend taking these same changes into your app if you can.
+
+* @xh/hoist-dev-utils `10.x → 11.x`
+* eslint `8.x → 9.x`
+    * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
+      configuration found in Toolbox's `eslint.config.js` as your new baseline.
+* eslint-config-prettier `9.x → 10.x`
+* typescript `5.1 → 5.8`
+
+## v72.5.1 - 2025-04-15
+
+### 🐞 Bug Fixes
+
+* Allow the display of very long log lines in Admin log viewer.
+
+## v72.5.0 - 2025-04-14
+
+### 🎁 New Features
+
+* Added option from the Admin Console > Websockets tab to request a client health report from any
+  connected clients.
+* Enabled telemetry reporting from `WebSocketService`.
+* Updated `MenuItem.actionFn()` to receive the click event as an additional argument.
+* Support for reporting App Build, Tab Id, and Load Id in websocket admin page.
+
+## v72.4.0 - 2025-04-09
+
+### 🎁 New Features
+
+* Added new methods for formatting timestamps within JSON objects. See `withFormattedTimestamps`
+  and `timestampReplacer` in the `@xh/hoist/format` package.
+* Added new `ViewManagerConfig.viewMenuItemFn` option to support custom rendering of pinned views in
+  the drop-down menu.
+
+### ⚙️ Technical
+
+* Added dedicated `ClientHealthService` for managing client health report. Additional enhancements
+  to health report to include information about web sockets, idle time, and page state.
+
+## v72.3.0 - 2025-04-08
+
+### 🎁 New Features
+
+* Added support for posting a "Client Health Report" track message on a configurable interval. This
+  message will include basic client information, and can be extended to include any other desired
+  data via `XH.clientHealthService.addSource()`. Enable by updating your app's
+  `xhActivityTrackingConfig` to include `clientHealthReport: {intervalMins: XXXX}`.
+* Enabled opt-in support for telemetry in `MsalClient`, leveraging hooks built-in to MSAL to collect
+  timing and success/failure count for all events emitted by the library.
+* Added the reported client app version as a column in the Admin Console WebSockets tab.
+
+### 🐞 Bug Fixes
+
+* Improved fetch request tracking to include time spent loading headers as specified by application.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.28 → 4.8`
+
+## v72.2.0 - 2025-03-13
+
+### 🎁 New Features
+
+* Modified `TabContainerModel` to make more methods `protected`, improving extensibility for
+  advanced use-cases.
+* Enhanced `XH.reloadApp` with new argument to clear query parameters before loading.
+* Enhanced exception handling in `FetchService` to capture messages returned as raw strings, or
+  without explicit names.
+* Added dedicated columns to the Admin Console "Client Errors" tab for error names and messages.
+* `BaseOAuthClient` has been enhanced to allow `lazy` loading of Access Tokens, and also made more
+  robust such that Access Tokens that fail to load will never prevent the client from
+  initialization.
+
+### 🐞 Bug Fixes
+
+* Prevented native browser context menu from showing on `DashCanvas` surfaces and obscuring the
+  `DashCanvas` custom context menu.
+
+## v72.1.0 - 2025-02-13
+
+### 🎁 New Features
+
+* Introduced a new "JSON Search" feature to the Hoist Admin Console, accessible from the Config,
+  User Preference, and JSON Blob tabs. Supports searching JSON values stored within these objects
+  to filter and match data using JSON Path expressions.
+    * ⚠️Requires `hoist-core >= 28.1` with new APIs for this (optional) feature to function.
+* Added new getters `StoreRecord.isDirty`, `Store.dirtyRecords`, and `Store.isDirty` to provide a
+  more consistent API in the data package. The pre-existing `isModified` getters are retained as
+  aliases, with the same semantics.
+
+### 🐞 Bug Fixes
+
+* Tuned mobile swipe handling to prevent horizontal swipes on a scrolling grid view from triggering
+  the Navigator's back gesture.
+* Prevented the Admin Console Roles grid from losing its expand/collapse/scroll state on refresh.
+* Fixed bug when merging `PersistOptions` with conflicting implicit provider types.
+* Fixed bug where explicit `persistGrouping` options were not being respected by `GridModel`.
+
+## v72.0.0 - 2025-01-27
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - minor changes to mobile nav)
+
+* Mobile `Navigator` no longer supports `animation` prop, and `NavigatorModel` no longer supports
+  `swipeToGoBack`. Both of these properties are now managed internally by the `Navigator` component.
+
+### 🎁 New Features
+
+* Mobile `Navigator` has been rebuilt to support smooth swipe-based navigation. The API remains
+  largely the same, notwithstanding the minor breaking changes detailed above.
+
+### 🐞 Bug Fixes
+
+* Fixed `ViewManagerModel` unique name validation.
+* Fixed `GridModel.restoreDefaultsAsync()` to restore any default filter, rather than simply
+  clearing it.
+* Improved suboptimal column state synchronization between `GridModel` and AG Grid.
+
+### ⚙️ Technical
+
+* Added support for providing custom `PersistenceProvider` implementations to `PersistOptions`.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved signature of `HoistBase.markPersist`.
+
+## v71.0.0 - 2025-01-08
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Hoist core update, import adjustments)
+
+* Requires `hoist-core >= 27.0` with new APIs to support `ViewManager` and enhanced cluster state
+  monitoring in the Admin Console.
+* `ErrorMessage` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/error`
+  or `@xh/hoist/mobile/cmp/error` to `@xh/hoist/cmp/error`.
+* `Mask` is now cross-platform - update imports from `@xh/hoist/desktop/cmp/mask` or
+  `@xh/hoist/mobile/cmp/mask` to `@xh/hoist/cmp/mask`.
+* `LoadingIndicator` is now cross-platform - update imports from
+  `@xh/hoist/desktop/cmp/loadingindicator` or `@xh/hoist/mobile/cmp/loadingindicator` to
+  `@xh/hoist/cmp/loadingindicator`.
+* `TreeMap` and `SplitTreeMap` are now cross-platform and can be used in mobile applications.
+  Update imports from `@xh/hoist/desktop/cmp/treemap` to `@xh/hoist/cmp/treemap`.
+* Renamed `RefreshButton.model` prop to `target` for clarity and consistency.
+
+### 🎁 New Features
+
+* Major improvements to the `ViewManager` component, including:
+    * A clearer, better organized management dialog.
+    * Support for persisting a view's pending value, to avoid users losing changes when e.g. an app
+      goes into idle mode and requires a page refresh to restore.
+    * Improved handling of delete / update collisions.
+    * New `ViewManagerModel.settleTime` config, to allow persisted components such as dashboards to
+      fully resolve their rendered state before capturing a baseline for dirty checks.
+* Added `SessionStorageService` and associated persistence provider to support saving tab-local
+  data across reloads. Exact analog to `LocalStorageService`, but scoped to lifetime of current tab.
+* Added `AuthZeroClientConfig.audience` config to support improved flow for Auth0 OAuth clients that
+  request access tokens. Specify your access token audience here to allow the client to fetch both
+  ID and access tokens in a single request and to use refresh tokens to maintain access without
+  relying on third-party cookies.
+* Updated sorting on grouped grids to place ungrouped items at the bottom.
+* Improved `DashCanvas` views to support resizing from left/top edges in addition to right/bottom.
+* Added functional form of `FetchService.autoGenCorrelationIds` for per-request behavior.
+* Added a new `Cluster›Objects` tab in Admin Console to support comparing state across the cluster
+  and alerting of any persistent state inconsistencies.
+
+### 🐞 Bug Fixes
+
+* Fixed sizing and position of mobile `TabContainer` switcher, particularly when the switcher is
+  positioned with `top` orientation.
+* Fixed styling of `ButtonGroup` in vertical orientations.
+* Improved handling of calls to `DashContainerModel.loadStateAsync()` when the component has yet
+  to be rendered. Requested state updates are no longer dropped, and will be applied as soon as the
+  component is ready to do so.
+
+### ⚙️ Technical
+
+* Added explicit `devDependencies` and `resolutions` blocks for `@types/react[-dom]` at v18.x.
+* Added workaround for problematic use of SASS-syntax-in-CSS shipped by `react-dates`. This began
+  throwing "This function isn't allowed in plain CSS" with latest version of sass/sass-loader.
+
+### ⚙️ Typescript API Adjustments
+
+* Improved accuracy of `IconProps` interface, with use of the `IconName` and `IconPrefix` types
+  provided by FontAwesome.
+* Improved accuracy of `PersistOptions.type` enum.
+* Corrected the type of `ColumnSpec.editor`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.27 → 3.28`
+* dompurify `3.1 → 3.2`
+* react-grid-layout `1.4 → 1.5`
+
+## v70.0.0 - 2024-11-15
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - changes to advanced persistence APIs)
+
+* Upgraded the `PersistenceProvider` API as noted in `New Features`. Could require updates in apps
+  with advanced direct usages of this API (uncommon).
+* Updated `GridModel` persistence to omit the widths of autosized columns from its persisted state.
+  This helps to keep persisted state more stable, avoiding spurious diffs due to autosize updates.
+  Note this can result in more visible column resizing for large grids without in-code default
+  widths. Please let XH know if this is a noticeable annoyance for your app.
+* Removed the following persistence-related model classes, properties, and methods:
+    * `GridPersistenceModel` and `ZoneGridPersistenceModel`
+    * `GridModel|ZoneGridModel.persistenceModel`
+    * `GridModel.autosizeState`
+    * `Column.manuallySized`
+    * `GroupingChooserModel|FilterChooserModel.persistValue`
+    * `DashModel|GroupingChooserModel|FilterChooserModel|PanelModel|TabContainerModel.provider`
+    * `PersistenceProvider.clearRaw()`
+* Renamed `ZoneGridModelPersistOptions.persistMappings`, adding the trailing `s` for consistency.
+* Changed signature of `JsonBlobService.listAsync()` to inline `loadSpec` with all other args in a
+  single options object.
+* Changed signature of `waitFor()` to take its optional `interval` and `timeout` arguments in a
+  single options object.
+
+### 🎁 New Features
+
+* Introduced a new `ViewManager` component and backing model to support user-driven management of
+  persisted component state - e.g. saved grid views.
+    * Bundled with a desktop-only menu button based component, but designed to be extensible.
+    * Bindable to any persistable component with `persistWith: {viewManagerModel: myViewManager}`.
+    * Detects changes to any bound components and syncs them back to saved views, with support for
+      an autosave option or user-driven saving with a clear "dirty" indicator.
+    * Saves persisted state back to the server using Hoist Core `JSONBlob`s for storage.
+    * Includes a simple sharing model - if enabled for all or some users, allows those users to
+      publish saved views to everyone else in the application.
+    * Users can rename views, nest them into folders, and mark them as favorites for quick access.
+* Generally enhanced Hoist's persistence-related APIs:
+    * Added new `Persistable` interface to formalize the contract for objects that can be persisted.
+    * `PersistenceProvider` now targets a `Persistable` and is responsible for setting persisted
+      state on its bound `Persistable` when the provider is constructed and persisting state from
+      its bound `Persistable` when changes are detected.
+    * In its constructor, `PersistenceProvider` also stores the initial state of its bound
+      `Persistable` and clears its persisted state when structurally equal to the initial state.
+* Updated persistable components to support specifying distinct `PersistOptions` for individual
+  bits of persisted state. E.g. you can now configure a `GroupingChooserModel` used within a
+  dashboard widget to persist its value to that particular widget's `DashViewModel` while saving the
+  user's favorites to a global preference.
+
+### ⚙️ Typescript API Adjustments
+
+* Tightened `FilterChooserFilterLike` union type to remove the generic `Filter` type, as filter
+  chooser supports only `FieldFilter` and `CompoundFilter`.
+* Improved `HoistBase.markPersist()` signature to ensure the provided property name is a known key
+  of the model.
+* Expanded the `JsonBlob` interface to include additional properties present on all blobs.
+* Corrected `DashViewSpec.title` to be optional - it can be defaulted from the `id`.
+* Corrected the return type for `SelectProps.loadingMessageFn` and `noOptionsMessageFn` to return
+  `ReactNode` vs `string`. The component supports rendering richer content via these options.
+
+## 69.1.0 - 2024-11-07
+
+### 🐞 Bug Fixes
+
+* Updated minimum required version of FontAwesome to 6.6, as required by the `fileXml()` icon added
+  in the prior Hoist release. The previous spec for FA dependencies allowed apps to upgrade to 6.6,
+  but did not enforce it, which could result in a build error due to an unresolved import.
+
+### ⚙️ Technical
+
+* Deprecated `FileChooserModel.removeAllFiles()`, replaced with `clear()` for brevity/consistency.
+* Improved timeout error message thrown by `FetchService` to format the timeout interval in seconds
+  where possible.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.23 → 3.27`
+* @fortawesome/fontawesome-pro `6.2 → 6.6`
+* qs `6.12 → 6.13`
+* store2 `2.13 → 2.14`
+
+## 69.0.0 - 2024-10-17
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist core update)
+
+* Requires `hoist-core >= 24` to support batch upload of activity tracking logs to server and
+  new memory monitoring persistence.
+* Replaced `AppState.INITIALIZING` with finer-grained states (not expected to impact most apps).
+
+### 🎁 New Features
+
+* Optimized activity tracking to batch its calls to the server, reducing network overhead.
+* Enhanced data posted with the built-in "Loaded App" entry to include a new `timings` block that
+  breaks down the overall initial load time into more discrete phases.
+* Added an optional refresh button to `RestGrid`s toolbar.
+* Updated the nested search input within Grid column filters to match candidate values on `any` vs
+  `startsWith`. (Note that this does not change how grid filters are applied, only how users can
+  search for values to select/deselect.)
+* Support for persisting of memory monitoring results
+
+### ⚙️ Typescript API Adjustments
+
+* Improved typing of `HoistBase.addReaction` to flow types returned by the `track` closure through
+  to the `run` closure that receives them.
+    * Note that apps might need to adjust their reaction signatures slightly to accommodate the more
+      accurate typing, specifically if they are tracking an array of values, destructuring those
+      values in their `run` closure, and passing them on to typed APIs. Look out for `tsc` warnings.
+
+### ✨ Styles
+
+* Reset the `--xh-popup-bg` background color to match the primary `--xh-bg` color by default.
+
+### 🐞 Bug Fixes
+
+* Fixed broken `Panel` resizing in Safari. (Other browsers were not affected.)
+
+## 68.1.0 - 2024-09-27
+
+### 🎁 New Features
+
+* `Markdown` now supports a `reactMarkdownOptions` prop to allow passing React Markdown
+  props to the underlying `reactMarkdown` instance.
+
+### ⚙️ Technical
+
+* Misc. Improvements to Cluster Tab in Admin Panel.
+
+## 68.0.0 - 2024-09-18
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
+
+* Requires `hoist-core >= 22.0` for consolidated polling of Alert Banner updates (see below).
+
+### 🎁 New Features
+
+* Added expand/collapse affordance in the left column header of ZoneGrids in tree mode.
+
+### ⚙️ Technical
+
+* Updated Admin Console's Cluster tab to refresh more frequently.
+* Consolidated the polling check for Alert Banner updates into existing `EnvironmentService`
+  polling, avoiding an extra request and improving alert banner responsiveness.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected types of enhanced `Promise` methods.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.17 → 3.23`
+* mobx  `6.9.1 -> 6.13.2`,
+* mobx-react-lite  `3.4.3 -> 4.0.7`,
+
+## 67.0.0 - 2024-09-03
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - Hoist Core update)
+
+* Requires `hoist-core >= 21.0`.
+
+### 🎁 New Features
+
+* Added support for Correlation IDs across fetch requests and error / activity tracking:
+    * New `FetchService` members: `autoGenCorrelationIds`, `genCorrelationId` and
+      `correlationIdHeaderKey` to support generation and inclusion of Correlation IDs on outbound
+      request headers.
+    * Correlation IDs are assigned via:
+        * `FetchOptions.correlationId` - specify an ID to be used on a particular request or `true`
+          to use a UUID generated by Hoist (see `FetchService.genCorrelationId()`).
+        * `TrackOptions.correlationId` - specify an ID for a tracked activity, if not using the
+          new `FetchOptions.track` API (see below).
+    * If set on a fetch request, Correlation IDs are passed through to downstream error reporting
+      and are available for review in the Admin Console.
+* Added `FetchOptions.track` as streamlined syntax to track a request via Hoist activity tracking.
+  Prefer this option (vs. a chained `.track()` call) to relay the request's `correlationId` and
+  `loadSpec` automatically.
+* Added `FetchOptions.asJson` to instruct `FetchService` to decode an HTTP response as JSON.
+  Note that `FetchService` methods suffixed with `Json` will set this property automatically.
+* Added global interceptors on `FetchService`. See `FetchService.addInterceptor()`.
+* `GridModel` will now accept `contextMenu: false` to omit context menus.
+* Added bindable `AppContainerModel.intializingLoadMaskMessage` to allow apps to customize the
+  load mask message shown during app initialization.
+* Enhanced `select` component with new `emptyValue` prop, allowing for a custom value to be returned
+  when the control is empty (vs `null`). Expected usage is `[]` when `enableMulti:true`.
+* Added `GroupingChooserModel.setDimensions()` API, to support updating available dimensions on an
+  already constructed `GroupingChooserModel`.
+
+### 🐞 Bug Fixes
+
+* Fixed Admin Console bug where a role with a dot in its name could not be deleted.
+* Fixed inline `SelectEditor` to ensure new value is flushed before grid editing stops.
+* `WebSocketService` now attempts to establish a new connection when app's server instance changes.
+
+### ✨ Styles
+
+* Added CSS variables to support customization of `Badge` component styling.
+
+### 📚 Libraries
+
+* short-unique-id `added @ 5.2`
+
+## 66.1.1 - 2024-08-01
+
+### 🐞 Bug Fixes
+
+* `HoistException` now correctly passes an exception message to its underlying `Error` instance.
+* Fixed `GridModel.cellBorders` to apply top and bottom cell borders, as expected.
+* Fix to new `mergeDeep` method.
+
+## 66.1.0 - 2024-07-31
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support the underlying `components` prop from `react-markdown`.
+  Use this prop to customize markdown rendering.
+* New `mergeDeep` method provided in `@xh/hoist/utils/js` as an alternative to `lodash.merge`,
+  without lodash's surprising deep-merging of array-based properties.
+* Enhanced Roles Admin UI to support bulk category reassignment.
+* Enhanced the number formatters' `zeroPad` option to take an integer in addition to true/false, for
+  finer-grained control over padding length.
+
+### 🐞 Bug Fixes
+
+* Fixed `Record.descendants` and `Record.allDescendants` getters that were incorrectly returning the
+  parent record itself. Now only the descendants are returned, as expected.
+    * ⚠️ Note that apps relying on the previous behavior will need to adjust to account for the
+      parent record no longer being included. (Tree grids with custom parent/child checkbox
+      selection are one example of a component that might be affected by this change.)
+* Fixed `Grid` regression where pinned columns were automatically un-pinned when the viewport became
+  too small to accommodate them.
+* Fixed bug where `Grid` context-menus would lose focus when rendered inside `Overlay` components.
+
+### ⚙️ Typescript API Adjustments
+
+* ⚠️ Please ensure you update your app to `hoist-dev-utils >= v9.0.1` - this ensures you have a
+  recent version of `type-fest` as a dev dependency, required to compile some recent Hoist
+  typescript changes.
+* The `NumberFormatOptions.precision` arg has been more strictly typed to `Precision`, a new type
+  exported from `@xh/hoist/format`. (It was previously `number`.) Apps might require minor
+  adjustments - e.g. typing shared format configs as `NumberFormatOptions` to satisfy the compiler.
+
+### ⚙️ Technical
+
+* Enhanced beta `MsalClient` and `AuthZeroClient` OAuth implementations to support passing
+  app-specific configs directly into the constructors of their underlying client implementation.
+
+## 66.0.2 - 2024-07-17
+
+### 🐞 Bug Fixes
+
+* Improved redirect handling within beta `MsalClient` to use Hoist-provided blank URL (an empty,
+  static page) for all iFrame-based "silent" token requests, as per MS recommendations. Intended to
+  avoid potential race conditions triggered by redirecting to the base app URL in these cases.
+* Fixed bug where `ContextMenu` items could be improperly positioned.
+    * ⚠️ Note that `MenuItems` inside a desktop `ContextMenu` are now rendered in a portal, outside
+      the normal component hierarchy, to ensures that menu items are positioned properly relative to
+      their parent. It should not affect most apps, but could impact menu style customizations that
+      rely on specific CSS selectors targeting the previous DOM structure.
+
+## 66.0.1 - 2024-07-10
+
+### 🐞 Bug Fixes
+
+* Fixed bug where inline grid edit of `NumberInput` was lost after quick navigation.
+
+## 66.0.0 - 2024-07-09
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor adjustments to client-side auth)
+
+* New `HoistAuthModel` exposes the client-side authentication lifecycle via a newly consolidated,
+  overridable API. This new API provides more easy customization of auth across all client-side
+  apps by being easily overrideable and specified via the `AppSpec` passed to `XH.renderApp()`.
+    * In most cases, upgrading should be a simple matter of moving code from `HoistAppModel` methods
+      `preAuthInitAsync()` and `logoutAsync()` (removed by this change) to new `HoistAuthModel`
+      methods `completeAuthAsync()` and `logoutAsync()`.
+
+### 🎁 New Features
+
+* Added option to `XH.reloadApp()` to reload specific app path.
+* Added `headerTooltip` prop to `ColumnGroup`.
+
+### 🐞 Bug Fixes
+
+* Updated `.xh-viewport` sizing styles and mobile `dialog` sizing to use `dvw/dvh` instead of prior
+  `svw/svh` - resolves edge case mobile issue where redirects back from an OAuth flow could leave
+  an unexpected gap across the bottom of the screen. Includes fallback for secure client browsers
+  that don't support dynamic viewport units.
+* Updated mobile `TabContainer` to flex properly within flexbox containers.
+* Fixed timing issue with missing validation for records added immediately to a new `Store`.
+* Fixed CSS bug in which date picker dates wrapped when `dateEditor` used in a grid in a dialog.
+
+## 65.0.0 - 2024-06-26
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 TRIVIAL - dependencies only)
+
+* Requires update to `hoist-dev-utils >= v9.0.0` with updated handling of static/public assets.
+  This should be a drop-in change for applications.
+* iOS < 16.4 is no longer supported, due to the use of complex RegExes in GFM parsing.
+
+### 🎁 New Features
+
+* Enhanced `markdown` component to support GitHub Flavored Markdown (GFM) syntax.
+
+### ✨ Styles
+
+* Refactored CSS classnames applied to the primary application (☰) menu on desktop and mobile.
+  On both platforms the button itself now has an `xh-app-menu-button` class, the popover has
+  `xh-app-menu-popover`, and the menu itself has `xh-app-menu`.
+
+### ⚙️ Technical
+
+* Improved popup behavior of (beta) `MsalClient` - uses recommended `blank.html`.
+* Added new convenience method `XH.renderAdminApp()` - consider replacing the call within your
+  project's `src/apps/admin.ts` file with this new method and removing any duplicate config values
+  if the defaults introduced here are suitable for your application's Hoist Admin console.
+* Prop types for components passed to `elementFactory` and `createElement` are now inferred from the
+  component itself where possible.
+
+### 📚 Libraries
+
+* @xh/hoist-dev-utils `8.x → 9.x`
+* react-markdown `8.0 → 9.0`
+* remark-breaks `3.0 → 4.0`
+* remark-gfm `4.0`
+
+## 64.0.5 - 2024-06-14
+
+### 🐞 Bug Fixes
+
+* Added a workaround for a mobile-only bug where Safari auto-zooms on orientation change if the user
+  had previously zoomed the page themselves.
+
+### ⚙️ Technical
+
+* Improved logout behavior of (beta) `MsalClient`.
+
+### 📚 Libraries
+
+* @azure/msal-browser `3.14 → 3.17`
+
+## 64.0.4 - 2024-06-05
+
+### ⚙️ Typescript API Adjustments
+
+* Improved `ref` typing in JSX.
+
+## 64.0.3 - 2024-05-31
+
+### 🐞 Bug Fixes
+
+* Restored previous suppression of Blueprint animations on popovers and tooltips. These had been
+  unintentionally (re)enabled in v63 and are now turned off again.
+
+### ⚙️ Technical
+
+* Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
 
 ### 🎁 New Features
 * Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
@@ -10,18 +806,19 @@
 ## 64.0.2 - 2024-05-23
 
 ### ⚙️ Technical
-* Adjustments to API of (beta) `BaseOAuthClient`.
-* `FetchService.addDefaultHeaders()` now supports async functions.
+
+* Adjusted (beta) API of `BaseOAuthClient`.
+* Improved `FetchService.addDefaultHeaders()` to support async functions.
 
 ## 64.0.1 - 2024-05-19
 
 ### ⚙️ Technical
-* Adjustments to loading of ID Tokens and API of `BaseOAuthClient`.  (Note that
-  this package remains in Beta for v64 and is subject to change.)
+
+* Adjusted (beta) API of `BaseOAuthClient` and its approach to loading ID tokens.
 
 ## 64.0.0 - 2024-05-17
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core = AG Grid updates)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - major Hoist Core + AG Grid updates)
 
 #### Hoist Core v20 with Multi-Instance Support
 
@@ -69,10 +866,9 @@ for more details.
   by `--xh-grid-multifield` are now prefixed by `--xh-zone-grid`, several vars have been added, and
   some defaults have changed.
 * Removed obsolete `AppSpec.isSSO` property in favor of two new properties `AppSpec.enableLogout`
-  and `AppSpec.enableLoginForm`.  This should have no effect on the vast majority of apps which had
-  `isSSO` set to `true`.  For apps where `isSSO` was set to `false`, the new flags should be
+  and `AppSpec.enableLoginForm`. This should have no effect on the vast majority of apps which had
+  `isSSO` set to `true`. For apps where `isSSO` was set to `false`, the new flags should be
   used to more clearly indicate the desired auth behavior.
-
 
 ### 🎁 New Features
 
@@ -88,7 +884,7 @@ for more details.
 * Added new `checkboxRenderer` for rendering booleans with a checkbox input look and feel.
 * Added new mobile `checkboxButton`, an alternate input component for toggling boolean values.
 * Added beta version of a new Hoist `security` package, providing built-in support for OAuth flows.
-  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information.  Please note that
+  See `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient` for more information. Please note that
   package is being released as a *beta* and is subject to change before final release.
 
 ### ✨ Styles
@@ -185,13 +981,25 @@ details.
 There are some common breaking changes that most/many apps will need to address:
 
 * CSS rules with the `bp4-` prefix should be updated to use the `bp5-` prefix.
-* For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
-  If using JSX, replace `target` prop with a child element. Also applies to the mobile `popover`.
-* Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
-  targeting `bp4-popover-wrapper`.
-* All components which render popovers now depend
-  on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
-  need to be reworked.
+* Popovers
+    * For `popover` and `tooltip` components, replace `target` with `item` if using elementFactory.
+      If using JSX, replace `target` prop with a child element. Also applies to the
+      mobile `popover`.
+    * Popovers no longer have a popover-wrapper element - remove/replace any CSS rules
+      targeting `bp4-popover-wrapper`.
+    * All components which render popovers now depend
+      on [`popper.js v2.x`](https://popper.js.org/docs/v2/). Complex customizations to popovers may
+      need to be reworked.
+    * A breaking change to `Popover` in BP5 was splitting the `boundary` prop into `rootBoundary`
+      and `boundary`:
+      Popovers were frequently set up with `boundary: 'viewport'`, which is no longer valid since
+      "viewport" can be assigned to the `rootBoundary` but not to the `boundary`.
+      However, viewport is the DEFAULT value for `rootBoundary`
+      per [popper.js docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary),
+      so `boundary: 'viewport'` should be safe to remove entirely.
+        * [see Blueprint's Popover2 migration guide](https://github.com/palantir/blueprint/wiki/Popover2-migration)
+        * [see Popover2's `boundary` &
+          `rootBoundary` docs](https://popper.js.org/docs/v2/utils/detect-overflow/#boundary)
 * Where applicable, the former `elementRef` prop has been replaced by the simpler, more
   straightforward `ref` prop using `React.forwardRef()` - e.g. Hoist's `button.elementRef` prop
   becomes just `ref`. Review your app for uses of `elementRef`.
@@ -5930,8 +6738,5 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-Copyright © 2024 Extremely Heavy Industries Inc. - all rights reserved
-
-------------------------------------------
-
 📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
@@ -21,9 +21,8 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
 
     /**
      * Field on optional model to which this component should bind its raw (text) value to persist
-     * across renders. Specify this field to control the state of this component directly or if
-     * deliberately not connecting this component to a Store/GridModel. These are both advanced
-     * use-cases - this prop is typically left unset.
+     * across renders. Specify this field to control the state of this component directly from a model.
+     * These are both advanced use-cases - this prop is typically left unset.
      */
     bind?: string;
 

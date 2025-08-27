@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -15,10 +15,11 @@ import {
     Some,
     TaskObserver,
     useContextModel,
-    uses
+    uses,
+    type ContextMenuSpec
 } from '@xh/hoist/core';
-import {loadingIndicator} from '@xh/hoist/desktop/cmp/loadingindicator';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
+import {mask} from '@xh/hoist/cmp/mask';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
@@ -27,7 +28,6 @@ import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
-import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -50,7 +50,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     /** Icon to be used when the panel is collapsed. Defaults to `icon`. */
     collapsedIcon?: ReactElement;
 
-    /** Context Menu to show on context clicking this panel. */
+    /** Context menu to show on a right-click within this panel. */
     contextMenu?: ContextMenuSpec;
 
     /**
@@ -84,7 +84,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     tbar?: Some<ReactNode>;
 
     /**
-     * A toolbar to be docked at the top of the panel.
+     * A toolbar to be docked at the bottom of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
     bbar?: Some<ReactNode>;

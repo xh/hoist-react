@@ -2,8 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {
+    RangeSliderProps as BpRangeSliderProps,
+    SliderProps as BpSliderProps
+} from '@blueprintjs/core';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
@@ -79,8 +83,7 @@ class SliderInputModel extends HoistInputModel {
 }
 
 const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, ref) => {
-    const {width, ...layoutProps} = getLayoutProps(props),
-        sliderType = isArray(model.renderValue) ? bpRangeSlider : bpSlider;
+    const {width, ...layoutProps} = getLayoutProps(props);
 
     throwIf(props.labelStepSize <= 0, 'Error in Slider: labelStepSize must be greater than zero.');
 
@@ -88,22 +91,25 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
+    const sliderProps: BpRangeSliderProps | BpSliderProps = {
+        value: model.renderValue,
+
+        disabled: props.disabled,
+        labelRenderer: props.labelRenderer,
+        labelStepSize: props.labelStepSize,
+        max: props.max,
+        min: props.min,
+        showTrackFill: props.showTrackFill,
+        stepSize: props.stepSize,
+        vertical: props.vertical,
+
+        onChange: val => model.noteValueChange(val)
+    };
+
     return box({
-        item: sliderType({
-            value: model.renderValue,
-
-            disabled: props.disabled,
-            labelRenderer: props.labelRenderer,
-            labelStepSize: props.labelStepSize,
-            max: props.max,
-            min: props.min,
-            showTrackFill: props.showTrackFill,
-            stepSize: props.stepSize,
-            tabIndex: props.tabIndex,
-            vertical: props.vertical,
-
-            onChange: val => model.noteValueChange(val)
-        }),
+        item: isArray(model.renderValue)
+            ? bpRangeSlider(sliderProps as BpRangeSliderProps)
+            : bpSlider(sliderProps as BpSliderProps),
 
         ...layoutProps,
         width: withDefault(width, 200),

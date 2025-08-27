@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 export * from './Field';
@@ -36,6 +36,7 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+export * from './cube/ViewRowData';
 
 export * from './validation/constraints';
 export * from './validation/Rule';

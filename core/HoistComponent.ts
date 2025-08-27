@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {
@@ -47,15 +47,20 @@ import {
 /**
  * Type representing props passed to a HoistComponent's render function.
  *
- * This type removes from its base type several props that are used by HoistComponent itself and
- * not provided to the render function.
+ * This type removes from its base type several properties that are pulled out by the HoistComponent itself and
+ * not provided to the render function.  `modelConfig` and `modelRef` are resolved into the `model` property.
+ * `ref` is passed as the second argument to the render function.
  */
+
 export type RenderPropsOf<P extends HoistProps> = P & {
     /** Pre-processed by HoistComponent internals into a mounted model.  Never passed to render. */
     modelConfig: never;
 
     /** Pre-processed by HoistComponent internals and attached to model.  Never passed to render. */
     modelRef: never;
+
+    /** Pre-processed by HoistComponent internals and passed as second argument to render. */
+    ref: never;
 };
 
 /**

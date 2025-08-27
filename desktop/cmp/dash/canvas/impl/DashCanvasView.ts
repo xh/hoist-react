@@ -2,8 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {isEmpty} from 'lodash';
+import {ReactElement} from 'react';
 import {box} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {ContextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
@@ -76,7 +78,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                     text: 'Add',
                     icon: Icon.add(),
                     items: addMenuItems,
-                    hidden: contentLocked
+                    hidden: contentLocked || isEmpty(addMenuItems)
                 },
                 {
                     text: 'Remove',
@@ -114,7 +116,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
                 '-',
                 ...(containerModel.extraMenuItems ?? [])
             ]
-        });
+        }) as ReactElement;
 
     // Workaround using React functional component to check if ContextMenu renders null
     // TODO - build a popover wrapper that null-checks content instead of this workaround

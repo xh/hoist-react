@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistServiceClass, Some, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {throwIf} from '@xh/hoist/utils/js';
+import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, castArray} from 'lodash';
 
 /**
@@ -30,7 +30,7 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
     throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
-    const svcs = serviceClasses.map(serviceClass => new serviceClass());
+    const svcs = serviceClasses.map(c => createSingleton(c));
     await initServicesInternalAsync(svcs);
 
     svcs.forEach(svc => {
@@ -43,7 +43,6 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
                 install the same service twice.`
         );
         XH[name] = svc;
-        (clazz as any).instance = svc;
         instanceManager.registerService(svc);
     });
 }

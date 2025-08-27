@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -68,7 +68,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         return menuButton({
             className,
             menuItems: buildMenuItems(props),
-            popoverProps: {popoverClassName: 'xh-app-menu'},
+            menuClassName: 'xh-app-menu',
+            popoverProps: {popoverClassName: 'xh-app-menu-popover'},
             ...rest
         });
     }
@@ -137,7 +138,7 @@ function buildMenuItems({
             omit: hideLogoutItem,
             text: 'Logout',
             icon: Icon.logout(),
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 

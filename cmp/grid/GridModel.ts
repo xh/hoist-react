@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     ColumnEvent,
+    ColumnState as AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@ag-grid-community/core';
@@ -35,6 +36,7 @@ import {
     SizingMode,
     Some,
     TaskObserver,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -51,6 +53,7 @@ import {
 } from '@xh/hoist/data';
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
@@ -76,6 +79,7 @@ import {
     first,
     forEach,
     isArray,
+    isBoolean,
     isEmpty,
     isFunction,
     isNil,
@@ -88,16 +92,16 @@ import {
     min,
     omit,
     pick,
-    pull
+    pull,
+    take
 } from 'lodash';
 import {ReactNode} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
-import {GridPersistenceModel} from './impl/GridPersistenceModel';
+import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
 import {
-    AutosizeState,
     ColChooserConfig,
     ColumnState,
     GridModelPersistOptions,
@@ -164,6 +168,12 @@ export interface GridConfig {
 
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
+
+    /**
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
+     * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
+     */
+    expandLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
@@ -253,7 +263,9 @@ export interface GridConfig {
     onRowDoubleClicked?: (e: RowDoubleClickedEvent) => void;
 
     /**
-     * Callback when a cell is clicked.
+     * Callback when any cell on the grid is clicked - inspect the event to determine the column.
+     * Note that {@link ColumnSpec.onCellClicked} is a more targeted handler scoped to a single
+     * column, which might be more convenient when clicks on only one column are of interest.
      */
     onCellClicked?: (e: CellClickedEvent) => void;
 
@@ -269,6 +281,15 @@ export interface GridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
+     * Array of strings (or a function returning one) providing user-facing labels for each depth
+     * level in a tree or grouped grid - e.g. `['Country', 'State', 'City']`. If set, the
+     * expand/collapse options in the default context menu will be enhanced to allow users to
+     * expand/collapse to a specific level. See {@link GroupingChooserModel.valueDisplayNames}
+     * for a convenient getter that will satisfy this API when a GroupingChooser is in play.
+     */
+    levelLabels?: Thunkable<string[]>;
+
+    /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
      * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
      * expanding / collapsing (requires click on tree col affordance to expand/collapse).
@@ -277,9 +298,9 @@ export interface GridConfig {
 
     /**
      * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same.
+     * May also be specified as a function returning same or false to omit context menu from grid.
      */
-    contextMenu?: GridContextMenuSpec;
+    contextMenu?: GridContextMenuSpec | false;
 
     /**
      * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
@@ -393,6 +414,7 @@ export class GridModel extends HoistModel {
     onCellClicked: (e: CellClickedEvent) => void;
     onCellDoubleClicked: (e: CellDoubleClickedEvent) => void;
     onCellContextMenu: (e: CellContextMenuEvent) => void;
+    levelLabels: Thunkable<string[]>;
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
@@ -404,9 +426,13 @@ export class GridModel extends HoistModel {
     @observable.ref columns: Array<ColumnGroup | Column> = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
-    @observable.ref autosizeState: AutosizeState = {};
     @observable.ref sortBy: GridSorter[] = [];
     @observable.ref groupBy: string[] = null;
+    @observable expandLevel: number = 0;
+
+    get persistableColumnState(): ColumnState[] {
+        return this.cleanColumnState(this.columnState);
+    }
 
     @bindable showSummary: boolean | VSide = false;
     @bindable.ref emptyText: ReactNode;
@@ -433,7 +459,7 @@ export class GridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'exportExcel',
         'exportCsv',
@@ -445,7 +471,6 @@ export class GridModel extends HoistModel {
     ];
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: GridPersistenceModel;
 
     /**
      * Is autosizing enabled on this grid?
@@ -455,14 +480,16 @@ export class GridModel extends HoistModel {
         return this.autosizeOptions.mode !== 'disabled';
     }
 
+    get maxDepth(): number {
+        const {groupBy, store, treeMode} = this;
+        return treeMode ? store.maxDepth : groupBy ? groupBy.length : 0;
+    }
+
     /** Tracks execution of filtering operations.*/
     @managed filterTask = TaskObserver.trackAll();
 
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
-
-    /** @internal - used internally by any GridFindField that is bound to this GridModel. */
-    @bindable xhFindQuery: string = null;
 
     constructor(config: GridConfig) {
         super();
@@ -515,6 +542,8 @@ export class GridModel extends HoistModel {
             restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
             fullRowEditing = false,
             clicksToEdit = 2,
+            expandLevel = treeMode ? 0 : 1,
+            levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             experimental,
             appData,
@@ -524,12 +553,11 @@ export class GridModel extends HoistModel {
 
         this.xhImpl = xhImpl;
 
-        this._defaultState = {columns, sortBy, groupBy};
+        this._defaultState = {columns, sortBy, groupBy, expandLevel};
 
         this.treeMode = treeMode;
         this.treeStyle = treeStyle;
         this.showSummary = showSummary;
-
         this.emptyText = emptyText;
         this.hideEmptyTextBeforeLoad = hideEmptyTextBeforeLoad;
         this.headerMenuDisplay = headerMenuDisplay;
@@ -539,7 +567,8 @@ export class GridModel extends HoistModel {
         this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu = withDefault(contextMenu, GridModel.defaultContextMenu);
+        this.contextMenu =
+            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.autosizeOptions = defaults(
@@ -561,6 +590,8 @@ export class GridModel extends HoistModel {
         this.clicksToExpand = clicksToExpand;
         this.clicksToEdit = clicksToEdit;
         this.highlightRowOnClick = highlightRowOnClick;
+        this.expandLevel = expandLevel;
+        this.levelLabels = levelLabels;
 
         throwIf(
             autosizeOptions.fillMode &&
@@ -597,7 +628,8 @@ export class GridModel extends HoistModel {
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
-        this.persistenceModel = persistWith ? new GridPersistenceModel(this, persistWith) : null;
+        if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
+        if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
         this.onRowClicked = onRowClicked;
@@ -634,19 +666,20 @@ export class GridModel extends HoistModel {
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy} = this._defaultState;
+        const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
         this.setColumns(columns);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
+        this.expandToLevel(expandLevel);
 
-        this.filterModel?.clear();
-        this.persistenceModel?.clear();
+        this.filterModel?.setFilter(filter);
 
         if (this.autosizeOptions.mode === 'managed') {
             await this.autosizeAsync();
@@ -720,21 +753,29 @@ export class GridModel extends HoistModel {
      * will not change the selection if there is already a selection, which is what applications
      * typically want to do when loading/reloading a grid.
      *
-     * @param opts - set key 'ensureVisible' to true to make selection visible if it is within a
-     *      collapsed node or outside of the visible scroll window. Default true.
+     * @param opts -
+     *      expandParentGroups - set to true to expand nodes to allow selection when the
+     *          first selectable node is in a collapsed group. Default true.
+     *      ensureVisible - set to to true to scroll to the selected row if it is outside of the
+     *      visible scroll window. Default true.
+     *
      */
-    async selectFirstAsync(opts?: {ensureVisible?: boolean}) {
-        const {ensureVisible = true} = opts ?? {};
+    async selectFirstAsync(opts?: {expandParentGroups?: boolean; ensureVisible?: boolean}) {
+        const {expandParentGroups = true, ensureVisible = true} = opts ?? {};
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        // Get first displayed row with data - i.e. backed by a record, not a full-width group row.
+        // Get first visible row with data - i.e. backed by a record, not a full-width group row.
         const {selModel} = this,
-            id = this.agGridModel.getFirstSelectableRowNode()?.data.id;
+            row = this.agGridModel.getFirstSelectableRowNode();
 
-        if (id != null) {
-            selModel.select(id);
-            if (ensureVisible) await this.ensureSelectionVisibleAsync();
+        // If displayed, or potentially expandable to display, select it.
+        if (row && (expandParentGroups || row.displayed)) {
+            const id = row.data.id;
+            if (id != null) {
+                selModel.select(id);
+                if (ensureVisible) await this.ensureSelectionVisibleAsync();
+            }
         }
     }
 
@@ -744,7 +785,7 @@ export class GridModel extends HoistModel {
      * This method delegates to {@link selectFirstAsync}.
      */
     async preSelectFirstAsync() {
-        if (!this.hasSelection) return this.selectFirstAsync();
+        if (!this.hasSelection) return this.selectFirstAsync({expandParentGroups: false});
     }
 
     /** Deselect all rows. */
@@ -857,7 +898,7 @@ export class GridModel extends HoistModel {
      *
      * Note that this getter will *not* change if just the data of selected record is changed
      * due to store loading or editing.  Applications also interested in the contents of the
-     * of the selection should use the {@link selectedRecord} getter instead.
+     * selection should use the {@link selectedRecord} getter instead.
      */
     get selectedId(): StoreRecordId {
         return this.selModel.selectedId;
@@ -983,20 +1024,52 @@ export class GridModel extends HoistModel {
 
     /** Expand all parent rows in grouped or tree grid. (Note, this is recursive for trees!) */
     expandAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.expandAll();
-            this.noteAgExpandStateChange();
-        }
+        this.expandToLevel(this.maxDepth);
     }
 
     /** Collapse all parent rows in grouped or tree grid. */
     collapseAll() {
-        const {agApi} = this;
-        if (agApi) {
-            agApi.collapseAll();
-            this.noteAgExpandStateChange();
+        this.expandToLevel(0);
+    }
+
+    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    @action
+    expandToLevel(level: number) {
+        this.expandLevel = level;
+
+        // 0) Not rendered, we are done.
+        const {agApi, store} = this;
+        if (!agApi) return;
+
+        // 1) Update rendered grid.
+        agApi.setGridOption('groupDefaultExpanded', level);
+        if (level == 0 || level >= this.maxDepth) {
+            level == 0 ? agApi.collapseAll() : agApi.expandAll();
+        } else {
+            // Update raw nodes for efficiency
+            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
+            store.records.forEach(rec => {
+                const node = agApi.getRowNode(rec.agId);
+                if (node) {
+                    node.expanded = rec.depth < level;
+                }
+            });
+            agApi.onGroupExpandedOrCollapsed();
         }
+        this.noteAgExpandStateChange();
+    }
+
+    /**
+     * Get the resolved level labels for the current state of the grid.
+     */
+    get resolvedLevelLabels(): string[] {
+        const {maxDepth, levelLabels} = this,
+            ret = executeIfFunction(levelLabels);
+        if (ret && ret.length < maxDepth + 1) {
+            this.logError('Value produced by `GridModel.levelLabels` has insufficient length.');
+            return null;
+        }
+        return ret ? take(ret, maxDepth + 1) : null;
     }
 
     /**
@@ -1069,17 +1142,19 @@ export class GridModel extends HoistModel {
         (this.colChooserModel as any)?.open();
     }
 
-    noteAgColumnStateChanged(agColState) {
-        const colStateChanges = agColState.map(({colId, width, hide, pinned}) => {
-            const col = this.findColumn(this.columns, colId);
-            if (!col) return null;
-            return {
-                colId,
-                pinned: pinned ?? null,
-                hidden: !!hide,
-                width: col.flex ? undefined : width
-            };
-        });
+    noteAgColumnStateChanged(agColState: AgColumnState[]) {
+        const colStateChanges: Partial<ColumnState>[] = agColState.map(
+            ({colId, width, hide, pinned}) => {
+                const col = this.findColumn(this.columns, colId);
+                if (!col) return null;
+                return {
+                    colId,
+                    pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned,
+                    hidden: !!hide,
+                    width: col.flex ? undefined : width
+                };
+            }
+        );
 
         pull(colStateChanges, null);
         this.applyColumnStateChanges(colStateChanges);
@@ -1109,24 +1184,11 @@ export class GridModel extends HoistModel {
         }
     }
 
-    @action
-    setAutosizeState(autosizeState) {
-        if (!equal(this.autosizeState, autosizeState)) {
-            this.autosizeState = deepFreeze(autosizeState);
-        }
-    }
-
     noteColumnManuallySized(colId, width) {
         const col = this.findColumn(this.columns, colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
         this.applyColumnStateChanges(colStateChanges);
-    }
-
-    noteColumnsAutosized(colIds) {
-        const colStateChanges = castArray(colIds).map(colId => ({colId, manuallySized: false}));
-        this.applyColumnStateChanges(colStateChanges);
-        this.setAutosizeState({sizingMode: this.sizingMode});
     }
 
     /**
@@ -1288,11 +1350,11 @@ export class GridModel extends HoistModel {
      * columns are also ignored unless {@link GridAutosizeOptions.includeHiddenColumns} has been
      * set to true.
      *
-     * @param options - optional overrides of this model's configured {@link autosizeOptions}.
+     * @param overrideOpts - optional overrides of this model's {@link GridAutosizeOptions}.
      */
     @logWithDebug
-    async autosizeAsync(options: GridAutosizeOptions = {}) {
-        options = {...this.autosizeOptions, ...options};
+    async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
+        const options = {...this.autosizeOptions, ...overrideOpts};
 
         if (options.mode === 'disabled') {
             return;
@@ -1302,16 +1364,16 @@ export class GridModel extends HoistModel {
         const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
-        let colIds,
-            includeColFn = col => true;
+        let colIds: string[],
+            includeColFn = (_: Column) => true;
         if (isFunction(columns)) {
-            includeColFn = columns as (col) => boolean;
+            includeColFn = columns as (col: Column) => boolean;
             colIds = this.columnState.map(it => it.colId);
         } else {
-            colIds = columns ?? this.columnState.map(it => it.colId);
+            colIds = columns ? castArray(columns) : this.columnState.map(it => it.colId);
         }
 
-        colIds = castArray(colIds).filter(id => {
+        colIds = colIds.filter(id => {
             if (!options.includeHiddenColumns && !this.isColumnVisible(id)) return false;
             const col = this.getColumn(id);
             return col && col.autosizable && !col.flex && includeColFn(col);
@@ -1324,7 +1386,7 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param recOrId - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
      * @param colId - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
@@ -1437,6 +1499,18 @@ export class GridModel extends HoistModel {
         return this.isReady;
     }
 
+    /**
+     * Sorts ungrouped items to the bottom.
+     */
+    defaultGroupSortFn = (a: string, b: string): number => {
+        a = a ?? '';
+        b = b ?? '';
+        if (a === b) return 0;
+        if (a === '') return 1;
+        if (b === '') return -1;
+        return a.localeCompare(b);
+    };
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -1469,7 +1543,7 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    private async autosizeColsInternalAsync(colIds, options) {
+    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -1482,7 +1556,6 @@ export class GridModel extends HoistModel {
 
         try {
             await XH.gridAutosizeService.autosizeAsync(this, colIds, options);
-            this.noteColumnsAutosized(colIds);
         } finally {
             if (showMask) {
                 await wait();
@@ -1613,7 +1686,8 @@ export class GridModel extends HoistModel {
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
             // conflict with any code-level updates to their widths.
-            if (!col.resizable) state = omit(state, 'width');
+            if (!col.resizable || !state.manuallySized) state = omit(state, 'width');
+            state = {...state, manuallySized: state.manuallySized ?? false};
 
             // Remove all metadata other than the id and the hidden state from hidden columns, to save
             // on space when storing user configs with large amounts of hidden fields.
@@ -1779,10 +1853,6 @@ export class GridModel extends HoistModel {
     private isGroupSpec(col: ColumnGroupSpec | ColumnSpec): col is ColumnGroupSpec {
         return 'children' in col;
     }
-
-    defaultGroupSortFn = (a, b) => {
-        return a < b ? -1 : a > b ? 1 : 0;
-    };
 
     private readonly LEFT_BORDER_CLASS = 'xh-cell--group-border-left';
     private readonly RIGHT_BORDER_CLASS = 'xh-cell--group-border-right';

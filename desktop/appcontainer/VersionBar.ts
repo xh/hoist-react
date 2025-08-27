@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {box} from '@xh/hoist/cmp/layout';
+import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './VersionBar.scss';
@@ -19,30 +19,45 @@ export const versionBar = hoistCmp.factory({
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
             version = envSvc.get('clientVersion'),
-            build = envSvc.get('clientBuild'),
-            instance = envSvc.serverInstance,
-            isAdminApp = window.location.pathname?.startsWith('/admin/'),
-            versionAndBuild =
-                !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
+            isAdminApp = window.location.pathname?.startsWith('/admin/');
 
         return box({
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, versionAndBuild, instance].join(' • '),
+                [XH.appName, env, version].join(' • '),
+                span({
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
+                }),
+                span({
+                    className: 'xh-version-bar__tabid',
+                    title: 'Tab ID',
+                    item: XH.tabId
+                }),
+                span({
+                    className: 'xh-version-bar__spacer',
+                    items: '|'
+                }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),
+                    title: 'Show About Dialog',
                     onClick: () => XH.showAboutDialog()
                 }),
                 Icon.search({
                     omit: !inspectorSvc.enabled,
+                    title: 'Toggle Hoist Inspector',
                     onClick: () => inspectorSvc.toggleActive()
                 }),
                 Icon.wrench({
                     omit: isAdminApp || !XH.getUser().isHoistAdminReader,
-                    onClick: () => window.open('/admin')
+                    title: 'Open Admin Console',
+                    onClick: () => XH.appContainerModel.openAdmin()
+                }),
+                // Force GC, available via V8/chromium and "start chrome --js-flags="--expose-gc"
+                Icon.memory({
+                    omit: !window['gc'],
+                    title: 'Force GC',
+                    onClick: () => window['gc']()
                 })
             ]
         });

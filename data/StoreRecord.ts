@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -71,8 +71,13 @@ export class StoreRecord {
     }
 
     /** True if the StoreRecord has been modified since it was last committed. */
-    get isModified(): boolean {
+    get isDirty(): boolean {
         return this.committedData && this.committedData !== this.data;
+    }
+
+    /** Alias for {@link StoreRecord.isDirty} */
+    get isModified(): boolean {
+        return this.isDirty;
     }
 
     /** False if the StoreRecord has been added or modified. */

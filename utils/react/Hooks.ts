@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -27,8 +27,7 @@ export function useOnUnmount(fn: () => void) {
 
 /**
  * Hook to run a function when a DOM element is resized.
- *
- * @see observeResize() for more details.
+ * See {@link observeResize} for more details.
  *
  * @param fn - receives a DOMRect containing the dimensions of the DOM element.
  * @param opts - extra options, currently supporting a `debounce` specified in ms.

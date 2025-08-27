@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PersistenceProvider, XH} from '@xh/hoist/core';
+import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
@@ -27,22 +27,28 @@ import {
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
-    /** Total number of columns (x coordinates for views correspond with column numbers). */
+    /**
+     * Total number of columns (x coordinates for views correspond with column numbers).
+     * Default `12`.
+     */
     columns?: number;
 
-    /** Height of each row in pixels (y coordinates for views correspond with row numbers). */
+    /**
+     * Height of each row in pixels (y coordinates for views correspond with row numbers).
+     * Default `50`.
+     */
     rowHeight?: number;
 
-    /** Whether views should "compact" vertically to condense vertical space. */
+    /** Whether views should "compact" vertically to condense vertical space. Default `true`. */
     compact?: boolean;
 
-    /** Between items [x,y] in pixels. */
+    /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
-    /** Maximum number of rows permitted for this container. */
+    /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. */
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
 }
 
@@ -64,11 +70,10 @@ export interface DashCanvasItemLayout {
  * Model for {@link DashCanvas}, managing all configurable options for the component and publishing
  * the observable state of its current widgets and their layout.
  */
-export class DashCanvasModel extends DashModel<
-    DashCanvasViewSpec,
-    DashCanvasItemState,
-    DashCanvasViewModel
-> {
+export class DashCanvasModel
+    extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel>
+    implements Persistable<{state: DashCanvasItemState[]}>
+{
     //-----------------------------
     // Settable State
     //------------------------------
@@ -98,7 +103,6 @@ export class DashCanvasModel extends DashModel<
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
-    private scrollbarVisible: boolean;
     private isLoadingState: boolean;
 
     get rglLayout() {
@@ -108,7 +112,9 @@ export class DashCanvasModel extends DashModel<
 
             return {
                 ...it,
-                resizeHandles: autoHeight ? ['e'] : ['e', 's', 'se'],
+                resizeHandles: autoHeight
+                    ? ['w', 'e']
+                    : ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'],
                 maxH: viewSpec.maxHeight,
                 minH: viewSpec.minHeight,
                 maxW: viewSpec.maxWidth,
@@ -132,7 +138,7 @@ export class DashCanvasModel extends DashModel<
         compact = true,
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = null,
+        containerPadding = margin,
         extraMenuItems
     }: DashCanvasConfig) {
         super();
@@ -182,35 +188,24 @@ export class DashCanvasModel extends DashModel<
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
 
-        // Read state from provider -- fail gently
-        let persistState = null;
-        if (persistWith) {
-            try {
-                this.provider = PersistenceProvider.create({path: 'dashCanvas', ...persistWith});
-                persistState = this.provider.read();
-            } catch (e) {
-                this.logError(e);
-                XH.safeDestroy(this.provider);
-                this.provider = null;
-            }
-        }
-
-        this.loadState(persistState?.state ?? initialState);
+        this.loadState(initialState);
         this.state = this.buildState();
 
-        this.addReaction(
-            {
-                track: () => this.viewState,
-                run: () => this.publishState()
-            },
-            {
-                when: () => !!this.ref.current,
-                run: () => {
-                    const {current: node} = this.ref;
-                    this.scrollbarVisible = node.offsetWidth > node.clientWidth;
-                }
-            }
-        );
+        if (persistWith) {
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dashCanvas',
+                    settleTime: 1000,
+                    ...persistWith
+                },
+                target: this
+            });
+        }
+
+        this.addReaction({
+            track: () => this.viewState,
+            run: () => (this.state = this.buildState())
+        });
     }
 
     /** Removes all views from the canvas */
@@ -238,7 +233,6 @@ export class DashCanvasModel extends DashModel<
         this.columns = restoreState.columns;
         this.rowHeight = restoreState.rowHeight;
         this.loadState(restoreState.initialState);
-        this.provider?.clear();
     }
 
     /**
@@ -319,6 +313,18 @@ export class DashCanvasModel extends DashModel<
     }
 
     //------------------------
+    // Persistable Interface
+    //------------------------
+    getPersistableState(): PersistableState<{state: DashCanvasItemState[]}> {
+        return new PersistableState({state: this.state});
+    }
+
+    setPersistableState(persistableState: PersistableState<{state: DashCanvasItemState[]}>) {
+        const {state} = persistableState.value;
+        if (state) this.loadState(state);
+    }
+
+    //------------------------
     // Implementation
     //------------------------
     private getLayoutFromPosition(position: string, specId: string) {
@@ -351,7 +357,7 @@ export class DashCanvasModel extends DashModel<
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
         throwIf(
-            !viewSpec.allowAdd,
+            !this.isLoadingState && !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
         throwIf(
@@ -378,12 +384,6 @@ export class DashCanvasModel extends DashModel<
         return model;
     }
 
-    // Trigger window resize event when component becomes visible to ensure layout adjusted to
-    // current window size - fixes https://github.com/xh/hoist-react/issues/3215
-    onVisibleChange(visible: boolean) {
-        if (visible) this.fireWindowResizeEvent();
-    }
-
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
@@ -396,20 +396,11 @@ export class DashCanvasModel extends DashModel<
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isLoadingState) this.publishState();
-
-        // Check if scrollbar visibility has changed, and force resize event if so
-        const node = this.ref.current;
-        if (!node) return;
-        const scrollbarVisible = node.offsetWidth > node.clientWidth;
-        if (scrollbarVisible !== this.scrollbarVisible) {
-            this.fireWindowResizeEvent();
-            this.scrollbarVisible = scrollbarVisible;
-        }
+        if (!this.isLoadingState) this.state = this.buildState();
     }
 
     @action
-    private loadState(state) {
+    private loadState(state: DashCanvasItemState[]) {
         this.isLoadingState = true;
         try {
             this.clear();
@@ -427,13 +418,7 @@ export class DashCanvasModel extends DashModel<
         }
     }
 
-    @action
-    private publishState() {
-        this.state = this.buildState();
-        this.provider?.write({state: this.state});
-    }
-
-    private buildState() {
+    private buildState(): DashCanvasItemState[] {
         const {viewState} = this;
 
         return this.layout.map(it => {
@@ -528,9 +513,5 @@ export class DashCanvasModel extends DashModel<
         }
 
         return {x: defaultX, y: endY ?? rows};
-    }
-
-    private fireWindowResizeEvent() {
-        window.dispatchEvent(new Event('resize'));
     }
 }

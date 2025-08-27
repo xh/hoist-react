@@ -2,25 +2,49 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PlainObject} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    PlainObject
+} from '@xh/hoist/core';
 import {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {flatMap, forEach, forOwn, map, mapValues, pickBy, some, values} from 'lodash';
+import {
+    flatMap,
+    forEach,
+    forOwn,
+    isArray,
+    isDate,
+    isObject,
+    isString,
+    map,
+    mapValues,
+    pick,
+    pickBy,
+    some,
+    values,
+    without
+} from 'lodash';
 import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
+import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
 export interface FormConfig {
-    /**
-     * FieldModels, or configurations to create them, for all data fields managed by this FormModel.
-     */
+    /** FieldModels, or configs to create them, for all data fields managed by the model. */
     fields?: Array<BaseFieldModel | BaseFieldConfig | SubformsFieldConfig | SubformsFieldModel>;
 
     /** Map of initial values for fields in this model. */
     initialValues?: PlainObject;
+
+    /** Options governing persistence of the form state. */
+    persistWith?: FormPersistOptions;
 
     disabled?: boolean;
     readonly?: boolean;
@@ -29,28 +53,40 @@ export interface FormConfig {
     xhImpl?: boolean;
 }
 
+export interface FormPersistOptions extends PersistOptions {
+    /** If persisting only a subset of all fields, provide an array of field names. */
+    includeFields?: string[];
+    /** If excluding a subset of all fields, provide an array of field names. */
+    excludeFields?: string[];
+}
+
+export interface FormValidateOptions {
+    /** True to trigger display of validation errors (if any) by bound `FormField`s after validation is complete. */
+    display?: boolean;
+}
+
 /**
- * FormModel is the main entry point for Form specification. This Model's `fields` collection holds
- * multiple FieldModel instances, which in turn hold the state of user edited data and the
- * validation rules around editing that data.
+ * FormModel is the main entry point for Form specification. This Model's `fields` object references
+ * multiple {@link FieldModel} instances, keyed by name, which in turn hold the state of user-
+ * edited data and the validation rules around editing that data.
  *
  * A complete representation of all fields and data within a Form can be produced via this model's
- * `getData()` method, making it easy to harvest all values for e.g. submission to a server.
+ * {@link getData} method, making it easy to harvest all values for e.g. submission to a server.
  *
- * Individual field values are also available as observables via this model's `values` proxy. An
- * application model can setup a reaction to track changes to any value and execute app-specific
+ * Individual field values are also available as observables via this model's {@link values} proxy.
+ * An application model can setup a reaction to track changes to any value and execute app-specific
  * logic such as disabling one field based on the state of another, or setting up cascading options.
  *
  * This Model provides an overall validation state, determined by the current validation state of
  * its fields as per their configured rules and constraints.
  *
- * FormModels can be nested via SubformsFieldModels, a specialized type of FieldModel that itself
- * manages a collection of child FormModels. This allows use cases where Forms support editing of
+ * FormModels can be nested via {@link SubformsFieldModel}s, a specialized type of FieldModel that
+ * itself manages a collection of child FormModels. This enables forms to support editing of
  * dynamic collections of complex objects with their own internal validation rules (e.g. a FormModel
  * representing a market order might have multiple nested FormModels to represent execution splits,
  * where each split has its own internal fields for broker, quantity, and time).
  *
- * @see FieldModel for details on state and validation maintained at the individual field level.
+ * See {@link FieldModel} for details on state/validation maintained at the individual field level.
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/
@@ -87,6 +123,7 @@ export class FormModel extends HoistModel {
         fields = [],
         initialValues = {},
         disabled = false,
+        persistWith = null,
         readonly = false,
         xhImpl = false
     }: FormConfig = {}) {
@@ -97,6 +134,7 @@ export class FormModel extends HoistModel {
         this.disabled = disabled;
         this.readonly = readonly;
         const models = {};
+
         fields.forEach((f: any) => {
             const model =
                     f instanceof BaseFieldModel
@@ -111,6 +149,7 @@ export class FormModel extends HoistModel {
         this.fields = models;
 
         this.init(initialValues);
+        if (persistWith) this.initPersist(persistWith);
 
         // Set the owning formModel *last* after all fields in place with data.
         // This (currently) kicks off the validation and other reactivity.
@@ -164,7 +203,6 @@ export class FormModel extends HoistModel {
 
     /**
      * Set the value of one or more fields on this form.
-     *
      * @param values - map of field name to value.
      */
     @action
@@ -184,9 +222,7 @@ export class FormModel extends HoistModel {
     //-----------------------------------
     /**
      * The Field that is currently focused on this form.
-     *
-     * @see FieldModel.focus() for important information on this method
-     * and its limitations.
+     * See {@link FieldModel.focus} for important information on this method and its limitations.
      */
     @computed
     get focusedField(): BaseFieldModel {
@@ -195,9 +231,7 @@ export class FormModel extends HoistModel {
 
     /**
      * Focus a field on this form.
-     *
-     * @see FieldModel.focus() for important information on this method
-     * and its limitations.
+     * See {@link FieldModel.focus} for important information on this method and its limitations.
      */
     focusField(name: string) {
         this.getField(name)?.focus();
@@ -230,21 +264,15 @@ export class FormModel extends HoistModel {
         return flatMap(this.fields, s => s.allErrors);
     }
 
-    /**
-     * Recompute all validations and return true if the form is valid.
-     *
-     * @param opts - set 'display' to true to trigger the display of
-     *  validation errors (if any) by bound FormField components after validation
-     *  is complete.
-     */
-    async validateAsync(opts?: {display?: boolean}): Promise<boolean> {
+    /** Recompute all validations and return true if the form is valid. */
+    async validateAsync(opts?: FormValidateOptions): Promise<boolean> {
         const {display = true} = opts ?? {},
             promises = map(this.fields, m => m.validateAsync({display}));
         await Promise.all(promises);
         return this.isValid;
     }
 
-    /** Trigger the display of validation errors (if any) by bound FormField components. */
+    /** Trigger the display of validation errors (if any) by bound `FormField`s. */
     displayValidation() {
         forOwn(this.fields, m => m.displayValidation());
     }
@@ -274,4 +302,50 @@ export class FormModel extends HoistModel {
             }
         );
     }
+
+    private initPersist({
+        includeFields = null,
+        excludeFields = null,
+        path = 'formValues',
+        ...rootPersistWith
+    }: FormPersistOptions) {
+        const allFields = Object.keys(this.fields);
+        const fieldNamesToPersist = excludeFields
+            ? without(allFields, ...excludeFields)
+            : (includeFields ?? allFields);
+
+        PersistenceProvider.create({
+            persistOptions: {
+                path,
+                ...rootPersistWith
+            },
+            target: {
+                getPersistableState: () =>
+                    new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),
+                setPersistableState: ({value: formValues}) =>
+                    this.setValues(this.deserialize(pick(formValues, fieldNamesToPersist)))
+            },
+            owner: this
+        });
+    }
+
+    private serialize = (formValue: unknown) => {
+        if (isArray(formValue)) return formValue.map(this.serialize);
+        if (isDate(formValue)) return {_xhType: 'date', value: formValue.toJSON()};
+        if (isLocalDate(formValue)) return {_xhType: 'localDate', value: formValue.toJSON()};
+        if (isObject(formValue)) return mapValues(formValue, this.serialize);
+        return formValue;
+    };
+
+    private deserialize = (formValue: unknown) => {
+        if (isArray(formValue)) return formValue.map(this.deserialize);
+        if (isObject(formValue)) {
+            if ('_xhType' in formValue && 'value' in formValue && isString(formValue.value)) {
+                if (formValue._xhType === 'date') return new Date(formValue.value);
+                if (formValue._xhType === 'localDate') return LocalDate.get(formValue.value);
+            }
+            return mapValues(formValue, this.deserialize);
+        }
+        return formValue;
+    };
 }

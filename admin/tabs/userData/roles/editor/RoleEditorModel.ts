@@ -2,10 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
 import {RoleModel} from '../RoleModel';
@@ -78,15 +77,14 @@ export class RoleEditorModel extends HoistModel {
             this.doCancel();
         } else {
             XH.confirm({
-                icon: Icon.warning(),
-                title: 'Discard unsaved changes?',
-                message: 'You have unsaved changes. Are you sure you wish to proceed?',
+                message: 'You have unsaved changes. Are you sure you want to proceed?',
                 cancelProps: {
                     text: 'Keep editing'
                 },
                 confirmProps: {
+                    text: 'Discard Changes',
                     intent: 'danger',
-                    text: 'Discard changes'
+                    outlined: true
                 },
                 onConfirm: () => this.doCancel()
             });

@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {textArea} from '@xh/hoist/mobile/cmp/input';
@@ -41,6 +42,9 @@ export const feedbackDialog = hoistCmp.factory({
                 }),
                 button({
                     text: 'Send',
+                    icon: Icon.mail(),
+                    intent: 'primary',
+                    outlined: true,
                     onClick: () => model.submitAsync()
                 })
             ]

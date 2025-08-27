@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
@@ -35,11 +35,9 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
             ...props,
             inputProps: {
                 rightElement: null,
-
                 enablePicker: !!portalContainer,
                 showPickerOnFocus: !!portalContainer,
                 portalContainer,
-                popoverBoundary: 'clippingParents',
                 ...props.inputProps
             }
         };

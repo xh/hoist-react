@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
 import {castArray, isString} from 'lodash';
@@ -72,6 +72,15 @@ export function logWarn(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'warn');
 }
 
+/** Parse a LogSource in to a canonical string label. */
+export function parseSource(source: LogSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    if (source['displayName']) return source['displayName'];
+    if (source.constructor) return source.constructor.name;
+    return null;
+}
+
 //----------------------------------
 // Implementation
 //----------------------------------
@@ -115,14 +124,6 @@ function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, le
     }
 
     return ret;
-}
-
-function parseSource(source: LogSource): string {
-    if (!source) return null;
-    if (isString(source)) return source;
-    if (source['displayName']) return source['displayName'];
-    if (source.constructor) return source.constructor.name;
-    return null;
 }
 
 function writeLog(msgs: unknown[], src: string, level: LogLevel) {

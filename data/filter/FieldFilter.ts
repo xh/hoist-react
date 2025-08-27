@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -69,6 +69,10 @@ export class FieldFilter extends Filter {
         'excludes'
     ];
 
+    static INCLUDE_LIKE_OPERATORS = ['=', 'like', 'begins', 'ends', 'includes'];
+    static EXCLUDE_LIKE_OPERATORS = ['!=', 'not like', 'excludes'];
+    static RANGE_LIKE_OPERATORS = ['>', '>=', '<', '<='];
+
     /**
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
      * @internal
@@ -96,11 +100,6 @@ export class FieldFilter extends Filter {
               : value;
 
         Object.freeze(this);
-    }
-
-    toJSON() {
-        const {field, op, value, serializedValueType} = this;
-        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
     }
 
     //-----------------
@@ -202,6 +201,11 @@ export class FieldFilter extends Filter {
                   difference(other.value, this.value).length === 0
                 : other.value === this.value)
         );
+    }
+
+    override toJSON(): FieldFilterSpec {
+        const {field, op, value, serializedValueType} = this;
+        return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
     }
 
     //-----------------

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -19,9 +19,10 @@ import {
 } from '@xh/hoist/core';
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {isFunction, merge} from 'lodash';
+import {isFunction} from 'lodash';
 import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
     /**
@@ -74,7 +75,7 @@ class DataViewLocalModel extends HoistModel {
             run: () => model.gridModel.agApi?.resetRowHeights()
         });
 
-        this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        this.agOptions = mergeDeep(this.createDefaultAgOptions(), this.componentProps.agOptions);
     }
 
     private createDefaultAgOptions(): GridOptions {

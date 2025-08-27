@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
@@ -23,7 +23,6 @@ export const [button, Button] = wrappedCmp(ons.Button),
     [checkbox, Checkbox] = wrappedCmp(ons.Checkbox),
     [gestureDetector, GestureDetector] = wrappedCmp(ons.GestureDetector),
     [input, Input] = wrappedCmp(ons.Input),
-    [navigator, Navigator] = wrappedCmp(ons.Navigator),
     [searchInput, SearchInput] = wrappedCmp(ons.SearchInput),
     [select, Select] = wrappedCmp(ons.Select),
     [switchControl, SwitchControl] = wrappedCmp(ons.Switch);

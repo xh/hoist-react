@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, HoistModel, useLocalModel, MenuItemLike} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -14,6 +14,9 @@ import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
 export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
+    /** Optional additional classname to apply to the menu element itself. */
+    menuClassName?: string;
+
     /** Array of MenuItems or spacers. */
     menuItems?: MenuItemLike[];
 
@@ -51,6 +54,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     className: 'xh-menu-button',
 
     render({
+        menuClassName,
         menuItems,
         menuPosition = 'auto',
         title,
@@ -66,7 +70,12 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             position: menuPosition,
             disabled: disabled,
             item: button({icon, disabled, ...props}),
-            content: menu({menuItems, title, onDismiss: () => (impl.isOpen = false)}),
+            content: menu({
+                menuItems,
+                className: menuClassName,
+                title,
+                onDismiss: () => (impl.isOpen = false)
+            }),
             onInteraction: nextOpenState => (impl.isOpen = nextOpenState),
             backdrop: true,
             ...popoverProps

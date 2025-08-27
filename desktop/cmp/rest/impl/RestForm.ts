@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {form} from '@xh/hoist/cmp/form';
 import {div, filler} from '@xh/hoist/cmp/layout';
@@ -80,9 +80,10 @@ const tbar = hoistCmp.factory<RestFormModel>(({model}) => {
             onClick: () => model.close()
         }),
         button({
-            text: 'Save',
+            text: 'Save Changes',
             icon: Icon.check(),
             intent: 'success',
+            outlined: true,
             disabled: !model.isAdd && !formModel.isDirty,
             onClick: () => model.validateAndSaveAsync(),
             omit: formModel.readonly

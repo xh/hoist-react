@@ -289,7 +289,7 @@ available to application code, use the`XH.installServicesAsync()` method. This m
 construct, initialize, and install the services as a property on the XH object. Note that there is a
 strict expectation that service classes will be named ending with the word 'Service', e.g.
 `MyCustomService.`. The installed instance in this case would then be made available to application
-code as `XH.myCustomService'.
+code as `XH.myCustomService`.
 
 Many core Hoist features are exposed on the client via services such as `PrefService`,
 `ConfigService`, and `IdentityService`. See these examples for a better understanding of the kind of
@@ -401,6 +401,5 @@ will be filled in as soon as possible. These include planned notes on:
 
 ------------------------------------------
 
-📫☎️🌎 info@xh.io | <https://xh.io/contact>
-
-Copyright © 2024 Extremely Heavy Industries Inc.
+📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

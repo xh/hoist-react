@@ -4,9 +4,18 @@ The information below applies to Hoist development generally and covers the setu
 development environment for both a [Hoist Core](https://github.com/xh/toolbox) server and a Hoist
 React client application.
 
-[Toolbox](https://github.com/xh/toolbox) is our reference app for Hoist development. Please also
-refer to [that project's README](https://github.com/xh/toolbox/blob/develop/README.md) for
-additional, Toolbox-specific setup info.
+[Toolbox](https://github.com/xh/toolbox) is our reference app for Hoist development and can be a
+useful project to check out and run locally to explore Hoist development. Please refer
+to [that project's README](https://github.com/xh/toolbox/blob/develop/README.md) for additional,
+Toolbox-specific setup info.
+
+## tldr;
+
+Development of Hoist applications requires:
+
+* Git
+* JDK 17
+* Node (LTS or other recent) + `npm` (bundled with Node) or `yarn` (installable via `npm`)
 
 ## Git
 
@@ -16,27 +25,34 @@ via [Homebrew](https://brew.sh/).
 
 ## Server-side prerequisites
 
-### Java 8 JDK
+Hoist Core is the server-side plugin powering Hoist React applications.
+See [that project's README](https://github.com/xh/hoist-core/blob/develop/README.md) for more
+detailed information about the configuration and use of Hoist's Grails server.
 
-The one common pre-requisite for running the server-side of a Hoist project is a Java 8 JDK. Either
-an Oracle or any common OpenJDK distribution should be fine.
+### Java 17 JDK
+
+The one common pre-requisite for running the server-side of a Hoist project is a Java 17 JDK. Any
+common OpenJDK distribution should work. XH typically uses the JetBrains distro, which has
+improved support for hot reloading, helpful for Hoist projects with a significant amount of server-
+side development.
 
 If using IntelliJ (see below), consider having the IDE download and update a JDK for you:
 
--   From the "File > New Projects Settings" menu, open "Structure for New Projects..." If you have an
-    existing project open, you can also select "File > Project Structure" to modify that project.
--   Select the "SDKs" option in the navigation tree.
--   Click the + button and select "Download JDK..."
--   Select version 8/1.8 - a known-good option to choose is the "Azul" open source SDK.
+- From the "File > New Projects Settings" menu, open "Structure for New Projects..." If you have an
+  existing project open, you can also select "File > Project Structure" to modify that project.
+- Select the "SDKs" option in the navigation tree.
+- Click the + button and select "Download JDK..."
+- Select version 17 and a distro of your choice (JetBrains Runtime is a good default).
 
-### Other server-side requirements
+### Server-side instance configuration
 
-Specific projects can have their own additional requirements for running their server-side
-application, typically around database access or connection configuration. Before starting the
-server-side of a project for the first time, ensure you have the required instance configuration
-YAML file in place to tell your app where and how to connect to its database.
+Before starting the server-side of a project for the first time, ensure you have copied the
+project's `template.env` to `.env` and filled in any missing instance configuration values required
+to provide environment-specific database connection and service account details.
 
-For Toolbox development, see that project's README for TB-specific database info.
+Note that some older projects might use a YAML config file in place of `.env` - if you don't see a
+`.env.template` file in the root of your project repo, this is likely the case. Consult another
+developer on the project or ask XH for assistance.
 
 ## Client-side prerequisites
 
@@ -45,28 +61,26 @@ For Toolbox development, see that project's README for TB-specific database info
 A recent version of Node.js is required to build and run the client-side component of the
 application (via Webpack and webpack-dev-server).
 
--   The latest (or any recent) LTS build is recommended - you can download directly from
-    https://nodejs.dev/ or use a tool (recommended) such as Homebrew or NVM (node-version-manager) to
-    install and update your local node versions.
--   Ensure that node is on your path via `node --version`.
+- The latest (or any recent) LTS build is recommended - you can download directly from
+  https://nodejs.dev/ or use a tool (recommended) such as Homebrew or NVM (node-version-manager) to
+  install and update your local node versions.
+- Ensure that node is on your path via `node --version`.
 
 ### Yarn
 
-XH uses Yarn for JS package management. To reduce variability across workstations, we typically
-include an updated, portable version of yarn bundled within each project, but a local yarn install
-is still required to detect and run the portable copy.
+XH uses both `yarn` (v1) and `npm` (recent/lts) for JS package management - Hoist has no requirement
+for one over the other, although `npm` has been found to work better in some corporate environments
+with intensive workstation and/or network-level antimalware and other file scanning. The important
+thing is to decide on one or the other for your project and ensure all developers use the same tool.
 
--   The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
--   Once installed, verify it can be run globally with `yarn --version`
--   Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
-    and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
-    do the same thing.)
+When using `yarn`, we typically include an updated, portable version of yarn bundled within each
+project, but a local yarn install is still required to detect and run the portable copy:
 
-### Other client-side requirements
-
-Some Hoist React dependencies can require a post-install build step, which looks for and can require
-some supporting build tools (such as Python) on your local workstation. Most of the time this works
-seamlessly, but contact the XH team if you receive any post-install errors from these dependencies.
+- The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
+- Once installed, verify it can be run globally with `yarn --version`
+- Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
+  and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
+  do the same thing.)
 
 ## JetBrains IntelliJ
 
@@ -98,30 +112,29 @@ beyond the scope of this doc. There are a few recommended settings to highlight,
 
 From within the IDE's general preferences / settings dialog:
 
--   Navigate to _Languages & Frameworks > Javascript_:
-    -   Ensure "ECMAScript 6+" selected in the top-level of this section.
-    -   Expand _Webpack_ - if doing local Toolbox + Hoist React development, you can choose to configure
-        "Manually" and point IntelliJ at a stub `webpack.config.intellij.js` checked-in at the root of
-        your local hoist-react project. This will cause IntelliJ to resolve any auto-suggestions or
-        context clues to the local versions of the Hoist classes and utils.
-    -   Expand _Code Quality Tools > Eslint_ - select "Automatic" configuration to enable eslint to run
-        and monitor your code as you update it. Note that you will need to have run `yarn` to install
-        your local client-side dependencies first.
--   Navigate to _Languages & Frameworks > Node.js and NPM_:
-    -   Ensure the IDE has detected the version of Node you wish to use.
-    -   You can also specify yarn as your package manager, if you wish to use the IDEs built-in yarn
-        integration.
--   Navigate to _Languages & Frameworks > Stylesheets > Stylelint_:
-    -   Enable with "Automatic configuration" to turn on local support for Stylelint, if using in your
-        project.
--   Navigate to _Version Control > Git_ - verify the IDE has detected your local git and select
-    "Update method: Rebase" to avoid introducing unnecessary merge commits when updating your local
-    repo.
-    -   The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
-        version control support.
+- Navigate to `Languages & Frameworks > Javascript`:
+    - Ensure "ECMAScript 6+" selected in the top-level of this section.
+    - Expand `Webpack` - *if doing local Toolbox + Hoist React development*, you can choose to
+      configure "Manually" and point IntelliJ at a stub `webpack.config.intellij.js` checked-in at
+      the root of your local hoist-react project. This will cause IntelliJ to resolve any
+      auto-suggestions or context clues to the local versions of the Hoist classes and utils.
+    - Expand `Code Quality Tools > Eslint` - select "Automatic" configuration to enable eslint to
+      run and monitor your code as you update it. Note that you will need to have run `yarn` to
+      install your local client-side dependencies first.
+    - If using Prettier in your project, enable that as well in the dedicated `Prettier` section.
+- Navigate to `Languages & Frameworks > Node.js and NPM`:
+    - Ensure the IDE has detected the version of Node you wish to use.
+    - You can also specify yarn as your package manager, if you wish to use the IDEs built-in yarn
+      integration.
+- Navigate to `Languages & Frameworks > Stylesheets > Stylelint`:
+    - Enable with "Automatic configuration" to turn on local support for Stylelint, if using in your
+      project.
+- Navigate to `Version Control > Git` - verify the IDE has detected your local git and select
+  "Update method: Rebase" to avoid unnecessary merge commits when updating your local repo.
+    - The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
+      version control support.
 
----
+------------------------------------------
 
-📫☎️🌎 info@xh.io | <https://xh.io/contact>
-
-Copyright © 2024 Extremely Heavy Industries Inc.
+📫☎️🌎 info@xh.io | https://xh.io/contact
+Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

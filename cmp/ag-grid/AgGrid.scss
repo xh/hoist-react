@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 @mixin group-border($side) {
@@ -25,6 +25,12 @@
   .ag-floating-top,
   .ag-floating-bottom {
     overflow-y: hidden !important;
+  }
+
+  // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
+  // conflicts with the drag management in the Navigator.
+  .ag-center-cols-viewport {
+    overscroll-behavior-x: none;
   }
 }
 
@@ -140,11 +146,14 @@
         border-color: var(--xh-grid-group-border-color);
       }
     }
+    .ag-cell {
+      border-bottom: none;
+      border-top: none;
+    }
   }
 
   &--no-row-borders {
-    .ag-row,
-    .ag-cell {
+    .ag-row {
       border-bottom: none;
       border-top: none;
     }
@@ -249,6 +258,7 @@
   &--cell-borders {
     .ag-cell {
       border-right-color: var(--xh-grid-border-color);
+      border-bottom-color: var(--xh-grid-border-color);
     }
 
     .ag-row {

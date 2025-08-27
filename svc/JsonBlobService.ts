@@ -2,79 +2,124 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {XH, HoistService} from '@xh/hoist/core';
+import {HoistService, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
+import {pick} from 'lodash';
+
+export interface JsonBlob {
+    /** Either null for private blobs or special token "*" for globally shared blobs. */
+    acl: '*';
+    /** True if this blob has been archived (soft-deleted). */
+    archived: boolean;
+    /** Timestamp indicating when this blob was archived, or special value `0` if not archived. */
+    archivedDate: number;
+    dateCreated: number;
+    description: string;
+    /** @internal database ID for this blob. Favor token instead. */
+    id: number;
+    lastUpdated: number;
+    lastUpdatedBy: string;
+    /** Optional application-specific metadata. */
+    meta: PlainObject | unknown[];
+    name: string;
+    /** Username of the blob's creator / owner. */
+    owner: string;
+    /** Primary unique identifier for getting, updating, and archiving blobs. */
+    token: string;
+    /**
+     * Application defined type for this blob. Used as a discriminator when querying blobs related
+     * to a particular use-case within an application.
+     */
+    type: string;
+    /**
+     * Current JSON value of this blob - its contents or data. Will be undefined for blob stubs
+     * returned by `listAsync` if `includeValue` was false.
+     */
+    value?: any;
+}
 
 /**
  * Service to read and set chunks of user-specific JSON persisted via Hoist Core's JSONBlob class.
+ *
+ * This service is intended as a general, lightweight utility for persisting small bundles of
+ * unstructured data that might not warrant a full-blown domain object, but which still need to be
+ * persisted back to the database.
  */
 export class JsonBlobService extends HoistService {
     static instance: JsonBlobService;
 
-    async getAsync(token) {
+    /** Retrieve a single JSONBlob by its unique token. */
+    async getAsync(token: string): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
         });
     }
 
-    /**
-     * Return the list of blobs visible to the current user.
-     *
-     * @param type - reference key for which type of data to list.
-     * @param includeValue - true to include the full value string for each blob.
-     */
-    async listAsync({type, includeValue}: {type: string; includeValue?: boolean}) {
+    /** Retrieve all blobs of a particular type that are visible to the current user. */
+    async listAsync(spec: {
+        type: string;
+        includeValue?: boolean;
+        loadSpec?: LoadSpec;
+    }): Promise<JsonBlob[]> {
+        const {type, includeValue, loadSpec} = spec;
         return XH.fetchJson({
             url: 'xh/listJsonBlobs',
-            params: {type, includeValue}
+            params: {type, includeValue},
+            loadSpec
         });
     }
 
     /** Persist a new JSONBlob back to the server. */
     async createAsync({
+        acl,
+        description,
         type,
-        name,
-        value,
         meta,
-        description
-    }: {
-        type: string;
-        name: string;
-        description?: string;
-        value: any;
-        meta?: any;
-    }) {
+        name,
+        value
+    }: Partial<JsonBlob>): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/createJsonBlob',
             params: {
-                data: JSON.stringify({type, name, value, meta, description})
+                data: JSON.stringify({type, name, acl, value, meta, description})
             }
         });
     }
 
-    /** Modify an existing JSONBlob, as identified by its unique token. */
-    async updateAsync(
-        token: string,
-        {
-            name,
-            value,
-            meta,
-            description
-        }: {name?: string; value?: any; meta?: any; description?: string}
-    ) {
+    /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
+    async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
+        update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
         return XH.fetchJson({
             url: 'xh/updateJsonBlob',
-            params: {
-                token,
-                update: JSON.stringify({name, value, meta, description})
-            }
+            params: {token, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Create or update a blob for a user with the existing type and name. */
+    async createOrUpdateAsync(
+        type: string,
+        name: string,
+        data: Partial<JsonBlob>
+    ): Promise<JsonBlob> {
+        const update = pick(data, ['acl', 'description', 'meta', 'value']);
+        return XH.fetchJson({
+            url: 'xh/createOrUpdateJsonBlob',
+            params: {type, name, update: JSON.stringify(update)}
+        });
+    }
+
+    /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
+    async findAsync(type: string, name: string): Promise<JsonBlob> {
+        return XH.fetchJson({
+            url: 'xh/findJsonBlob',
+            params: {type, name}
         });
     }
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
-    async archiveAsync(token: string) {
+    async archiveAsync(token: string): Promise<JsonBlob> {
         return XH.fetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}

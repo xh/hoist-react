@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
@@ -136,21 +136,9 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 hidden: !gridModel?.colChooserModel,
                 actionFn: () => (gridModel.colChooserModel as any)?.open()
             });
-        case 'expandCollapseAll':
-            return [
-                new RecordAction({
-                    text: 'Expand All',
-                    icon: Icon.groupRowExpanded(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.expandAll()
-                }),
-                new RecordAction({
-                    text: 'Collapse All',
-                    icon: Icon.groupRowCollapsed(),
-                    hidden: !gridModel || (!gridModel.treeMode && isEmpty(gridModel.groupBy)),
-                    actionFn: () => gridModel.collapseAll()
-                })
-            ];
+        case 'expandCollapseAll': // For backward compatibility
+        case 'expandCollapse':
+            return createExpandCollapseItem(gridModel);
         case 'export':
         case 'exportExcel':
             return new RecordAction({
@@ -197,7 +185,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                   column,
                                   gridModel
                               })
-                            : values[0] ?? '[blank]',
+                            : (values[0] ?? '[blank]'),
                         // Grid col renderers will very typically return elements, but we need this to be a string.
                         // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
                         // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
@@ -269,4 +257,47 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
         default:
             return token;
     }
+}
+
+function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
+    if (!gridModel || gridModel.maxDepth === 0) return null;
+
+    return [
+        new RecordAction({
+            text: 'Expand All',
+            icon: Icon.groupRowExpanded(),
+            actionFn: () => gridModel.expandAll()
+        }),
+        new RecordAction({
+            text: 'Collapse All',
+            icon: Icon.groupRowCollapsed(),
+            actionFn: () => gridModel.collapseAll()
+        }),
+        levelExpandAction(gridModel)
+    ];
+}
+
+function levelExpandAction(gridModel: GridModel): RecordAction {
+    return new RecordAction({
+        text: 'Expand to...',
+        displayFn: () => {
+            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+
+            // Don't show for flat grid models or if we don't have labels
+            if (!maxDepth || !resolvedLevelLabels) return {hidden: true};
+
+            const items = resolvedLevelLabels.map((label, idx) => {
+                const isCurrLevel =
+                    expandLevel === idx ||
+                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
+
+                return {
+                    icon: isCurrLevel ? Icon.check() : null,
+                    text: label,
+                    actionFn: () => gridModel.expandToLevel(idx)
+                };
+            });
+            return {items};
+        }
+    });
 }

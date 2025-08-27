@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -68,13 +68,29 @@ export const message = hoistCmp.factory({
 });
 
 const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
-    const {formModel, input} = model;
+    const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
+
+    const items = [];
+    if (formModel.getField('value')) {
+        items.push(
+            formField({
+                field: 'value',
+                item: withDefault(input.item, textInput())
+            })
+        );
+    }
+    if (formModel.getField('extraConfirm')) {
+        items.push(
+            formField({
+                label: extraConfirmLabel,
+                field: 'extraConfirm',
+                item: textInput()
+            })
+        );
+    }
     return form({
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        item: formField({
-            field: 'value',
-            item: withDefault(input.item, textInput())
-        })
+        items
     });
 });

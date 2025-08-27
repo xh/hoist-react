@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {RecordActionLike} from '@xh/hoist/data';
@@ -20,7 +20,7 @@ export type GridContextMenuItemLike = RecordActionLike | GridContextMenuToken | 
  *          `autosizeColumns` - autosize columns to fit their contents.
  *          `copyCell` - copy cell value to clipboard.
  *          `colChooser` - display column chooser for a grid.
- *          `expandCollapseAll` - expand/collapse all parent rows on grouped or tree grid.
+ *          `expandCollapse` - expand/collapse parent rows on grouped or tree grid.
  *          `export` - export grid data to excel via Hoist's server-side export capabilities.
  *          `exportExcel` - alias for `export`.
  *          `exportCsv` - export to CSV via Hoist's server-side export capabilities.
@@ -34,6 +34,7 @@ export type GridContextMenuToken =
     | 'copyCell'
     | 'colChooser'
     | 'expandCollapseAll'
+    | 'expandCollapse'
     | 'export'
     | 'exportExcel'
     | 'exportCsv'

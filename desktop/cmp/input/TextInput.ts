@@ -2,20 +2,21 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
-import {FocusEvent, ReactElement, ReactNode, Ref} from 'react';
+import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
 export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     value?: string;
@@ -63,7 +64,7 @@ export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /** True to allow browser spell check, default false. */
     spellCheck?: boolean;
@@ -100,7 +101,7 @@ export class TextInputModel extends HoistInputModel {
         this.noteValueChange(value);
     };
 
-    onKeyDown = (ev: KeyboardEvent) => {
+    onKeyDown: KeyboardEventHandler = ev => {
         if (ev.key === 'Enter') this.doCommit();
         this.componentProps.onKeyDown?.(ev);
     };
@@ -130,11 +131,11 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                 ),
                 autoFocus: props.autoFocus,
                 disabled: props.disabled,
-                inputRef: composeRefs(model.inputRef, props.inputRef),
+                inputRef: composeRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
                 leftIcon: props.leftIcon,
                 placeholder: props.placeholder,
                 rightElement:
-                    props.rightElement ||
+                    (props.rightElement as ReactElement) ||
                     (props.enableClear && !props.disabled && isClearable ? clearButton() : null),
                 round: withDefault(props.round, false),
                 spellCheck: withDefault(props.spellCheck, false),

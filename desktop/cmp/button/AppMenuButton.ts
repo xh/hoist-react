@@ -2,18 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItemLike, MenuItem, PlainObject, XH} from '@xh/hoist/core';
+import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {menu, popover} from '@xh/hoist/kit/blueprint';
+import {parseMenuItems} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -58,7 +55,7 @@ export interface AppMenuButtonProps extends ButtonProps {
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,
-    className: 'xh-app-menu',
+    className: 'xh-app-menu-button',
 
     render(props) {
         const {
@@ -86,7 +83,11 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
                 disabled,
                 ...rest
             }),
-            content: menu(buildMenuItems(props))
+            popoverClassName: 'xh-app-menu-popover',
+            content: menu({
+                className: 'xh-app-menu',
+                items: buildMenuItems(props)
+            })
         });
     }
 });
@@ -138,7 +139,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             omit: hideAdminItem,
             text: 'Admin',
             icon: Icon.wrench(),
-            actionFn: () => window.open('/admin')
+            actionFn: () => XH.appContainerModel.openAdmin()
         },
         {
             omit: hideImpersonateItem,
@@ -165,52 +166,9 @@ function buildMenuItems(props: AppMenuButtonProps) {
             text: 'Logout',
             icon: Icon.logout(),
             intent: 'danger',
-            actionFn: () => XH.identityService.logoutAsync()
+            actionFn: () => XH.logoutAsync()
         }
     ];
 
     return parseMenuItems([...extraItems, '-', ...defaultItems]);
-}
-
-function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
-    items = items.map(item => {
-        if (!isMenuItem(item)) return item;
-
-        item = clone(item);
-        item.items = clone(item.items);
-        item.prepareFn?.(item);
-        return item;
-    });
-
-    return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
-        .filter(filterConsecutiveMenuSeparators())
-        .map(item => {
-            if (item === '-') return menuDivider();
-            if (!isMenuItem(item)) return item;
-
-            const {actionFn} = item;
-
-            // Create menuItem from config
-            const cfg = {
-                text: item.text,
-                icon: item.icon,
-                intent: item.intent,
-                className: item.className,
-                onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
-                disabled: item.disabled
-            } as PlainObject;
-
-            // Recursively parse any submenus
-            if (!isEmpty(item.items)) {
-                cfg.items = parseMenuItems(item.items);
-                cfg.popoverProps = {openOnTargetFocus: false};
-            }
-
-            return menuItem(cfg);
-        });
-}
-
-function isMenuItem(item: MenuItemLike): item is MenuItem {
-    return !isString(item) && !isValidElement(item);
 }

@@ -2,17 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide} from '@xh/hoist/core';
-import {fmtNumber} from '@xh/hoist/format';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
-import {debounced, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isNaN, isNil, isNumber, round} from 'lodash';
+import type {Property} from 'csstype';
+import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import './NumberInput.scss';
 
 export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
@@ -46,7 +47,7 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
     placeholder?: string;
 
     /** Max decimal precision of the value, defaults to 4. */
-    precision?: number;
+    precision?: NumericPrecision;
 
     /**
      * Scale factor to apply when converting between the internal and external value. Useful for
@@ -60,7 +61,7 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
     selectOnFocus?: boolean;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /**
      * Text appended to the rendered value within control when not editing.
@@ -68,8 +69,8 @@ export interface NumberInputProps extends HoistProps, HoistInputProps, StyleProp
      */
     valueLabel?: string;
 
-    /** True to pad with trailing zeros out to precision, default false. */
-    zeroPad?: boolean;
+    /** @see NumberFormatOptions.zeroPad */
+    zeroPad?: ZeroPad;
 }
 
 /**
@@ -92,20 +93,19 @@ class NumberInputModel extends HoistInputModel {
 
     static shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
 
-    constructor() {
-        super();
+    override onLinked() {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
-    }
-
-    get precision() {
-        return withDefault(this.componentProps.precision, 4);
     }
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
-    get scaleFactor() {
+    get precision(): number {
+        return withDefault(this.componentProps.precision, 4);
+    }
+
+    get scaleFactor(): number {
         return withDefault(this.componentProps.scaleFactor, 1);
     }
 
@@ -123,9 +123,12 @@ class NumberInputModel extends HoistInputModel {
         this.noteValueChange(ev.target.value);
     };
 
-    @debounced(250)
+    /** TODO: Completely remove the debounce, or find and verify a reason why we need it set to 250. */
     override doCommitOnChangeInternal() {
-        super.doCommitOnChangeInternal();
+        debounce(
+            () => super.doCommitOnChangeInternal(),
+            withDefault(this.componentProps.commitOnChangeDebounce, 250)
+        )();
     }
 
     override toInternal(val) {
@@ -192,7 +195,7 @@ class NumberInputModel extends HoistInputModel {
         const {valueLabel, displayWithCommas} = componentProps,
             zeroPad = withDefault(componentProps.zeroPad, false),
             formattedVal = fmtNumber(value, {
-                precision,
+                precision: precision as Precision,
                 zeroPad,
                 label: valueLabel,
                 labelCls: null,

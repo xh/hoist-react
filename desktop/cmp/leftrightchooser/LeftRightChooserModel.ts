@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 export interface LeftRightChooserConfig {
@@ -135,6 +135,7 @@ export class LeftRightChooserModel extends HoistModel {
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
+        makeObservable(this);
         this.xhImpl = xhImpl;
 
         this.onChange = onChange;
@@ -157,16 +158,19 @@ export class LeftRightChooserModel extends HoistModel {
             ]
         };
 
-        const leftTextCol = {
+        const colSpec = {
                 field: 'text',
                 flex: true,
+                resizable: true
+            },
+            leftTextCol = {
+                ...colSpec,
                 headerName: () =>
                     leftTitle + (showCounts ? ` (${this.leftModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('left')
             },
             rightTextCol = {
-                field: 'text',
-                flex: true,
+                ...colSpec,
                 headerName: () =>
                     rightTitle + (showCounts ? ` (${this.rightModel.store.count})` : ''),
                 renderer: this.getTextColRenderer('right')
@@ -184,6 +188,8 @@ export class LeftRightChooserModel extends HoistModel {
             emptyText: leftEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol],
+            contextMenu: false,
+            expandLevel: leftGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 
@@ -194,6 +200,8 @@ export class LeftRightChooserModel extends HoistModel {
             emptyText: rightEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol],
+            contextMenu: false,
+            expandLevel: rightGroupingExpanded ? 1 : 0,
             xhImpl: true
         });
 

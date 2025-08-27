@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
 import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {errorIf, stripTags, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {action, bindable, comparer, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {stripTags, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     escapeRegExp,
@@ -29,7 +29,8 @@ import {
 export class GridFindFieldImplModel extends HoistModel {
     override xhImpl = true;
 
-    gridModel: GridModel;
+    @bindable
+    query: string = null;
 
     get matchMode(): string {
         return this.componentProps.matchMode ?? 'startWord';
@@ -79,35 +80,26 @@ export class GridFindFieldImplModel extends HoistModel {
         return !isNil(this.results) && !isEmpty(this.results);
     }
 
+    @computed
+    get gridModel() {
+        const ret = withDefault(this.componentProps.gridModel, this.lookupModel(GridModel));
+        if (!ret) {
+            this.logError("No GridModel available.  Provide via a 'gridModel' prop, or context.");
+        } else if (!ret.selModel?.isEnabled) {
+            this.logError('GridFindField must be bound to GridModel with selection enabled.');
+        }
+        return ret;
+    }
+
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
-    get query() {
-        return this.gridModel.xhFindQuery;
-    }
-
-    @action
-    setQuery(v) {
-        this.gridModel.xhFindQuery = v;
-    }
-
     constructor() {
         super();
         makeObservable(this);
     }
 
     override onLinked() {
-        const gridModel = (this.gridModel = withDefault(
-            this.componentProps.gridModel,
-            this.lookupModel(GridModel)
-        ));
-        errorIf(
-            !gridModel?.selModel?.isEnabled,
-            'GridFindField must be bound to GridModel with an enabled StoreSelectionModel.'
-        );
-
-        throwIf(!gridModel, "Must specify 'gridModel' in GridFindField.");
-
         this.addReaction({
             track: () => this.query,
             run: () => this.updateResults(true),
@@ -116,10 +108,10 @@ export class GridFindFieldImplModel extends HoistModel {
 
         this.addReaction({
             track: () => [
-                gridModel.store.records,
-                gridModel.columns,
-                gridModel.sortBy,
-                gridModel.groupBy
+                this.gridModel?.store.records,
+                this.gridModel?.columns,
+                this.gridModel?.sortBy,
+                this.gridModel?.groupBy
             ],
             run: () => {
                 this._records = null;
@@ -184,7 +176,7 @@ export class GridFindFieldImplModel extends HoistModel {
 
         // Auto-select first matching result
         if (autoSelect && this.hasResults && !isFinite(this.selectedIdx)) {
-            gridModel.selectAsync(this.results[0]);
+            gridModel?.selectAsync(this.results[0]);
         }
     }
 

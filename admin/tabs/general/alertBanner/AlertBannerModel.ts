@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
@@ -10,13 +10,13 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {AlertBannerSpec} from '@xh/hoist/svc';
+import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
-    savedValue;
-    @observable.ref savedPresets: PlainObject[] = [];
+    savedValue: AlertBannerSpec;
+    @bindable.ref savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -61,7 +61,7 @@ export class AlertBannerModel extends HoistModel {
         return ['primary', 'success', 'warning', 'danger'];
     }
 
-    get iconOptions() {
+    get iconOptions(): AlertBannerIconName[] {
         return [
             'bullhorn',
             'check-circle',
@@ -118,7 +118,6 @@ export class AlertBannerModel extends HoistModel {
         this.formModel.setValues({...preset, expires: null});
     }
 
-    @action
     addPreset() {
         const {message, intent, iconName, enableClose, clientApps} = this.formModel.values,
             dateCreated = Date.now(),
@@ -136,7 +135,7 @@ export class AlertBannerModel extends HoistModel {
     @action
     removePreset(preset: PlainObject) {
         XH.confirm({
-            message: 'Are you sure you wish to delete this preset?',
+            message: 'Are you sure you want to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
@@ -188,25 +187,6 @@ export class AlertBannerModel extends HoistModel {
         }
     }
 
-    async saveBannerSpecAsync(spec: AlertBannerSpec) {
-        const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        try {
-            await XH.fetchService
-                .postJson({
-                    url: 'alertBannerAdmin/setAlertSpec',
-                    body: spec
-                })
-                .track({
-                    category: 'Audit',
-                    message: 'Updated Alert Banner',
-                    data: {active, message, intent, iconName, enableClose, clientApps},
-                    logData: ['active']
-                });
-        } catch (e) {
-            XH.handleException(e);
-        }
-    }
-
     //----------------
     // Implementation
     //----------------
@@ -233,7 +213,7 @@ export class AlertBannerModel extends HoistModel {
         let preservedPublishDate = null;
 
         // Ask some questions if we are dealing with live stuff
-        if (XH.alertBannerService.enabled && (active || savedValue?.active)) {
+        if (active || savedValue?.active) {
             // Question 1. Reshow when modifying an active && already active, closable banner?
             if (
                 active &&
@@ -272,12 +252,13 @@ export class AlertBannerModel extends HoistModel {
             const finalConfirm = await XH.confirm({
                 message: fragment(
                     p('This change will modify a live banner for all users of this application.'),
-                    p('Are you sure you wish to do this?')
+                    p('Are you sure you want to do this?')
                 ),
                 confirmProps: {
                     text: 'Yes, modify the banner',
                     intent: 'primary',
-                    outlined: true
+                    outlined: true,
+                    autoFocus: false
                 }
             });
             if (!finalConfirm) return;
@@ -299,7 +280,25 @@ export class AlertBannerModel extends HoistModel {
             };
 
         await this.saveBannerSpecAsync(value);
-        await XH.alertBannerService.checkForBannerAsync();
+        await XH.environmentService.pollServerAsync();
         await this.refreshAsync();
+    }
+
+    private async saveBannerSpecAsync(spec: AlertBannerSpec) {
+        const {active, message, intent, iconName, enableClose, clientApps} = spec;
+        try {
+            await XH.fetchService.postJson({
+                url: 'alertBannerAdmin/setAlertSpec',
+                body: spec,
+                track: {
+                    category: 'Audit',
+                    message: 'Updated Alert Banner',
+                    data: {active, message, intent, iconName, enableClose, clientApps},
+                    logData: ['active']
+                }
+            });
+        } catch (e) {
+            XH.handleException(e);
+        }
     }
 }

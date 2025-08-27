@@ -2,15 +2,16 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
-import {forOwn, has, isFunction} from 'lodash';
-import {DefaultHoistProps, HoistBase, managed, PlainObject} from '../';
+import {isFunction} from 'lodash';
+import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
+import {Class} from 'type-fest';
 
 /**
  * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
@@ -66,8 +67,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 
     // Internal State
-    @observable
-    _componentProps = {};
+    @observable.ref _componentProps = null;
     _modelLookup = null;
     _created = Date.now();
 
@@ -116,7 +116,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 
@@ -135,8 +135,9 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * Observability is based on a shallow computation for each prop (i.e. a reference
      * change in any particular prop will trigger observers to be notified).
      */
+    @computed({equals: comparer.shallow})
     get componentProps(): DefaultHoistProps {
-        return this._componentProps;
+        return this._componentProps ?? {};
     }
 
     /**
@@ -186,13 +187,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     /** @internal */
     @action
     setComponentProps(newProps) {
-        const props = this._componentProps;
-        Object.assign(props, newProps);
-        forOwn(props, (v, k) => {
-            if (!has(newProps, k)) {
-                delete props[k];
-            }
-        });
+        this._componentProps = newProps;
     }
 
     /** @internal */
@@ -221,6 +216,4 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 }
 
-export interface HoistModelClass<T extends HoistModel> extends Function {
-    prototype: T;
-}
+export type HoistModelClass<T extends HoistModel> = Class<T> | {prototype: Pick<T, keyof T>};

@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
-import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
@@ -17,7 +17,7 @@ import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/imp
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
-import {mask} from '@xh/hoist/desktop/cmp/mask';
+import {mask} from '@xh/hoist/cmp/mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
@@ -26,13 +26,14 @@ import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
+import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
+import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -41,7 +42,6 @@ import {optionsDialog} from './OptionsDialog';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 import {ReactElement} from 'react';
-import {errorMessage} from '../cmp/error/ErrorMessage';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -56,7 +56,8 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
-    errorMessage
+    errorMessageImpl,
+    maskImpl
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -87,7 +88,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState()
+                item: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -101,11 +102,15 @@ export const AppContainer = hoistCmp({
 //-----------------------------------------
 // Implementation
 //-----------------------------------------
-function viewForState() {
+function viewForState({model}) {
     switch (XH.appState) {
         case 'PRE_AUTH':
-        case 'INITIALIZING':
-            return viewport(mask({spinner: true, isDisplayed: true}));
+        case 'AUTHENTICATING':
+        case 'INITIALIZING_HOIST':
+        case 'INITIALIZING_APP':
+            return viewport(
+                mask({spinner: true, isDisplayed: true, message: model.initializingLoadMaskMessage})
+            );
         case 'LOGIN_REQUIRED':
             return loginPanel();
         case 'ACCESS_DENIED':
@@ -166,19 +171,7 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {

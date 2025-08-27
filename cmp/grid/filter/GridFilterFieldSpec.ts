@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
-import {FieldFilterOperator, parseFilter, View} from '@xh/hoist/data';
+import {FieldFilterOperator, parseFilter, StoreRecord, View} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
@@ -61,6 +61,11 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
     }
 
+    getUniqueValue(value: unknown) {
+        // Return ms timestamp for dates to facilitate uniqueness check
+        return isDate(value) ? value.getTime() : value;
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -112,7 +117,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     }
 
     // Recursively modify a Filter|CompoundFilter to remove all FieldFilters referencing this column
-    cleanFilter(filter) {
+    private cleanFilter(filter) {
         if (!filter) return filter;
 
         const {field, filters, op} = filter;
@@ -126,13 +131,8 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         return filter;
     }
 
-    valueFromRecord(record) {
+    private valueFromRecord(record: StoreRecord) {
         const {filterModel, field} = this;
         return filterModel.toDisplayValue(record.get(field));
-    }
-
-    getUniqueValue(value) {
-        // Return ms timestamp for dates to facilitate uniqueness check
-        return isDate(value) ? value.getTime() : value;
     }
 }

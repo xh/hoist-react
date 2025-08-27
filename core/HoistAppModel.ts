@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
@@ -27,14 +27,6 @@ import {ReactNode} from 'react';
  */
 export class HoistAppModel extends HoistModel {
     /**
-     * Hoist will call this method early in the initialization sequence, prior to user
-     * authentication and full Hoist initialization. This means that several core services
-     * (identity, configs, prefs) will *not* be available, but it provides the app a hook to
-     * do early service initialization or other work to support flows such as OAuth.
-     */
-    static async preAuthAsync() {}
-
-    /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
@@ -44,15 +36,8 @@ export class HoistAppModel extends HoistModel {
     async initAsync() {}
 
     /**
-     * Called by {@link IdentityService.logoutAsync} to provide an app-specific hook after
-     * logging out an authenticated user. Applicable only to apps that generally support
-     * logout and require handling in addition to Hoist server logout.
-     */
-    async logoutAsync() {}
-
-    /**
      * Should the version bar be shown in this application?.
-     * Applications  for which  a version bar might not be appropriate (e.g. a mini-app
+     * Applications for which a version bar might not be appropriate (e.g. a mini-app
      * being shown in a frame or modal) may override this getter and return false
      */
     get supportsVersionBar(): boolean {
@@ -81,21 +66,21 @@ export class HoistAppModel extends HoistModel {
      */
     getAboutDialogItems(): AboutDialogItem[] {
         const XH = window['XH'],
-            svc = XH.environmentService;
-
+            svc = XH.environmentService,
+            clientVersionBuild = `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`,
+            serverVersionBuild = `${svc.get('appVersion')} (build ${svc.get('appBuild')})`;
         return [
             {label: 'App', value: `${svc.get('appName')} (${svc.get('appCode')})`},
             {label: 'Current User', value: XH.identityService.username},
             {label: 'Environment', value: svc.get('appEnvironment')},
-            {label: 'Instance', value: svc.serverInstance},
-            {label: 'Server', value: `${svc.get('appVersion')} (build ${svc.get('appBuild')})`},
-            {
-                label: 'Client',
-                value: `${svc.get('clientVersion')} (build ${svc.get('clientBuild')})`
-            },
+            {label: 'Server', value: serverVersionBuild},
+            {label: 'Client', value: clientVersionBuild},
             {label: 'Hoist Core', value: svc.get('hoistCoreVersion')},
             {label: 'Hoist React', value: svc.get('hoistReactVersion')},
             {label: 'User Agent', value: window.navigator.userAgent},
+            {label: 'Tab ID', value: XH.tabId},
+            {label: 'Load ID', value: XH.loadId},
+            {label: 'Server Instance', value: svc.serverInstance},
             {label: 'WebSockets', value: webSocketIndicator()}
         ];
     }
@@ -103,17 +88,25 @@ export class HoistAppModel extends HoistModel {
     /**
      * Resets user preferences and any persistent local application state.
      *
-     * The default implementation for this method will clear *all* preferences and local storage.
+     * The default implementation for this method will clear all preferences, local + session
+     * storage, and transient {@link ViewManager} state such as last-selected and pinned views.
+     * (Views themselves are preserved.)
      *
-     * Applications may wish to override this method to do a more targeted clearing of state.
-     * This is important for complex applications with smaller sub-applications, and/or device
+     * Applications may wish to override this method to perform a more targeted clearing of state.
+     * This is important for complex applications with smaller sub-applications and/or device
      * specific applications. These applications will typically want to perform a custom clearing
-     * that is more targeted, and includes any additional app-specific state.
+     * that is more targeted and/or clears additional app-specific state.
+     *
+     * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
         const XH = window['XH'];
-        await XH.prefService.clearAllAsync();
+        await XH.fetchJson({
+            url: 'xh/clearUserState',
+            params: {clientUsername: XH.getUsername()}
+        });
         XH.localStorageService.clear();
+        XH.sessionStorageService.clear();
     }
 }
 

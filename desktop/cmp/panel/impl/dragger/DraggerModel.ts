@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -30,25 +30,34 @@ export class DraggerModel extends HoistModel {
     override onLinked() {
         this.throttledSetSize = throttle(size => (this.panelModel.size = size), 50);
 
-        // Add listeners to el to ensure we can get non-passive handlers than can preventDefault()
+        // maintain listeners on el to ensure we can get non-passive handlers than can preventDefault()
         // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
         this.addReaction({
             track: () => this.ref.current,
-            run: current => {
-                if (current) this.addListeners(current);
+            run: (current, old) => {
+                this.toggleListeners(old, false);
+                this.toggleListeners(current, true);
             }
         });
     }
 
-    private addListeners(el) {
+    private toggleListeners(el, add: boolean) {
+        if (!el) return;
+        const fn = (element, event, handler, options = undefined) => {
+            add
+                ? element.addEventListener(event, handler, options)
+                : element.removeEventListener(event, handler, options);
+        };
         if (XH.isDesktop) {
-            el.addEventListener('dragstart', this.onDragStart);
-            el.addEventListener('drag', this.onDrag);
-            el.addEventListener('dragend', this.onDragEnd);
+            fn(el, 'dragstart', this.onDragStart);
+            fn(el, 'dragend', this.onDragEnd);
+            this.isFirefox // drag co-ordinates not impl in firefox -- use 'dragover' on doc
+                ? fn(document, `dragover`, this.onDrag)
+                : fn(el, 'drag', this.onDrag);
         } else {
-            el.addEventListener('touchstart', this.onDragStart);
-            el.addEventListener('touchmove', this.onDrag, {passive: false});
-            el.addEventListener('touchend', this.onDragEnd);
+            fn(el, 'touchstart', this.onDragStart);
+            fn(el, 'touchmove', this.onDrag, {passive: false});
+            fn(el, 'touchend', this.onDragEnd);
         }
     }
 
@@ -254,11 +263,17 @@ export class DraggerModel extends HoistModel {
     }
 
     private isValidMouseEvent(e) {
-        return e.buttons && e.buttons !== 0;
+        // Note: We fall back to deprecated 'which' to work around a Safari issue where `buttons`
+        // was not being set. We may be able to remove in the future.
+        return (e.buttons && e.buttons !== 0) || (e.which && e.which !== 0);
     }
 
     private isValidTouchEvent(e) {
         return e.touches && e.touches.length > 0;
+    }
+
+    private get isFirefox(): boolean {
+        return navigator.userAgent.toLowerCase().includes('firefox');
     }
 
     /**
@@ -269,5 +284,10 @@ export class DraggerModel extends HoistModel {
         for (const el of document.getElementsByTagName('iframe') as any) {
             el.style['pointer-events'] = v;
         }
+    }
+
+    override destroy() {
+        this.toggleListeners(this.ref.current, false);
+        super.destroy();
     }
 }

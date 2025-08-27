@@ -2,8 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import {inRange, isNil} from 'lodash';
 import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
@@ -20,9 +21,9 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {logWarn, withDefault} from '@xh/hoist/utils/js';
+import {apiDeprecated, logWarn, withDefault} from '@xh/hoist/utils/js';
 
-interface RelativeTimestampProps extends HoistProps, BoxProps {
+interface RelativeTimestampProps extends HoistProps, BoxProps, RelativeTimestampOptions {
     /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
@@ -32,7 +33,11 @@ interface RelativeTimestampProps extends HoistProps, BoxProps {
     /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
     timestamp?: Date | number;
 
-    /** Formatting options */
+    /**
+     * Formatting options.
+     *
+     * @deprecated - these options should be spread into this object directly.
+     */
     options?: RelativeTimestampOptions;
 }
 
@@ -91,13 +96,13 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, bind, timestamp, options, ...rest}, ref) {
-        const impl = useLocalModel(RelativeTimestampLocalModel);
-
+    render({className, bind, timestamp, ...rest}, ref) {
+        const impl = useLocalModel(RelativeTimestampLocalModel),
+            layoutProps = getLayoutProps(rest);
         return box({
             className,
             ref,
-            ...rest,
+            ...layoutProps,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
@@ -128,21 +133,29 @@ class RelativeTimestampLocalModel extends HoistModel {
 
     @computed.struct
     get options(): RelativeTimestampOptions {
-        return this.componentProps.options;
+        const {componentProps} = this;
+
+        apiDeprecated('options', {
+            test: componentProps.options,
+            msg: 'Spread options directly in this object instead',
+            v: `v78`,
+            source: RelativeTimestamp
+        });
+
+        return componentProps.options ?? componentProps;
     }
 
     constructor() {
         super();
         makeObservable(this);
-
-        this.addReaction({
-            track: () => [this.timestamp, this.options],
-            run: () => this.refreshDisplay()
-        });
     }
 
     override onLinked() {
         this.model = this.lookupModel('*');
+        this.addReaction({
+            track: () => [this.timestamp, this.options],
+            run: () => this.refreshDisplay()
+        });
     }
 
     @action

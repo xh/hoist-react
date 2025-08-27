@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {capitalize, isNil, kebabCase, map} from 'lodash';
+import {capitalize, isNil, isString, kebabCase, map} from 'lodash';
 import {CSSProperties, ReactNode} from 'react';
+import {PlainObject} from '@xh/hoist/core';
 
 export interface FormatOptions<T = any> {
     /** Display value for null values. */
@@ -63,11 +64,12 @@ export interface JSONFormatOptions {
 }
 
 /**
- * Pretty-print a JSON string, adding line breaks and indentation.
+ * Pretty-print a JSON string or (JSON Object), adding line breaks and indentation.
  */
-export function fmtJson(str: string, opts?: JSONFormatOptions): string {
+export function fmtJson(v: string | PlainObject, opts?: JSONFormatOptions): string {
     const {replacer = undefined, space = 2} = opts ?? {};
-    return isNil(str) ? '' : JSON.stringify(JSON.parse(str), replacer, space);
+    if (isString(v)) v = JSON.parse(v);
+    return isNil(v) ? '' : JSON.stringify(v, replacer, space);
 }
 
 /**

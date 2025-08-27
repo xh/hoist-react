@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
@@ -34,7 +34,7 @@ export interface RecordActionSpec extends TestSupportProps {
     actionFn?: (data: ActionFnData) => void;
 
     /** Function called prior to showing this item. */
-    displayFn?: (data: DisplayFnData) => PlainObject;
+    displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
     items?: RecordActionLike[];
@@ -83,7 +83,7 @@ export interface ActionFnData {
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
- * a Grid Context Menu nd RecordActionBar (aka grid context menus and action columns).
+ * a Grid Context Menu and RecordActionBar (aka grid context menus and action columns).
  *
  * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
@@ -107,7 +107,7 @@ export class RecordAction {
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: DisplayFnData) => PlainObject;
+    displayFn: (data: ActionFnData) => PlainObject;
     items: Array<RecordAction | string>;
     disabled: boolean;
     hidden: boolean;
@@ -206,9 +206,4 @@ export class RecordAction {
             (isNumber(required) && count === required)
         );
     }
-}
-
-interface DisplayFnData extends ActionFnData {
-    /** Default display config for the action */
-    defaultConfig?: PlainObject;
 }

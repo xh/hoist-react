@@ -3,5 +3,6 @@
     "rules": {
         "no-descending-specificity": null,
         "no-duplicate-selectors": null
-    }
+    },
+    "ignoreFiles": ["node_modules/**/*", "build/**/*"]
 }

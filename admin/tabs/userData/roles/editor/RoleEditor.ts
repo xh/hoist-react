@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
@@ -33,23 +33,24 @@ export const roleEditor = hoistCmp.factory({
                 mask: savingTask,
                 bbar: [
                     button({
-                        onClick: () => model.deleteAsync(),
+                        text: 'Delete',
                         icon: Icon.delete(),
                         intent: 'danger',
-                        text: 'Delete',
-                        disabled: !role
+                        disabled: !role,
+                        onClick: () => model.deleteAsync()
                     }),
                     filler(),
                     button({
-                        onClick: () => model.cancel(),
-                        text: 'Cancel'
+                        text: 'Cancel',
+                        onClick: () => model.cancel()
                     }),
                     button({
-                        onClick: () => model.saveAsync(),
+                        text: 'Save Changes',
                         icon: Icon.check(),
                         intent: 'success',
-                        text: 'Save',
-                        disabled: saveDisabled
+                        outlined: true,
+                        disabled: saveDisabled,
+                        onClick: () => model.saveAsync()
                     })
                 ]
             })

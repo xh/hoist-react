@@ -2,38 +2,49 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-.xh-date-input {
-  // Style input in picker-only mode
-  &--picker-only {
-    input {
-      color: var(--xh-input-text-color) !important;
-      background-color: var(--xh-input-bg) !important;
-      cursor: pointer !important;
+.xh-date-input__wrapper {
+  .bp5-input-action {
+    height: 100%;
+  }
+
+  .bp5-input-group .xh-icon {
+    position: relative;
+    margin: 0 !important;
+  }
+
+  .xh-date-input {
+    // Style input in picker-only mode
+    &--picker-only {
+      input {
+        color: var(--xh-input-text-color) !important;
+        background-color: var(--xh-input-bg) !important;
+        cursor: pointer !important;
+      }
+
+      .bp5-input-group.bp5-disabled {
+        cursor: pointer !important;
+      }
     }
 
-    .bp5-input-group.bp5-disabled {
-      cursor: pointer !important;
+    // Style picker icon in input-only mode
+    &__picker-icon--disabled:hover {
+      background-color: transparent !important;
+      cursor: not-allowed;
     }
-  }
 
-  // Style picker icon in input-only mode
-  &__picker-icon--disabled:hover {
-    background-color: transparent !important;
-    cursor: not-allowed;
-  }
+    // Style buttons when disabled
+    &.xh-input-disabled:not(.xh-date-input--picker-only) button:hover {
+      background-color: transparent !important;
+      cursor: not-allowed;
+    }
 
-  // Style buttons when disabled
-  &.xh-input-disabled:not(.xh-date-input--picker-only) button:hover {
-    background-color: transparent !important;
-    cursor: not-allowed;
-  }
-
-  // Prevent browser from capturing click events when input is disabled due to use of
-  // enableTextInput: false prop. See https://github.com/xh/hoist-react/issues/3460
-  input[disabled] {
-    pointer-events: none;
+    // Prevent browser from capturing click events when input is disabled due to use of
+    // enableTextInput: false prop. See https://github.com/xh/hoist-react/issues/3460
+    input[disabled] {
+      pointer-events: none;
+    }
   }
 }

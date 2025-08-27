@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
@@ -16,7 +16,8 @@ import {withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
-import {ReactElement} from 'react';
+import {badge} from '@xh/hoist/cmp/badge';
+import {cloneElement, ReactElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
@@ -26,6 +27,8 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     disabled?: boolean;
     /** True to show a "clear" button at the right of the control.  Defaults to true. */
     enableClear?: boolean;
+    /** True to show count of filter tags next to the left icon. */
+    displayCount?: boolean;
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
     /** Max-height of dropdown. Either a number in pixels or a valid CSS string, such as '80vh'. */
@@ -36,6 +39,8 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     menuWidth?: number;
     /** Text to display when control is empty. */
     placeholder?: string;
+    /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite()) */
+    favoritesIcon?: ReactElement;
 }
 
 /**
@@ -47,10 +52,24 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
     className: 'xh-filter-chooser',
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
-            {inputRef, suggestFieldsWhenEmpty, selectOptions, unsupportedFilter, favoritesIsOpen} =
-                model,
-            {autoFocus, enableClear, leftIcon, maxMenuHeight, menuPlacement, menuWidth} =
-                chooserProps,
+            {
+                inputRef,
+                suggestFieldsWhenEmpty,
+                selectOptions,
+                unsupportedFilter,
+                favoritesIsOpen,
+                tagCount
+            } = model,
+            {
+                autoFocus,
+                enableClear,
+                displayCount,
+                leftIcon,
+                maxMenuHeight,
+                menuPlacement,
+                menuWidth,
+                favoritesIcon
+            } = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter
                 ? 'Unsupported filter (click to clear)'
@@ -61,42 +80,49 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
             className,
             ...layoutProps,
             item: popover({
-                item: select({
-                    flex: 1,
-                    height: layoutProps?.height,
-                    bind: 'selectValue',
-                    ref: inputRef,
+                item: hframe(
+                    badge({
+                        omit: !displayCount || tagCount < 1,
+                        className: 'xh-filter-chooser__count',
+                        item: tagCount
+                    }),
+                    select({
+                        flex: 1,
+                        height: layoutProps?.height,
+                        bind: 'selectValue',
+                        ref: inputRef,
 
-                    autoFocus,
-                    disabled,
-                    menuPlacement,
-                    menuWidth,
-                    placeholder,
-                    leftIcon: withDefault(leftIcon, Icon.filter()),
-                    enableClear: withDefault(enableClear, true),
+                        autoFocus,
+                        disabled,
+                        menuPlacement,
+                        menuWidth,
+                        placeholder,
+                        leftIcon: withDefault(leftIcon, Icon.filter()),
+                        enableClear: withDefault(enableClear, true),
 
-                    enableMulti: true,
-                    queryFn: q => model.queryAsync(q),
-                    options: selectOptions,
-                    optionRenderer,
-                    rsOptions: {
-                        defaultOptions: suggestFieldsWhenEmpty,
-                        openMenuOnClick: suggestFieldsWhenEmpty,
-                        openMenuOnFocus: false,
-                        isOptionDisabled: opt => opt.type === 'msg',
-                        noOptionsMessage: () => null,
-                        loadingMessage: () => null,
-                        styles: {
-                            menuList: base => ({
-                                ...base,
-                                maxHeight: withDefault(maxMenuHeight, '50vh')
-                            })
-                        },
-                        components: {
-                            DropdownIndicator: () => favoritesIcon(model)
+                        enableMulti: true,
+                        queryFn: q => model.queryAsync(q),
+                        options: selectOptions,
+                        optionRenderer,
+                        rsOptions: {
+                            defaultOptions: suggestFieldsWhenEmpty,
+                            openMenuOnClick: suggestFieldsWhenEmpty,
+                            openMenuOnFocus: false,
+                            isOptionDisabled: opt => opt.type === 'msg',
+                            noOptionsMessage: () => null,
+                            loadingMessage: () => null,
+                            styles: {
+                                menuList: base => ({
+                                    ...base,
+                                    maxHeight: withDefault(maxMenuHeight, '50vh')
+                                })
+                            },
+                            components: {
+                                DropdownIndicator: () => favoritesIconCmp(model, favoritesIcon)
+                            }
                         }
-                    }
-                }),
+                    })
+                ),
                 content: favoritesMenu(),
                 isOpen: favoritesIsOpen,
                 position: 'bottom-right',
@@ -187,15 +213,18 @@ const messageOption = hoistCmp.factory({
 //-----------------
 // Favorites
 //------------------
-function favoritesIcon(model) {
+function favoritesIconCmp(model, favoritesIcon) {
     if (!model.persistFavorites) return null;
-    return Icon.favorite({
+
+    const iconProps = {
         className: classNames('xh-select__indicator', 'xh-filter-chooser-favorite-icon'),
         onMouseDown: e => {
             model.openFavoritesMenu();
             e.stopPropagation();
         }
-    });
+    };
+
+    return favoritesIcon ? cloneElement(favoritesIcon, iconProps) : Icon.favorite(iconProps);
 }
 
 const favoritesMenu = hoistCmp.factory<FilterChooserModel>({

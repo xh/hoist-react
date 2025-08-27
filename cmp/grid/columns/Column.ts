@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
@@ -34,9 +34,9 @@ import {
     toString
 } from 'lodash';
 import {
-    Attributes,
     createElement,
     forwardRef,
+    FunctionComponent,
     isValidElement,
     ReactNode,
     useImperativeHandle,
@@ -52,6 +52,7 @@ import {
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
+    ColumnEditorProps,
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
@@ -64,13 +65,13 @@ import {
     ColumnTooltipFn
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
-import {FunctionComponent} from 'react';
 import type {
     ColDef,
     ITooltipParams,
     ValueGetterParams,
     ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
+import {CellClickedEvent} from '@ag-grid-community/core';
 
 export interface ColumnSpec {
     /**
@@ -333,10 +334,10 @@ export interface ColumnSpec {
     editable?: boolean | ColumnEditableFn;
 
     /**
-     * Cell editor Component or a function to create one.  Adding an editor will also
-     * install a cellClassRule and tooltip to display the validation state of the cell in question.
+     * Cell editor Component or a function to create one. Adding an editor will also install a
+     * cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: FunctionComponent | ColumnEditorFn;
+    editor?: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -373,6 +374,12 @@ export interface ColumnSpec {
      * many rows + multiple actions per row. Defaults to false;
      */
     actionsShowOnHoverOnly?: boolean;
+
+    /**
+     * Callback when a cell within this column clicked.
+     * See also {@link GridConfig.onCellClicked}, called when any cell within the grid is clicked.
+     */
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
@@ -471,15 +478,15 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: FunctionComponent | ColumnEditorFn;
+    editor: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
     actions?: Array<RecordActionSpec | RecordAction>;
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
-    manuallySized: boolean;
     omit: Thunkable<boolean>;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     gridModel: GridModel;
     agOptions: ColDef;
@@ -552,6 +559,7 @@ export class Column {
             actionsShowOnHoverOnly,
             actions,
             omit,
+            onCellClicked,
             agOptions,
             appData,
             ...rest
@@ -658,6 +666,7 @@ export class Column {
 
         this.actions = actions;
         this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
+        this.onCellClicked = onCellClicked;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -759,7 +768,8 @@ export class Column {
                     if (event.shiftKey && event.key === 'Enter') return true;
 
                     return false;
-                }
+                },
+                onCellClicked: this.onCellClicked
             };
 
         // We will change this setter as needed to install the renderer in the proper location
@@ -987,8 +997,7 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent)
-                    return createElement(editor, props as Attributes);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
@@ -1103,6 +1112,6 @@ export class Column {
 
         return isFunction(sortValue)
             ? sortValue(v, {record, column: this, gridModel})
-            : record?.data[sortValue] ?? v;
+            : (record?.data[sortValue] ?? v);
     }
 }

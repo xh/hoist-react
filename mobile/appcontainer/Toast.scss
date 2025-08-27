@@ -1,6 +1,6 @@
 ons-toast.xh-toast {
   // Better constrain height to available viewport, allows margins below to position as expected.
-  height: 100svh;
+  height: 100dvh;
 
   .toast {
     // Ensure toasts respect safe area for full-screen apps. We don't want them to overlap

@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import parser from 'ua-parser-js';
+import {UAParser} from 'ua-parser-js';
 
 /**
  * Support for user agent parsing.
@@ -32,6 +32,6 @@ export class UserAgentModel extends HoistModel {
     // Implementation
     //---------------------
     private get uaParser() {
-        return (this._uaParser = this._uaParser ?? new parser());
+        return (this._uaParser = this._uaParser ?? new UAParser());
     }
 }

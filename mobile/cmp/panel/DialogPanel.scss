@@ -1,17 +1,33 @@
 // Sizing below designed to ensure that DialogPanel occupies the entire (safe) area of the screen.
 .xh-dialog-panel {
   & > .dialog {
+    // Fallbacks for secure client browsers that don't support dynamic viewport units.
+    /* stylelint-disable consecutive-duplicates */
+    width: 100vw;
     width: 100svw;
-    max-height: 100svh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    /* stylelint-enable consecutive-duplicates */
 
     .dialog-container {
-      height: 100svh;
+      // Fallbacks for secure client browsers that don't support dynamic viewport units.
+      /* stylelint-disable consecutive-duplicates */
+      height: 100vh;
+      height: 100dvh;
+      max-width: 100vw !important;
       max-width: 100svw !important;
+      /* stylelint-enable consecutive-duplicates */
+
       border: 0 !important;
 
       & > .xh-panel {
         width: 100%;
         height: 100%;
+
+        // Additional padding on dialog panel's own header.
+        > .xh-panel-header {
+          padding: 10px;
+        }
       }
     }
   }

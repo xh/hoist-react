@@ -2,38 +2,55 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
-import {navigator as onsenNavigator} from '@xh/hoist/kit/onsen';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {swiper, swiperSlide, EffectCreative} from '@xh/hoist/kit/swiper';
 import '@xh/hoist/mobile/register';
-import {swiper} from './impl/swipe/Swiper';
+import './Navigator.scss';
 import {NavigatorModel} from './NavigatorModel';
-
-export interface NavigatorProps extends HoistProps<NavigatorModel> {
-    /** Set animation style or turn off, default 'slide'. */
-    animation?: 'slide' | 'lift' | 'fade' | 'none';
-}
+import {PageModel} from './PageModel';
+import {gestureRefresh} from './impl/GestureRefresh';
+import {page} from './impl/Page';
 
 /**
  * Top-level Component within an application, responsible for rendering a stack of
  * pages and managing transitions between pages.
  */
-export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorProps>({
+export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorModel>({
     displayName: 'Navigator',
     model: uses(NavigatorModel),
     className: 'xh-navigator',
-
-    render({model, className, animation = 'slide'}) {
-        return swiper(
-            onsenNavigator({
+    render({model, className}) {
+        const {stack, allowSlideNext, allowSlidePrev} = model;
+        return gestureRefresh(
+            swiper({
                 className,
-                initialRoute: {init: true},
-                animation,
-                animationOptions: {duration: 0.2, delay: 0, timing: 'ease-in'},
-                renderPage: model.renderPage,
-                onPostPush: model.onPageChange,
-                onPostPop: model.onPageChange
+                allowSlideNext,
+                allowSlidePrev,
+                slidesPerView: 1,
+                modules: [EffectCreative],
+                effect: 'creative',
+                creativeEffect: {
+                    prev: {
+                        shadow: true,
+                        translate: ['-15%', 0, -1]
+                    },
+                    next: {
+                        translate: ['100%', 0, 0]
+                    }
+                },
+                onSwiper: swiper => model.setSwiper(swiper),
+                items: stack.map(it => {
+                    const {key} = it as PageModel;
+                    return swiperSlide({
+                        key: `slide-${key}`,
+                        item: page({
+                            key: `page-${key}`,
+                            model: it
+                        })
+                    });
+                })
             })
         );
     }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase} from '@xh/hoist/core';
@@ -70,7 +70,8 @@ export class StoreValidator extends HoistBase {
 
         this.addReaction({
             track: () => this.uncommittedRecords,
-            run: () => this.syncValidatorsAsync()
+            run: () => this.syncValidatorsAsync(),
+            fireImmediately: true
         });
     }
 

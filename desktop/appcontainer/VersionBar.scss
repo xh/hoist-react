@@ -2,12 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 .xh-version-bar {
+  align-items: center;
   background-color: var(--xh-gray-dark);
   color: white;
+  flex: none;
+  justify-content: center;
   padding: var(--xh-pad-half-px);
 
   &--development {
@@ -33,6 +36,15 @@
 
   &--test {
     background-color: hsl(180, 100%, 25%);
+  }
+
+  &__spacer {
+    margin-left: var(--xh-pad-px);
+  }
+
+  &__tabid {
+    margin-left: var(--xh-pad-px);
+    cursor: pointer;
   }
 
   svg {

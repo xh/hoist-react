@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -25,7 +25,7 @@ export const [LaunchAdminButton, launchAdminButton] = hoistCmp.withFactory<Launc
             ref,
             icon: Icon.wrench(),
             title: 'Launch admin client...',
-            onClick: () => window.open('/admin'),
+            onClick: () => XH.appContainerModel.openAdmin(),
             ...props
         });
     }

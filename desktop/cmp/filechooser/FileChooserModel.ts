@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'codemirror/src/util/misc';
-import filesize from 'filesize';
+import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {
@@ -51,9 +51,7 @@ export class FileChooserModel extends HoistModel {
         this.files = [file];
     }
 
-    /**
-     * Remove a single file from the current selection.
-     */
+    /** Remove a single file from the current selection. */
     @action
     removeFileByName(name: string) {
         const toRemove = find(this.files, {name});
@@ -62,7 +60,7 @@ export class FileChooserModel extends HoistModel {
 
     /** Clear the current selection. */
     @action
-    removeAllFiles() {
+    clear() {
         this.files = [];
     }
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
@@ -30,7 +30,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, isEmpty, isFinite} from 'lodash';
-import {CSSProperties} from 'react';
+import {CSSProperties, ReactElement, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -41,7 +41,7 @@ import {CSSProperties} from 'react';
  *
  * Overflowing tabs can be displayed in a dropdown menu if `enableOverflow` is true.
  * Note that in order for tabs to overflow, the TabSwitcher or it's wrapper must have a
- * a maximum width.
+ * maximum width.
  */
 export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>({
     displayName: 'TabSwitcher',
@@ -99,9 +99,8 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 disabled,
                 style: tabStyle,
                 item: bpTooltip({
-                    content: tooltip,
+                    content: tooltip as ReactElement,
                     disabled: !tooltip,
-                    boundary: 'viewport',
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
                     item: hframe({
@@ -142,7 +141,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId)
+                        onChange: tabId => model.activateTab(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),

@@ -1,3 +1,4 @@
+export * from './Clients';
 export * from './Core';
 export * from './Rest';
 export * from './Tracking';

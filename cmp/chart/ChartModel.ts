@@ -2,11 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, Some} from '@xh/hoist/core';
+import {type MouseEvent} from 'react';
+import type {ChartContextMenuSpec, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
+import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
+import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, merge} from 'lodash';
+import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -15,8 +19,10 @@ interface ChartConfig {
     /** The initial data series to be displayed. */
     series?: Some<any>;
 
-    /** True to showContextMenu.  Defaults to true.  Desktop only. */
-    showContextMenu?: boolean;
+    /**
+     * True (default) to show default ContextMenu. Supported on desktop only.
+     */
+    contextMenu?: ChartContextMenuSpec;
 
     /** @internal */
     xhImpl?: boolean;
@@ -32,7 +38,18 @@ export class ChartModel extends HoistModel {
     @observable.ref
     series: any[] = [];
 
-    showContextMenu: boolean;
+    contextMenu: ChartContextMenuSpec;
+
+    static defaultContextMenu: ChartMenuToken[] = [
+        'viewFullscreen',
+        '-',
+        'copyToClipboard',
+        'printChart',
+        '-',
+        'downloadPNG',
+        'downloadSVG',
+        'downloadCSV'
+    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -46,17 +63,12 @@ export class ChartModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const {
-            highchartsConfig,
-            series = [],
-            showContextMenu = true,
-            xhImpl = false
-        } = config ?? {};
+        const {highchartsConfig, series = [], contextMenu, xhImpl = false} = config ?? {};
 
         this.xhImpl = xhImpl;
         this.highchartsConfig = highchartsConfig;
         this.series = castArray(series);
-        this.showContextMenu = showContextMenu;
+        this.contextMenu = this.parseContextMenu(contextMenu);
     }
 
     /**
@@ -81,7 +93,7 @@ export class ChartModel extends HoistModel {
      */
     @action
     updateHighchartsConfig(update: any) {
-        this.highchartsConfig = merge(cloneDeep(this.highchartsConfig), update);
+        this.highchartsConfig = mergeDeep(cloneDeep(this.highchartsConfig), update);
     }
 
     /** @param series - one or more data series to be charted. */
@@ -93,5 +105,26 @@ export class ChartModel extends HoistModel {
     /** Remove all series from this chart. */
     clear() {
         this.setSeries([]);
+    }
+
+    private parseContextMenu(spec: ChartContextMenuSpec): ChartContextMenuSpec {
+        if (spec === false || !XH.isDesktop) return null;
+        if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
+
+        return (e: MouseEvent | PointerEvent) => {
+            // Convert hoverpoints to points for use in actionFn.
+            // Hoverpoints are transient, and change/disappear as mouse moves.
+            const getPoint = pt => pt.series?.points.find(it => it.index === pt.index);
+            const {hoverPoint, hoverPoints} = this.highchart,
+                context = {
+                    contextMenuEvent: e,
+                    chartModel: this,
+                    point: hoverPoint ? getPoint(hoverPoint) : null,
+                    points: hoverPoints ? hoverPoints.map(getPoint) : []
+                },
+                items = isFunction(spec) ? spec(e, context) : spec;
+
+            return getContextMenuItems(items, context);
+        };
     }
 }

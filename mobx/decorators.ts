@@ -2,11 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
-import {observable, runInAction} from 'mobx';
-import {getOrCreate} from '../utils/js';
 
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
@@ -40,40 +38,14 @@ function createBindable(target, name, descriptor, isRef) {
         Object.defineProperty(target, setterName, {value});
     }
 
-    // 2) Place a hidden getter on prototype that wraps the backing observable.
-    const {initializer} = descriptor,
-        propName = `_${name}_bindable`,
-        valName = `_${name}_bindable_value`;
-    Object.defineProperty(target, propName, {
-        get() {
-            return getOrCreate(this, valName, () => {
-                const initVal = initializer?.call(this);
-                return isRef ? observable.box(initVal, {deep: false}) : observable.box(initVal);
-            });
-        }
-    });
-
-    // 3) Create the descriptor for a getter/setter pair..
-    descriptor = {
-        get() {
-            return this[propName].get();
-        },
-        set(v) {
-            runInAction(() => this[propName].set(v));
-        },
-        enumerable: true,
-        configurable: true
-    };
-
-    // 4) Record on class, so we can later create on *instance* in makeObservable.
-    // (Be sure to create cloned list for *this* particular class.)
+    // 2) Record on class, so we can later create on *instance* in makeObservable.
+    // (Be sure to create cloned list since this will exist on prototype superclasses of this class)
     const key = '_xhBindableProperties';
     if (!target.hasOwnProperty(key)) {
         target[key] = {...target[key]};
     }
-    target[key][name] = descriptor;
+    target[key][name] = {isRef};
 
-    // 5) Return the get/set to be placed on prototype.  (If makeObservable() never called, or called
-    // late, the non-enumerable property will still be available.)
+    // 3) Return original descriptor.
     return descriptor;
 }

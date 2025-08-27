@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
@@ -43,7 +43,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
-    /** True to commit on every change/keystroke, default false. */
+    /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
 
     /**
@@ -473,7 +473,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
                 className: 'xh-code-input__inner-wrapper',
                 item: textArea({
                     value: model.renderValue || '',
-                    ref: model.manageCodeEditor,
+                    inputRef: model.manageCodeEditor,
                     onChange: model.onChange
                 })
             }),

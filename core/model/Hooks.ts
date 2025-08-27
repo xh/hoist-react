@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {useContext, useEffect, useState} from 'react';
@@ -27,9 +27,8 @@ import {each, isUndefined} from 'lodash';
  * @returns model or null if no matching model found.
  */
 export function useContextModel<T extends HoistModel>(selector: ModelSelector<T> = '*'): T {
-    const modelLookup = useContext(ModelLookupContext),
-        [ret] = useState(() => modelLookup?.lookupModel(selector) ?? null);
-    return ret;
+    const modelLookup = useContext(ModelLookupContext);
+    return modelLookup?.lookupModel(selector);
 }
 
 /**

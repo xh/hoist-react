@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -15,7 +15,7 @@ export type LogoutButtonProps = ButtonProps;
  * Convenience Button preconfigured for use as a trigger for a logout operation.
  *
  * An onClick handler can be provided to implement additional operations on logout,
- * but should ensure it calls `XH.identityService.logoutAsync()`.
+ * but should ensure it calls `XH.logoutAsync()`.
  */
 export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonProps>({
     displayName: 'LogoutButton',
@@ -28,7 +28,7 @@ export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonPro
             icon: Icon.logout(),
             title: 'Logout',
             intent: 'danger',
-            onClick: () => XH.identityService.logoutAsync(),
+            onClick: () => XH.logoutAsync(),
             ...props
         });
     }

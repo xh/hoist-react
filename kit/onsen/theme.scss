@@ -11,15 +11,10 @@
 // Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
 body.xh-app.xh-mobile {
   // Background
-  .page,
-  .page__content,
-  .page__background,
   .textarea {
     background-color: var(--xh-bg);
   }
 
-  .page--material,
-  .page--material__background,
   .bottom-bar,
   .tabbar {
     background-color: var(--xh-bg-alt);
@@ -121,6 +116,11 @@ body.xh-app.xh-mobile {
   .select-input--material,
   .select-input--underbar:invalid {
     color: var(--xh-text-color);
+  }
+
+  // Toast - ensure z-index exceeds dialogs
+  ons-toast {
+    z-index: 30001 !important;
   }
 
   // Remove outlines

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -43,6 +43,7 @@ export class PrefEditorModel extends HoistModel {
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('prefs')},
             selModel: 'multiple',
+            showRefreshButton: true,
             store: {
                 url: 'rest/preferenceAdmin',
                 reloadLookupsOnLoad: true,
@@ -79,6 +80,7 @@ export class PrefEditorModel extends HoistModel {
                 addAction,
                 editAction,
                 deleteAction,
+                '-',
                 this.regroupDialogModel.regroupAction
             ],
             columns: [

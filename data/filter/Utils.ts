@@ -2,27 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
-
-import {FieldFilterSpec, FilterLike} from './Types';
-import {Filter} from './Filter';
-import {FieldFilter} from './FieldFilter';
-import {FunctionFilter} from './FunctionFilter';
-import {CompoundFilter} from './CompoundFilter';
 import {Some} from '@xh/hoist/core';
+import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
+import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {FieldFilter} from './FieldFilter';
+import {Filter} from './Filter';
+import {FieldFilterSpec, FilterLike} from './Types';
 
 /**
  * Parse a filter from an object or array representation.
  *
  * @param spec - one or more filters or specs to create one.
  *      * An existing Filter instance will be returned directly as-is.
- *      * A null value will also be returned as-is. A null filter represents no filter at all,
- *        or the equivalent of a filter that always passes every record.
+ *      * Null/undefined or empty array will return `null`, representing no filter.
  *      * A raw Function will be converted to a `FunctionFilter` with key 'default'.
- *      * Arrays will be converted to a `CompoundFilter` with a default 'AND' operator.
+ *      * Non-empty arrays will return a `CompoundFilter` with a default 'AND' operator.
  *      * Config objects will be returned as an appropriate concrete `Filter` subclass based on
  *        their properties.
  *
@@ -32,7 +29,8 @@ export function parseFilter(spec: FilterLike): Filter {
     let s = spec as any;
 
     // Degenerate cases
-    if (!s || s instanceof Filter) return s as Filter;
+    if (s instanceof Filter) return s as Filter;
+    if (!s || (isArray(s) && s.length === 0)) return null;
 
     // Normalize special forms
     if (isFunction(s)) s = {key: 'default', testFn: s};

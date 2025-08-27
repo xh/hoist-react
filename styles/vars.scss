@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 @use "sass:color";
@@ -47,6 +47,7 @@ body {
   --xh-purple: var(--purple, #{mc('purple', '800')});
   --xh-red: var(--red, #{mc('red', '900')});
   --xh-red-muted: var(--red-muted, #{mc-muted('red', '900', 40%, 20%)});
+  --xh-white: var(--white, hsl(0, 0%, 100%));
   --xh-yellow: var(--yellow, #{mc('yellow', '800')});
   --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
 
@@ -254,6 +255,17 @@ body {
     --xh-bg-highlight: var(--bg-highlight, hsl(200, 50%, 27%));
   }
 
+  //-----------------------------------------
+  // Badges
+  //-----------------------------------------
+  --xh-badge-bg: var(--badge-bg, var(--xh-blue-gray));
+  --xh-badge-border-radius: var(--badge-border-radius, var(--xh-border-radius-px));
+  --xh-badge-font-size: var(--badge-font-size, 0.75em);
+  --xh-badge-font-weight: var(--badge-font-weight, bold);
+  --xh-badge-height: var(--badge-height, 1.6em);
+  --xh-badge-min-width: var(--badge-min-width, 15px);
+  --xh-badge-padding: var(--badge-padding, #{0 4px});
+  --xh-badge-text-color: var(--badge-text-color, white);
 
   //------------------------
   // Borders
@@ -362,7 +374,7 @@ body {
   //------------------------
   // Fonts
   //------------------------
-  --xh-font-family: var(--font-family, #{("Inter Var", system-ui, sans-serif)});
+  --xh-font-family: var(--font-family, #{("InterVariable", system-ui, sans-serif)});
   --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
 
@@ -633,7 +645,7 @@ body {
   //------------------------
   // Popups / dialogs
   //------------------------
-  --xh-popup-bg: var(--popup-bg, #ebf1f5);
+  --xh-popup-bg: var(--popup-bg, var(--xh-bg));
   --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
@@ -642,10 +654,6 @@ body {
   --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
   --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
-
-  &.xh-dark {
-    --xh-popup-bg: var(--popup-bg, #293742);
-  }
 
   &.xh-mobile {
     --xh-popup-border-width: 2;

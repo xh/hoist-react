@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 export * from './Icon';
 export * from './XHLogo';
@@ -110,6 +110,7 @@ import {
     faFilePdf as faFilePdfLight,
     faFilePowerpoint as faFilePowerpointLight,
     faFileWord as faFileWordLight,
+    faFileXml as faFileXmlLight,
     faFilter as faFilterLight,
     faFilterSlash as faFilterSlashLight,
     faFlag as faFlagLight,
@@ -321,6 +322,7 @@ import {
     faFilePdf,
     faFilePowerpoint,
     faFileWord,
+    faFileXml,
     faFilter,
     faFilterSlash,
     faFlag,
@@ -532,6 +534,7 @@ import {
     faFilePdf as faFilePdfSolid,
     faFilePowerpoint as faFilePowerpointSolid,
     faFileWord as faFileWordSolid,
+    faFileXml as faFileXmlSolid,
     faFilter as faFilterSolid,
     faFilterSlash as faFilterSlashSolid,
     faFlag as faFlagSolid,
@@ -744,6 +747,7 @@ import {
     faFilePdf as faFilePdfThin,
     faFilePowerpoint as faFilePowerpointThin,
     faFileWord as faFileWordThin,
+    faFileXml as faFileXmlThin,
     faFilter as faFilterThin,
     faFilterSlash as faFilterSlashThin,
     faFlag as faFlagThin,
@@ -1260,6 +1264,10 @@ library.add(
     faFileWordLight,
     faFileWordSolid,
     faFileWordThin,
+    faFileXml,
+    faFileXmlLight,
+    faFileXmlSolid,
+    faFileXmlThin,
     faFilter,
     faFilterLight,
     faFilterSolid,

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {
@@ -167,7 +167,9 @@ class PopoverModel extends HoistModel {
     constructor() {
         super();
         makeObservable(this);
+    }
 
+    override onLinked() {
         // Popovers are automatically closed on app route changes to avoid navigating the
         // app underneath the popover in an unsettling way. (i.e. via browser back button)
         this.addReaction({

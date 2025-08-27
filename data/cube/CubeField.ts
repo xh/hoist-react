@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
@@ -28,23 +28,8 @@ export interface CubeFieldSpec extends FieldSpec {
     /** True to allow this field to be used for grouping.*/
     isDimension?: boolean;
 
-    /**
-     * Instance of a Hoist Cube Aggregator (from the aggregate package), or string alias for the
-     * same (e.g. 'MAX').
-     */
-    aggregator?:
-        | Aggregator
-        | 'AVG'
-        | 'AVG_STRICT'
-        | 'CHILD_COUNT'
-        | 'LEAF_COUNT'
-        | 'MAX'
-        | 'MIN'
-        | 'NULL'
-        | 'SINGLE'
-        | 'SUM'
-        | 'SUM_STRICT'
-        | 'UNIQUE';
+    /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
+    aggregator?: Aggregator | AggregatorToken;
 
     /** Function to determine if aggregation should be performed at a given level of a query result. */
     canAggregateFn?: CanAggregateFn;
@@ -59,6 +44,20 @@ export interface CubeFieldSpec extends FieldSpec {
      */
     parentDimension?: string;
 }
+
+/** Convenient (and serializable) alias for one of Hoist's Cube {@link Aggregator} classes. */
+export type AggregatorToken =
+    | 'AVG'
+    | 'AVG_STRICT'
+    | 'CHILD_COUNT'
+    | 'LEAF_COUNT'
+    | 'MAX'
+    | 'MIN'
+    | 'NULL'
+    | 'SINGLE'
+    | 'SUM'
+    | 'SUM_STRICT'
+    | 'UNIQUE';
 
 /**
  * @param dimension - dimension of aggregation
@@ -114,7 +113,7 @@ export class CubeField extends Field {
     //------------------------
     // Implementation
     //------------------------
-    private parseAggregator(val: any): Aggregator {
+    private parseAggregator(val: Aggregator | AggregatorToken): Aggregator {
         if (isString(val)) {
             switch (val) {
                 case 'AVG':

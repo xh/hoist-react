@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {cloneDeep, isUndefined} from 'lodash';
-import {wait} from '../promise';
+import {wait} from '@xh/hoist/promise';
+import {observable} from 'mobx';
 import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistenceProvider, PersistOptions} from './';
+import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -73,35 +73,38 @@ function createPersistDescriptor(
         );
         return descriptor;
     }
-    const codeValue = descriptor.initializer;
-    const initializer = function () {
-        let providerState;
+    const codeValue = descriptor.initializer,
+        initializer = function () {
+            // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
+            let ret = codeValue?.call(this);
 
-        // Read from and attach to Provider.
-        // Fail gently -- initialization exceptions causes stack overflows for MobX.
-        try {
-            const persistWith = {path: property, ...this.persistWith, ...options},
-                provider = this.markManaged(PersistenceProvider.create(persistWith));
-            providerState = cloneDeep(provider.read());
-            wait().then(() => {
-                this.addReaction({
-                    track: () => this[property],
-                    run: data => provider.write(data)
-                });
+            // Property is not available on the instance until after the next tick.
+            const propertyAvailable = observable.box(false),
+                persistOptions = {
+                    path: property,
+                    ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
+                };
+            PersistenceProvider.create({
+                persistOptions,
+                owner: this,
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(propertyAvailable.get() ? this[property] : ret),
+                    setPersistableState: state => {
+                        if (!propertyAvailable.get()) {
+                            ret = state.value;
+                        } else {
+                            this[property] = state.value;
+                        }
+                    }
+                }
             });
-        } catch (e) {
-            logError(
-                [
-                    `Failed to configure Persistence for '${property}'.  Be sure to fully specify ` +
-                        `'persistWith' on this object or annotation`,
-                    e
-                ],
-                target
-            );
-        }
 
-        // 2) Return data from provider data *or* code, if provider not yet set or failed
-        return !isUndefined(providerState) ? providerState : codeValue?.call(this);
-    };
+            // Wait for next tick to ensure construction has completed and property has been made
+            // observable via makeObservable.
+            wait().thenAction(() => propertyAvailable.set(true));
+
+            return ret;
+        };
     return {...descriptor, initializer};
 }

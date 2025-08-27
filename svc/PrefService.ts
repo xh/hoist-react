@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, debounce, forEach, isEmpty, isEqual, size} from 'lodash';
+import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {cloneDeep, forEach, isEmpty, isEqual, size} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -30,16 +30,9 @@ export class PrefService extends HoistService {
 
     private _data = {};
     private _updates = {};
-    private pushPendingBuffered: any;
-
-    constructor() {
-        super();
-        const pushFn = () => this.pushPendingAsync();
-        window.addEventListener('beforeunload', pushFn);
-        this.pushPendingBuffered = debounce(pushFn, 5 * SECONDS);
-    }
 
     override async initAsync() {
+        window.addEventListener('beforeunload', () => this.pushPendingAsync());
         await this.migrateLocalPrefsAsync();
         return this.loadPrefsAsync();
     }
@@ -118,18 +111,6 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Reset *all* preferences, reverting their effective values back to defaults.
-     * @returns a Promise that resolves when preferences have been cleared and defaults reloaded.
-     */
-    async clearAllAsync() {
-        await XH.fetchJson({
-            url: 'xh/clearPrefs',
-            params: {clientUsername: XH.getUsername()}
-        });
-        return this.loadPrefsAsync();
-    }
-
-    /**
      * Push any pending buffered updates to persist newly set values to server.
      * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
      * changes and option and then immediately hits a (browser) refresh.
@@ -139,23 +120,25 @@ export class PrefService extends HoistService {
 
         if (isEmpty(updates)) return;
 
-        // clear obj state immediately to allow picking up next batch during async operation
         this._updates = {};
 
-        if (!isEmpty(updates)) {
-            await XH.fetchJson({
-                url: 'xh/setPrefs',
-                params: {
-                    updates: JSON.stringify(updates),
-                    clientUsername: XH.getUsername()
-                }
-            });
-        }
+        await XH.postJson({
+            url: 'xh/setPrefs',
+            body: updates,
+            params: {
+                clientUsername: XH.getUsername()
+            }
+        });
     }
 
     //-------------------
     //  Implementation
     //-------------------
+    @debounced(5 * SECONDS)
+    private pushPendingBuffered() {
+        this.pushPendingAsync();
+    }
+
     private async loadPrefsAsync() {
         const data = await XH.fetchJson({
             url: 'xh/getPrefs',
@@ -180,10 +163,11 @@ export class PrefService extends HoistService {
                     params: {
                         clientUsername: XH.getUsername(),
                         updates: JSON.stringify(updates)
+                    },
+                    track: {
+                        message: `Migrated ${updateCount} preferences`,
+                        data: updates
                     }
-                }).track({
-                    message: `Migrated ${updateCount} preferences`,
-                    data: updates
                 });
                 XH.localStorageService.remove(key);
             }

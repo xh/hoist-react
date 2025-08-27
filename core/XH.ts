@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
 import {Store} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
@@ -25,12 +26,15 @@ import {
     JsonBlobService,
     LocalStorageService,
     PrefService,
+    SessionStorageService,
     TrackService,
-    WebSocketService
+    WebSocketService,
+    ClientHealthService
 } from '@xh/hoist/svc';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
@@ -43,7 +47,6 @@ import {
     Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
-    FetchResponse,
     HoistAppModel,
     HoistException,
     HoistService,
@@ -52,6 +55,7 @@ import {
     MessageSpec,
     PageState,
     PlainObject,
+    ReloadAppOptions,
     SizingMode,
     TaskObserver,
     Theme,
@@ -61,9 +65,9 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '18.0';
+export const MIN_HOIST_CORE_VERSION = '31.2';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -82,6 +86,15 @@ declare const xhIsDevelopmentMode: boolean;
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
  */
 export class XHApi {
+    /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
+    loadId: string = this.genLoadId();
+
+    /**
+     * Unique id for this browser tab/window on this domain.
+     * Corresponds to the scope of the built-in sessionStorage object.
+     */
+    tabId: string = this.genTabId();
+
     //--------------------------
     // Implementation Delegates
     //--------------------------
@@ -92,8 +105,8 @@ export class XHApi {
     exceptionHandler: ExceptionHandler = new ExceptionHandler();
 
     //----------------------------------------------------------------------------------------------
-    // Metadata - set via webpack.DefinePlugin at build time.
-    // See @xh/hoist-dev-utils/configureWebpack.
+    // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
+    // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     readonly appCode: string = xhAppCode;
@@ -119,6 +132,9 @@ export class XHApi {
     /** True if the app is running in a local development environment. */
     readonly isDevelopmentMode: boolean = xhIsDevelopmentMode;
 
+    /** Authentication Model for this App. */
+    authModel: HoistAuthModel;
+
     //----------------------------------------------------------------------------------------------
     // Hoist Core Services
     // Singleton instances of each are created and installed within AppContainerModel.initAsync().
@@ -126,6 +142,7 @@ export class XHApi {
     alertBannerService: AlertBannerService;
     autoRefreshService: AutoRefreshService;
     changelogService: ChangelogService;
+    clientHealthService: ClientHealthService;
     configService: ConfigService;
     environmentService: EnvironmentService;
     fetchService: FetchService;
@@ -137,6 +154,7 @@ export class XHApi {
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
     prefService: PrefService;
+    sessionStorageService: SessionStorageService;
     trackService: TrackService;
     webSocketService: WebSocketService;
 
@@ -257,7 +275,7 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<FetchResponse> {
+    fetch(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetch(opts);
     }
 
@@ -267,6 +285,14 @@ export class XHApi {
      */
     fetchJson(opts: FetchOptions): Promise<any> {
         return this.fetchService.fetchJson(opts);
+    }
+
+    /**
+     * Send a POST request with a JSON body and decode the response as JSON.
+     * @see FetchService.postJson
+     */
+    postJson(opts: FetchOptions): Promise<any> {
+        return this.fetchService.postJson(opts);
     }
 
     /**
@@ -325,6 +351,15 @@ export class XHApi {
         return this.identityService?.username ?? null;
     }
 
+    /**
+     * Logout the current user.
+     * @see HoistAuthModel.logoutAsync
+     */
+    async logoutAsync(): Promise<void> {
+        await this.authModel?.logoutAsync();
+        this.reloadApp();
+    }
+
     //----------------------
     // App lifecycle support
     //----------------------
@@ -334,6 +369,26 @@ export class XHApi {
      */
     renderApp<T extends HoistAppModel>(appSpec: AppSpec<T>) {
         this.acm.renderApp(appSpec);
+    }
+
+    /**
+     * Entry-point to start the Hoist Admin console app, with common properties defaulted.
+     * Call this from within your project's `/client-app/src/apps/admin.ts` file.
+     *
+     * NOTE you must still import and pass in the `componentClass`, `containerClass`, and
+     * `modelClass` options. We don't default those here, as we do not want to import admin-only
+     * code in XH, where it would be added to the bundles for all client apps.
+     */
+    renderAdminApp<T extends HoistAppModel>(
+        appSpec: SetOptional<AppSpec<T>, 'isMobileApp' | 'checkAccess'>
+    ) {
+        this.acm.renderApp({
+            clientAppCode: 'admin',
+            clientAppName: `${this.appName} Admin`,
+            isMobileApp: false,
+            checkAccess: 'HOIST_ADMIN_READER',
+            ...appSpec
+        });
     }
 
     /**
@@ -349,13 +404,25 @@ export class XHApi {
     /**
      * Trigger a full reload of the current application.
      *
+     * @param opts - options to govern reload. To support legacy usages, a provided
+     *       string will be treated as `ReloadAppOptions.path`.
+     *
      * This method will reload the entire application document in the browser - to trigger a
      * refresh of the loadable content within the app, use {@link refreshAppAsync} instead.
      */
     @action
-    reloadApp() {
+    reloadApp(opts?: ReloadAppOptions | string) {
         never().linkTo(this.appLoadModel);
-        const url = new URL(window.location.href);
+
+        opts = isString(opts) ? {path: opts} : (opts ?? {});
+
+        const {location} = window,
+            href = opts.path
+                ? `${location.origin}/${opts.path.replace(/^\/+/, '')}`
+                : location.href,
+            url = new URL(href);
+
+        if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
         url.searchParams.set('xhCacheBuster', Date.now().toString());
         document.location.assign(url);
@@ -375,16 +442,22 @@ export class XHApi {
     }
 
     /**
+     * Open a url in an external browser window/tab.
+     *
+     * Unlike a simple call to `open`, this method ensures the "opener" method on the
+     * new window is null. This ensures that the new page will not share sessionState with
+     * this page.  See https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
+     */
+    openWindow(url: string, target?: string) {
+        window.open(url, target ?? '_blank', 'noopener=true');
+    }
+
+    /**
      * Flags for controlling experimental, hotfix, or otherwise provisional features.
      *
      * Configure via `xhFlags` config.
      *
-     * Currently supported (subject to changes without API notice):
-     *
-     *  - applyBigNumberWorkaround -  workaround for mysterious Chromium bug that causes
-     *      BigNumber to lose precision after a certain number of invocations.
-     *      See https://github.com/MikeMcl/bignumber.js/issues/354
-     *      See https://bugs.chromium.org/p/v8/issues/detail?id=14271#c11
+     * No flags currently supported (subject to changes without API notice):
      */
     get flags(): PlainObject {
         return XH.getConf('xhFlags', {});
@@ -589,14 +662,6 @@ export class XHApi {
         this.exceptionHandler.handleException(exception, options);
     }
 
-    showException(exception: unknown, options?: ExceptionHandlerOptions) {
-        apiDeprecated('showException', {
-            msg: 'Use XH.exceptionHandler.showException instead',
-            v: '62'
-        });
-        this.exceptionHandler.showException(exception, options);
-    }
-
     /**
      * Create a new exception - See {@link Exception}.
      *
@@ -707,11 +772,20 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**
@@ -745,6 +819,19 @@ export class XHApi {
     //----------------
     private get acm(): AppContainerModel {
         return this.appContainerModel;
+    }
+
+    private genLoadId(): string {
+        return new ShortUniqueId({length: 8}).rnd();
+    }
+
+    private genTabId(): string {
+        let ret = window.sessionStorage?.getItem('xhTabId');
+        if (!ret) {
+            ret = new ShortUniqueId({length: 8}).rnd();
+            window.sessionStorage?.setItem('xhTabId', ret);
+        }
+        return ret;
     }
 }
 

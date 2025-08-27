@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
@@ -39,6 +39,7 @@ import {
     managed,
     PlainObject,
     Some,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -56,7 +57,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
 import {ReactNode} from 'react';
-import {ZoneGridPersistenceModel} from './impl/ZoneGridPersistenceModel';
+import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
@@ -92,7 +93,7 @@ export interface ZoneGridConfig {
     rightColumnSpec?: Partial<ColumnSpec>;
 
     /** String rendered between consecutive SubFields. */
-    delimiter?: string;
+    delimiter?: string | false;
 
     /** Config with which to create a ZoneMapperModel, or boolean `true` to enable default. */
     zoneMapperModel?: ZoneMapperConfig | boolean;
@@ -145,6 +146,9 @@ export interface ZoneGridConfig {
 
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
+
+    /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
+    expandLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
@@ -232,6 +236,13 @@ export interface ZoneGridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
+     * Array of labels (or a function returning one) that describes the individual depth
+     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
+     * options in the default context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
+
+    /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
      * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
      * expanding / collapsing (requires click on tree col affordance to expand/collapse).
@@ -310,12 +321,11 @@ export class ZoneGridModel extends HoistModel {
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
-    delimiter: string;
+    delimiter: string | false;
     restoreDefaultsFn: () => Awaitable<void>;
     restoreDefaultsWarning: ReactNode;
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
-    @managed persistenceModel: ZoneGridPersistenceModel;
 
     constructor(config: ZoneGridConfig) {
         super();
@@ -363,9 +373,7 @@ export class ZoneGridModel extends HoistModel {
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
-        this.persistenceModel = persistWith
-            ? new ZoneGridPersistenceModel(this, persistWith)
-            : null;
+        if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({
             track: () => [this.leftColumnSpec, this.rightColumnSpec],
@@ -386,6 +394,7 @@ export class ZoneGridModel extends HoistModel {
                 message: this.restoreDefaultsWarning,
                 confirmProps: {
                     text: 'Yes, restore defaults',
+                    icon: Icon.reset(),
                     intent: 'primary'
                 }
             });
@@ -396,8 +405,6 @@ export class ZoneGridModel extends HoistModel {
         this.setMappings(mappings);
         this.setSortBy(sortBy);
         this.setGroupBy(groupBy);
-
-        this.persistenceModel?.clear();
 
         if (this.restoreDefaultsFn) {
             await this.restoreDefaultsFn();
@@ -423,7 +430,7 @@ export class ZoneGridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'restoreDefaults',
         '-',
@@ -583,7 +590,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
                 position: 'top'
             });
         });
@@ -591,7 +598,7 @@ export class ZoneGridModel extends HoistModel {
             const colId = it.field;
             subFields.push({
                 colId,
-                label: it.showLabel ? labelRenderers[colId] ?? true : false,
+                label: it.showLabel ? (labelRenderers[colId] ?? true) : false,
                 position: 'bottom'
             });
         });
@@ -608,6 +615,7 @@ export class ZoneGridModel extends HoistModel {
             // Controlled properties
             field: isLeft ? 'left_column' : 'right_column',
             align: isLeft ? 'left' : 'right',
+            isTreeColumn: gridModel?.treeMode && isLeft,
             flex: overrideSpec.width ? null : isLeft ? 2 : 1,
             renderer: (value, context) => zoneGridRenderer(value, context, isLeft),
             rendererIsComplex: true,

@@ -2,23 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, PlainObject, ElementSpec, XH} from '@xh/hoist/core';
+import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
-import {Icon} from '@xh/hoist/icon/Icon';
+import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {RestStore, RestStoreConfig} from './data/RestStore';
-import {RestFormModel} from './impl/RestFormModel';
 import {FormFieldProps} from '../form';
 import {addAction, deleteAction, editAction, viewAction} from './Actions';
-import {ExportOptions} from '@xh/hoist/svc';
+import {RestStore, RestStoreConfig} from './data/RestStore';
+import {RestFormModel} from './impl/RestFormModel';
 
 export interface RestGridConfig extends GridConfig {
     store?: RestStore | RestStoreConfig;
@@ -29,13 +28,16 @@ export interface RestGridConfig extends GridConfig {
     /** Actions to display in the toolbar. Defaults to add, edit, delete. */
     toolbarActions?: Array<RecordAction | RecordActionSpec>;
 
-    /** actions to display in the grid context menu. Defaults to add, edit, delete. */
-    menuActions?: Array<RecordAction | RecordActionSpec>;
+    /** Actions to display in the grid context menu. Defaults to add, edit, delete. */
+    menuActions?: Array<RecordAction | RecordActionSpec | '-'>;
 
     /** Actions to display in the form toolbar. Defaults to delete. */
     formActions?: Array<RecordAction | RecordActionSpec>;
 
-    /** Warning to display before actions on a selection of  records. */
+    /** Show a refresh button in the toolbar. Defaults to false. **/
+    showRefreshButton?: boolean;
+
+    /** Warning to display before actions on a selection of records. */
     actionWarning?: {
         add?: string | ((recs: StoreRecord[]) => string);
         del?: string | ((recs: StoreRecord[]) => string);
@@ -96,8 +98,9 @@ export class RestGridModel extends HoistModel {
     readonly: boolean;
     editors: RestGridEditor[];
     toolbarActions: Array<RecordAction | RecordActionSpec>;
-    menuActions: Array<RecordAction | RecordActionSpec>;
+    menuActions: Array<RecordAction | RecordActionSpec | '-'>;
     formActions: Array<RecordAction | RecordActionSpec>;
+    showRefreshButton: boolean;
     prepareCloneFn: (input: {record: StoreRecord; clone: PlainObject}) => void;
     unit: string;
     filterFields: string[] = null;
@@ -134,6 +137,7 @@ export class RestGridModel extends HoistModel {
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
+        showRefreshButton = false,
         actionWarning,
         prepareCloneFn,
         unit = 'record',
@@ -150,6 +154,7 @@ export class RestGridModel extends HoistModel {
         this.toolbarActions = toolbarActions;
         this.menuActions = menuActions;
         this.formActions = formActions;
+        this.showRefreshButton = showRefreshButton;
 
         this.actionWarning = Object.assign(this.actionWarning, actionWarning);
 
@@ -243,9 +248,7 @@ export class RestGridModel extends HoistModel {
             warning = this.actionWarning.del,
             message = isFunction(warning) ? warning(records) : warning;
 
-        message
-            ? XH.confirm({message, title: 'Warning', icon: Icon.warning(), onConfirm: delFn})
-            : delFn();
+        message ? XH.confirm({message, title: 'Warning', onConfirm: delFn}) : delFn();
     }
 
     async exportAsync(options?: ExportOptions) {

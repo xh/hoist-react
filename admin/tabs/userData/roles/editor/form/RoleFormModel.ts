@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
@@ -11,7 +11,7 @@ import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from 
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
 import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
@@ -46,9 +46,9 @@ export class RoleFormModel extends HoistModel {
     @computed
     get hasDirtyMembers(): boolean {
         return (
-            this.usersGridModel.store.isModified ||
-            this.directoryGroupsGridModel.store.isModified ||
-            this.rolesGridModel.store.isModified
+            this.usersGridModel.store.isDirty ||
+            this.directoryGroupsGridModel.store.isDirty ||
+            this.rolesGridModel.store.isDirty
         );
     }
 
@@ -72,6 +72,8 @@ export class RoleFormModel extends HoistModel {
 
     constructor(roleModel: RoleModel) {
         super();
+        makeObservable(this);
+
         this.roleModel = roleModel;
         this.addReaction(
             this.clearDegenerateRowReaction(this.usersGridModel),
@@ -159,6 +161,7 @@ export class RoleFormModel extends HoistModel {
         return new GridModel({
             emptyText: 'None added.',
             hideHeaders: true,
+            showHover: true,
             selModel: 'multiple',
             store: {
                 fields: [{name: 'error', type: 'string'}],
@@ -194,6 +197,7 @@ export class RoleFormModel extends HoistModel {
                             ...props,
                             inputProps: {
                                 enableCreate: entity !== 'ROLE',
+                                createMessageFn: user => `Add ${user}`,
                                 options: this.filterSelected(options, selected)
                             }
                         });

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
 import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/hoist/data';
-import {isEmpty} from 'lodash';
+import {compact, isArray, isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
 export interface BaseFilterFieldSpecConfig {
@@ -72,7 +72,11 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
-        this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
+        this.values = isArray(values)
+            ? compact(values)
+            : this.isBoolFieldType
+              ? [true, false]
+              : null;
         this.hasExplicitValues = !isEmpty(this.values);
         this.enableValues = this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault);
     }

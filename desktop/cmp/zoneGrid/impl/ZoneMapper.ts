@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
@@ -122,7 +122,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: intersperse(samples, span(delimiter))
+            items: delimiter ? intersperse(samples, span(delimiter)) : samples
         });
     }
 });

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2024 Extremely Heavy Industries Inc.
+ * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
 import {GridFilterFieldSpec, GridFilterModelConfig} from '@xh/hoist/cmp/grid';
@@ -46,7 +46,7 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor(
-        {bind, commitOnChange = true, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        {bind, commitOnChange = false, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
