@@ -5,19 +5,21 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
 
 ### 🎁 New Features
-
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+    allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+    persist "favorited" tab state across sessions.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-  
+
 * `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
   Requires hoist-core v31.2
 
@@ -797,11 +799,6 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### ⚙️ Technical
 
 * Adjusted (beta) APIs of OAuth-related `BaseOAuthClient`, `MsalClient`, and `AuthZeroClient`.
-
-### 🎁 New Features
-* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
-  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
-  persist tab state across sessions.
 
 ## 64.0.2 - 2024-05-23
 
