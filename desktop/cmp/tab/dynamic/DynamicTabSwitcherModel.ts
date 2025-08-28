@@ -1,9 +1,12 @@
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {
     HoistModel,
-    managed,
+    isMenuItem,
+    MenuContext,
     MenuItemLike,
-    NonEmptyArray,
+    MenuToken,
+    Persistable,
+    PersistableState,
     PersistenceProvider,
     PersistOptions,
     ReactionSpec,
@@ -13,60 +16,76 @@ import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {makeObservable} from '@xh/hoist/mobx';
-import {compact, first, isEmpty, isEqual, without} from 'lodash';
-import {action, computed, observable, runInAction, when} from 'mobx';
+import {compact, find, first, uniqBy} from 'lodash';
+import {action, computed, observable, when} from 'mobx';
 import React from 'react';
 
 export interface DynamicTabSwitcherConfig {
-    /** IDs of tabs to show by default (in order) or `null` (default) to show all tabs. */
-    defaultTabIds?: NonEmptyArray<string> | null;
+    /** Additional menu items to include in tab context menus. */
+    extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
+    /** IDs of favorite tabs to display by default (in order). */
+    initialFavorites?: string[];
     /** Options governing persistence. */
     persistWith?: PersistOptions;
     /** TabContainerModel to which this switcher should bind. */
     tabContainerModel: TabContainerModel;
 }
 
-export class DynamicTabSwitcherModel extends HoistModel {
+export interface DynamicTabSwitcherMenuContext extends MenuContext {
+    tab: TabModel;
+}
+
+export class DynamicTabSwitcherModel
+    extends HoistModel
+    implements Persistable<{favoriteTabIds: string[]}>
+{
     declare config: DynamicTabSwitcherConfig;
 
-    @managed provider: PersistenceProvider;
-
-    @observable.ref visibleTabIds: string[];
-
-    private readonly defaultTabIds: string[];
+    private readonly extraMenuItems: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
     private readonly tabContainerModel: TabContainerModel;
+    @observable.ref private visibleTabState: TabState[];
 
-    get activeTab(): TabModel {
-        return this.tabContainerModel.activeTab;
+    @computed
+    get favoriteTabIds(): string[] {
+        return this.visibleTabState.filter(it => it.isFavorite).map(it => it.tabId);
     }
 
     @computed
     get visibleTabs(): TabModel[] {
-        return compact(this.visibleTabIds.map(id => this.tabContainerModel.findTab(id)));
+        return compact(this.visibleTabState.map(it => this.tabContainerModel.findTab(it.tabId)));
     }
 
     @computed
-    get hiddenTabs(): TabModel[] {
-        const visibleTabIds = new Set(this.visibleTabIds);
-        return this.tabContainerModel.tabs.filter(tab => !visibleTabIds.has(tab.id));
+    get enabledVisibleTabs(): TabModel[] {
+        return this.visibleTabs.filter(it => !it.disabled);
     }
 
     constructor({
-        defaultTabIds = null,
+        extraMenuItems = [],
+        initialFavorites = [],
         persistWith = null,
         tabContainerModel
     }: DynamicTabSwitcherConfig) {
         super();
         makeObservable(this);
 
+        this.extraMenuItems = extraMenuItems;
         this.tabContainerModel = tabContainerModel;
+        this.visibleTabState = this.getValidTabIds(initialFavorites).map(tabId => ({
+            tabId,
+            isFavorite: true
+        }));
 
-        const validDefaultIds = defaultTabIds && this.getValidTabIds(defaultTabIds);
-        this.visibleTabIds = this.defaultTabIds = isEmpty(validDefaultIds)
-            ? tabContainerModel.tabs.map(tab => tab.id)
-            : validDefaultIds;
-
-        if (persistWith) this.setupStateProvider(persistWith);
+        if (persistWith) {
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: 'dynamicTabSwitcher',
+                    ...persistWith
+                },
+                target: this,
+                owner: this
+            });
+        }
 
         // Wait for router to start before observing active tab
         when(
@@ -75,46 +94,57 @@ export class DynamicTabSwitcherModel extends HoistModel {
         );
     }
 
-    activate(tab: TabModel) {
-        this.tabContainerModel.activateTab(tab);
+    isTabActive(tabId: string): boolean {
+        return this.tabContainerModel.activeTabId === tabId;
+    }
+
+    isTabFavorite(tabId: string): boolean {
+        return !!find(this.visibleTabState, {tabId})?.isFavorite;
+    }
+
+    @action
+    toggleTabFavorite(tabId: string) {
+        if (this.isTabVisible(tabId)) {
+            this.visibleTabState = this.visibleTabState.map(it =>
+                it.tabId === tabId ? {tabId, isFavorite: !this.isTabFavorite(tabId)} : it
+            );
+        } else {
+            this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: true}];
+        }
+    }
+
+    activate(tabId: string) {
+        this.tabContainerModel.activateTab(tabId);
     }
 
     @action
     hide(tabId: string) {
-        this.visibleTabIds = without(this.visibleTabIds, tabId);
-        const {tabContainerModel, visibleTabIds} = this;
-        if (tabContainerModel.activeTabId === tabId)
-            tabContainerModel.activateTab(first(visibleTabIds));
+        this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
+        const {enabledVisibleTabs, tabContainerModel} = this;
+        if (tabContainerModel.activeTabId === tabId) {
+            tabContainerModel.activateTab(first(enabledVisibleTabs));
+        }
     }
 
     onContextMenu(e: React.MouseEvent<HTMLDivElement, MouseEvent>, tab: TabModel) {
+        const isFavorite = this.isTabFavorite(tab.id),
+            {left, bottom} = e.currentTarget.getBoundingClientRect();
         showContextMenu(
             contextMenu({
                 menuItems: [
                     {
-                        icon: Icon.x(),
-                        text: 'Remove',
-                        actionFn: () => this.hide(tab.id),
-                        prepareFn: me => {
-                            // Don't allow closing the last tab
-                            me.disabled = this.visibleTabs.length === 1;
-                        }
+                        icon: Icon.favorite({prefix: isFavorite ? 'fal' : 'fas'}),
+                        text: isFavorite ? 'Remove from Favorites' : 'Favorite',
+                        actionFn: () => this.toggleTabFavorite(tab.id)
                     },
-                    {
-                        icon: Icon.add(),
-                        text: 'Add',
-                        items: this.hiddenTabActions(),
-                        prepareFn: me => {
-                            me.hidden = isEmpty(me.items);
-                        }
-                    },
-                    '-',
-                    this.resetDefaultAction()
+                    ...this.extraMenuItems.map(item =>
+                        this.buildMenuItem(item, {contextMenuEvent: e, tab})
+                    )
                 ]
             }),
             {
-                left: e.clientX,
-                top: e.clientY
+                left,
+                top: bottom
             }
         );
     }
@@ -122,82 +152,69 @@ export class DynamicTabSwitcherModel extends HoistModel {
     @action
     onDragEnd(result) {
         if (!result.destination) return;
-        const tabIds = this.visibleTabs.map(tab => tab.id),
-            [removed] = tabIds.splice(result.source.index, 1);
-        tabIds.splice(result.destination.index, 0, removed);
-        this.visibleTabIds = tabIds;
+        const visibleTabState = [...this.visibleTabState],
+            [removed] = visibleTabState.splice(result.source.index, 1);
+        visibleTabState.splice(result.destination.index, 0, removed);
+        this.visibleTabState = visibleTabState;
     }
 
-    hiddenTabActions(): MenuItemLike[] {
-        return this.hiddenTabs.map(tab => ({
-            text: tab.title,
-            actionFn: () => this.activate(tab)
-        }));
+    // -------------------------------
+    // Persistable Interface
+    // -------------------------------
+    getPersistableState(): PersistableState<{favoriteTabIds: string[]}> {
+        return new PersistableState({favoriteTabIds: this.favoriteTabIds});
     }
 
-    resetDefaultAction(): MenuItemLike {
-        return {
-            icon: Icon.reset(),
-            text: 'Restore Default Tabs',
-            intent: 'warning',
-            actionFn: () =>
-                runInAction(() => {
-                    const {activeTab, defaultTabIds, tabContainerModel} = this;
-                    this.visibleTabIds = defaultTabIds;
-                    if (!defaultTabIds.includes(activeTab.id)) {
-                        tabContainerModel.activateTab(first(defaultTabIds));
-                    }
-                }),
-            prepareFn: me => {
-                me.disabled = isEqual(this.visibleTabIds, this.defaultTabIds);
-            }
-        };
+    setPersistableState(state: PersistableState<{favoriteTabIds: string[]}>) {
+        this.visibleTabState = uniqBy(
+            [
+                ...this.getValidTabIds(state.value.favoriteTabIds).map(tabId => ({
+                    tabId,
+                    isFavorite: true
+                })),
+                {tabId: this.tabContainerModel.activeTabId, isFavorite: false}
+            ],
+            'tabId'
+        );
     }
 
     // -------------------------------
     // Implementation
     // -------------------------------
-
     private activeTabReaction(): ReactionSpec<string> {
         return {
             track: () => this.tabContainerModel.activeTabId,
             run: tabId => {
-                if (!this.visibleTabIds.includes(tabId))
-                    this.visibleTabIds = [...this.visibleTabIds, tabId];
+                if (!this.isTabVisible(tabId)) {
+                    this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: false}];
+                }
             },
             fireImmediately: true
         };
     }
 
-    private setupStateProvider(persistWith: PersistOptions) {
-        // Read state from provider -- fail gently
-        let visibleTabIds: string[] = this.visibleTabIds;
-        try {
-            this.provider = PersistenceProvider.create({
-                path: 'dynamicTabSwitcher',
-                ...persistWith
-            });
-            const state = this.provider.read();
-            visibleTabIds = state?.visibleTabIds ?? visibleTabIds;
-        } catch (e) {
-            this.logError(e);
-            XH.safeDestroy(this.provider);
-            this.provider = null;
-        }
-
-        // Initialize state.
-        this.visibleTabIds = this.getValidTabIds(visibleTabIds);
-
-        // Attach to provider last
-        if (this.provider) {
-            this.addReaction({
-                track: () => this.visibleTabIds,
-                run: visibleTabIds => this.provider.write({visibleTabIds})
-            });
-        }
-    }
-
     private getValidTabIds(tabIds: string[]): string[] {
         return tabIds.filter(id => this.tabContainerModel.findTab(id));
     }
+
+    private isTabVisible(tabId: string): boolean {
+        return this.visibleTabState.some(it => it.tabId === tabId);
+    }
+
+    private buildMenuItem(
+        item: MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>,
+        context: DynamicTabSwitcherMenuContext
+    ): MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext> {
+        if (!isMenuItem(item)) return item;
+        const ret = {...item};
+        if (item.actionFn) ret.actionFn = e => item.actionFn(e, context);
+        if (item.prepareFn) ret.prepareFn = e => item.prepareFn(e, context);
+        if (item.items) ret.items = item.items.map(it => this.buildMenuItem(it, context));
+        return ret;
+    }
+}
+
+interface TabState {
+    tabId: string;
+    isFavorite: boolean;
 }

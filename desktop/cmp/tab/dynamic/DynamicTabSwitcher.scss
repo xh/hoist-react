@@ -4,17 +4,28 @@
     flex-direction: row;
     overflow-x: auto;
 
+    .bp5-tab-list {
+      column-gap: var(--xh-pad-double-px);
+    }
+
     &::-webkit-scrollbar {
       display: none;
     }
 
     &__tab {
+      align-items: center;
+      user-select: none;
+
       &:not(&--active) {
         cursor: pointer;
       }
 
       &--dragging {
         background-color: var(--xh-menu-item-highlight-bg);
+      }
+
+      &__icon {
+        margin-right: 3px;
       }
 
       &__close-button {
@@ -24,10 +35,6 @@
         min-height: 15px;
         min-width: 15px;
         border-radius: 100% !important;
-      }
-
-      &:not(&:hover):not(&--dragging) &__close-button {
-        visibility: hidden;
       }
     }
   }

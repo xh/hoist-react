@@ -1,25 +1,23 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {div, hframe, span} from '@xh/hoist/cmp/layout';
-import {HoistProps, hoistCmp, uses, useContextModel} from '@xh/hoist/core';
+import {TabModel} from '@xh/hoist/cmp/tab';
+import {hoistCmp, HoistProps, useContextModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {hScroller} from '@xh/hoist/desktop/cmp/tab/dynamic/hscroller/HScroller';
 import {HScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/hscroller/HScrollerModel';
-import {popover} from '@xh/hoist/kit/blueprint';
+import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {wait} from '@xh/hoist/promise';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {first, isEmpty} from 'lodash';
+import {first} from 'lodash';
 import {CSSProperties, Ref, useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
-import {Icon} from '@xh/hoist/icon';
-import {TabModel} from '@xh/hoist/cmp/tab';
-import {wait} from '@xh/hoist/promise';
 import './DynamicTabSwitcher.scss';
 
 /**
  * A tab switcher that displays tabs as draggable items in a horizontal list.
- * Tabs can be added, removed, and reordered. All actions can be persisted.
+ * Tabs can be added, removed, reordered and favorited with persistence.
  */
 
 export const [DynamicTabSwitcher, dynamicTabSwitcher] = hoistCmp.withFactory({
@@ -29,7 +27,7 @@ export const [DynamicTabSwitcher, dynamicTabSwitcher] = hoistCmp.withFactory({
     render({className}) {
         return hframe({
             className,
-            items: [hScroller({content: tabs}), addButton()]
+            item: hScroller({content: tabs})
         });
     }
 });
@@ -45,7 +43,7 @@ const tabs = hoistCmp.factory<TabsProps>(({model}, ref) => {
         item: droppable({
             droppableId: model.xhId,
             direction: 'horizontal',
-            item: provided =>
+            children: provided =>
                 div({
                     className: 'xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--top',
                     ref: composeRefs(provided.innerRef, ref),
@@ -66,29 +64,19 @@ const tabs = hoistCmp.factory<TabsProps>(({model}, ref) => {
     });
 });
 
-const addButton = hoistCmp.factory<DynamicTabSwitcherModel>(({model}) => {
-    const {hiddenTabs} = model;
-    if (isEmpty(hiddenTabs)) return null;
-    return popover({
-        interactionKind: 'click',
-        content: contextMenu({
-            menuItems: [...model.hiddenTabActions(), '-', model.resetDefaultAction()]
-        }),
-        item: button({icon: Icon.add()})
-    });
-});
-
 interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
     tabModel: TabModel;
     index: number;
 }
 
 const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
-    const isActive = model.activeTab === tabModel,
-        isCloseable = model.visibleTabs.length > 1,
+    const isActive = model.isTabActive(tabModel.id),
+        isCloseable = tabModel.disabled || model.enabledVisibleTabs.length > 1,
         tabRef = useRef<HTMLDivElement>(),
         scrollerModel = useContextModel(HScrollerModel),
-        {showScrollButtons} = scrollerModel;
+        {showScrollButtons} = scrollerModel,
+        {disabled, icon} = tabModel,
+        isFavorite = model.isTabFavorite(tabModel.id);
 
     // Handle this at the component level rather than in the model since they are not "linked"
     useEffect(() => {
@@ -102,14 +90,16 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
         key: tabModel.id,
         draggableId: tabModel.id,
         index,
-        item: (provided, snapshot) =>
+        children: (provided, snapshot) =>
             hframe({
                 className: classNames(
                     'xh-dynamic-tab-switcher__tabs__tab',
                     isActive && 'xh-dynamic-tab-switcher__tabs__tab--active',
                     snapshot.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
                 ),
-                onClick: () => model.activate(tabModel),
+                onClick: () => {
+                    if (!disabled) model.activate(tabModel.id);
+                },
                 onContextMenu: e => model.onContextMenu(e, tabModel),
                 ref: composeRefs(provided.innerRef, tabRef),
                 ...provided.draggableProps,
@@ -118,25 +108,35 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
                 items: [
                     div({
                         'aria-selected': isActive,
+                        'aria-disabled': disabled,
                         className: 'bp5-tab',
                         item: span({
                             className: 'bp5-popover-target',
                             item: hframe({
                                 className: 'xh-tab-switcher__tab',
                                 tabIndex: -1,
-                                item: tabModel.title
+                                items: [
+                                    div({
+                                        className: 'xh-dynamic-tab-switcher__tabs__tab__icon',
+                                        item: icon,
+                                        omit: !icon
+                                    }),
+                                    tabModel.title,
+                                    button({
+                                        className:
+                                            'xh-dynamic-tab-switcher__tabs__tab__close-button',
+                                        icon: Icon.x({size: 'sm'}),
+                                        title: 'Remove Tab',
+                                        minimal: true,
+                                        onClick: e => {
+                                            consumeEvent(e);
+                                            model.hide(tabModel.id);
+                                        },
+                                        omit: isFavorite || !isCloseable
+                                    })
+                                ]
                             })
                         })
-                    }),
-                    button({
-                        className: 'xh-dynamic-tab-switcher__tabs__tab__close-button',
-                        icon: Icon.x(),
-                        minimal: true,
-                        onClick: e => {
-                            consumeEvent(e);
-                            model.hide(tabModel.id);
-                        },
-                        omit: !isCloseable
                     })
                 ]
             })
