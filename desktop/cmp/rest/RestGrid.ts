@@ -25,32 +25,33 @@ export interface RestGridProps
         Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
-     * ag-Grid API.  It should be used with care. Settings made here might be overwritten and/or
-     * interfere with the implementation of this component and its use of the ag-Grid API.
+     * AG Grid API. Use with care - settings made here might be overwritten and/or interfere with
+     * the implementation of this component and its use of AG Grid.
      */
     agOptions?: PlainObject;
 
-    /** Optional components rendered adjacent to the top toolbar's action buttons */
+    /**
+     * Optional components rendered adjacent to the top toolbar's action buttons.
+     * See also {@link tbar} to take full control of the toolbar.
+     */
     extraToolbarItems?: Some<ReactNode> | (() => Some<ReactNode>);
-
-    /**
-     * A custom toolbar to be docked above the grid. Note that this supersedes the default
-     * toolbar, meaning the `extraToolbarItems` prop will have no effect. Furthermore,
-     * `RestGridModel.toolbarActions`, `RestGridModel.filterFields` will `RestGridModel.showRefreshButton`
-     * will not be automatically applied to controls within this toolbar.
-     * If specified as an array, items will be passed as children to a Toolbar component.
-     */
-    tbar?: Some<ReactNode>;
-
-    /**
-     * Mask to render on this Component. Defaults to true, which renders a standard
-     * Hoist mask. Also can be set to false for no mask, or passed an element
-     * specifying a Mask instance.
-     */
-    mask?: ReactElement | boolean;
 
     /** Classname to be passed to RestForm. */
     formClassName?: string;
+
+    /**
+     * Mask to render on this Component. Defaults to true, which renders a standard Hoist mask.
+     * Set to null/false for no mask, or pass a fully customized mask element.
+     */
+    mask?: ReactElement | boolean;
+
+    /**
+     * A custom toolbar to be docked above the grid. Note that this supersedes the default
+     * toolbar, meaning the `extraToolbarItems` prop will be ignored, as will the `RestGridModel`
+     * configs `toolbarActions`, `filterFields`, and `showRefreshButton`. If specified as an array,
+     * will be passed as children to a Toolbar component.
+     */
+    tbar?: Some<ReactNode>;
 }
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
