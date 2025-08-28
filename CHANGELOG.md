@@ -77,7 +77,7 @@
 * WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
   Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
   Console functionality and is recommended, but clients that must disable WebSockets can do so via
-  `AppSpec.disableWebSockets`. Note `AppSpec.enableWebSockets` is deprecated and can be removed.
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
 * Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
   the app-specified class. App developers can declare a typed static `instance` property on their
   model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
