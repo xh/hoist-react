@@ -2,12 +2,31 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+
 ### 🎁 New Features
 
-* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`.  Use this option
-  to require the specified text to be re-typed by a user when confirming a potentially destructive or disruptive action.
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
+  to require the specified text to be re-typed by a user when confirming a potentially destructive
+  or disruptive action.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
+  toolbar for clarity.
 * `GridCountLabel` supports a new `excludeParents` property to exclude parent records from the
   count. This is useful for tree grids, where the parent record count is not always relevant.
+
+### 🐞 Bug Fixes
+
+* Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
+  state had already been persisted w/users pointed at in-code default view. The manager now calls
+  its configured `initialViewSpec` function as expected in this case.
+
+* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
+  Requires hoist-core v31.2
+
+### ⚙️ Technical
+
+* Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
+  Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
 
 ## 75.0.1 - 2025-08-11
 
@@ -22,11 +41,11 @@
       Provides easier discoverability on desktop and supports this feature on mobile, where we
       don't have context menus.
 * Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
-  * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
-  * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
-  * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
-  * This behavior is consistent with current behavior and user intuition and should maximize the
-    ability to create useful queries using this component.
+    * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+    * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+    * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+    * This behavior is consistent with current behavior and user intuition and should maximize the
+      ability to create useful queries using this component.
 * Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
@@ -56,12 +75,13 @@
 * WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
   Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
   Console functionality and is recommended, but clients that must disable WebSockets can do so via
-  `AppSpec.disableWebSockets`. Note `AppSpec.enableWebSockets` is deprecated and can be removed.
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
 * Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
   the app-specified class. App developers can declare a typed static `instance` property on their
   model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
-  * The `XH.authModel` property is still set and available - this is a non-breaking change.
-  * This approach was already (and continues to be) used for services and the `AppModel` singleton.
+    * The `XH.authModel` property is still set and available - this is a non-breaking change.
+    * This approach was already (and continues to be) used for services and the `AppModel`
+      singleton.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
 
