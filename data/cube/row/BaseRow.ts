@@ -99,8 +99,12 @@ export abstract class BaseRow {
         let {children, view} = this,
             {query} = view;
 
-        if (!children || (children[0].isLeaf && !query.includeLeaves && !query.provideLeaves))
+        if (
+            isEmpty(children) ||
+            (children[0].isLeaf && !query.includeLeaves && !query.provideLeaves)
+        ) {
             return null;
+        }
 
         // Skip all children in a locked node
         if (query.lockFn?.(this as any)) {
