@@ -11,13 +11,15 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* `GridCountLabel` supports a new `excludeParents` property to exclude parent records from the
+  count. This is useful for tree grids, where the parent record count is not always relevant.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-  
+
 * `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
   Requires hoist-core v31.2
 
