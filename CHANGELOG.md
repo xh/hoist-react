@@ -12,23 +12,26 @@
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
 * Improvements to View Management:
-   ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
-   ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
-      views will be pinned by default.  This feature was deemed too confusing, and not useful in
-      practice.  App maintainers should ensure that all global views are appropriate and well
-      organized enough to be shown immediately to new users in the view menu.
+  ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
+  ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
+  views will be pinned by default.  This feature was deemed too confusing, and not useful in
+  practice.  App maintainers should ensure that all global views are appropriate and well
+  organized enough to be shown immediately to new users in the view menu.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-
-* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
-  Requires hoist-core v31.2
+* `XH.restoreDefaultsAsync` will now clear basic ViewManager state, notably last active view. User
+  views themselves will be preserved. Requires `hoist-core >= 31.2`.
 
 ### ⚙️ Technical
 
+* Hoist's client-side logging utilities are now governed by the new `XH.logLevel` property, defining
+  a logging severity threshold for the app. Default level is 'info', preventing memory usage and
+  performance impacts from verbose logging on level 'debug'. This level can be changed at runtime
+  for troubleshooting. See documentation within `LogUtils.ts` for more info.
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
 
@@ -79,7 +82,7 @@
 * WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
   Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
   Console functionality and is recommended, but clients that must disable WebSockets can do so via
-  `AppSpec.disableWebSockets`. Note `AppSpec.enableWebSockets` is deprecated and can be removed.
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
 * Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
   the app-specified class. App developers can declare a typed static `instance` property on their
   model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
