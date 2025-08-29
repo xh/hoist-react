@@ -2,7 +2,7 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v33.0)
 
 ### 🎁 New Features
 
@@ -13,6 +13,7 @@
   toolbar for clarity.
 * Improvements to View Management:
   ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
+  ** Simplify presentation/edit of view visibility to new "Visibility" control
   ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
   views will be pinned by default.  This feature was deemed too confusing, and not useful in
   practice.  App maintainers should ensure that all global views are appropriate and well
