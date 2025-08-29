@@ -362,17 +362,18 @@ export class XHApi {
     }
 
     /**
-     * Logging severity threshold for app.  Messages with less severity will be ignored.
-     * Default 'info'.
+     * Current minimum severity for Hoist log utils (default 'info').
+     * Messages logged via managed Hoist log utils with lower severity will be ignored.
      */
     get logLevel(): LogLevel {
         return getLogLevel();
     }
 
     /**
-     * Adjust severity threshold for app.
+     * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
+     * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
      *
-     * Call this method from the console to adjust the log level for troubleshooting.
+     * Hint: call this method from the console to adjust your app's log level while troubleshooting.
      */
     setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
         setLogLevel(level, persistInSessionStorage);

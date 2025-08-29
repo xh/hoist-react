@@ -10,11 +10,12 @@ import store from 'store2';
 import {intersperse} from './LangUtils';
 
 /**
- * Utility functions providing managed, structured logging to hoist apps.  Essentially a wrapper
- * around the browser console supporting logging levels, timing, and miscellaneous hoist
- * display conventions.
+ * Utility functions providing managed, structured logging to Hoist apps.
  *
- * Objects extending HoistBase need not import these functions directly, as they are available
+ * Essentially a wrapper around the browser console supporting logging levels, timing, and
+ * miscellaneous Hoist display conventions.
+ *
+ * Objects extending `HoistBase` need not import these functions directly, as they are available
  * via delegates on `HoistBase`.
  *
  * Hoist sets its minimum severity level to 'info' by default.  This prevents performance or
@@ -29,23 +30,27 @@ export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 export type LogSource = string | {displayName: string} | {constructor: {name: string}};
 
 /**
- * Severity threshold for app.  Messages with less severity will be ignored. Default 'info'.
- * @internal Applications should typically use `XH.logLevel` instead.
+ * Current minimum severity for Hoist log utils (default 'info').
+ * Messages logged via managed Hoist log utils with lower severity will be ignored.
+ *
+ * @internal - use public `XH.logLevel`.
  */
 export function getLogLevel() {
     return _logLevel;
 }
 
 /**
- * Adjust severity level of logging for lifetime of page or browser tab.
+ * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
+ * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
  *
- * Call this method from the console to adjust the log level for troubleshooting.
- * @internal Applications should typically use `XH.setLogLevel()` instead.
+ * @internal - use public `XH.setLogLevel()`.
  */
 export function setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
     level = level.toLowerCase() as LogLevel;
-    if (!['error', 'warn', 'info', 'debug'].includes(level)) {
-        console.error(`Invalid value for log level: '${level}'`);
+
+    const validLevels = ['error', 'warn', 'info', 'debug'];
+    if (!validLevels.includes(level)) {
+        console.error(`Ignored invalid log level '${level}' - must be one of ${validLevels}`);
         return;
     }
     _logLevel = level;
