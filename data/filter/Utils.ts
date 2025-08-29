@@ -7,6 +7,7 @@
 
 import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
+import {logError} from '@xh/hoist/utils/js';
 import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
@@ -55,7 +56,7 @@ export function parseFilter(spec: FilterLike): Filter {
         }
     }
 
-    console.error('Unable to identify filter type:', s);
+    logError(['Unable to identify filter type:', s]);
     return null;
 }
 

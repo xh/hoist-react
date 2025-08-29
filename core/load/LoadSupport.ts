@@ -135,7 +135,7 @@ export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec | any) 
         ret = await Promise.allSettled(promises);
 
     ret.filter(it => it.status === 'rejected').forEach((err: any) =>
-        console.error('Failed to Load Object', err.reason)
+        logError(['Failed to Load Object', err.reason])
     );
 
     return ret;
