@@ -2,7 +2,7 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
 
 ### 🎁 New Features
 
@@ -17,15 +17,15 @@
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-* `XH.restoreDefaultsAsync` will now clear basic ViewManager state, notably last active view. User
-  views themselves will be preserved. Requires `hoist-core >= 31.2`.
+* Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
+  view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
 
 ### ⚙️ Technical
 
-* Hoist's client-side logging utilities are now governed by the new `XH.logLevel` property, defining
-  a logging severity threshold for the app. Default level is 'info', preventing memory usage and
-  performance impacts from verbose logging on level 'debug'. This level can be changed at runtime
-  for troubleshooting. See documentation within `LogUtils.ts` for more info.
+* Added `XH.logLevel` to define a minimum logging severity threshold for Hoist's client-side logging
+  utilities. Defaulted to 'info' to prevent possible memory and performance impacts of verbose
+  logging on 'debug'. Change at runtime via new `XH.setLogLevel()` when troubleshooting. See
+  `LogUtils.ts` for more info.
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
 
