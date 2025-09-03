@@ -65,8 +65,8 @@ export class ViewPanelModel extends HoistModel {
 
         if (visibilityField.isDirty) {
             const visibility = visibilityField.value;
-            updates.isShared = visibility == 'shared';
-            updates.isGlobal = visibility == 'global';
+            updates.isShared = visibility === 'shared';
+            updates.isGlobal = visibility === 'global';
 
             const msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
             switch (visibility) {

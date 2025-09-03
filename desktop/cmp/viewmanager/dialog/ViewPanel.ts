@@ -34,7 +34,7 @@ export const viewPanel = hoistCmp.factory({
 
         const {lastUpdated, lastUpdatedBy, isEditable} = view,
             visibility = formModel.values.visibility,
-            isGlobal = visibility == 'global',
+            isGlobal = visibility === 'global',
             visOptions = getVisibilityOptions(viewManagerModel),
             visInfo = getVisibilityInfo(viewManagerModel, visibility),
             groupOptions = getGroupOptions(viewManagerModel, isGlobal);
@@ -79,7 +79,7 @@ export const viewPanel = hoistCmp.factory({
                             field: 'visibility',
                             label: 'Visibility',
                             item: select({options: visOptions}),
-                            omit: !isEditable || visOptions.length == 1,
+                            omit: !isEditable || visOptions.length === 1,
                             info: visInfo
                         }),
                         vspacer(),

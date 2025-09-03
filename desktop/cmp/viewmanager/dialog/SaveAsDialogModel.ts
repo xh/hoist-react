@@ -88,8 +88,8 @@ export class SaveAsDialogModel extends HoistModel {
         let {formModel, parent} = this,
             {name, group, description, visibility, isPinned} = formModel.getData(),
             isValid = await formModel.validateAsync(),
-            isGlobal = visibility == 'global',
-            isShared = visibility == 'shared';
+            isGlobal = visibility === 'global',
+            isShared = visibility === 'shared';
 
         if (!isValid) return;
 

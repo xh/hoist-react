@@ -45,7 +45,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
         const {parent, formModel} = model,
             {visibility} = formModel.values,
-            isGlobal = visibility == 'global',
+            isGlobal = visibility === 'global',
             groupOptions = getGroupOptions(parent, isGlobal),
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
@@ -90,7 +90,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             field: 'visibility',
                             label: 'Visibility',
                             labelTextAlign: 'left',
-                            omit: visOptions.length == 1,
+                            omit: visOptions.length === 1,
                             item: select({options: visOptions}),
                             info: visInfo
                         }),
@@ -98,7 +98,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             field: 'isPinned',
                             label: 'Pinned?',
                             labelTextAlign: 'left',
-                            info: 'Show in your default menu?',
+                            info: 'Show in your menu?',
                             item: checkbox()
                         })
                     ]
