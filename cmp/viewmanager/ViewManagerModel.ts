@@ -711,11 +711,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const latestInfo = latest.info,
             {typeDisplayName, globalDisplayName} = this,
             msgs: ReactNode[] = [`Save ${view.typedName}?`];
+
         if (isGlobal) {
             msgs.push(
                 span(
-                    `This is a ${globalDisplayName} ${typeDisplayName}. `,
-                    strong('Changes will be visible to all users.')
+                    strong(
+                        `This is a ${globalDisplayName} ${typeDisplayName}. Changes will be visible to all users.`
+                    )
                 )
             );
         }
@@ -731,7 +733,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return XH.confirm({
             message: fragment(msgs.map(m => p(m))),
             confirmProps: {
-                text: 'Yes, save changes',
+                text: isGlobal
+                    ? `Yes, update ${globalDisplayName} ${typeDisplayName}`
+                    : 'Yes, save changes',
                 intent: 'primary',
                 outlined: true,
                 autoFocus: false
