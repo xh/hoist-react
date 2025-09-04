@@ -239,7 +239,8 @@ function extractMessage(parsedResp: PlainObject, responseText: string, statusTex
         // From parsed response, including cause if provided (e.g. ExternalHttpException)
         ret = parsedResp.message;
         if (isString(parsedResp.cause)) {
-            ret = ret ? `${ret} (Caused by: ${parsedResp.cause})` : parsedResp.cause;
+            const cause = truncate(parsedResp.cause, {length: 255});
+            ret = ret ? `${ret} (Caused by: ${cause})` : cause;
         }
     } else {
         // Use raw text if not JSON parseable
