@@ -40,9 +40,9 @@ export function getVisibilityInfo(vmm: ViewManagerModel, val: Visibility): strin
         case 'private':
             return 'Visible to you only.';
         case 'shared':
-            return 'Visible to ALL users, discoverable via "Shared" tab.';
+            return 'Visible to ALL users, discoverable via "Shared" tab under your username.';
         case 'global':
-            return `Visible to ALL users, editable by other ${startCase(vmm.globalDisplayName)} editors`;
+            return `Visible to ALL users, and placed in their menu by default.   Editable by other ${startCase(vmm.globalDisplayName)} editors`;
         default:
             return '';
     }
