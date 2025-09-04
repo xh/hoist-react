@@ -39,7 +39,7 @@ export class SaveAsDialogModel extends HoistModel {
             group: src.group,
             description: src.description,
             visibility: 'private',
-            isPinned: src.info.isPinned
+            isPinned: !!src.info?.isPinned
         });
 
         this.isOpen = true;
