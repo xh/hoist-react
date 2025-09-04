@@ -7,7 +7,7 @@
 import {PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {pluralize} from '@xh/hoist/utils/js';
-import {isPlainObject, truncate} from 'lodash';
+import {isPlainObject, isString, truncate} from 'lodash';
 import {FetchException, HoistException, TimeoutException, TimeoutExceptionConfig} from './Types';
 
 /**
@@ -91,14 +91,13 @@ export class Exception {
         try {
             const cType = headers.get('Content-Type');
             if (cType?.includes('application/json')) {
-                const obj = safeParseJson(responseText),
-                    message = obj ? obj.message : truncate(responseText?.trim(), {length: 255});
+                const parsedResp = safeParseJson(responseText);
                 return this.createFetchException({
                     ...defaults,
-                    name: obj?.name ?? defaults.name,
-                    message: message ?? statusText,
-                    isRoutine: obj?.isRoutine ?? false,
-                    serverDetails: obj ?? responseText
+                    name: parsedResp?.name ?? defaults.name,
+                    message: extractMessage(parsedResp, responseText, statusText),
+                    isRoutine: parsedResp?.isRoutine ?? false,
+                    serverDetails: parsedResp ?? responseText
                 });
             }
         } catch (ignored) {}
@@ -232,6 +231,23 @@ function safeParseJson(txt: string): PlainObject {
     } catch (ignored) {
         return null;
     }
+}
+
+function extractMessage(parsedResp: PlainObject, responseText: string, statusText: string): string {
+    let ret: string;
+    if (parsedResp) {
+        // From parsed response, including cause if provided (e.g. ExternalHttpException)
+        ret = parsedResp.message;
+        if (isString(parsedResp.cause)) {
+            ret = ret ? `${ret} (Caused by: ${parsedResp.cause})` : parsedResp.cause;
+        }
+    } else {
+        // Use raw text if not JSON parseable
+        ret = truncate(responseText?.trim(), {length: 255});
+    }
+
+    // Fallback to statusText if we have nothing else.
+    return ret || statusText;
 }
 
 export function isHoistException(src: unknown): src is HoistException {
