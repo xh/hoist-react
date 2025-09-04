@@ -37,13 +37,7 @@ export interface ViewCreateSpec {
     value: PlainObject;
 }
 
-export interface ViewUpdateSpec {
-    name?: string;
-    group?: string;
-    description?: string;
-    isShared?: boolean;
-    isGlobal?: boolean;
-}
+export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>>;
 
 export interface ViewUserState {
     currentView?: string;
