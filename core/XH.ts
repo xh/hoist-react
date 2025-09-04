@@ -31,6 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
+import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -67,7 +68,7 @@ import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '30.1';
+export const MIN_HOIST_CORE_VERSION = '31.2';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -358,6 +359,24 @@ export class XHApi {
     async logoutAsync(): Promise<void> {
         await this.authModel?.logoutAsync();
         this.reloadApp();
+    }
+
+    /**
+     * Current minimum severity for Hoist log utils (default 'info').
+     * Messages logged via managed Hoist log utils with lower severity will be ignored.
+     */
+    get logLevel(): LogLevel {
+        return getLogLevel();
+    }
+
+    /**
+     * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
+     * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
+     *
+     * Hint: call this method from the console to adjust your app's log level while troubleshooting.
+     */
+    setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
+        setLogLevel(level, persistInSessionStorage);
     }
 
     //----------------------
@@ -772,11 +791,20 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**

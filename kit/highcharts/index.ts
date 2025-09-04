@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+import {checkVersion, logError} from '@xh/hoist/utils/js';
 
 export let Highcharts = null;
 
@@ -19,7 +19,7 @@ const MAX_VERSION = '11.*.*';
 export function installHighcharts(HighchartsImpl) {
     const {version} = HighchartsImpl;
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
-        console.error(
+        logError(
             `This version of Hoist requires a Highcharts version between ${MIN_VERSION} and ` +
                 `${MAX_VERSION}. Version ${version} detected. Highcharts will be unavailable.`
         );

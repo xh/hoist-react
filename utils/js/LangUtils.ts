@@ -6,7 +6,7 @@
  */
 import {PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
-import {LogSource, logWarn} from '@xh/hoist/utils/js/LogUtils';
+import {LogSource, logWarn, logError} from '@xh/hoist/utils/js/LogUtils';
 import {
     flatMap,
     forOwn,
@@ -131,7 +131,7 @@ export function throwIf(condition: any, message: unknown) {
  */
 export function warnIf(condition: any, message: any) {
     if (condition) {
-        console.warn(message);
+        logWarn(message);
     }
 }
 
@@ -140,7 +140,7 @@ export function warnIf(condition: any, message: any) {
  */
 export function errorIf(condition: any, message: any) {
     if (condition) {
-        console.error(message);
+        logError(message);
     }
 }
 
