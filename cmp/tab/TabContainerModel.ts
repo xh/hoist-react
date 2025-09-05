@@ -27,7 +27,7 @@ import {TabSwitcherProps} from './TabSwitcherProps';
 
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
-    tabs?: TabConfig[];
+    tabs: TabConfig[];
 
     /**
      * ID of Tab to be shown initially if routing does not specify otherwise. If not set,

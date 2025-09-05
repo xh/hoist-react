@@ -176,13 +176,13 @@ export class TabModel extends HoistModel {
     private parseContent(content: Content | TabContainerConfig | TabConfig[]): Content {
         // Recognize if content is a child container spec.
         let childConfig: TabContainerConfig = null;
-        if (isArray(content) && content[0]?.content) {
+        if (isArray(content)) {
             childConfig = {tabs: content};
         } else if ('tabs' in content) {
             childConfig = content;
         } else {
             // ...otherwise just pass through
-            return content as Content;
+            return content;
         }
 
         // It's a child container, create model and return
