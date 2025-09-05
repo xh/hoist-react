@@ -11,8 +11,8 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
-* Added new `childTabs` property to `TabConfig`. Apps should use this property for a declarative
-  way to create nested tabs within a `TabContainer`.
+* Added new ability to specify nested tab containers in a single declarative config.  Apps may now
+  provide a spec for a nested tab container directly to the `TabConfig.content` property.
 
 ### 🐞 Bug Fixes
 
