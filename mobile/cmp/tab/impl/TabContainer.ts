@@ -10,7 +10,7 @@ import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen'
 import '@xh/hoist/mobile/register';
 import {debounced, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isEmpty, some} from 'lodash';
+import {isEmpty} from 'lodash';
 import {tab} from './Tab';
 import './Tabs.scss';
 import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
@@ -29,7 +29,6 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
         switcher && !['top', 'bottom'].includes(switcher.orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
-    throwIf(some(tabs, 'childTabs'), 'Mobile TabContainer does not currently support child tabs.');
 
     if (isEmpty(tabs)) {
         return page({

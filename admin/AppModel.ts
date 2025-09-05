@@ -129,28 +129,24 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'general',
                 icon: Icon.info(),
-                childTabs: {
-                    modelConfig: {
-                        switcher: {orientation: 'left', testId: 'general-tab-switcher'},
-                        tabs: [
-                            {id: 'about', icon: Icon.info(), content: aboutPanel},
-                            {id: 'config', icon: Icon.settings(), content: configPanel},
-                            {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
-                        ]
-                    }
+                content: {
+                    switcher: {orientation: 'left', testId: 'general-tab-switcher'},
+                    tabs: [
+                        {id: 'about', icon: Icon.info(), content: aboutPanel},
+                        {id: 'config', icon: Icon.settings(), content: configPanel},
+                        {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                    ]
                 }
             },
             {
                 id: 'servers',
                 icon: Icon.server(),
-                childTabs: {
-                    modelConfig: {
-                        switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
-                        tabs: [
-                            {id: 'instances', icon: Icon.server(), content: instancesTab},
-                            {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
-                        ]
-                    }
+                content: {
+                    switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
+                    tabs: [
+                        {id: 'instances', icon: Icon.server(), content: instancesTab},
+                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
+                    ]
                 }
             },
             {
@@ -166,36 +162,34 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                childTabs: {
-                    modelConfig: {
-                        switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
-                        refreshMode: 'onShowAlways',
-                        tabs: [
-                            {
-                                id: 'users',
-                                icon: Icon.users(),
-                                content: userPanel,
-                                omit: conf['hideUsersTab']
-                            },
-                            {
-                                id: 'roles',
-                                icon: Icon.idBadge(),
-                                content: rolePanel
-                            },
-                            {
-                                id: 'prefs',
-                                title: 'Preferences',
-                                icon: Icon.bookmark(),
-                                content: userPreferencePanel
-                            },
-                            {
-                                id: 'jsonBlobs',
-                                title: 'JSON Blobs',
-                                icon: Icon.json(),
-                                content: jsonBlobPanel
-                            }
-                        ]
-                    }
+                content: {
+                    switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
+                    refreshMode: 'onShowAlways',
+                    tabs: [
+                        {
+                            id: 'users',
+                            icon: Icon.users(),
+                            content: userPanel,
+                            omit: conf['hideUsersTab']
+                        },
+                        {
+                            id: 'roles',
+                            icon: Icon.idBadge(),
+                            content: rolePanel
+                        },
+                        {
+                            id: 'prefs',
+                            title: 'Preferences',
+                            icon: Icon.bookmark(),
+                            content: userPreferencePanel
+                        },
+                        {
+                            id: 'jsonBlobs',
+                            title: 'JSON Blobs',
+                            icon: Icon.json(),
+                            content: jsonBlobPanel
+                        }
+                    ]
                 }
             },
             {

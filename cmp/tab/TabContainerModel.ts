@@ -202,15 +202,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
         this.tabs = tabs.map(t =>
-            t instanceof TabModel
-                ? t
-                : new TabModel(
-                      {
-                          ...t,
-                          xhImpl: this.xhImpl
-                      },
-                      this
-                  )
+            t instanceof TabModel ? t : new TabModel({...t, xhImpl: this.xhImpl}, this)
         );
 
         if (oldTabs) {
@@ -264,8 +256,6 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         const tab = this.findTab(tabId);
         if (tab) {
             tab.title = title;
-        } else {
-            this.logDebug(`Failed to setTabTitle`, `Tab ${tabId} not found`);
         }
     }
 
