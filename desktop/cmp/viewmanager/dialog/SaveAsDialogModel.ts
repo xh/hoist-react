@@ -86,6 +86,7 @@ export class SaveAsDialogModel extends HoistModel {
 
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
+            {typeDisplayName, globalDisplayName} = parent,
             {name, group, description, visibility, isPinned} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isGlobal = visibility === 'global',
@@ -96,13 +97,14 @@ export class SaveAsDialogModel extends HoistModel {
         if (isGlobal) {
             const message = [
                 p(
-                    `This ${parent.typeDisplayName} will become a ${parent.globalDisplayName} ${parent.typeDisplayName} visible to all other ${XH.appName} users.`
+                    `This ${typeDisplayName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`
                 ),
                 p(strong('Are you sure you want to proceed?'))
             ];
             const confirmed = await XH.confirm({
                 message,
                 confirmProps: {
+                    text: `Yes, save ${globalDisplayName} ${typeDisplayName}`,
                     outlined: true,
                     autoFocus: false,
                     intent: 'primary'
