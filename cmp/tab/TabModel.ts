@@ -198,7 +198,7 @@ export class TabModel extends HoistModel {
                     emptyText: containerModel.emptyText,
                     switcher: containerModel.switcher,
                     track: containerModel.track,
-                    route: `${containerModel?.route}.${id}`,
+                    route: `${containerModel.route}.${id}`,
                     ...childConfig
                 },
                 modelRef
