@@ -27,7 +27,7 @@ export const tab = hoistCmp.factory({
     model: uses(TabModel, {publishMode: 'limited'}),
 
     render({model, className, testId}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+        const {content, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;

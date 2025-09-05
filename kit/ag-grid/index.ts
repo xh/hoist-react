@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+import {checkVersion, logError} from '@xh/hoist/utils/js';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -69,7 +69,7 @@ const MAX_VERSION = '34.*.*';
  */
 export function installAgGrid(ComponentReactWrapper, version: string) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
-        console.error(
+        logError(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +
                 `${MAX_VERSION}. Version ${version} detected. ag-Grid will be unavailable.`
         );

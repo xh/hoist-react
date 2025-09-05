@@ -1067,7 +1067,7 @@ export class GridModel extends HoistModel {
         const {maxDepth, levelLabels} = this,
             ret = executeIfFunction(levelLabels);
         if (ret && ret.length < maxDepth + 1) {
-            this.logError('Value produced by `GridModel.levelLabels` has insufficient length.');
+            this.logDebug('Value produced by `GridModel.levelLabels` has insufficient length.');
             return null;
         }
         return ret ? take(ret, maxDepth + 1) : null;

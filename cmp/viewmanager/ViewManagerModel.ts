@@ -19,7 +19,7 @@ import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
@@ -531,8 +531,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Implementation
     //------------------
     private async initAsync() {
-        let {dataAccess, pendingValueStorageKey} = this,
-            initialState;
+        let {dataAccess, pendingValueStorageKey, enableDefault} = this,
+            initialState: ViewUserState;
 
         try {
             // 1) Initialize views and related state
@@ -547,17 +547,23 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 }
             });
 
-            // 2) Initialize/choose initial view.  Null is ok, and will yield default.
+            // 2) Select the initial view.
             let initialView: ViewInfo,
                 initialTkn: string = initialState.currentView;
-            if (isUndefined(initialTkn)) {
+            if (isUndefined(initialTkn) || (isNull(initialTkn) && !enableDefault)) {
+                // Token undefined (no prior view) or null (in-code default *had* been loaded) but
+                // default no longer enabled - call initialViewSpec.
                 initialView = this.initialViewSpec?.(views);
             } else if (!isNull(initialTkn)) {
+                // Token provided - find the view, falling back to initialViewSpec if not found.
                 initialView = find(views, {token: initialTkn}) ?? this.initialViewSpec?.(views);
             } else {
+                // Token null - active signal to load in-code default.
                 initialView = null;
             }
 
+            // Note that the above routine failed to resolve a view, we will pass undefined here
+            // and load the in-code default, even if not enabled. We have no other choice!
             await this.loadViewAsync(initialView?.token, this.pendingValue);
         } catch (e) {
             // Always ensure at least default view is installed (other state defaults are fine)
@@ -594,7 +600,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 track: () => this.userPinned,
                 run: userPinned => dataAccess.updateStateAsync({userPinned}),
                 equals: comparer.structural,
-                debounce: 1 * SECONDS
+                debounce: ONE_SECOND
             },
             {
                 track: () => this.autoSave,
@@ -699,11 +705,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const latestInfo = latest.info,
             {typeDisplayName, globalDisplayName} = this,
             msgs: ReactNode[] = [`Save ${view.typedName}?`];
+
         if (isGlobal) {
             msgs.push(
                 span(
-                    `This is a ${globalDisplayName} ${typeDisplayName}. `,
-                    strong('Changes will be visible to all users.')
+                    strong(
+                        `This is a ${globalDisplayName} ${typeDisplayName}. Changes will be visible to all users.`
+                    )
                 )
             );
         }
@@ -719,7 +727,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return XH.confirm({
             message: fragment(msgs.map(m => p(m))),
             confirmProps: {
-                text: 'Yes, save changes',
+                text: isGlobal
+                    ? `Yes, update ${globalDisplayName} ${typeDisplayName}`
+                    : 'Yes, save changes',
                 intent: 'primary',
                 outlined: true,
                 autoFocus: false

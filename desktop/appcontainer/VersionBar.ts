@@ -52,6 +52,12 @@ export const versionBar = hoistCmp.factory({
                     omit: isAdminApp || !XH.getUser().isHoistAdminReader,
                     title: 'Open Admin Console',
                     onClick: () => XH.appContainerModel.openAdmin()
+                }),
+                // Force GC, available via V8/chromium and "start chrome --js-flags="--expose-gc"
+                Icon.memory({
+                    omit: !window['gc'],
+                    title: 'Force GC',
+                    onClick: () => window['gc']()
                 })
             ]
         });
