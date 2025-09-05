@@ -2,7 +2,9 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
+*  The constructor for `TabModel` has changed to take its owning container as a second argument.
+   (Most applications do not create `TabModels` directly, but it is possible.)
 
 ### 🎁 New Features
 
@@ -11,6 +13,8 @@
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* Added new ability to specify nested tab containers in a single declarative config.  Apps may now
+  provide a spec for a nested tab container directly to the `TabConfig.content` property.
 * Improvements to View Management:
   ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
   ** Simplify presentation/edit of view visibility to new "Visibility" control
