@@ -157,13 +157,14 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: 'tabContainer',
-                    ...persistWith
-                },
-                target: this
-            });
+            ((this.persistWith = {
+                path: 'tabContainer',
+                ...persistWith
+            }),
+                PersistenceProvider.create({
+                    persistOptions: this.persistWith,
+                    target: this
+                }));
         }
 
         if (track) {

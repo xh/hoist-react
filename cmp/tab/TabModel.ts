@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray, startCase} from 'lodash';
+import {isArray, isUndefined, startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {ReactElement, ReactNode} from 'react';
 
@@ -202,11 +202,11 @@ export class TabModel extends HoistModel {
         // Trampoline nested routing OR persistence (TCM supports one or the other)
         if (parent.route && !childConfig.route) {
             childConfig.route = `${parent.route}.${id}`;
-        } else if (parent.persistWith && childConfig.persistWith !== null) {
-            if (parent.persistWith.path && !childConfig.persistWith?.path) {
-                childConfig.persistWith.path = parent.persistWith.path + '.' + id;
-            }
-            childConfig.persistWith = {...parent.persistWith, ...childConfig.persistWith};
+        } else if (parent.persistWith && isUndefined(childConfig.persistWith)) {
+            childConfig.persistWith = {
+                ...parent.persistWith,
+                path: `${parent.persistWith.path}.${id}`
+            };
         }
 
         this.childContainerModel = new TabContainerModel(childConfig);
