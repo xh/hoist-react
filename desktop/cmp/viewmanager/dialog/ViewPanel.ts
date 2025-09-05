@@ -77,9 +77,8 @@ export const viewPanel = hoistCmp.factory({
                         }),
                         formField({
                             field: 'visibility',
-                            label: 'Visibility',
-                            item: select({options: visOptions}),
                             omit: !isEditable || visOptions.length === 1,
+                            item: select({options: visOptions, enableFilter: false}),
                             info: visInfo
                         }),
                         vspacer(),

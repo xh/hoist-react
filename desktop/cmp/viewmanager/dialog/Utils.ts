@@ -7,7 +7,8 @@
 
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {SelectOption} from '@xh/hoist/core';
-import {map, startCase, uniq} from 'lodash';
+import {pluralize} from '@xh/hoist/utils/js';
+import {capitalize, map, startCase, uniq} from 'lodash';
 
 export function getGroupOptions(vmm: ViewManagerModel, isGlobal: boolean): SelectOption[] {
     const views = isGlobal ? vmm.globalViews : vmm.ownedViews;
@@ -40,9 +41,9 @@ export function getVisibilityInfo(vmm: ViewManagerModel, val: Visibility): strin
         case 'private':
             return 'Visible to you only.';
         case 'shared':
-            return 'Visible to ALL users, discoverable via "Shared" tab under your username.';
+            return `Visible to all users via the "Manage ${capitalize(pluralize(vmm.typeDisplayName))}" dialog.`;
         case 'global':
-            return `Visible to ALL users, and placed in their menu by default.   Editable by other ${startCase(vmm.globalDisplayName)} editors`;
+            return `Visible to all users and automatically pinned to their menus.`;
         default:
             return '';
     }

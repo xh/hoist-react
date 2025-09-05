@@ -88,16 +88,13 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         }),
                         formField({
                             field: 'visibility',
-                            label: 'Visibility',
-                            labelTextAlign: 'left',
                             omit: visOptions.length === 1,
-                            item: select({options: visOptions}),
+                            item: select({options: visOptions, enableFilter: false}),
                             info: visInfo
                         }),
                         formField({
                             field: 'isPinned',
                             label: 'Pinned?',
-                            labelTextAlign: 'left',
                             info: 'Show in your menu?',
                             item: checkbox()
                         })
