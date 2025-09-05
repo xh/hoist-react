@@ -17,10 +17,9 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {isArray, startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
-import {ReactElement, ReactNode, RefObject} from 'react';
+import {ReactElement, ReactNode} from 'react';
 
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
@@ -91,17 +90,14 @@ export class TabModel extends HoistModel {
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
 
+    /** Child TabContainerModel. For nested TabContainers only. */
+    @managed childContainerModel: TabContainerModel;
+
     private _renderMode: RenderMode;
     private _refreshMode: RefreshMode;
-    private _childContainerModelRef: RefObject<TabContainerModel> = null;
 
     get isTabModel() {
         return true;
-    }
-
-    /** Child TabContainerModel. For nested TabContainers only. */
-    get childContainerModel(): TabContainerModel {
-        return this._childContainerModelRef?.current;
     }
 
     constructor(
@@ -178,34 +174,42 @@ export class TabModel extends HoistModel {
     // Implementation
     //------------------
     private parseContent(content: Content | TabContainerConfig | TabConfig[]): Content {
-        // Recognize content is a child container spec and auto create with appropriate defaults
-        let raw = content as any,
-            childConfig: TabContainerConfig = null;
-        if (isArray(raw) && raw[0]?.content) {
-            childConfig = {tabs: raw};
-        } else if (raw.tabs) {
-            childConfig = raw;
-        }
-        if (childConfig) {
-            throwIf(XH.isMobileApp, 'Child Tabs not supported for Mobile TabContainer');
-
-            let {containerModel, id} = this,
-                modelRef = (this._childContainerModelRef = createObservableRef());
-            return tabContainer({
-                modelConfig: {
-                    renderMode: containerModel.renderMode,
-                    refreshMode: containerModel.refreshMode,
-                    emptyText: containerModel.emptyText,
-                    switcher: containerModel.switcher,
-                    track: containerModel.track,
-                    route: `${containerModel.route}.${id}`,
-                    ...childConfig
-                },
-                modelRef
-            });
+        // Recognize if content is a child container spec.
+        let childConfig: TabContainerConfig = null;
+        if (isArray(content) && content[0]?.content) {
+            childConfig = {tabs: content};
+        } else if ('tabs' in content) {
+            childConfig = content;
+        } else {
+            // ...otherwise just pass through
+            return content as Content;
         }
 
-        // ..otherwise its standard content!
-        return content as Content;
+        // It's a child container, create model and return
+        throwIf(XH.isMobileApp, 'Child Tabs not supported for Mobile TabContainer');
+        const {id} = this,
+            parent = this.containerModel;
+
+        childConfig = {
+            renderMode: parent.renderMode,
+            refreshMode: parent.refreshMode,
+            emptyText: parent.emptyText,
+            switcher: parent.switcher,
+            track: parent.track,
+            ...childConfig
+        };
+
+        // Trampoline nested routing OR persistence (TCM supports one or the other)
+        if (parent.route && !childConfig.route) {
+            childConfig.route = `${parent.route}.${id}`;
+        } else if (parent.persistWith && childConfig.persistWith !== null) {
+            if (parent.persistWith.path && !childConfig.persistWith?.path) {
+                childConfig.persistWith.path = parent.persistWith.path + '.' + id;
+            }
+            childConfig.persistWith = {...parent.persistWith, ...childConfig.persistWith};
+        }
+
+        this.childContainerModel = new TabContainerModel(childConfig);
+        return tabContainer({model: this.childContainerModel});
     }
 }
