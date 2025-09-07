@@ -88,17 +88,6 @@ export class DataAccess<T> {
         }
     }
 
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        try {
-            this.ensureEditable(view);
-            const raw = await XH.fetchJson({url: 'xhView/makeGlobal', params: {token: view.token}});
-            return View.fromBlob(raw, this.model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
-        }
-    }
-
     /** Update a view's value. */
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {

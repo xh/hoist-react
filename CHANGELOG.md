@@ -30,6 +30,13 @@
   toolbar for clarity.
 * Added new ability to specify nested tab containers in a single declarative config.  Apps may now
   provide a spec for a nested tab container directly to the `TabConfig.content` property.
+* Improvements to View Management:
+  ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
+  ** Simplify presentation/edit of view visibility to new "Visibility" control
+  ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
+  views will be pinned by default.  This feature was deemed too confusing, and not useful in
+  practice.  App maintainers should ensure that all global views are appropriate and well
+  organized enough to be shown immediately to new users in the view menu.
 
 ### 🐞 Bug Fixes
 
