@@ -78,7 +78,6 @@ export class SaveAsDialogModel extends HoistModel {
                 },
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isPinned'},
                 {name: 'visibility'}
             ]
         });
@@ -87,7 +86,7 @@ export class SaveAsDialogModel extends HoistModel {
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
             {typeDisplayName, globalDisplayName} = parent,
-            {name, group, description, visibility, isPinned} = formModel.getData(),
+            {name, group, description, visibility} = formModel.getData(),
             isValid = await formModel.validateAsync(),
             isGlobal = visibility === 'global',
             isShared = visibility === 'shared';
@@ -117,7 +116,6 @@ export class SaveAsDialogModel extends HoistModel {
             name: name.trim(),
             group: group?.trim(),
             description: description?.trim(),
-            isPinned,
             isGlobal,
             isShared,
             value: parent.getValue()

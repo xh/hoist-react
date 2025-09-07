@@ -10,7 +10,7 @@ import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, checkbox, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
@@ -91,12 +91,6 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                             omit: visOptions.length === 1,
                             item: select({options: visOptions, enableFilter: false}),
                             info: visInfo
-                        }),
-                        formField({
-                            field: 'isPinned',
-                            label: 'Pinned?',
-                            info: 'Show in your menu?',
-                            item: checkbox()
                         })
                     ]
                 })
