@@ -32,17 +32,12 @@ export interface ViewCreateSpec {
     group: string;
     description: string;
     isShared: boolean;
-    isPinned: boolean;
+    isGlobal: boolean;
+    isPinned?: boolean;
     value: PlainObject;
 }
 
-export interface ViewUpdateSpec {
-    name?: string;
-    group?: string;
-    description?: string;
-    isShared?: boolean;
-    isDefaultPinned?: boolean;
-}
+export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>>;
 
 export interface ViewUserState {
     currentView?: string;
@@ -466,14 +461,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //-----------------
     // Management
     //-----------------
-    async validateViewNameAsync(name: string, existing: ViewInfo = null): Promise<string> {
+    /**
+     * Validate a name for a view.
+     * @param name - candidate name to validate
+     * @param existing - existing view that will have the name.  null if the name is for a new view.
+     * @param isGlobal - true if the name is for a global view.
+     */
+    async validateViewNameAsync(
+        name: string,
+        existing: ViewInfo,
+        isGlobal: boolean
+    ): Promise<string> {
         const maxLength = 50;
         name = name?.trim();
         if (!name) return 'Name is required';
         if (name.length > maxLength) {
             return `Name cannot be longer than ${maxLength} characters`;
         }
-        const views = existing?.isGlobal ? this.globalViews : this.ownedViews;
+        const views = isGlobal ? this.globalViews : this.ownedViews;
         if (views.some(view => view.name === name && view.token != existing?.token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
@@ -483,11 +488,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         return this.dataAccess.updateViewInfoAsync(view, updates);
-    }
-
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        return this.dataAccess.makeViewGlobalAsync(view);
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
