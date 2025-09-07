@@ -32,8 +32,8 @@ export interface ViewCreateSpec {
     group: string;
     description: string;
     isShared: boolean;
-    isPinned: boolean;
     isGlobal: boolean;
+    isPinned?: boolean;
     value: PlainObject;
 }
 

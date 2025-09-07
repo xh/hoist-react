@@ -91,10 +91,12 @@ export class ViewInfo {
      * True if this view should appear on the users easy access menu.
      *
      * This value is computed with the user persisted state for the view.
-     * If the user has not set pinning state for the view, global views are pinned by default.
+     *
+     * If the user has not set pinning state for the view, global views and
+     * owned views are pinned by default.
      */
     get isPinned(): boolean {
-        return this.isUserPinned ?? this.isGlobal;
+        return this.isUserPinned ?? (this.isGlobal || this.isOwned);
     }
 
     /**
