@@ -165,6 +165,7 @@ export class DynamicTabSwitcherModel
         return new PersistableState({favoriteTabIds: this.favoriteTabIds});
     }
 
+    @action
     setPersistableState(state: PersistableState<{favoriteTabIds: string[]}>) {
         this.visibleTabState = uniqBy(
             [
