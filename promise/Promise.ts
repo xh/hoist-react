@@ -305,16 +305,3 @@ const enhancePromise = promisePrototype => {
 
 // Enhance canonical Promises.
 enhancePromise(Promise.prototype);
-
-// MS Edge returns a "native Promise" from async functions that won't get the enhancements above.
-// Check to see if we're in such an environment and enhance that prototype as well.
-// @see https://github.com/xh/hoist-react/issues/1411
-const asyncFnReturn = (async () => {})();
-if (!(asyncFnReturn instanceof Promise)) {
-    console.debug(
-        '"Native" Promise return detected as return from async function - enhancing prototype'
-    );
-
-    // @ts-ignore
-    enhancePromise(asyncFnReturn.__proto__);
-}

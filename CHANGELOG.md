@@ -2,29 +2,44 @@
 
 ## 76.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - requires hoist-core v31.2)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
+*  The constructor for `TabModel` has changed to take its owning container as a second argument.
+   (Most applications do not create `TabModels` directly, but it is possible.)
 
 ### 🎁 New Features
+
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive
   or disruptive action.
 * Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
   toolbar for clarity.
+* Added new ability to specify nested tab containers in a single declarative config.  Apps may now
+  provide a spec for a nested tab container directly to the `TabConfig.content` property.
+* Improvements to View Management:
+  ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
+  ** Simplify presentation/edit of view visibility to new "Visibility" control
+  ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
+  views will be pinned by default.  This feature was deemed too confusing, and not useful in
+  practice.  App maintainers should ensure that all global views are appropriate and well
+  organized enough to be shown immediately to new users in the view menu.
 * Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
-    allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
-    persist "favorited" tab state across sessions.
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions.
 
 ### 🐞 Bug Fixes
 
 * Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
   state had already been persisted w/users pointed at in-code default view. The manager now calls
   its configured `initialViewSpec` function as expected in this case.
-
-* `XH.restoreDefaultsAsync` will now clear basic view state.  Views themselves will be preserved.
-  Requires hoist-core v31.2
+* Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
+  view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
 
 ### ⚙️ Technical
 
+* Added `XH.logLevel` to define a minimum logging severity threshold for Hoist's client-side logging
+  utilities. Defaulted to 'info' to prevent possible memory and performance impacts of verbose
+  logging on 'debug'. Change at runtime via new `XH.setLogLevel()` when troubleshooting. See
+  `LogUtils.ts` for more info.
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
 

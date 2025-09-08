@@ -31,6 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
+import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -358,6 +359,24 @@ export class XHApi {
     async logoutAsync(): Promise<void> {
         await this.authModel?.logoutAsync();
         this.reloadApp();
+    }
+
+    /**
+     * Current minimum severity for Hoist log utils (default 'info').
+     * Messages logged via managed Hoist log utils with lower severity will be ignored.
+     */
+    get logLevel(): LogLevel {
+        return getLogLevel();
+    }
+
+    /**
+     * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
+     * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
+     *
+     * Hint: call this method from the console to adjust your app's log level while troubleshooting.
+     */
+    setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
+        setLogLevel(level, persistInSessionStorage);
     }
 
     //----------------------
