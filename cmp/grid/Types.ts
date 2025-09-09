@@ -136,10 +136,10 @@ export interface ColChooserConfig {
     autosizeOnCommit?: boolean;
 
     /** Chooser width for popover and dialog. Desktop only. */
-    width?: number;
+    width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
-    height?: number;
+    height?: string | number;
 }
 
 /**
