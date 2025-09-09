@@ -194,13 +194,13 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
-            reactiveCustomComponents: true, // will be default in ag-grid v32
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
+                suppressHeaderContextMenu: true,
                 suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
