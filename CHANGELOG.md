@@ -40,6 +40,10 @@
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
 
+### ⚙️ Typescript API Adjustments
+
+* Corrected `ColChooserConfig` `width` and `height` types.
+
 ## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features
