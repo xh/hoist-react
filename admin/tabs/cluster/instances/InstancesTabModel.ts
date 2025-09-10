@@ -212,7 +212,8 @@ export class InstancesTabModel extends HoistModel {
     private async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
-                message: `Are you sure you wish to immediately terminate instance ${instance.name}?`,
+                message: `Are you sure you want to immediately terminate instance ${instance.name}?`,
+                extraConfirmText: instance.name,
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Yes, kill the instance',

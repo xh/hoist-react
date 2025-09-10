@@ -6,17 +6,17 @@
  */
 
 import {form} from '@xh/hoist/cmp/form';
-import {filler, hbox, vframe} from '@xh/hoist/cmp/layout';
+import {filler, vframe} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {select, switchInput, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
+import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {startCase} from 'lodash';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupOptions} from './Utils';
+import {getGroupOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -43,6 +43,13 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
 
 const formPanel = hoistCmp.factory<SaveAsDialogModel>({
     render({model}) {
+        const {parent, formModel} = model,
+            {visibility} = formModel.values,
+            isGlobal = visibility === 'global',
+            groupOptions = getGroupOptions(parent, isGlobal),
+            visOptions = getVisibilityOptions(parent),
+            visInfo = getVisibilityInfo(parent, visibility);
+
         return panel({
             item: form({
                 fieldDefaults: {
@@ -69,7 +76,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 enableCreate: true,
                                 enableClear: true,
                                 placeholder: 'Select optional group....',
-                                options: getGroupOptions(model.parent, 'owned')
+                                options: groupOptions
                             })
                         }),
                         formField({
@@ -79,15 +86,12 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 height: 70
                             })
                         }),
-                        hbox(
-                            formField({
-                                field: 'isShared',
-                                label: 'Share?',
-                                labelTextAlign: 'left',
-                                omit: !model.parent.enableSharing,
-                                item: switchInput()
-                            })
-                        )
+                        formField({
+                            field: 'visibility',
+                            omit: visOptions.length === 1,
+                            item: select({options: visOptions, enableFilter: false}),
+                            info: visInfo
+                        })
                     ]
                 })
             }),

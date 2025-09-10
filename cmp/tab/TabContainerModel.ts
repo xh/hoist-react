@@ -27,7 +27,7 @@ import {TabSwitcherProps} from './TabSwitcherProps';
 
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
-    tabs?: TabConfig[];
+    tabs: TabConfig[];
 
     /**
      * ID of Tab to be shown initially if routing does not specify otherwise. If not set,
@@ -157,13 +157,14 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
 
             this.forwardRouterToTab(this.activeTabId);
         } else if (persistWith) {
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: 'tabContainer',
-                    ...persistWith
-                },
-                target: this
-            });
+            ((this.persistWith = {
+                path: 'tabContainer',
+                ...persistWith
+            }),
+                PersistenceProvider.create({
+                    persistOptions: this.persistWith,
+                    target: this
+                }));
         }
 
         if (track) {
@@ -202,13 +203,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
         this.tabs = tabs.map(t =>
-            t instanceof TabModel
-                ? t
-                : new TabModel({
-                      ...t,
-                      containerModel: this,
-                      xhImpl: this.xhImpl
-                  })
+            t instanceof TabModel ? t : new TabModel({...t, xhImpl: this.xhImpl}, this)
         );
 
         if (oldTabs) {
@@ -228,7 +223,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         return this.findTab(tab.id);
     }
 
-    /** Remove a single tab from the container. */
+    /**
+     * Remove a single tab from the container.
+     * Supported for tabs that are immediate children of this container.
+     **/
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
@@ -250,16 +248,19 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.setTabs(without(tabs, toRemove));
     }
 
-    /** Update the title of an existing tab. Logs failures quietly on debug if not found.  */
+    /**
+     * Update the title of an existing tab.
+     * Supported for tabs that are immediate children of this container.
+     * Logs failures quietly on debug if not found.
+     * */
     setTabTitle(tabId: string, title: ReactNode) {
         const tab = this.findTab(tabId);
         if (tab) {
             tab.title = title;
-        } else {
-            this.logDebug(`Failed to setTabTitle`, `Tab ${tabId} not found`);
         }
     }
 
+    /** Find a tab that is an immediate child of this container. */
     findTab(id: string): TabModel {
         return find(this.tabs, {id});
     }
@@ -284,8 +285,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
      * Set the currently active Tab.
      *
      * If using routing, this method will navigate to the new tab via the router and the active Tab
-     * will only be updated once the router state changes. Otherwise the active Tab will be updated
+     * will only be updated once the router state changes. Otherwise, the active Tab will be updated
      * immediately.
+     *
+     * Supported for tabs that are immediate children of this container.
      *
      * @param tab - TabModel or id of TabModel to be activated.
      */

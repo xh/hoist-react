@@ -1,6 +1,50 @@
 # Changelog
 
-## 75.0-SNAPSHOT - Unreleased
+## 76.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
+*  The constructor for `TabModel` has changed to take its owning container as a second argument.
+   (Most applications do not create `TabModels` directly, but it is possible.)
+
+### 🎁 New Features
+
+* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
+  to require the specified text to be re-typed by a user when confirming a potentially destructive
+  or disruptive action.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
+  toolbar for clarity.
+* Added new ability to specify nested tab containers in a single declarative config.  Apps may now
+  provide a spec for a nested tab container directly to the `TabConfig.content` property.
+* Improvements to View Management:
+  ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
+  ** Simplify presentation/edit of view visibility to new "Visibility" control
+  ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
+  views will be pinned by default.  This feature was deemed too confusing, and not useful in
+  practice.  App maintainers should ensure that all global views are appropriate and well
+  organized enough to be shown immediately to new users in the view menu.
+
+### 🐞 Bug Fixes
+
+* Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
+  state had already been persisted w/users pointed at in-code default view. The manager now calls
+  its configured `initialViewSpec` function as expected in this case.
+* Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
+  view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
+
+### ⚙️ Technical
+
+* Added `XH.logLevel` to define a minimum logging severity threshold for Hoist's client-side logging
+  utilities. Defaulted to 'info' to prevent possible memory and performance impacts of verbose
+  logging on 'debug'. Change at runtime via new `XH.setLogLevel()` when troubleshooting. See
+  `LogUtils.ts` for more info.
+* Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
+  Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `ColChooserConfig` `width` and `height` types.
+
+## 75.0.1 - 2025-08-11
 
 ### 🎁 New Features
 
@@ -13,11 +57,11 @@
       Provides easier discoverability on desktop and supports this feature on mobile, where we
       don't have context menus.
 * Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
-  * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
-  * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
-  * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
-  * This behavior is consistent with current behavior and user intuition and should maximize the
-    ability to create useful queries using this component.
+    * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+    * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+    * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+    * This behavior is consistent with current behavior and user intuition and should maximize the
+      ability to create useful queries using this component.
 * Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
 * Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
   which `dimensions` are provided to the model.
@@ -29,14 +73,10 @@
   This new object supports several documented properties, including a useful `cubeLeaves` property,
   which can be activated via the `Query.provideLeaves` property.
 
-
-
 ### 🐞 Bug Fixes
+
 * Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
   handling changes to `SummaryRecords`.
-
-### 🐞 Bug Fixes
-
 * Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
   via `loadState()` and hiding the `Add` context menu item in views as intended.
 * Updated `DashCanvas` CSS to set `position: relative;`, ensuring that the empty state overlay is
@@ -51,12 +91,13 @@
 * WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
   Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
   Console functionality and is recommended, but clients that must disable WebSockets can do so via
-  `AppSpec.disableWebSockets`. Note `AppSpec.enableWebSockets` is deprecated and can be removed.
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
 * Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
   the app-specified class. App developers can declare a typed static `instance` property on their
   model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
-  * The `XH.authModel` property is still set and available - this is a non-breaking change.
-  * This approach was already (and continues to be) used for services and the `AppModel` singleton.
+    * The `XH.authModel` property is still set and available - this is a non-breaking change.
+    * This approach was already (and continues to be) used for services and the `AppModel`
+      singleton.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
 

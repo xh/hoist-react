@@ -122,10 +122,6 @@ export class ManageDialogModel extends HoistModel {
         return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
     }
 
-    async makeGlobalAsync(view: ViewInfo) {
-        return this.doMakeGlobalAsync(view).linkTo(this.updateTask).catchDefault();
-    }
-
     @action
     togglePinned(views: ViewInfo[]) {
         const allPinned = every(views, 'isPinned'),
@@ -177,9 +173,10 @@ export class ManageDialogModel extends HoistModel {
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
-        await viewManagerModel.updateViewInfoAsync(view, update);
+        const updated = await viewManagerModel.updateViewInfoAsync(view, update);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
+        await this.selectViewAsync(updated.info); // reselect -- may have moved tabs!
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
@@ -217,40 +214,6 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         return viewManagerModel.deleteViewsAsync(views).finally(() => this.refreshAsync());
-    }
-
-    private async doMakeGlobalAsync(view: ViewInfo) {
-        const {globalDisplayName, typeDisplayName, globalViews} = this.viewManagerModel,
-            {typedName} = view;
-
-        if (some(globalViews, {name: view.name})) {
-            XH.alert({
-                title: 'Alert',
-                message: `There is already a ${globalDisplayName} ${typedName}. Please rename or edit it instead.`
-            });
-            return;
-        }
-
-        const msgs = [
-            `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`,
-            strong('Are you sure you want to proceed?')
-        ];
-        const confirmed = await XH.confirm({
-            message: fragment(msgs.map(m => p(m))),
-            confirmProps: {
-                text: `Yes, change visibility`,
-                outlined: true,
-                autoFocus: false,
-                intent: 'primary'
-            }
-        });
-        if (!confirmed) return;
-
-        const {viewManagerModel} = this;
-        const updated = await viewManagerModel.makeViewGlobalAsync(view);
-        await viewManagerModel.refreshAsync();
-        await this.refreshAsync();
-        await this.selectViewAsync(updated.info); // reselect -- will have moved tabs!
     }
 
     private async selectViewAsync(view: ViewInfo) {
@@ -362,7 +325,7 @@ export class ManageDialogModel extends HoistModel {
                         Icon.globe(),
                         `This tab shows ${globalViews} available to everyone.`,
                         br(),
-                        `${capitalize(globalViews)} can be set to appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
+                        `${capitalize(globalViews)} appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
                     )
                 })
             });

@@ -4,14 +4,14 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Some} from '@xh/hoist/core';
+import {Some} from '@xh/hoist/core';
 import {flatMap} from 'lodash';
 
 /**
  * Grouped node data, as returned by {@link Cube.executeQuery} or exposed via {@link View.result}.
  * Designed for direct consumption by hierarchical stores and their associated tree grids.
  */
-export class ViewRowData implements PlainObject {
+export class ViewRowData {
     constructor(id: string) {
         this.id = id;
     }
@@ -57,6 +57,11 @@ export class ViewRowData implements PlainObject {
         if (this.isCubeLeaf) return this;
         return this._cubeLeafChildren ?? flatMap(this.children, 'cubeLeaves');
     }
+
+    /**
+     * Support all other string keys for application fields in source data.
+     */
+    [key: string]: any;
 
     //------------------
     // Implementation

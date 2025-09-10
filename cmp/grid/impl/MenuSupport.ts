@@ -279,7 +279,7 @@ function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
 
 function levelExpandAction(gridModel: GridModel): RecordAction {
     return new RecordAction({
-        text: 'Expand to ...',
+        text: 'Expand to...',
         displayFn: () => {
             const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
 

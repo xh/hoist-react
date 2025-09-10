@@ -312,7 +312,7 @@ export class ExceptionHandler {
     }
 
     private logException(e: HoistException, opts: ExceptionHandlerOptions) {
-        return opts.showAsError ? console.error(opts.message, e) : console.debug(opts.message);
+        return opts.showAsError ? logError([opts.message, e], this) : logDebug(opts.message, this);
     }
 
     private parseOptions(

@@ -25,7 +25,7 @@ import {
     formatSelector,
     HoistModel
 } from './model';
-import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
@@ -285,11 +285,11 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
 
         // 2) Validate
         if (!model && !spec.optional && spec instanceof UsesSpec) {
-            console.error(`
-                Failed to find model with selector '${formatSelector(spec.selector)}' for
-                component '${cfg.displayName}'. Ensure the proper model is available via context, or
-                specify explicitly using the 'model' prop.
-            `);
+            logError(
+                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
+                proper model is available via context, or specify using the 'model' prop.`,
+                cfg.displayName
+            );
             return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
         }
 
@@ -408,10 +408,11 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 2) props - instance
     if (model) {
         if (!model.isHoistModel || !model.matchesSelector(selector, true)) {
-            console.error(
-                `Incorrect model passed to '${cfg.displayName}'.
+            logError(
+                `Incorrect model passed.
                 Expected: ${formatSelector(selector)}
-                Received: ${model.constructor.name}`
+                Received: ${model.constructor.name}`,
+                cfg.displayName
             );
             model = null;
         }

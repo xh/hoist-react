@@ -9,7 +9,7 @@ import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {camelCase, isEmpty, zipWith} from 'lodash';
+import {isEmpty, zipWith} from 'lodash';
 
 /**
  * @internal
@@ -77,8 +77,6 @@ export class JsonSearchImplModel extends HoistModel {
             selModel: 'single'
         });
 
-        this.markPersist('path', {localStorageKey: `xhJsonSearch${camelCase(this.subjectName)}`});
-
         this.addReaction(
             {
                 track: () => this.path,
@@ -95,9 +93,6 @@ export class JsonSearchImplModel extends HoistModel {
                 debounce: 300
             }
         );
-
-        // We might have a persisted path - go ahead and load if so.
-        this.loadMatchingDocsAsync();
     }
 
     async loadMatchingDocsAsync() {

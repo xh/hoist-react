@@ -96,6 +96,8 @@ export class ValuesTabModel extends HoistModel {
             {
                 track: () => this.filterText,
                 run: () => this.onFilterTextChange(),
+                // Must be longer than the `filterBuffer` on `storeFilterField` since this Grid's
+                // filtered RecordSet must be current before `onFilterTextChange` can run.
                 debounce: 300
             },
             {

@@ -47,7 +47,7 @@ export class DataAccess<T> {
         }
     }
 
-    /** Fetch the latest version of a view. */
+    /** Fetch the latest version of a view, or the in-code default if token null/undefined/empty. */
     async fetchViewAsync(token: string): Promise<View<T>> {
         const {model} = this;
         if (!token) return View.createDefault(model);
@@ -82,17 +82,6 @@ export class DataAccess<T> {
                 params: {token: view.token},
                 body: updates
             });
-            return View.fromBlob(raw, this.model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
-        }
-    }
-
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        try {
-            this.ensureEditable(view);
-            const raw = await XH.fetchJson({url: 'xhView/makeGlobal', params: {token: view.token}});
             return View.fromBlob(raw, this.model);
         } catch (e) {
             throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
