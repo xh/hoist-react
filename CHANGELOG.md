@@ -22,6 +22,7 @@
   views will be pinned by default.  This feature was deemed too confusing, and not useful in
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
+* New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
 
 ### 🐞 Bug Fixes
 
