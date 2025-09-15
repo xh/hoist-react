@@ -7,6 +7,7 @@ import {createRef} from 'react';
 /**
  * Internal model for the HScroller component. Used to manage the scroll state and provide
  * scroll functionality. Uses animation frames to ensure smooth scrolling.
+ * @internal
  */
 
 export class HScrollerModel extends HoistModel {

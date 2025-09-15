@@ -13,14 +13,17 @@ import {
     XH
 } from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {DynamicTabConfig} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
 import {Icon} from '@xh/hoist/icon';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {makeObservable} from '@xh/hoist/mobx';
-import {compact, find, first, uniqBy} from 'lodash';
+import {compact, find, keyBy, uniqBy} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
 import React from 'react';
 
 export interface DynamicTabSwitcherConfig {
+    /** Additional tabs to include in the switcher, such as for actions outside the TabContainer. */
+    extraTabs?: DynamicTabConfig[];
     /** Additional menu items to include in tab context menus. */
     extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
     /** IDs of favorite tabs to display by default (in order). */
@@ -32,7 +35,7 @@ export interface DynamicTabSwitcherConfig {
 }
 
 export interface DynamicTabSwitcherMenuContext extends MenuContext {
-    tab: TabModel;
+    tab: TabModel | DynamicTabConfig;
 }
 
 export class DynamicTabSwitcherModel
@@ -42,6 +45,7 @@ export class DynamicTabSwitcherModel
     declare config: DynamicTabSwitcherConfig;
 
     private readonly extraMenuItems: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
+    private readonly extraTabsById: Record<string, DynamicTabConfig>;
     private readonly tabContainerModel: TabContainerModel;
     @observable.ref private visibleTabState: TabState[];
 
@@ -51,17 +55,22 @@ export class DynamicTabSwitcherModel
     }
 
     @computed
-    get visibleTabs(): TabModel[] {
-        return compact(this.visibleTabState.map(it => this.tabContainerModel.findTab(it.tabId)));
+    get visibleTabs(): Array<TabModel | DynamicTabConfig> {
+        return compact(
+            this.visibleTabState.map(
+                it => this.tabContainerModel.findTab(it.tabId) ?? this.findExtraTab(it.tabId)
+            )
+        );
     }
 
     @computed
-    get enabledVisibleTabs(): TabModel[] {
+    get enabledVisibleTabs(): Array<TabModel | DynamicTabConfig> {
         return this.visibleTabs.filter(it => !it.disabled);
     }
 
     constructor({
         extraMenuItems = [],
+        extraTabs = [],
         initialFavorites = [],
         persistWith = null,
         tabContainerModel
@@ -70,6 +79,7 @@ export class DynamicTabSwitcherModel
         makeObservable(this);
 
         this.extraMenuItems = extraMenuItems;
+        this.extraTabsById = keyBy(extraTabs, 'id');
         this.tabContainerModel = tabContainerModel;
         this.visibleTabState = this.getValidTabIds(initialFavorites).map(tabId => ({
             tabId,
@@ -122,11 +132,22 @@ export class DynamicTabSwitcherModel
         this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
         const {enabledVisibleTabs, tabContainerModel} = this;
         if (tabContainerModel.activeTabId === tabId) {
-            tabContainerModel.activateTab(first(enabledVisibleTabs));
+            tabContainerModel.activateTab(enabledVisibleTabs.find(tab => tab instanceof TabModel));
         }
     }
 
-    onContextMenu(e: React.MouseEvent<HTMLDivElement, MouseEvent>, tab: TabModel) {
+    findExtraTab(tabId: string): Omit<DynamicTabConfig, 'displayFn' | 'omit'> {
+        const extraTab = this.extraTabsById[tabId];
+        if (!extraTab) return null;
+        const {displayFn = () => ({}), ...rest} = this.extraTabsById[tabId],
+            {omit, ...ret} = {...rest, ...displayFn()};
+        return omit ? null : ret;
+    }
+
+    onContextMenu(
+        e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+        tab: TabModel | DynamicTabConfig
+    ) {
         const isFavorite = this.isTabFavorite(tab.id),
             {left, bottom} = e.currentTarget.getBoundingClientRect();
         showContextMenu(
@@ -195,7 +216,11 @@ export class DynamicTabSwitcherModel
     }
 
     private getValidTabIds(tabIds: string[]): string[] {
-        return tabIds.filter(id => this.tabContainerModel.findTab(id));
+        return tabIds.filter(id => this.isValidTabId(id));
+    }
+
+    private isValidTabId(tabId: string): boolean {
+        return !!(this.tabContainerModel.findTab(tabId) || this.findExtraTab(tabId));
     }
 
     private isTabVisible(tabId: string): boolean {

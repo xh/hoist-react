@@ -1,17 +1,19 @@
 import composeRefs from '@seznam/compose-react-refs';
-import {div, hframe, span} from '@xh/hoist/cmp/layout';
+import {div, hframe} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, HoistProps, useContextModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {hScroller} from '@xh/hoist/desktop/cmp/tab/dynamic/hscroller/HScroller';
 import {HScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/hscroller/HScrollerModel';
+import {DynamicTabConfig} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
 import {Icon} from '@xh/hoist/icon';
+import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {first} from 'lodash';
-import {CSSProperties, Ref, useEffect, useRef} from 'react';
+import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
 
@@ -52,9 +54,7 @@ const tabs = hoistCmp.factory<TabsProps>(({model}, ref) => {
                         item: div({
                             className: 'bp5-tab-list',
                             items: [
-                                visibleTabs.map((tabModel, index) =>
-                                    tab({key: tabModel.id, tabModel, index})
-                                ),
+                                visibleTabs.map((tab, index) => tabCmp({key: tab.id, tab, index})),
                                 provided.placeholder
                             ]
                         })
@@ -65,18 +65,20 @@ const tabs = hoistCmp.factory<TabsProps>(({model}, ref) => {
 });
 
 interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
-    tabModel: TabModel;
+    tab: TabModel | DynamicTabConfig;
     index: number;
 }
 
-const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
-    const isActive = model.isTabActive(tabModel.id),
-        isCloseable = tabModel.disabled || model.enabledVisibleTabs.length > 1,
+const tabCmp = hoistCmp.factory<TabProps>(({tab, index, model}) => {
+    const isActive = model.isTabActive(tab.id),
+        isCloseable =
+            tab.disabled ||
+            model.enabledVisibleTabs.filter(it => it instanceof TabModel).length > 1,
         tabRef = useRef<HTMLDivElement>(),
         scrollerModel = useContextModel(HScrollerModel),
         {showScrollButtons} = scrollerModel,
-        {disabled, icon} = tabModel,
-        isFavorite = model.isTabFavorite(tabModel.id);
+        {disabled, icon, tooltip} = tab,
+        isFavorite = model.isTabFavorite(tab.id);
 
     // Handle this at the component level rather than in the model since they are not "linked"
     useEffect(() => {
@@ -87,8 +89,8 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
     }, [isActive, showScrollButtons]);
 
     return draggable({
-        key: tabModel.id,
-        draggableId: tabModel.id,
+        key: tab.id,
+        draggableId: tab.id,
         index,
         children: (provided, snapshot) =>
             hframe({
@@ -98,9 +100,14 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
                     snapshot.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
                 ),
                 onClick: () => {
-                    if (!disabled) model.activate(tabModel.id);
+                    if (disabled) return;
+                    if (tab instanceof TabModel) {
+                        model.activate(tab.id);
+                    } else {
+                        tab.actionFn();
+                    }
                 },
-                onContextMenu: e => model.onContextMenu(e, tabModel),
+                onContextMenu: e => model.onContextMenu(e, tab),
                 ref: composeRefs(provided.innerRef, tabRef),
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
@@ -110,8 +117,11 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp5-tab',
-                        item: span({
-                            className: 'bp5-popover-target',
+                        item: bpTooltip({
+                            content: tooltip as ReactElement,
+                            disabled: !tooltip,
+                            hoverOpenDelay: 1000,
+                            position: 'bottom',
                             item: hframe({
                                 className: 'xh-tab-switcher__tab',
                                 tabIndex: -1,
@@ -121,7 +131,7 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
                                         item: icon,
                                         omit: !icon
                                     }),
-                                    tabModel.title,
+                                    tab.title,
                                     button({
                                         className:
                                             'xh-dynamic-tab-switcher__tabs__tab__close-button',
@@ -130,7 +140,7 @@ const tab = hoistCmp.factory<TabProps>(({tabModel, index, model}) => {
                                         minimal: true,
                                         onClick: e => {
                                             consumeEvent(e);
-                                            model.hide(tabModel.id);
+                                            model.hide(tab.id);
                                         },
                                         omit: isFavorite || !isCloseable
                                     })

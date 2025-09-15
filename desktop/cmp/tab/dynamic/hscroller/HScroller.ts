@@ -10,6 +10,7 @@ import React, {Ref} from 'react';
 /**
  * A horizontal scroller component that displays a content component with left and right scroll
  * buttons when the content overflows the viewport.
+ * @internal
  */
 
 export interface HScrollerProps extends HoistProps<HScrollerModel> {
