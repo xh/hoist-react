@@ -38,26 +38,21 @@ export const validEmail: Constraint<string> = ({value, displayName}) => {
 
 /**
  * Validate all email addresses in a field that allows multiple email addresses
- * separated by a semicolon - separator used by Outlook for multiple email addresses.
+ * separated by a semicolon - the separator used by Outlook for multiple email addresses.
  * All email addresses must be unique.
  */
 export function validEmails(c?: ValidEmailsOptions): Constraint<string> {
     return ({value, displayName}) => {
         if (isNil(value)) return null;
 
-        let emails = value.split(';');
-        if (c?.strict) {
-            if (emails.some(it => it.match(/(^\s|\s$)/)))
-                return `${displayName} must not contain whitespace between email addresses.`;
-            if (value.endsWith(';')) return `${displayName} field must not end with a semicolon.`;
-        }
-
-        emails = emails.filter(Boolean).map(it => it.trim());
+        const emails = value
+            .split(';')
+            .map(it => it.trim())
+            .filter(Boolean);
 
         if (uniq(emails).length !== emails.length) {
             return `${displayName} must not contain duplicate email addresses.`;
         }
-
         if (emails.length < c?.minCount) {
             return `${displayName} must contain at least ${c.minCount} email addresses.`;
         }
@@ -71,14 +66,6 @@ export function validEmails(c?: ValidEmailsOptions): Constraint<string> {
     };
 }
 export interface ValidEmailsOptions {
-    /**
-     * True to not allow whitespace between addresses and not allow a trailing semicolon.
-     * Defaults to false.
-     * False is the more user-friendly option, the user can enter spaces after semicolons, and a trailing semicolon
-     * and the user will not be bothered with a validation error, but downstream code will need to handle trimming.
-     */
-    strict?: boolean;
-
     /** Require at least N email addresses. */
     minCount?: number;
 
