@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {isArray, isEmpty, isFinite, isNil, isString} from 'lodash';
+import {isArray, isEmpty, isFinite, isNil, isString, uniq} from 'lodash';
 import moment from 'moment';
 import {Constraint} from './Rule';
 /**
@@ -27,18 +27,51 @@ export const required: Constraint = ({value, displayName}) => {
 };
 
 /**
- * Validate an email address.
- * https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181.
+ * Validate a single email address in a field that expects only one email address.
  */
 export const validEmail: Constraint<string> = ({value, displayName}) => {
     if (isNil(value)) return null;
 
-    // prettier-ignore
-    // eslint-disable-next-line no-useless-escape
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        isValid = re.test(value);
-    if (!isValid) return `${displayName} is not a properly formatted address.`;
+    const isValid = emailRegEx.test(value);
+    if (!isValid) return `${displayName} is not a properly formatted email address.`;
 };
+
+/**
+ * Validate all email addresses in a field that allows multiple email addresses
+ * separated by a semicolon - the separator used by Outlook for multiple email addresses.
+ * All email addresses must be unique.
+ */
+export function validEmails(c?: ValidEmailsOptions): Constraint<string> {
+    return ({value, displayName}) => {
+        if (isNil(value)) return null;
+
+        const emails = value
+            .split(';')
+            .map(it => it.trim())
+            .filter(Boolean);
+
+        if (uniq(emails).length !== emails.length) {
+            return `${displayName} must not contain duplicate email addresses.`;
+        }
+        if (emails.length < c?.minCount) {
+            return `${displayName} must contain at least ${c.minCount} email addresses.`;
+        }
+        if (!isNil(c?.maxCount) && emails.length > c.maxCount) {
+            return `${displayName} must contain no more than ${c.maxCount} email addresses.`;
+        }
+
+        const isValid = emails.every(it => emailRegEx.test(it));
+
+        if (!isValid) return `${displayName} has an improperly formatted email address.`;
+    };
+}
+export interface ValidEmailsOptions {
+    /** Require at least N email addresses. */
+    minCount?: number;
+
+    /** Require no more than N email addresses. */
+    maxCount?: number;
+}
 
 /** Validate length of a string.*/
 export function lengthIs(c: LengthIsOptions): Constraint<string> {
@@ -197,3 +230,8 @@ export const isValidJson: Constraint = ({value, displayName}) => {
         return `${displayName} is not valid JSON`;
     }
 };
+
+// https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript/46181#46181
+// prettier-ignore
+// eslint-disable-next-line no-useless-escape
+const emailRegEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

@@ -22,6 +22,7 @@
   views will be pinned by default.  This feature was deemed too confusing, and not useful in
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
+* New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
 * Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions.
@@ -42,6 +43,10 @@
   `LogUtils.ts` for more info.
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `ColChooserConfig` `width` and `height` types.
 
 ## 75.0.1 - 2025-08-11
 
