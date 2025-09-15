@@ -23,6 +23,8 @@
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
 * New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
+* `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
+  `react-grid-layout`.
 
 ### 🐞 Bug Fixes
 
