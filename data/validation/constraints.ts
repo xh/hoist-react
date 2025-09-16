@@ -5,6 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {LocalDate} from '@xh/hoist/utils/datetime';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isString, uniq} from 'lodash';
 import moment from 'moment';
 import {Constraint} from './Rule';
@@ -43,21 +44,21 @@ export const validEmail: Constraint<string> = ({value, displayName}) => {
  */
 export function validEmails(c?: ValidEmailsOptions): Constraint<string> {
     return ({value, displayName}) => {
-        if (isNil(value)) return null;
+        if (isNil(value) && !c?.minCount) return null;
 
-        const emails = value
+        const emails = (value ?? '')
             .split(';')
             .map(it => it.trim())
             .filter(Boolean);
 
         if (uniq(emails).length !== emails.length) {
-            return `${displayName} must not contain duplicate email addresses.`;
+            return `${displayName} must not contain duplicate emails.`;
         }
         if (emails.length < c?.minCount) {
-            return `${displayName} must contain at least ${c.minCount} email addresses.`;
+            return `${displayName} must contain at least ${c.minCount} ${pluralize('email', c.minCount)}.`;
         }
         if (!isNil(c?.maxCount) && emails.length > c.maxCount) {
-            return `${displayName} must contain no more than ${c.maxCount} email addresses.`;
+            return `${displayName} must contain no more than ${c.maxCount} ${pluralize('email', c.maxCount)}.`;
         }
 
         const isValid = emails.every(it => emailRegEx.test(it));
