@@ -6,7 +6,8 @@
  */
 import {Exception} from './Exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn} from '@xh/hoist/utils/js/LogUtils';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {HoistException, PlainObject, XH} from '../';

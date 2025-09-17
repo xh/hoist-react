@@ -25,7 +25,8 @@ import {
     formatSelector,
     HoistModel
 } from './model';
-import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/js/LogUtils';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
