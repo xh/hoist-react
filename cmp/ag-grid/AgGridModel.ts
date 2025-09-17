@@ -373,7 +373,6 @@ export class AgGridModel extends HoistModel {
         const sortBy = castArray(value).map(it => GridSorter.parse(it));
         const {agApi} = this,
             prevSortBy = this._prevSortBy;
-        let togglingAbsSort = false;
 
         if (isEqual(prevSortBy, sortBy)) return;
 
@@ -386,7 +385,6 @@ export class AgGridModel extends HoistModel {
                 )
             )
         ) {
-            togglingAbsSort = true;
             agApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
         }
 
@@ -403,12 +401,6 @@ export class AgGridModel extends HoistModel {
             state: newState,
             defaultState: {sort: null, sortIndex: null}
         });
-
-        // Workaround needed for ag v27.
-        // https://github.com/xh/hoist-react/issues/2997
-        if (togglingAbsSort) {
-            agApi.redrawRows();
-        }
 
         this._prevSortBy = sortBy;
     }
