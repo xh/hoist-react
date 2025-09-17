@@ -1579,7 +1579,7 @@ export class GridModel extends HoistModel {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        const {agApi, empty} = this,
+        const {agApi} = this,
             {showMask} = options;
 
         if (showMask) {
@@ -1592,7 +1592,6 @@ export class GridModel extends HoistModel {
             if (showMask) {
                 await wait();
                 agApi.updateGridOptions({loading: false});
-                if (empty) agApi.showNoRowsOverlay();
             }
         }
     }
