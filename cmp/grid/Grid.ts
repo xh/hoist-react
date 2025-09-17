@@ -95,11 +95,19 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
-                model,
+        const {
+                store,
+                treeMode,
+                treeStyle,
+                highlightRowOnClick,
+                colChooserModel,
+                filterModel,
+                enableFullWidthScroll
+            } = model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
-            maxDepth = impl.isHierarchical ? store.maxDepth : null;
+            maxDepth = impl.isHierarchical ? store.maxDepth : null,
+            container = enableFullWidthScroll ? vframe : frame;
 
         className = classNames(
             className,
@@ -109,9 +117,6 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             treeMode ? getTreeStyleClasses(treeStyle) : null,
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
-
-        const {enableFullWidthScroll} = model.experimental,
-            container = enableFullWidthScroll ? vframe : frame;
 
         return fragment(
             container({
@@ -299,7 +304,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         // Support for FullWidthScroll
-        if (model.experimental.enableFullWidthScroll) {
+        if (model.enableFullWidthScroll) {
             ret.suppressHorizontalScroll = true;
         }
 

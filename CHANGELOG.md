@@ -37,6 +37,10 @@
   views will be pinned by default.  This feature was deemed too confusing, and not useful in
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
+* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
+   on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
+   spanning the width of all columns, including any pinned columns.
+
 
 ### 🐞 Bug Fixes
 

@@ -344,6 +344,13 @@ export interface GridConfig {
     highlightRowOnClick?: boolean;
 
     /**
+     *  Set to true to ensure that the grid will have a single horizontal scrollbar spanning the
+     *  width of all columns, including any pinned columns.  A value of false (default) will show
+     *  the scrollbar only under the scrollable area.
+     */
+    enableFullWidthScroll?: boolean;
+
+    /**
      * Flags for experimental features. These features are designed for early client-access and
      * testing, but are not yet part of the Hoist API.
      */
@@ -395,6 +402,7 @@ export class GridModel extends HoistModel {
     showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
     enableExport: boolean;
+    enableFullWidthScroll: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
@@ -554,6 +562,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
+            enableFullWidthScroll = false,
             experimental,
             appData,
             xhImpl,
@@ -580,6 +589,7 @@ export class GridModel extends HoistModel {
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
+        this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
