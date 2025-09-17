@@ -52,7 +52,7 @@ export function useInlineEditorModel(
             // Call the onCommit callback last - if provided by the app developer.
             // If app's onCommit invokes agParams.stopEditing() before onValueChange is called,
             // it will prevent the value change.
-            props.inputProps?.onCommit?.(value, oldValue);
+            inputProps?.onCommit?.(value, oldValue);
         }
     });
 }

@@ -6,6 +6,7 @@
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
+import {Component} from 'react';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -54,57 +55,22 @@ export type {
     RowHeightParams,
     CellClickedEvent,
     CellContextMenuEvent,
-    CellDoubleClickedEvent
+    CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent
 } from 'ag-grid-community';
 
 export type {CustomCellEditorProps} from 'ag-grid-react';
 export {useGridCellEditor} from 'ag-grid-react';
 
-const MIN_VERSION = '34.0.0';
+const MIN_VERSION = '34.1.1';
 const MAX_VERSION = '34.*.*';
-
-import {
-    ClientSideRowModelApiModule,
-    ClientSideRowModelModule,
-    CellStyleModule,
-    ColumnApiModule,
-    CustomEditorModule,
-    PinnedRowModule,
-    RenderApiModule,
-    RowSelectionModule,
-    RowApiModule,
-    RowAutoHeightModule,
-    RowStyleModule,
-    ScrollApiModule,
-    TextEditorModule,
-    TooltipModule,
-    TextFilterModule
-} from 'ag-grid-community';
-
-export const REQUIRED_COMMUNITY_MODULES = [
-    ClientSideRowModelApiModule,
-    ClientSideRowModelModule,
-    CellStyleModule,
-    ColumnApiModule,
-    CustomEditorModule,
-    PinnedRowModule,
-    RenderApiModule,
-    RowSelectionModule,
-    RowApiModule,
-    RowAutoHeightModule,
-    RowStyleModule,
-    ScrollApiModule,
-    TextEditorModule,
-    TooltipModule,
-    TextFilterModule
-];
 
 /**
  * Expose application versions of ag-Grid to Hoist.
  * Typically called in the Bootstrap.js. of the application.
  */
-export function installAgGrid(ComponentReactWrapper) {
-    const version = ClientSideRowModelModule.version;
+export function installAgGrid(ComponentReactWrapper: Component, version: string) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
         logError(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +

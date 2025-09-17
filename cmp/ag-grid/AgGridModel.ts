@@ -305,77 +305,22 @@ export class AgGridModel extends HoistModel {
                 it => !isArray(it.colId)
             ),
             {agApi} = this,
-            isPivot = agApi.isPivotMode(),
-            havePivotCols = !isEmpty(agApi.getPivotColumns()),
             defaultState = {
                 sort: null,
                 sortIndex: null
             };
 
-        // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
-        // so this approach is required for setting sort config on secondary columns.
-        if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
-            // 1st clear all pre-existing primary column sorts
-            // with an explicit clear of the auto_group column,
-            // which is not cleared by the defaultState config.
-            agApi.applyColumnState({
-                state: [
-                    {
-                        colId: AgGridModel.AUTO_GROUP_COL_ID,
-                        sort: null,
-                        sortIndex: null
-                    }
-                ],
-                defaultState
-            });
-
-            // 2nd clear all pre-existing secondary column sorts
-            agApi.getPivotResultColumns().forEach(col => {
-                if (col) {
-                    agApi.applyColumnState({
-                        state: [
-                            {
-                                colId: col.getColId(),
-                                sort: null,
-                                sortIndex: null
-                            }
-                        ],
-                        defaultState
-                    });
-                }
-            });
-
-            // finally apply sorts from state to secondary columns
-            secondaryColumnState.forEach(state => {
-                // TODO -- state saving for pivot appears broken.
-                // Related to TS error below? Need to analyze and tear down if no longer needed.
-                // @ts-ignore
-                const col = agApi.getPivotResultColumn(state.colId[0], state.colId[1]);
-                if (col) {
-                    agApi.applyColumnState({
-                        state: [
-                            {
-                                colId: col.getColId(),
-                                sort: state.sort ?? null,
-                                sortIndex: state.sortIndex
-                            }
-                        ]
-                    });
-                } else {
-                    this.logWarn(
-                        'Could not find a secondary column to associate with the pivot column path',
-                        state.colId
-                    );
-                }
-            });
-        }
+        // ag-Grid has had issues manipulation secondary columns with applyColumnState
+        // If support here deemed necessary, more investigation could be done.
+        throwIf(
+            agApi.isPivotMode() &&
+                !isEmpty(agApi.getPivotColumns()) &&
+                !isEmpty(secondaryColumnState),
+            'setSortState not currently supported for PivotGrid with secondary column state '
+        );
 
         // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
-        agApi.applyColumnState({
-            state: primaryColumnState,
-            defaultState
-        });
-
+        agApi.applyColumnState({state: primaryColumnState, defaultState});
         agApi.onSortChanged();
     }
 

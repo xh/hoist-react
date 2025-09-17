@@ -8,6 +8,8 @@ import {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent,
     ColumnEvent,
     AgColumnState,
     RowClickedEvent,
@@ -443,7 +445,12 @@ export class GridModel extends HoistModel {
      * Flag to track inline editing at a granular level. Will toggle each time row
      * or cell editing is activated or ended.
      */
-    @observable isEditing = false;
+    get isEditing(): boolean {
+        return !!this.editingCell;
+    }
+
+    @observable.ref
+    private editingCell: PlainObject = null;
 
     /**
      * Flag to track inline editing at a general level.
@@ -1465,14 +1472,27 @@ export class GridModel extends HoistModel {
 
     /** @internal */
     @action
-    onCellEditingStarted = () => {
-        this.isEditing = true;
+    onCellEditingStarted = (e: CellEditingStartedEvent) => {
+        this.editingCell = {colId: e.column.getColId(), rowIndex: e.rowIndex};
     };
 
     /** @internal*/
     @action
-    onCellEditingStopped = () => {
-        this.isEditing = false;
+    onCellEditingStopped = (e: CellEditingStoppedEvent) => {
+        const origCell = this.editingCell;
+        this.editingCell = null;
+        const {agApi} = this,
+            focusedCell = agApi.getFocusedCell();
+
+        // If the rowIndex has moved since we started edit, sorting might have caused the wrong row
+        // to be focused.  In this (rare) case, just conservatively keep focus on what was edited
+        if (
+            !isUndefined(e.rowIndex) &&
+            origCell?.rowIndex != e.rowIndex &&
+            focusedCell?.rowIndex != e.rowIndex
+        ) {
+            agApi.setFocusedCell(e.rowIndex, origCell.colId);
+        }
     };
 
     /**
