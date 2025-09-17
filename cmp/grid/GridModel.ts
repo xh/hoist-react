@@ -449,9 +449,6 @@ export class GridModel extends HoistModel {
         return !!this.editingCell;
     }
 
-    @observable.ref
-    private editingCell: PlainObject = null;
-
     /**
      * Flag to track inline editing at a general level.
      * Will not change during transient navigation from cell to cell or row to row,
@@ -477,7 +474,7 @@ export class GridModel extends HoistModel {
         'colChooser',
         'autosizeColumns'
     ];
-
+    @observable.ref private editingCell: PlainObject = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
     /**
@@ -491,6 +488,10 @@ export class GridModel extends HoistModel {
     get maxDepth(): number {
         const {groupBy, store, treeMode} = this;
         return treeMode ? store.maxDepth : groupBy ? groupBy.length : 0;
+    }
+
+    get bodyViewport(): HTMLElement {
+        return this.viewRef.current?.querySelector('.ag-body-viewport') as HTMLElement;
     }
 
     /** Tracks execution of filtering operations.*/
