@@ -7,7 +7,7 @@
 
 import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
-import {logError} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';

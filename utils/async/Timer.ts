@@ -7,7 +7,8 @@
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {MILLISECONDS, MINUTES, olderThan} from '@xh/hoist/utils/datetime';
-import {logError, logWarn, throwIf} from '@xh/hoist/utils/js';
+import {throwIf} from '@xh/hoist/utils/js';
+import {logError, logWarn} from '@xh/hoist/utils/log';
 import {isBoolean, isFinite, isFunction, isNil, isString, pull} from 'lodash';
 
 /**

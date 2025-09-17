@@ -9,7 +9,8 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {withDefault} from '@xh/hoist/utils/js';
 
 export interface ModalToggleButtonProps extends ButtonProps {
     panelModel?: PanelModel;

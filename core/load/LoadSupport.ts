@@ -15,7 +15,7 @@ import {
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {logDebug, logError} from '@xh/hoist/utils/js/LogUtils';
+import {logDebug, logError} from '@xh/hoist/utils/log';
 import {isPlainObject, pull} from 'lodash';
 
 /**

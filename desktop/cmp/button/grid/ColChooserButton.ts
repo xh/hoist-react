@@ -12,7 +12,8 @@ import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColCho
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from '../Button';
 
 export interface ColChooserButtonProps extends ButtonProps {

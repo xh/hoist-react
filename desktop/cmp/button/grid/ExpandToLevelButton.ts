@@ -11,7 +11,8 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover, Position} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/utils/impl';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {button, ButtonProps} from '../Button';
 

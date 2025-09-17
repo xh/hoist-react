@@ -12,7 +12,7 @@ import '@xh/hoist/desktop/register';
 import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
-import {logWarn} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
 
 export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     /**

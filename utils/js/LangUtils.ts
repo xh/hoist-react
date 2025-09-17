@@ -6,7 +6,7 @@
  */
 import {PlainObject, Thunkable} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
-import {LogSource, logWarn, logError} from '@xh/hoist/utils/js/LogUtils';
+import {type LogSource, logWarn, logError} from '@xh/hoist/utils/log';
 import {
     flatMap,
     forOwn,

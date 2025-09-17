@@ -25,7 +25,7 @@ import {omitBy} from 'lodash';
 import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
-import {logWarn} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */

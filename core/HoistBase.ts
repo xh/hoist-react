@@ -13,16 +13,8 @@ import {
     runInAction,
     when as mobxWhen
 } from '@xh/hoist/mobx';
-import {
-    getOrCreate,
-    logDebug,
-    logError,
-    logInfo,
-    logWarn,
-    throwIf,
-    withDebug,
-    withInfo
-} from '@xh/hoist/utils/js';
+import {getOrCreate, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, logInfo, logWarn, withDebug, withInfo} from '@xh/hoist/utils/log';
 import {
     debounce as lodashDebounce,
     isFunction,

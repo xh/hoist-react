@@ -7,7 +7,8 @@
 import {box} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
-import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {GridModel} from '../GridModel';
 
 export interface GridCountLabelProps extends HoistProps, BoxProps {

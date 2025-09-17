@@ -13,7 +13,8 @@ import {Token} from '@xh/hoist/security/Token';
 import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {isJSON, throwIf} from '@xh/hoist/utils/js';
 import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 

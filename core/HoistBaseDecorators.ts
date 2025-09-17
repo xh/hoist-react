@@ -6,7 +6,8 @@
  */
 import {wait} from '@xh/hoist/promise';
 import {observable} from 'mobx';
-import {logError, throwIf} from '../utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {throwIf} from '../utils/js';
 import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
 
 /**

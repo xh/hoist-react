@@ -15,7 +15,8 @@ import {
     RecordActionSpec,
     StoreRecord
 } from '@xh/hoist/data';
-import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logDebug, logWarn} from '@xh/hoist/utils/log';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {
     castArray,

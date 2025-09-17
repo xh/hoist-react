@@ -9,7 +9,8 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {ExportOptions} from '@xh/hoist/svc';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from '../Button';
 
 export interface ExportButtonProps extends ButtonProps {

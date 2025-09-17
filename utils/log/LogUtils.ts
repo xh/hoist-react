@@ -7,7 +7,7 @@
 import {Some} from '@xh/hoist/core';
 import {castArray, isString} from 'lodash';
 import store from 'store2';
-import {intersperse} from './LangUtils';
+import {intersperse} from '../js/LangUtils';
 
 /**
  * Utility functions providing managed, structured logging to Hoist apps.

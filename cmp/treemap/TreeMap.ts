@@ -21,7 +21,8 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logError, logWithDebug} from '@xh/hoist/utils/js';
+import {logWithDebug} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {
     createObservableRef,
     getLayoutProps,

@@ -5,7 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {checkVersion, logError} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {checkVersion} from '@xh/hoist/utils/js';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.

@@ -6,7 +6,8 @@
  */
 
 import equal from 'fast-deep-equal';
-import {logWarn, throwIf} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
+import {throwIf} from '@xh/hoist/utils/js';
 import {maxBy, isNil} from 'lodash';
 import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';

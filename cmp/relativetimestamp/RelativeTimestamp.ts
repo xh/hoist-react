@@ -21,7 +21,8 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logWarn, withDefault} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
+import {apiDeprecated, withDefault} from '@xh/hoist/utils/js';
 
 interface RelativeTimestampProps extends HoistProps, BoxProps, RelativeTimestampOptions {
     /**

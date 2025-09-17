@@ -17,7 +17,8 @@ import {
 } from '@azure/msal-browser';
 import {AppState, PlainObject, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
-import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, logInfo, logWarn} from '@xh/hoist/utils/log';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';

@@ -7,7 +7,8 @@
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import '@xh/hoist/mobile/register';
 

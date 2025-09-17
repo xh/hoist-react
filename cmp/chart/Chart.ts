@@ -21,7 +21,8 @@ import {
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
-import {logError, mergeDeep} from '@xh/hoist/utils/js';
+import {mergeDeep} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {
     createObservableRef,
     getLayoutProps,

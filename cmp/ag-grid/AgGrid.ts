@@ -18,7 +18,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
-import {logError} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isNil} from 'lodash';

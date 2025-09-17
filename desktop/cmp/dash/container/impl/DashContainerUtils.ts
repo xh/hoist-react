@@ -7,7 +7,8 @@
 import {PlainObject} from '@xh/hoist/core';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {serializeIcon} from '@xh/hoist/icon';
-import {logDebug, throwIf} from '@xh/hoist/utils/js';
+import {logDebug} from '@xh/hoist/utils/log';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
 import GoldenLayout, {ContentItem} from 'golden-layout';

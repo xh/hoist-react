@@ -6,7 +6,7 @@
  */
 import {Column, ColumnGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
-import {logWarn} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
 import {castArray, isFunction} from 'lodash';
 
 /** @internal */

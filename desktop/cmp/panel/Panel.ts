@@ -24,7 +24,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
-import {logWarn} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';

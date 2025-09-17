@@ -8,7 +8,8 @@ import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {withDefault} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from '../Button';
 
 export interface ColAutosizeButtonProps extends ButtonProps {

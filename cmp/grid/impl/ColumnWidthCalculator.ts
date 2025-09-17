@@ -9,7 +9,8 @@ import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
 import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logWarn} from '@xh/hoist/utils/log';
+import {stripTags} from '@xh/hoist/utils/js';
 import {
     forOwn,
     groupBy,

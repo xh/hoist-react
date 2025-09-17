@@ -6,7 +6,8 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError} from '@xh/hoist/utils/log';
+import {throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     compact,

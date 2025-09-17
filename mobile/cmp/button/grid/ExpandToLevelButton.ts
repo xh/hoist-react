@@ -8,7 +8,8 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, MenuItemLike, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import '@xh/hoist/mobile/register';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/log';
+import {withDefault} from '@xh/hoist/utils/js';
 import {menuButton, MenuButtonProps} from '../../menu';
 
 export interface ExpandToLevelButtonProps extends MenuButtonProps {

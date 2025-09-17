@@ -7,7 +7,7 @@
 import {XH} from '@xh/hoist/core';
 import {debounce, isFunction} from 'lodash';
 import {getOrCreate, throwIf, warnIf} from './LangUtils';
-import {withDebug, withInfo} from './LogUtils';
+import {withDebug, withInfo} from '../log/LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
