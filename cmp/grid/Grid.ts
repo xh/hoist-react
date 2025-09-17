@@ -443,8 +443,7 @@ export class GridLocalModel extends HoistModel {
         return (
             agOptions.getRowHeight &&
             !agOptions.rowHeight &&
-            !model.getVisibleLeafColumns().some(c => c.autoHeight) &&
-            model.experimental.useScrollOptimization !== false
+            !model.getVisibleLeafColumns().some(c => c.autoHeight)
         );
     }
 
