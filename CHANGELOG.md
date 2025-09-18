@@ -6,7 +6,9 @@
 * The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
 * `checkVersion` and related methods' import path has changed. Update imports from
-  `@xh/hoist/utils/js/VersionUtils` to `@xh/hoist/utils/version`;  (Unlikely to affect most apps.)
+  `@xh/hoist/utils/js/VersionUtils` to `@xh/hoist/utils/version` (Unlikely to affect most apps).
+* `logDebug, logWarn, logError` and related methods' import path has changed. Update imports from
+  `@xh/hoist/utils/js` to `@xh/hoist/utils/log`.
 
 ### 🎁 New Features
 
