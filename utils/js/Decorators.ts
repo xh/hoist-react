@@ -4,10 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {debounce, isFunction} from 'lodash';
+import {XH} from '@xh/hoist/core';
+import {withDebug, withInfo} from '@xh/hoist/utils/log';
 import {getOrCreate, throwIf, warnIf} from './LangUtils';
-import {withDebug, withInfo} from '../log';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
