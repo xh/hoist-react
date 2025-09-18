@@ -6,7 +6,7 @@
  */
 
 import {logError} from '@xh/hoist/utils/log';
-import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+import {checkVersion} from '@xh/hoist/utils/version';
 
 export let Highcharts = null;
 

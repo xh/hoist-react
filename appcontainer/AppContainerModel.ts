@@ -40,7 +40,8 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, createSingleton, throwIf} from '@xh/hoist/utils/js';
+import {checkMinVersion} from '@xh/hoist/utils/version';
+import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';

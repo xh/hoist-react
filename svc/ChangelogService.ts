@@ -8,7 +8,7 @@ import {HoistService, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {checkMinVersion} from '@xh/hoist/utils/js';
+import {checkMinVersion} from '@xh/hoist/utils/version';
 import {isEmpty, forOwn, includes} from 'lodash';
 
 /**

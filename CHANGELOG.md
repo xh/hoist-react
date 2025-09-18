@@ -3,8 +3,10 @@
 ## 76.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
-*  The constructor for `TabModel` has changed to take its owning container as a second argument.
+* The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
+* `checkVersion` and related methods' import path has changed. Update imports from
+  `@xh/hoist/utils/js/VersionUtils` to `@xh/hoist/utils/version`;  (Unlikely to affect most apps.)
 
 ### 🎁 New Features
 
