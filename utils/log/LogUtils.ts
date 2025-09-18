@@ -36,7 +36,11 @@ export type LogSource = string | {displayName: string} | {constructor: {name: st
  * @internal - use public `XH.logLevel`.
  */
 export function getLogLevel() {
-    return _logLevel;
+    try {
+        return _logLevel;
+    } catch (e) {
+        return 'info';
+    }
 }
 
 /**
@@ -128,7 +132,9 @@ export function logWarn(msgs: Some<unknown>, source?: LogSource) {
 // Implementation
 //----------------------------------
 function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel): T {
-    if (_severity[level] < _severity[_logLevel]) {
+    const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
+
+    if (_severity[level] < _severity[getLogLevel()]) {
         return fn?.();
     }
 
@@ -208,6 +214,5 @@ function parseSource(source: LogSource): string {
 // Initialize during parsing to make available immediately.
 //----------------------------------------------------------------
 let _logLevel: LogLevel = 'info';
-const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
 setLogLevel(store.session.get('xhLogLevel', 'info'));
