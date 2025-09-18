@@ -6,6 +6,7 @@
  */
 import type {PlainObject, Thunkable, LogSource} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
+import {logWarn, logError} from '@xh/hoist/utils/log';
 import {
     flatMap,
     forOwn,
@@ -130,7 +131,7 @@ export function throwIf(condition: any, message: unknown) {
  */
 export function warnIf(condition: any, message: any) {
     if (condition) {
-        console.warn(message);
+        logWarn(message);
     }
 }
 
@@ -139,7 +140,7 @@ export function warnIf(condition: any, message: any) {
  */
 export function errorIf(condition: any, message: any) {
     if (condition) {
-        console.error(message);
+        logError(message);
     }
 }
 
@@ -197,7 +198,7 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
         msg = opts.msg ?? '',
         warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
     if (!_seenWarnings[warn]) {
-        console.warn(warn, opts.source);
+        logWarn(warn, opts.source);
         _seenWarnings[warn] = true;
     }
 }
