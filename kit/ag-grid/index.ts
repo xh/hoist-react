@@ -6,7 +6,7 @@
  */
 
 import {logError} from '@xh/hoist/utils/log';
-import {checkVersion} from '@xh/hoist/utils/js';
+import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
