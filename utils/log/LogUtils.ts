@@ -4,10 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
-import {castArray, isString} from 'lodash';
+import type {Some, LogLevel, LogSource} from '@xh/hoist/core';
+import {castArray, flatMap, isString} from 'lodash';
 import store from 'store2';
-import {intersperse} from '../js/LangUtils';
 
 /**
  * Utility functions providing managed, structured logging to Hoist apps.
@@ -22,12 +21,6 @@ import {intersperse} from '../js/LangUtils';
  * memory impacts that might result from verbose debug logging.  This can be adjusted by calling
  * XH.logLevel from the console.
  */
-
-/** Severity Level for log statement */
-export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
-
-/** Object identifying the source of log statement.  Typically, a javascript class */
-export type LogSource = string | {displayName: string} | {constructor: {name: string}};
 
 /**
  * Current minimum severity for Hoist log utils (default 'info').
@@ -209,6 +202,15 @@ function parseSource(source: LogSource): string {
     return null;
 }
 
+/**
+ * Intersperse a separator between each item in an array.
+ * Same method as in LangUtils, but duplicated here to avoid circular dependency.
+ */
+function intersperse<T>(arr: T[], separator: T): T[] {
+    return flatMap(arr, (it, idx) => {
+        return idx > 0 ? [separator, it] : [it];
+    });
+}
 //----------------------------------------------------------------
 // Initialization + Level/Severity support.
 // Initialize during parsing to make available immediately.

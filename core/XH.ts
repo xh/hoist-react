@@ -31,7 +31,8 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
-import {getLogLevel, setLogLevel, type LogLevel} from '@xh/hoist/utils/log';
+import type {LogLevel} from './types/Types';
+import {getLogLevel, setLogLevel} from '@xh/hoist/utils/log';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';

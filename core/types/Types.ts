@@ -86,3 +86,9 @@ export type PageState =
      * The page is in the process of being unloaded by the browser (this is a terminal state x_x).
      */
     | 'terminated';
+
+/** Severity Level for log statement */
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+/** Object identifying the source of log statement.  Typically, a javascript class */
+export type LogSource = string | {displayName: string} | {constructor: {name: string}};

@@ -4,9 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Thunkable} from '@xh/hoist/core';
+import type {PlainObject, Thunkable, LogSource} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/core/exception/Exception';
-import {type LogSource} from '@xh/hoist/utils/log';
 import {
     flatMap,
     forOwn,
