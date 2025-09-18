@@ -13,7 +13,7 @@ import {
     observable,
     runInAction
 } from 'mobx';
-import {logError} from '@xh/hoist/utils/log/LogUtils';
+import {logError} from '@xh/hoist/utils/log';
 
 /**
  * An enhanced version of the native mobx makeObservable.
