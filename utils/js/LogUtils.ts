@@ -168,6 +168,7 @@ export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
 
     const src = opts.source ? `[${opts.source}] ` : '',
         msg = opts.msg ? ` ${opts.msg}.` : '';
+    // low-level exception api for low-level package
     throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
 }
 

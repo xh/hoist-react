@@ -121,7 +121,7 @@ export function isJSON(obj: any): boolean {
  */
 export function throwIf(condition: any, message: unknown) {
     if (condition) {
-        throw Exception.create(message);
+        throw Exception.create(message); // low-level exception api for low-level package
     }
 }
 
