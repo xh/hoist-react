@@ -5,6 +5,10 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
 *  The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
+*  The `Exception` class and `HoistException` type have been moved from `@xh\hoist\core` to a new
+    lower level package `@xh\hoist\exception`.  This new structure is not expected to effect most
+    applications, and was put in place to reduce the risk of circular dependencies between internal
+    hoist packages.
 
 ### 🎁 New Features
 
