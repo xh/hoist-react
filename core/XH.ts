@@ -31,7 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
-import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js/LogUtils';
+import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -40,16 +40,16 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
+import {Exception, HoistException} from '../exception';
+
 import {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
     HoistAppModel,
-    HoistException,
     HoistService,
     HoistServiceClass,
     HoistUser,

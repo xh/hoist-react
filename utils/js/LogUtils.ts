@@ -4,8 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
-import {castArray, isString} from 'lodash';
+import type {Some} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
+import {castArray, isString, isUndefined} from 'lodash';
 import store from 'store2';
 import {intersperse} from './LangUtils';
 
@@ -28,6 +29,23 @@ export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
 /** Object identifying the source of log statement.  Typically, a javascript class */
 export type LogSource = string | {displayName: string} | {constructor: {name: string}};
+
+export interface APIWarnOptions {
+    /**
+     * If provided and undefined, this method will be a no-op.
+     * Useful for testing if a parameter has been provided in caller.
+     */
+    test?: any;
+
+    /** Version when this API will no longer be supported or this warning should be removed. */
+    v?: string;
+
+    /** An additional message. Can contain suggestions for alternatives. */
+    msg?: string;
+
+    /** Source of message for labelling log message.  */
+    source?: LogSource;
+}
 
 /**
  * Current minimum severity for Hoist log utils (default 'info').
@@ -122,6 +140,54 @@ export function logError(msgs: Some<unknown>, source?: LogSource) {
  */
 export function logWarn(msgs: Some<unknown>, source?: LogSource) {
     return loggedDo(msgs, null, source, 'warn');
+}
+
+/**
+ * Log a warning to the console if a condition evaluates as truthy.
+ */
+export function warnIf(condition: any, message: any) {
+    if (condition) {
+        logWarn(message);
+    }
+}
+
+/**
+ * Log an error to the console if a condition evaluates as truthy.
+ */
+export function errorIf(condition: any, message: any) {
+    if (condition) {
+        logError(message);
+    }
+}
+
+/**
+ * Document and prevent usage of a removed parameter.
+ */
+export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const src = opts.source ? `[${opts.source}] ` : '',
+        msg = opts.msg ? ` ${opts.msg}.` : '';
+    // low-level exception api for low-level package
+    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
+}
+
+/**
+ * Document and warn on usage of a deprecated API
+ *
+ * @param name - the name of the deprecated parameter
+ */
+const _seenWarnings = {};
+export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const v = opts.v ?? 'a future release',
+        msg = opts.msg ?? '',
+        warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
+    if (!_seenWarnings[warn]) {
+        logWarn(warn, opts.source);
+        _seenWarnings[warn] = true;
+    }
 }
 
 //----------------------------------
