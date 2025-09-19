@@ -4,10 +4,10 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {debounce, isFunction} from 'lodash';
-import {getOrCreate, throwIf, warnIf} from './LangUtils';
-import {withDebug, withInfo} from './LogUtils';
+import {getOrCreate, throwIf} from './LangUtils';
+import {withDebug, warnIf, withInfo} from './LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -106,7 +106,7 @@ export function abstract(target, key, descriptor) {
     return {
         ...descriptor,
         [baseFnName]: function () {
-            throw XH.exception(`${key} must be implemented by ${this.constructor.name}`);
+            throw Exception.create(`${key} must be implemented by ${this.constructor.name}`);
         }
     };
 }

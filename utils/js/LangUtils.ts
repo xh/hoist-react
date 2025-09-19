@@ -4,9 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Thunkable} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/core/exception/Exception';
-import {LogSource, logWarn, logError} from '@xh/hoist/utils/js/LogUtils';
+import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {
     flatMap,
     forOwn,
@@ -127,24 +126,6 @@ export function throwIf(condition: any, message: unknown) {
 }
 
 /**
- * Log a warning to the console if a condition evaluates as truthy.
- */
-export function warnIf(condition: any, message: any) {
-    if (condition) {
-        logWarn(message);
-    }
-}
-
-/**
- * Log an error to the console if a condition evaluates as truthy.
- */
-export function errorIf(condition: any, message: any) {
-    if (condition) {
-        logError(message);
-    }
-}
-
-/**
  * Instantiate a singleton object of a class, and place a reference to the created
  * object in a static property on the class.
  *
@@ -155,52 +136,6 @@ export function errorIf(condition: any, message: any) {
  */
 export function createSingleton<T>(clazz: new () => T): T {
     return (clazz['instance'] = new clazz());
-}
-
-export interface APIWarnOptions {
-    /**
-     * If provided and undefined, this method will be a no-op.
-     * Useful for testing if a parameter has been provided in caller.
-     */
-    test?: any;
-
-    /** Version when this API will no longer be supported or this warning should be removed. */
-    v?: string;
-
-    /** An additional message. Can contain suggestions for alternatives. */
-    msg?: string;
-
-    /** Source of message for labelling log message.  */
-    source?: LogSource;
-}
-
-/**
- * Document and prevent usage of a removed parameter.
- */
-export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const src = opts.source ? `[${opts.source}] ` : '',
-        msg = opts.msg ? ` ${opts.msg}.` : '';
-    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
-}
-
-/**
- * Document and warn on usage of a deprecated API
- *
- * @param name - the name of the deprecated parameter
- */
-const _seenWarnings = {};
-export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const v = opts.v ?? 'a future release',
-        msg = opts.msg ?? '',
-        warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
-    if (!_seenWarnings[warn]) {
-        logWarn(warn, opts.source);
-        _seenWarnings[warn] = true;
-    }
 }
 
 /**

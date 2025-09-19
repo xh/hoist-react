@@ -6,15 +6,15 @@
  */
 import {
     Thunkable,
-    Exception,
     ExceptionHandlerOptions,
     TaskObserver,
     TrackOptions,
     XH,
     Some,
-    Awaitable,
-    TimeoutExceptionConfig
+    Awaitable
 } from '@xh/hoist/core';
+import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
+
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
