@@ -20,6 +20,10 @@
 
 *  The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
+*  The `Exception` class and `HoistException` type have been moved from `@xh\hoist\core` to a new
+    lower level package `@xh\hoist\exception`.  This new structure is not expected to effect most
+    applications, and was put in place to reduce the risk of circular dependencies between internal
+    hoist packages.
 
 ### 🎁 New Features
 
@@ -37,9 +41,12 @@
   views will be pinned by default.  This feature was deemed too confusing, and not useful in
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
-* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
-   on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
-   spanning the width of all columns, including any pinned columns.
+* New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
+* `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
+  `react-grid-layout`.
+* * Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
+    on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
+    spanning the width of all columns, including any pinned columns.
 
 
 ### 🐞 Bug Fixes
@@ -58,6 +65,10 @@
   `LogUtils.ts` for more info.
 * Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
   Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `ColChooserConfig` `width` and `height` types.
 
 ## 75.0.1 - 2025-08-11
 

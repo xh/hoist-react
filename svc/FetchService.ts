@@ -4,20 +4,13 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {
-    Awaitable,
-    Exception,
-    HoistService,
-    LoadSpec,
-    PlainObject,
-    TrackOptions,
-    XH
-} from '@xh/hoist/core';
+import {Awaitable, HoistService, LoadSpec, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
-import {isDate, isFunction, isNil, isObject, isString, omit, omitBy} from 'lodash';
+import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
 
@@ -198,7 +191,7 @@ export class FetchService extends HoistService {
         // Apply tracking
         const {correlationId, loadSpec, track} = opts;
         if (track) {
-            const trackOptions = isString(track) ? {message: track} : track;
+            const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
                 trackOptions.correlationId || trackOptions.loadSpec,
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
@@ -296,14 +289,14 @@ export class FetchService extends HoistService {
                         ? timeout.message
                         : // Exception.timeout() message already includes interval - add URL here.
                           e.message + ` loading '${opts.url}'`;
-                throw Exception.fetchTimeout(opts, e, msg);
+                throw this.timeoutException(opts, e, msg);
             }
 
             if (!e.isHoistException) {
                 // Just two other cases where we expect this to *throw* -- Typically we get a fail status
                 throw e.name === 'AbortError'
-                    ? Exception.fetchAborted(opts, e)
-                    : Exception.serverUnavailable(opts, e);
+                    ? this.abortedException(opts, e)
+                    : this.serverUnavailableException(opts, e);
             }
             throw e;
         } finally {
@@ -359,7 +352,8 @@ export class FetchService extends HoistService {
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
 
-        if (!ret.ok) throw Exception.fetchError(opts, ret, await this.safeResponseTextAsync(ret));
+        if (!ret.ok)
+            throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
 
         return ret;
     }
@@ -367,7 +361,7 @@ export class FetchService extends HoistService {
     private async parseJsonAsync(opts: FetchOptions, r: Response): Promise<any> {
         if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
         return r.json().catchWhen('SyntaxError', e => {
-            throw Exception.fetchJsonParseError(opts, e);
+            throw this.jsonParseException(opts, e);
         });
     }
 
@@ -384,6 +378,184 @@ export class FetchService extends HoistService {
         if (isLocalDate(value)) return value.isoString;
         return value;
     };
+
+    //---------------------
+    // Exception Handling
+    //--------------------
+    /**
+     * Create an Error to throw when a fetch call returns a !ok response.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param response - return value of native fetch.
+     * @param responseText - optional additional details from the server.
+     */
+    private exceptionFromResponse(
+        fetchOptions: FetchOptions,
+        response: Response,
+        responseText: string = null
+    ): FetchException {
+        const {headers, status, statusText} = response,
+            defaults = {
+                name: 'HTTP Error ' + (status || ''),
+                message: statusText,
+                httpStatus: status,
+                serverDetails: responseText,
+                fetchOptions
+            };
+
+        if (status === 401) {
+            return this.createException({
+                ...defaults,
+                name: 'Unauthorized',
+                message: 'Your session may have timed out and you may need to log in again.'
+            });
+        }
+
+        // Try to "smart" decode as server provided JSON Exception (with a name)
+        try {
+            const cType = headers.get('Content-Type');
+            if (cType?.includes('application/json')) {
+                const parsedResp = this.safeParseJson(responseText);
+                return this.createException({
+                    ...defaults,
+                    name: parsedResp?.name ?? defaults.name,
+                    message: this.extractMessage(parsedResp, responseText, statusText),
+                    isRoutine: parsedResp?.isRoutine ?? false,
+                    serverDetails: parsedResp ?? responseText
+                });
+            }
+        } catch (ignored) {}
+
+        // Fall back to raw defaults
+        return this.createException(defaults);
+    }
+
+    /**
+     * Create an Error to throw when a fetchJson call encounters a SyntaxError.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param cause - object thrown by native {@link response.json}.
+     */
+    private jsonParseException(fetchOptions: FetchOptions, cause: any): FetchException {
+        return this.createException({
+            name: 'JSON Parsing Error',
+            message:
+                'Error parsing the response body as JSON. The server may have returned an invalid ' +
+                'or empty response. Use "XH.fetch()" to process the response manually.',
+            fetchOptions,
+            cause
+        });
+    }
+
+    /**
+     * Create an Error to throw when a fetch call is aborted.
+     * @param fetchOptions - original options passed to FetchService.
+     * @param cause - object thrown by native fetch
+     */
+    private abortedException(fetchOptions: FetchOptions, cause: any): FetchException {
+        return this.createException({
+            name: 'Fetch Aborted',
+            message: `Fetch request aborted, url: "${fetchOptions.url}"`,
+            isRoutine: true,
+            isFetchAborted: true,
+            fetchOptions,
+            cause
+        });
+    }
+
+    /**
+     * Create an Error to throw when a fetch call times out.
+     * @param fetchOptions - original options the app passed when calling FetchService.
+     * @param cause - underlying timeout exception
+     * @param message - optional custom message
+     *
+     * @returns an exception that is both a TimeoutException, and a FetchException, with the
+     *      underlying TimeoutException as its cause.
+     */
+    private timeoutException(
+        fetchOptions: FetchOptions,
+        cause: TimeoutException,
+        message: string
+    ): FetchException & TimeoutException {
+        return this.createException({
+            name: 'Fetch Timeout',
+            message,
+            isFetchTimeout: true,
+            isTimeout: true,
+            interval: cause.interval,
+            fetchOptions,
+            cause
+        }) as FetchException & TimeoutException;
+    }
+
+    /**
+     * Create an Error for when the server called by fetch does not respond
+     * @param fetchOptions - original options the app passed to FetchService.fetch
+     * @param cause - object thrown by native fetch
+     */
+    private serverUnavailableException(fetchOptions: FetchOptions, cause: any): FetchException {
+        const protocolPattern = /^[a-z]+:\/\//i,
+            originPattern = /^[a-z]+:\/\/[^/]+/i,
+            match = fetchOptions.url.match(originPattern),
+            origin = match
+                ? match[0]
+                : protocolPattern.test(XH.baseUrl)
+                  ? XH.baseUrl
+                  : window.location.origin;
+
+        return this.createException({
+            name: 'Server Unavailable',
+            message: `Unable to contact the server at ${origin}`,
+            isServerUnavailable: true,
+            fetchOptions,
+            cause
+        });
+    }
+
+    private createException(attributes: PlainObject) {
+        let correlationId: string = null;
+        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
+        if (correlationIdHeaderKey) {
+            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
+        }
+
+        return Exception.create({
+            isFetchAborted: false,
+            httpStatus: 0, // native fetch doesn't put status on its Error
+            serverDetails: null,
+            stack: null, // server-sourced exceptions do not include, neither should client, not relevant
+            correlationId,
+            ...attributes
+        }) as FetchException;
+    }
+
+    private safeParseJson(txt: string): PlainObject {
+        try {
+            return JSON.parse(txt);
+        } catch (ignored) {
+            return null;
+        }
+    }
+
+    private extractMessage(
+        parsedResp: PlainObject,
+        responseText: string,
+        statusText: string
+    ): string {
+        let ret: string;
+        if (parsedResp) {
+            // From parsed response, including cause if provided (e.g. ExternalHttpException)
+            ret = parsedResp.message;
+            if (isString(parsedResp.cause)) {
+                const cause = truncate(parsedResp.cause, {length: 255});
+                ret = ret ? `${ret} (Caused by: ${cause})` : cause;
+            }
+        } else {
+            // Use raw text if not JSON parseable
+            ret = truncate(responseText?.trim(), {length: 255});
+        }
+
+        // Fallback to statusText if we have nothing else.
+        return ret || statusText;
+    }
 }
 
 /** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
@@ -472,4 +644,24 @@ export interface FetchOptions {
      * here - use the top-level `correlationId` property instead.)
      */
     track?: string | TrackOptions;
+}
+
+/**
+ * Exception thrown to indicate an HTTP error resulting from a call to FetchService.
+ */
+export interface FetchException extends HoistException {
+    /** Http Status code associated with exception. 0 if no response received. */
+    httpStatus: number;
+
+    /** Rich object or string containing details about the exception as sent by server. */
+    serverDetails: string | PlainObject;
+
+    /** Options of underlying fetch call. */
+    fetchOptions: FetchOptions;
+
+    /**
+     * True if exception resulted from the fetch being aborted by fetchService, or the application.
+     * @see FetchService.abort and FetchOptions.autoAbortKey.
+     */
+    isFetchAborted: boolean;
 }
