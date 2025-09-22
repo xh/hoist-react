@@ -482,7 +482,7 @@ export class GridModel extends HoistModel {
         'colChooser',
         'autosizeColumns'
     ];
-    @observable.ref private editingCell: PlainObject = null;
+    @observable.ref private editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
     /**

@@ -310,7 +310,7 @@ export class AgGridModel extends HoistModel {
                 sortIndex: null
             };
 
-        // ag-Grid has had issues manipulation secondary columns with applyColumnState
+        // ag-Grid has had issues manipulating secondary columns with applyColumnState
         // If support here deemed necessary, more investigation could be done.
         throwIf(
             agApi.isPivotMode() &&
