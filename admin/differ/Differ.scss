@@ -39,7 +39,7 @@
       vertical-align: top;
       width: 290px;
       max-width: 290px;
-      word-wrap: break-word;
+      overflow-wrap: break-word;
 
       &.diff {
         color: var(--xh-green);
