@@ -5,7 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistBase, isHoistException, managed, XH} from '@xh/hoist/core';
+import {isHoistException} from '@xh/hoist/exception';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';

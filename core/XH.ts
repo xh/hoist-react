@@ -40,16 +40,16 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
+import {Exception, HoistException} from '../exception';
+
 import {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
     HoistAppModel,
-    HoistException,
     HoistService,
     HoistServiceClass,
     HoistUser,

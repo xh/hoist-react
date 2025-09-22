@@ -4,12 +4,12 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Exception} from './Exception';
+import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
-import {HoistException, PlainObject, XH} from '../';
+import {PlainObject, XH} from './';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */

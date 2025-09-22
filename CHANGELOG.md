@@ -5,9 +5,16 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
 *  The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
+*  The `Exception` class and `HoistException` type have been moved from `@xh\hoist\core` to a new
+    lower level package `@xh\hoist\exception`.  This new structure is not expected to effect most
+    applications, and was put in place to reduce the risk of circular dependencies between internal
+    hoist packages.
 
 ### 🎁 New Features
 
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions.
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive
   or disruptive action.
@@ -23,9 +30,8 @@
   practice.  App maintainers should ensure that all global views are appropriate and well
   organized enough to be shown immediately to new users in the view menu.
 * New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
-* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
-  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
-  persist "favorited" tab state across sessions.
+* `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
+  `react-grid-layout`.
 
 ### 🐞 Bug Fixes
 
@@ -46,7 +52,13 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* Corrected `ColChooserConfig` `width` and `height` types.
+* Corrected `ColChooserConfig.width` and `height` types.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.3 → 2.4`
+* @azure/msal-browser `4.16 → 4.23`
+* typescript `5.8 → 5.9`
 
 ## 75.0.1 - 2025-08-11
 
