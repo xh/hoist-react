@@ -68,7 +68,13 @@
 
 ### ⚙️ Typescript API Adjustments
 
-* Corrected `ColChooserConfig` `width` and `height` types.
+* Corrected `ColChooserConfig.width` and `height` types.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.3 → 2.4`
+* @azure/msal-browser `4.16 → 4.23`
+* typescript `5.8 → 5.9`
 
 ## 75.0.1 - 2025-08-11
 
