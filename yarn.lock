@@ -2,28 +2,6 @@
 # yarn lockfile v1
 
 
-"@ag-grid-community/client-side-row-model@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/client-side-row-model/-/client-side-row-model-31.3.4.tgz#0827b8f832f49e266f90e01e6131830d4f8029e5"
-  integrity sha512-lbrbhwSoY1/N2CiOQBa322gVnrhyrbzyG7cvbOef3itAiaLUzQ03PWBw09d9mj+/0hnqMs386ZuGX15FWJaTqQ==
-  dependencies:
-    "@ag-grid-community/core" "31.3.4"
-    tslib "^2.3.0"
-
-"@ag-grid-community/core@31.3.4", "@ag-grid-community/core@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/core/-/core-31.3.4.tgz#11572ab8415f3b1f3427f4e870d1cce13ae94008"
-  integrity sha512-Fz7P4lMAYDo9rG6jOA8OXlAXta/4E+PiCdjT7M9OloaXAJtU47oO4f3VKV7rdbVCC8SGSo0cBCateddQTAFCNQ==
-  dependencies:
-    tslib "^2.3.0"
-
-"@ag-grid-community/react@31.x":
-  version "31.3.4"
-  resolved "https://registry.yarnpkg.com/@ag-grid-community/react/-/react-31.3.4.tgz#9e4e8c73fc7a015d3fea91631661bf71528ab6c6"
-  integrity sha512-mNkVEDiatxny6AeNIxkJe/oNsakV0RaP6qqyDla/bijKFX1cVR7t13SFYMujxdM3lF7j1s+HHJv1Z4dg9xRqSw==
-  dependencies:
-    prop-types "^15.8.1"
-
 "@auth0/auth0-spa-js@~2.4.1":
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.4.1.tgz#48fcde461684be720a664746a3eaf6c1aca7e7d7"
@@ -2148,6 +2126,26 @@ acorn@^8.0.4, acorn@^8.11.0, acorn@^8.14.0, acorn@^8.15.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
+ag-charts-types@12.2.0:
+  version "12.2.0"
+  resolved "https://registry.yarnpkg.com/ag-charts-types/-/ag-charts-types-12.2.0.tgz#e62139f604256bf56ec86a616f5150009f6a4209"
+  integrity sha512-d2qQrQirt9wP36YW5HPuOvXsiajyiFnr1CTsoCbs02bavPDz7Lk2jHp64+waM4YKgXb3GN7gafbBI9Qgk33BmQ==
+
+ag-grid-community@34.2.0, ag-grid-community@34.x:
+  version "34.2.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-community/-/ag-grid-community-34.2.0.tgz#708986ea8f0212313aa92c581027f3d7d35a4ce2"
+  integrity sha512-peS7THEMYwpIrwLQHmkRxw/TlOnddD/F5A88RqlBxf8j+WqVYRWMOOhU5TqymGcha7z2oZ8IoL9ROl3gvtdEjg==
+  dependencies:
+    ag-charts-types "12.2.0"
+
+ag-grid-react@34.x:
+  version "34.2.0"
+  resolved "https://registry.yarnpkg.com/ag-grid-react/-/ag-grid-react-34.2.0.tgz#f9adc51fe210d498f1ef1701accdee31898f2257"
+  integrity sha512-dLKFw6hz75S0HLuZvtcwjm+gyiI4gXVzHEu7lWNafWAX0mb8DhogEOP5wbzAlsN6iCfi7bK/cgZImZFjenlqwg==
+  dependencies:
+    ag-grid-community "34.2.0"
+    prop-types "^15.8.1"
+
 airbnb-prop-types@^2.14.0, airbnb-prop-types@^2.15.0, airbnb-prop-types@^2.16.0:
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/airbnb-prop-types/-/airbnb-prop-types-2.16.0.tgz#b96274cefa1abb14f623f804173ee97c13971dc2"
@@ -2213,9 +2211,9 @@ ajv@~8.12.0:
     uri-js "^4.2.2"
 
 ansi-escapes@^7.0.0:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-7.1.0.tgz#91983a524b64e49f8e46fb962bfb7f375ced2ad5"
-  integrity sha512-YdhtCd19sKRKfAAUsrcC1wzm4JuzJoiX4pOJqIoW2qmKj5WzG/dL8uUJ0361zaXtHqK7gEhOwtAtz7t3Yq3X5g==
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-7.1.1.tgz#fdd39427a7e5a26233e48a8b4366351629ffea1b"
+  integrity sha512-Zhl0ErHcSRUaVfGUeUdDuLgpkEo8KIFjB4Y9uAc46ScOpdDiU1Dbyplh7qWJeJ/ZHpbyMSM26+X3BySgnIz40Q==
   dependencies:
     environment "^1.0.0"
 
@@ -3319,9 +3317,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.5.218:
-  version "1.5.222"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.222.tgz#965c93783ad989116b74593ae3068b9466fdb237"
-  integrity sha512-gA7psSwSwQRE60CEoLz6JBCQPIxNeuzB2nL8vE03GK/OHxlvykbLyeiumQy1iH5C2f3YbRAZpGCMT12a/9ih9w==
+  version "1.5.223"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.223.tgz#cf9b1aebba1c8ee5e50d1c9e198229e15bc87b28"
+  integrity sha512-qKm55ic6nbEmagFlTFczML33rF90aU+WtrJ9MdTCThrcvDNdUHN4p6QfVN78U06ZmguqXIyMPyYhw2TrbDUwPQ==
 
 emoji-regex@^10.3.0:
   version "10.5.0"
@@ -5128,9 +5126,9 @@ lower-case@^2.0.2:
     tslib "^2.0.3"
 
 lru-cache@^11.0.0:
-  version "11.2.1"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.2.1.tgz#d426ac471521729c6c1acda5f7a633eadaa28db2"
-  integrity sha512-r8LA6i4LP4EeWOhqBaZZjDWwehd1xUJPCJd9Sv300H0ZmcUER4+JPh7bqqZeqs1o5pgtgvXm+d9UGrB5zZGDiQ==
+  version "11.2.2"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-11.2.2.tgz#40fd37edffcfae4b2940379c0722dc6eeaa75f24"
+  integrity sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg==
 
 lru-cache@^5.1.1:
   version "5.1.1"
@@ -5357,10 +5355,10 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-memfs@^4.6.0:
-  version "4.43.0"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-4.43.0.tgz#8aeed4d242e29acf57dfdfe93fec4f84280f8df6"
-  integrity sha512-XCdhMy33sgxCwJ4JgjSasLGgOjFm9/i+IEhO03gPHroJeTBhM7ZQ1+v3j7di9nNKtcLGjVvKjHVOkTbVop/R/Q==
+"memfs@>=4.6.0 <4.43.0":
+  version "4.42.0"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-4.42.0.tgz#faa3b89d78fb723bef37370ca86a460763c23e15"
+  integrity sha512-RG+4HMGyIVp6UWDWbFmZ38yKrSzblPnfJu0PyPt0hw52KW4PPlPp+HdV4qZBG0hLDuYVnf8wfQT4NymKXnlQjA==
   dependencies:
     "@jsonjoy.com/json-pack" "^1.11.0"
     "@jsonjoy.com/util" "^1.9.0"
@@ -7947,7 +7945,7 @@ ts-api-utils@^2.1.0:
   resolved "https://registry.yarnpkg.com/ts-api-utils/-/ts-api-utils-2.1.0.tgz#595f7094e46eed364c13fd23e75f9513d29baf91"
   integrity sha512-CUgTZL1irw8u29bzrOD/nH85jqyc74D6SshFgujOIA7osm2Rz7dYH77agkx7H4FBNxDq7Cjf+IjaX/8zwFW+ZQ==
 
-tslib@^2.0.0, tslib@^2.0.1, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.3.0:
+tslib@^2.0.0, tslib@^2.0.1, tslib@^2.0.3, tslib@^2.1.0:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -8305,12 +8303,12 @@ webpack-cli@~6.0.1:
     webpack-merge "^6.0.1"
 
 webpack-dev-middleware@^7.4.2:
-  version "7.4.3"
-  resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-7.4.3.tgz#4e23b479a574549334641faa4e00670720f01839"
-  integrity sha512-5kA/PzpZzDz5mNOkcNLmU1UdjGeSSxd7rt1akWpI70jMNHLASiBPRaQZn0hgyhvhawfIwSnnLfDABIxL3ueyFg==
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/webpack-dev-middleware/-/webpack-dev-middleware-7.4.4.tgz#def03430943fd74e06ef90d0b4d35153b6b79250"
+  integrity sha512-MMERxBs7QRSrquqjvExZ3GtTJc3r/yWASgiOCMnvXB4jdfEN/Jb9p68KzD6zku3+BViaG8cA+CiRkADFFaDCfw==
   dependencies:
     colorette "^2.0.10"
-    memfs "^4.6.0"
+    memfs ">=4.6.0 <4.43.0"
     mime-types "^3.0.1"
     on-finished "^2.4.1"
     range-parser "^1.2.1"
