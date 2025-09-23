@@ -1686,7 +1686,7 @@ export class GridModel extends HoistModel {
             // Remove the width from any non-resizable column - we don't want to track those widths as
             // they are set programmatically (e.g. fixed / action columns), and saved state should not
             // conflict with any code-level updates to their widths.
-            if (!col.resizable || !state.manuallySized) state = omit(state, 'width');
+            if (!col.resizable) state = omit(state, 'width');
             state = {...state, manuallySized: state.manuallySized ?? false};
 
             // Remove all metadata other than the id and the hidden state from hidden columns, to save
