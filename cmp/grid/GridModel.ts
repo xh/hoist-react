@@ -61,7 +61,7 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    cachePending,
+    sharePendingPromise,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -1576,7 +1576,7 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    @cachePending
+    @sharePendingPromise
     private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
