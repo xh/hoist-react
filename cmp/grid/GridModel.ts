@@ -1147,10 +1147,11 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => {
-            const {colId, width, hidden, pinned} = it;
-            return {colId, width, hidden, pinned};
-        });
+        this.columnState = this.getLeafColumns().map(it => ({
+            ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized
+            manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
+        }));
     }
 
     setColumnState(colState: Partial<ColumnState>[]) {

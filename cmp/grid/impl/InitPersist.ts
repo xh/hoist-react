@@ -6,6 +6,7 @@
  */
 import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
+import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
 
@@ -36,7 +37,16 @@ export function initPersist(
             target: {
                 getPersistableState: () =>
                     new PersistableColumnState(gridModel.persistableColumnState),
-                setPersistableState: ({value}) => gridModel.setColumnState(value)
+                setPersistableState: ({value}) =>
+                    runInAction(() => {
+                        gridModel.columnState = gridModel.cleanColumnState(value);
+                        if (gridModel.autosizeOptions.mode === 'managed') {
+                            const columns = gridModel.columnState
+                                .filter(it => !it.manuallySized)
+                                .map(it => it.colId);
+                            gridModel.autosizeAsync({columns});
+                        }
+                    })
             },
             owner: gridModel
         });

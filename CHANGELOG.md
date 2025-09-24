@@ -56,6 +56,7 @@
   its configured `initialViewSpec` function as expected in this case.
 * Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
   view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
+* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
 
 ### ⚙️ Technical
 
