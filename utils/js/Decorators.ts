@@ -110,3 +110,20 @@ export function abstract(target, key, descriptor) {
         }
     };
 }
+
+/**
+ * Decorates a class method that returns a Promise so that concurrent calls with the same arguments
+ * will share a single pending Promise. Arguments must be serializable via JSON.stringify.
+ */
+export function cachePending<T>(target: T, key: string, descriptor: PropertyDescriptor) {
+    const fn = descriptor.value;
+    return {
+        ...descriptor,
+        value: function () {
+            const cacheKey = '_xh_' + key + JSON.stringify(arguments);
+            return getOrCreate(this, cacheKey, () =>
+                fn.apply(this, arguments).finally(() => delete this[cacheKey])
+            );
+        }
+    };
+}

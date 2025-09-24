@@ -44,9 +44,10 @@
 * New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
 * `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
   `react-grid-layout`.
-* * Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
+* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
     on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
     spanning the width of all columns, including any pinned columns.
+* New `@cachePending` decorator for returning a shared Promise across concurrent async method calls.
 
 
 ### 🐞 Bug Fixes
