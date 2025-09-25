@@ -44,9 +44,10 @@
 * New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
 * `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
   `react-grid-layout`.
-* * Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
+* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
     on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
     spanning the width of all columns, including any pinned columns.
+* New `@sharePendingPromise` decorator for returning a shared Promise across concurrent async calls.
 
 
 ### 🐞 Bug Fixes
@@ -56,6 +57,10 @@
   its configured `initialViewSpec` function as expected in this case.
 * Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
   view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
+* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
+  This led to columns not being set to their expected widths when switching `ViewManager` views.
+* Fixed bug where a `Grid` with managed autosizing was not triggering an autosize as expected when
+  new column state was loaded (e.g. via `ViewManager`).
 
 ### ⚙️ Technical
 

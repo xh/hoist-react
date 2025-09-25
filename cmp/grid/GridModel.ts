@@ -61,6 +61,7 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
+    sharePendingPromise,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -1137,7 +1138,6 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
-    /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
         this.validateColConfigs(colConfigs);
@@ -1147,10 +1147,15 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => {
-            const {colId, width, hidden, pinned} = it;
-            return {colId, width, hidden, pinned};
-        });
+        this.columnState = this.getLeafColumns().map(it => ({
+            ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
+            // widths are not omitted from persistableColumnState. This is important because
+            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
+            // state in order to detect changes and restore initial state correctly.
+            // See https://github.com/xh/hoist-react/issues/4102.
+            manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
+        }));
     }
 
     setColumnState(colState: Partial<ColumnState>[]) {
@@ -1373,14 +1378,16 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const options: GridAutosizeOptions = {...this.autosizeOptions, ...overrideOpts};
+        const {columns, ...options}: GridAutosizeOptions = {
+            ...this.autosizeOptions,
+            ...overrideOpts
+        };
 
         if (options.mode === 'disabled') {
             return;
         }
 
         // 1) Pre-process columns to be operated on
-        const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
         let colIds: string[],
@@ -1577,7 +1584,11 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
+    @sharePendingPromise
+    private async autosizeColsInternalAsync(
+        colIds: string[],
+        options: Omit<GridAutosizeOptions, 'columns'>
+    ) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
