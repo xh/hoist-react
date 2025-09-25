@@ -38,7 +38,11 @@ export class GridAutosizeService extends HoistService {
      * @param colIds - array of columns in model to compute sizing for.
      * @param options - options to use for this autosize.
      */
-    async autosizeAsync(gridModel: GridModel, colIds: string[], options: GridAutosizeOptions) {
+    async autosizeAsync(
+        gridModel: GridModel,
+        colIds: string[],
+        options: Omit<GridAutosizeOptions, 'columns'>
+    ) {
         await gridModel.whenReadyAsync();
         if (!gridModel.isReady) return;
 
@@ -103,7 +107,7 @@ export class GridAutosizeService extends HoistService {
         gridModel: GridModel,
         colIds: string[],
         records: StoreRecord[],
-        options: GridAutosizeOptions,
+        options: Omit<GridAutosizeOptions, 'columns'>,
         manuallySized: boolean
     ): Promise<ColWidthSpec[]> {
         const startRecords = gridModel.store._filtered,
@@ -127,7 +131,7 @@ export class GridAutosizeService extends HoistService {
 
     private gatherRecordsToBeSized(
         gridModel: GridModel,
-        options: GridAutosizeOptions
+        options: Omit<GridAutosizeOptions, 'columns'>
     ): StoreRecord[] {
         let {store, agApi, treeMode, groupBy} = gridModel,
             {includeCollapsedChildren, renderedRowsOnly} = options,

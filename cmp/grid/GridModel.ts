@@ -1378,14 +1378,16 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const options: GridAutosizeOptions = {...this.autosizeOptions, ...overrideOpts};
+        const {columns, ...options}: GridAutosizeOptions = {
+            ...this.autosizeOptions,
+            ...overrideOpts
+        };
 
         if (options.mode === 'disabled') {
             return;
         }
 
         // 1) Pre-process columns to be operated on
-        const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
         let colIds: string[],
@@ -1581,7 +1583,10 @@ export class GridModel extends HoistModel {
     }
 
     @sharePendingPromise
-    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
+    private async autosizeColsInternalAsync(
+        colIds: string[],
+        options: Omit<GridAutosizeOptions, 'columns'>
+    ) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 

@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {debounce, isFunction} from 'lodash';
 import {getOrCreate, throwIf} from './LangUtils';
-import {withDebug, warnIf, withInfo} from './LogUtils';
+import {withDebug, warnIf, withInfo, logWarn} from './LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -120,10 +120,29 @@ export function sharePendingPromise<T>(target: T, key: string, descriptor: Prope
     return {
         ...descriptor,
         value: function () {
-            const cacheKey = '_xh_' + key + JSON.stringify(arguments);
-            return getOrCreate(this, cacheKey, () =>
-                fn.apply(this, arguments).finally(() => delete this[cacheKey])
-            );
+            try {
+                const cacheKey = '_xh_' + key + JSON.stringify(arguments);
+                return getOrCreate(this, cacheKey, () => {
+                    const ret = fn.apply(this, arguments);
+                    if (!(ret instanceof Promise)) {
+                        logWarn(
+                            `@sharePendingPromise applied to non-Promise-returning method: ${key}`,
+                            this.constructor.name
+                        );
+                        return ret;
+                    }
+                    return ret.finally(() => delete this[cacheKey]);
+                });
+            } catch (e) {
+                logWarn(
+                    [
+                        `@sharePendingPromise unable to serialize arguments for method: ${key}.`,
+                        e.message
+                    ],
+                    this.constructor.name
+                );
+                return fn.apply(this, arguments);
+            }
         }
     };
 }
