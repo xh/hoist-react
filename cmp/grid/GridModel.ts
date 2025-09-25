@@ -1505,9 +1505,11 @@ export class GridModel extends HoistModel {
         // If the rowIndex has moved since we started edit, sorting might have caused the wrong row
         // to be focused.  In this (rare) case, just conservatively keep focus on what was edited
         if (
+            origCell &&
+            focusedCell &&
             !isUndefined(e.rowIndex) &&
-            origCell?.rowIndex != e.rowIndex &&
-            focusedCell?.rowIndex != e.rowIndex
+            origCell.rowIndex != e.rowIndex &&
+            focusedCell.rowIndex != e.rowIndex
         ) {
             agApi.setFocusedCell(e.rowIndex, origCell.colId);
         }
