@@ -58,6 +58,9 @@
 * Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
   view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
 * Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
+  This led to columns not being set to their expected widths when switching `ViewManager` views.
+* Fixed bug where a `Grid` with managed autosizing was not triggering an autosize as expected when
+  new column state was loaded (e.g. via `ViewManager`).
 
 ### ⚙️ Technical
 

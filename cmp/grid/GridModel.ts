@@ -1149,7 +1149,11 @@ export class GridModel extends HoistModel {
         this.columns = columns;
         this.columnState = this.getLeafColumns().map(it => ({
             ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
-            // If not in managed auto-size mode, treat in-code column widths as manuallySized
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
+            // widths are not omitted from persistableColumnState. This is important because
+            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
+            // state in order to detect changes and restore initial state correctly.
+            // See https://github.com/xh/hoist-react/issues/4102.
             manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
         }));
     }
