@@ -1,5 +1,7 @@
 # Changelog
 
+## 77.0.0-SNAPSHOT - unreleased
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
