@@ -2,6 +2,9 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Updated grid column filter to support sorting via header sort icon click
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
