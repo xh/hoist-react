@@ -47,6 +47,13 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     /** Title with which to initialize the view. */
     @bindable title: string;
 
+    /**
+     * Additional info that will be displayed after the title.
+     * Applications can bind to this property to provide dynamic title details.
+     * Value is not persisted.
+     **/
+    @bindable titleDetails: string;
+
     /** Icon with which to initialize the view. */
     @bindable.ref icon: ReactElement;
 

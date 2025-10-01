@@ -338,7 +338,7 @@ export class DashContainerModel
     renameView(id: string) {
         const view = this.getItemByViewModel(id);
         if (!view) return;
-        this.showTitleForm(view.tab.element);
+        this.showTitleForm(view.tab.element, this.getViewModel(id));
     }
 
     onResize() {
@@ -558,8 +558,18 @@ export class DashContainerModel
 
             if (viewSpec.allowRename) {
                 this.insertTitleForm($el, viewModel);
-                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
+                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
             }
+
+            viewModel.addReaction({
+                track: () => viewModel.titleDetails,
+                run: () => {
+                    const currentTitle = $titleEl.text(),
+                        {title, titleDetails} = viewModel,
+                        newTitle = title + (titleDetails ? ' ' + titleDetails : '');
+                    if (currentTitle !== newTitle) $titleEl.text(newTitle);
+                }
+            });
         });
     }
 
@@ -588,12 +598,11 @@ export class DashContainerModel
         });
     }
 
-    private showTitleForm($tabEl) {
+    private showTitleForm($tabEl, viewModel: DashViewModel) {
         if (this.renameLocked) return;
 
-        const $titleEl = $tabEl.find('.lm_title').first(),
-            $inputEl = $tabEl.find('.title-form input').first(),
-            currentTitle = $titleEl.text();
+        const $inputEl = $tabEl.find('.title-form input').first(),
+            currentTitle = viewModel.title;
 
         $tabEl.addClass('show-title-form');
         $inputEl.val(currentTitle);

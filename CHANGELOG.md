@@ -2,6 +2,13 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `DashCanvasView` and `DashContainerView` components now have a public `@bindable` `titleDetails`
+  property on their models to support displaying additional information in the title bar of these
+  components.  `titleDetails` is not persisted, and is expected to be set programmatically by the
+  application as needed.
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
