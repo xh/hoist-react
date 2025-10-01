@@ -6,7 +6,7 @@
  */
 import {isEmpty} from 'lodash';
 import {grid} from '@xh/hoist/cmp/grid';
-import {div, hframe, placeholder, label, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {div, hframe, placeholder, label, vbox, vframe, filler} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {XH, hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -73,6 +73,12 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
                 label({
                     htmlFor: selectAllId,
                     item: `(Select All${filterText ? ' Search Results' : ''})`
+                }),
+                filler(),
+                div({
+                    className: 'sortIcon',
+                    item: model.sortIcon,
+                    onClick: () => model.toggleSort()
                 })
             ),
             hframe({

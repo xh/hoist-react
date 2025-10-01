@@ -11,6 +11,11 @@
       color: var(--xh-grid-header-text-color);
       cursor: pointer;
     }
+    .sortIcon {
+      border-left: var(--xh-menu-border);
+      padding-left: var(--xh-pad-half-px);
+      color: var(--xh-grid-header-text-color);
+    }
   }
 
   &__hidden-values-message {

@@ -4,13 +4,14 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
+import {GridFilterModel, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
-import {HeaderFilterModel} from '../HeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
@@ -80,12 +81,26 @@ export class ValuesTabModel extends HoistModel {
         return this.values.length < this.valueCount;
     }
 
+    get sortIcon() {
+        const {sort, abs} = this.gridModel.sortBy[0];
+        if (sort === 'asc') {
+            if (abs) return Icon.sortAbsAsc();
+            return Icon.sortAsc();
+        }
+        if (sort === 'desc') {
+            if (abs) return Icon.sortAbsDesc();
+            return Icon.sortDesc();
+        }
+        return null;
+    }
+
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
         makeObservable(this);
 
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
+        this.initGridSortBy();
 
         this.addReaction(
             {
@@ -123,6 +138,13 @@ export class ValuesTabModel extends HoistModel {
         this.pendingValues = isChecked
             ? uniq([...this.pendingValues, ...values])
             : without(this.pendingValues, ...values);
+    }
+
+    @action
+    toggleSort() {
+        const {colId, sort, abs} = this.gridModel.sortBy.find(it => it.colId === 'value'),
+            newSort = sort === 'asc' ? 'desc' : 'asc';
+        this.gridModel.setSortBy(new GridSorter({colId, sort: newSort, abs}));
     }
 
     toggleAllRecsChecked() {
@@ -242,6 +264,21 @@ export class ValuesTabModel extends HoistModel {
             return {value, isChecked};
         });
         this.gridModel.loadData(data);
+    }
+
+    private initGridSortBy() {
+        const column = this.headerFilterModel.parent.column,
+            [colGridSorter] = column.gridModel.sortBy
+                .toString()
+                .split(',')
+                .map(it => GridSorter.parse(it))
+                .filter(it => it.colId === this.field),
+            gridSorter = new GridSorter({
+                colId: 'value',
+                sort: colGridSorter?.sort ?? 'asc',
+                abs: column?.absSort || colGridSorter?.abs
+            });
+        this.gridModel.setSortBy(gridSorter);
     }
 
     private createGridModel() {
