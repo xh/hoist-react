@@ -44,7 +44,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
      */
     containerModel: any;
 
-    /** Title with which to initialize the view. */
+    /** Title with which to initialize the view.  Value is persisted. */
     @bindable title: string;
 
     /**
@@ -53,6 +53,10 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
      * Value is not persisted.
      **/
     @bindable titleDetails: string;
+
+    get fullTitle(): string {
+        return this.title + (this.titleDetails ? ' ' + this.titleDetails : '');
+    }
 
     /** Icon with which to initialize the view. */
     @bindable.ref icon: ReactElement;

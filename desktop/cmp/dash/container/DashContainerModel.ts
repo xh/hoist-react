@@ -562,11 +562,11 @@ export class DashContainerModel
             }
 
             viewModel.addReaction({
-                track: () => viewModel.titleDetails,
+                track: () => viewModel.fullTitle,
                 run: () => {
                     const currentTitle = $titleEl.text(),
-                        {title, titleDetails} = viewModel,
-                        newTitle = title + (titleDetails ? ' ' + titleDetails : '');
+                        newTitle = viewModel.fullTitle;
+
                     if (currentTitle !== newTitle) $titleEl.text(newTitle);
                 }
             });
