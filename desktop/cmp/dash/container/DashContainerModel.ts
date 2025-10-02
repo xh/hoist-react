@@ -531,7 +531,7 @@ export class DashContainerModel
                 $titleEl = $el.find('.lm_title').first(),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
-                {icon, title} = viewModel;
+                {icon} = viewModel;
 
             $el.off('contextmenu').contextmenu(e => {
                 const index = stack.contentItems.indexOf(item);
@@ -551,18 +551,13 @@ export class DashContainerModel
                 }
             }
 
-            if (title) {
-                const currentTitle = $titleEl.text();
-                if (currentTitle !== title) $titleEl.text(title);
-            }
-
             if (viewSpec.allowRename) {
                 this.insertTitleForm($el, viewModel);
                 $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
             }
 
-            viewModel.titleReaction?.();
-            viewModel.titleReaction = viewModel.addReaction({
+            viewModel.fullTitleReaction?.();
+            viewModel.fullTitleReaction = viewModel.addReaction({
                 track: () => viewModel.fullTitle,
                 run: () => {
                     const currentTitle = $titleEl.text(),
@@ -590,7 +585,6 @@ export class DashContainerModel
         $formEl.submit(() => {
             const title = $inputEl.val();
             if (title.length) {
-                $titleEl.text(title);
                 viewModel.title = title;
             }
 

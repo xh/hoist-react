@@ -59,7 +59,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         return this.title + (this.titleDetails ? ' ' + this.titleDetails : '');
     }
 
-    titleReaction: IReactionDisposer;
+    fullTitleReaction: IReactionDisposer;
 
     /** Icon with which to initialize the view. */
     @bindable.ref icon: ReactElement;
