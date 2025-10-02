@@ -16,6 +16,7 @@ import {
 import '@xh/hoist/desktop/register';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {IReactionDisposer} from 'mobx/dist/internal';
 import {ReactElement} from 'react';
 import {DashViewSpec} from './DashViewSpec';
 
@@ -57,6 +58,8 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     get fullTitle(): string {
         return this.title + (this.titleDetails ? ' ' + this.titleDetails : '');
     }
+
+    titleReaction: IReactionDisposer;
 
     /** Icon with which to initialize the view. */
     @bindable.ref icon: ReactElement;

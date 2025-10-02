@@ -561,7 +561,8 @@ export class DashContainerModel
                 $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
             }
 
-            viewModel.addReaction({
+            viewModel.titleReaction?.();
+            viewModel.titleReaction = viewModel.addReaction({
                 track: () => viewModel.fullTitle,
                 run: () => {
                     const currentTitle = $titleEl.text(),
