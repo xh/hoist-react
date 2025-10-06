@@ -12,10 +12,8 @@ import {
     ReactionSpec,
     XH
 } from '@xh/hoist/core';
-import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {DynamicTabConfig} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
 import {Icon} from '@xh/hoist/icon';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {makeObservable} from '@xh/hoist/mobx';
 import {compact, find, keyBy, uniqBy} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
@@ -144,30 +142,19 @@ export class DynamicTabSwitcherModel
         return omit ? null : ret;
     }
 
-    onContextMenu(
+    getContextMenuItems(
         e: React.MouseEvent<HTMLDivElement, MouseEvent>,
         tab: TabModel | DynamicTabConfig
-    ) {
-        const isFavorite = this.isTabFavorite(tab.id),
-            {left, bottom} = e.currentTarget.getBoundingClientRect();
-        showContextMenu(
-            contextMenu({
-                menuItems: [
-                    {
-                        icon: Icon.favorite({prefix: isFavorite ? 'fal' : 'fas'}),
-                        text: isFavorite ? 'Remove from Favorites' : 'Favorite',
-                        actionFn: () => this.toggleTabFavorite(tab.id)
-                    },
-                    ...this.extraMenuItems.map(item =>
-                        this.buildMenuItem(item, {contextMenuEvent: e, tab})
-                    )
-                ]
-            }),
+    ): Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>> {
+        const isFavorite = this.isTabFavorite(tab.id);
+        return [
             {
-                left,
-                top: bottom
-            }
-        );
+                icon: Icon.favorite({prefix: isFavorite ? 'fal' : 'fas'}),
+                text: isFavorite ? 'Remove from Favorites' : 'Favorite',
+                actionFn: () => this.toggleTabFavorite(tab.id)
+            },
+            ...this.extraMenuItems.map(item => this.buildMenuItem(item, {contextMenuEvent: e, tab}))
+        ];
     }
 
     @action

@@ -10,29 +10,33 @@ import {createRef} from 'react';
  * @internal
  */
 
-export class HScrollerModel extends HoistModel {
+export class ScrollerModel extends HoistModel {
     contentRef = createRef<HTMLDivElement>();
 
-    @observable private scrollLeft: number;
-    @observable private scrollWidth: number;
-    @observable private clientWidth: number;
+    @observable private scrollStart: number;
+    @observable private scrollSize: number;
+    @observable private clientSize: number;
 
     private animationFrameId: number;
 
     @computed
     get showScrollButtons(): boolean {
-        return this.scrollWidth > this.clientWidth;
+        return this.scrollSize > this.clientSize;
     }
 
     @computed
-    get isScrolledToLeft(): boolean {
-        return this.scrollLeft === 0;
+    get isScrolledToStart(): boolean {
+        return this.scrollStart === 0;
     }
 
     @computed
-    get isScrolledToRight(): boolean {
+    get isScrolledToEnd(): boolean {
         // Allow for a 1px buffer to account for rounding errors discovered when testing
-        return this.scrollLeft + this.clientWidth >= this.scrollWidth - 1;
+        return this.scrollStart + this.clientSize >= this.scrollSize - 1;
+    }
+
+    get isHorizontal(): boolean {
+        return this.componentProps.orientation !== 'vertical';
     }
 
     constructor() {
@@ -44,19 +48,23 @@ export class HScrollerModel extends HoistModel {
         this.contentRef.current.addEventListener('scroll', () => this.onViewportEvent());
     }
 
-    scroll(direction: 'left' | 'right') {
+    scroll(direction: 'forward' | 'backward') {
         this.stopScrolling();
         this.animationFrameId = window.requestAnimationFrame(() => {
             const {current} = this.contentRef;
             if (
                 !current ||
-                (direction === 'left' && this.isScrolledToLeft) ||
-                (direction === 'right' && this.isScrolledToRight)
+                (direction === 'backward' && this.isScrolledToStart) ||
+                (direction === 'forward' && this.isScrolledToEnd)
             ) {
                 this.stopScrolling();
                 return;
             }
-            current.scrollLeft += direction === 'left' ? -10 : 10;
+            if (this.isHorizontal) {
+                current.scrollLeft += direction === 'backward' ? -10 : 10;
+            } else {
+                current.scrollTop += direction === 'backward' ? -10 : 10;
+            }
             this.scroll(direction);
         });
     }
@@ -70,10 +78,11 @@ export class HScrollerModel extends HoistModel {
 
     @action
     onViewportEvent() {
-        const {scrollLeft, scrollWidth, clientWidth} = this.contentRef.current;
-        this.scrollLeft = scrollLeft;
-        this.scrollWidth = scrollWidth;
-        this.clientWidth = clientWidth;
+        const {contentRef, isHorizontal} = this,
+            {current} = contentRef;
+        this.scrollStart = isHorizontal ? current.scrollLeft : current.scrollTop;
+        this.scrollSize = isHorizontal ? current.scrollWidth : current.scrollHeight;
+        this.clientSize = isHorizontal ? current.clientWidth : current.clientHeight;
     }
 
     override destroy() {
