@@ -1,8 +1,25 @@
 # Changelog
 
-## 76.0.0-SNAPSHOT - unreleased
+## 77.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core, change to Tab constructor)
+## 76.0.0 - 2025-09-26
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
+
+* Hoist v76 upgrades AG Grid to v34 (from v31), covering three major AG Grid releases with their own
+  potentially breaking changes. Fortunately, internal Hoist updates to our managed API wrappers mean
+  that most apps will see very minimal changes, although there are required adjustments to app-level
+  `package.json` to install updated grid dependencies and `Bootstrap.ts` to import and register
+  your licensed grid modules at their new import paths.
+
+  Applications implementing `groupRowRenderer` should note that the `value` property passed to this
+  function is no longer stringified, but is instead the raw field value for the group.
+
+  See AG's upgrade guides for more details:
+  ** [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
+  ** [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
+  ** [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
+
 *  The constructor for `TabModel` has changed to take its owning container as a second argument.
    (Most applications do not create `TabModels` directly, but it is possible.)
 *  The `Exception` class and `HoistException` type have been moved from `@xh\hoist\core` to a new
@@ -32,6 +49,11 @@
 * New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
 * `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
   `react-grid-layout`.
+* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
+    on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
+    spanning the width of all columns, including any pinned columns.
+* New `@sharePendingPromise` decorator for returning a shared Promise across concurrent async calls.
+
 
 ### 🐞 Bug Fixes
 
@@ -40,6 +62,10 @@
   its configured `initialViewSpec` function as expected in this case.
 * Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
   view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
+* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
+  This led to columns not being set to their expected widths when switching `ViewManager` views.
+* Fixed bug where a `Grid` with managed autosizing was not triggering an autosize as expected when
+  new column state was loaded (e.g. via `ViewManager`).
 
 ### ⚙️ Technical
 

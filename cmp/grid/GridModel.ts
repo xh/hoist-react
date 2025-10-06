@@ -8,11 +8,13 @@ import {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent,
     ColumnEvent,
-    ColumnState as AgColumnState,
+    AgColumnState,
     RowClickedEvent,
     RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from '@xh/hoist/kit/ag-grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -59,6 +61,7 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
+    sharePendingPromise,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -95,7 +98,7 @@ import {
     pull,
     take
 } from 'lodash';
-import {ReactNode} from 'react';
+import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
@@ -342,6 +345,13 @@ export interface GridConfig {
     highlightRowOnClick?: boolean;
 
     /**
+     *  Set to true to ensure that the grid will have a single horizontal scrollbar spanning the
+     *  width of all columns, including any pinned columns.  A value of false (default) will show
+     *  the scrollbar only under the scrollable area.
+     */
+    enableFullWidthScroll?: boolean;
+
+    /**
      * Flags for experimental features. These features are designed for early client-access and
      * testing, but are not yet part of the Hoist API.
      */
@@ -393,6 +403,7 @@ export class GridModel extends HoistModel {
     showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
     enableExport: boolean;
+    enableFullWidthScroll: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
@@ -419,6 +430,7 @@ export class GridModel extends HoistModel {
 
     @managed filterModel: GridFilterModel;
     @managed agGridModel: AgGridModel;
+    viewRef: RefObject<HTMLDivElement> = createRef();
 
     //------------------------
     // Observable API
@@ -442,7 +454,9 @@ export class GridModel extends HoistModel {
      * Flag to track inline editing at a granular level. Will toggle each time row
      * or cell editing is activated or ended.
      */
-    @observable isEditing = false;
+    get isEditing(): boolean {
+        return !!this.editingCell;
+    }
 
     /**
      * Flag to track inline editing at a general level.
@@ -469,7 +483,7 @@ export class GridModel extends HoistModel {
         'colChooser',
         'autosizeColumns'
     ];
-
+    @observable.ref private editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
     /**
@@ -483,6 +497,10 @@ export class GridModel extends HoistModel {
     get maxDepth(): number {
         const {groupBy, store, treeMode} = this;
         return treeMode ? store.maxDepth : groupBy ? groupBy.length : 0;
+    }
+
+    get bodyViewport(): HTMLElement {
+        return this.viewRef.current?.querySelector('.ag-body-viewport') as HTMLElement;
     }
 
     /** Tracks execution of filtering operations.*/
@@ -545,6 +563,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
+            enableFullWidthScroll = false,
             experimental,
             appData,
             xhImpl,
@@ -571,6 +590,7 @@ export class GridModel extends HoistModel {
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
+        this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
@@ -1118,7 +1138,6 @@ export class GridModel extends HoistModel {
         this.store.clear();
     }
 
-    /** @param colConfigs - {@link Column} or {@link ColumnGroup} configs. */
     @action
     setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
         this.validateColConfigs(colConfigs);
@@ -1128,10 +1147,15 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => {
-            const {colId, width, hidden, pinned} = it;
-            return {colId, width, hidden, pinned};
-        });
+        this.columnState = this.getLeafColumns().map(it => ({
+            ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
+            // widths are not omitted from persistableColumnState. This is important because
+            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
+            // state in order to detect changes and restore initial state correctly.
+            // See https://github.com/xh/hoist-react/issues/4102.
+            manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
+        }));
     }
 
     setColumnState(colState: Partial<ColumnState>[]) {
@@ -1216,7 +1240,7 @@ export class GridModel extends HoistModel {
 
         // 1) Update any width, visibility or pinned changes
         colStateChanges.forEach(change => {
-            const col = find(columnState, {colId: change.colId});
+            const col: ColumnState = find(columnState, {colId: change.colId});
 
             if (!isNil(change.width)) col.width = change.width;
             if (!isNil(change.hidden)) col.hidden = change.hidden;
@@ -1354,14 +1378,16 @@ export class GridModel extends HoistModel {
      */
     @logWithDebug
     async autosizeAsync(overrideOpts: Omit<GridAutosizeOptions, 'mode'> = {}) {
-        const options = {...this.autosizeOptions, ...overrideOpts};
+        const {columns, ...options}: GridAutosizeOptions = {
+            ...this.autosizeOptions,
+            ...overrideOpts
+        };
 
         if (options.mode === 'disabled') {
             return;
         }
 
         // 1) Pre-process columns to be operated on
-        const {columns} = options;
         if (columns) options.fillMode = 'none'; // Fill makes sense only for the entire set.
 
         let colIds: string[],
@@ -1464,14 +1490,29 @@ export class GridModel extends HoistModel {
 
     /** @internal */
     @action
-    onCellEditingStarted = () => {
-        this.isEditing = true;
+    onCellEditingStarted = (e: CellEditingStartedEvent) => {
+        this.editingCell = {colId: e.column.getColId(), rowIndex: e.rowIndex};
     };
 
     /** @internal*/
     @action
-    onCellEditingStopped = () => {
-        this.isEditing = false;
+    onCellEditingStopped = (e: CellEditingStoppedEvent) => {
+        const origCell = this.editingCell;
+        this.editingCell = null;
+        const {agApi} = this,
+            focusedCell = agApi.getFocusedCell();
+
+        // If the rowIndex has moved since we started edit, sorting might have caused the wrong row
+        // to be focused.  In this (rare) case, just conservatively keep focus on what was edited
+        if (
+            origCell &&
+            focusedCell &&
+            !isUndefined(e.rowIndex) &&
+            origCell.rowIndex != e.rowIndex &&
+            focusedCell.rowIndex != e.rowIndex
+        ) {
+            agApi.setFocusedCell(e.rowIndex, origCell.colId);
+        }
     };
 
     /**
@@ -1543,15 +1584,19 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    private async autosizeColsInternalAsync(colIds: string[], options: GridAutosizeOptions) {
+    @sharePendingPromise
+    private async autosizeColsInternalAsync(
+        colIds: string[],
+        options: Omit<GridAutosizeOptions, 'columns'>
+    ) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
-        const {agApi, empty} = this,
+        const {agApi} = this,
             {showMask} = options;
 
         if (showMask) {
-            agApi.showLoadingOverlay();
+            agApi.updateGridOptions({loading: true});
         }
 
         try {
@@ -1559,11 +1604,7 @@ export class GridModel extends HoistModel {
         } finally {
             if (showMask) {
                 await wait();
-                if (empty) {
-                    agApi.showNoRowsOverlay();
-                } else {
-                    agApi.hideOverlay();
-                }
+                agApi.updateGridOptions({loading: false});
             }
         }
     }

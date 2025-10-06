@@ -52,8 +52,7 @@ export const [ZoneGrid, zoneGrid] = hoistCmp.withFactory<ZoneGridProps>({
                 ref,
                 model: gridModel,
                 agOptions: {
-                    suppressRowGroupHidesColumns: true,
-                    suppressMakeColumnVisibleAfterUnGroup: true,
+                    suppressGroupChangesColumnVisibility: true,
                     ...props.agOptions
                 }
             }),

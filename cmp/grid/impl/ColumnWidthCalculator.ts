@@ -50,7 +50,7 @@ export class ColumnWidthCalculator {
         gridModel: GridModel,
         records: StoreRecord[],
         colId: string,
-        options: GridAutosizeOptions
+        options: Omit<GridAutosizeOptions, 'columns'>
     ) {
         const column = gridModel.findColumn(gridModel.columns, colId),
             {autosizeMinWidth, autosizeMaxWidth} = column;

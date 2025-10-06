@@ -11,7 +11,7 @@ import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {debounced} from '@xh/hoist/utils/js';
+import {debounced, consumeEvent} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {
     filter,
@@ -253,8 +253,7 @@ class ColumnHeaderModel extends HoistModel {
     onExpandOrCollapse = e => {
         const {gridModel, majorityIsExpanded} = this;
 
-        e.stopPropagation();
-        e.preventDefault();
+        consumeEvent(e);
         if (majorityIsExpanded) {
             gridModel.collapseAll();
         } else {

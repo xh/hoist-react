@@ -10,7 +10,7 @@ import {
     CellDoubleClickedEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from '@xh/hoist/kit/ag-grid';
 import {
     Column,
     ColumnRenderer,

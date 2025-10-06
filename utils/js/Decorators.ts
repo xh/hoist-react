@@ -7,7 +7,7 @@
 import {Exception} from '@xh/hoist/exception';
 import {debounce, isFunction} from 'lodash';
 import {getOrCreate, throwIf} from './LangUtils';
-import {withDebug, warnIf, withInfo} from './LogUtils';
+import {withDebug, warnIf, withInfo, logWarn} from './LogUtils';
 
 /**
  * Decorates a class method so that it is debounced by the specified duration.
@@ -107,6 +107,42 @@ export function abstract(target, key, descriptor) {
         ...descriptor,
         [baseFnName]: function () {
             throw Exception.create(`${key} must be implemented by ${this.constructor.name}`);
+        }
+    };
+}
+
+/**
+ * Decorates a class method that returns a Promise so that concurrent calls with the same arguments
+ * will share a single pending Promise. Arguments must be serializable via JSON.stringify.
+ */
+export function sharePendingPromise<T>(target: T, key: string, descriptor: PropertyDescriptor) {
+    const fn = descriptor.value;
+    return {
+        ...descriptor,
+        value: function () {
+            try {
+                const cacheKey = '_xh_' + key + JSON.stringify(arguments);
+                return getOrCreate(this, cacheKey, () => {
+                    const ret = fn.apply(this, arguments);
+                    if (!(ret instanceof Promise)) {
+                        logWarn(
+                            `@sharePendingPromise applied to non-Promise-returning method: ${key}`,
+                            this.constructor.name
+                        );
+                        return ret;
+                    }
+                    return ret.finally(() => delete this[cacheKey]);
+                });
+            } catch (e) {
+                logWarn(
+                    [
+                        `@sharePendingPromise unable to serialize arguments for method: ${key}.`,
+                        e.message
+                    ],
+                    this.constructor.name
+                );
+                return fn.apply(this, arguments);
+            }
         }
     };
 }
