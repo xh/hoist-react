@@ -34,13 +34,13 @@ export const dashCanvasView = hoistCmp.factory({
     model: uses(DashCanvasViewModel, {publishMode: 'limited'}),
 
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight, fullTitle, icon} = model,
             headerProps = hidePanelHeader
                 ? {}
                 : {
                       compactHeader: true,
-                      title: model.title,
-                      icon: model.icon,
+                      title: fullTitle,
+                      icon,
                       headerItems: [...headerItems, headerMenu({model})]
                   };
         return panel({
