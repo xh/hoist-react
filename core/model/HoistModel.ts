@@ -20,7 +20,7 @@ import {Class} from 'type-fest';
  *
  * The most common use of `HoistModel` is to support Hoist components. Components can be configured
  * to create or lookup an instance of an appropriate model subclass using the `model` config passed
- * to {@link hoistComponent.factory}. Hoist will automatically pass the resolved model instance as a
+ * to {@link hoistCmp.factory}. Hoist will automatically pass the resolved model instance as a
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
