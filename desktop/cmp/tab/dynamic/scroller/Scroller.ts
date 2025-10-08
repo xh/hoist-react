@@ -13,7 +13,7 @@ import React, {Ref} from 'react';
  * @internal
  */
 
-export interface HScrollerProps extends HoistProps<ScrollerModel>, Omit<BoxProps, 'content'> {
+export interface ScrollerProps extends HoistProps<ScrollerModel>, Omit<BoxProps, 'content'> {
     /** The content to be displayed within the scroller. */
     content: React.FC<{ref: Ref<HTMLDivElement>}>;
     /** Props to be passed to the content component. */
@@ -22,7 +22,7 @@ export interface HScrollerProps extends HoistProps<ScrollerModel>, Omit<BoxProps
     orientation?: 'horizontal' | 'vertical';
 }
 
-export const [Scroller, scroller] = hoistCmp.withFactory<HScrollerProps>({
+export const [Scroller, scroller] = hoistCmp.withFactory<ScrollerProps>({
     displayName: 'Scroller',
     model: creates(ScrollerModel, {publishMode: 'limited'}),
     render({className, content, contentProps, model, orientation, ...layoutProps}) {

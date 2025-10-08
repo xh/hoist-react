@@ -1,6 +1,6 @@
 import {ReactElement, ReactNode} from 'react';
 
-export interface DynamicTabConfig {
+export interface ActionTabSpec {
     /** Unique ID for the tab. */
     id: string;
     /** Display title for the Tab. */
@@ -16,5 +16,5 @@ export interface DynamicTabConfig {
     /** Action to be performed when the tab is selected. */
     actionFn: () => void;
     /** Function called prior to showing this item. */
-    displayFn?: () => Partial<DynamicTabConfig>;
+    displayFn?: () => Omit<ActionTabSpec, 'id' | 'actionFn'>;
 }

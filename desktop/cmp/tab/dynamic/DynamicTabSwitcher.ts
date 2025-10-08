@@ -15,7 +15,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
-import {DynamicTabConfig} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
+import {ActionTabSpec} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
 import {Icon} from '@xh/hoist/icon';
 import {showContextMenu, tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
@@ -108,7 +108,7 @@ const tabs = hoistCmp.factory<TabsProps>(({localModel, model}, ref) => {
 });
 
 interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
-    tab: TabModel | DynamicTabConfig;
+    tab: TabModel | ActionTabSpec;
     index: number;
     localModel: DynamicTabSwitcherLocalModel;
 }

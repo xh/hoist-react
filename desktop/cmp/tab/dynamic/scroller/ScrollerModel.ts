@@ -5,7 +5,7 @@ import {action, computed, observable} from 'mobx';
 import {createRef} from 'react';
 
 /**
- * Internal model for the HScroller component. Used to manage the scroll state and provide
+ * Internal model for the Scroller component. Used to manage the scroll state and provide
  * scroll functionality. Uses animation frames to ensure smooth scrolling.
  * @internal
  */
@@ -31,7 +31,7 @@ export class ScrollerModel extends HoistModel {
 
     @computed
     get isScrolledToEnd(): boolean {
-        // Allow for a 1px buffer to account for rounding errors discovered when testing
+        // Allow for a 1px buffer to account for rounding errors
         return this.scrollStart + this.clientSize >= this.scrollSize - 1;
     }
 
