@@ -528,7 +528,7 @@ export class DashContainerModel
 
             const $el = item.tab.element, // Note: this is a jquery element
                 stack = item.parent,
-                $titleEl = $el.find('.lm_title').first(),
+                $titleEl = this.getTitleElement($el),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
                 {icon} = viewModel;
@@ -555,17 +555,6 @@ export class DashContainerModel
                 this.insertTitleForm($el, viewModel);
                 $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
             }
-
-            viewModel.fullTitleReaction?.();
-            viewModel.fullTitleReaction = viewModel.addReaction({
-                track: () => viewModel.fullTitle,
-                run: () => {
-                    const currentTitle = $titleEl.text(),
-                        newTitle = viewModel.fullTitle;
-
-                    if (currentTitle !== newTitle) $titleEl.text(newTitle);
-                }
-            });
         });
     }
 
@@ -574,7 +563,7 @@ export class DashContainerModel
         if ($el.find(formSelector).length) return;
 
         // Create and insert form
-        const $titleEl = $el.find('.lm_title').first();
+        const $titleEl = this.getTitleElement($el);
         $titleEl.after(`<form class="title-form"><input type="text"/></form>`);
 
         // Attach listeners
@@ -651,6 +640,18 @@ export class DashContainerModel
                     containerModel: this
                 });
 
+                model.addReaction({
+                    track: () => model.fullTitle,
+                    run: () => {
+                        const item = this.getItemByViewModel(id),
+                            $titleEl = this.getTitleElement(item.tab.element),
+                            currentTitle = $titleEl.text(),
+                            newTitle = model.fullTitle;
+
+                        if (currentTitle !== newTitle) $titleEl.text(newTitle);
+                    }
+                });
+
                 this.addViewModel(model);
                 return modelLookupContextProvider({
                     value: this.modelLookupContext,
@@ -664,6 +665,10 @@ export class DashContainerModel
         ret.on('stackCreated', stack => this.onStackCreated(stack));
         ret.init();
         return ret;
+    }
+
+    private getTitleElement($el) {
+        return $el.find('.lm_title').first();
     }
 
     @action
