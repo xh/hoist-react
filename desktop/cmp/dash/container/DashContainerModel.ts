@@ -644,11 +644,9 @@ export class DashContainerModel
                     track: () => model.fullTitle,
                     run: () => {
                         const item = this.getItemByViewModel(id),
-                            $titleEl = this.getTitleElement(item.tab.element),
-                            currentTitle = $titleEl.text(),
-                            newTitle = model.fullTitle;
+                            $titleEl = this.getTitleElement(item.tab.element);
 
-                        if (currentTitle !== newTitle) $titleEl.text(newTitle);
+                        $titleEl.text(model.fullTitle);
                     }
                 });
 
