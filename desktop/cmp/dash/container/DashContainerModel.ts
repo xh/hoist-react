@@ -338,7 +338,7 @@ export class DashContainerModel
     renameView(id: string) {
         const view = this.getItemByViewModel(id);
         if (!view) return;
-        this.showTitleForm(view.tab.element);
+        this.showTitleForm(view.tab.element, this.getViewModel(id));
     }
 
     onResize() {
@@ -528,10 +528,10 @@ export class DashContainerModel
 
             const $el = item.tab.element, // Note: this is a jquery element
                 stack = item.parent,
-                $titleEl = $el.find('.lm_title').first(),
+                $titleEl = this.getTitleElement($el),
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
-                {icon, title} = viewModel;
+                {icon} = viewModel;
 
             $el.off('contextmenu').contextmenu(e => {
                 const index = stack.contentItems.indexOf(item);
@@ -551,14 +551,9 @@ export class DashContainerModel
                 }
             }
 
-            if (title) {
-                const currentTitle = $titleEl.text();
-                if (currentTitle !== title) $titleEl.text(title);
-            }
-
             if (viewSpec.allowRename) {
                 this.insertTitleForm($el, viewModel);
-                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el));
+                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
             }
         });
     }
@@ -568,7 +563,7 @@ export class DashContainerModel
         if ($el.find(formSelector).length) return;
 
         // Create and insert form
-        const $titleEl = $el.find('.lm_title').first();
+        const $titleEl = this.getTitleElement($el);
         $titleEl.after(`<form class="title-form"><input type="text"/></form>`);
 
         // Attach listeners
@@ -579,7 +574,6 @@ export class DashContainerModel
         $formEl.submit(() => {
             const title = $inputEl.val();
             if (title.length) {
-                $titleEl.text(title);
                 viewModel.title = title;
             }
 
@@ -588,12 +582,11 @@ export class DashContainerModel
         });
     }
 
-    private showTitleForm($tabEl) {
+    private showTitleForm($tabEl, viewModel: DashViewModel) {
         if (this.renameLocked) return;
 
-        const $titleEl = $tabEl.find('.lm_title').first(),
-            $inputEl = $tabEl.find('.title-form input').first(),
-            currentTitle = $titleEl.text();
+        const $inputEl = $tabEl.find('.title-form input').first(),
+            currentTitle = viewModel.title;
 
         $tabEl.addClass('show-title-form');
         $inputEl.val(currentTitle);
@@ -647,6 +640,16 @@ export class DashContainerModel
                     containerModel: this
                 });
 
+                model.addReaction({
+                    track: () => model.fullTitle,
+                    run: () => {
+                        const item = this.getItemByViewModel(id),
+                            $titleEl = this.getTitleElement(item.tab.element);
+
+                        $titleEl.text(model.fullTitle);
+                    }
+                });
+
                 this.addViewModel(model);
                 return modelLookupContextProvider({
                     value: this.modelLookupContext,
@@ -660,6 +663,10 @@ export class DashContainerModel
         ret.on('stackCreated', stack => this.onStackCreated(stack));
         ret.init();
         return ret;
+    }
+
+    private getTitleElement($el) {
+        return $el.find('.lm_title').first();
     }
 
     @action
