@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {GridFilterModel, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
@@ -144,7 +144,7 @@ export class ValuesTabModel extends HoistModel {
     toggleSort() {
         const {colId, sort, abs} = this.gridModel.sortBy.find(it => it.colId === 'value'),
             newSort = sort === 'asc' ? 'desc' : 'asc';
-        this.gridModel.setSortBy(new GridSorter({colId, sort: newSort, abs}));
+        this.gridModel.setSortBy({colId, sort: newSort, abs});
     }
 
     toggleAllRecsChecked() {
@@ -267,27 +267,21 @@ export class ValuesTabModel extends HoistModel {
     }
 
     private initGridSortBy() {
-        const column = this.headerFilterModel.parent.column,
-            [colGridSorter] = column.gridModel.sortBy
-                .toString()
-                .split(',')
-                .map(it => GridSorter.parse(it))
-                .filter(it => it.colId === this.field),
-            gridSorter = new GridSorter({
-                colId: 'value',
-                sort: colGridSorter?.sort ?? 'asc',
-                abs: column?.absSort || colGridSorter?.abs
-            });
-        this.gridModel.setSortBy(gridSorter);
+        const {gridModel: srcGridModel, column} = this.headerFilterModel,
+            srcColGridSorter = srcGridModel.sortBy.find(it => it.colId === column.colId);
+
+        this.gridModel.setSortBy({
+            colId: 'value',
+            sort: srcColGridSorter?.sort ?? 'asc',
+            abs: srcColGridSorter?.abs ?? false
+        });
     }
 
     private createGridModel() {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
-            {fieldType} = headerFilterModel,
-            renderer =
-                fieldSpec.renderer ??
-                (fieldType !== 'tags' ? this.headerFilterModel.parent.column.renderer : null);
+            {fieldType, column} = headerFilterModel,
+            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? column.renderer : null);
 
         return new GridModel({
             store: {
