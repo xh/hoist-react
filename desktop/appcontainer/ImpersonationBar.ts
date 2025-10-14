@@ -54,6 +54,7 @@ export const impersonationBar = hoistCmp.factory({
                     options: targets,
                     enableCreate: true,
                     placeholder: 'Select User...',
+                    createMessageFn: q => `Impersonate new user "${q}"`,
                     width: 250,
                     menuWidth: 300,
                     onCommit: model.onCommit

@@ -73,7 +73,7 @@ export class ImpersonationBarModel extends HoistModel {
         try {
             await XH.identityService.impersonateAsync(pendingTarget);
         } catch (e) {
-            this.pendingTarget = '';
+            this.pendingTarget = null;
             XH.handleException(e, {logOnServer: false}); // likely to be an unknown user
         }
     };
