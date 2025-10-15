@@ -116,6 +116,14 @@ export interface GridFilterModelConfig {
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
+/** Cross-platform interface for desktop and mobile ColChooserModels. */
+export interface IColChooserModel {
+    readonly gridModel: GridModel;
+    readonly isOpen: boolean;
+    open: () => void;
+    close: () => void;
+}
+
 export interface ColChooserConfig {
     /**
      * Immediately render changed columns on grid (default true).
