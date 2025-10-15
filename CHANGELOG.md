@@ -36,6 +36,9 @@
 
 ### 🎁 New Features
 
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions.
 * Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
   to require the specified text to be re-typed by a user when confirming a potentially destructive
   or disruptive action.

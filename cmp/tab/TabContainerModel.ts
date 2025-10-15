@@ -238,7 +238,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         if (toRemove === activeTab) {
             let toActivate = this.findTab(this.lastActiveTabId);
             if (!toActivate || toActivate === toRemove) {
-                toActivate = this.nextTab ?? this.prevTab;
+                toActivate = this.nextTab ?? this.prevTab; // TODO - consider whether next/prev are disabled
             }
             if (toActivate) {
                 this.activateTab(toActivate);
