@@ -455,10 +455,11 @@ export class View extends HoistBase {
 
     private filterRecords() {
         const {query, cube} = this,
+            {hasFilter} = query,
             ret = new Map();
 
         cube.store.records.forEach(r => {
-            if (query.test(r)) ret.set(r.id, r);
+            if (!hasFilter || query.test(r)) ret.set(r.id, r);
         });
 
         this._recordMap = ret;
