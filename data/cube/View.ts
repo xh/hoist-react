@@ -373,7 +373,7 @@ export class View extends HoistBase {
             if (isNil(bucketVal)) {
                 ret.push(row);
             } else {
-                const bucketRows = buckets[bucketVal] ?? (buckets[bucketVal] = []);
+                const bucketRows = buckets[bucketVal] ??= [];
                 bucketRows.push(row);
             }
         });
