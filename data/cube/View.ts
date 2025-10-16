@@ -309,12 +309,12 @@ export class View extends HoistBase {
         appliedDimensions: PlainObject,
         leafMap: Map<StoreRecordId, LeafRow>
     ): BaseRow[] {
-        if (isEmpty(records)) return [];
+        if (!records?.length) return [];
 
         const rootId = parentId + Cube.RECORD_ID_DELIMITER;
 
-        if (isEmpty(dimensions)) {
-            return map(records, r => {
+        if (!dimensions?.length) {
+            return records.map(r => {
                 const id = rootId + r.id,
                     leaf = this.cachedRow(id, null, () => new LeafRow(this, id, r));
                 leafMap.set(r.id, leaf);
