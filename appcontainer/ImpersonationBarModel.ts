@@ -4,9 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
+import {createRef} from 'react';
 
 /**
  *  @internal
@@ -17,6 +19,9 @@ export class ImpersonationBarModel extends HoistModel {
     @observable showRequested: boolean = false;
     @observable.ref targets: string[] = [];
     @bindable pendingTarget: string = null;
+
+    // For managed focus of desktop select.
+    inputRef = createRef<HoistInputModel>();
 
     constructor() {
         super();
@@ -58,7 +63,7 @@ export class ImpersonationBarModel extends HoistModel {
     @action
     toggleVisibility() {
         if (this.isOpen) {
-            this.hide();
+            XH.identityService.isImpersonating ? this.inputRef.current?.focus() : this.hide();
         } else {
             this.show();
         }
