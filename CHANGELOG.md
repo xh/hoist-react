@@ -7,6 +7,7 @@
 * Added a public `@bindable titleDetails` config to `DashViewModel` to support displaying additional
   information in the title bar of dashboard widgets. The new property is not persisted, allowing
   apps to programmatically show dynamic info in a widget header without perturbing its saved state.
+* Enhanced grid column filtering to support sorting the list of available values.
 
 ## 76.0.0 - 2025-09-26
 

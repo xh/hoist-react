@@ -7,26 +7,27 @@
 import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {FieldFilterSpec} from '@xh/hoist/data';
-import {HeaderFilterModel} from '../HeaderFilterModel';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
 
     headerFilterModel: HeaderFilterModel;
 
-    /** Checkbox grid to display enumerated set of values */
-    @managed @observable.ref gridModel: GridModel;
+    /** Checkbox grid to display enumerated set of values. */
+    @managed gridModel: GridModel;
 
-    /** List of currently checked values in the list*/
+    /** List of currently checked values. */
     @observable.ref pendingValues: any[] = [];
 
-    /** Bound search term for `StoreFilterField` */
+    /** Bound search term for `StoreFilterField`. */
     @bindable filterText: string = null;
 
-    /*
+    /**
      * Merge current filter with pendingValues on commit.
      * Used when commitOnChange is false.
      */
@@ -80,12 +81,26 @@ export class ValuesTabModel extends HoistModel {
         return this.values.length < this.valueCount;
     }
 
+    get sortIcon() {
+        const {sort, abs} = this.gridModel.sortBy[0];
+        if (sort === 'asc') {
+            if (abs) return Icon.sortAbsAsc();
+            return Icon.sortAsc();
+        }
+        if (sort === 'desc') {
+            if (abs) return Icon.sortAbsDesc();
+            return Icon.sortDesc();
+        }
+        return null;
+    }
+
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
         makeObservable(this);
 
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
+        this.initGridSortBy();
 
         this.addReaction(
             {
@@ -123,6 +138,13 @@ export class ValuesTabModel extends HoistModel {
         this.pendingValues = isChecked
             ? uniq([...this.pendingValues, ...values])
             : without(this.pendingValues, ...values);
+    }
+
+    @action
+    toggleSort() {
+        const {colId, sort, abs} = this.gridModel.sortBy.find(it => it.colId === 'value'),
+            newSort = sort === 'asc' ? 'desc' : 'asc';
+        this.gridModel.setSortBy({colId, sort: newSort, abs});
     }
 
     toggleAllRecsChecked() {
@@ -244,13 +266,22 @@ export class ValuesTabModel extends HoistModel {
         this.gridModel.loadData(data);
     }
 
+    private initGridSortBy() {
+        const {gridModel: srcGridModel, column} = this.headerFilterModel,
+            srcColGridSorter = srcGridModel.sortBy.find(it => it.colId === column.colId);
+
+        this.gridModel.setSortBy({
+            colId: 'value',
+            sort: srcColGridSorter?.sort ?? 'asc',
+            abs: srcColGridSorter?.abs ?? false
+        });
+    }
+
     private createGridModel() {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
-            {fieldType} = headerFilterModel,
-            renderer =
-                fieldSpec.renderer ??
-                (fieldType !== 'tags' ? this.headerFilterModel.parent.column.renderer : null);
+            {fieldType, column} = headerFilterModel,
+            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? column.renderer : null);
 
         return new GridModel({
             store: {
@@ -301,6 +332,7 @@ export class ValuesTabModel extends HoistModel {
                 {
                     field: 'value',
                     align: 'left',
+                    tooltip: true,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_PLACEHOLDER) return 1 * mul;
