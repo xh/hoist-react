@@ -1041,24 +1041,34 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private createRecords(rawData: PlainObject[], parent: StoreRecord, recordMap = new Map()) {
+    private createRecords(
+        rawData: PlainObject[],
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
         const {loadTreeData, loadTreeDataFrom} = this;
+
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id) || this.summaryRecords?.some(it => it.id === id),
+                recordMap.has(id) || summaryRecordIds.has(id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
             recordMap.set(id, rec);
 
             if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap);
+                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
             }
         });
         return recordMap;
+    }
+
+    private get summaryRecordIds(): Set<StoreRecordId> {
+        return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }
 
     private parseRaw(data: PlainObject): PlainObject {
