@@ -54,7 +54,6 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
         const {commitOnChange, hasFilter, isDirty} = model;
         return toolbar({
-            compact: true,
             items: [
                 button({
                     icon: Icon.delete(),

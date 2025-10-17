@@ -60,7 +60,7 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
         addToFilterId = XH.genId();
 
     return vbox({
-        className: 'store-filter-header',
+        className: 'xh-values-filter-tab__filter-controls',
         items: [
             hframe(
                 checkbox({
@@ -76,7 +76,7 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
                 }),
                 filler(),
                 div({
-                    className: 'sortIcon',
+                    className: 'xh-values-filter-tab__filter-controls__sort-icon',
                     item: model.sortIcon,
                     onClick: () => model.toggleSort()
                 })

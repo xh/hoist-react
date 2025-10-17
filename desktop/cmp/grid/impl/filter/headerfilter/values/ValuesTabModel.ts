@@ -18,16 +18,16 @@ export class ValuesTabModel extends HoistModel {
 
     headerFilterModel: HeaderFilterModel;
 
-    /** Checkbox grid to display enumerated set of values */
-    @managed @observable.ref gridModel: GridModel;
+    /** Checkbox grid to display enumerated set of values. */
+    @managed gridModel: GridModel;
 
-    /** List of currently checked values in the list*/
+    /** List of currently checked values. */
     @observable.ref pendingValues: any[] = [];
 
-    /** Bound search term for `StoreFilterField` */
+    /** Bound search term for `StoreFilterField`. */
     @bindable filterText: string = null;
 
-    /*
+    /**
      * Merge current filter with pendingValues on commit.
      * Used when commitOnChange is false.
      */
@@ -332,6 +332,7 @@ export class ValuesTabModel extends HoistModel {
                 {
                     field: 'value',
                     align: 'left',
+                    tooltip: true,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_PLACEHOLDER) return 1 * mul;
