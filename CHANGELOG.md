@@ -8,6 +8,10 @@
   information in the title bar of dashboard widgets. The new property is not persisted, allowing
   apps to programmatically show dynamic info in a widget header without perturbing its saved state.
 
+### ⚙️ Technical
+
+* Autofocus the user input when the impersonation bar is shown.
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
