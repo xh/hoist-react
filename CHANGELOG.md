@@ -9,6 +9,10 @@
   apps to programmatically show dynamic info in a widget header without perturbing its saved state.
 * Enhanced grid column filtering to support sorting the list of available values.
 
+### ⚙️ Technical
+
+* Autofocus the user input when the impersonation bar is shown.
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
