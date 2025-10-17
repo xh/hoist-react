@@ -13,6 +13,13 @@
 
 * Autofocus the user input when the impersonation bar is shown.
 
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.4 → 2.7`
+* @azure/msal-browser `4.23 → 4.25`
+* dompurify `3.2 → 3.3`
+* mobx `6.13 → 6.15`
+
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
