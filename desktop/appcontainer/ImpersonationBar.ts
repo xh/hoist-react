@@ -53,6 +53,7 @@ export const impersonationBar = hoistCmp.factory({
                     bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
+                    autoFocus: true,
                     placeholder: 'Select User...',
                     createMessageFn: q => `Impersonate new user "${q}"`,
                     width: 250,
