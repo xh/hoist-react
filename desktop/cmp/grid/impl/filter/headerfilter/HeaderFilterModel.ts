@@ -5,8 +5,9 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
+import {Column, GridFilterFieldSpec, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, managed, lookup} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {
     CompoundFilter,
     FieldFilter,
@@ -19,12 +20,11 @@ import {
 import {action, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';
-import {GridFilterFieldSpec, GridFilterModel} from '@xh/hoist/cmp/grid';
+import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 import {customTab} from './custom/CustomTab';
 import {CustomTabModel} from './custom/CustomTabModel';
 import {valuesTab} from './values/ValuesTab';
 import {ValuesTabModel} from './values/ValuesTabModel';
-import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
 
 export class HeaderFilterModel extends HoistModel {
     override xhImpl = true;
@@ -46,8 +46,16 @@ export class HeaderFilterModel extends HoistModel {
         return this.fieldSpec.field;
     }
 
+    get gridModel(): GridModel {
+        return this.filterModel.gridModel;
+    }
+
     get store(): Store {
-        return this.filterModel.gridModel.store;
+        return this.gridModel.store;
+    }
+
+    get column(): Column {
+        return this.parent.column;
     }
 
     get fieldType(): FieldType {

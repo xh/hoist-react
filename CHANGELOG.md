@@ -2,62 +2,68 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+## 76.1.0 - 2025-10-17
+
 ### 🎁 New Features
 
-* `DashCanvasView` and `DashContainerView` components now have a public `@bindable` `titleDetails`
-  property on their models to support displaying additional information in the title bar of these
-  components.  `titleDetails` is not persisted, and is expected to be set programmatically by the
-  application as needed.
+* Added a public `@bindable titleDetails` config to `DashViewModel` to support displaying additional
+  information in the title bar of dashboard widgets. The new property is not persisted, allowing
+  apps to programmatically show dynamic info in a widget header without perturbing its saved state.
+* Enhanced grid column filtering to support sorting the list of available values.
+
+### ⚙️ Technical
+
+* Autofocus the user input when the impersonation bar is shown.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.4 → 2.7`
+* @azure/msal-browser `4.23 → 4.25`
+* dompurify `3.2 → 3.3`
+* mobx `6.13 → 6.15`
 
 ## 76.0.0 - 2025-09-26
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
 
-* Hoist v76 upgrades AG Grid to v34 (from v31), covering three major AG Grid releases with their own
-  potentially breaking changes. Fortunately, internal Hoist updates to our managed API wrappers mean
-  that most apps will see very minimal changes, although there are required adjustments to app-level
-  `package.json` to install updated grid dependencies and `Bootstrap.ts` to import and register
-  your licensed grid modules at their new import paths.
-
-  Applications implementing `groupRowRenderer` should note that the `value` property passed to this
-  function is no longer stringified, but is instead the raw field value for the group.
-
-  See AG's upgrade guides for more details:
-  ** [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
-  ** [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
-  ** [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
-
-*  The constructor for `TabModel` has changed to take its owning container as a second argument.
-   (Most applications do not create `TabModels` directly, but it is possible.)
-*  The `Exception` class and `HoistException` type have been moved from `@xh\hoist\core` to a new
-    lower level package `@xh\hoist\exception`.  This new structure is not expected to effect most
-    applications, and was put in place to reduce the risk of circular dependencies between internal
-    hoist packages.
+* Hoist v76 **upgrades AG Grid to v34** (from v31), covering three major AG Grid releases with their
+  own potentially breaking changes.
+    * Fortunately, internal Hoist updates to our managed API wrappers mean that most apps will see
+      very minimal changes, although there are required adjustments to app-level `package.json` to
+      install updated grid dependencies and `Bootstrap.ts` to import and register your licensed grid
+      modules at their new import paths.
+    * Applications implementing `groupRowRenderer` should note that the `value` property passed
+      to this function is no longer stringified, but is instead the raw field value for the group.
+    * See AG's upgrade guides for more details:
+        * [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
+        * [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
+        * [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
+* Modified the `TabModel` constructor to take its owning container as a second argument.
+    * Apps very rarely create `TabModels` directly, so this unlikely to require changes.
+* Moved the `Exception` class and `HoistException` type from `@xh\hoist\core` to a new lower-level
+  package `@xh\hoist\exception` to reduce the risk of circule dependencies within Hoist.
+    * Apps rarely interact with these directly, so also unlikely to require changes.
 
 ### 🎁 New Features
 
-* Added new `extraConfirmText`, `extraConfirmLabel` properties to `MessageOptions`. Use this option
+* Added `extraConfirmText` + `extraConfirmLabel` configs to `MessageOptions`. Use these new options
   to require the specified text to be re-typed by a user when confirming a potentially destructive
-  or disruptive action.
-* Updated grid column filters to apply on `Enter` / dismiss on `Esc` and tweaked the filter popup
+  or disruptive action. Note their usage within Hoist's Admin Console when deleting a role.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc`. Tweaked the filter popup
   toolbar for clarity.
-* Added new ability to specify nested tab containers in a single declarative config.  Apps may now
+* Added new ability to specify nested tab containers in a single declarative config. Apps may now
   provide a spec for a nested tab container directly to the `TabConfig.content` property.
-* Improvements to View Management:
-  ** Allow users to create 'Global' views directly in 'Save/Save As' Dialog.
-  ** Simplify presentation/edit of view visibility to new "Visibility" control
-  ** Support for the 'isDefaultPinned' attribute on global views has been removed.  All global
-  views will be pinned by default.  This feature was deemed too confusing, and not useful in
-  practice.  App maintainers should ensure that all global views are appropriate and well
-  organized enough to be shown immediately to new users in the view menu.
-* New constraint rule: `validEmails` - to validate one or more email addresses in an input field.
-* `DashCanvas` accepts a new prop `rglOptions` to pass additional options to the underlying
-  `react-grid-layout`.
-* Experimental grid feature  `enableFullWidthScroll` has been promoted to a first-class property
-    on `GridModel`.   Set to true to ensure that the grid will have a single horizontal scrollbar
-    spanning the width of all columns, including any pinned columns.
-* New `@sharePendingPromise` decorator for returning a shared Promise across concurrent async calls.
-
+* Improved `ViewManager` features:
+    * Enabled globally sharing a new view directly from the 'Save/Save As' dialog.
+    * Simplified presentation and management of view visibility via new "Visibility" control.
+    * Removed support for the `isDefaultPinned` attribute on global views. All global views will be
+      pinned (i.e. show up in user menus) by default. Users can still explicitly "unpin" any global
+      views to remove them from their menus.
+* Added a `validEmails` constraint rule to validate one or more email addresses in an input field.
+* Added `DashCanvas.rglOptions` prop - passed through to the underlying `react-grid-layout`.
+* Promoted experimental grid feature `enableFullWidthScroll` to a first-class `GridModel` config.
+  Set to true to ensure that the grid will have a single horizontal scrollbar spanning the width of
+  all columns, including any pinned columns.
 
 ### 🐞 Bug Fixes
 
@@ -73,6 +79,9 @@
 
 ### ⚙️ Technical
 
+* Added a new `@sharePendingPromise` decorator for returning a shared Promise across concurrent
+  async calls. Calls made to a decorated method while a prior call with the same args is still
+  pending won't kick off a new call, but will instead receive the same Promise as the first call.
 * Added `XH.logLevel` to define a minimum logging severity threshold for Hoist's client-side logging
   utilities. Defaulted to 'info' to prevent possible memory and performance impacts of verbose
   logging on 'debug'. Change at runtime via new `XH.setLogLevel()` when troubleshooting. See

@@ -31,9 +31,12 @@ export const impersonationBar = hoistCmp.factory({
 
         const {targets} = model;
 
-        let msg = `Logged in as ${authUsername}`;
+        let msg = `Logged in as ${authUsername}`,
+            placeholder = 'Select a user...';
+
         if (isImpersonating) {
             msg += ` › impersonating ${username}`;
+            placeholder = `Impersonating ${username}`;
         }
 
         return toolbar({
@@ -53,10 +56,16 @@ export const impersonationBar = hoistCmp.factory({
                     bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
-                    placeholder: 'Select User...',
-                    width: 250,
-                    menuWidth: 300,
-                    onCommit: model.onCommit
+                    // Autofocus when shown to begin impersonation
+                    autoFocus: !isImpersonating,
+                    placeholder,
+                    createMessageFn: q => `Impersonate new user "${q}"`,
+                    minWidth: 150,
+                    maxWidth: 350,
+                    menuWidth: 350,
+                    flex: 1,
+                    onCommit: model.onCommit,
+                    ref: model.inputRef
                 }),
                 button({
                     text: isImpersonating ? 'Exit Impersonation' : 'Cancel',
@@ -71,6 +80,7 @@ export const impersonationBar = hoistCmp.factory({
 const showUseResponsiblyAlert = () => {
     XH.alert({
         title: 'Important Reminders',
+        icon: Icon.warning(),
         message: fragment(
             h3('With great power comes great responsibility.'),
             ul(
@@ -94,7 +104,8 @@ const showUseResponsiblyAlert = () => {
             )
         ),
         confirmProps: {
-            text: 'I understand and will be careful'
+            text: 'I understand and will be careful',
+            autoFocus: false
         }
     });
 };

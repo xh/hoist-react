@@ -309,12 +309,12 @@ export class View extends HoistBase {
         appliedDimensions: PlainObject,
         leafMap: Map<StoreRecordId, LeafRow>
     ): BaseRow[] {
-        if (isEmpty(records)) return [];
+        if (!records?.length) return [];
 
         const rootId = parentId + Cube.RECORD_ID_DELIMITER;
 
-        if (isEmpty(dimensions)) {
-            return map(records, r => {
+        if (!dimensions?.length) {
+            return records.map(r => {
                 const id = rootId + r.id,
                     leaf = this.cachedRow(id, null, () => new LeafRow(this, id, r));
                 leafMap.set(r.id, leaf);
@@ -355,16 +355,17 @@ export class View extends HoistBase {
         parentId: string,
         appliedDimensions: PlainObject
     ): BaseRow[] {
-        if (!this.query.bucketSpecFn) return rows;
+        const {query} = this;
 
-        const bucketSpec = this.query.bucketSpecFn(rows);
+        if (!query.bucketSpecFn) return rows;
+        if (!query.includeLeaves && rows[0]?.isLeaf) return rows;
+
+        const bucketSpec = query.bucketSpecFn(rows);
         if (!bucketSpec) return rows;
 
-        if (!this.query.includeLeaves && rows[0]?.isLeaf) return rows;
-
         const {name: bucketName, bucketFn} = bucketSpec,
-            buckets = {},
-            ret = [];
+            buckets: Record<string, BaseRow[]> = {},
+            ret: BaseRow[] = [];
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
@@ -372,8 +373,8 @@ export class View extends HoistBase {
             if (isNil(bucketVal)) {
                 ret.push(row);
             } else {
-                if (!buckets[bucketVal]) buckets[bucketVal] = [];
-                buckets[bucketVal].push(row);
+                const bucketRows = (buckets[bucketVal] ??= []);
+                bucketRows.push(row);
             }
         });
 
@@ -454,8 +455,13 @@ export class View extends HoistBase {
 
     private filterRecords() {
         const {query, cube} = this,
+            {hasFilter} = query,
             ret = new Map();
-        cube.store.records.filter(r => query.test(r)).forEach(r => ret.set(r.id, r));
+
+        cube.store.records.forEach(r => {
+            if (!hasFilter || query.test(r)) ret.set(r.id, r);
+        });
+
         this._recordMap = ret;
     }
 

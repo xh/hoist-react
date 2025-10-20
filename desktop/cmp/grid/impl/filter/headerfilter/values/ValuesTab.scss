@@ -1,24 +1,32 @@
 .xh-values-filter-tab {
-  .store-filter-header {
-    padding: 5px 7px;
+  &__filter-controls {
     border-bottom: 1px solid var(--xh-grid-header-border-color);
+    padding: 5px 7px;
     row-gap: 5px;
+
     .bp5-control-indicator {
       font-size: 1em;
     }
+
     label {
       font-size: var(--xh-grid-compact-header-font-size-px);
       color: var(--xh-grid-header-text-color);
       cursor: pointer;
     }
+
+    &__sort-icon {
+      border-left: var(--xh-menu-border);
+      padding-left: var(--xh-pad-half-px);
+      color: var(--xh-grid-header-text-color);
+    }
   }
 
   &__hidden-values-message {
-    display: flex;
-    padding: var(--xh-pad-half-px);
     background-color: var(--xh-bg-alt);
     border-top: var(--xh-border-solid);
     color: var(--xh-text-color-muted);
+    display: flex;
+    padding: var(--xh-pad-half-px);
 
     .xh-icon {
       margin-right: var(--xh-pad-half-px);
