@@ -7,11 +7,16 @@
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
-import Ajv, {ValidateFunction} from 'ajv';
+import Ajv, {Options, ValidateFunction} from 'ajv';
 import {codeInput, CodeInputProps} from './CodeInput';
 
 export interface JsonInputProps extends CodeInputProps {
     jsonSchema?: PlainObject;
+    /**
+     * Configuration object with any properties supported by the AJV API.
+     * @see {@link https://ajv.js.org/options.html}
+     */
+    ajvProps?: Options;
 }
 
 /**
@@ -21,10 +26,10 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     displayName: 'JsonInput',
     className: 'xh-json-input',
     render(props, ref) {
-        const {jsonSchema, ...rest} = props;
+        const {jsonSchema, ajvProps, ...rest} = props;
 
         return codeInput({
-            linter: jsonLinterWrapper(jsonSchema),
+            linter: jsonLinterWrapper(jsonSchema, ajvProps),
             formatter: fmtJson,
             language: 'json',
             ...rest,
@@ -38,11 +43,11 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
 // JSON Linter helper
 //----------------------
 
-function jsonLinterWrapper(jsonSchema?: PlainObject) {
+function jsonLinterWrapper(jsonSchema?: PlainObject, ajvProps?: Options) {
     let validate: ValidateFunction | undefined;
 
     if (jsonSchema) {
-        const ajv = new Ajv({allErrors: true, strictSchema: true});
+        const ajv = new Ajv({...ajvProps});
         validate = ajv.compile(jsonSchema);
     }
 
@@ -71,12 +76,20 @@ function jsonLinterWrapper(jsonSchema?: PlainObject) {
 
         for (const err of validate.errors) {
             const path = err.instancePath || '';
-            let from = 0;
-            let to = 0;
+            let from = 0,
+                to = 0,
+                key = '';
 
-            if (path) {
+            // Handle "additionalProperties" separately
+            if (err.keyword === 'additionalProperties' && err.params?.additionalProperty) {
+                key = err.params.additionalProperty;
+            } else {
                 const pointerParts = path.split('/').filter(Boolean);
-                const key = pointerParts[pointerParts.length - 1];
+                key = pointerParts[pointerParts.length - 1];
+            }
+
+            // Try to locate the key in the JSON text for highlighting
+            if (key) {
                 const keyIdx = text.indexOf(`"${key}"`);
                 if (keyIdx >= 0) {
                     from = keyIdx;
@@ -84,10 +97,16 @@ function jsonLinterWrapper(jsonSchema?: PlainObject) {
                 }
             }
 
+            // Make the message more readable
+            let message = `${path || '(root)'} ${err.message}`;
+            if (err.keyword === 'additionalProperties' && key) {
+                message = `Unexpected property "${key}"`;
+            }
+
             annotations.push({
                 from,
                 to,
-                message: `${path || '(root)'} ${err.message}`,
+                message,
                 severity: 'error'
             });
         }

@@ -456,7 +456,12 @@ class CodeInputModel extends HoistInputModel {
                 autocompletion(),
                 history(),
                 // Linter
-                userLinter ? linter(view => userLinter(view.state.doc.toString())) : [],
+                userLinter
+                    ? linter(async view => {
+                          const text = view.state.doc.toString();
+                          return await userLinter(text);
+                      })
+                    : [],
                 // Key bindings
                 keymap.of([
                     ...defaultKeymap,
@@ -492,6 +497,9 @@ class CodeInputModel extends HoistInputModel {
                     case 'javascript':
                     case 'js':
                         langExt = javascript();
+                        break;
+                    case 'ts':
+                        langExt = javascript({typescript: true});
                         break;
                     case 'json':
                         langExt = json();
