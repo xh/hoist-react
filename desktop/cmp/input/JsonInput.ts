@@ -97,7 +97,6 @@ function jsonLinterWrapper(jsonSchema?: PlainObject, ajvProps?: Options) {
                 }
             }
 
-            // Make the message more readable
             let message = `${path || '(root)'} ${err.message}`;
             if (err.keyword === 'additionalProperties' && key) {
                 message = `Unexpected property "${key}"`;
