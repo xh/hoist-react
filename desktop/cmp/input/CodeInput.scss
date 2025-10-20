@@ -5,13 +5,14 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 .xh-app .xh-input {
-  .CodeMirror {
+  .cm-editor {
     background-color: var(--xh-input-bg) !important;
     font-family: var(--xh-font-family-mono);
     font-size: var(--xh-font-size-px);
     line-height: calc(var(--xh-font-size-px) * 1.4);
+    height: 100%;
 
-    pre.CodeMirror-line {
+    pre.cm-line {
       box-shadow: inset 0 0 0 0 rgba(16, 22, 26, 0.4);
       -webkit-box-shadow: inset 0 0 0 0 rgba(16, 22, 26, 0.4);
     }
@@ -21,7 +22,11 @@
     }
   }
 
-  .CodeMirror-gutter {
+  .cm-gutters {
+    border: none;
+  }
+
+  .cm-gutter {
     background-color: var(--xh-bg-alt);
   }
 }
@@ -30,13 +35,13 @@
   height: 100px;
 
   &.xh-input-invalid {
-    div.CodeMirror {
+    div.cm-editor {
       border: var(--xh-form-field-invalid-border);
     }
   }
 
   &.xh-input-disabled {
-    .CodeMirror {
+    .cm-editor {
       background-color: var(--xh-input-disabled-bg);
       color: var(--xh-input-disabled-text-color);
     }
@@ -46,7 +51,7 @@
     position: relative;
     flex: 1;
 
-    & > .CodeMirror {
+    & > .cm-editor {
       position: absolute;
       top: 0;
       bottom: 0;
@@ -54,16 +59,17 @@
       right: 0;
       height: 100%;
 
-      .CodeMirror-selected {
+      .cm-editor-selected {
         background-color: var(--xh-bg-highlight);
       }
 
-      .CodeMirror-scroll {
-        box-sizing: content-box !important;
+      .cm-scroller {
+        overflow: auto;
+        //box-sizing: content-box !important;
       }
 
-      .CodeMirror-simplescroll-vertical,
-      .CodeMirror-simplescroll-horizontal {
+      .cm-editor-simplescroll-vertical,
+      .cm-editor-simplescroll-horizontal {
         background-color: var(--xh-scrollbar-bg);
         > div {
           background-color: var(--xh-scrollbar-thumb);
@@ -71,15 +77,15 @@
         }
       }
 
-      .CodeMirror-scrollbar-filler {
+      .cm-editor-scrollbar-filler {
         background-color: var(--xh-scrollbar-bg);
       }
 
-      .CodeMirror-simplescroll-horizontal {
+      .cm-editor-simplescroll-horizontal {
         height: var(--xh-scrollbar-size-px);
       }
 
-      .CodeMirror-simplescroll-vertical {
+      .cm-editor-simplescroll-vertical {
         width: var(--xh-scrollbar-size-px);
       }
     }

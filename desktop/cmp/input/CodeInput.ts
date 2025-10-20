@@ -4,6 +4,45 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {autocompletion} from '@codemirror/autocomplete';
+import {defaultKeymap, history, historyKeymap, indentWithTab} from '@codemirror/commands';
+import {css} from '@codemirror/lang-css';
+import {html} from '@codemirror/lang-html';
+import {java} from '@codemirror/lang-java';
+import {javascript} from '@codemirror/lang-javascript';
+import {json} from '@codemirror/lang-json';
+import {python} from '@codemirror/lang-python';
+import {sql} from '@codemirror/lang-sql';
+import {
+    defaultHighlightStyle,
+    foldGutter,
+    foldKeymap,
+    indentOnInput,
+    LanguageSupport,
+    syntaxHighlighting
+} from '@codemirror/language';
+import {linter, lintGutter} from '@codemirror/lint';
+import {highlightSelectionMatches, search} from '@codemirror/search';
+import {
+    Compartment,
+    EditorState,
+    Extension,
+    RangeSetBuilder,
+    StateEffect,
+    StateField
+} from '@codemirror/state';
+import {
+    Decoration,
+    DecorationSet,
+    EditorView,
+    highlightActiveLine,
+    highlightActiveLineGutter,
+    keymap,
+    lineNumbers,
+    ViewPlugin,
+    ViewUpdate
+} from '@codemirror/view';
+import {dracula, solarizedLight} from '@uiw/codemirror-themes-all';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
@@ -13,30 +52,14 @@ import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {textArea} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import * as codemirror from 'codemirror';
-import 'codemirror/addon/fold/brace-fold.js';
-import 'codemirror/addon/fold/foldcode.js';
-import 'codemirror/addon/fold/foldgutter.css';
-import 'codemirror/addon/fold/foldgutter.js';
-import 'codemirror/addon/lint/lint.css';
-import 'codemirror/addon/lint/lint.js';
-import 'codemirror/addon/scroll/simplescrollbars.css';
-import 'codemirror/addon/scroll/simplescrollbars.js';
-import 'codemirror/addon/search/searchcursor.js';
-import 'codemirror/addon/selection/mark-selection.js';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/dracula.css';
-import {compact, defaultsDeep, isEqual, isFunction} from 'lodash';
+import {compact, isFunction} from 'lodash';
 import {ReactElement} from 'react';
-import {findDOMNode} from 'react-dom';
 import './CodeInput.scss';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -46,6 +69,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
 
+    // TODO not supported anymore do we want to make it backwards compatible?
     /**
      * Configuration object with any properties supported by the CodeMirror API.
      * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
@@ -75,7 +99,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * ({@link https://codemirror.net/mode/}) regarding available modes.
      * Applications must import any mode they wish to enable.
      */
-    mode?: string;
+    language?: string | LanguageSupport | (() => LanguageSupport);
 
     /**
      * True to prevent user modification of editor contents, while still allowing user to
@@ -101,6 +125,9 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * action buttons show only when the input focused and float in the bottom-right corner.
      */
     showToolbar?: boolean;
+
+    /** False (default) to highlight active line in input. */
+    highlightActiveLine?: boolean;
 }
 
 /**
@@ -131,17 +158,17 @@ class CodeInputModel extends HoistInputModel {
     @managed
     modalSupportModel: ModalSupportModel = new ModalSupportModel();
 
-    /** A CodeMirror editor instance. */
-    editor: any;
+    editor: EditorView;
 
     // Support for internal search feature.
     cursor = null;
     @bindable query: string = '';
     @observable currentMatchIdx: number = -1;
-    @observable.ref matches = [];
-    get matchCount(): number {
-        return this.matches.length;
-    }
+    @observable.ref matches: {from: number; to: number}[] = [];
+
+    private updateMatchesEffect = StateEffect.define<void>();
+    private highlightField: StateField<DecorationSet>;
+    private themeCompartment = new Compartment();
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -214,8 +241,7 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override blur() {
-        this.editor?.execCommand('undoSelection');
-        this.editor?.getInputField().blur();
+        this.editor?.contentDOM.blur();
     }
 
     override focus() {
@@ -223,12 +249,34 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override select() {
-        this.editor?.execCommand('selectAll');
+        if (!this.editor) return;
+        this.editor.dispatch({selection: {anchor: 0, head: this.editor.state.doc.length}});
     }
 
     constructor() {
         super();
         makeObservable(this);
+
+        this.highlightField = StateField.define<DecorationSet>({
+            create: () => Decoration.none,
+            update: (deco, tr) => {
+                deco = deco.map(tr.changes);
+                if (tr.effects.some(e => e.is(this.updateMatchesEffect))) {
+                    const builder = new RangeSetBuilder<Decoration>();
+                    this.matches.forEach(match => {
+                        builder.add(
+                            match.from,
+                            match.to,
+                            Decoration.mark({class: 'xh-code-input--highlight'})
+                        );
+                    });
+                    deco = builder.finish();
+                }
+                return deco;
+            },
+            provide: f => EditorView.decorations.from(f)
+        });
+
         this.addReaction({
             track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),
@@ -240,103 +288,61 @@ class CodeInputModel extends HoistInputModel {
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
-                const {editor} = this;
-                if (editor) editor.setOption('theme', XH.darkTheme ? 'dracula' : 'default');
+                if (!this.editor) return;
+                this.editor.dispatch({
+                    effects: this.themeCompartment.reconfigure(this.getThemeExtension())
+                });
             }
         });
 
         this.addReaction({
             track: () => this.renderValue,
-            run: value => {
-                const {editor} = this;
-                if (editor && editor.getValue() != value) {
-                    // CodeMirror will throw on null value.
-                    editor.setValue(value == null ? '' : value);
+            run: val => {
+                if (this.editor && this.editor.state.doc.toString() !== val) {
+                    this.editor.dispatch({
+                        changes: {from: 0, to: this.editor.state.doc.length, insert: val ?? ''}
+                    });
                 }
             }
         });
 
         this.addReaction({
             track: () => this.componentProps.readonly || this.componentProps.disabled,
-            run: editorReadOnly => {
-                this.editor.setOption('readOnly', editorReadOnly);
+            run: readOnly => {
+                if (this.editor)
+                    this.editor.dispatch({
+                        effects: StateEffect.appendConfig.of(EditorView.editable.of(!readOnly))
+                    });
             }
         });
 
         this.addReaction({
             track: () => this.query,
             run: query => {
-                if (query?.trim()) {
-                    this.findAll();
-                } else {
-                    this.clearSearchResults();
-                }
+                if (query?.trim()) this.findAll();
+                else this.clearSearchResults();
             },
             debounce: 300
         });
     }
 
-    manageCodeEditor = textAreaComp => {
-        if (textAreaComp) {
-            this.editor = this.createCodeEditor(textAreaComp);
-            this.preserveSearchResults();
-        }
+    manageCodeEditor = (container: HTMLElement) => {
+        if (!container) return;
+        const extensions: Extension[] = [...this.getExtensions()];
+
+        const state = EditorState.create({doc: this.renderValue || '', extensions});
+        this.editor = new EditorView({state, parent: container});
     };
 
-    createCodeEditor(textAreaComp) {
-        const editorSpec = defaultsDeep(this.componentProps.editorProps, this.createDefaults());
-
-        const taDom = findDOMNode(textAreaComp),
-            editor = codemirror.fromTextArea(taDom, editorSpec);
-
-        editor.on('change', this.handleEditorChange);
-        return editor;
+    onAutoFormat() {
+        if (!this.editor) return;
+        const val = this.tryPrettyPrint(this.editor.state.doc.toString());
+        this.editor.dispatch({changes: {from: 0, to: this.editor.state.doc.length, insert: val}});
     }
 
-    createDefaults() {
-        const {disabled, readonly, mode, linter, autoFocus} = this.componentProps;
-        let gutters = ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'];
-        if (linter) gutters.push('CodeMirror-lint-markers');
-
-        return {
-            mode,
-            theme: XH.darkTheme ? 'dracula' : 'default',
-            lineWrapping: false,
-            lineNumbers: true,
-            autoCloseBrackets: true,
-            extraKeys: {
-                'Cmd-P': this.onAutoFormat,
-                'Ctrl-P': this.onAutoFormat
-            },
-            foldGutter: true,
-            scrollbarStyle: 'simple',
-            readOnly: disabled || readonly,
-            gutters,
-            lint: linter ? {getAnnotations: linter} : false,
-            autoFocus
-        };
-    }
-
-    onChange = ev => {
-        this.noteValueChange(ev.target.value);
-    };
-
-    handleEditorChange = editor => {
-        this.noteValueChange(editor.getValue());
-        if (this.cursor) this.clearSearchResults();
-    };
-
-    onAutoFormat = () => {
-        if (!isFunction(this.componentProps.formatter)) return;
-
-        const editor = this.editor,
-            val = this.tryPrettyPrint(editor.getValue());
-        editor.setValue(val);
-    };
-
-    tryPrettyPrint(str) {
+    tryPrettyPrint(str: string) {
         try {
-            return this.componentProps.formatter(str);
+            return this.componentProps.formatter?.(str) ?? str;
         } catch (e) {
             return str;
         }
@@ -344,106 +350,187 @@ class CodeInputModel extends HoistInputModel {
 
     toggleFullScreen() {
         this.modalSupportModel.toggleIsModal();
-
-        // 'Nudge' the mouse wheel to trigger CodeMirror to update scrollbar state
-        const scrollEvent = d => new window.WheelEvent('mousewheel', {deltaX: d, deltaY: d});
         wait().then(() => {
-            this.editor.getScrollerElement().dispatchEvent(scrollEvent(2));
-            this.editor.getScrollerElement().dispatchEvent(scrollEvent(-2));
+            const scroller = this.editor?.scrollDOM;
+            if (scroller) {
+                scroller.scrollTop += 2;
+                scroller.scrollTop -= 2;
+            }
         });
     }
 
-    //------------------------
-    // Local Searching
-    //------------------------
     @action
     findAll() {
-        this.clearSearchResults();
-        if (!this.query?.trim()) return;
+        if (!this.editor || !this.query?.trim()) return;
 
-        this.cursor = this.editor.getSearchCursor(this.query, 0, true);
-
-        const {cursor, editor} = this,
-            newMatches = [];
-
-        while (cursor.findNext()) {
-            const anchor = cursor.from(),
-                head = cursor.to();
-            newMatches.push({
-                anchor,
-                head,
-                textMarker: editor.markText(anchor, head, {className: 'xh-code-input--highlight'})
-            });
+        const doc = this.editor.state.doc.toString();
+        const matches = [];
+        let idx = doc.indexOf(this.query);
+        while (idx !== -1) {
+            matches.push({from: idx, to: idx + this.query.length});
+            idx = doc.indexOf(this.query, idx + 1);
         }
+        this.matches = matches;
+        this.currentMatchIdx = matches.length ? 0 : -1;
+        this.updateMatchDecorations();
 
-        this.matches = newMatches;
-        if (newMatches.length) {
-            this.findNext();
-        } else {
-            this.currentMatchIdx = -1;
+        if (matches.length) {
+            const match = matches[0];
+            this.editor.dispatch({
+                selection: {anchor: match.from, head: match.to},
+                scrollIntoView: true
+            });
         }
     }
 
     @action
     findNext() {
-        const {editor, query, cursor, matchCount} = this;
-        if (!cursor || !matchCount) return;
-
-        if (cursor.findNext(query)) {
-            this.handleCursorMatchUpdate();
-        } else {
-            // Loop around
-            this.cursor = editor.getSearchCursor(query, 0, true);
-            this.findNext();
-        }
-    }
-
-    @action
-    findPrevious() {
-        const {editor, query, cursor, matches, matchCount} = this;
-        if (!cursor || !matchCount) return;
-
-        if (cursor.findPrevious(query)) {
-            this.handleCursorMatchUpdate();
-        } else {
-            // Loop around
-            this.cursor = editor.getSearchCursor(query, matches[matchCount - 1].head, true);
-            this.findPrevious();
-        }
-    }
-
-    @action
-    handleCursorMatchUpdate() {
-        const {editor, cursor, matches} = this,
-            from = cursor.from(),
-            to = cursor.to();
-        editor.scrollIntoView({from, to}, 50);
-        editor.setSelection(from, to);
-        this.currentMatchIdx = matches.findIndex(match => isEqual(match.anchor, from));
-    }
-
-    preserveSearchResults() {
-        const {matches, editor} = this;
-        matches.forEach(match => {
-            match.textMarker = editor.markText(match.anchor, match.head, {
-                className: 'xh-code-input--highlight'
-            });
+        if (!this.editor || !this.matches.length) return;
+        this.currentMatchIdx = (this.currentMatchIdx + 1) % this.matches.length;
+        const match = this.matches[this.currentMatchIdx];
+        this.editor.dispatch({
+            selection: {anchor: match.from, head: match.to},
+            scrollIntoView: true
         });
     }
 
     @action
+    findPrevious() {
+        if (!this.editor || !this.matches.length) return;
+        this.currentMatchIdx =
+            (this.currentMatchIdx - 1 + this.matches.length) % this.matches.length;
+        const match = this.matches[this.currentMatchIdx];
+        this.editor.dispatch({
+            selection: {anchor: match.from, head: match.to},
+            scrollIntoView: true
+        });
+    }
+
+    @action
+    updateMatchDecorations() {
+        if (!this.editor) return;
+        this.editor.dispatch({effects: this.updateMatchesEffect.of()});
+    }
+
+    @action
     clearSearchResults() {
-        this.cursor = null;
-        this.currentMatchIdx = -1;
-        this.matches.forEach(match => match.textMarker.clear());
         this.matches = [];
+        this.currentMatchIdx = -1;
+        this.updateMatchDecorations();
     }
 
     override destroy() {
-        // Cleanup editor component as per CodeMirror docs.
-        if (this.editor) this.editor.toTextArea();
+        this.editor?.destroy();
         super.destroy();
     }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private getExtensions() {
+        const {
+                autoFocus,
+                language,
+                readonly,
+                highlightActiveLine: highlightActiveLineProp,
+                linter: userLinter
+            } = this.componentProps,
+            extensions = [
+                // Theme
+                this.themeCompartment.of(this.getThemeExtension()),
+                // Editor state
+                EditorView.editable.of(!readonly),
+                EditorView.updateListener.of((update: ViewUpdate) => {
+                    if (update.docChanged) this.noteValueChange(update.state.doc.toString());
+                }),
+                // Search & custom highlight
+                search(),
+                syntaxHighlighting(defaultHighlightStyle),
+                highlightSelectionMatches(),
+                this.highlightField,
+                // Editor UI
+                foldGutter(),
+                lineNumbers(),
+                lintGutter(),
+                indentOnInput(),
+                autocompletion(),
+                history(),
+                // Linter
+                userLinter ? linter(view => userLinter(view.state.doc.toString())) : [],
+                // Key bindings
+                keymap.of([
+                    ...defaultKeymap,
+                    ...historyKeymap,
+                    ...foldKeymap,
+                    indentWithTab,
+                    {
+                        key: 'Mod-p',
+                        run: () => {
+                            this.onAutoFormat();
+                            return true;
+                        }
+                    }
+                ])
+            ];
+        if (highlightActiveLineProp)
+            extensions.push(highlightActiveLine(), highlightActiveLineGutter());
+        if (autoFocus) extensions.push(this.autofocusExtension);
+        if (language) extensions.push(this.getLanguageExtension(language));
+
+        return extensions;
+    }
+    private getThemeExtension() {
+        return XH.darkTheme ? dracula : solarizedLight;
+    }
+
+    private getLanguageExtension(language) {
+        if (language) {
+            let langExt: Extension | null = null;
+            // Allow passing a string or a LanguageSupport object
+            if (typeof language === 'string') {
+                switch (language.toLowerCase()) {
+                    case 'javascript':
+                    case 'js':
+                        langExt = javascript();
+                        break;
+                    case 'json':
+                        langExt = json();
+                        break;
+                    case 'html':
+                        langExt = html();
+                        break;
+                    case 'python':
+                        langExt = python();
+                        break;
+                    case 'css':
+                        langExt = css();
+                        break;
+                    case 'sql':
+                        langExt = sql();
+                        break;
+                    case 'java':
+                        langExt = java();
+                        break;
+                    default:
+                        console.warn(`CodeInput: unsupported language "${language}".`);
+                        break;
+                }
+            } else if (isFunction(language)) {
+                langExt = language();
+            } else {
+                langExt = language;
+            }
+            if (langExt) return langExt;
+        }
+    }
+
+    private autofocusExtension = ViewPlugin.fromClass(
+        class {
+            constructor(view: EditorView) {
+                queueMicrotask(() => view.focus());
+            }
+        }
+    );
 }
 
 const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref) => {
@@ -471,11 +558,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
-                item: textArea({
-                    value: model.renderValue || '',
-                    inputRef: model.manageCodeEditor,
-                    onChange: model.onChange
-                })
+                ref: model.manageCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],
@@ -496,7 +579,9 @@ const toolbarCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
 });
 
 const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
-    const {query, cursor, currentMatchIdx, matchCount, fullScreen} = model;
+    const {query, currentMatchIdx, matches, fullScreen} = model,
+        matchCount = matches.length;
+
     return fragment(
         // Frame wrapper added due to issues with textInput not supporting all layout props as it should.
         frame({
@@ -505,20 +590,16 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
             item: textInput({
                 width: null,
                 flex: 1,
-                model: this,
+                model,
                 bind: 'query',
                 leftIcon: Icon.search(),
                 enableClear: true,
                 commitOnChange: true,
                 onKeyDown: e => {
                     if (e.key !== 'Enter') return;
-                    if (!cursor) {
-                        model.findAll();
-                    } else if (e.shiftKey) {
-                        model.findPrevious();
-                    } else {
-                        model.findNext();
-                    }
+                    if (!matches.length) model.findAll();
+                    else if (e.shiftKey) model.findPrevious();
+                    else model.findNext();
                 }
             })
         }),
