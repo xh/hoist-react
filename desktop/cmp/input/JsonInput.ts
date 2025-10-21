@@ -7,11 +7,17 @@
 import {hoistCmp, PlainObject} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
-import Ajv, {Options, ValidateFunction} from 'ajv';
+import Ajv, {Options, SchemaObject, ValidateFunction} from 'ajv';
 import {codeInput, CodeInputProps} from './CodeInput';
 
 export interface JsonInputProps extends CodeInputProps {
-    jsonSchema?: PlainObject;
+    /**
+     * JSON Schema object used to validate the input JSON. Accepts any valid JSON Schema keywords
+     * supported by AJV, such as `type`, `properties`, `required`, and `additionalProperties`.
+     * @see https://ajv.js.org/json-schema.html
+     */
+    jsonSchema?: SchemaObject;
+
     /**
      * Configuration object with any properties supported by the AJV API.
      * @see {@link https://ajv.js.org/options.html}
