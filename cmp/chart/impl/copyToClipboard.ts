@@ -24,7 +24,7 @@ export function installCopyToClipboard(Highcharts) {
             try {
                 const blobPromise = convertChartToPngAsync(this),
                     clipboardItemInput = new window.ClipboardItem({
-                        // Safari requires an unresolved promise. See https://bugs.webkit.org/show_bug.cgi?id=222262
+                        // Safari requires an unresolved promise. See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion
                         'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
                     });
                 await window.navigator.clipboard.write([clipboardItemInput]);
@@ -42,7 +42,7 @@ export function installCopyToClipboard(Highcharts) {
 //------------------
 async function convertChartToPngAsync(chart) {
     // v12 replacement for getSVGForLocalExport
-    const svg = chart.getSVG(), // <-- changed here
+    const svg = chart.getSVG(),
         svgUrl = svgToDataUrl(svg),
         pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl),
         ret = await loadBlob(pngDataUrl);
