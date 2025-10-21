@@ -12,12 +12,23 @@ import {flatMap} from 'lodash';
  * Designed for direct consumption by hierarchical stores and their associated tree grids.
  */
 export class ViewRowData {
-    constructor(id: string) {
+    constructor(
+        id: string,
+        {isBucket = false, isAggregate = false}: {isBucket?: boolean; isAggregate?: boolean} = {}
+    ) {
         this.id = id;
+        this.isBucket = isBucket;
+        this.isAggregate = isAggregate;
     }
 
     /** Unique id. */
     id: string;
+
+    /** Note if the row represents a bucket (CLOSED or FLAT grouping row) */
+    isBucket: boolean;
+
+    /** Note if the row represents an aggregate roll up */
+    isAggregate: boolean;
 
     /**
      * Label of the row. The dimension value or, for leaf rows. the underlying cubeId.
