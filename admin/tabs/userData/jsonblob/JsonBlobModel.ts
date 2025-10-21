@@ -51,7 +51,7 @@ export class JsonBlobModel extends HoistModel {
             store: {
                 url: 'rest/jsonBlobAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {...(JBCol.token.field as FieldSpec), editable: false},
                     JBCol.owner.field,

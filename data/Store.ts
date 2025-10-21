@@ -44,7 +44,7 @@ export interface StoreConfig {
      * Default configs applied to `Field` instances constructed internally by this Store.
      * @see FieldSpec
      */
-    fieldDefaults?: any;
+    fieldDefaults?: Omit<FieldSpec, 'name'>;
 
     /**
      * Specification for producing an immutable unique id for each record. May be provided as
@@ -978,17 +978,20 @@ export class Store extends HoistBase {
         this.summaryRecords = null;
     }
 
-    private parseFields(fields: any[], defaults: any): Field[] {
+    private parseFields(
+        fields: Array<string | FieldSpec | Field>,
+        defaults: Omit<FieldSpec, 'name'>
+    ): Field[] {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
 
-            if (isString(f)) f = {name: f};
+            let fieldSpec: FieldSpec = isString(f) ? {name: f} : f;
 
             if (!isEmpty(defaults)) {
-                f = defaultsDeep({}, f, defaults);
+                fieldSpec = defaultsDeep({}, fieldSpec, defaults);
             }
 
-            return new this.defaultFieldClass(f);
+            return new this.defaultFieldClass(fieldSpec);
         });
 
         throwIf(

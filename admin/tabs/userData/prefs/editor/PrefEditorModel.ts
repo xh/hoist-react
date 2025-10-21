@@ -47,7 +47,7 @@ export class PrefEditorModel extends HoistModel {
             store: {
                 url: 'rest/preferenceAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
                     {
