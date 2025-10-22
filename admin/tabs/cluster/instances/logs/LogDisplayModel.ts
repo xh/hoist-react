@@ -136,7 +136,7 @@ export class LogDisplayModel extends HoistModel {
             hideHeaders: true,
             rowBorders: false,
             sizingMode: 'tiny',
-            emptyText: 'No log entries found...',
+            emptyText: 'No log entries found.',
             sortBy: 'rowNum|asc',
             autosizeOptions: {mode: 'disabled'},
             store: {
