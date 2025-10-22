@@ -1,5 +1,7 @@
 # Changelog
 
+## 77.0.0-SNAPSHOT - unreleased
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
