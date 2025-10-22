@@ -8,7 +8,6 @@
 * New property `cubeRowType` on `ViewRowData` supports identifying bucketed rows.
 * `waitFor` can accept a null value for a timeout.
 
-
 ## 76.1.0 - 2025-10-17
 
 ### 🎁 New Features
