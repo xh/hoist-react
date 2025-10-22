@@ -127,6 +127,7 @@ export class Query {
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
     readonly filter: Filter;
+    readonly hasFilter: boolean;
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
     readonly provideLeaves: boolean;
@@ -164,6 +165,7 @@ export class Query {
         this.omitFn = omitFn;
 
         this._testFn = this.filter?.getTestFn(this.cube.store) ?? null;
+        this.hasFilter = this._testFn != null;
     }
 
     clone(overrides: Partial<QueryConfig>) {

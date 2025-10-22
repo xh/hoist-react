@@ -73,7 +73,7 @@ export class JsonSearchImplModel extends HoistModel {
     override onLinked() {
         this.gridModel = new GridModel({
             ...this.gridModelConfig,
-            emptyText: 'No matches found...',
+            emptyText: 'No matches found.',
             selModel: 'single'
         });
 

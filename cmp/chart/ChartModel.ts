@@ -8,8 +8,8 @@ import {type MouseEvent} from 'react';
 import type {ChartContextMenuSpec, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
@@ -58,6 +58,12 @@ export class ChartModel extends HoistModel {
      */
     @observable.ref
     highchart: any;
+
+    /** True if this chart has no series to display */
+    @computed
+    get empty(): boolean {
+        return isEmpty(this.series);
+    }
 
     constructor(config?: ChartConfig) {
         super();

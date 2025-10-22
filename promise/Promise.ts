@@ -132,15 +132,15 @@ export function waitFor(
     condition: () => boolean,
     {interval = 50, timeout = 5 * SECONDS}: {interval?: number; timeout?: number} = {}
 ): Promise<void> {
-    if (!isNumber(interval) || interval <= 0) throw new Error('Invalid interval');
-    if (!isNumber(timeout) || timeout <= 0) throw new Error('Invalid timeout');
+    if (interval <= 0) throw new Error('Invalid interval');
+    if (timeout != null && timeout <= 0) throw new Error('Invalid timeout');
 
     const startTime = Date.now();
     return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
                 resolve();
-            } else if (olderThan(startTime, timeout)) {
+            } else if (timeout != null && olderThan(startTime, timeout)) {
                 reject(Exception.timeout({interval: Date.now() - startTime}));
             } else {
                 setTimeout(resolveOnMet, interval);

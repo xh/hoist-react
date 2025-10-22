@@ -18,13 +18,16 @@ export const versionBar = hoistCmp.factory({
         const inspectorSvc = XH.inspectorService,
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
+            build = envSvc.get('clientBuild'),
             version = envSvc.get('clientVersion'),
-            isAdminApp = window.location.pathname?.startsWith('/admin/');
+            isAdminApp = window.location.pathname?.startsWith('/admin/'),
+            versionAndBuild =
+                !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             items: [
-                [XH.appName, env, version].join(' • '),
+                [XH.appName, env, versionAndBuild].join(' • '),
                 span({
                     className: 'xh-version-bar__spacer',
                     items: '|'
