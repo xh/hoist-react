@@ -38,6 +38,7 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
+        this.data.cubeRowType = 'aggregate';
         this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;
 
