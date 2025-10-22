@@ -172,8 +172,6 @@ class TreeMapLocalModel extends HoistModel {
             this.prevConfig = cloneDeep(chartCfg);
             this.createChart(config);
         }
-
-        this.updateLabelVisibility();
     }
 
     createChart(config) {
@@ -195,13 +193,26 @@ class TreeMapLocalModel extends HoistModel {
 
         assign(config.chart, parentDims, {renderTo: chartElem});
         this.withDebug(['Creating new TreeMap', `${newData.length} records`], () => {
-            this.chart = Highcharts.chart(config);
+            this.chart = Highcharts.chart(config, () => {
+                this.updateLabelVisibility();
+            });
         });
     }
 
     @logWithDebug
     reloadSeriesData(newData) {
-        this.chart?.series[0].setData(newData, true, false);
+        if (!this.chart) return;
+
+        this.chart.series[0].setData(newData, true, false, false);
+
+        // Define the handler so we can remove it after it runs once
+        const onRedraw = () => {
+            this.updateLabelVisibility();
+            Highcharts.removeEvent(this.chart, 'redraw', onRedraw);
+        };
+
+        // Use Highcharts redraw event to trigger after chart fully updates
+        Highcharts.addEvent(this.chart, 'redraw', onRedraw);
     }
 
     startResize = ({width, height}) => {
