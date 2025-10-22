@@ -1,5 +1,13 @@
 # Changelog
 
+## 77.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions.
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
