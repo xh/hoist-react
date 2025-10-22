@@ -7,22 +7,20 @@
 import {Some} from '@xh/hoist/core';
 import {flatMap} from 'lodash';
 
-type CubeRowType = 'leaf' | 'aggregate' | 'bucket';
 /**
  * Grouped node data, as returned by {@link Cube.executeQuery} or exposed via {@link View.result}.
  * Designed for direct consumption by hierarchical stores and their associated tree grids.
  */
 export class ViewRowData {
-    constructor(id: string, cubeRowType: CubeRowType) {
+    constructor(id: string) {
         this.id = id;
-        this.cubeRowType = cubeRowType;
     }
 
     /** Unique id. */
     id: string;
 
-    /** Denotes a type for a row */
-    cubeRowType: CubeRowType;
+    /** Denotes a type for the row */
+    cubeRowType: 'leaf' | 'aggregate' | 'bucket';
 
     /**
      * Label of the row. The dimension value or, for leaf rows. the underlying cubeId.
@@ -50,11 +48,6 @@ export class ViewRowData {
     /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
     get isCubeLeaf(): boolean {
         return this.cubeDimension == null;
-    }
-
-    /** Is a row a bucket? (CLOSED or FLAT). */
-    get isBucket(): boolean {
-        return this.cubeRowType === 'bucket';
     }
 
     /**

@@ -33,8 +33,8 @@ export class LeafRow extends BaseRow {
 
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
-
         this.cubeRecordId = rawRecord.id;
+        this.data.cubeRowType = 'leaf';
         this.data.cubeLabel = rawRecord.id.toString();
         this.data.cubeDimension = null;
 

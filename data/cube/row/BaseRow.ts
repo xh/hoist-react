@@ -41,8 +41,7 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        const cubeRowType = this.isLeaf ? 'leaf' : this.isAggregate ? 'aggregate' : 'bucket';
-        this.data = new ViewRowData(id, cubeRowType);
+        this.data = new ViewRowData(id);
     }
 
     //-----------------------
