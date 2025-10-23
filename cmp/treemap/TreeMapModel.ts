@@ -465,7 +465,7 @@ export class TreeMapModel extends HoistModel {
     //----------------------
     defaultOnClick = (record, e) => {
         const {gridModel} = this;
-        if (!gridModel) return;
+        if (!gridModel || !record) return;
 
         // Select nodes in grid
         const {selModel} = gridModel;
@@ -477,7 +477,7 @@ export class TreeMapModel extends HoistModel {
     };
 
     defaultOnDoubleClick = record => {
-        if (!this.gridModel?.treeMode || isEmpty(record.children)) return;
+        if (!this.gridModel?.treeMode || isEmpty(record?.children)) return;
         this.toggleNodeExpanded(record.treePath);
     };
 }

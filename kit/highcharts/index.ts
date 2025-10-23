@@ -9,8 +9,8 @@ import {checkVersion, logError} from '@xh/hoist/utils/js';
 
 export let Highcharts = null;
 
-const MIN_VERSION = '11.1.0';
-const MAX_VERSION = '11.*.*';
+const MIN_VERSION = '12.4.0';
+const MAX_VERSION = '12.*.*';
 
 /**
  * Expose application versions of Highcharts to Hoist.
