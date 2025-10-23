@@ -203,15 +203,14 @@ class TreeMapLocalModel extends HoistModel {
     reloadSeriesData(newData) {
         if (!this.chart) return;
 
-        this.chart.series[0].setData(newData, true, false, false);
+        this.chart.series[0].setData(newData, true, false);
 
-        // Define the handler so we can remove it after it runs once
+        // Use an event handler to trigger label updates
+        // This approach was required when `cluster` series option is enabled
         const onRedraw = () => {
             this.updateLabelVisibility();
             Highcharts.removeEvent(this.chart, 'redraw', onRedraw);
         };
-
-        // Use Highcharts redraw event to trigger after chart fully updates
         Highcharts.addEvent(this.chart, 'redraw', onRedraw);
     }
 

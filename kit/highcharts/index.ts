@@ -9,7 +9,7 @@ import {checkVersion, logError} from '@xh/hoist/utils/js';
 
 export let Highcharts = null;
 
-const MIN_VERSION = '12.0.0';
+const MIN_VERSION = '12.4.0';
 const MAX_VERSION = '12.*.*';
 
 /**
