@@ -269,16 +269,18 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         return this.findTab(this.activeTabId);
     }
 
-    /** The tab immediately before the active tab in the model's tab list. */
+    /** The visitable tab immediately before the active tab in the model's tab list. */
     get prevTab(): TabModel {
-        const activeTabIdx = this.tabs.indexOf(this.activeTab);
-        return activeTabIdx > 0 ? this.tabs[activeTabIdx - 1] : null;
+        const tabs = this.tabs.filter(t => !t.disabled || t === this.activeTab),
+            activeTabIdx = tabs.indexOf(this.activeTab);
+        return activeTabIdx > 0 ? tabs[activeTabIdx - 1] : null;
     }
 
-    /** The tab immediately after the active tab in the model's tab list. */
+    /** The visitable tab immediately after the active tab in the model's tab list. */
     get nextTab(): TabModel {
-        const activeTabIdx = this.tabs.indexOf(this.activeTab);
-        return activeTabIdx < this.tabs.length - 1 ? this.tabs[activeTabIdx + 1] : null;
+        const tabs = this.tabs.filter(t => !t.disabled || t === this.activeTab),
+            activeTabIdx = tabs.indexOf(this.activeTab);
+        return activeTabIdx < tabs.length - 1 ? tabs[activeTabIdx + 1] : null;
     }
 
     /**
