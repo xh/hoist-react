@@ -23,7 +23,7 @@ export interface DynamicTabSwitcherConfig {
     /** Additional tabs to include in the switcher, such as for actions outside the TabContainer. */
     actionTabs?: ActionTabSpec[];
     /** Additional menu items to include in tab context menus. */
-    extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
+    extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>; // TODO - consider making this `contextMenu` and having app-code spread the default
     /** IDs of favorite tabs to display by default (in order). */
     initialFavorites?: string[];
     /** Options governing persistence. */
@@ -127,11 +127,17 @@ export class DynamicTabSwitcherModel
 
     @action
     hide(tabId: string) {
-        this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
         const {enabledVisibleTabs, tabContainerModel} = this;
         if (tabContainerModel.activeTabId === tabId) {
-            tabContainerModel.activateTab(enabledVisibleTabs.find(tab => tab instanceof TabModel)); // TODO - go to next or prev tab instead of first
+            const visitableTabs = enabledVisibleTabs.filter(tab => tab instanceof TabModel),
+                activeTabIdx = visitableTabs.findIndex(tab => tab.id === tabId),
+                toActivate =
+                    visitableTabs[
+                        activeTabIdx + (activeTabIdx === visitableTabs.length - 1 ? -1 : 1)
+                    ];
+            if (toActivate) tabContainerModel.activateTab(toActivate);
         }
+        this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
     }
 
     findActionTab(tabId: string): ActionTabSpec {
