@@ -14,6 +14,14 @@
     * Apps that were previously opting-out via `disableXssProtection` should simply remove that
       flag. Apps for which this protection remains important should enable at either the app level
       or for selected Fields and/or Stores.
+      
+## 76.2.0 - 2025-10-22
+
+### ⚙️ Technical
+
+* Performance improvements to Store for large data sets.
+* New property `cubeRowType` on `ViewRowData` supports identifying bucketed rows.
+* `waitFor` can accept a null value for a timeout.
 
 ## 76.1.0 - 2025-10-17
 
