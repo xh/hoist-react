@@ -32,6 +32,7 @@ export function initPersist(
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.columns`,
+                persistDefaultValue: true,
                 ...persistWith
             },
             target: {
@@ -61,7 +62,6 @@ export function initPersist(
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.sortBy`,
-                persistDefaultValue: true,
                 ...persistWith
             },
             target: {
