@@ -61,8 +61,9 @@ export type PersistenceProviderConfig<S = any> = {
 export abstract class PersistenceProvider<S = any> {
     readonly path: string;
     readonly debounce: DebounceSpec;
-    readonly owner: HoistBase;
     readonly settleTime: number;
+    readonly persistDefaultValue: boolean;
+    readonly owner: HoistBase;
 
     protected target: Persistable<S>;
     protected defaultState: PersistableState<S>;
@@ -171,12 +172,13 @@ export abstract class PersistenceProvider<S = any> {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
 
-        const {path, debounce = 250, settleTime} = persistOptions;
+        const {path, debounce = 250, settleTime, persistDefaultValue = false} = persistOptions;
         throwIf(!path, 'Path not specified in PersistenceProvider.');
 
         this.path = path;
         this.debounce = debounce;
         this.settleTime = settleTime;
+        this.persistDefaultValue = persistDefaultValue;
         this.owner.markManaged(this);
 
         if (debounce) {
@@ -189,7 +191,7 @@ export abstract class PersistenceProvider<S = any> {
     /** Called by factory method to bind this provider to its target. */
     protected bindToTarget(target: Persistable<S>) {
         this.target = target;
-        this.defaultState = target.getPersistableState();
+        this.defaultState = target.defaultPersistableState ?? target.getPersistableState();
 
         const state = this.read();
         if (state) target.setPersistableState(state);
@@ -198,14 +200,16 @@ export abstract class PersistenceProvider<S = any> {
         this.disposer = reaction(
             () => this.target.getPersistableState(),
             state => {
-                if (this.settleTime && !olderThan(this.lastReadTime, this.settleTime)) {
+                const {settleTime, lastReadTime, lastReadState, persistDefaultValue, defaultState} =
+                    this;
+                if (settleTime && !olderThan(lastReadTime, settleTime)) {
                     return;
-                } else if (state.equals(this.defaultState)) {
+                } else if (!persistDefaultValue && state.equals(defaultState)) {
                     this.clear();
-                } else if (this.lastReadState && state.equals(this.lastReadState)) {
+                } else if (lastReadState && state.equals(lastReadState)) {
                     // If the last read state is equal to the current state, use the last read state
                     // to avoid appearing "dirty"
-                    this.write(this.lastReadState.value);
+                    this.write(lastReadState.value);
                 } else {
                     this.write(state.value);
                 }

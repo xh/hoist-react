@@ -61,6 +61,7 @@ export function initPersist(
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.sortBy`,
+                persistDefaultValue: true,
                 ...persistWith
             },
             target: {

@@ -34,6 +34,12 @@ export interface PersistOptions {
     settleTime?: number;
 
     /**
+     * If true, the default state will be persisted just like any other state, by writing its value.
+     * Otherwise, the default state is represented by clearing/emptying the persisted value.
+     */
+    persistDefaultValue?: boolean;
+
+    /**
      * Type of PersistenceProvider to create. Specify as one of the built-in string types,
      * or a subclass of PersistenceProvider.
      *
