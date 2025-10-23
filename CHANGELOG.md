@@ -2,6 +2,19 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* The `disableXssProtection` flag supported by `AppSpec` and `FieldSpec` has been removed and
+  replaced with its opposite, `enableXssProtection`, now an opt-in feature.
+    * While store-based XSS protection via DomPurify is still available to apps that can display
+      untrusted or potentially malicious data, this is an uncommon use case for Hoist apps and was
+      deemed to not provide enough benefit relative to potential performance pitfalls for most
+      applications. In addition, the core change to React-based AG Grid rendering has reduced the
+      attack surface for such exploits relative to when this system was first implemented.
+    * Apps that were previously opting-out via `disableXssProtection` should simply remove that
+      flag. Apps for which this protection remains important should enable at either the app level
+      or for selected Fields and/or Stores.
+      
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical

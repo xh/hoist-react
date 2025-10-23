@@ -71,12 +71,19 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     disableWebSockets?: boolean;
 
     /**
-     * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
-     * For use with secure, internal apps that do not display arbitrary/external user input and
-     * have tight performance tolerances and/or load very large record sets.
-     * @see FieldSpec.disableXssProtection
+     * True to enable Field-level XSS protection by default across all Stores/Fields in the app.
+     * Available as an extra precaution for use with apps that might display arbitrary input from
+     * untrusted or external users. This feature does exact a minor performance penalty during data
+     * parsing, which can be significant in aggregate for very large stores containing records with
+     * many `string` fields.
+     *
+     * Note: this flag and its default behavior was changed as of Hoist v77 to be `false`, i.e.
+     * Store-level XSS protection *disabled* by default, in keeping with Hoist's primary use-case:
+     * building secured internal apps with large datasets and tight performance tolerances.
+     *
+     * @see FieldSpec.enableXssProtection
      */
-    disableXssProtection?: boolean;
+    enableXssProtection?: boolean;
 
     /**
      * True to show a login form on initialization when not authenticated. Default is `false` as
@@ -144,7 +151,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         componentClass,
         containerClass,
         disableWebSockets = false,
-        disableXssProtection = false,
+        enableXssProtection = false,
         enableLoginForm = false,
         enableLogout = false,
         idlePanel = null,
@@ -191,7 +198,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.componentClass = componentClass;
         this.containerClass = containerClass;
         this.disableWebSockets = disableWebSockets;
-        this.disableXssProtection = disableXssProtection;
+        this.enableXssProtection = enableXssProtection;
         this.enableLoginForm = enableLoginForm;
         this.enableLogout = enableLogout;
         this.idlePanel = idlePanel;
