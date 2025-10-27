@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -69,9 +68,10 @@ import type {
     ColDef,
     ITooltipParams,
     ValueGetterParams,
-    ValueSetterParams
+    ValueSetterParams,
+    CustomCellEditorProps,
+    CellClickedEvent
 } from '@xh/hoist/kit/ag-grid';
-import {CellClickedEvent} from '@ag-grid-community/core';
 
 export interface ColumnSpec {
     /**

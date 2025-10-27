@@ -27,9 +27,8 @@ import {each, isUndefined} from 'lodash';
  * @returns model or null if no matching model found.
  */
 export function useContextModel<T extends HoistModel>(selector: ModelSelector<T> = '*'): T {
-    const modelLookup = useContext(ModelLookupContext),
-        [ret] = useState(() => modelLookup?.lookupModel(selector) ?? null);
-    return ret;
+    const modelLookup = useContext(ModelLookupContext);
+    return modelLookup?.lookupModel(selector);
 }
 
 /**

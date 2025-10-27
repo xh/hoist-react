@@ -5,10 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 .xh-tile-frame {
-  // Scrollbar will be shown above the content in order to not take up width.
-  // Consider increasing the spacing for TileFrames that are expected to scroll.
-  overflow-y: overlay !important;
-  overflow-x: overlay !important;
+  overflow: auto !important;
 
   &__tile {
     position: absolute !important;

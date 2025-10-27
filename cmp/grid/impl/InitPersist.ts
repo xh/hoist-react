@@ -6,6 +6,7 @@
  */
 import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
+import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
 
@@ -19,6 +20,7 @@ export function initPersist(
         persistColumns = true,
         persistGrouping = true,
         persistSort = true,
+        persistExpandToLevel = true,
         path = 'grid',
         ...rootPersistWith
     }: GridModelPersistOptions
@@ -35,7 +37,18 @@ export function initPersist(
             target: {
                 getPersistableState: () =>
                     new PersistableColumnState(gridModel.persistableColumnState),
-                setPersistableState: ({value}) => gridModel.setColumnState(value)
+                setPersistableState: ({value}) =>
+                    runInAction(() => {
+                        // Set columnState directly since GridModel.setColumnState will merge the
+                        // provided state with the current state, which is not what we want here.
+                        gridModel.columnState = gridModel.cleanColumnState(value);
+                        if (gridModel.autosizeOptions.mode === 'managed') {
+                            const columns = gridModel.columnState
+                                .filter(it => !it.manuallySized)
+                                .map(it => it.colId);
+                            gridModel.autosizeAsync({columns});
+                        }
+                    })
             },
             owner: gridModel
         });
@@ -71,6 +84,23 @@ export function initPersist(
             target: {
                 getPersistableState: () => new PersistableState(gridModel.groupBy),
                 setPersistableState: ({value}) => gridModel.setGroupBy(value)
+            },
+            owner: gridModel
+        });
+    }
+
+    if (persistExpandToLevel) {
+        const persistWith = isObject(persistExpandToLevel)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistExpandToLevel)
+            : rootPersistWith;
+        PersistenceProvider.create({
+            persistOptions: {
+                path: `${path}.expandLevel`,
+                ...persistWith
+            },
+            target: {
+                getPersistableState: () => new PersistableState(gridModel.expandLevel),
+                setPersistableState: ({value}) => gridModel.expandToLevel(value)
             },
             owner: gridModel
         });

@@ -30,7 +30,7 @@
     }
 
     .bp5-toast-message {
-      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     // High level of specificity here required to override built-in BP styles

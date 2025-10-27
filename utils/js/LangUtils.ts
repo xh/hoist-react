@@ -4,8 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Thunkable} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/core/exception/Exception';
+import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {
     flatMap,
     forOwn,
@@ -121,68 +121,21 @@ export function isJSON(obj: any): boolean {
  */
 export function throwIf(condition: any, message: unknown) {
     if (condition) {
-        throw Exception.create(message);
+        throw Exception.create(message); // low-level exception api for low-level package
     }
 }
 
 /**
- * Log a warning to the console if a condition evaluates as truthy.
- */
-export function warnIf(condition: any, message: any) {
-    if (condition) {
-        console.warn(message);
-    }
-}
-
-/**
- * Log an error to the console if a condition evaluates as truthy.
- */
-export function errorIf(condition: any, message: any) {
-    if (condition) {
-        console.error(message);
-    }
-}
-
-export interface APIWarnOptions {
-    /**
-     * If provided and undefined, this method will be a no-op.
-     * Useful for testing if a parameter has been provided in caller.
-     */
-    test?: any;
-
-    /** Version when this API will no longer be supported or this warning should be removed. */
-    v?: string;
-
-    /** An additional message. Can contain suggestions for alternatives. */
-    msg?: string;
-}
-
-/**
- * Document and prevent usage of a removed parameter.
- */
-export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const msg = opts.msg ? ` ${opts.msg}.` : '';
-    throw Exception.create(`The use of '${name}' is no longer supported.${msg}`);
-}
-
-/**
- * Document and warn on usage of a deprecated API
+ * Instantiate a singleton object of a class, and place a reference to the created
+ * object in a static property on the class.
  *
- * @param name - the name of the deprecated parameter
+ * This pattern is useful to allow gaining typed references to the singleton via import
+ * and is used for creating the singleton HoistServices, AuthModel, and AppModel.
+ *
+ * @param clazz -- Class (i.e. Constructor) of singleton object to be created.
  */
-const _seenWarnings = {};
-export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const v = opts.v ?? 'a future release',
-        msg = opts.msg ? ` ${opts.msg}.` : '',
-        warn = `The use of '${name}' has been deprecated and will be removed in ${v}.${msg}`;
-    if (!_seenWarnings[warn]) {
-        console.warn(warn);
-        _seenWarnings[warn] = true;
-    }
+export function createSingleton<T>(clazz: new () => T): T {
+    return (clazz['instance'] = new clazz());
 }
 
 /**

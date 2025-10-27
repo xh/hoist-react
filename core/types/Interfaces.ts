@@ -6,7 +6,8 @@
  */
 
 import {RuleLike} from '@xh/hoist/data';
-import {MouseEvent, ReactElement, ReactNode} from 'react';
+import {isString} from 'lodash';
+import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
@@ -90,16 +91,17 @@ export interface MessageSpec {
     messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
-    input?: {
-        /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
-        item?: ReactElement;
+    input?: MessageSpecInput;
 
-        /** Validation constraints to apply. */
-        rules?: RuleLike[];
+    /** If specified, user will be required to type this text when confirming. */
+    extraConfirmText?: string;
 
-        /** Initial value for the input. */
-        initialValue?: any;
-    };
+    /**
+     * Text/label to inform the user of the text required to confirm.
+     * Only used if extraConfirmText is specified.
+     * Defaults to `Type '${extraConfirmText}' to confirm:`.
+     */
+    extraConfirmLabel?: ReactNode;
 
     /**
      * Props for primary confirm button.
@@ -132,6 +134,17 @@ export interface MessageSpec {
 
     /** Flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
     cancelOnDismiss?: boolean;
+}
+
+export interface MessageSpecInput {
+    /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
+    item?: ReactElement;
+
+    /** Validation constraints to apply. */
+    rules?: RuleLike[];
+
+    /** Initial value for the input. */
+    initialValue?: any;
 }
 
 /**
@@ -223,7 +236,7 @@ export interface TrackOptions {
     correlationId?: string;
 
     /** App-supplied data to save along with track log.*/
-    data?: PlainObject | PlainObject[];
+    data?: PlainObject | Array<unknown>;
 
     /**
      * Set true to log on the server all primitive values in the 'data' property.
@@ -266,11 +279,40 @@ export interface TrackOptions {
 }
 
 /**
+ * The base `MenuToken` type.  '-' is interpreted as the standard textless divider.
+ * Components will likely extend this type to support other strings like 'copyToClipboard',
+ * 'print', etc. which the component then converts into a {@link MenuItem}.
+ */
+export type MenuToken = '-';
+
+/**
+ * `MenuContext` is the set of contextual arguments passed to a {@link MenuItem}'s
+ * `actionFn` and `prepareFn`. `contextMenuEvent` is the right click event that opened the
+ * context menu.  It is optional because the `contextMenu` component can also be used on
+ * popover buttons, where there is no `contextMenuEvent`.
+ *
+ * Components offering a built-in {@link contextMenu} can extend `MenuContext` to add values
+ * relevant to the component.  See for example {@link ChartMenuContext}.
+ */
+export interface MenuContext {
+    contextMenuEvent?: MouseEvent | PointerEvent;
+}
+
+/**
+ * A context menu is specified as an array of items, a function to generate one from a click, or
+ * a full element representing a contextMenu Component.
+ */
+export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
+    | MenuItemLike<T, C>[]
+    | ((e: MouseEvent | PointerEvent, context: C) => MenuItemLike<T, C>[])
+    | boolean;
+
+/**
  *  Basic interface for a MenuItem to appear in a menu.
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
-export interface MenuItem {
+export interface MenuItem<T = MenuToken, C = MenuContext> {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -284,13 +326,13 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: (e: MouseEvent | PointerEvent) => void;
+    actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
-    prepareFn?: (me: MenuItem) => void;
+    prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
     /** Child menu items. */
-    items?: MenuItemLike[];
+    items?: MenuItemLike<T, C>[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -304,12 +346,15 @@ export interface MenuItem {
 
 /**
  * An item that can exist in a Menu.
- *
- * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
- * an appropriate default display, with '-' providing a standard textless divider that will also
- * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
+ * Components may accept token strings, in addition, '-' will be interpreted as the standard
+ * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
+ * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike = MenuItem | ReactNode;
+export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
+
+export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
+    return !isString(item) && !isValidElement(item);
+}
 
 /**
  * An option to be passed to Select controls

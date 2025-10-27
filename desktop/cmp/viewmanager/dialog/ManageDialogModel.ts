@@ -7,7 +7,7 @@
 
 import {badge} from '@xh/hoist/cmp/badge';
 import {dateTimeCol, GridAutosizeMode, GridModel} from '@xh/hoist/cmp/grid';
-import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
+import {br, fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewInfo, ViewManagerModel, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, LoadSpec, managed, TaskObserver, XH} from '@xh/hoist/core';
@@ -122,10 +122,6 @@ export class ManageDialogModel extends HoistModel {
         return this.doUpdateAsync(view, update).linkTo(this.updateTask).catchDefault();
     }
 
-    async makeGlobalAsync(view: ViewInfo) {
-        return this.doMakeGlobalAsync(view).linkTo(this.updateTask).catchDefault();
-    }
-
     @action
     togglePinned(views: ViewInfo[]) {
         const allPinned = every(views, 'isPinned'),
@@ -177,9 +173,10 @@ export class ManageDialogModel extends HoistModel {
 
     private async doUpdateAsync(view: ViewInfo, update: ViewUpdateSpec) {
         const {viewManagerModel} = this;
-        await viewManagerModel.updateViewInfoAsync(view, update);
+        const updated = await viewManagerModel.updateViewInfoAsync(view, update);
         await viewManagerModel.refreshAsync();
         await this.refreshAsync();
+        await this.selectViewAsync(updated.info); // reselect -- may have moved tabs!
     }
 
     private async doDeleteAsync(views: ViewInfo[]) {
@@ -217,40 +214,6 @@ export class ManageDialogModel extends HoistModel {
         if (!confirmed) return;
 
         return viewManagerModel.deleteViewsAsync(views).finally(() => this.refreshAsync());
-    }
-
-    private async doMakeGlobalAsync(view: ViewInfo) {
-        const {globalDisplayName, typeDisplayName, globalViews} = this.viewManagerModel,
-            {typedName} = view;
-
-        if (some(globalViews, {name: view.name})) {
-            XH.alert({
-                title: 'Alert',
-                message: `There is already a ${globalDisplayName} ${typedName}. Please rename or edit it instead.`
-            });
-            return;
-        }
-
-        const msgs = [
-            `The ${typedName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`,
-            strong('Are you sure you want to proceed?')
-        ];
-        const confirmed = await XH.confirm({
-            message: fragment(msgs.map(m => p(m))),
-            confirmProps: {
-                text: `Yes, change visibility`,
-                outlined: true,
-                autoFocus: false,
-                intent: 'primary'
-            }
-        });
-        if (!confirmed) return;
-
-        const {viewManagerModel} = this;
-        const updated = await viewManagerModel.makeViewGlobalAsync(view);
-        await viewManagerModel.refreshAsync();
-        await this.refreshAsync();
-        await this.selectViewAsync(updated.info); // reselect -- will have moved tabs!
     }
 
     private async selectViewAsync(view: ViewInfo) {
@@ -338,10 +301,15 @@ export class ManageDialogModel extends HoistModel {
                         model: this.ownedGridModel,
                         helpText: fragment(
                             Icon.user(),
-                            `This tab shows ${views} you have created. Pinned ${views} are shown in your menu for quick access. Set a group on ${views} to show them together in a sub-menu. `,
-                            enableSharing
-                                ? `Opt-in to sharing any of your ${views} to make them discoverable by other users.`
-                                : ''
+                            `This tab shows ${views} you have created.`,
+                            br(),
+                            `Pin ${views} to your menu for quick access. Use groups to nest them under sub-menus.`,
+                            ...(enableSharing
+                                ? [
+                                      br(),
+                                      `Opt-in to sharing any of your ${views} to make them discoverable by other users.`
+                                  ]
+                                : [''])
                         )
                     })
                 }
@@ -355,7 +323,9 @@ export class ManageDialogModel extends HoistModel {
                     model: this.globalGridModel,
                     helpText: fragment(
                         Icon.globe(),
-                        `This tab shows ${globalViews} available to everyone. ${capitalize(globalViews)} can be pinned by default so they appear automatically in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
+                        `This tab shows ${globalViews} available to everyone.`,
+                        br(),
+                        `${capitalize(globalViews)} appear by default in everyone's menu, but you can choose which ${views} you would like to see by pinning/unpinning them at any time.`
                     )
                 })
             });
@@ -369,7 +339,9 @@ export class ManageDialogModel extends HoistModel {
                     model: this.sharedGridModel,
                     helpText: fragment(
                         Icon.users(),
-                        `This tab shows ${views} shared by other ${XH.appName} users. You can pin these ${views} to add them to your menu and access them directly. Only the owner will be able to save changes to a shared ${view}, but you can save as a copy to make it your own.`
+                        `This tab shows ${views} shared by other ${XH.appName} users.`,
+                        br(),
+                        `You can pin these ${views} to your menu for quick access. Only the owner will be able to save changes to a shared ${view}, but you can save a copy to make it your own.`
                     )
                 })
             });

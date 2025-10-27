@@ -9,13 +9,13 @@ import {HoistModel, PlainObject, XH} from './';
 /**
  *  Base class for managing authentication lifecycle.
  *
- *  Hoist will consult this model early in  the initialization sequence, prior to full Hoist
+ *  Hoist will consult this model early in the initialization sequence, prior to full Hoist
  *  initialization. This means that several core services (identity, configs, prefs) will *not* be
  *  available, but it provides the app a hook to do early service initialization or other work to
  *  support flows such as OAuth.
  *
  *  The base implementation of this class is minimal and would be adequate only for fully
- *  transparent SSO based solutions such as NTLM.  Applications wishing to provide custom
+ *  transparent SSO based solutions such as NTLM. Applications wishing to provide custom
  *  authentication should spec an extended version of this class in the {@link AppSpec} passed to
  *  {@link XHApi#renderApp}.
  */

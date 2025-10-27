@@ -374,7 +374,7 @@ body {
   //------------------------
   // Fonts
   //------------------------
-  --xh-font-family: var(--font-family, #{("Inter Var", system-ui, sans-serif)});
+  --xh-font-family: var(--font-family, #{("InterVariable", system-ui, sans-serif)});
   --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
 
@@ -522,8 +522,8 @@ body {
   --xh-zone-grid-label-color: var(--zone-grid-label-color, inherit);
 
   // Grid column-header-based filter popover (desktop only)
-  --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 350px);
-  --xh-grid-filter-popover-width-px: var(--grid-filter-popover-width-px, 240px);
+  --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 400px);
+  --xh-grid-filter-popover-width-px: var(--grid-filter-popover-width-px, 280px);
 
   // Dark Grid
   &.xh-dark {

@@ -13,7 +13,7 @@ import classNames from 'classnames';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
 
-import type {AgColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
+import type {AgProvidedColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnGroupHeaderProps
     extends HoistProps<ColumnGroupHeaderModel>,
@@ -80,7 +80,7 @@ class ColumnGroupHeaderModel extends HoistModel {
         return this.agColumnGroup.isExpandable();
     }
 
-    get agColumnGroup(): AgColumnGroup {
+    get agColumnGroup(): AgProvidedColumnGroup {
         return this.componentProps.columnGroup.providedColumnGroup;
     }
 
@@ -99,5 +99,7 @@ class ColumnGroupHeaderModel extends HoistModel {
         super.destroy();
     }
 
-    syncIsExpanded = () => (this.isExpanded = this.agColumnGroup.isExpanded());
+    syncIsExpanded = () => {
+        this.isExpanded = this.agColumnGroup.isExpanded();
+    };
 }

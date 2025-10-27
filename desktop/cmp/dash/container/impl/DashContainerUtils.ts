@@ -7,7 +7,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {serializeIcon} from '@xh/hoist/icon';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logDebug, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
 import GoldenLayout, {ContentItem} from 'golden-layout';
@@ -119,8 +119,9 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
             const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
-                console.debug(
-                    `Attempted to load non-existent or omitted view from state: ${item.id}`
+                logDebug(
+                    `Attempted to load non-existent or omitted view from state: ${item.id}`,
+                    'DashContainer'
                 );
                 return null;
             }

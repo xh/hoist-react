@@ -88,7 +88,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                 grid({
                     model,
                     agOptions: {
-                        suppressMakeColumnVisibleAfterUnGroup: true
+                        suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup'
                     }
                 }),
                 div({

@@ -88,17 +88,25 @@ export class HoistAppModel extends HoistModel {
     /**
      * Resets user preferences and any persistent local application state.
      *
-     * The default implementation for this method will clear *all* preferences and local storage.
+     * The default implementation for this method will clear all preferences, local + session
+     * storage, and transient {@link ViewManager} state such as last-selected and pinned views.
+     * (Views themselves are preserved.)
      *
-     * Applications may wish to override this method to do a more targeted clearing of state.
-     * This is important for complex applications with smaller sub-applications, and/or device
+     * Applications may wish to override this method to perform a more targeted clearing of state.
+     * This is important for complex applications with smaller sub-applications and/or device
      * specific applications. These applications will typically want to perform a custom clearing
-     * that is more targeted, and includes any additional app-specific state.
+     * that is more targeted and/or clears additional app-specific state.
+     *
+     * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
         const XH = window['XH'];
-        await XH.prefService.clearAllAsync();
+        await XH.fetchJson({
+            url: 'xh/clearUserState',
+            params: {clientUsername: XH.getUsername()}
+        });
         XH.localStorageService.clear();
+        XH.sessionStorageService.clear();
     }
 }
 

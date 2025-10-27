@@ -38,8 +38,8 @@ import {find, pull} from 'lodash';
 export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
-    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
+    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     readonly HEARTBEAT_INTERVAL = 10 * SECONDS;
 
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
@@ -47,8 +47,8 @@ export class WebSocketService extends HoistService {
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
     readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
 
-    /** True if WebSockets generally enabled - set statically in code via {@link AppSpec}. */
-    enabled: boolean = XH.appSpec.webSocketsEnabled;
+    /** True if WebSockets not explicitly disabled via {@link AppSpec.disableWebSockets}. */
+    enabled: boolean = !XH.appSpec.disableWebSockets;
 
     /** Unique channel assigned by server upon successful connection. */
     @observable channelKey: string = null;
@@ -84,7 +84,7 @@ export class WebSocketService extends HoistService {
         const {environmentService} = XH;
         if (environmentService.get('webSocketsEnabled') === false) {
             this.logError(
-                `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
+                `WebSockets enabled on this client app but disabled on server - unexpected! WebSockets will not be available, review and reconcile your server configuration.`
             );
             this.enabled = false;
             return;

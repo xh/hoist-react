@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent} from '@ag-grid-community/core';
+import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
@@ -91,7 +91,7 @@ export abstract class BaseMembersModel extends HoistModel {
             .join(', ');
     };
 
-    protected onRowDoubleClicked: (e: RowClickedEvent) => void = null;
+    protected onRowDoubleClicked: (e: RowDoubleClickedEvent) => void = null;
 
     //-----------------
     // Implementation
