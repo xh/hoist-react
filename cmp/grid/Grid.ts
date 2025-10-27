@@ -273,6 +273,7 @@ export class GridLocalModel extends HoistModel {
                 mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
                 enableClickSelection: selModel.isEnabled,
                 isRowSelectable: () => selModel.isEnabled,
+                copySelectedRows: selModel.isEnabled,
                 checkboxes: false,
                 headerCheckbox: false
             };
