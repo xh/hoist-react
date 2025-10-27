@@ -35,6 +35,7 @@ export class BucketRow extends BaseRow {
         super(view, id);
 
         this.bucketSpec = bucketSpec;
+        this.data.cubeRowType = 'bucket';
         this.data.cubeLabel = bucketSpec.labelFn(bucketVal);
         this.data.cubeDimension = bucketSpec.name;
 

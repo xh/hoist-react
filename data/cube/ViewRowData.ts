@@ -19,6 +19,9 @@ export class ViewRowData {
     /** Unique id. */
     id: string;
 
+    /** Denotes a type for the row */
+    cubeRowType: 'leaf' | 'aggregate' | 'bucket';
+
     /**
      * Label of the row. The dimension value or, for leaf rows. the underlying cubeId.
      * Suitable for display, although apps will typically wish to customize leaf row rendering.
