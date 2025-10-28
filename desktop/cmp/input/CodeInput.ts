@@ -6,19 +6,12 @@
  */
 import {autocompletion} from '@codemirror/autocomplete';
 import {defaultKeymap, history, historyKeymap, indentWithTab} from '@codemirror/commands';
-import {css} from '@codemirror/lang-css';
-import {html} from '@codemirror/lang-html';
-import {java} from '@codemirror/lang-java';
-import {javascript} from '@codemirror/lang-javascript';
-import {json} from '@codemirror/lang-json';
-import {python} from '@codemirror/lang-python';
-import {sql} from '@codemirror/lang-sql';
 import {
     defaultHighlightStyle,
     foldGutter,
     foldKeymap,
     indentOnInput,
-    LanguageSupport,
+    LanguageDescription,
     syntaxHighlighting
 } from '@codemirror/language';
 import {linter, lintGutter} from '@codemirror/lint';
@@ -58,9 +51,10 @@ import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isFunction} from 'lodash';
+import {compact, find, includes, isEmpty, isFunction} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
+import {languages} from '@codemirror/language-data';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
@@ -96,10 +90,10 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
-     * ({@link https://codemirror.net/mode/}) regarding available modes.
-     * Applications must import any mode they wish to enable.
+     * ({@link https://github.com/codemirror/language-data/blob/main/src/language-data.ts}) regarding available languages.
+     * String can be the alias or name
      */
-    language?: string | LanguageSupport | (() => LanguageSupport);
+    language?: string;
 
     /**
      * True to prevent user modification of editor contents, while still allowing user to
@@ -326,9 +320,12 @@ class CodeInputModel extends HoistInputModel {
         });
     }
 
-    manageCodeEditor = (container: HTMLElement) => {
+    manageCodeEditor = async (container: HTMLElement) => {
         if (!container) return;
-        const extensions: Extension[] = [...this.getExtensions()];
+        const extensions = await this.getExtensionsAsync();
+
+        // DEBUG
+        console.log(extensions);
 
         const state = EditorState.create({doc: this.renderValue || '', extensions});
         this.editor = new EditorView({state, parent: container});
@@ -427,7 +424,7 @@ class CodeInputModel extends HoistInputModel {
     //------------------------
     // Implementation
     //------------------------
-    private getExtensions() {
+    private async getExtensionsAsync(): Promise<Extension[]> {
         const {
                 autoFocus,
                 language,
@@ -480,55 +477,25 @@ class CodeInputModel extends HoistInputModel {
         if (highlightActiveLineProp)
             extensions.push(highlightActiveLine(), highlightActiveLineGutter());
         if (autoFocus) extensions.push(this.autofocusExtension);
-        if (language) extensions.push(this.getLanguageExtension(language));
+        if (language) extensions.push(await this.getLanguageExtensionAsync(language));
 
-        return extensions;
+        return extensions.filter(it => !isEmpty(it));
     }
     private getThemeExtension() {
         return XH.darkTheme ? dracula : solarizedLight;
     }
 
-    private getLanguageExtension(language) {
-        if (language) {
-            let langExt: Extension | null = null;
-            // Allow passing a string or a LanguageSupport object
-            if (typeof language === 'string') {
-                switch (language.toLowerCase()) {
-                    case 'javascript':
-                    case 'js':
-                        langExt = javascript();
-                        break;
-                    case 'ts':
-                        langExt = javascript({typescript: true});
-                        break;
-                    case 'json':
-                        langExt = json();
-                        break;
-                    case 'html':
-                        langExt = html();
-                        break;
-                    case 'python':
-                        langExt = python();
-                        break;
-                    case 'css':
-                        langExt = css();
-                        break;
-                    case 'sql':
-                        langExt = sql();
-                        break;
-                    case 'java':
-                        langExt = java();
-                        break;
-                    default:
-                        console.warn(`CodeInput: unsupported language "${language}".`);
-                        break;
-                }
-            } else if (isFunction(language)) {
-                langExt = language();
-            } else {
-                langExt = language;
-            }
-            if (langExt) return langExt;
+    private async getLanguageExtensionAsync(lang: string) {
+        const langDesc: LanguageDescription | undefined = find(
+            languages,
+            it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
+        );
+        if (!langDesc) return [];
+        try {
+            return await langDesc.load();
+        } catch (err) {
+            console.error(`Failed to load language: ${lang}`, err);
+            return [];
         }
     }
 
