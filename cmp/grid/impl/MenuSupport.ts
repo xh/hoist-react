@@ -4,11 +4,13 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Some, XH} from '@xh/hoist/core';
+import {div, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {convertIconToHtml, Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {useGridMenuItem} from 'ag-grid-react';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
@@ -84,7 +86,7 @@ function buildMenuItems(
         if (displaySpec.className) cssClasses.push(displaySpec.className);
 
         ret.push({
-            name: displaySpec.text,
+            // name: XH.genId(),
             shortcut: displaySpec.secondaryText,
             icon,
             cssClasses,
@@ -92,7 +94,12 @@ function buildMenuItems(
             tooltip: displaySpec.tooltip,
             disabled: displaySpec.disabled,
             // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
-            action: action.actionFn ? () => action.call(actionParams) : undefined
+            action: action.actionFn ? () => action.call(actionParams) : undefined,
+            menuItem: AgCustomMenuItem,
+            menuItemParams: {
+                text: displaySpec.text,
+                hoistIcon: span({style: {color: 'green'}, item: 'hola Icon'})
+            },
         });
     });
 
@@ -202,7 +209,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
 
             return new RecordAction({
                 text: 'Filter',
-                icon: Icon.filter(),
+                icon: Icon.filter({asHtml: true}),
                 displayFn: ({column}) => {
                     return {
                         hidden:
@@ -214,7 +221,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 },
                 items: [
                     {
-                        icon: Icon.equals(),
+                        icon: Icon.equals({asHtml: true}),
                         recordsRequired: true,
                         displayFn: filterDisplayFn('='),
                         actionFn: ({selectedRecords, column}) => {
@@ -306,3 +313,22 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
+
+const AgCustomMenuItem = hoistCmp<GridModel>({
+    render: ({text, hoistIcon, icon, shortcut, subMenu} ) => {
+    useGridMenuItem(() => {
+        configureDefaults: () => true;
+    });
+
+    // const {text, icon, shortcut, subMenu} = children[0];
+
+    return div(
+            // span({className: "ag-menu-option-part ag-menu-option-icon", dangerouslySetInnerHTML: {__html:icon}}),
+            // hoistIcon,
+            span({className: "ag-menu-option-part ag-menu-option-icon", item: icon}),
+            span({className: "ag-menu-option-part ag-menu-option-text", item: text}),
+            span({className: "ag-menu-option-part ag-menu-option-shortcut", item: shortcut}),
+            span({className: "ag-menu-option-part ag-menu-option-popup-pointer", item: subMenu ? '>': ''})
+        );
+}
+});
