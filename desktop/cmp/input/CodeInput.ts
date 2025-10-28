@@ -324,9 +324,6 @@ class CodeInputModel extends HoistInputModel {
         if (!container) return;
         const extensions = await this.getExtensionsAsync();
 
-        // DEBUG
-        console.log(extensions);
-
         const state = EditorState.create({doc: this.renderValue || '', extensions});
         this.editor = new EditorView({state, parent: container});
     };
