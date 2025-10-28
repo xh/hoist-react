@@ -2,6 +2,32 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Code mirror v6 update)
+* Hoist v77 **upgrades Code Mirror to v6** (from v5)
+  * editorProps deprecated:
+    The v5-style editorProps object (which accepted any CodeMirror config keys) is no longer
+    supported. Most former options can be achieved via v6 extensions or by setting CodeInput props
+    such as readonly, language, and linter.
+  * `mode` to set the language of code input now changed to `language` prop.
+    * Check [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts) for language string (alias and name allowed)
+
+### 🎁 New Features
+* Added `jsonSchema` and `ajvProps` configs to JsonInputProps.
+  * `jsonSchema` - Used to validate the input Json
+  * `ajvProps` - Used to configure AJV Object
+
+### 📚 Libraries
+* codemirror `5.65.0 -> 6.0.2`
+* @codemirror/view `6.38.6`
+* @uiw/codemirror-themes-all `4.25.2`
+* @codemirror/commands `6.9.0`
+* @codemirror/language `6.11.3`
+* @codemirror/lint `6.9.0`
+* @codemirror/search `6.5.11`
+* @codemirror/autocomplete `6.19.0`
+* @codemirror/language-data `6.5.2`
+* ajv `8.17.1`,
+
 ## 76.1.0 - 2025-10-17
 
 ### 🎁 New Features
