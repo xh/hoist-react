@@ -12,7 +12,6 @@ import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import {isValidElement} from 'react';
-import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
@@ -179,21 +178,17 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     const values = getValues(selectedRecords, field);
                     if (values.length > 1) return {text: `${values.length} values`};
 
-                    const renderer = fieldSpec.renderer ?? column.renderer,
-                        elem = renderer
-                            ? renderer(values[0], {
-                                  record,
-                                  column,
-                                  gridModel
-                              })
-                            : (values[0] ?? '[blank]'),
-                        // Grid col renderers will very typically return elements, but we need this to be a string.
-                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
-                        // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
-                        // and *not* ReactElements (as of AG v28.2).
-                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
+                    // Grid col renderers will very typically return elements, but we need this to be a string.
+                    // As of AG v34.2.0 actions into Ag-Grid context menus *only* accept strings.
+                    let raw = values[0],
+                        renderer = fieldSpec.renderer ?? column.renderer,
+                        text = renderer?.(raw, {record, column, gridModel});
+                    if (!isString(text)) {
+                        text = raw?.toString();
+                    }
+                    text = text?.trim();
 
-                    return {text};
+                    return {text: text ?? '[blank]'};
                 };
 
             return new RecordAction({
