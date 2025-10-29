@@ -4,18 +4,15 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, Some, XH} from '@xh/hoist/core';
+import {Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
-import {convertIconToHtml, Icon} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import {useGridMenuItem} from 'ag-grid-react';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import {isValidElement} from 'react';
-import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
+import MenuItem from './MenuItem';
 
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
 import {wait} from '@xh/hoist/promise';
@@ -78,28 +75,24 @@ function buildMenuItems(
             subMenu = buildMenuItems(displaySpec.items, record, gridModel, column, agParams);
         }
 
-        const icon = isValidElement(displaySpec.icon) ? convertIconToHtml(displaySpec.icon) : null;
-
         const cssClasses = ['xh-grid-menu-option'];
         if (displaySpec.intent)
             cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
         if (displaySpec.className) cssClasses.push(displaySpec.className);
 
         ret.push({
-            // name: XH.genId(),
             shortcut: displaySpec.secondaryText,
-            icon,
+            icon: displaySpec.icon,
             cssClasses,
             subMenu,
             tooltip: displaySpec.tooltip,
             disabled: displaySpec.disabled,
             // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
             action: action.actionFn ? () => action.call(actionParams) : undefined,
-            menuItem: AgCustomMenuItem,
+            menuItem: MenuItem,
             menuItemParams: {
-                text: displaySpec.text,
-                hoistIcon: span({style: {color: 'green'}, item: 'hola Icon'})
-            },
+                text: displaySpec.text
+            }
         });
     });
 
@@ -193,23 +186,14 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                   column,
                                   gridModel
                               })
-                            : (values[0] ?? '[blank]'),
-                        // Grid col renderers will very typically return elements, but we need this to be a string.
-                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
-                        // those actions into Ag-Grid context menus, which *only* accept strings (as of AG v34.2.0).
-                        text = isValidElement(elem)
-                            ? document
-                                  .createRange()
-                                  .createContextualFragment(renderToStaticMarkup(elem))
-                                  .textContent.replace(/(\r\n|\n|\r)/g, '')
-                            : elem;
+                            : (values[0] ?? '[blank]');
 
-                    return {text};
+                    return {text: elem};
                 };
 
             return new RecordAction({
                 text: 'Filter',
-                icon: Icon.filter({asHtml: true}),
+                icon: Icon.filter(),
                 displayFn: ({column}) => {
                     return {
                         hidden:
@@ -221,7 +205,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 },
                 items: [
                     {
-                        icon: Icon.equals({asHtml: true}),
+                        icon: Icon.equals(),
                         recordsRequired: true,
                         displayFn: filterDisplayFn('='),
                         actionFn: ({selectedRecords, column}) => {
@@ -313,22 +297,3 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
-
-const AgCustomMenuItem = hoistCmp<GridModel>({
-    render: ({text, hoistIcon, icon, shortcut, subMenu} ) => {
-    useGridMenuItem(() => {
-        configureDefaults: () => true;
-    });
-
-    // const {text, icon, shortcut, subMenu} = children[0];
-
-    return div(
-            // span({className: "ag-menu-option-part ag-menu-option-icon", dangerouslySetInnerHTML: {__html:icon}}),
-            // hoistIcon,
-            span({className: "ag-menu-option-part ag-menu-option-icon", item: icon}),
-            span({className: "ag-menu-option-part ag-menu-option-text", item: text}),
-            span({className: "ag-menu-option-part ag-menu-option-shortcut", item: shortcut}),
-            span({className: "ag-menu-option-part ag-menu-option-popup-pointer", item: subMenu ? '>': ''})
-        );
-}
-});
