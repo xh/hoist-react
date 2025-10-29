@@ -89,7 +89,7 @@ function buildMenuItems(
             disabled: displaySpec.disabled,
             // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
             action: action.actionFn ? () => action.call(actionParams) : undefined,
-            menuItem: AgCustomMenuItem,
+            menuItem: AgGridCustomMenuItem,
             menuItemParams: {
                 text: displaySpec.text
             }
@@ -297,7 +297,7 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
-const AgCustomMenuItem = hoistCmp({
+const AgGridCustomMenuItem = hoistCmp({
     render: ({text, icon, shortcut, subMenu}) => {
         useGridMenuItem({
             configureDefaults: () => true
