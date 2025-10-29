@@ -1,14 +1,6 @@
 # Changelog
 
-## 76.2.1 - 2025-10-29
-
-### 🐞 Bug Fixes
-* Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
-* Fixes `getExpandState` in `AgGridModel`
-
-* Note: As of v34, AgGrid no longer supports html markup in context menus.  Applications setting
- the `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
- react nodes for formatting instead.
+## 77.0.0 - 2025-10-29
 
 ### 💥 Breaking Changes
 
@@ -22,6 +14,15 @@
     * Apps that were previously opting-out via `disableXssProtection` should simply remove that
       flag. Apps for which this protection remains important should enable at either the app level
       or for selected Fields and/or Stores.
+
+### 🐞 Bug Fixes
+
+* Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
+* Fixes `getExpandState` in `AgGridModel`
+
+* Note: As of v34, AgGrid no longer supports html markup in context menus.  Applications setting
+  the `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
+  react nodes for formatting instead.
 
 ## 76.2.0 - 2025-10-22
 
