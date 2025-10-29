@@ -6,7 +6,8 @@
 * Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
 
 * Note: AgGrid no longer supports html markup in context menus.  Applications setting the
-RecordGridAction `text` property to markup should be sure to convert React Elements.
+`RecordGridAction` `text` or `secondaryText` property to markup should be sure to use React nodes
+instead.
 
 ### 💥 Breaking Changes
 

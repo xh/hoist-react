@@ -4,18 +4,21 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import type {ReactNode, ReactElement} from 'react';
-import {CustomMenuItemProps, useGridMenuItem} from 'ag-grid-react';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import copy from 'clipboard-copy';
 import {hoistCmp, HoistProps, Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
+import {RecordAction, RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
-import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
+import {
+    useGridMenuItem,
+    GetContextMenuItemsParams,
+    MenuItemDef,
+    CustomMenuItemProps
+} from '@xh/hoist/kit/ag-grid';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 /**
@@ -82,19 +85,17 @@ function buildMenuItems(
         if (displaySpec.className) cssClasses.push(displaySpec.className);
 
         ret.push({
-            shortcut: displaySpec.secondaryText,
-            icon: displaySpec.icon,
+            menuItem: RecordActionMenuItem,
+            menuItemParams: {
+                displaySpec
+            },
+            // Standard MenuActionProps
             cssClasses,
             subMenu,
             tooltip: displaySpec.tooltip,
             disabled: displaySpec.disabled,
-            // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
-            action: action.actionFn ? () => action.call(actionParams) : undefined,
-            // Use custom menu item component to support React nodes in the Menu Item.
-            menuItem: XhCustomAgGridMenuItem,
-            menuItemParams: {
-                text: displaySpec.text
-            }
+            // Don't specify action if no handler, allows submenus to remain open if clicked
+            action: action.actionFn ? () => action.call(actionParams) : undefined
         });
     });
 
@@ -301,41 +302,41 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
 }
 
 /**
+ * A MenuItem for a Hoist RecordAction.
+ *
+ * A variant of the standard ag-Grid Context menu.  Unlike built-in ag-Grid menu item,
+ * provides support for specifying 'text' and 'shortcut' display as react elements.
+ *
  * @internal
- * Custom menu item component to support React nodes in ag-Grid menu items.
- * Note that ag-Grid `name` property is not used here, as it only supports strings.
- * Instead, we pass our `text` (which supports React Nodes) via `menuItemParams`.
  */
 
-interface XhCustomAgGridMenuItemrops
-    extends HoistProps,
-        Partial<Omit<CustomMenuItemProps, 'name' | 'icon'>> {
-    text: ReactNode;
-    icon: ReactElement;
+interface RecordActionMenuItemProps extends HoistProps, CustomMenuItemProps {
+    displaySpec: RecordActionSpec;
 }
 
-const XhCustomAgGridMenuItem = hoistCmp<XhCustomAgGridMenuItemrops>({
-    render: ({text, icon, shortcut, subMenu}) => {
+const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
+    render({displaySpec, subMenu}: RecordActionMenuItemProps) {
         useGridMenuItem({
             configureDefaults: () => true
         });
 
-        return div({
-            items: [
-                span({className: 'ag-menu-option-part ag-menu-option-icon', item: icon}),
-                span({className: 'ag-menu-option-part ag-menu-option-text', item: text}),
-                span({className: 'ag-menu-option-part ag-menu-option-shortcut', item: shortcut}),
-                span({
-                    className: 'ag-menu-option-part ag-menu-option-popup-pointer',
-                    item: subMenu
-                        ? span({
-                              className: 'ag-icon ag-icon-small-right',
-                              unselectable: 'on',
-                              role: 'presentation'
-                          })
-                        : ''
-                })
-            ]
-        });
+        return div(
+            span({className: 'ag-menu-option-part ag-menu-option-icon', item: displaySpec.icon}),
+            span({className: 'ag-menu-option-part ag-menu-option-text', item: displaySpec.text}),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-shortcut',
+                item: displaySpec.secondaryText
+            }),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-popup-pointer',
+                item: subMenu
+                    ? span({
+                          className: 'ag-icon ag-icon-small-right',
+                          unselectable: 'on',
+                          role: 'presentation'
+                      })
+                    : ''
+            })
+        );
     }
 });
