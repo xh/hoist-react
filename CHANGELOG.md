@@ -2,6 +2,14 @@
 
 ## 77.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
+* Fixes `getExpandState` in `AgGridModel`
+
+* Note: AgGrid no longer supports html markup in context menus.  Applications setting the
+`RecordGridAction` `text` or `secondaryText` property to markup should be sure to use React nodes
+instead.
+
 ### 💥 Breaking Changes
 
 * The `disableXssProtection` flag supported by `AppSpec` and `FieldSpec` has been removed and
@@ -14,7 +22,7 @@
     * Apps that were previously opting-out via `disableXssProtection` should simply remove that
       flag. Apps for which this protection remains important should enable at either the app level
       or for selected Fields and/or Stores.
-      
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
