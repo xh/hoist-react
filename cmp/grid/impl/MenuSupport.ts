@@ -6,20 +6,20 @@
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import copy from 'clipboard-copy';
-import {hoistCmp, HoistProps, Some, XH} from '@xh/hoist/core';
+import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
+import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {
     useGridMenuItem,
-    GetContextMenuItemsParams,
-    MenuItemDef,
-    CustomMenuItemProps
+    type GetContextMenuItemsParams,
+    type MenuItemDef,
+    type CustomMenuItemProps
 } from '@xh/hoist/kit/ag-grid';
-import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
+import type {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 /**
  * @internal
