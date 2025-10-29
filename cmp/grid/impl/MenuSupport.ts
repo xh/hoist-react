@@ -4,16 +4,17 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {useGridMenuItem} from 'ag-grid-react';
-import {hoistCmp, Some, XH} from '@xh/hoist/core';
+import type {ReactNode, ReactElement} from 'react';
+import {CustomMenuItemProps, useGridMenuItem} from 'ag-grid-react';
+import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
+import copy from 'clipboard-copy';
+import {hoistCmp, HoistProps, Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
-import copy from 'clipboard-copy';
-import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
 import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
@@ -89,7 +90,8 @@ function buildMenuItems(
             disabled: displaySpec.disabled,
             // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
             action: action.actionFn ? () => action.call(actionParams) : undefined,
-            menuItem: AgGridCustomMenuItem,
+            // Use custom menu item component to support React nodes in the Menu Item.
+            menuItem: XhCustomAgGridMenuItem,
             menuItemParams: {
                 text: displaySpec.text
             }
@@ -297,7 +299,22 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
-const AgGridCustomMenuItem = hoistCmp({
+
+/**
+ * @internal
+ * Custom menu item component to support React nodes in ag-Grid menu items.
+ * Note that ag-Grid `name` property is not used here, as it only supports strings.
+ * Instead, we pass our `text` (which supports React Nodes) via `menuItemParams`.
+ */
+
+interface XhCustomAgGridMenuItemrops
+    extends HoistProps,
+        Partial<Omit<CustomMenuItemProps, 'name' | 'icon'>> {
+    text: ReactNode;
+    icon: ReactElement;
+}
+
+const XhCustomAgGridMenuItem = hoistCmp<XhCustomAgGridMenuItemrops>({
     render: ({text, icon, shortcut, subMenu}) => {
         useGridMenuItem({
             configureDefaults: () => true
