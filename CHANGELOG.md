@@ -4,6 +4,7 @@
 
 ### 🐞 Bug Fixes
 * Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
+* Fixes `getExpandState` in `AgGridModel`
 
 * Note: AgGrid no longer supports html markup in context menus.  Applications setting the
 RecordGridAction `text` property to markup should be sure to convert to a simpler form.
