@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "77.0.1",
+  "version": "78.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
