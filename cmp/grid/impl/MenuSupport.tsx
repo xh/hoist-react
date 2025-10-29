@@ -4,18 +4,18 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Some, XH} from '@xh/hoist/core';
+import {useGridMenuItem} from 'ag-grid-react';
+import {hoistCmp, Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {wait} from '@xh/hoist/promise';
+import {div, span} from '@xh/hoist/cmp/layout';
 import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
-import MenuItem from './MenuItem';
-
 import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
-import {wait} from '@xh/hoist/promise';
+import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 /**
  * @internal
@@ -89,7 +89,7 @@ function buildMenuItems(
             disabled: displaySpec.disabled,
             // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
             action: action.actionFn ? () => action.call(actionParams) : undefined,
-            menuItem: MenuItem,
+            menuItem: AgCustomMenuItem,
             menuItemParams: {
                 text: displaySpec.text
             }
@@ -297,3 +297,28 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
+const AgCustomMenuItem = hoistCmp({
+    render: ({text, icon, shortcut, subMenu}) => {
+        useGridMenuItem({
+            configureDefaults: () => true
+        });
+
+        return div({
+            items: [
+                span({className: 'ag-menu-option-part ag-menu-option-icon', item: icon}),
+                span({className: 'ag-menu-option-part ag-menu-option-text', item: text}),
+                span({className: 'ag-menu-option-part ag-menu-option-shortcut', item: shortcut}),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-popup-pointer',
+                    item: subMenu
+                        ? span({
+                              className: 'ag-icon ag-icon-small-right',
+                              unselectable: 'on',
+                              role: 'presentation'
+                          })
+                        : ''
+                })
+            ]
+        });
+    }
+});
