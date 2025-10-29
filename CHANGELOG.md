@@ -1,14 +1,14 @@
 # Changelog
 
-## 77.0.0-SNAPSHOT - unreleased
+## 76.2.1 - 2025-10-29
 
 ### 🐞 Bug Fixes
 * Fixes regressions in grid context menu for filtering and copy/paste introduced by agGrid v34.
 * Fixes `getExpandState` in `AgGridModel`
 
-* Note: AgGrid no longer supports html markup in context menus.  Applications setting the
-`RecordGridAction` `text` or `secondaryText` property to markup should be sure to use React nodes
-instead.
+* Note: As of v34, AgGrid no longer supports html markup in context menus.  Applications setting
+ the `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
+ react nodes for formatting instead.
 
 ### 💥 Breaking Changes
 
