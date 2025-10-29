@@ -2060,9 +2060,9 @@
     typescript-eslint "^8.32"
 
 "@xh/hoist-dev-utils@11.x":
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-11.0.0.tgz#5c04bc8f1e14fc771156437bdf8726889bdfe1f3"
-  integrity sha512-jokSgkMvNtOcn/kFOgGQ6liZd0jwQB4FwcwJS3ysDla34C/tqELDe34/Dk98IMecXtgakT2wCCtGGaUbMy0R8A==
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-11.0.1.tgz#a63535c3438cca2529b54c4184f897830fe4c6ac"
+  integrity sha512-ZCfLN9A3N3aBH+q1ow2y2GbWvNuwAQLKZtfArJuCJ1mjevI7BxOn/+fppz5YECYvnvhAa7CCcDeAjQNJElimTw==
   dependencies:
     "@babel/core" "^7.27.1"
     "@babel/plugin-proposal-decorators" "^7.27.1"
