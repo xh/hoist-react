@@ -7,7 +7,8 @@
 * Fixes `getExpandState` in `AgGridModel`
 
 * Note: AgGrid no longer supports html markup in context menus.  Applications setting the
-RecordGridAction `text` property to markup should be sure to convert to a simpler form.
+`RecordGridAction` `text` or `secondaryText` property to markup should be sure to use React nodes
+instead.
 
 ### 💥 Breaking Changes
 
