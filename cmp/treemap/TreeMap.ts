@@ -208,8 +208,6 @@ class TreeMapLocalModel extends HoistModel {
         if (!chart) return;
         const oldSeries = chart.series[0],
             series = Highcharts.merge(oldSeries.userOptions, {data: newData});
-        // DEBUG
-        console.log(oldSeries);
         oldSeries.remove(false);
         chart.addSeries(series, true);
     }
