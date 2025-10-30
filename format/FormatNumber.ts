@@ -397,13 +397,13 @@ function fmtNumberString(
         ret += sign;
     }
 
-    if (isString(prefix)) {
+    if (isString(prefix) && prefix.trim()) {
         ret += prefix;
     }
 
     ret += str;
 
-    if (isString(label)) {
+    if (isString(label) && label.trim()) {
         if (labelCls) {
             ret += fmtSpan(label, {className: labelCls, asHtml});
         } else {

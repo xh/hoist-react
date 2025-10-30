@@ -273,6 +273,7 @@ export class GridLocalModel extends HoistModel {
                 mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
                 enableClickSelection: selModel.isEnabled,
                 isRowSelectable: () => selModel.isEnabled,
+                copySelectedRows: selModel.isEnabled,
                 checkboxes: false,
                 headerCheckbox: false
             };
@@ -321,7 +322,7 @@ export class GridLocalModel extends HoistModel {
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
         const {model} = this,
             {contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
+        if (!contextMenu || XH.isMobileApp || model.isEditing) return [];
 
         // Manipulate selection if needed.
         if (model.selModel.isEnabled) {
@@ -336,7 +337,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return null;
+        if (isEmpty(ret)) return [];
 
         return ret;
     };

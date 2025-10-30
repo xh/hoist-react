@@ -18,6 +18,7 @@ import {
     isEmpty,
     isEqual,
     isNil,
+    isObject,
     partition,
     setWith,
     startCase
@@ -415,27 +416,23 @@ export class AgGridModel extends HoistModel {
 
         const expandState = {};
         this.agApi.forEachNode(node => {
-            if (!node.allChildrenCount) return;
-
-            if (node.expanded) {
-                // Skip if parent is collapsed. Parents are visited before children,
-                // so should already be in expandState if expanded.
-                const parent = node.parent;
-                if (
-                    parent &&
-                    parent.id !== 'ROOT_NODE_ID' &&
-                    !has(expandState, this.getGroupNodePath(parent))
-                ) {
-                    return;
-                }
-
-                // Note use of setWith + customizer - required to ensure that nested nodes are
-                // serialized as objects - see https://github.com/xh/hoist-react/issues/3550.
-                const path = this.getGroupNodePath(node);
-                setWith(expandState, path, true, () => ({}));
+            if (!node.allChildrenCount || !node.expanded) return;
+            // Skip if parent is collapsed. Parents are visited before children,
+            // so should already be in expandState if expanded.
+            const parent = node.parent;
+            if (
+                parent &&
+                parent.id !== 'ROOT_NODE_ID' &&
+                !has(expandState, this.getGroupNodePath(parent))
+            ) {
+                return;
             }
-        });
 
+            const path = this.getGroupNodePath(node);
+            // Note use of setWith + customizer - required to ensure that nested nodes are
+            // serialized as objects - see https://github.com/xh/hoist-react/issues/3550.
+            setWith(expandState, path, true, nsValue => (isObject(nsValue) ? nsValue : {}));
+        });
         return expandState;
     }
 

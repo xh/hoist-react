@@ -1,11 +1,13 @@
 # Changelog
 
-## 77.0.0-SNAPSHOT - unreleased
+## 78.0.0-SNAPSHOT - unreleased
+
+## 77.0.1 - 2025-10-29
 
 ### 💥 Breaking Changes
 
-* The `disableXssProtection` flag supported by `AppSpec` and `FieldSpec` has been removed and
-  replaced with its opposite, `enableXssProtection`, now an opt-in feature.
+* Removed the `disableXssProtection` flag supported by `AppSpec` and `FieldSpec` and replaced with
+  its opposite, `enableXssProtection`, now an opt-in feature.
     * While store-based XSS protection via DomPurify is still available to apps that can display
       untrusted or potentially malicious data, this is an uncommon use case for Hoist apps and was
       deemed to not provide enough benefit relative to potential performance pitfalls for most
@@ -14,14 +16,23 @@
     * Apps that were previously opting-out via `disableXssProtection` should simply remove that
       flag. Apps for which this protection remains important should enable at either the app level
       or for selected Fields and/or Stores.
-      
+
+### 🐞 Bug Fixes
+
+* Fixed regressions in grid context menus for filtering and copy/paste introduced by AG Grid v34.
+    * Note: AG Grid v34+ no longer supports HTML markup in context menus. Applications setting the
+      `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
+      React nodes for formatting instead.
+* Fixed `AgGridModel.getExpandState()` not returning a full representation of expanded groups -
+  an issue that primarily affected linked tree map visualizations.
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
 
-* Performance improvements to Store for large data sets.
-* New property `cubeRowType` on `ViewRowData` supports identifying bucketed rows.
-* `waitFor` can accept a null value for a timeout.
+* Implemented minor performance improvements within `Store` for large data sets.
+* Added new `ViewRowData.cubeRowType` property to support identifying bucketed rows.
+* Improved `waitFor` to accept a `null` value for its timeout.
 
 ## 76.1.0 - 2025-10-17
 
