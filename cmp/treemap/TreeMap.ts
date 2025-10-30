@@ -172,6 +172,7 @@ class TreeMapLocalModel extends HoistModel {
             this.prevConfig = cloneDeep(chartCfg);
             this.createChart(config);
         }
+        this.updateLabelVisibility();
     }
 
     createChart(config) {
