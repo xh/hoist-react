@@ -193,25 +193,13 @@ class TreeMapLocalModel extends HoistModel {
 
         assign(config.chart, parentDims, {renderTo: chartElem});
         this.withDebug(['Creating new TreeMap', `${newData.length} records`], () => {
-            this.chart = Highcharts.chart(config, () => {
-                this.updateLabelVisibility();
-            });
+            this.chart = Highcharts.chart(config);
         });
     }
 
     @logWithDebug
     reloadSeriesData(newData) {
-        if (!this.chart) return;
-
-        this.chart.series[0].setData(newData, true, false);
-
-        // Use an event handler to trigger label updates
-        // This approach was required when `cluster` series option is enabled
-        const onRedraw = () => {
-            this.updateLabelVisibility();
-            Highcharts.removeEvent(this.chart, 'redraw', onRedraw);
-        };
-        Highcharts.addEvent(this.chart, 'redraw', onRedraw);
+        this.chart?.series[0].setData(newData, true, false);
     }
 
     startResize = ({width, height}) => {

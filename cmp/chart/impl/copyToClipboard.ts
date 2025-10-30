@@ -41,7 +41,6 @@ export function installCopyToClipboard(Highcharts) {
 // Implementation
 //------------------
 async function convertChartToPngAsync(chart) {
-    // v12 replacement for getSVGForLocalExport
     const svg = chart.getSVG(),
         svgUrl = svgToDataUrl(svg),
         pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl),
@@ -88,12 +87,12 @@ function svgToDataUrl(svg) {
         }
     } catch (e) {}
 
-    // Safari, Firefox, or SVGs with foreignObject fallback
+    // Safari, Firefox, or SVGs with foreignObect returns this
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
 /**
- * Get PNG data:URL from image URL.
+ * Get PNG data:URL from image URL. Pass in callbacks to handle results.
  */
 async function svgUrlToPngDataUrlAsync(imageURL, scale = 1) {
     const img = new window.Image(),
