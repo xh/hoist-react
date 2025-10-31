@@ -149,7 +149,7 @@ export class StoreRecord {
     }
 
     get modifiedData(): PlainObject {
-        if (!this.isDirty) return {};
+        if (!this.isModified) return {};
 
         const ret = this.fields.reduce((acc, {name}) => {
             if (isNil(this.committedData) || this.data[name] !== this.committedData[name]) {
