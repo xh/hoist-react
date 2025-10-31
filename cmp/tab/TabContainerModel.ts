@@ -144,10 +144,10 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.refreshContextModel.xhImpl = xhImpl;
 
         if (route) {
-            if (XH.isMobileApp) {
-                this.logWarn('TabContainer routing is not supported for mobile applications.');
-                return;
-            }
+            // if (XH.isMobileApp) {
+            //     this.logWarn('TabContainer routing is not supported for mobile applications.');
+            //     return;
+            // }
 
             this.addReaction({
                 track: () => XH.routerState,
