@@ -6,7 +6,7 @@
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
-import {bindable, computed} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, isEmpty, isMatch, sortBy, sumBy} from 'lodash';
 import {RoleModel} from '../RoleModel';
@@ -53,6 +53,11 @@ export class RoleGraphModel extends HoistModel {
                 height: AVG_HEIGHT * (leafCount + 1)
             };
         }
+    }
+
+    constructor() {
+        super();
+        makeObservable(this);
     }
 
     override onLinked() {

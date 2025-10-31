@@ -57,7 +57,7 @@ export class ConfigPanelModel extends HoistModel {
             store: new RestStore({
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
                     {

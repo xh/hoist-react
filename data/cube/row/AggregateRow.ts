@@ -11,14 +11,17 @@ import {View} from '../View';
 import {BaseRow} from './BaseRow';
 
 /**
- *  Object used by views to gather Aggregate rows.
+ *  Row within a dataset produced by a Cube / View representing aggregated data on a dimension.
+ *
+ * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export class AggregateRow extends BaseRow {
     override get isAggregate() {
         return true;
     }
 
-    readonly dim: CubeField = null; // null for summary row
+    /** The dimension for which this row is aggregating data. Null for a top-level summary row. */
+    readonly dim: CubeField = null;
     readonly dimName: string = null;
 
     constructor(
@@ -35,6 +38,7 @@ export class AggregateRow extends BaseRow {
 
         this.dim = dim;
         this.dimName = dimName;
+        this.data.cubeRowType = 'aggregate';
         this.data.cubeLabel = strVal;
         this.data.cubeDimension = dimName;
 

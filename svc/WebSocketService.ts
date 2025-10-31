@@ -4,8 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
-import {Icon} from '@xh/hoist/icon';
+import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -38,17 +38,23 @@ import {find, pull} from 'lodash';
 export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
+    /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
     readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
+    readonly HEARTBEAT_INTERVAL = 10 * SECONDS;
+
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
+    readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
+    readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
+
+    /** True if WebSockets not explicitly disabled via {@link AppSpec.disableWebSockets}. */
+    enabled: boolean = !XH.appSpec.disableWebSockets;
 
     /** Unique channel assigned by server upon successful connection. */
-    @observable
-    channelKey: string = null;
+    @observable channelKey: string = null;
 
     /** Last time a message was received, including heartbeat messages. */
-    @observable
-    lastMessageTime: Date = null;
+    @observable lastMessageTime: Date = null;
 
     /** Observable flag indicating service is connected and available for use. */
     get connected(): boolean {
@@ -58,11 +64,14 @@ export class WebSocketService extends HoistService {
     /** Set to true to log all sent/received messages - very chatty. */
     logMessages: boolean = false;
 
+    telemetry: WebSocketTelemetry = {channelKey: null, subscriptionCount: 0, events: {}};
+
     private _timer: Timer;
     private _socket: WebSocket;
-    private _subsByTopic = {};
+    private _subsByTopic: Record<string, WebSocketSubscription[]> = {};
 
-    enabled: boolean = XH.appSpec.webSocketsEnabled;
+    private _lastHeartbeatSent: number = null;
+    private _lastHeartbeatReceived: number = null;
 
     constructor() {
         super();
@@ -71,10 +80,11 @@ export class WebSocketService extends HoistService {
 
     override async initAsync() {
         if (!this.enabled) return;
+
         const {environmentService} = XH;
         if (environmentService.get('webSocketsEnabled') === false) {
             this.logError(
-                `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
+                `WebSockets enabled on this client app but disabled on server - unexpected! WebSockets will not be available, review and reconcile your server configuration.`
             );
             this.enabled = false;
             return;
@@ -89,7 +99,7 @@ export class WebSocketService extends HoistService {
 
         this._timer = Timer.create({
             runFn: () => this.heartbeatOrReconnect(),
-            interval: 10 * SECONDS,
+            interval: this.HEARTBEAT_INTERVAL,
             delay: true
         });
     }
@@ -104,6 +114,7 @@ export class WebSocketService extends HoistService {
      *      dispose of their subs on destroy.
      */
     subscribe(topic: string, fn: (msg: WebSocketMessage) => any): WebSocketSubscription {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(topic),
             existingSub = find(subs, {fn});
 
@@ -111,34 +122,48 @@ export class WebSocketService extends HoistService {
 
         const newSub = new WebSocketSubscription(topic, fn);
         subs.push(newSub);
+        this.telemetry.subscriptionCount++;
         return newSub;
     }
 
     /**
      * Cancel a subscription for a given topic/handler.
-     *
      * @param subscription - WebSocketSubscription returned when the subscription was established.
      */
     unsubscribe(subscription: WebSocketSubscription) {
+        this.ensureEnabled();
         const subs = this.getSubsForTopic(subscription.topic);
         pull(subs, subscription);
+        this.telemetry.subscriptionCount--;
     }
 
     /**
      * Send a message back to the server via the connected websocket.
      */
     sendMessage(message: WebSocketMessage) {
+        this.ensureEnabled();
         this.updateConnectedStatus();
         throwIf(!this.connected, 'Unable to send message via websocket - not connected.');
 
         this._socket.send(JSON.stringify(message));
+
+        this.noteTelemetryEvent('msgSent');
         this.maybeLogMessage('Sent message', message);
+    }
+
+    shutdown() {
+        if (this._timer) this._timer.cancel();
+        this.disconnect();
+    }
+
+    getFormattedTelemetry(): PlainObject {
+        return withFormattedTimestamps(this.telemetry);
     }
 
     //------------------------
     // Implementation
     //------------------------
-    connect() {
+    private connect() {
         try {
             // Create new socket and wire up events.  Be sure to ignore obsolete sockets
             const s = new WebSocket(this.buildWebSocketUrl());
@@ -155,6 +180,10 @@ export class WebSocketService extends HoistService {
                 if (s === this._socket) this.onMessage(data);
             };
             this._socket = s;
+
+            // Reset heartbeat tracking - any prior values no longer relevant.
+            this._lastHeartbeatReceived = null;
+            this._lastHeartbeatSent = null;
         } catch (e) {
             this.logError('Failure creating WebSocket', e);
         }
@@ -162,7 +191,7 @@ export class WebSocketService extends HoistService {
         this.updateConnectedStatus();
     }
 
-    disconnect() {
+    private disconnect() {
         if (this._socket) {
             this._socket.close();
             this._socket = null;
@@ -170,26 +199,41 @@ export class WebSocketService extends HoistService {
         this.updateConnectedStatus();
     }
 
-    heartbeatOrReconnect() {
-        this.updateConnectedStatus();
-        if (this.connected) {
-            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
-        } else {
-            this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
-            this.disconnect();
-            this.connect();
-        }
-    }
-
-    private onServerInstanceChange() {
-        this.logWarn('Server instance changed - attempting to connect to new instance.');
+    private reconnect() {
         this.disconnect();
         this.connect();
     }
 
-    shutdown() {
-        if (this._timer) this._timer.cancel();
-        this.disconnect();
+    private heartbeatOrReconnect() {
+        this.updateConnectedStatus();
+
+        // If there is a problem, attempt to reconnect and come back on the next cycle.
+        const {connected, heartbeatWasUnacknowledged} = this;
+        if (!connected || heartbeatWasUnacknowledged) {
+            this.logWarn(
+                `Heartbeat found ${!connected ? 'websocket not connected' : 'last heartbeat not acknowledged'} - attempting to reconnect...`
+            );
+            this.noteTelemetryEvent('heartbeatReconnectAttempt');
+            this.reconnect();
+            return;
+        }
+
+        // If all looks OK, send a heartbeat message.
+        this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+        this.noteTelemetryEvent('heartbeatSent');
+        this._lastHeartbeatSent = Date.now();
+    }
+
+    // We expect the server to respond immediately to every heartbeat. There will be a tiny window
+    // while the message is round-tripping, but that's not material to our check on HEARTBEAT_INTERVAL.
+    private get heartbeatWasUnacknowledged() {
+        return this._lastHeartbeatSent > this._lastHeartbeatReceived;
+    }
+
+    private onServerInstanceChange() {
+        this.logWarn('Server instance changed - attempting to connect to new instance.');
+        this.noteTelemetryEvent('instanceChangeReconnectAttempt');
+        this.reconnect();
     }
 
     //------------------------
@@ -197,20 +241,23 @@ export class WebSocketService extends HoistService {
     //------------------------
     onOpen(ev) {
         this.logDebug('WebSocket connection opened', ev);
+        this.noteTelemetryEvent('connOpened');
         this.updateConnectedStatus();
     }
 
     onClose(ev) {
         this.logDebug('WebSocket connection closed', ev);
+        this.noteTelemetryEvent('connClosed');
         this.updateConnectedStatus();
     }
 
     onError(ev) {
         this.logError('WebSocket connection error', ev);
+        this.noteTelemetryEvent('connError');
         this.updateConnectedStatus();
     }
 
-    onMessage(rawMsg) {
+    onMessage(rawMsg: MessageEvent) {
         try {
             const msg = JSON.parse(rawMsg.data),
                 {topic, data} = msg;
@@ -218,6 +265,7 @@ export class WebSocketService extends HoistService {
             // Record arrival
             this.updateLastMessageTime();
             this.maybeLogMessage('Received message', rawMsg);
+            this.noteTelemetryEvent('msgReceived');
 
             // Hoist and app handling
             switch (topic) {
@@ -227,6 +275,13 @@ export class WebSocketService extends HoistService {
                 case this.FORCE_APP_SUSPEND_TOPIC:
                     XH.suspendApp({reason: 'SERVER_FORCE', message: data});
                     XH.track({category: 'App', message: 'App suspended via WebSocket'});
+                    break;
+                case this.REQ_CLIENT_HEALTH_RPT_TOPIC:
+                    XH.clientHealthService.sendReportAsync();
+                    break;
+                case this.HEARTBEAT_TOPIC:
+                    this._lastHeartbeatReceived = Date.now();
+                    this.noteTelemetryEvent('heartbeatReceived');
                     break;
             }
 
@@ -240,7 +295,7 @@ export class WebSocketService extends HoistService {
     //------------------------
     // Subscription impl
     //------------------------
-    notifySubscribers(message) {
+    private notifySubscribers(message) {
         const subs = this.getSubsForTopic(message.topic);
 
         subs.forEach(sub => {
@@ -252,7 +307,7 @@ export class WebSocketService extends HoistService {
         });
     }
 
-    getSubsForTopic(topic): WebSocketSubscription[] {
+    private getSubsForTopic(topic: string): WebSocketSubscription[] {
         let ret = this._subsByTopic[topic];
         if (!ret) {
             ret = this._subsByTopic[topic] = [];
@@ -263,7 +318,7 @@ export class WebSocketService extends HoistService {
     //------------------------
     // Other impl
     //------------------------
-    updateConnectedStatus() {
+    private updateConnectedStatus() {
         const socketOpen = this._socket?.readyState === WebSocket.OPEN;
         if (!socketOpen && this.channelKey) {
             this.installChannelKey(null);
@@ -271,33 +326,36 @@ export class WebSocketService extends HoistService {
     }
 
     @action
-    installChannelKey(key) {
+    private installChannelKey(key: string) {
         this.channelKey = key;
+        this.telemetry.channelKey = key;
     }
 
     @action
-    updateLastMessageTime() {
+    private updateLastMessageTime() {
         this.lastMessageTime = new Date();
     }
 
-    buildWebSocketUrl() {
+    private buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
-            endpoint = 'xhWebSocket?clientAppVersion=' + XH.appVersion;
+            endpoint = `xhWebSocket?${this.METADATA_FOR_HANDSHAKE.map(key => `${key}=${XH[key]}`).join('&')}`;
         return XH.isDevelopmentMode
             ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
             : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
     }
 
-    showTestMessageAlert(message) {
-        XH.alert({
-            title: 'Test Message',
-            icon: Icon.bullhorn(),
-            message
-        });
+    private maybeLogMessage(...args) {
+        if (this.logMessages) this.logDebug(args);
     }
 
-    maybeLogMessage(...args) {
-        if (this.logMessages) this.logDebug(args);
+    private noteTelemetryEvent(eventKey: keyof WebSocketTelemetry['events']) {
+        const evtTel = (this.telemetry.events[eventKey] ??= {count: 0, lastTime: null});
+        evtTel.count++;
+        evtTel.lastTime = Date.now();
+    }
+
+    private ensureEnabled() {
+        throwIf(!this.enabled, 'Operation not available.  WebSocketService is disabled.');
     }
 }
 
@@ -322,4 +380,26 @@ export class WebSocketSubscription {
 export interface WebSocketMessage {
     topic: string;
     data?: any;
+}
+
+/** Telemetry collected by this service + included in {@link ClientHealthService} reporting. */
+export interface WebSocketTelemetry {
+    channelKey: string;
+    subscriptionCount: number;
+    events: {
+        connOpened?: WebSocketEventTelemetry;
+        connClosed?: WebSocketEventTelemetry;
+        connError?: WebSocketEventTelemetry;
+        msgReceived?: WebSocketEventTelemetry;
+        msgSent?: WebSocketEventTelemetry;
+        heartbeatReceived?: WebSocketEventTelemetry;
+        heartbeatSent?: WebSocketEventTelemetry;
+        heartbeatReconnectAttempt?: WebSocketEventTelemetry;
+        instanceChangeReconnectAttempt?: WebSocketEventTelemetry;
+    };
+}
+
+export interface WebSocketEventTelemetry {
+    count: number;
+    lastTime: number;
 }

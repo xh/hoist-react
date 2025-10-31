@@ -5,9 +5,10 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
-import {isObject} from 'lodash';
+import {isEqual, isObject} from 'lodash';
+import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
-import {GridModelPersistOptions} from '../Types';
+import {ColumnState, GridModelPersistOptions} from '../Types';
 
 /**
  * Initialize persistence for a {@link GridModel} by applying its `persistWith` config.
@@ -19,6 +20,7 @@ export function initPersist(
         persistColumns = true,
         persistGrouping = true,
         persistSort = true,
+        persistExpandToLevel = true,
         path = 'grid',
         ...rootPersistWith
     }: GridModelPersistOptions
@@ -33,8 +35,20 @@ export function initPersist(
                 ...persistWith
             },
             target: {
-                getPersistableState: () => new PersistableState(gridModel.persistableColumnState),
-                setPersistableState: ({value}) => gridModel.setColumnState(value)
+                getPersistableState: () =>
+                    new PersistableColumnState(gridModel.persistableColumnState),
+                setPersistableState: ({value}) =>
+                    runInAction(() => {
+                        // Set columnState directly since GridModel.setColumnState will merge the
+                        // provided state with the current state, which is not what we want here.
+                        gridModel.columnState = gridModel.cleanColumnState(value);
+                        if (gridModel.autosizeOptions.mode === 'managed') {
+                            const columns = gridModel.columnState
+                                .filter(it => !it.manuallySized)
+                                .map(it => it.colId);
+                            gridModel.autosizeAsync({columns});
+                        }
+                    })
             },
             owner: gridModel
         });
@@ -73,5 +87,31 @@ export function initPersist(
             },
             owner: gridModel
         });
+    }
+
+    if (persistExpandToLevel) {
+        const persistWith = isObject(persistExpandToLevel)
+            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistExpandToLevel)
+            : rootPersistWith;
+        PersistenceProvider.create({
+            persistOptions: {
+                path: `${path}.expandLevel`,
+                ...persistWith
+            },
+            target: {
+                getPersistableState: () => new PersistableState(gridModel.expandLevel),
+                setPersistableState: ({value}) => gridModel.expandToLevel(value)
+            },
+            owner: gridModel
+        });
+    }
+}
+
+class PersistableColumnState extends PersistableState<ColumnState[]> {
+    override equals(other: PersistableState<ColumnState[]>): boolean {
+        return isEqual(
+            this.value.filter(it => !it.hidden),
+            other.value.filter(it => !it.hidden)
+        );
     }
 }

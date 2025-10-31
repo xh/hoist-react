@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, Some} from '@xh/hoist/core';
 import {Store, StoreRecord, View} from '@xh/hoist/data';
@@ -22,7 +21,8 @@ import type {
     IRowNode,
     ITooltipParams,
     RowClassParams,
-    ValueSetterParams
+    ValueSetterParams,
+    CustomCellEditorProps
 } from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnState {
@@ -46,8 +46,8 @@ export interface ColumnState {
  *      and a positive number if `b` sorts first.
  */
 export type GridGroupSortFn = (
-    groupAVal: any,
-    groupBVal: any,
+    groupAVal: string,
+    groupBVal: string,
     groupField: string,
     metadata: {
         gridModel: GridModel;
@@ -81,6 +81,8 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean | PersistOptions;
+    /** True (default) to include expanded level state or provide expanded level-specific PersistOptions.  */
+    persistExpandToLevel?: boolean | PersistOptions;
 }
 
 export interface GridFilterModelConfig {
@@ -90,7 +92,10 @@ export interface GridFilterModelConfig {
      */
     bind?: Store | View;
 
-    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    /**
+     * True to update filters immediately after each change made in the column-based filter UI.
+     * Defaults to False.
+     */
     commitOnChange?: boolean;
 
     /**
@@ -131,10 +136,10 @@ export interface ColChooserConfig {
     autosizeOnCommit?: boolean;
 
     /** Chooser width for popover and dialog. Desktop only. */
-    width?: number;
+    width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
-    height?: number;
+    height?: string | number;
 }
 
 /**

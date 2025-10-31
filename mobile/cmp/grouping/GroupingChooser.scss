@@ -16,18 +16,23 @@
     }
   }
 
+  &__editor {
+    .xh-panel__content {
+      padding: var(--xh-pad-px);
+    }
+  }
+
   &__row {
     display: flex;
     align-items: center;
     background-color: var(--xh-bg);
-    height: 35px;
+    height: 45px;
     flex-shrink: 0;
 
     &__grabber {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 30px;
       width: 30px;
     }
 
@@ -49,30 +54,46 @@
   }
 
   &__add-control {
-    padding: var(--xh-pad-half-px);
+    // Align with already-added level controls.
+    padding: 5px 40px 5px 30px;
   }
 
-  &__favorite {
-    height: 35px;
-    align-items: center;
+  &__favorites {
+    // Fix at 50% of dialog height, preventing panel's default flex:auto
+    flex: none !important;
+    height: 50%;
 
-    .xh-button {
-      justify-content: left;
+    // Section heading style for internal title (like colChooser)
+    .xh-panel-header {
+      background-color: var(--xh-appbar-bg);
+      color: var(--xh-appbar-title-color);
+      padding-left: var(--xh-pad-px);
     }
-  }
-}
 
-.xh-grouping-chooser-popover {
-  .dialog {
-    min-width: unset;
-  }
+    .xh-panel__content {
+      padding: var(--xh-pad-px);
+    }
 
-  .xh-dialog__inner {
-    padding: 0;
-  }
+    // Empty state placeholder - don't flex as it pushes add button down.
+    .xh-placeholder {
+      flex: none;
+      margin: var(--xh-pad-px);
+    }
 
-  &__content {
-    padding: 3px var(--xh-pad-half-px);
-    min-width: 240px; // Required to allow for toolbars
+    // Individual favorite items (hBoxes w/buttons)
+    &__favorite {
+      flex: none !important;
+      height: 35px;
+      align-items: center;
+
+      .xh-button {
+        justify-content: left;
+      }
+    }
+
+    &__add-btn {
+      width: 200px;
+      margin: var(--xh-pad-px) auto;
+    }
   }
 }

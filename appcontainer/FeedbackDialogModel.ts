@@ -48,24 +48,23 @@ export class FeedbackDialogModel extends HoistModel {
     }
 
     /**
-     * Submit the feedback entry. Username, browser info, environment info, and datetime will be
-     * recorded automatically by the server. Feedback entries are viewable via the Admin console,
-     * and feedback submissions can trigger server-side notifications.
-     * See FeedbackService.groovy within hoist-core for details.
+     * Submit the feedback entry to the activity tracking system.
      */
     async submitAsync() {
-        if (!this.message) this.hide();
+        const {message} = this,
+            {trackService} = XH;
+
+        if (!message) this.hide();
 
         try {
-            await XH.fetchJson({
-                url: 'xh/submitFeedback',
-                params: {
-                    msg: this.message,
-                    appVersion: XH.getEnv('appVersion'),
-                    clientUsername: XH.getUsername()
+            trackService.track({
+                category: 'Feedback',
+                message: 'User submitted feedback',
+                data: {
+                    userMessage: this.message
                 }
-            }).linkTo(XH.appLoadModel);
-
+            });
+            trackService.pushPendingAsync().linkTo(XH.appLoadModel);
             XH.successToast('Thank you - your feedback has been sent.');
             this.hide();
         } catch (e) {

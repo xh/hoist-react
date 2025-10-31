@@ -1,6 +1,6 @@
 node_modules
 .editorconfig
-.eslintrc
+eslint.config.js
 .github
 .stylelintrc
 .yarn

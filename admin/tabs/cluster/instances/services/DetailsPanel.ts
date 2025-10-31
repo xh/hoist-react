@@ -12,8 +12,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty} from 'lodash';
-import {fmtJson} from '@xh/hoist/format';
-import {timestampReplacer} from '@xh/hoist/admin/AdminUtils';
+import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 export const detailsPanel = hoistCmp.factory({
     model: creates(DetailsModel),
@@ -59,7 +58,7 @@ const stats = hoistCmp.factory<DetailsModel>({
                       enableSearch: true,
                       showFullscreenButton: false,
                       editorProps: {lineNumbers: false},
-                      value: fmtJson(stats, {replacer: timestampReplacer})
+                      value: fmtJson(stats, {replacer: timestampReplacer()})
                   })
               );
     }

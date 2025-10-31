@@ -82,7 +82,7 @@ class DataViewLocalModel extends HoistModel {
         const {model} = this;
         return {
             headerHeight: 0,
-            suppressMakeColumnVisibleAfterUnGroup: true,
+            suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup',
             getRowHeight: agParams => {
                 const {groupRowHeight, itemHeight} = model;
 

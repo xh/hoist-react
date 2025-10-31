@@ -33,7 +33,7 @@ export const clusterObjectsPanel = hoistCmp.factory({
                         defaultSize: 475,
                         collapsible: false
                     },
-                    item: grid({agOptions: {groupDefaultExpanded: 2}})
+                    item: grid()
                 }),
                 detailPanel()
             ),

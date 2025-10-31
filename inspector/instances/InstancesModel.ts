@@ -130,7 +130,7 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(xhId);
 
         if (!instance) {
-            console.warn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
+            this.logWarn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
             console.log(`[${xhId}]`, instance);
             XH.toast({
@@ -147,7 +147,7 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(instanceXhId);
 
         if (!instance) {
-            console.warn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
+            this.logWarn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
         } else {
             console.log(`[${instanceDisplayName}].${property}`, instance[property]);
             XH.toast({
@@ -264,9 +264,9 @@ export class InstancesModel extends HoistModel {
             showGroupRowCounts: false,
             groupRowRenderer: ({value, node}) => propsGridGroupRenderer({value, node, model: this}),
             groupSortFn: (a, b) => {
-                a = a === 'Watchlist' ? 0 : 1;
-                b = b === 'Watchlist' ? 0 : 1;
-                return a - b;
+                const sortValA = a === 'Watchlist' ? 0 : 1,
+                    sortValB = b === 'Watchlist' ? 0 : 1;
+                return sortValA - sortValB;
             },
             store: {
                 fields: [

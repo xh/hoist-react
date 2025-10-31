@@ -4,23 +4,29 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed, XH} from '@xh/hoist/core';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {HoistAppModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
-import {activityTab} from './tabs/activity/ActivityTab';
-import {generalTab} from './tabs/general/GeneralTab';
+import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
+import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {userDataTab} from './tabs/userData/UserDataTab';
+import {instancesTab, clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster';
+import {aboutPanel, alertBannerPanel, configPanel} from '@xh/hoist/admin/tabs/general';
+import {
+    jsonBlobPanel,
+    userPreferencePanel,
+    rolePanel,
+    userPanel
+} from '@xh/hoist/admin/tabs/userData';
 
 export class AppModel extends HoistAppModel {
-    static instance: AppModel;
-
-    @managed
     tabModel: TabContainerModel;
+
+    viewManagerModels: Record<string, ViewManagerModel> = {};
 
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
@@ -37,6 +43,11 @@ export class AppModel extends HoistAppModel {
 
         // Enable managed autosize mode across Hoist Admin console grids.
         GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+    }
+
+    override async initAsync() {
+        await this.initViewManagerModelsAsync();
+        await super.initAsync();
     }
 
     override getRoutes(): Route[] {
@@ -64,12 +75,13 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
+                    {name: 'feedback', path: '/feedback'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
             {
-                name: 'cluster',
-                path: '/cluster',
+                name: 'servers',
+                path: '/servers',
                 children: [
                     {
                         name: 'instances',
@@ -79,14 +91,15 @@ export class AppModel extends HoistAppModel {
                             {name: 'memory', path: '/memory'},
                             {name: 'jdbcPool', path: '/jdbcPool'},
                             {name: 'environment', path: '/environment'},
-                            {name: 'services', path: '/services'},
-                            {name: 'hibernate', path: '/hibernate'},
-                            {name: 'consistency', path: '/consistency'},
-                            {name: 'webSockets', path: '/webSockets'}
+                            {name: 'services', path: '/services'}
                         ]
                     },
                     {name: 'objects', path: '/objects'}
                 ]
+            },
+            {
+                name: 'clients',
+                path: '/clients'
             },
             {
                 name: 'monitors',
@@ -94,12 +107,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'activity',
-                path: '/activity',
-                children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
+                path: '/activity'
             },
             {
                 name: 'userData',
@@ -115,16 +123,36 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
+        const conf = XH.getConf('xhAdminAppConfig', {});
+
         return [
             {
                 id: 'general',
                 icon: Icon.info(),
-                content: generalTab
+                content: {
+                    switcher: {orientation: 'left', testId: 'general-tab-switcher'},
+                    tabs: [
+                        {id: 'about', icon: Icon.info(), content: aboutPanel},
+                        {id: 'config', icon: Icon.settings(), content: configPanel},
+                        {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                    ]
+                }
             },
             {
-                id: 'cluster',
+                id: 'servers',
                 icon: Icon.server(),
-                content: clusterTab
+                content: {
+                    switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
+                    tabs: [
+                        {id: 'instances', icon: Icon.server(), content: instancesTab},
+                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
+                    ]
+                }
+            },
+            {
+                id: 'clients',
+                icon: Icon.desktop(),
+                content: clientsPanel
             },
             {
                 id: 'monitors',
@@ -134,24 +162,61 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                content: userDataTab
+                content: {
+                    switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
+                    refreshMode: 'onShowAlways',
+                    tabs: [
+                        {
+                            id: 'users',
+                            icon: Icon.users(),
+                            content: userPanel,
+                            omit: conf['hideUsersTab']
+                        },
+                        {
+                            id: 'roles',
+                            icon: Icon.idBadge(),
+                            content: rolePanel
+                        },
+                        {
+                            id: 'prefs',
+                            title: 'Preferences',
+                            icon: Icon.bookmark(),
+                            content: userPreferencePanel
+                        },
+                        {
+                            id: 'jsonBlobs',
+                            title: 'JSON Blobs',
+                            icon: Icon.json(),
+                            content: jsonBlobPanel
+                        }
+                    ]
+                }
             },
             {
                 id: 'activity',
                 title: 'User Activity',
                 icon: Icon.analytics(),
-                content: activityTab
+                content: activityTrackingPanel
             }
         ];
     }
 
     /** Open the primary business-facing application, typically 'app'. */
     openPrimaryApp() {
-        window.open(`/${this.getPrimaryAppCode()}`);
+        const appCode = this.getPrimaryAppCode();
+        XH.openWindow(`/${appCode}`, appCode);
     }
 
     getPrimaryAppCode() {
         const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
         return appCodes.find(it => it === 'app') ?? appCodes[0];
+    }
+
+    async initViewManagerModelsAsync() {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
+            type: 'xhAdminActivityTrackingView',
+            typeDisplayName: 'View',
+            manageGlobal: XH.getUser().isHoistAdmin
+        });
     }
 }

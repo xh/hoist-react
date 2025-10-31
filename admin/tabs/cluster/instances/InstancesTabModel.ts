@@ -15,7 +15,6 @@ import {
 } from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorModel';
 import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/MemoryMonitorPanel';
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
-import {webSocketPanel} from '@xh/hoist/admin/tabs/cluster/instances/websocket/WebSocketPanel';
 import {badge} from '@xh/hoist/cmp/badge';
 import {GridContextMenuSpec, GridModel, numberCol} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -193,7 +192,7 @@ export class InstancesTabModel extends HoistModel {
 
     private createTabContainerModel() {
         return new TabContainerModel({
-            route: 'default.cluster.instances',
+            route: 'default.servers.instances',
             switcher: false,
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
@@ -205,8 +204,7 @@ export class InstancesTabModel extends HoistModel {
                     content: connPoolMonitorPanel
                 },
                 {id: 'environment', icon: Icon.globe(), content: serverEnvPanel},
-                {id: 'services', icon: Icon.gears(), content: servicePanel},
-                {id: 'webSockets', title: 'WebSockets', icon: Icon.bolt(), content: webSocketPanel}
+                {id: 'services', icon: Icon.gears(), content: servicePanel}
             ]
         });
     }
@@ -214,7 +212,8 @@ export class InstancesTabModel extends HoistModel {
     private async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
-                message: `Are you sure you wish to immediately terminate instance ${instance.name}?`,
+                message: `Are you sure you want to immediately terminate instance ${instance.name}?`,
+                extraConfirmText: instance.name,
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Yes, kill the instance',

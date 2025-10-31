@@ -34,7 +34,7 @@ export class UserPreferenceModel extends HoistModel {
             store: {
                 url: 'rest/userPreferenceAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {
                         ...(Col.name.field as FieldSpec),

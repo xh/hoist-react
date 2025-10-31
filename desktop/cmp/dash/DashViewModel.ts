@@ -4,6 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {isNil} from 'lodash';
+import {ReactElement} from 'react';
 import {
     HoistModel,
     managed,
@@ -16,7 +18,6 @@ import {
 import '@xh/hoist/desktop/register';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ReactElement} from 'react';
 import {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = PlainObject;
@@ -44,8 +45,19 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
      */
     containerModel: any;
 
-    /** Title with which to initialize the view. */
+    /** Title with which to initialize the view.  Value is persisted. */
     @bindable title: string;
+
+    /**
+     * Additional info that will be displayed after the title.
+     * Applications can bind to this property to provide dynamic title details.
+     * Value is not persisted.
+     **/
+    @bindable titleDetails: string;
+
+    get fullTitle(): string {
+        return [this.title, this.titleDetails].filter(it => !isNil(it)).join(' ');
+    }
 
     /** Icon with which to initialize the view. */
     @bindable.ref icon: ReactElement;

@@ -4,17 +4,20 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {find, isPlainObject, pick, round} from 'lodash';
+import {withFormattedTimestamps} from '@xh/hoist/format';
+import {pick, round} from 'lodash';
 
 /**
- * Service for gathering data about client health.
+ * Service for gathering data about the current state and health of the client app, for submission
+ * to the server or review on the console during interactive troubleshooting.
  *
- * Hoist sends this data once on application load, and can be configured to send
- * it at regularly scheduled intervals.  Configure via soft-config property
- * 'xhActivityTracking.clientHealthReport'.
+ * Hoist sends this data once on application load and can be configured to send at regular intervals
+ * throughout a user's session via the `xhActivityTracking.clientHealthReport` app config. Reports
+ * are submitted via activity tracking for review within the Admin Console.
  */
 export class ClientHealthService extends HoistService {
     static instance: ClientHealthService;
@@ -24,30 +27,34 @@ export class ClientHealthService extends HoistService {
     override async initAsync() {
         const {clientHealthReport} = XH.trackService.conf;
         Timer.create({
-            runFn: () => this.sendReport(),
+            runFn: () => this.sendReportInternal(),
             interval: clientHealthReport.intervalMins * MINUTES,
             delay: true
         });
     }
 
-    /**
-     * Main Entry report.  Return a default report of client health.
-     */
+    get enabled(): boolean {
+        return XH.trackService.enabled;
+    }
+
+    /** @returns a customizable report with metrics capturing client app/session state. */
     getReport(): ClientHealthReport {
         return {
-            session: this.getSession(),
-            ...this.getCustom(),
+            general: this.getGeneral(),
             memory: this.getMemory(),
             connection: this.getConnection(),
-            window: this.getWindow(),
-            screen: this.getScreen()
+            webSockets: XH.webSocketService.telemetry,
+            ...this.getCustom()
         };
     }
 
+    /** @returns a report, formatted for easier viewing in console. **/
+    getFormattedReport(): PlainObject {
+        return withFormattedTimestamps(this.getReport());
+    }
+
     /**
-     * Register a new source for client health report data. No-op if background health report is
-     * not generally enabled via `xhActivityTrackingConfig.clientHealthReport.intervalMins`.
-     *
+     * Register a new source for app-specific data to be sent with each report.
      * @param key - key under which to report the data - can be used to remove this source later.
      * @param callback - function returning serializable to include with each report.
      */
@@ -60,14 +67,29 @@ export class ClientHealthService extends HoistService {
         this.sources.delete(key);
     }
 
+    /**
+     * Generate and submit a report to the server, via TrackService.
+     *
+     * For ad-hoc troubleshooting. Apps may also configure this service to
+     * submit on regular intervals.
+     */
+    async sendReportAsync() {
+        this.sendReportInternal({severity: 'INFO'});
+        await XH.trackService.pushPendingAsync();
+    }
+
     // -----------------------------------
     // Generate individual report sections
     //------------------------------------
-    getSession(): SessionData {
-        const {loadStarted} = XH.appContainerModel.appStateModel;
+    getGeneral(): GeneralData {
+        const startTime = XH.appContainerModel.appStateModel.loadStarted,
+            elapsedMins = (ts: number) => round((Date.now() - ts) / 60_000, 1);
+
         return {
-            startTime: loadStarted,
-            durationMins: round((Date.now() - loadStarted) / 60_000, 1)
+            startTime,
+            durationMins: elapsedMins(startTime),
+            idleMins: elapsedMins(XH.lastActivityMs),
+            pageState: XH.pageState
         };
     }
 
@@ -89,42 +111,10 @@ export class ClientHealthService extends HoistService {
 
         const {jsHeapSizeLimit: limit, usedJSHeapSize: used} = ret;
         if (limit && used) {
-            ret.usedPctLimit = round((used / limit) * 100, 1);
+            ret.usedPctLimit = round((used / limit) * 100);
         }
 
         return ret;
-    }
-
-    getScreen(): ScreenData {
-        const screen = window.screen as any;
-        if (!screen) return null;
-
-        const ret: ScreenData = pick(screen, [
-            'availWidth',
-            'availHeight',
-            'width',
-            'height',
-            'colorDepth',
-            'pixelDepth',
-            'availLeft',
-            'availTop'
-        ]);
-        if (screen.orientation) {
-            ret.orientation = pick(screen.orientation, ['angle', 'type']);
-        }
-        return ret;
-    }
-
-    getWindow(): WindowData {
-        return pick(window, [
-            'devicePixelRatio',
-            'screenX',
-            'screenY',
-            'innerWidth',
-            'innerHeight',
-            'outerWidth',
-            'outerHeight'
-        ]);
     }
 
     getCustom(): PlainObject {
@@ -140,35 +130,27 @@ export class ClientHealthService extends HoistService {
         return ret;
     }
 
-    //------------------
+    //---------------------
     // Implementation
-    //------------------
-    private sendReport() {
-        const {
-            intervalMins,
-            severity: defaultSeverity,
-            ...rest
-        } = XH.trackService.conf.clientHealthReport ?? {};
-
-        const rpt = this.getReport();
-        let severity = defaultSeverity ?? 'INFO';
-        if (find(rpt, (v: any) => isPlainObject(v) && v.severity === 'WARN')) {
-            severity = 'WARN';
-        }
+    //---------------------
+    private sendReportInternal(opts: Partial<TrackOptions> = {}) {
+        const {intervalMins, ...rest} = XH.trackService.conf.clientHealthReport ?? {};
 
         XH.track({
             category: 'App',
             message: 'Submitted health report',
-            severity,
             ...rest,
-            data: rpt
+            ...opts,
+            data: this.getReport()
         });
     }
 }
 
-export interface SessionData {
+export interface GeneralData {
     startTime: number;
     durationMins: number;
+    idleMins: number;
+    pageState: PageState;
 }
 
 export interface ConnectionData {
@@ -185,35 +167,9 @@ export interface MemoryData {
     usedJSHeapSize?: number;
 }
 
-export interface WindowData {
-    devicePixelRatio: number;
-    screenX: number;
-    screenY: number;
-    innerWidth: number;
-    innerHeight: number;
-    outerWidth: number;
-    outerHeight: number;
-}
-
-export interface ScreenData {
-    availWidth: number;
-    availHeight: number;
-    width: number;
-    height: number;
-    colorDepth: number;
-    pixelDepth: number;
-    availLeft: number;
-    availTop: number;
-    orientation?: {
-        angle: number;
-        type: string;
-    };
-}
-
 export interface ClientHealthReport {
-    session: SessionData;
+    general: GeneralData;
     connection: ConnectionData;
     memory: MemoryData;
-    window: WindowData;
-    screen: ScreenData;
+    webSockets: WebSocketTelemetry;
 }

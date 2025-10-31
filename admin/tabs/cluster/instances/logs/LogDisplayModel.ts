@@ -136,20 +136,25 @@ export class LogDisplayModel extends HoistModel {
             hideHeaders: true,
             rowBorders: false,
             sizingMode: 'tiny',
-            emptyText: 'No log entries found...',
+            emptyText: 'No log entries found.',
             sortBy: 'rowNum|asc',
+            autosizeOptions: {mode: 'disabled'},
             store: {
                 idSpec: 'rowNum'
             },
             columns: [
                 {
                     field: {name: 'rowNum', type: 'number'},
-                    width: 4,
+                    width: 60,
+                    pinned: true,
                     cellClass: 'xh-log-display__row-number'
                 },
                 {
                     field: 'rowContent',
-                    width: 1200,
+                    // Hard-code to a very wide value - allows us to avoid autosize overhead while
+                    // ensuring that all but crazy-long lines are readable. We trust Admins can
+                    // ignore excess horizontal scrolling for this component.
+                    width: 5000,
                     autosizable: false,
                     cellClass: 'xh-log-display__row-content'
                 }
@@ -179,20 +184,11 @@ export class LogDisplayModel extends HoistModel {
     }
 
     private updateGridData(data) {
-        const {tailActive, gridModel} = this;
-        let maxRowLength = 200;
-        const gridData = data.map(row => {
-            if (row[1].length > maxRowLength) {
-                maxRowLength = row[1].length;
-            }
-            return {
+        const {tailActive, gridModel} = this,
+            gridData = data.map(row => ({
                 rowNum: row[0],
                 rowContent: row[1]
-            };
-        });
-
-        // Estimate the length of the row in pixels based on (character count) * (font size)
-        gridModel.setColumnState([{colId: 'rowContent', width: maxRowLength * 6}]);
+            }));
 
         gridModel.loadData(gridData);
 

@@ -9,6 +9,7 @@ import {HoistModel, XH, MessageSpec, managed} from '@xh/hoist/core';
 import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
+import {ReactNode} from 'react';
 
 /**
  * Model for a single instance of a modal dialog.
@@ -26,6 +27,7 @@ export class MessageModel extends HoistModel {
     messageKey;
     className;
     input;
+    extraConfirmLabel: ReactNode;
     confirmProps;
     cancelProps;
     cancelAlign;
@@ -50,6 +52,8 @@ export class MessageModel extends HoistModel {
         messageKey,
         className,
         input,
+        extraConfirmText,
+        extraConfirmLabel,
         confirmProps = {},
         cancelProps = {},
         cancelAlign = 'right',
@@ -69,10 +73,24 @@ export class MessageModel extends HoistModel {
         this.dismissable = dismissable;
         this.cancelOnDismiss = cancelOnDismiss;
 
+        const fields = [];
+
         if (input) {
             this.input = input;
             const {initialValue, rules} = input;
-            this.formModel = new FormModel({fields: [{name: 'value', initialValue, rules}]});
+            fields.push({name: 'value', initialValue, rules});
+        }
+
+        if (extraConfirmText) {
+            this.extraConfirmLabel = extraConfirmLabel ?? `Enter '${extraConfirmText}' to confirm:`;
+            fields.push({
+                name: 'extraConfirm',
+                rules: [({value}) => (value === extraConfirmText ? null : `Confirmation required`)]
+            });
+        }
+
+        if (!isEmpty(fields)) {
+            this.formModel = new FormModel({fields});
         }
 
         this.confirmProps = this.parseButtonProps(confirmProps, () => this.doConfirmAsync());
@@ -98,7 +116,9 @@ export class MessageModel extends HoistModel {
         if (this.formModel) {
             await this.formModel.validateAsync();
             if (!this.formModel.isValid) return;
-            resolvedVal = this.formModel.getData().value;
+            if (this.formModel.getField('value')) {
+                resolvedVal = this.formModel.getData().value;
+            }
         }
 
         this.onConfirm?.();

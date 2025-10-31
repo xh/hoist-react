@@ -4,7 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {ColumnState as AgColumnState, GridApi} from '@ag-grid-community/core';
+import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+
 import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
@@ -94,11 +95,19 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
-                model,
+        const {
+                store,
+                treeMode,
+                treeStyle,
+                highlightRowOnClick,
+                colChooserModel,
+                filterModel,
+                enableFullWidthScroll
+            } = model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
-            maxDepth = impl.isHierarchical ? store.maxDepth : null;
+            maxDepth = impl.isHierarchical ? store.maxDepth : null,
+            container = enableFullWidthScroll ? vframe : frame;
 
         className = classNames(
             className,
@@ -108,9 +117,6 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             treeMode ? getTreeStyleClasses(treeStyle) : null,
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
-
-        const {enableFullWidthScroll} = model.experimental,
-            container = enableFullWidthScroll ? vframe : frame;
 
         return fragment(
             container({
@@ -128,7 +134,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 ],
                 testId,
                 onKeyDown: impl.onKeyDown,
-                ref: composeRefs(impl.viewRef, ref)
+                ref: composeRefs(impl.viewRef, model.viewRef, ref)
             }),
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
             filterModel ? gridFilterDialog({model: filterModel}) : null
@@ -193,13 +199,13 @@ export class GridLocalModel extends HoistModel {
             {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
-            reactiveCustomComponents: true, // will be default in ag-grid v32
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
+                suppressHeaderContextMenu: true,
                 suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
@@ -220,9 +226,6 @@ export class GridLocalModel extends HoistModel {
                 agColumnHeader: props => columnHeader({...props, gridModel: model}),
                 agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
-            rowSelection: selModel.mode == 'disabled' ? undefined : selModel.mode,
-            suppressRowClickSelection: !selModel.isEnabled,
-            isRowSelectable: () => selModel.isEnabled,
             tooltipShowDelay: 0,
             getRowHeight: this.defaultGetRowHeight,
             getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
@@ -246,7 +249,7 @@ export class GridLocalModel extends HoistModel {
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: 1,
+            groupDefaultExpanded: model.expandLevel,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -255,8 +258,7 @@ export class GridLocalModel extends HoistModel {
             autoGroupColumnDef: {
                 suppressSizeToFit: true // Without this the auto group col will get shrunk when we size to fit
             },
-            autoSizePadding: 3, // tighten up cells for ag-Grid native autosizing.  Remove when Hoist autosizing no longer experimental,
-            editType: model.fullRowEditing ? 'fullRow' : undefined,
+            editType: model.fullRowEditing ? 'fullRow' : 'singleCell',
             singleClickEdit: clicksToEdit === 1,
             suppressClickEdit: clicksToEdit !== 1 && clicksToEdit !== 2,
             stopEditingWhenCellsLoseFocus: true,
@@ -265,6 +267,17 @@ export class GridLocalModel extends HoistModel {
             // Override AG-Grid's default behavior of automatically unpinning columns to make the center viewport visible
             processUnpinnedColumns: () => []
         };
+
+        if (selModel.mode != 'disabled') {
+            ret.rowSelection = {
+                mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
+                enableClickSelection: selModel.isEnabled,
+                isRowSelectable: () => selModel.isEnabled,
+                copySelectedRows: selModel.isEnabled,
+                checkboxes: false,
+                headerCheckbox: false
+            };
+        }
 
         // Platform specific defaults
         if (XH.isMobileApp) {
@@ -277,7 +290,7 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems
+                getContextMenuItems: this.getContextMenuItems as any
             };
         }
 
@@ -285,7 +298,6 @@ export class GridLocalModel extends HoistModel {
         if (model.treeMode) {
             ret = {
                 ...ret,
-                groupDefaultExpanded: 0,
                 groupDisplayType: 'custom',
                 treeData: true,
                 getDataPath: this.getDataPath
@@ -293,7 +305,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         // Support for FullWidthScroll
-        if (model.experimental.enableFullWidthScroll) {
+        if (model.enableFullWidthScroll) {
             ret.suppressHorizontalScroll = true;
         }
 
@@ -308,12 +320,12 @@ export class GridLocalModel extends HoistModel {
     }
 
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
-        const {model, agOptions} = this,
+        const {model} = this,
             {contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp || model.isEditing) return null;
+        if (!contextMenu || XH.isMobileApp || model.isEditing) return [];
 
         // Manipulate selection if needed.
-        if (!agOptions.suppressRowClickSelection) {
+        if (model.selModel.isEnabled) {
             const record = params.node?.data,
                 {selModel} = model;
 
@@ -325,7 +337,7 @@ export class GridLocalModel extends HoistModel {
         }
 
         const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return null;
+        if (isEmpty(ret)) return [];
 
         return ret;
     };
@@ -432,8 +444,7 @@ export class GridLocalModel extends HoistModel {
         return (
             agOptions.getRowHeight &&
             !agOptions.rowHeight &&
-            !model.getVisibleLeafColumns().some(c => c.autoHeight) &&
-            model.experimental.useScrollOptimization !== false
+            !model.getVisibleLeafColumns().some(c => c.autoHeight)
         );
     }
 
@@ -768,12 +779,9 @@ export class GridLocalModel extends HoistModel {
         return gridModel.groupSortFn(nodeA.key, nodeB.key, nodeA.field, {gridModel, nodeA, nodeB});
     };
 
-    doWithPreservedState({expansion, filters}: PlainObject, fn) {
-        const {agGridModel} = this.model,
-            expandState = expansion ? agGridModel.getExpandState() : null,
-            filterState = filters ? this.readFilterState() : null;
+    doWithPreservedState({filters}: PlainObject, fn) {
+        const filterState = filters ? this.readFilterState() : null;
         fn();
-        if (expandState) agGridModel.setExpandState(expandState);
         if (filterState) this.writeFilterState(filterState);
     }
 

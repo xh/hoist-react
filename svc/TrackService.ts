@@ -90,10 +90,11 @@ export class TrackService extends HoistService {
         this.pushPendingBuffered();
     }
 
-    //------------------
-    // Implementation
-    //------------------
-    private async pushPendingAsync() {
+    /**
+     * Flush the queue of pending activity tracking messages to the server.
+     * @internal - apps should generally allow this service to manage w/its internal debounce.
+     */
+    async pushPendingAsync() {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
@@ -105,6 +106,9 @@ export class TrackService extends HoistService {
         });
     }
 
+    //------------------
+    // Implementation
+    //------------------
     @debounced(10 * SECONDS)
     private pushPendingBuffered() {
         this.pushPendingAsync();
@@ -115,6 +119,8 @@ export class TrackService extends HoistService {
             msg: stripTags(options.message),
             clientUsername: XH.getUsername(),
             appVersion: XH.getEnv('clientVersion'),
+            loadId: XH.loadId,
+            tabId: XH.tabId,
             url: window.location.href,
             timestamp: Date.now()
         };
@@ -126,10 +132,11 @@ export class TrackService extends HoistService {
         if (options.logData !== undefined) ret.logData = options.logData;
         if (options.elapsed !== undefined) ret.elapsed = options.elapsed;
 
-        const {maxDataLength} = this.conf;
-        if (ret.data?.length > maxDataLength) {
+        const {maxDataLength} = this.conf,
+            dataLength = JSON.stringify(ret.data)?.length ?? 0;
+        if (dataLength > maxDataLength) {
             this.logWarn(
-                `Track log includes ${ret.data.length} chars of JSON data`,
+                `Track log includes ${dataLength} chars of JSON data`,
                 `exceeds limit of ${maxDataLength}`,
                 'data will not be persisted',
                 options.data
@@ -164,6 +171,6 @@ interface ActivityTrackingConfig {
     levels?: Array<{
         username: string | '*';
         category: string | '*';
-        severity: 'DEBUG' | 'INFO' | 'WARN';
+        severity: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
     }>;
 }

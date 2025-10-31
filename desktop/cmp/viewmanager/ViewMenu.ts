@@ -11,8 +11,9 @@ import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
+import {filterConsecutiveMenuSeparators, parseMenuItems} from '@xh/hoist/utils/impl';
 import {Dictionary} from 'express-serve-static-core';
-import {each, filter, groupBy, isEmpty, orderBy, some, startCase} from 'lodash';
+import {each, filter, groupBy, isEmpty, isFunction, orderBy, some, startCase} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
@@ -20,16 +21,22 @@ import {ViewManagerLocalModel} from './ViewManagerLocalModel';
  * Default Menu used by ViewManager.
  */
 export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model}) {
+    render({model, extraMenuItems}) {
         return menu({
             className: 'xh-view-manager__menu',
-            items: [...getNavMenuItems(model.parent), menuDivider(), ...getOtherMenuItems(model)]
+            items: [
+                ...getNavMenuItems(model.parent),
+                menuDivider(),
+                ...parseMenuItems(extraMenuItems),
+                menuDivider(),
+                ...getOtherMenuItems(model)
+            ].filter(filterConsecutiveMenuSeparators())
         });
     }
 });
 
 function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
-    const {enableDefault, view, typeDisplayName, globalDisplayName} = model,
+    const {enableDefault, view, defaultDisplayName, typeDisplayName, globalDisplayName} = model,
         ownedViews = groupBy(filter(model.ownedViews, 'isPinned'), 'group'),
         globalViews = groupBy(filter(model.globalViews, 'isPinned'), 'group'),
         sharedViews = groupBy(filter(model.sharedViews, 'isPinned'), 'owner'),
@@ -62,7 +69,7 @@ function getNavMenuItems(model: ViewManagerModel): ReactNode[] {
             menuItem({
                 className: 'xh-view-manager__menu-item',
                 icon: view.isDefault ? Icon.check() : Icon.placeholder(),
-                text: `Default ${startCase(typeDisplayName)}`,
+                text: `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`,
                 onClick: () => model.selectViewAsync(null).catchDefault()
             })
         );
@@ -162,12 +169,14 @@ function viewMenuItem(view: ViewInfo, model: ViewManagerModel): ReactNode {
     if (!view.isOwned && view.owner) title.push(view.owner);
     if (view.description) title.push(view.description);
 
-    return menuItem({
-        className: 'xh-view-manager__menu-item',
-        key: view.token,
-        text: view.name,
-        title: title.join(' | '),
-        icon,
-        onClick: () => model.selectViewAsync(view).catchDefault()
-    });
+    return isFunction(model.viewMenuItemFn)
+        ? model.viewMenuItemFn(view, model)
+        : menuItem({
+              className: 'xh-view-manager__menu-item',
+              key: view.token,
+              text: view.name,
+              title: title.join(' | '),
+              icon,
+              onClick: () => model.selectViewAsync(view).catchDefault()
+          });
 }

@@ -4,45 +4,46 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
-import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
+import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
+import {mask} from '@xh/hoist/cmp/mask';
+import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
-import {suspendPanel} from '@xh/hoist/desktop/appcontainer/SuspendPanel';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
+import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
-import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {columnHeaderFilter} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilter';
 import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/ColumnHeaderFilterModel';
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
-import {mask} from '@xh/hoist/cmp/mask';
+import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
+import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
-import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
-import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
+import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
+import {ReactElement} from 'react';
 import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
-import {ReactElement} from 'react';
 
 installDesktopImpls({
     tabContainerImpl,
@@ -172,19 +173,7 @@ const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
     mask({bind: model.appLoadModel, spinner: true})
 );
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
     render({model}) {
@@ -196,9 +185,9 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-function globalHotKeys(model) {
+function globalHotKeys(model: AppContainerModel) {
     const {impersonationBarModel, optionsDialogModel} = model,
-        ret = [
+        ret: HotkeyConfig[] = [
             {
                 global: true,
                 combo: 'shift + r',
@@ -212,7 +201,10 @@ function globalHotKeys(model) {
             global: true,
             combo: 'shift + i',
             label: 'Impersonate another user',
-            onKeyDown: () => impersonationBarModel.toggleVisibility()
+            onKeyDown: e => {
+                consumeEvent(e); // avoid typing "i" in the impersonation bar select
+                impersonationBarModel.toggleVisibility();
+            }
         });
     }
     if (optionsDialogModel.hasOptions) {

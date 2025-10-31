@@ -5,8 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isFunction} from 'lodash';
-import {action, makeObservable, observable} from 'mobx';
 import {ReactNode} from 'react';
 
 export interface ErrorBoundaryConfig {

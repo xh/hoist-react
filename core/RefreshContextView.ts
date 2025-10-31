@@ -30,7 +30,7 @@ export const [RefreshContextView, refreshContextView] = hoistCmp.withFactory({
                 parent.register(model);
                 return () => parent.unregister(model);
             }
-        });
+        }, [model, parent]);
 
         return children;
     }

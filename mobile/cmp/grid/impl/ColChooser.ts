@@ -60,7 +60,6 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                     onDragEnd: impl.onDragEnd,
                     items: [
                         panel({
-                            title: 'Visible Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
                             items: [
@@ -90,6 +89,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             item: droppable({
                                 droppableId: 'hidden-columns',
+                                isDropDisabled: true,
                                 children: dndProps =>
                                     columnList({
                                         model: impl,
@@ -118,8 +118,10 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                     onClick: () => model.close()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Apply',
                     icon: Icon.check(),
+                    intent: 'primary',
+                    outlined: true,
                     onClick: () => {
                         model.commit();
                         model.close();

@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
-import {apiDeprecated, deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -54,15 +54,6 @@ export class IdentityService extends HoistService {
         return this.authUser?.username ?? null;
     }
 
-    /**
-     * Logs the current user out and reloads the application.
-     * @deprecated use XH.logoutAsync() instead.
-     */
-    async logoutAsync() {
-        apiDeprecated('logoutAsync', {v: '67', msg: 'Call XH.logoutAsync() instead.'});
-        return XH.logoutAsync();
-    }
-
     //------------------------
     // Impersonation
     //------------------------
@@ -104,27 +95,25 @@ export class IdentityService extends HoistService {
             !this.canAuthUserImpersonate,
             'User does not have right to impersonate or impersonation is disabled.'
         );
-        return XH.fetchJson({
+        await XH.prefService.pushPendingAsync();
+        await XH.fetchJson({
             url: 'xh/impersonate',
             params: {
                 username: username
             }
-        }).then(() => {
-            XH.reloadApp();
         });
+        XH.reloadApp();
     }
 
     /** Exit any active impersonation, reloading the app to resume accessing it as yourself. */
     async endImpersonateAsync() {
-        return XH.fetchJson({
-            url: 'xh/endImpersonate'
-        })
-            .then(() => {
-                XH.reloadApp();
-            })
-            .catchDefault({
-                message: 'Failed to end impersonation'
-            });
+        try {
+            await XH.prefService?.pushPendingAsync();
+            await XH.fetchJson({url: 'xh/endImpersonate'});
+            XH.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {message: 'Failed to end impersonation'});
+        }
     }
 
     //------------------------

@@ -18,9 +18,8 @@ export const versionBar = hoistCmp.factory({
         const inspectorSvc = XH.inspectorService,
             envSvc = XH.environmentService,
             env = envSvc.get('appEnvironment'),
-            version = envSvc.get('clientVersion'),
             build = envSvc.get('clientBuild'),
-            instance = envSvc.serverInstance,
+            version = envSvc.get('clientVersion'),
             isAdminApp = window.location.pathname?.startsWith('/admin/'),
             versionAndBuild =
                 !build || build === 'UNKNOWN' ? version : `${version} (build ${build})`;
@@ -34,9 +33,9 @@ export const versionBar = hoistCmp.factory({
                     items: '|'
                 }),
                 span({
-                    className: 'xh-version-bar__instance',
-                    title: 'Currently Connected Server Instance',
-                    items: [Icon.server(), instance]
+                    className: 'xh-version-bar__tabid',
+                    title: 'Tab ID',
+                    item: XH.tabId
                 }),
                 span({
                     className: 'xh-version-bar__spacer',
@@ -55,7 +54,13 @@ export const versionBar = hoistCmp.factory({
                 Icon.wrench({
                     omit: isAdminApp || !XH.getUser().isHoistAdminReader,
                     title: 'Open Admin Console',
-                    onClick: () => window.open('/admin')
+                    onClick: () => XH.appContainerModel.openAdmin()
+                }),
+                // Force GC, available via V8/chromium and "start chrome --js-flags="--expose-gc"
+                Icon.memory({
+                    omit: !window['gc'],
+                    title: 'Force GC',
+                    onClick: () => window['gc']()
                 })
             ]
         });

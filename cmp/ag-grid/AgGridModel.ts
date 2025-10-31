@@ -18,6 +18,7 @@ import {
     isEmpty,
     isEqual,
     isNil,
+    isObject,
     partition,
     setWith,
     startCase
@@ -305,65 +306,22 @@ export class AgGridModel extends HoistModel {
                 it => !isArray(it.colId)
             ),
             {agApi} = this,
-            isPivot = agApi.isPivotMode(),
-            havePivotCols = !isEmpty(agApi.getPivotColumns()),
             defaultState = {
                 sort: null,
                 sortIndex: null
             };
 
-        // ag-Grid does not allow "secondary" columns to be manipulated by applyColumnState
-        // so this approach is required for setting sort config on secondary columns.
-        if (isPivot && havePivotCols && !isEmpty(secondaryColumnState)) {
-            // 1st clear all pre-existing primary column sorts
-            // with an explicit clear of the auto_group column,
-            // which is not cleared by the defaultState config.
-            agApi.applyColumnState({
-                state: [
-                    {
-                        colId: AgGridModel.AUTO_GROUP_COL_ID,
-                        sort: null,
-                        sortIndex: null
-                    }
-                ],
-                defaultState
-            });
-
-            // 2nd clear all pre-existing secondary column sorts
-            agApi.getPivotResultColumns().forEach(col => {
-                if (col) {
-                    // When using `applyColumnState`, `undefined` means do nothing, `null` means set to none, not cleared.
-                    // But when using the setSort & setSortIndex methods directly, to clear all sort settings as if no sort
-                    // had ever been specified, `undefined` must be used.
-                    col.setSort(undefined, null);
-                    col.setSortIndex(undefined);
-                }
-            });
-
-            // finally apply sorts from state to secondary columns
-            secondaryColumnState.forEach(state => {
-                // TODO -- state saving for pivot appears broken.
-                // Related to TS error below? Need to analyze and tear down if no longer needed.
-                // @ts-ignore
-                const col = agApi.getPivotResultColumn(state.colId[0], state.colId[1]);
-                if (col) {
-                    col.setSort(state.sort, null);
-                    col.setSortIndex(state.sortIndex);
-                } else {
-                    this.logWarn(
-                        'Could not find a secondary column to associate with the pivot column path',
-                        state.colId
-                    );
-                }
-            });
-        }
+        // ag-Grid has had issues manipulating secondary columns with applyColumnState
+        // If support here deemed necessary, more investigation could be done.
+        throwIf(
+            agApi.isPivotMode() &&
+                !isEmpty(agApi.getPivotColumns()) &&
+                !isEmpty(secondaryColumnState),
+            'setSortState not currently supported for PivotGrid with secondary column state '
+        );
 
         // always apply any sorts on primary columns (includes the auto_group column on pivot grids)
-        agApi.applyColumnState({
-            state: primaryColumnState,
-            defaultState
-        });
-
+        agApi.applyColumnState({state: primaryColumnState, defaultState});
         agApi.onSortChanged();
     }
 
@@ -416,7 +374,6 @@ export class AgGridModel extends HoistModel {
         const sortBy = castArray(value).map(it => GridSorter.parse(it));
         const {agApi} = this,
             prevSortBy = this._prevSortBy;
-        let togglingAbsSort = false;
 
         if (isEqual(prevSortBy, sortBy)) return;
 
@@ -429,7 +386,6 @@ export class AgGridModel extends HoistModel {
                 )
             )
         ) {
-            togglingAbsSort = true;
             agApi.applyColumnState({defaultState: {sort: null, sortIndex: null}});
         }
 
@@ -447,12 +403,6 @@ export class AgGridModel extends HoistModel {
             defaultState: {sort: null, sortIndex: null}
         });
 
-        // Workaround needed for ag v27.
-        // https://github.com/xh/hoist-react/issues/2997
-        if (togglingAbsSort) {
-            agApi.redrawRows();
-        }
-
         this._prevSortBy = sortBy;
     }
 
@@ -466,27 +416,23 @@ export class AgGridModel extends HoistModel {
 
         const expandState = {};
         this.agApi.forEachNode(node => {
-            if (!node.allChildrenCount) return;
-
-            if (node.expanded) {
-                // Skip if parent is collapsed. Parents are visited before children,
-                // so should already be in expandState if expanded.
-                const parent = node.parent;
-                if (
-                    parent &&
-                    parent.id !== 'ROOT_NODE_ID' &&
-                    !has(expandState, this.getGroupNodePath(parent))
-                ) {
-                    return;
-                }
-
-                // Note use of setWith + customizer - required to ensure that nested nodes are
-                // serialized as objects - see https://github.com/xh/hoist-react/issues/3550.
-                const path = this.getGroupNodePath(node);
-                setWith(expandState, path, true, () => ({}));
+            if (!node.allChildrenCount || !node.expanded) return;
+            // Skip if parent is collapsed. Parents are visited before children,
+            // so should already be in expandState if expanded.
+            const parent = node.parent;
+            if (
+                parent &&
+                parent.id !== 'ROOT_NODE_ID' &&
+                !has(expandState, this.getGroupNodePath(parent))
+            ) {
+                return;
             }
-        });
 
+            const path = this.getGroupNodePath(node);
+            // Note use of setWith + customizer - required to ensure that nested nodes are
+            // serialized as objects - see https://github.com/xh/hoist-react/issues/3550.
+            setWith(expandState, path, true, nsValue => (isObject(nsValue) ? nsValue : {}));
+        });
         return expandState;
     }
 

@@ -72,7 +72,6 @@ export class HoistInputModel extends HoistModel {
      */
     get domEl(): HTMLElement {
         const current = this.domRef.current as ReactInstance;
-        // eslint-disable-next-line no-undef
         return (
             !current || current instanceof Element ? current : findDOMNode(current)
         ) as HTMLElement;

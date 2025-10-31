@@ -10,9 +10,8 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 import {isEmpty} from 'codemirror/src/util/misc';
-import filesize from 'filesize';
+import {filesize} from 'filesize';
 import {find, uniqBy, without} from 'lodash';
 
 export class FileChooserModel extends HoistModel {
@@ -63,12 +62,6 @@ export class FileChooserModel extends HoistModel {
     @action
     clear() {
         this.files = [];
-    }
-
-    /** @deprecated use clear() instead */
-    removeAllFiles() {
-        apiDeprecated('FileChooserModel.removeAllFiles()', {msg: 'Use clear() instead'});
-        this.clear();
     }
 
     //------------------------

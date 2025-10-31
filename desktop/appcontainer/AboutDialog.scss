@@ -16,17 +16,18 @@
   }
 
   th {
-    text-align: right;
-    vertical-align: middle;
-    white-space: nowrap;
     background-color: var(--xh-bg-alt);
     border-bottom: var(--xh-border-solid);
     border-right: var(--xh-border-solid);
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    text-align: right;
+    vertical-align: middle;
+    white-space: nowrap;
   }
 
   td {
     border-bottom: var(--xh-border-solid);
+    cursor: copy;
     padding: var(--xh-pad-half-px);
   }
 }

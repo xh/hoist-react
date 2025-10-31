@@ -16,9 +16,8 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, when as mobxWhen} from '@xh/hoist/mobx';
+import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import numbro from 'numbro';
 import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
@@ -41,7 +40,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, throwIf} from '@xh/hoist/utils/js';
+import {checkMinVersion, createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -105,6 +104,21 @@ export class AppContainerModel extends HoistModel {
      * Update within `AppModel.initAsync()` to relay app-specific initialization status.
      */
     @bindable initializingLoadMaskMessage: ReactNode;
+
+    /**
+     * The last interactive login in the app. Hoist's security package will mark the last
+     * time spent during user interactive login.
+     *
+     * Used by `Promise.track`, to ensure this time is not counted in any elapsed time tracking
+     * for the app.
+     * @internal
+     */
+    lastRelogin: {started: number; completed: number} = null;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
 
     /**
      * Main entry point. Initialize and render application code.
@@ -183,7 +197,7 @@ export class AppContainerModel extends HoistModel {
 
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
-            XH.authModel = new this.appSpec.authModelClass();
+            XH.authModel = createSingleton(this.appSpec.authModelClass);
             const isAuthenticated = await XH.authModel.completeAuthAsync();
             if (!isAuthenticated) {
                 throwIf(
@@ -222,10 +236,6 @@ export class AppContainerModel extends HoistModel {
             await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
             await installServicesAsync(TrackService);
             await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
-
-            if (XH.flags.applyBigNumberWorkaround) {
-                numbro['BigNumber'].clone();
-            }
 
             // Confirm hoist-core version after environment service loaded.
             const hcVersion = XH.getEnv('hoistCoreVersion');
@@ -277,8 +287,7 @@ export class AppContainerModel extends HoistModel {
             await wait(XH.isDevelopmentMode ? 300 : 1);
 
             this.setAppState('INITIALIZING_APP');
-            const modelClass: any = this.appSpec.modelClass;
-            this.appModel = modelClass.instance = new modelClass();
+            this.appModel = createSingleton(this.appSpec.modelClass);
             await this.appModel.initAsync();
             this.startRouter();
             this.startOptionsDialog();
@@ -326,6 +335,10 @@ export class AppContainerModel extends HoistModel {
 
     hasAboutDialog() {
         return !isEmpty(this.aboutDialogModel.getItems());
+    }
+
+    openAdmin() {
+        XH.openWindow('/admin', XH.appCode + '_xhAdmin');
     }
 
     //----------------------------
