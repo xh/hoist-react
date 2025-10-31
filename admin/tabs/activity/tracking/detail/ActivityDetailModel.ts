@@ -61,7 +61,7 @@ export class ActivityDetailModel extends HoistModel {
 
     @computed
     get hasSelection() {
-        return this.gridModel.selectedRecord != null;
+        return this.gridModel?.selectedRecord != null;
     }
 
     constructor() {
