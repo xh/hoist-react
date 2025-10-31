@@ -24,14 +24,14 @@ export function installCopyToClipboard(Highcharts) {
             try {
                 const blobPromise = convertChartToPngAsync(this),
                     clipboardItemInput = new window.ClipboardItem({
-                        // Safari requires an unresolved promise.  See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion
+                        // Safari requires an unresolved promise. See https://bugs.webkit.org/show_bug.cgi?id=222262 for discussion
                         'image/png': Highcharts.isSafari ? blobPromise : await blobPromise
                     });
                 await window.navigator.clipboard.write([clipboardItemInput]);
                 XH.successToast('Chart copied to clipboard');
             } catch (e) {
                 XH.handleException(e, {showAlert: false, logOnServer: true});
-                XH.dangerToast('Error: Chart could not be copied.  This error has been logged.');
+                XH.dangerToast('Error: Chart could not be copied. This error has been logged.');
             }
         }
     });
@@ -41,14 +41,7 @@ export function installCopyToClipboard(Highcharts) {
 // Implementation
 //------------------
 async function convertChartToPngAsync(chart) {
-    const svg = await new Promise((resolve, reject) =>
-            chart.getSVGForLocalExport(
-                chart.options.exporting,
-                {},
-                () => reject('Cannot fallback to export server'),
-                svg => resolve(svg)
-            )
-        ),
+    const svg = chart.getSVG(),
         svgUrl = svgToDataUrl(svg),
         pngDataUrl = await svgUrlToPngDataUrlAsync(svgUrl),
         ret = await loadBlob(pngDataUrl);
@@ -65,7 +58,7 @@ function memoryCleanup(svgUrl) {
 }
 
 /**
- * Convert dataUri converted to blob
+ * Convert dataUri to blob
  */
 async function loadBlob(dataUrl) {
     const fetched = await fetch(dataUrl);
@@ -84,7 +77,7 @@ function svgToDataUrl(svg) {
     try {
         // Safari requires data URI since it doesn't allow navigation to blob
         // URLs.
-        // foreignObjects dont work well in Blobs in Chrome (#14780).
+        // foreignObjects don't work well in Blobs in Chrome (#14780).
         if (!isWebKitButNotChrome && svg.indexOf('<foreignObject') === -1) {
             return domurl.createObjectURL(
                 new window.Blob([svg], {
@@ -94,7 +87,7 @@ function svgToDataUrl(svg) {
         }
     } catch (e) {}
 
-    // safari, firefox, or svgs with foreignObect returns this
+    // Safari, Firefox, or SVGs with foreignObect returns this
     return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
 
