@@ -59,13 +59,13 @@ export interface PersistOptions {
 
     /**
      *  Function returning blob of data to be used for reading state.
-     *  Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     *  Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     getData?: () => any;
 
     /**
      * Function to be used to write blob of data representing state.
-     * Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     * Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     setData?: (data: object) => void;
 }
