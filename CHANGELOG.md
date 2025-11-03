@@ -2,6 +2,13 @@
 
 ## 78.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+*  New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+
+### 🐞 Bug Fixes
+*  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
+   then returned to its original value in a subsequent edit.
+
 ## 77.0.1 - 2025-10-29
 
 ### 💥 Breaking Changes

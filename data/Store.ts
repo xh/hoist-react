@@ -515,10 +515,12 @@ export class Store extends HoistBase {
 
             return new StoreRecord({
                 id,
-                data: parsedData,
                 store: this,
+                raw: null,
+                data: parsedData,
+                committedData: null,
                 parent,
-                committedData: null
+                isSummary: false
             });
         });
 
@@ -585,13 +587,22 @@ export class Store extends HoistBase {
             const currentRec = this.getOrThrow(id),
                 updatedData = this.parseUpdate(currentRec.data, mod);
 
+            // If after parsing, data is deep equal, its a no-op
+            if (equal(updatedData, currentRec.data)) return;
+
+            // Previously updated record might now be reverted to clean, normalize
+            const committedData =
+                currentRec.isModified && equal(currentRec.committedData, updatedData)
+                    ? updatedData
+                    : currentRec.committedData;
+
             const updatedRec = new StoreRecord({
                 id: currentRec.id,
+                store: currentRec.store,
                 raw: currentRec.raw,
                 data: updatedData,
+                committedData: committedData,
                 parent: currentRec.parent,
-                store: currentRec.store,
-                committedData: currentRec.committedData,
                 isSummary: currentRec.isSummary
             });
 
@@ -1040,7 +1051,15 @@ export class Store extends HoistBase {
         }
 
         data = this.parseRaw(data);
-        const ret = new StoreRecord({id, data, raw, parent, store: this, isSummary});
+        const ret = new StoreRecord({
+            id,
+            store: this,
+            raw,
+            data,
+            committedData: data,
+            parent,
+            isSummary
+        });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
         if (isSummary) ret.finalize();
@@ -1097,7 +1116,7 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private parseUpdate(data, update) {
+    private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
         const {_fieldMap} = this;
 
         // a) clone the existing object
@@ -1155,9 +1174,11 @@ export class Store extends HoistBase {
 
             const ret = new StoreRecord({
                 id: recToRevert.id,
-                raw: recToRevert.raw,
-                data: {...recToRevert.committedData},
                 store: this,
+                raw: recToRevert.raw,
+                data: recToRevert.committedData,
+                committedData: recToRevert.committedData,
+                parent: null,
                 isSummary: true
             });
             ret.finalize();
