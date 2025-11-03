@@ -44,7 +44,7 @@ export interface StoreConfig {
      * Default configs applied to `Field` instances constructed internally by this Store.
      * @see FieldSpec
      */
-    fieldDefaults?: any;
+    fieldDefaults?: Omit<FieldSpec, 'name'>;
 
     /**
      * Specification for producing an immutable unique id for each record. May be provided as
@@ -978,17 +978,20 @@ export class Store extends HoistBase {
         this.summaryRecords = null;
     }
 
-    private parseFields(fields: any[], defaults: any): Field[] {
+    private parseFields(
+        fields: Array<string | FieldSpec | Field>,
+        defaults: Omit<FieldSpec, 'name'>
+    ): Field[] {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
 
-            if (isString(f)) f = {name: f};
+            let fieldSpec: FieldSpec = isString(f) ? {name: f} : f;
 
             if (!isEmpty(defaults)) {
-                f = defaultsDeep({}, f, defaults);
+                fieldSpec = defaultsDeep({}, fieldSpec, defaults);
             }
 
-            return new this.defaultFieldClass(f);
+            return new this.defaultFieldClass(fieldSpec);
         });
 
         throwIf(
@@ -1041,24 +1044,34 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private createRecords(rawData: PlainObject[], parent: StoreRecord, recordMap = new Map()) {
+    private createRecords(
+        rawData: PlainObject[],
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
         const {loadTreeData, loadTreeDataFrom} = this;
+
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id) || this.summaryRecords?.some(it => it.id === id),
+                recordMap.has(id) || summaryRecordIds.has(id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
             recordMap.set(id, rec);
 
             if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap);
+                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
             }
         });
         return recordMap;
+    }
+
+    private get summaryRecordIds(): Set<StoreRecordId> {
+        return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }
 
     private parseRaw(data: PlainObject): PlainObject {

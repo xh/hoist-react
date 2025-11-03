@@ -395,7 +395,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             exportOptions: {filename: exportFilename('activity-summary')},
-            emptyText: 'No activity reported...',
+            emptyText: 'No activity reported.',
             sortBy: ['cubeLabel'],
             expandLevel: 1,
             levelLabels: () => ['Total', ...this.groupingChooserModel.valueDisplayNames],
