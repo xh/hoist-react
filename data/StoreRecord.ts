@@ -6,11 +6,12 @@
  */
 import {PlainObject} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch} from 'lodash';
+import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
+import equal from 'fast-deep-equal';
 
 /**
  * Wrapper object for each data element within a {@link Store}. Records must be assigned a unique ID
@@ -185,6 +186,26 @@ export class StoreRecord {
     }
 
     /**
+     * Get a map of modified values only.
+     *
+     * If record has no modifications, this method will return null.
+     * If modifications are returned, the returned object will include id,
+     * for convenience.
+     */
+    getModifiedValues(): PlainObject {
+        if (!this.isModified) return null;
+
+        const {data, committedData} = this,
+            ret = pickBy(data, (v, k) => !equal(v, committedData[k]));
+        if (!isEmpty(ret)) {
+            ret.id = this.id;
+            return ret;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Construct a StoreRecord from a pre-processed `data` source object.
      *
      * Not typically called by applications directly - `Store` instances create `StoreRecord`s when
@@ -195,15 +216,7 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {
-            id,
-            store,
-            data,
-            raw = null,
-            committedData = data,
-            parent,
-            isSummary = false
-        } = config;
+        const {id, store, raw, data, committedData, parent, isSummary} = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
