@@ -20,7 +20,7 @@ export const versionBar = hoistCmp.factory({
         const svc = XH.environmentService,
             env = svc.get('appEnvironment'),
             version = svc.get('clientVersion'),
-            tabId = XH.tabId
+            tabId = XH.tabId;
 
         return box({
             justifyContent: 'center',
