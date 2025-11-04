@@ -106,21 +106,25 @@ export class DashCanvasModel
     private isLoadingState: boolean;
 
     get rglLayout() {
-        return this.layout.map(it => {
-            const dashCanvasView = this.getView(it.i),
-                {autoHeight, viewSpec} = dashCanvasView;
+        return this.layout
+            .map(it => {
+                const dashCanvasView = this.getView(it.i);
+                if (!dashCanvasView) return null;
 
-            return {
-                ...it,
-                resizeHandles: autoHeight
-                    ? ['w', 'e']
-                    : ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'],
-                maxH: viewSpec.maxHeight,
-                minH: viewSpec.minHeight,
-                maxW: viewSpec.maxWidth,
-                minW: viewSpec.minWidth
-            };
-        });
+                const {autoHeight, viewSpec} = dashCanvasView;
+
+                return {
+                    ...it,
+                    resizeHandles: autoHeight
+                        ? ['w', 'e']
+                        : ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'],
+                    maxH: viewSpec.maxHeight,
+                    minH: viewSpec.minHeight,
+                    maxW: viewSpec.maxWidth,
+                    minW: viewSpec.minWidth
+                };
+            })
+            .filter(Boolean);
     }
 
     constructor({
