@@ -25,8 +25,8 @@
 //------------------------
 // Blueprint overrides
 //------------------------
-.bp5-navbar,
-.bp5-dark .bp5-navbar {
+.bp6-navbar,
+.bp6-dark .bp6-navbar {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -40,7 +40,7 @@
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
   min-height: var(--xh-appbar-height-px);
 
-  .bp5-navbar-divider {
+  .bp6-navbar-divider {
     border-left-color: var(--xh-tbar-separator-color);
   }
 
@@ -49,17 +49,17 @@
     flex-shrink: 0;
   }
 
-  .bp5-navbar-heading {
+  .bp6-navbar-heading {
     color: var(--xh-appbar-title-color);
     font-size: var(--xh-appbar-title-font-size-px);
     margin-left: var(--xh-pad-px);
   }
 
-  .bp5-navbar-group {
+  .bp6-navbar-group {
     overflow: hidden;
     height: var(--xh-appbar-height-px);
 
-    .bp5-navbar-divider {
+    .bp6-navbar-divider {
       margin: 0 var(--xh-pad-px);
     }
 
@@ -70,7 +70,7 @@
       margin: 0 5px 0 0;
     }
 
-    &.bp5-align-left {
+    &.bp6-align-left {
       // Flex simulates left alignment
       flex: 1;
 
@@ -80,13 +80,13 @@
       }
     }
 
-    &.bp5-align-right {
+    &.bp6-align-right {
       // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
-      > *:not(.bp5-navbar-divider):not(.xh-no-pad) {
+      > *:not(.bp6-navbar-divider):not(.xh-no-pad) {
         margin-left: var(--xh-pad-px);
       }
 
-      .bp5-navbar-divider {
+      .bp6-navbar-divider {
         margin-right: 0;
       }
     }
