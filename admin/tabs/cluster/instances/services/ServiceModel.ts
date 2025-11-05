@@ -156,7 +156,7 @@ export class ServiceModel extends BaseInstanceModel {
         // For Grails >7, we provide class to determine provider
         // TODO: simplify when Hoist v34+ required.
         const provider =
-            r.name?.startsWith('hoistCore') || r.className?.startsWith('io.xh.hoist')
+            r.name.startsWith('hoistCore') || r.className?.startsWith('io.xh.hoist')
                 ? 'Hoist'
                 : 'App';
         const displayName = lowerFirst(r.name.replace('hoistCore', ''));
