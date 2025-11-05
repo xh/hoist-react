@@ -28,6 +28,11 @@
   the `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
   react nodes for formatting instead.
 
+### ⚙️ Technical
+
+* Support Grails 7 service name conventions in admin client (backward compatible)
+
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
