@@ -33,6 +33,11 @@
 * Fixed `AgGridModel.getExpandState()` not returning a full representation of expanded groups -
   an issue that primarily affected linked tree map visualizations.
 
+### ⚙️ Technical
+
+* Support Grails 7 service name conventions in admin client (backward compatible)
+
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical

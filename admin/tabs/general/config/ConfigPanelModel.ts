@@ -7,7 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {hbox, hspacer} from '@xh/hoist/cmp/layout';
+import {br, fragment, hbox, hspacer} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
@@ -17,14 +17,14 @@ import {
     cloneAction,
     deleteAction,
     editAction,
-    RestGridModel,
-    RestStore
+    RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
+import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../regroup/RegroupDialogModel';
-import {Icon} from '@xh/hoist/icon';
 
 export class ConfigPanelModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminConfigState'};
@@ -43,18 +43,27 @@ export class ConfigPanelModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const required = true,
+        const {regroupAction} = this.regroupDialogModel,
+            required = true,
             enableCreate = true,
             hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly: AppModel.readonly,
-            persistWith: this.persistWith,
+            // Core config
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('configs')},
+            filterFields: ['name', 'value', 'groupName', 'note'],
+            groupBy: 'groupName',
+            persistWith: this.persistWith,
+            prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
+            readonly: AppModel.readonly,
             selModel: 'multiple',
-            store: new RestStore({
+            sortBy: 'name',
+            unit: 'config',
+            // Store + fields
+            store: {
                 url: 'rest/configAdmin',
                 reloadLookupsOnLoad: true,
                 fieldDefaults: {enableXssProtection: false},
@@ -83,25 +92,8 @@ export class ConfigPanelModel extends HoistModel {
                         editable: false
                     }
                 ]
-            }),
-            actionWarning: {
-                del: records =>
-                    `Are you sure you want to delete ${records.length} config(s)? Deleting configs can break running apps.`
             },
-            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
-            menuActions: [
-                addAction,
-                editAction,
-                cloneAction,
-                deleteAction,
-                '-',
-                this.regroupDialogModel.regroupAction
-            ],
-            prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
-            unit: 'config',
-            filterFields: ['name', 'value', 'groupName', 'note'],
-            sortBy: 'name',
-            groupBy: 'groupName',
+            // Cols + editors
             columns: [
                 {...Col.groupName, hidden},
                 {...Col.name},
@@ -138,7 +130,19 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
-            ]
+            ],
+            // Actions
+            actionWarning: {
+                del: records =>
+                    fragment(
+                        `Are you sure you want to delete ${pluralize('selected config', records.length, true)}?`,
+                        br(),
+                        br(),
+                        `Deleting configs can break running apps.`
+                    )
+            },
+            menuActions: [addAction, editAction, cloneAction, deleteAction, '-', regroupAction],
+            toolbarActions: [addAction, editAction, cloneAction, deleteAction]
         });
     }
 
