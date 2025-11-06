@@ -12,6 +12,7 @@ import {
     foldKeymap,
     indentOnInput,
     LanguageDescription,
+    LanguageSupport,
     syntaxHighlighting
 } from '@codemirror/language';
 import {linter, lintGutter} from '@codemirror/lint';
@@ -47,7 +48,6 @@ import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -320,7 +320,7 @@ class CodeInputModel extends HoistInputModel {
         });
     }
 
-    manageCodeEditor = async (container: HTMLElement) => {
+    createCodeEditor = async (container: HTMLElement) => {
         if (!container) return;
         const extensions = await this.getExtensionsAsync();
 
@@ -344,22 +344,15 @@ class CodeInputModel extends HoistInputModel {
 
     toggleFullScreen() {
         this.modalSupportModel.toggleIsModal();
-        wait().then(() => {
-            const scroller = this.editor?.scrollDOM;
-            if (scroller) {
-                scroller.scrollTop += 2;
-                scroller.scrollTop -= 2;
-            }
-        });
     }
 
     @action
     findAll() {
         if (!this.editor || !this.query?.trim()) return;
 
-        const doc = this.editor.state.doc.toString();
-        const matches = [];
-        let idx = doc.indexOf(this.query);
+        let doc = this.editor.state.doc.toString(),
+            matches = [],
+            idx = doc.indexOf(this.query);
         while (idx !== -1) {
             matches.push({from: idx, to: idx + this.query.length});
             idx = doc.indexOf(this.query, idx + 1);
@@ -482,17 +475,17 @@ class CodeInputModel extends HoistInputModel {
         return XH.darkTheme ? dracula : solarizedLight;
     }
 
-    private async getLanguageExtensionAsync(lang: string) {
-        const langDesc: LanguageDescription | undefined = find(
-            languages,
-            it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
-        );
-        if (!langDesc) return [];
+    private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
         try {
+            const langDesc: LanguageDescription | undefined = find(
+                languages,
+                it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
+            );
+            if (!langDesc) return null;
             return await langDesc.load();
         } catch (err) {
             console.error(`Failed to load language: ${lang}`, err);
-            return [];
+            return null;
         }
     }
 
@@ -530,7 +523,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
-                ref: model.manageCodeEditor
+                ref: model.createCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],

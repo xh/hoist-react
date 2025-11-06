@@ -9,6 +9,7 @@ import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
 import Ajv, {Options, SchemaObject, ValidateFunction} from 'ajv';
 import {codeInput, CodeInputProps} from './CodeInput';
+import {jsonlint} from './impl/jsonlint.js';
 
 export interface JsonInputProps extends CodeInputProps {
     /**
@@ -48,74 +49,112 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
 //----------------------
 // JSON Linter helper
 //----------------------
-
 function jsonLinterWrapper(jsonSchema?: PlainObject, ajvProps?: Options) {
-    let validate: ValidateFunction | undefined;
+    // No schema → only use JSONLint
+    if (!jsonSchema) return jsonLintOnly;
 
-    if (jsonSchema) {
-        const ajv = new Ajv({...ajvProps});
+    const ajv = new Ajv({...ajvProps}),
         validate = ajv.compile(jsonSchema);
-    }
 
     return (text: string) => {
         const annotations: any[] = [];
+
         if (!text.trim()) return annotations;
-        // Try parsing JSON
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (err: any) {
-            annotations.push({
-                from: 0,
-                to: Math.min(1, text.length),
-                message: err.message,
-                severity: 'error'
-            });
-            return annotations;
-        }
 
-        // Skip schema validation if no schema provided
-        if (!validate) return annotations;
+        runJsonLint(text, annotations);
+        if (annotations.length) return annotations;
 
-        const valid = validate(data);
-        if (valid || !validate.errors) return annotations;
-
-        for (const err of validate.errors) {
-            const path = err.instancePath || '';
-            let from = 0,
-                to = 0,
-                key = '';
-
-            // Handle "additionalProperties" separately
-            if (err.keyword === 'additionalProperties' && err.params?.additionalProperty) {
-                key = err.params.additionalProperty;
-            } else {
-                const pointerParts = path.split('/').filter(Boolean);
-                key = pointerParts[pointerParts.length - 1];
-            }
-
-            // Try to locate the key in the JSON text for highlighting
-            if (key) {
-                const keyIdx = text.indexOf(`"${key}"`);
-                if (keyIdx >= 0) {
-                    from = keyIdx;
-                    to = keyIdx + key.length + 2;
-                }
-            }
-
-            let message = `${path || '(root)'} ${err.message}`;
-            if (err.keyword === 'additionalProperties' && key) {
-                message = `Unexpected property "${key}"`;
-            }
-
-            annotations.push({
-                from,
-                to,
-                message,
-                severity: 'error'
-            });
-        }
+        runAjvValidation(text, validate, annotations);
 
         return annotations;
     };
+}
+
+/** Run JSONLint and append errors to annotations */
+function runJsonLint(text: string, annotations: any[]) {
+    jsonlint.parseError = (message, hash) => {
+        const {first_line, first_column, last_line, last_column} = hash.loc;
+        annotations.push({
+            from: indexFromLineCol(text, first_line, first_column),
+            to: indexFromLineCol(text, last_line, last_column),
+            message,
+            severity: 'error'
+        });
+    };
+
+    try {
+        jsonlint.parse(text);
+    } catch {
+        // intentionally ignored: parseError handles reporting
+    }
+}
+
+/** Run AJV schema validation and append errors to annotations */
+function runAjvValidation(text: string, validate: ValidateFunction, annotations: any[]) {
+    let data: any;
+    try {
+        data = JSON.parse(text);
+    } catch {
+        return;
+    }
+
+    const valid = validate(data);
+    if (valid || !validate.errors) return;
+
+    validate.errors.forEach(err => {
+        const {from, to} = getErrorPosition(err, text),
+            message = formatAjvMessage(err);
+
+        annotations.push({from, to, message, severity: 'error'});
+    });
+}
+
+/** Determine text positions for AJV error highlighting */
+function getErrorPosition(err: any, text: string): {from: number; to: number} {
+    let from = 0,
+        to = 0,
+        key: string;
+
+    if (err.keyword === 'additionalProperties' && err.params?.additionalProperty) {
+        key = err.params.additionalProperty;
+    } else {
+        const parts = (err.instancePath || '').split('/').filter(Boolean);
+        key = parts[parts.length - 1];
+    }
+
+    if (key) {
+        const idx = text.indexOf(`"${key}"`);
+        if (idx >= 0) {
+            from = idx;
+            to = idx + key.length + 2;
+        }
+    }
+
+    return {from, to};
+}
+
+/** Format AJV error messages nicely */
+function formatAjvMessage(err: any): string {
+    const path = err.instancePath || '(root)';
+    if (err.keyword === 'additionalProperties' && err.params?.additionalProperty) {
+        return `Unexpected property "${err.params.additionalProperty}"`;
+    }
+    return `${path} ${err.message}`;
+}
+
+/** JSONLint-only linter (used when no jsonSchema prop) */
+function jsonLintOnly(text: string) {
+    const annotations: any[] = [];
+    if (!text) return annotations;
+
+    runJsonLint(text, annotations);
+    return annotations;
+}
+
+/** Convert line/col to string index */
+function indexFromLineCol(text: string, line: number, col: number): number {
+    const lines = text.split('\n');
+    let idx = 0;
+    for (let i = 0; i < line - 1; i++) idx += lines[i].length + 1;
+    return idx + col;
 }
