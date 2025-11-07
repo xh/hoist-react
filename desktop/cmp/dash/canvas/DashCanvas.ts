@@ -98,7 +98,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         ),
                         ...rglOptions
                     }),
-                    emptyContainerOverlay()
+                    emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
                 ],
                 [TEST_ID]: testId
             })

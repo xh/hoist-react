@@ -50,6 +50,12 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 
     /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
+
+    /**
+     * Whether an overlay with an Add View button should be rendered
+     * when the canvas is empty. Default true.
+     */
+    showAddViewButtonWhenEmpty?: boolean;
 }
 
 export interface DashCanvasItemState {
@@ -86,7 +92,9 @@ export class DashCanvasModel
     //-----------------------------
     // Public properties
     //-----------------------------
+    DROPPING_ELEM_ID = '__dropping-elem__';
     maxRows: number;
+    showAddViewButtonWhenEmpty: boolean;
 
     /** Current number of rows in canvas */
     get rows(): number {
@@ -143,7 +151,8 @@ export class DashCanvasModel
         margin = [10, 10],
         maxRows = Infinity,
         containerPadding = margin,
-        extraMenuItems
+        extraMenuItems,
+        showAddViewButtonWhenEmpty = true
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
@@ -191,6 +200,7 @@ export class DashCanvasModel
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+        this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
 
         this.loadState(initialState);
         this.state = this.buildState();
@@ -263,6 +273,27 @@ export class DashCanvasModel
             h: height
         };
         return this.addViewInternal(specId, {title, layout, state});
+    }
+
+    @action dropViewIntoCanvas(
+        specId: string,
+        opts: {
+            title: string;
+            state: any;
+            layout: {
+                x: number;
+                y: number;
+                w: number;
+                h: number;
+            };
+        },
+        rglLayout: any[]
+    ): DashCanvasViewModel {
+        const newViewModel: DashCanvasViewModel = this.addViewInternal(specId, opts),
+            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+        droppingItem.i = newViewModel.id;
+        this.onRglLayoutChange(rglLayout);
+        return newViewModel;
     }
 
     /**
@@ -390,6 +421,8 @@ export class DashCanvasModel
 
     onRglLayoutChange(rglLayout) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
+        if (rglLayout.some(it => it.i === this.DROPPING_ELEM_ID)) return;
+
         this.setLayout(rglLayout);
     }
 
