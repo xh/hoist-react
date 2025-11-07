@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 *  New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+*  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
 
 ### 🐞 Bug Fixes
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
