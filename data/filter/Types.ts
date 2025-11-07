@@ -28,7 +28,9 @@ export type FieldFilterOperator =
     | 'like'
     | 'not like'
     | 'begins'
+    | 'not begins'
     | 'ends'
+    | 'not ends'
     | 'includes'
     | 'excludes';
 export interface FieldFilterSpec {
