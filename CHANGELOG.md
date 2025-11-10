@@ -8,6 +8,7 @@
 ### 🐞 Bug Fixes
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
    then returned to its original value in a subsequent edit.
+*  Restore support for `TabModel.content` being nullable to support dynamic tab content.
 
 ## 77.0.1 - 2025-10-29
 
