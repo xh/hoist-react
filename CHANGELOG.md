@@ -9,6 +9,9 @@
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
    then returned to its original value in a subsequent edit.
 
+*  Remove stray context menu from appearing when clicking on column group headers and other grid
+   empty space.
+
 ## 77.0.1 - 2025-10-29
 
 ### 💥 Breaking Changes
