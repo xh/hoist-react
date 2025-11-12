@@ -8,6 +8,7 @@
 ### 🐞 Bug Fixes
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
    then returned to its original value in a subsequent edit.
+*  Restore support for `TabModel.content` being nullable to support dynamic tab content.
 
 *  Remove stray context menu from appearing when clicking on column group headers and other grid
    empty space.
