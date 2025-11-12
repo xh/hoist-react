@@ -51,7 +51,7 @@ const modelSpec: RestGridConfig = {
     showRefreshButton: true,
     store: {
         url: 'rest/monitorAdmin',
-        fieldDefaults: {disableXssProtection: true},
+        fieldDefaults: {enableXssProtection: false},
         fields: [
             {...(MCol.code.field as FieldSpec), required},
             MCol.metricUnit.field,

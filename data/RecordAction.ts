@@ -6,17 +6,17 @@
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
-import {ReactElement} from 'react';
-import {Intent, PlainObject, TestSupportProps} from '../core';
+import {ReactElement, ReactNode} from 'react';
+import {Intent, TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {Column, GridModel} from '../cmp/grid';
 
 export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */
-    text?: string;
+    text?: ReactNode;
 
     /** Additional label to be displayed, usually in a minimal fashion.*/
-    secondaryText?: string;
+    secondaryText?: ReactNode;
 
     /** Icon to be displayed.*/
     icon?: ReactElement;
@@ -100,15 +100,15 @@ export interface ActionFnData {
  * @see GridContextMenuSpec
  */
 export class RecordAction {
-    text: string;
-    secondaryText: string;
+    text: ReactNode;
+    secondaryText: ReactNode;
     icon: ReactElement;
     intent: Intent;
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: ActionFnData) => PlainObject;
-    items: Array<RecordAction | string>;
+    displayFn: (data: ActionFnData) => RecordActionSpec;
+    items: RecordActionLike[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean | number;
@@ -152,11 +152,17 @@ export class RecordAction {
      * Called by UI elements to get the display configuration for rendering the action.
      * @internal
      */
-    getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}: ActionFnData) {
+    getDisplaySpec({
+        record,
+        selectedRecords,
+        gridModel,
+        column,
+        ...rest
+    }: ActionFnData): RecordActionSpec {
         const recordCount =
             record && isEmpty(selectedRecords) ? 1 : selectedRecords ? selectedRecords.length : 0;
 
-        const defaultDisplay = {
+        const defaultDisplay: RecordActionSpec = {
             icon: this.icon,
             text: this.text,
             secondaryText: this.secondaryText,

@@ -4,19 +4,22 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {Some, XH} from '@xh/hoist/core';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, Store, StoreRecord} from '@xh/hoist/data';
-import {convertIconToHtml, Icon} from '@xh/hoist/icon';
-import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
-import copy from 'clipboard-copy';
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import {isValidElement} from 'react';
-import {renderToStaticMarkup} from '@xh/hoist/utils/react';
-import {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
-
-import type {GetContextMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
+import copy from 'clipboard-copy';
+import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
+import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {wait} from '@xh/hoist/promise';
+import {div, span} from '@xh/hoist/cmp/layout';
+import {
+    useGridMenuItem,
+    type GetContextMenuItemsParams,
+    type MenuItemDef,
+    type CustomMenuItemProps
+} from '@xh/hoist/kit/ag-grid';
+import type {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
 
 /**
  * @internal
@@ -76,22 +79,22 @@ function buildMenuItems(
             subMenu = buildMenuItems(displaySpec.items, record, gridModel, column, agParams);
         }
 
-        const icon = isValidElement(displaySpec.icon) ? convertIconToHtml(displaySpec.icon) : null;
-
         const cssClasses = ['xh-grid-menu-option'];
         if (displaySpec.intent)
             cssClasses.push(`xh-grid-menu-option--intent-${displaySpec.intent}`);
         if (displaySpec.className) cssClasses.push(displaySpec.className);
 
         ret.push({
-            name: displaySpec.text,
-            shortcut: displaySpec.secondaryText,
-            icon,
+            menuItem: RecordActionMenuItem,
+            menuItemParams: {
+                displaySpec
+            },
+            // Standard MenuActionProps
             cssClasses,
             subMenu,
             tooltip: displaySpec.tooltip,
             disabled: displaySpec.disabled,
-            // Avoid specifying action if no handler, allows submenus to remain open if accidentally clicked
+            // Don't specify action if no handler, allows submenus to remain open if clicked
             action: action.actionFn ? () => action.call(actionParams) : undefined
         });
     });
@@ -186,14 +189,9 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                   column,
                                   gridModel
                               })
-                            : (values[0] ?? '[blank]'),
-                        // Grid col renderers will very typically return elements, but we need this to be a string.
-                        // That's the contract for `RecordAction.text`, but even more importantly, we end up piping
-                        // those actions into Ag-Grid context menus, which *only* accept strings / HTML markup
-                        // and *not* ReactElements (as of AG v28.2).
-                        text = isValidElement(elem) ? renderToStaticMarkup(elem) : elem;
+                            : (values[0] ?? '[blank]');
 
-                    return {text};
+                    return {text: elem};
                 };
 
             return new RecordAction({
@@ -302,3 +300,43 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
         }
     });
 }
+
+/**
+ * A MenuItem for a Hoist RecordAction.
+ *
+ * A variant of the standard ag-Grid Context menu.  Unlike built-in ag-Grid menu item,
+ * provides support for specifying 'text' and 'shortcut' display as react elements.
+ *
+ * @internal
+ */
+
+interface RecordActionMenuItemProps extends HoistProps, CustomMenuItemProps {
+    displaySpec: RecordActionSpec;
+}
+
+const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
+    render({displaySpec, subMenu}: RecordActionMenuItemProps) {
+        useGridMenuItem({
+            configureDefaults: () => true
+        });
+
+        return div(
+            span({className: 'ag-menu-option-part ag-menu-option-icon', item: displaySpec.icon}),
+            span({className: 'ag-menu-option-part ag-menu-option-text', item: displaySpec.text}),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-shortcut',
+                item: displaySpec.secondaryText
+            }),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-popup-pointer',
+                item: subMenu
+                    ? span({
+                          className: 'ag-icon ag-icon-small-right',
+                          unselectable: 'on',
+                          role: 'presentation'
+                      })
+                    : ''
+            })
+        );
+    }
+});
