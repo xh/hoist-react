@@ -12,6 +12,7 @@ import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, isObject} from 'lodash';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
+import {dynamicTabSwitcher} from '../dynamic/DynamicTabSwitcher';
 import {tab} from './Tab';
 
 /**
@@ -58,11 +59,12 @@ function getChildren(
         return div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)});
     }
 
-    const {activeTabId} = model,
+    const {activeTabId, dynamicTabSwitcherModel} = model,
         switcherBefore = ['left', 'top'].includes(switcher?.orientation),
         switcherAfter = ['right', 'bottom'].includes(switcher?.orientation),
+        switcherImpl = dynamicTabSwitcherModel ? dynamicTabSwitcher : tabSwitcher,
         switcherCmp = switcher
-            ? tabSwitcher({key: 'switcher', testId: getTestId(testId, 'switcher'), ...switcher})
+            ? switcherImpl({key: 'switcher', testId: getTestId(testId, 'switcher'), ...switcher})
             : null;
 
     return [
