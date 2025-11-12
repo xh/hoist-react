@@ -234,7 +234,7 @@ export class TabContainerModel extends HoistModel {
         if (toRemove === activeTab) {
             let toActivate = this.findTab(this.lastActiveTabId);
             if (!toActivate || toActivate === toRemove) {
-                toActivate = this.nextTab ?? this.prevTab; // TODO - consider whether next/prev are disabled
+                toActivate = this.nextTab ?? this.prevTab;
             }
             if (toActivate) {
                 this.activateTab(toActivate);
