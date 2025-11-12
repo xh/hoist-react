@@ -22,7 +22,15 @@ export const AppComponent = hoistCmp({
         return panel({
             tbar: tbar(),
             className: 'xh-admin-app',
-            item: tabContainer()
+            item: tabContainer({
+                switcher: false,
+                childTabContainerProps: ({tabId}) => ({
+                    switcher: {
+                        orientation: 'left',
+                        testId: `${tabId}-tab-switcher`
+                    }
+                })
+            })
         });
     }
 });

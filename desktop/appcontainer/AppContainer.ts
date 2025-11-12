@@ -25,7 +25,7 @@ import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilter
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
-import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
@@ -59,7 +59,8 @@ installDesktopImpls({
     useContextMenu,
     ModalSupportModel,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    DynamicTabSwitcherModel
 });
 /**
  * Top-level wrapper for Desktop applications.

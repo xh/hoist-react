@@ -10,23 +10,29 @@ import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen'
 import '@xh/hoist/mobile/register';
 import {debounced, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isEmpty, isObject} from 'lodash';
 import {tab} from './Tab';
 import './Tabs.scss';
-import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
+import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 
 /**
  * Mobile Implementation of TabContainer.
  *
  * @internal
  */
-export function tabContainerImpl({model, className}: TabContainerProps) {
-    const {activeTab, switcher} = model,
+export function tabContainerImpl({model, className, switcher}: TabContainerProps) {
+    const switcherProps: TabSwitcherProps = isObject(switcher)
+        ? switcher
+        : switcher === false
+          ? null
+          : {orientation: 'bottom'};
+
+    const {activeTab} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
         impl = useLocalModel(TabContainerLocalModel);
 
     throwIf(
-        switcher && !['top', 'bottom'].includes(switcher.orientation),
+        switcher && !['top', 'bottom'].includes(switcherProps.orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
 
@@ -38,8 +44,8 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
     }
 
     return onsenTabbar({
-        className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
-        position: switcher?.orientation,
+        className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
+        position: switcherProps?.orientation,
         activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: (idx, ref) => {
             impl.setSwiper(ref);
@@ -47,7 +53,7 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
         },
         onPreChange: e => model.activateTab(tabs[e.index].id),
         hideTabs: !switcher,
-        ...switcher
+        ...switcherProps
     });
 }
 
