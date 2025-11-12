@@ -1,6 +1,6 @@
 # Changelog
 
-## 78.0.0-SNAPSHOT - unreleased
+## 77.1.1 - 2025-11-12
 
 ### 🎁 New Features
 *  New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
@@ -9,7 +9,6 @@
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
    then returned to its original value in a subsequent edit.
 *  Restore support for `TabModel.content` being nullable to support dynamic tab content.
-
 *  Remove stray context menu from appearing when clicking on column group headers and other grid
    empty space.
 
