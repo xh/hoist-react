@@ -194,7 +194,6 @@ export class TabModel extends HoistModel {
             renderMode: parent.renderMode,
             refreshMode: parent.refreshMode,
             emptyText: parent.emptyText,
-            switcher: parent.switcher,
             track: parent.track,
             ...childConfig
         };
@@ -209,7 +208,7 @@ export class TabModel extends HoistModel {
             };
         }
 
-        this.childContainerModel = new TabContainerModel(childConfig);
+        this.childContainerModel = new TabContainerModel(childConfig, parent.depth + 1);
         return tabContainer({model: this.childContainerModel});
     }
 }

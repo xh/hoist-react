@@ -1,8 +1,8 @@
 import composeRefs from '@seznam/compose-react-refs';
-import {div, hframe} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
+import {box, div, hframe} from '@xh/hoist/cmp/layout';
+import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
+import {ActionTab, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {
-    BoxProps,
     hoistCmp,
     HoistModel,
     HoistProps,
@@ -15,7 +15,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
-import {ActionTabSpec} from '@xh/hoist/desktop/cmp/tab/dynamic/Types';
 import {Icon} from '@xh/hoist/icon';
 import {showContextMenu, tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
@@ -23,37 +22,31 @@ import {wait} from '@xh/hoist/promise';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, last} from 'lodash';
+import {first, isFinite, last} from 'lodash';
 import {computed} from 'mobx';
 import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
-import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
+import {DesktopDynamicTabSwitcherModel} from './DesktopDynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
-
-export interface DynamicTabSwitcherProps extends HoistProps<DynamicTabSwitcherModel>, BoxProps {
-    /** Relative position within the parent TabContainer. Defaults to 'top'. */
-    orientation?: Side;
-}
 
 /**
  * A tab switcher that displays tabs as draggable items in a horizontal list.
  * Tabs can be added, removed, reordered and favorited with persistence.
  */
-export const [DynamicTabSwitcher, dynamicTabSwitcher] =
-    hoistCmp.withFactory<DynamicTabSwitcherProps>({
-        className: 'xh-dynamic-tab-switcher',
-        displayName: 'DynamicTabSwitcher',
-        model: uses(DynamicTabSwitcherModel),
-        render({className, orientation, ...props}) {
-            const impl = useLocalModel(DynamicTabSwitcherLocalModel);
-            return scroller({
-                className: classNames(className, impl.isVertical && `${className}--vertical`),
-                content: tabs,
-                contentProps: {localModel: impl},
-                orientation: ['left', 'right'].includes(orientation) ? 'vertical' : 'horizontal',
-                ...getLayoutProps(props)
-            });
-        }
-    });
+export const [DynamicTabSwitcher, dynamicTabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>({
+    className: 'xh-dynamic-tab-switcher',
+    displayName: 'DynamicTabSwitcher',
+    model: uses(TabContainerModel),
+    render({className, orientation, ...props}) {
+        const impl = useLocalModel(DynamicTabSwitcherLocalModel);
+        return scroller({
+            className: classNames(className, impl.isVertical && `${className}--vertical`),
+            content: tabs,
+            contentProps: {localModel: impl},
+            orientation: ['left', 'right'].includes(orientation) ? 'vertical' : 'horizontal',
+            ...getLayoutProps(props)
+        });
+    }
+});
 
 /**
  * Minimal local model to avoid prop drilling.
@@ -64,8 +57,8 @@ class DynamicTabSwitcherLocalModel extends HoistModel {
         return ['left', 'right'].includes(this.props.orientation);
     }
 
-    get props(): DynamicTabSwitcherProps {
-        const ret = this.componentProps as DynamicTabSwitcherProps;
+    get props(): TabSwitcherProps {
+        const ret = this.componentProps as TabSwitcherProps;
         return {
             ...ret,
             orientation: ret.orientation ?? 'top'
@@ -73,42 +66,47 @@ class DynamicTabSwitcherLocalModel extends HoistModel {
     }
 }
 
-interface TabsProps extends HoistProps<DynamicTabSwitcherModel> {
+interface TabsProps extends HoistProps<DesktopDynamicTabSwitcherModel> {
     localModel: DynamicTabSwitcherLocalModel;
     ref: Ref<HTMLDivElement>;
 }
 
-const tabs = hoistCmp.factory<TabsProps>(({localModel, model}, ref) => {
-    const {visibleTabs} = model,
-        {isVertical, props} = localModel;
-    return dragDropContext({
-        onDragEnd: result => model.onDragEnd(result),
-        item: droppable({
-            droppableId: model.xhId,
-            direction: isVertical ? 'vertical' : 'horizontal',
-            children: provided =>
-                div({
-                    className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
-                    ref: composeRefs(provided.innerRef, ref),
-                    item: div({
-                        className: classNames('bp5-tabs', isVertical && 'bp5-vertical'),
+const tabs = hoistCmp.factory<TabsProps>({
+    model: uses(DesktopDynamicTabSwitcherModel),
+    render({localModel, model}, ref) {
+        const {visibleTabs} = model,
+            {isVertical, props} = localModel,
+            layoutProps = getLayoutProps(props);
+        return dragDropContext({
+            onDragEnd: result => model.onDragEnd(result),
+            item: droppable({
+                droppableId: model.xhId,
+                direction: isVertical ? 'vertical' : 'horizontal',
+                children: provided =>
+                    box({
+                        ...layoutProps,
+                        className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
+                        ref: composeRefs(provided.innerRef, ref),
                         item: div({
-                            className: 'bp5-tab-list',
-                            items: [
-                                visibleTabs.map((tab, index) =>
-                                    tabCmp({key: tab.id, localModel, tab, index})
-                                ),
-                                provided.placeholder
-                            ]
+                            className: classNames('bp5-tabs', isVertical && 'bp5-vertical'),
+                            item: div({
+                                className: 'bp5-tab-list',
+                                items: [
+                                    visibleTabs.map((tab, index) =>
+                                        tabCmp({key: tab.id, localModel, tab, index})
+                                    ),
+                                    provided.placeholder
+                                ]
+                            })
                         })
                     })
-                })
-        })
-    });
+            })
+        });
+    }
 });
 
-interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
-    tab: TabModel | ActionTabSpec;
+interface TabProps extends HoistProps<DesktopDynamicTabSwitcherModel> {
+    tab: TabModel | ActionTab;
     index: number;
     localModel: DynamicTabSwitcherLocalModel;
 }
@@ -123,7 +121,14 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         {showScrollButtons} = scrollerModel,
         {disabled, icon, tooltip} = tab,
         isFavorite = model.isTabFavorite(tab.id),
-        {isVertical, props} = localModel;
+        {isVertical, props} = localModel,
+        {tabWidth, tabMinWidth, tabMaxWidth} = props;
+
+    // Handle tab sizing props
+    const tabStyle: CSSProperties = {};
+    if (!isVertical && isFinite(tabWidth)) tabStyle.width = tabWidth + 'px';
+    if (!isVertical && isFinite(tabMinWidth)) tabStyle.minWidth = tabMinWidth + 'px';
+    if (!isVertical && isFinite(tabMaxWidth)) tabStyle.maxWidth = tabMaxWidth + 'px';
 
     // Handle this at the component level rather than in the model since they are not "linked"
     useEffect(() => {
@@ -180,6 +185,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                             position: flipOrientation(props.orientation),
                             item: hframe({
                                 className: 'xh-tab-switcher__tab',
+                                style: tabStyle,
                                 tabIndex: -1,
                                 items: [
                                     div({

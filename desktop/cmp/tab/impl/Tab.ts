@@ -5,9 +5,17 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabModel} from '@xh/hoist/cmp/tab';
-import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
+import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
+import {
+    hoistCmp,
+    HoistProps,
+    PlainObject,
+    refreshContextView,
+    TestSupportProps,
+    uses
+} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
+import {isFunction} from 'lodash';
 import {useRef} from 'react';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
@@ -21,13 +29,17 @@ import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
  *
  * @internal
  */
-export const tab = hoistCmp.factory({
+interface TabProps extends HoistProps<TabModel>, TestSupportProps {
+    childTabContainerProps?: TabContainerProps['childTabContainerProps'];
+}
+
+export const tab = hoistCmp.factory<TabProps>({
     displayName: 'Tab',
     className: 'xh-tab',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model, className, testId}) {
-        const {content, isActive, renderMode, refreshContextModel} = model,
+    render({model, childTabContainerProps, className, testId}) {
+        const {childContainerModel, content, isActive, id, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -39,13 +51,25 @@ export const tab = hoistCmp.factory({
             return null;
         }
 
+        let contentProps: PlainObject = {flex: 1};
+        if (childContainerModel) {
+            if (isFunction(childTabContainerProps)) {
+                contentProps = {
+                    ...contentProps,
+                    ...childTabContainerProps({tabId: id, depth: childContainerModel.depth})
+                };
+            } else if (childTabContainerProps) {
+                contentProps = {...contentProps, ...childTabContainerProps};
+            }
+        }
+
         return frame({
             display: isActive ? 'flex' : 'none',
             className,
             testId,
             item: refreshContextView({
                 model: refreshContextModel,
-                item: errorBoundary(elementFromContent(content, {flex: 1}))
+                item: errorBoundary(elementFromContent(content, contentProps))
             })
         });
     }

@@ -5,9 +5,13 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
+    DynamicTabSwitcherConfig,
+    DynamicTabSwitcherModel,
+    TabContainerModelPersistOptions
+} from '@xh/hoist/cmp/tab/Types';
+import {
     HoistModel,
     managed,
-    Persistable,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
@@ -16,14 +20,14 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
+import {DesktopDynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DesktopDynamicTabSwitcherModel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {difference, find, findLast, isString, without} from 'lodash';
+import {difference, find, findLast, isObject, isString, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
-import {TabSwitcherProps} from './TabSwitcherProps';
 
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
@@ -42,11 +46,9 @@ export interface TabContainerConfig {
     route?: string;
 
     /**
-     * Indicates whether to include a default switcher docked within this component. Specify as a
-     * boolean or an object containing props for a TabSwitcher component. Set to false to not
-     * include a switcher. Defaults to true.
+     * Config with which to create a DynamicTabSwitcherModel, or boolean `true` to enable default
      */
-    switcher?: boolean | TabSwitcherProps;
+    dynamicTabSwitcherModel?: DynamicTabSwitcherConfig | boolean;
 
     /**
      * True to enable activity tracking of tab views (default false).  Viewing of each tab will
@@ -87,7 +89,7 @@ export interface TabContainerConfig {
  *
  * Note: Routing is currently enabled for desktop applications only.
  */
-export class TabContainerModel extends HoistModel implements Persistable<{activeTabId: string}> {
+export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;
 
     @managed
@@ -97,9 +99,9 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     @observable
     activeTabId: string;
 
+    depth: number; // Depth in hierarchy of nested TabContainerModels
     route: string;
     defaultTabId: string;
-    switcher: TabSwitcherProps;
     track: boolean;
     renderMode: RenderMode;
     refreshMode: RefreshMode;
@@ -108,31 +110,31 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     @managed
     refreshContextModel: RefreshContextModel;
 
+    @managed
+    dynamicTabSwitcherModel: DynamicTabSwitcherModel;
+
     protected lastActiveTabId: string;
 
-    constructor({
-        tabs = [],
-        defaultTabId = null,
-        route = null,
-        switcher = true,
-        track = false,
-        renderMode = 'lazy',
-        refreshMode = 'onShowLazy',
-        persistWith,
-        emptyText = 'No tabs to display.',
-        xhImpl = false
-    }: TabContainerConfig) {
+    constructor(
+        {
+            tabs = [],
+            defaultTabId = null,
+            route = null,
+            track = false,
+            renderMode = 'lazy',
+            refreshMode = 'onShowLazy',
+            persistWith,
+            emptyText = 'No tabs to display.',
+            xhImpl = false,
+            dynamicTabSwitcherModel
+        }: TabContainerConfig,
+        depth = 0 // Passed internally for nested containers
+    ) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
 
-        throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
-
-        // Create default switcher props
-        if (switcher === true) switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};
-        if (switcher === false) switcher = null;
-
-        this.switcher = switcher as TabSwitcherProps;
+        this.depth = depth;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.defaultTabId = defaultTabId;
@@ -142,6 +144,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
         this.refreshContextModel.xhImpl = xhImpl;
+        this.dynamicTabSwitcherModel = this.parseDynamicTabSwitcherModel(dynamicTabSwitcherModel);
 
         if (route) {
             if (XH.isMobileApp) {
@@ -156,16 +159,9 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             wait().then(() => this.syncWithRouter());
 
             this.forwardRouterToTab(this.activeTabId);
-        } else if (persistWith) {
-            ((this.persistWith = {
-                path: 'tabContainer',
-                ...persistWith
-            }),
-                PersistenceProvider.create({
-                    persistOptions: this.persistWith,
-                    target: this
-                }));
         }
+
+        if (persistWith) this.initPersist(persistWith);
 
         if (track) {
             this.addReaction({
@@ -333,17 +329,6 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     }
 
     //-------------------------
-    // Persistable Interface
-    //-------------------------
-    getPersistableState(): PersistableState<{activeTabId: string}> {
-        return new PersistableState({activeTabId: this.activeTabId});
-    }
-
-    setPersistableState(state: PersistableState<{activeTabId: string}>): void {
-        this.activateTab(state.value.activeTabId);
-    }
-
-    //-------------------------
     // Implementation
     //-------------------------
     @action
@@ -396,6 +381,73 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         if (ret) return ret.id;
 
         return null;
+    }
+
+    private parseDynamicTabSwitcherModel(
+        cfg: DynamicTabSwitcherConfig | boolean
+    ): DynamicTabSwitcherModel {
+        if (!cfg) return null;
+        throwIf(XH.isMobileApp, 'DynamicTabSwitcherModel not supported for mobile TabContainer.');
+        const modelClass = DesktopDynamicTabSwitcherModel;
+
+        return this.markManaged(new modelClass(cfg === true ? {} : cfg, this));
+    }
+
+    private initPersist({
+        persistActiveTabId = !this.route,
+        persistFavoriteTabIds = !!this.dynamicTabSwitcherModel,
+        path = 'tabContainer',
+        ...rootPersistWith
+    }: TabContainerModelPersistOptions) {
+        if (persistActiveTabId) {
+            if (this.route) {
+                this.logWarn('persistActiveTabId and route cannot both be specified.');
+            }
+            const persistWith = isObject(persistActiveTabId)
+                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistActiveTabId)
+                : rootPersistWith;
+            PersistenceProvider.create({
+                persistOptions: {
+                    path: `${path}.activeTabId`,
+                    ...persistWith
+                },
+                target: {
+                    getPersistableState: () => new PersistableState(this.activeTabId),
+                    setPersistableState: ({value}) => this.activateTab(value)
+                },
+                owner: this
+            });
+        }
+
+        if (persistFavoriteTabIds) {
+            const {dynamicTabSwitcherModel} = this;
+            if (!dynamicTabSwitcherModel) {
+                this.logWarn(
+                    'persistFavoriteTabIds is set but no DynamicTabSwitcherModel is present.'
+                );
+            } else {
+                const persistWith = isObject(persistFavoriteTabIds)
+                    ? PersistenceProvider.mergePersistOptions(
+                          rootPersistWith,
+                          persistFavoriteTabIds
+                      )
+                    : rootPersistWith;
+                PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favoriteTabIds`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () =>
+                            new PersistableState(dynamicTabSwitcherModel.favoriteTabIds),
+                        setPersistableState: ({value}) => {
+                            dynamicTabSwitcherModel.setFavoriteTabIds(value);
+                        }
+                    },
+                    owner: this
+                });
+            }
+        }
     }
 }
 

@@ -8,6 +8,8 @@
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions.
 
+  TODO - UPDATE CHANGELOG ENTRY AND DOCUMENT BREAKING CHANGES TO TAB API
+
 ## 76.2.0 - 2025-10-22
 
 ### ⚙️ Technical
