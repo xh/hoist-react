@@ -413,7 +413,10 @@ export class FetchService extends HoistService {
         // Try to "smart" decode as server provided JSON Exception (with a name)
         try {
             const cType = headers.get('Content-Type');
-            if (cType?.includes('application/json')) {
+
+            // Catches application/json as well as optional JSON types, such as application/problem+json
+            const contentTypeMatcher = new RegExp(/application\/[^+]*[+]?(json);?.*/);
+            if (cType?.match(contentTypeMatcher)) {
                 const parsedResp = this.safeParseJson(responseText);
                 return this.createException({
                     ...defaults,
