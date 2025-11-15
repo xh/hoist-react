@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
-import {isEqual, isObject} from 'lodash';
+import {cloneDeep, differenceBy, isEqual, isObject} from 'lodash';
 import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
@@ -39,9 +39,17 @@ export function initPersist(
                     new PersistableColumnState(gridModel.persistableColumnState),
                 setPersistableState: ({value}) =>
                     runInAction(() => {
-                        // Set columnState directly since GridModel.setColumnState will merge the
-                        // provided state with the current state, which is not what we want here.
-                        gridModel.columnState = gridModel.cleanColumnState(value);
+                        // We need to merge the current (default) column state into the persisted state
+                        // so that we preserve the order from the persisted state while also preserving
+                        // any default state and order from the code for new columns
+                        const persistedState: ColumnState[] = cloneDeep(value),
+                            newCols = differenceBy(gridModel.columnState, persistedState, 'colId');
+
+                        gridModel.columnState = gridModel.cleanColumnState([
+                            ...persistedState,
+                            ...newCols
+                        ]);
+
                         if (gridModel.autosizeOptions.mode === 'managed') {
                             const columns = gridModel.columnState
                                 .filter(it => !it.manuallySized)
