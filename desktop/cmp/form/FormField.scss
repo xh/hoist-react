@@ -29,18 +29,18 @@
       align-items: stretch;
 
       .xh-input {
-        .bp5-input-group {
+        .bp6-input-group {
           width: 100%;
         }
 
-        &.bp5-popover-target,
-        .bp5-popover-target {
+        &.bp6-popover-target,
+        .bp6-popover-target {
           display: flex;
           flex: 1;
         }
       }
 
-      .bp5-popover-target > .bp5-control-group {
+      .bp6-popover-target > .bp6-control-group {
         display: flex;
         flex: 1;
       }

@@ -5,17 +5,17 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 .xh-popover-filter-chooser {
-  & > .bp5-popover-target {
+  & > .bp6-popover-target {
     display: flex;
     flex: 1;
   }
 
   // Extra class names required to override the default styles of the popover
-  &__popover.bp5-popover.bp5-minimal {
+  &__popover.bp6-popover.bp6-minimal {
     margin-top: -15px !important;
     box-shadow: none;
 
-    .bp5-popover-content {
+    .bp6-popover-content {
       background: transparent;
     }
 
