@@ -5,15 +5,16 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 import {FormFieldProps} from '../form';
 import {addAction, deleteAction, editAction, viewAction} from './Actions';
 import {RestStore, RestStoreConfig} from './data/RestStore';
@@ -39,9 +40,9 @@ export interface RestGridConfig extends GridConfig {
 
     /** Warning to display before actions on a selection of records. */
     actionWarning?: {
-        add?: string | ((recs: StoreRecord[]) => string);
-        del?: string | ((recs: StoreRecord[]) => string);
-        edit?: string | ((recs: StoreRecord[]) => string);
+        add?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
+        del?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
+        edit?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
     };
 
     /** Name that describes records in this grid. */
@@ -109,11 +110,7 @@ export class RestGridModel extends HoistModel {
         add: null,
         edit: null,
         del: recs =>
-            recs.length > 1
-                ? `Are you sure you want to delete the selected ${recs.length} ${pluralize(
-                      this.unit
-                  )}?`
-                : `Are you sure you want to delete the selected ${this.unit}?`
+            `Are you sure you want to delete ${pluralize(`selected ${this.unit}`, recs.length, true)}?`
     };
 
     @managed gridModel: GridModel = null;
