@@ -98,6 +98,7 @@ import {
     pull,
     take
 } from 'lodash';
+import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
@@ -442,6 +443,7 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
+    @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
