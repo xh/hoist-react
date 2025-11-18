@@ -6,7 +6,7 @@
  */
 import '@xh/hoist/desktop/register';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {div, filler, hbox, hframe, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, hframe, p, span, vbox} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
@@ -70,12 +70,20 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
     }
 });
 
-const introText = hoistCmp.factory({
-    render() {
+const introText = hoistCmp.factory<ZoneMapperModel>({
+    render({model}) {
         return div({
             className: 'xh-zone-mapper__intro-text',
             items: [
-                'Click any of the four quadrants in the sample row below to customize the fields displayed within. Fields will be shown in the order they are selected. The first field within the top zones will always be labelled by the column headers.'
+                p(
+                    Icon.questionCircle(),
+                    'Click to highlight any of the four quadrants in the sample row below, then check the field(s) you wish to show in that zone.'
+                ),
+                p('Fields will be shown in the order they are selected.'),
+                p({
+                    omit: model.headersAreHidden,
+                    item: 'The first field within the top two zones will always be labelled by the column headers.'
+                })
             ]
         });
     }
