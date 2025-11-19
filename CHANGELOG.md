@@ -2,10 +2,15 @@
 
 ## 78.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+*  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
+
 ### ⚙️ Technical
 
 * `FetchService` will recognize variants on the `application/json` content-type when processing
   failed responses and decoding exceptions - e.g. `application/problem+json`.
+
 
 ## 77.1.1 - 2025-11-12
 
