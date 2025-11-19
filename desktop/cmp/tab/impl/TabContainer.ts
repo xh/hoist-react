@@ -9,7 +9,7 @@ import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {getTestId} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isEmpty, isObject} from 'lodash';
+import {isEmpty, isNull, isObject} from 'lodash';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
 import {dynamicTabSwitcher} from '../dynamic/DynamicTabSwitcher';
@@ -21,18 +21,14 @@ import {tab} from './Tab';
  */
 export function tabContainerImpl({
     model,
-    childTabContainerProps,
+    childContainerProps,
     className,
     testId,
     ...props
 }: TabContainerProps) {
-    const switcher: TabSwitcherProps = isObject(props.switcher)
-            ? props.switcher
-            : props.switcher === false
-              ? null
-              : {orientation: 'top'},
+    const switcherProps = getSwitcherProps(props),
         layoutProps = getLayoutProps(props),
-        vertical = ['left', 'right'].includes(switcher?.orientation),
+        vertical = ['left', 'right'].includes(switcherProps?.orientation),
         container = vertical ? hbox : vbox;
 
     // Default flex = 'auto' if no dimensions / flex specified.
@@ -44,15 +40,21 @@ export function tabContainerImpl({
         ...layoutProps,
         className,
         testId,
-        item: getChildren(model, switcher, testId, childTabContainerProps)
+        item: getChildren(model, switcherProps, testId, childContainerProps)
     });
+}
+
+function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProps {
+    const {switcher} = tabContainerProps;
+    if (isObject(switcher)) return switcher;
+    return switcher === false || isNull(switcher) ? null : {orientation: 'top'};
 }
 
 function getChildren(
     model: TabContainerModel,
     switcher: TabSwitcherProps,
     testId: string,
-    childTabContainerProps: TabContainerProps['childTabContainerProps']
+    childContainerProps: TabContainerProps['childContainerProps']
 ) {
     const {tabs} = model;
     if (isEmpty(tabs)) {
@@ -78,7 +80,7 @@ function getChildren(
                 style,
                 key: tabId,
                 item: tab({
-                    childTabContainerProps,
+                    childContainerProps,
                     model: tabModel,
                     testId: getTestId(testId, tabId)
                 })

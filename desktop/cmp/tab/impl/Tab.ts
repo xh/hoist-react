@@ -30,7 +30,7 @@ import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
  * @internal
  */
 interface TabProps extends HoistProps<TabModel>, TestSupportProps {
-    childTabContainerProps?: TabContainerProps['childTabContainerProps'];
+    childContainerProps?: TabContainerProps['childContainerProps'];
 }
 
 export const tab = hoistCmp.factory<TabProps>({
@@ -38,7 +38,7 @@ export const tab = hoistCmp.factory<TabProps>({
     className: 'xh-tab',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model, childTabContainerProps, className, testId}) {
+    render({model, childContainerProps, className, testId}) {
         const {childContainerModel, content, isActive, id, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
@@ -53,13 +53,13 @@ export const tab = hoistCmp.factory<TabProps>({
 
         let contentProps: PlainObject = {flex: 1};
         if (childContainerModel) {
-            if (isFunction(childTabContainerProps)) {
+            if (isFunction(childContainerProps)) {
                 contentProps = {
                     ...contentProps,
-                    ...childTabContainerProps({tabId: id, depth: childContainerModel.depth})
+                    ...childContainerProps({tabId: id, depth: childContainerModel.depth})
                 };
-            } else if (childTabContainerProps) {
-                contentProps = {...contentProps, ...childTabContainerProps};
+            } else if (childContainerProps) {
+                contentProps = {...contentProps, ...childContainerProps};
             }
         }
 

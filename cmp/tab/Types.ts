@@ -32,12 +32,7 @@ export interface DynamicTabSwitcherMenuContext extends MenuContext {
     tab: TabModel | ActionTab;
 }
 
-export interface ActionTabSpec extends ActionTab {
-    /** Function called prior to showing this item. */
-    displayFn?: () => Omit<ActionTabSpec, 'id' | 'actionFn'>;
-}
-
-export interface ActionTab {
+export interface ActionTabSpec {
     /** Unique ID for the tab. */
     id: string;
     /** Display title for the Tab. */
@@ -48,11 +43,15 @@ export interface ActionTab {
     tooltip?: ReactNode;
     /** True to disable this tab. */
     disabled?: boolean;
-    /** True to omit this tab. */
-    omit?: boolean;
+    /** True to hide this tab. */
+    hidden?: boolean;
     /** Action to be performed when the tab is selected. */
     actionFn: () => void;
+    /** Function called prior to showing this item. */
+    displayFn?: () => Omit<ActionTab, 'id' | 'actionFn'>;
 }
+
+export type ActionTab = Omit<ActionTabSpec, 'displayFn' | 'hidden'>;
 
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */

@@ -10,7 +10,7 @@ import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen'
 import '@xh/hoist/mobile/register';
 import {debounced, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isEmpty, isObject} from 'lodash';
+import {isEmpty, isNull, isObject} from 'lodash';
 import {tab} from './Tab';
 import './Tabs.scss';
 import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
@@ -20,19 +20,14 @@ import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
  *
  * @internal
  */
-export function tabContainerImpl({model, className, switcher}: TabContainerProps) {
-    const switcherProps: TabSwitcherProps = isObject(switcher)
-        ? switcher
-        : switcher === false
-          ? null
-          : {orientation: 'bottom'};
-
-    const {activeTab} = model,
+export function tabContainerImpl({model, className, ...props}: TabContainerProps) {
+    const switcherProps = getSwitcherProps(props),
+        {activeTab} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
         impl = useLocalModel(TabContainerLocalModel);
 
     throwIf(
-        switcher && !['top', 'bottom'].includes(switcherProps.orientation),
+        switcherProps && !['top', 'bottom'].includes(switcherProps.orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
 
@@ -52,9 +47,15 @@ export function tabContainerImpl({model, className, switcher}: TabContainerProps
             return tabs.map(renderTabModel);
         },
         onPreChange: e => model.activateTab(tabs[e.index].id),
-        hideTabs: !switcher,
+        hideTabs: !switcherProps,
         ...switcherProps
     });
+}
+
+function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProps {
+    const {switcher} = tabContainerProps;
+    if (isObject(switcher)) return switcher;
+    return switcher === false || isNull(switcher) ? null : {orientation: 'bottom'};
 }
 
 function renderTabModel(tabModel: TabModel) {

@@ -12,26 +12,26 @@ import {TabContainerModel} from './TabContainerModel';
 
 export interface TabContainerProps extends HoistProps<TabContainerModel>, BoxProps {
     /**
+     * Indicates whether to include a default switcher docked within this component. Specify as a
+     * boolean or props for a TabSwitcher component. False to not include a switcher. Default true.
+     */
+    switcher?: boolean | TabSwitcherProps;
+
+    /**
      * Props to apply to child TabContainers, if any. Specify as an object or a function
      * that returns props based on the tabId and depth of the child container.
      */
-    childTabContainerProps?:
+    childContainerProps?:
         | TabContainerProps
         | ((ctx: {tabId: string; depth: number}) => TabContainerProps);
-    /**
-     * Indicates whether to include a default switcher docked within this component. Specify as a
-     * boolean or an object containing props for a TabSwitcher component. Set to false to not
-     * include a switcher. Defaults to true.
-     */
-    switcher?: boolean | TabSwitcherProps;
 }
 
 /**
  * Display a set of child Tabs and (optionally) a switcher control.
  *
  * By default, this TabContainer will install a TabSwitcher above the Tabs to control the currently
- * displayed Tab. The 'TabContainerProps.switcher' property can be adjusted to place the switcher
- * control on alternative edges of the container.
+ * displayed Tab. The 'switcher' prop can be adjusted to place the switcher control on alternative
+ * edges of the container.
  *
  * If `switcher` is set to false then no TabSwitcher will be installed.  This setting
  * is useful for applications that wish to place an associated TabSwitcher elsewhere in the

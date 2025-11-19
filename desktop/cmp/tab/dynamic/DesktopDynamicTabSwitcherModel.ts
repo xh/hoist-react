@@ -17,7 +17,7 @@ import {
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {compact, find, keyBy, uniqBy} from 'lodash';
+import {compact, find, keyBy, omit as lodashOmit, uniqBy} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
 import React from 'react';
 
@@ -115,9 +115,11 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     getActionTab(tabId: string): ActionTab {
         const actionTab = this.actionTabSpecsById[tabId];
         if (!actionTab) return null;
-        const ret = this.actionTabSpecsById[tabId];
-        if (ret.omit) return null;
-        return ret.displayFn ? {...ret, ...ret.displayFn()} : ret;
+        const {displayFn, ...rest} = this.actionTabSpecsById[tabId];
+        const {hidden, ...ret} = displayFn
+            ? {...rest, ...lodashOmit(displayFn(), ['id', 'actionFn'])}
+            : rest;
+        return hidden ? null : ret;
     }
 
     getContextMenuItems(

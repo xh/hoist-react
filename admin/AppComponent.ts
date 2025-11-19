@@ -24,7 +24,7 @@ export const AppComponent = hoistCmp({
             className: 'xh-admin-app',
             item: tabContainer({
                 switcher: false,
-                childTabContainerProps: ({tabId}) => ({
+                childContainerProps: ({tabId}) => ({
                     switcher: {
                         orientation: 'left',
                         testId: `${tabId}-tab-switcher`

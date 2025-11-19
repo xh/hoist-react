@@ -46,9 +46,10 @@ export interface TabContainerConfig {
     route?: string;
 
     /**
-     * Config with which to create a DynamicTabSwitcherModel, or boolean `true` to enable default
+     * Specification for type of switcher. Specify `dynamic` or config for user-configurable tabs.
+     * Default `static` for simple, static switcher.
      */
-    dynamicTabSwitcherModel?: DynamicTabSwitcherConfig | boolean;
+    switcher?: 'static' | 'dynamic' | DynamicTabSwitcherConfig;
 
     /**
      * True to enable activity tracking of tab views (default false).  Viewing of each tab will
@@ -115,6 +116,10 @@ export class TabContainerModel extends HoistModel {
 
     protected lastActiveTabId: string;
 
+    /**
+     * @param config - TabContainer configuration.
+     * @param [depth] - Depth in hierarchy of nested TabContainerModels. Not for application use.
+     */
     constructor(
         {
             tabs = [],
@@ -126,9 +131,9 @@ export class TabContainerModel extends HoistModel {
             persistWith,
             emptyText = 'No tabs to display.',
             xhImpl = false,
-            dynamicTabSwitcherModel
+            switcher = 'static'
         }: TabContainerConfig,
-        depth = 0 // Passed internally for nested containers
+        depth = 0
     ) {
         super();
         makeObservable(this);
@@ -144,7 +149,7 @@ export class TabContainerModel extends HoistModel {
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
         this.refreshContextModel.xhImpl = xhImpl;
-        this.dynamicTabSwitcherModel = this.parseDynamicTabSwitcherModel(dynamicTabSwitcherModel);
+        this.dynamicTabSwitcherModel = this.parseSwitcher(switcher);
 
         if (route) {
             if (XH.isMobileApp) {
@@ -383,14 +388,12 @@ export class TabContainerModel extends HoistModel {
         return null;
     }
 
-    private parseDynamicTabSwitcherModel(
-        cfg: DynamicTabSwitcherConfig | boolean
-    ): DynamicTabSwitcherModel {
-        if (!cfg) return null;
+    private parseSwitcher(switcher: TabContainerConfig['switcher']): DynamicTabSwitcherModel {
+        if (!switcher || switcher === 'static') return null;
         throwIf(XH.isMobileApp, 'DynamicTabSwitcherModel not supported for mobile TabContainer.');
         const modelClass = DesktopDynamicTabSwitcherModel;
 
-        return this.markManaged(new modelClass(cfg === true ? {} : cfg, this));
+        return this.markManaged(new modelClass(switcher === 'dynamic' ? {} : switcher, this));
     }
 
     private initPersist({
@@ -402,21 +405,22 @@ export class TabContainerModel extends HoistModel {
         if (persistActiveTabId) {
             if (this.route) {
                 this.logWarn('persistActiveTabId and route cannot both be specified.');
+            } else {
+                const persistWith = isObject(persistActiveTabId)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistActiveTabId)
+                    : rootPersistWith;
+                PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.activeTabId`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () => new PersistableState(this.activeTabId),
+                        setPersistableState: ({value}) => this.activateTab(value)
+                    },
+                    owner: this
+                });
             }
-            const persistWith = isObject(persistActiveTabId)
-                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistActiveTabId)
-                : rootPersistWith;
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.activeTabId`,
-                    ...persistWith
-                },
-                target: {
-                    getPersistableState: () => new PersistableState(this.activeTabId),
-                    setPersistableState: ({value}) => this.activateTab(value)
-                },
-                owner: this
-            });
         }
 
         if (persistFavoriteTabIds) {
