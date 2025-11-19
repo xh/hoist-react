@@ -38,6 +38,12 @@ export class FetchService extends HoistService {
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
+    /**
+     * Regex applied during failed response handling to determine if contentType indicates JSON.
+     * Matches `application/json` as well as variants such as `application/problem+json`
+     */
+    JSON_CONTENT_TYPE_RE = /application\/[^+]*[+]?(json);?.*/i;
+
     private idGenerator = new ShortUniqueId({length: 16});
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
@@ -410,10 +416,9 @@ export class FetchService extends HoistService {
             });
         }
 
-        // Try to "smart" decode as server provided JSON Exception (with a name)
+        // Attempt to decode server-provided exception if returned as JSON.
         try {
-            const cType = headers.get('Content-Type');
-            if (cType?.includes('application/json')) {
+            if (headers.get('Content-Type')?.match(this.JSON_CONTENT_TYPE_RE)) {
                 const parsedResp = this.safeParseJson(responseText);
                 return this.createException({
                     ...defaults,
