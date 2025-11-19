@@ -93,6 +93,10 @@ export class ZoneMapperModel extends HoistModel {
             });
     }
 
+    get headersAreHidden(): boolean {
+        return this.zoneGridModel.gridModel.hideHeaders;
+    }
+
     constructor(config: ZoneMapperConfig) {
         super();
         makeObservable(this);

@@ -3,12 +3,28 @@
 ## 78.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-*  New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+
 *  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
 
+### ⚙️ Technical
+
+* `FetchService` will recognize variants on the `application/json` content-type when processing
+  failed responses and decoding exceptions - e.g. `application/problem+json`.
+
+
+## 77.1.1 - 2025-11-12
+
+### 🎁 New Features
+
+* New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+
 ### 🐞 Bug Fixes
-*  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
-   then returned to its original value in a subsequent edit.
+
+* StoreRecord will no longer report `isModified` as `true` if a field has been edited and
+  then returned to its original value in a subsequent edit.
+* Restore support for `TabModel.content` being nullable to support dynamic tab content.
+* Remove stray context menu from appearing when clicking on column group headers and other grid
+  empty space.
 
 ## 77.0.1 - 2025-10-29
 
@@ -37,7 +53,6 @@
 ### ⚙️ Technical
 
 * Support Grails 7 service name conventions in admin client (backward compatible)
-
 
 ## 76.2.0 - 2025-10-22
 
