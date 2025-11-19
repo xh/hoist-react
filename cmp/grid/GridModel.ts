@@ -1152,7 +1152,7 @@ export class GridModel extends HoistModel {
         this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
     }
 
-    setColumnState(colState: Partial<ColumnState>[]) {
+    setColumnState(colState: ColumnState[]) {
         this.columnState = this.cleanColumnState(colState);
     }
 
