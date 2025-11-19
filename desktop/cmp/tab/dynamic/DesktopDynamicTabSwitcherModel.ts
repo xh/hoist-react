@@ -6,15 +6,7 @@ import {
     DynamicTabSwitcherMenuContext,
     DynamicTabSwitcherModel
 } from '@xh/hoist/cmp/tab/Types';
-import {
-    HoistModel,
-    isMenuItem,
-    MenuItemLike,
-    MenuToken,
-    PersistableState,
-    ReactionSpec,
-    XH
-} from '@xh/hoist/core';
+import {HoistModel, isMenuItem, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {compact, find, keyBy, omit as lodashOmit, uniqBy} from 'lodash';
@@ -161,13 +153,6 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
             [removed] = visibleTabState.splice(result.source.index, 1);
         visibleTabState.splice(result.destination.index, 0, removed);
         this.visibleTabState = visibleTabState;
-    }
-
-    // -------------------------------
-    // Persistable Interface
-    // -------------------------------
-    getPersistableState(): PersistableState<{favoriteTabIds: string[]}> {
-        return new PersistableState({favoriteTabIds: this.favoriteTabIds});
     }
 
     // -------------------------------
