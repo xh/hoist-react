@@ -8,6 +8,8 @@
 ### 🐞 Bug Fixes
 *  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
    then returned to its original value in a subsequent edit.
+*  Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+   chooser after loading grid state that was persisted before the columns were added to the grid.
 
 ## 77.0.1 - 2025-10-29
 
