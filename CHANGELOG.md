@@ -11,6 +11,12 @@
 *  Fixed issue where newly added columns appearing in the Displayed Columns section of the column
    chooser after loading grid state that was persisted before the columns were added to the grid.
 
+### 💥 Breaking Changes
+* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
+  wholesale. Applications that were relying on the prior patching behavior will need to
+  call `GridModel.applyColumnStateChanges` instead.
+
 ## 77.0.1 - 2025-10-29
 
 ### 💥 Breaking Changes
