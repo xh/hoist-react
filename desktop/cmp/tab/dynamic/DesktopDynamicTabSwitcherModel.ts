@@ -84,12 +84,15 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
 
     @action
     toggleTabFavorite(tabId: string) {
-        if (this.isTabVisible(tabId)) {
+        if (!this.isTabVisible(tabId)) {
+            this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: true}];
+        } else if (this.getActionTab(tabId)) {
+            // Leaving unfavorited action tabs in the switcher wouldn't make sense since they are not "closeable"
+            this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
+        } else {
             this.visibleTabState = this.visibleTabState.map(it =>
                 it.tabId === tabId ? {tabId, isFavorite: !this.isTabFavorite(tabId)} : it
             );
-        } else {
-            this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: true}];
         }
     }
 
@@ -130,7 +133,7 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
         return [
             {
                 icon: Icon.favorite({prefix: isFavorite ? 'fal' : 'fas'}),
-                text: isFavorite ? 'Remove from Favorites' : 'Favorite',
+                text: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
                 actionFn: () => this.toggleTabFavorite(tab.id)
             },
             ...this.extraMenuItems.map(item => this.buildMenuItem(item, {contextMenuEvent: e, tab}))
