@@ -14,14 +14,16 @@ import {
     Query,
     QueryConfig,
     Store,
+    StoreChangeLog,
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
+import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
@@ -94,6 +96,7 @@ export class View extends HoistBase {
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    private _bucketDependentFields = new Set<string>();
     _aggContext: AggregationContext = null;
     _rowCache: Map<string, BaseRow> = null;
 
@@ -207,7 +210,7 @@ export class View extends HoistBase {
     }
 
     @action
-    noteCubeUpdated(changeLog: PlainObject) {
+    noteCubeUpdated(changeLog: StoreChangeLog) {
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
@@ -276,6 +279,8 @@ export class View extends HoistBase {
         const {query} = this,
             {dimensions, includeRoot} = query,
             rootId = 'root';
+
+        this._bucketDependentFields.clear();
 
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
@@ -360,12 +365,18 @@ export class View extends HoistBase {
         if (!query.bucketSpecFn) return rows;
         if (!query.includeLeaves && rows[0]?.isLeaf) return rows;
 
-        const bucketSpec = query.bucketSpecFn(rows);
-        if (!bucketSpec) return rows;
+        const bucketSpecOrConf = query.bucketSpecFn(rows);
+        if (!bucketSpecOrConf) return rows;
 
-        const {name: bucketName, bucketFn} = bucketSpec,
+        const bucketSpec =
+            bucketSpecOrConf instanceof BucketSpec
+                ? bucketSpecOrConf
+                : new BucketSpec(bucketSpecOrConf);
+        const {name: bucketName, bucketFn, dependentFields} = bucketSpec,
             buckets: Record<string, BaseRow[]> = {},
             ret: BaseRow[] = [];
+
+        dependentFields.forEach(it => this._bucketDependentFields.add(it));
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
@@ -394,14 +405,14 @@ export class View extends HoistBase {
 
     // return a list of simple data updates we can apply to leaves.
     // false if leaf population changing, or aggregations are complex
-    private getSimpleUpdates(t): StoreRecord[] | false {
+    private getSimpleUpdates(t: StoreChangeLog): StoreRecord[] | false {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimUpdates(t.update)
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimOrBucketUpdates(t.update)
                 ? t.update
                 : false;
         }
@@ -425,19 +436,21 @@ export class View extends HoistBase {
 
         // 2c) Examine the final set of updates for any changes to dimension field values which would
         //     require rebuilding the row hierarchy
-        if (this.hasDimUpdates(ret)) return false;
+        if (this.hasDimOrBucketUpdates(ret)) return false;
 
         return ret;
     }
 
-    private hasDimUpdates(update: StoreRecord[]): boolean {
-        const {dimensions} = this.query;
-        if (isEmpty(dimensions)) return false;
+    private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
+        const {dimensions} = this.query,
+            bucketDependentFields = Array.from(this._bucketDependentFields);
 
-        const dimNames = dimensions.map(it => it.name);
+        if (isEmpty(dimensions) && isEmpty(bucketDependentFields)) return false;
+
+        const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
             const curRec = this._leafMap.get(rec.id);
-            if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+            if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
         }
 
         return false;
