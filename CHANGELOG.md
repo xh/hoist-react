@@ -9,6 +9,11 @@
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions. See `TabContainerConfig.dynamicTabSwitcherModel`.
 
+### 🐞 Bug Fixes
+
+* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
+  numerical ID.
+
 ### ⚙️ Technical
 
 * `FetchService` will recognize variants on the `application/json` content-type when processing

@@ -230,7 +230,12 @@ export class StoreRecord {
         this.raw = raw;
         this.committedData = committedData;
         this.parentId = parent?.id;
-        this.treePath = parent ? [...parent.treePath, id] : [id];
+        /*
+         * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
+         * Each row's position in the hierarchy must be provided to the grid as an array of strings,
+         * representing the path to the row.
+         */
+        this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
         this.isSummary = isSummary;
     }
 
