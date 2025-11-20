@@ -6,7 +6,8 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';

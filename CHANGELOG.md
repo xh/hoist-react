@@ -5,6 +5,9 @@
 ### 🎁 New Features
 
 *  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions. See `TabContainerConfig.dynamicTabSwitcherModel`.
 
 ### 🐞 Bug Fixes
 
@@ -16,6 +19,10 @@
 * `FetchService` will recognize variants on the `application/json` content-type when processing
   failed responses and decoding exceptions - e.g. `application/problem+json`.
 
+### 💥 Breaking Changes
+* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
+  Some apps may need to update their imports.
+* `TabContainerConfig.switcher` has been moved to `TabContainerProps.switcher`.
 
 ## 77.1.1 - 2025-11-12
 
