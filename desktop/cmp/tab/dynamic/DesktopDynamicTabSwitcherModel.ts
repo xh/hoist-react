@@ -1,7 +1,5 @@
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {
-    ActionTab,
-    ActionTabSpec,
     DynamicTabSwitcherConfig,
     DynamicTabSwitcherMenuContext,
     DynamicTabSwitcherModel
@@ -9,7 +7,7 @@ import {
 import {HoistModel, isMenuItem, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {compact, find, keyBy, omit as lodashOmit} from 'lodash';
+import {compact, find} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
 import React from 'react';
 
@@ -21,7 +19,6 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     declare config: DynamicTabSwitcherConfig;
 
     private readonly extraMenuItems: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
-    private readonly actionTabSpecsById: Record<string, ActionTabSpec>;
     private readonly tabContainerModel: TabContainerModel;
     @observable.ref private visibleTabState: TabState[];
 
@@ -31,28 +28,23 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     }
 
     @computed
-    get visibleTabs(): Array<TabModel | ActionTab> {
-        return compact(
-            this.visibleTabState.map(
-                it => this.tabContainerModel.findTab(it.tabId) ?? this.getActionTab(it.tabId)
-            )
-        );
+    get visibleTabs(): TabModel[] {
+        return compact(this.visibleTabState.map(it => this.tabContainerModel.findTab(it.tabId)));
     }
 
     @computed
-    get enabledVisibleTabs(): Array<TabModel | ActionTab> {
+    get enabledVisibleTabs(): TabModel[] {
         return this.visibleTabs.filter(it => !it.disabled);
     }
 
     constructor(
-        {extraMenuItems = [], actionTabs = [], initialFavorites = []}: DynamicTabSwitcherConfig,
+        {extraMenuItems = [], initialFavorites = []}: DynamicTabSwitcherConfig,
         tabContainerModel: TabContainerModel
     ) {
         super();
         makeObservable(this);
 
         this.extraMenuItems = extraMenuItems;
-        this.actionTabSpecsById = keyBy(actionTabs, 'id');
         this.tabContainerModel = tabContainerModel;
         this.visibleTabState = this.getValidTabIds(initialFavorites).map(tabId => ({
             tabId,
@@ -76,16 +68,11 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
 
     @action
     toggleTabFavorite(tabId: string) {
-        if (!this.isTabVisible(tabId)) {
-            this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: true}];
-        } else if (this.getActionTab(tabId)) {
-            // Leaving unfavorited action tabs in the switcher wouldn't make sense since they are not "closeable"
-            this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
-        } else {
-            this.visibleTabState = this.visibleTabState.map(it =>
-                it.tabId === tabId ? {tabId, isFavorite: !this.isTabFavorite(tabId)} : it
-            );
-        }
+        this.visibleTabState = !this.isTabVisible(tabId)
+            ? [...this.visibleTabState, {tabId, isFavorite: true}]
+            : this.visibleTabState.map(it =>
+                  it.tabId === tabId ? {tabId, isFavorite: !this.isTabFavorite(tabId)} : it
+              );
     }
 
     activate(tabId: string) {
@@ -107,19 +94,9 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
         this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
     }
 
-    getActionTab(tabId: string): ActionTab {
-        const actionTab = this.actionTabSpecsById[tabId];
-        if (!actionTab) return null;
-        const {displayFn, ...rest} = this.actionTabSpecsById[tabId];
-        const {hidden, ...ret} = displayFn
-            ? {...rest, ...lodashOmit(displayFn(), ['id', 'actionFn'])}
-            : rest;
-        return hidden ? null : ret;
-    }
-
     getContextMenuItems(
         e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-        tab: TabModel | ActionTab
+        tab: TabModel
     ): Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>> {
         const isFavorite = this.isTabFavorite(tab.id);
         return [
@@ -175,7 +152,7 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
 
     private isValidTabId(tabId: string): boolean {
         const tabModel = this.tabContainerModel.findTab(tabId);
-        return !!((tabModel && !tabModel.excludeFromSwitcher) || this.getActionTab(tabId));
+        return !!(tabModel && !tabModel.excludeFromSwitcher);
     }
 
     private isTabVisible(tabId: string): boolean {

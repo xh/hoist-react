@@ -10,7 +10,6 @@ import {
     PersistOptions,
     Side
 } from '@xh/hoist/core';
-import {ReactElement, ReactNode} from 'react';
 
 export interface TabContainerModelPersistOptions extends PersistOptions {
     /** True (default) to persist the active tab ID or provide custom PersistOptions. */
@@ -20,8 +19,6 @@ export interface TabContainerModelPersistOptions extends PersistOptions {
 }
 
 export interface DynamicTabSwitcherConfig {
-    /** Additional tabs to include in the switcher, such as for actions outside the TabContainer. */
-    actionTabs?: ActionTabSpec[];
     /** Additional menu items to include in tab context menus. */
     extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>; // TODO - consider making this `contextMenu` and having app-code spread the default
     /** IDs of favorite tabs to display by default (in order). */
@@ -29,29 +26,8 @@ export interface DynamicTabSwitcherConfig {
 }
 
 export interface DynamicTabSwitcherMenuContext extends MenuContext {
-    tab: TabModel | ActionTab;
+    tab: TabModel;
 }
-
-export interface ActionTabSpec {
-    /** Unique ID for the tab. */
-    id: string;
-    /** Display title for the Tab. */
-    title?: ReactNode;
-    /** Display icon for the Tab. */
-    icon?: ReactElement;
-    /** Tooltip for the Tab. */
-    tooltip?: ReactNode;
-    /** True to disable this tab. */
-    disabled?: boolean;
-    /** True to hide this tab. */
-    hidden?: boolean;
-    /** Action to be performed when the tab is selected. */
-    actionFn: () => void;
-    /** Function called prior to showing this item. */
-    displayFn?: () => Omit<ActionTab, 'id' | 'actionFn'>;
-}
-
-export type ActionTab = Omit<ActionTabSpec, 'displayFn' | 'hidden'>;
 
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
@@ -83,10 +59,10 @@ export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProp
 export interface DynamicTabSwitcherModel extends HoistModel {
     /** IDs of favorite tabs, in order. */
     get favoriteTabIds(): string[];
-    /** Tabs (including action tabs) displayed in switcher, in order. */
-    get visibleTabs(): Array<TabModel | ActionTab>;
-    /** Enabled tabs (including action tabs) displayed in switcher, in order. */
-    get enabledVisibleTabs(): Array<TabModel | ActionTab>;
+    /** Tabs displayed in switcher, in order. */
+    get visibleTabs(): TabModel[];
+    /** Enabled tabs displayed in switcher, in order. */
+    get enabledVisibleTabs(): TabModel[];
     /** Whether the specified tab is currently active in the TabContainer. */
     isTabActive(tabId: string): boolean;
     /** Whether the specified tab is currently marked as a favorite. */
@@ -97,8 +73,6 @@ export interface DynamicTabSwitcherModel extends HoistModel {
     activate(tabId: string): void;
     /** Remove the specified tab from the switcher. */
     hide(tabId: string): void;
-    /** Get the fully resolved ActionTab for the specified tabId. */
-    getActionTab(tabId: string): ActionTab;
     /** Set the IDs of all favorite tabs, in order. */
     setFavoriteTabIds(tabIds: string[]): void;
 }

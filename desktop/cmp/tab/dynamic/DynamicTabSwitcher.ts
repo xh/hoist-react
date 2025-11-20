@@ -1,7 +1,7 @@
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {ActionTab, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {
     hoistCmp,
     HoistModel,
@@ -106,7 +106,7 @@ const tabs = hoistCmp.factory<TabsProps>({
 });
 
 interface TabProps extends HoistProps<DesktopDynamicTabSwitcherModel> {
-    tab: TabModel | ActionTab;
+    tab: TabModel;
     index: number;
     localModel: DynamicTabSwitcherLocalModel;
 }
@@ -150,12 +150,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     snapshot.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
                 ),
                 onClick: () => {
-                    if (disabled) return;
-                    if (tab instanceof TabModel) {
-                        model.activate(tab.id);
-                    } else {
-                        tab.actionFn();
-                    }
+                    if (!disabled) model.activate(tab.id);
                 },
                 onContextMenu: e => {
                     const domRect = e.currentTarget.getBoundingClientRect();
