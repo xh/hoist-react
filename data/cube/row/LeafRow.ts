@@ -42,7 +42,7 @@ export class LeafRow extends BaseRow {
             this.data[name] = rawRecord.data[name];
         });
 
-        view.dimensionFields.forEach(({name}) => {
+        view.dimensionFields?.forEach(({name}) => {
             this.data[name] = rawRecord.data[name];
         });
     }
