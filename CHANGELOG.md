@@ -12,6 +12,7 @@
 
 * Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
   numerical ID.
+* `Query` dimensions are now automatically added to the fields list.
 
 ### ⚙️ Technical
 
