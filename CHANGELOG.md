@@ -6,6 +6,10 @@
 
 *  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
 
+### 🐞 Bug Fixes
+
+* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a numerical ID.
+
 ### ⚙️ Technical
 
 * `FetchService` will recognize variants on the `application/json` content-type when processing
