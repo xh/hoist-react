@@ -8,7 +8,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a numerical ID.
+* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
+  numerical ID.
 
 ### ⚙️ Technical
 
