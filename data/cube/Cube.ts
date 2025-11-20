@@ -17,7 +17,7 @@ import {StoreRecord} from '../StoreRecord';
 import {AggregateRow} from './row/AggregateRow';
 import {BucketRow} from './row/BucketRow';
 import {BaseRow} from './row/BaseRow';
-import {BucketSpec, BucketSpecConfig} from './BucketSpec';
+import {BucketSpec} from './BucketSpec';
 import {defaultsDeep, isEmpty} from 'lodash';
 
 export interface CubeConfig {
@@ -82,9 +82,9 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * aggregations and create an unwanted "Open" grouping.
  *
  * @param rows - the rows being checked for bucketing
- * @returns {@link BucketSpecConfig} for dynamic sub-aggregations, or null to perform no bucketing.
+ * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpecConfig | BucketSpec;
+export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 
 /**
  * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
