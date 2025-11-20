@@ -14,6 +14,7 @@ import {
     Query,
     QueryConfig,
     Store,
+    StoreChangeLog,
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
@@ -208,7 +209,7 @@ export class View extends HoistBase {
     }
 
     @action
-    noteCubeUpdated(changeLog: PlainObject) {
+    noteCubeUpdated(changeLog: StoreChangeLog) {
         const simpleUpdates = this.getSimpleUpdates(changeLog);
 
         if (!simpleUpdates) {
@@ -399,7 +400,7 @@ export class View extends HoistBase {
 
     // return a list of simple data updates we can apply to leaves.
     // false if leaf population changing, or aggregations are complex
-    private getSimpleUpdates(t): StoreRecord[] | false {
+    private getSimpleUpdates(t: StoreChangeLog): StoreRecord[] | false {
         if (!t) return [];
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
