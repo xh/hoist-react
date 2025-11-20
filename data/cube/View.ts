@@ -18,6 +18,7 @@ import {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
+import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
@@ -364,9 +365,13 @@ export class View extends HoistBase {
         if (!query.bucketSpecFn) return rows;
         if (!query.includeLeaves && rows[0]?.isLeaf) return rows;
 
-        const bucketSpec = query.bucketSpecFn(rows);
-        if (!bucketSpec) return rows;
+        const bucketSpecOrConf = query.bucketSpecFn(rows);
+        if (!bucketSpecOrConf) return rows;
 
+        const bucketSpec =
+            bucketSpecOrConf instanceof BucketSpec
+                ? bucketSpecOrConf
+                : new BucketSpec(bucketSpecOrConf);
         const {name: bucketName, bucketFn, dependentFields} = bucketSpec,
             buckets: Record<string, BaseRow[]> = {},
             ret: BaseRow[] = [];

@@ -107,7 +107,7 @@ export interface QueryConfig {
      *
      * This can be used to break selected aggregations into sub-groups dynamically, without having
      * to define another dimension in the Cube and have it apply to all aggregations. See the
-     * {@link BucketSpecFn} type and {@link BucketSpec} interface for additional information.
+     * {@link BucketSpecFn} type and {@link BucketSpecConfig} interface for additional information.
      *
      * Defaults to {@link Cube.bucketSpecFn}.
      */
