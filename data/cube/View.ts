@@ -126,10 +126,6 @@ export class View extends HoistBase {
         return this.query.fields;
     }
 
-    get dimensionFields(): CubeField[] {
-        return this.query.dimensions;
-    }
-
     get fieldNames(): string[] {
         return map(this.fields, 'name');
     }
