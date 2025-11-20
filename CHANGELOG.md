@@ -4,18 +4,20 @@
 
 ### 🎁 New Features
 
-*  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
+* `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
+* `BucketSpec` now includes `dependentFields` to enable re-bucketing of rows when dependent fields
+  change.
 
 ### 🐞 Bug Fixes
 
 * Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
   numerical ID.
+* `Query` dimensions are now automatically added to `View` leaf row data during processing.
 
 ### ⚙️ Technical
 
 * `FetchService` will recognize variants on the `application/json` content-type when processing
   failed responses and decoding exceptions - e.g. `application/problem+json`.
-
 
 ## 77.1.1 - 2025-11-12
 
