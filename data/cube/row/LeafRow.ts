@@ -41,6 +41,10 @@ export class LeafRow extends BaseRow {
         view.fields.forEach(({name}) => {
             this.data[name] = rawRecord.data[name];
         });
+
+        view.dimensionFields.forEach(({name}) => {
+            this.data[name] = rawRecord.data[name];
+        });
     }
 
     applyLeafDataUpdate(newRec: StoreRecord, updatedRowDatas: Set<PlainObject>) {

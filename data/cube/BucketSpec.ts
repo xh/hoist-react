@@ -12,6 +12,7 @@ import {BaseRow} from './row/BaseRow';
  */
 export class BucketSpec {
     name: string;
+    dependentFields: string[];
     bucketFn: (row: BaseRow) => string;
     labelFn: (bucket: string) => string;
 
@@ -20,14 +21,18 @@ export class BucketSpec {
      * @param bucketFn - function to determine which (if any) bucket the given row should
      *      be placed into
      * @param labelFn - function to generate the bucket row label from name returned by bucketFn
+     * @param dependentFields - fields which the bucketFn depends on, to ensure rows are re-bucketed
+     *      if dependent field values change
      **/
     constructor(
         name: string,
         bucketFn: (row: BaseRow) => string,
-        labelFn?: (bucket: string) => string
+        labelFn?: (bucket: string) => string,
+        dependentFields?: string[]
     ) {
         this.name = name;
         this.bucketFn = bucketFn;
         this.labelFn = labelFn ?? (b => b);
+        this.dependentFields = dependentFields ?? [];
     }
 }

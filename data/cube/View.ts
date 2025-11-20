@@ -21,7 +21,7 @@ import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
-import {castArray, find, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {AggregateRow} from './row/AggregateRow';
 import {BaseRow} from './row/BaseRow';
@@ -94,6 +94,7 @@ export class View extends HoistBase {
     private _rowDatas: ViewRowData[] = null;
     private _leafMap: Map<StoreRecordId, LeafRow> = null;
     private _recordMap: Map<StoreRecordId, StoreRecord> = null;
+    private _bucketDependentFields = new Set<string>();
     _aggContext: AggregationContext = null;
     _rowCache: Map<string, BaseRow> = null;
 
@@ -123,6 +124,10 @@ export class View extends HoistBase {
 
     get fields(): CubeField[] {
         return this.query.fields;
+    }
+
+    get dimensionFields(): CubeField[] {
+        return this.query.dimensions;
     }
 
     get fieldNames(): string[] {
@@ -277,6 +282,8 @@ export class View extends HoistBase {
             {dimensions, includeRoot} = query,
             rootId = 'root';
 
+        this._bucketDependentFields.clear();
+
         const records = this._aggContext.filteredRecords;
         const leafMap: Map<StoreRecordId, LeafRow> = new Map();
         let newRows = this.groupAndInsertRecords(records, dimensions, rootId, {}, leafMap);
@@ -363,9 +370,11 @@ export class View extends HoistBase {
         const bucketSpec = query.bucketSpecFn(rows);
         if (!bucketSpec) return rows;
 
-        const {name: bucketName, bucketFn} = bucketSpec,
+        const {name: bucketName, bucketFn, dependentFields} = bucketSpec,
             buckets: Record<string, BaseRow[]> = {},
             ret: BaseRow[] = [];
+
+        dependentFields.forEach(it => this._bucketDependentFields.add(it));
 
         // Determine which bucket to put this row into (if any)
         rows.forEach(row => {
@@ -401,7 +410,7 @@ export class View extends HoistBase {
 
         // 1) Simple case: no filter
         if (!query.filter) {
-            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimUpdates(t.update)
+            return isEmpty(t.add) && isEmpty(t.remove) && !this.hasDimOrBucketUpdates(t.update)
                 ? t.update
                 : false;
         }
@@ -425,19 +434,21 @@ export class View extends HoistBase {
 
         // 2c) Examine the final set of updates for any changes to dimension field values which would
         //     require rebuilding the row hierarchy
-        if (this.hasDimUpdates(ret)) return false;
+        if (this.hasDimOrBucketUpdates(ret)) return false;
 
         return ret;
     }
 
-    private hasDimUpdates(update: StoreRecord[]): boolean {
-        const {dimensions} = this.query;
-        if (isEmpty(dimensions)) return false;
+    private hasDimOrBucketUpdates(update: StoreRecord[]): boolean {
+        const {dimensions} = this.query,
+            bucketDependentFields = Array.from(this._bucketDependentFields);
 
-        const dimNames = dimensions.map(it => it.name);
+        if (isEmpty(dimensions) && isEmpty(bucketDependentFields)) return false;
+
+        const fieldNames = uniq([...dimensions.map(it => it.name), ...bucketDependentFields]);
         for (const rec of update) {
             const curRec = this._leafMap.get(rec.id);
-            if (dimNames.some(name => rec.data[name] !== curRec.data[name])) return true;
+            if (fieldNames.some(name => rec.data[name] !== curRec.data[name])) return true;
         }
 
         return false;
