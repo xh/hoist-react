@@ -2,6 +2,13 @@
 
 ## 78.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
+  wholesale. Applications that were relying on the prior patching behavior will need to
+  call `GridModel.applyColumnStateChanges` instead.
+
 ### 🎁 New Features
 
 * `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
@@ -12,6 +19,8 @@
 
 * Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
   numerical ID.
+* Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+  chooser after loading grid state that was persisted before the columns were added to the grid.
 * `Query` dimensions are now automatically added to the fields list.
 
 ### ⚙️ Technical
