@@ -9,7 +9,7 @@ import {
 import {HoistModel, isMenuItem, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import {compact, find, keyBy, omit as lodashOmit, uniqBy} from 'lodash';
+import {compact, find, keyBy, omit as lodashOmit} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
 import React from 'react';
 
@@ -134,16 +134,15 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
 
     @action
     setFavoriteTabIds(tabIds: string[]) {
-        this.visibleTabState = uniqBy(
-            [
-                ...this.getValidTabIds(tabIds).map(tabId => ({
-                    tabId,
-                    isFavorite: true
-                })),
-                {tabId: this.tabContainerModel.activeTabId, isFavorite: false}
-            ],
-            'tabId'
-        );
+        const visibleTabState = this.getValidTabIds(tabIds).map(tabId => ({
+                tabId,
+                isFavorite: true
+            })),
+            {activeTab} = this.tabContainerModel;
+        if (activeTab && !activeTab.excludeFromSwitcher && !tabIds.includes(activeTab.id)) {
+            visibleTabState.push({tabId: activeTab.id, isFavorite: false});
+        }
+        this.visibleTabState = visibleTabState;
     }
 
     @action
@@ -158,11 +157,11 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     // -------------------------------
     // Implementation
     // -------------------------------
-    private activeTabReaction(): ReactionSpec<string> {
+    private activeTabReaction(): ReactionSpec<TabModel> {
         return {
-            track: () => this.tabContainerModel.activeTabId,
-            run: tabId => {
-                if (!this.isTabVisible(tabId)) {
+            track: () => this.tabContainerModel.activeTab,
+            run: ({id: tabId, excludeFromSwitcher}) => {
+                if (!excludeFromSwitcher && !this.isTabVisible(tabId)) {
                     this.visibleTabState = [...this.visibleTabState, {tabId, isFavorite: false}];
                 }
             },
@@ -175,7 +174,8 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     }
 
     private isValidTabId(tabId: string): boolean {
-        return !!(this.tabContainerModel.findTab(tabId) || this.getActionTab(tabId));
+        const tabModel = this.tabContainerModel.findTab(tabId);
+        return !!((tabModel && !tabModel.excludeFromSwitcher) || this.getActionTab(tabId));
     }
 
     private isTabVisible(tabId: string): boolean {
