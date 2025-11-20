@@ -205,10 +205,10 @@ export class GridLocalModel extends HoistModel {
             defaultColDef: {
                 sortable: true,
                 resizable: true,
-                suppressHeaderContextMenu: true,
                 suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
+            getMainMenuItems: () => [],
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
