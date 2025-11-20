@@ -11,9 +11,12 @@
 
 ### 🎁 New Features
 
-* `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
-* `BucketSpec` now includes `dependentFields` to enable re-bucketing of rows when dependent fields
-  change.
+* Added new `FieldFilter` operators `not begins` and `not ends`.
+* Added new optional `BucketSpec.dependentFields` config to the Cube API, allowing apps to ensure
+  proper re-bucketing of rows during data-only updates where those updates could affect bucketing
+  determinations made by the spec.
+* Enhanced `FetchService` to recognize variants on the `application/json` content-type when
+  processing failed responses and decoding exceptions - e.g. `application/problem+json`.
 
 ### 🐞 Bug Fixes
 
@@ -21,12 +24,8 @@
   numerical ID.
 * Fixed issue where newly added columns appearing in the Displayed Columns section of the column
   chooser after loading grid state that was persisted before the columns were added to the grid.
-* `Query` dimensions are now automatically added to the fields list.
-
-### ⚙️ Technical
-
-* `FetchService` will recognize variants on the `application/json` content-type when processing
-  failed responses and decoding exceptions - e.g. `application/problem+json`.
+* Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
+  list and do not need to be manually repeated there.
 
 ## 77.1.1 - 2025-11-12
 
