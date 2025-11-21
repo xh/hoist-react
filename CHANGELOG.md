@@ -1,6 +1,6 @@
 # Changelog
 
-## 78.0.0-SNAPSHOT - unreleased
+## 78.0.0 - 2025-11-21
 
 ### 💥 Breaking Changes
 
