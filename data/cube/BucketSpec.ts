@@ -6,6 +6,7 @@
  */
 
 import {BaseRow} from './row/BaseRow';
+import {SetOptional} from '@xh/hoist/core';
 
 /**
  * Spec to define a bucketing level within the hierarchy of data returned by a Query, as identified
@@ -38,12 +39,7 @@ export class BucketSpec {
      */
     dependentFields: string[];
 
-    constructor(config: {
-        name: string;
-        bucketFn: (row: BaseRow) => string;
-        labelFn?: (bucket: string) => string;
-        dependentFields?: string[];
-    }) {
+    constructor(config: SetOptional<BucketSpec, 'labelFn' | 'dependentFields'>) {
         this.name = config.name;
         this.bucketFn = config.bucketFn;
         this.labelFn = config.labelFn ?? (b => b);
