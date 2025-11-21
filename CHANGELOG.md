@@ -35,6 +35,12 @@
 
 ## 77.1.1 - 2025-11-12
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+  Refer to `Bootstrap.js` in Toolbox for required import changes.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+
 ### 🎁 New Features
 
 * New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
