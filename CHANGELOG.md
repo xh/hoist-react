@@ -27,8 +27,7 @@
 
 ### ⚙️ Technical
 
-* Updated the Cube API's `BucketSpecFn` to return either a concrete `BucketSpec` class instance (as
-  before) or a plain object conforming to the new `BucketSpecConfig` interface.
+* Improved documentation on `BucketSpec` class.
 * Enhanced `FetchService` to recognize variants on the `application/json` content-type when
   processing failed responses and decoding exceptions - e.g. `application/problem+json`.
 
