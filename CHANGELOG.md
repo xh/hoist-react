@@ -1,30 +1,57 @@
 # Changelog
 
-## 78.0.0-SNAPSHOT - unreleased
+## 79.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes
+
+* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
+  Some apps may need to update their imports.
+* `TabContainerConfig.switcher` has been moved to `TabContainerProps.switcher`.
 
 ### 🎁 New Features
 
-*  `FieldFilter` implementation expanded to support `not begins` and `not ends` operators.
 * Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions. See `TabContainerConfig.dynamicTabSwitcherModel`.
+
+## 78.0.0 - 2025-11-21
+
+### 💥 Breaking Changes
+
+* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
+  wholesale. Applications that were relying on the prior patching behavior will need to
+  call `GridModel.applyColumnStateChanges` instead.
+* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+
+### 🎁 New Features
+
+* Added new `FieldFilter` operators `not begins` and `not ends`.
+* Added new optional `BucketSpec.dependentFields` config to the Cube API, allowing apps to ensure
+  proper re-bucketing of rows during data-only updates where those updates could affect bucketing
+  determinations made by the spec.
 
 ### 🐞 Bug Fixes
 
 * Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
   numerical ID.
+* Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+  chooser after loading grid state that was persisted before the columns were added to the grid.
+* Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
+  list and do not need to be manually repeated there.
 
 ### ⚙️ Technical
 
-* `FetchService` will recognize variants on the `application/json` content-type when processing
-  failed responses and decoding exceptions - e.g. `application/problem+json`.
-
-### 💥 Breaking Changes
-* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
-  Some apps may need to update their imports.
-* `TabContainerConfig.switcher` has been moved to `TabContainerProps.switcher`.
+* Improved documentation on `BucketSpec` class.
+* Enhanced `FetchService` to recognize variants on the `application/json` content-type when
+  processing failed responses and decoding exceptions - e.g. `application/problem+json`.
 
 ## 77.1.1 - 2025-11-12
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+  Refer to `Bootstrap.js` in Toolbox for required import changes.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 
 ### 🎁 New Features
 

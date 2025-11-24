@@ -82,7 +82,7 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * aggregations and create an unwanted "Open" grouping.
  *
  * @param rows - the rows being checked for bucketing
- * @returns BucketSpec for configuring dynamic sub-aggregations, or null to perform no bucketing.
+ * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
 export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 
