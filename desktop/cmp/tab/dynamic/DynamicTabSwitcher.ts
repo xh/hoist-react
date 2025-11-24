@@ -25,7 +25,7 @@ import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
 import {computed} from 'mobx';
 import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
-import {DesktopDynamicTabSwitcherModel} from './DesktopDynamicTabSwitcherModel';
+import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
 
 /**
@@ -66,13 +66,13 @@ class DynamicTabSwitcherLocalModel extends HoistModel {
     }
 }
 
-interface TabsProps extends HoistProps<DesktopDynamicTabSwitcherModel> {
+interface TabsProps extends HoistProps<DynamicTabSwitcherModel> {
     localModel: DynamicTabSwitcherLocalModel;
     ref: Ref<HTMLDivElement>;
 }
 
 const tabs = hoistCmp.factory<TabsProps>({
-    model: uses(DesktopDynamicTabSwitcherModel),
+    model: uses(DynamicTabSwitcherModel),
     render({localModel, model}, ref) {
         const {visibleTabs} = model,
             {isVertical, props} = localModel,
@@ -105,7 +105,7 @@ const tabs = hoistCmp.factory<TabsProps>({
     }
 });
 
-interface TabProps extends HoistProps<DesktopDynamicTabSwitcherModel> {
+interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
     tab: TabModel;
     index: number;
     localModel: DynamicTabSwitcherLocalModel;

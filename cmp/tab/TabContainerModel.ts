@@ -5,8 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {
-    DynamicTabSwitcherConfig,
-    DynamicTabSwitcherModel,
+    TabSwitcherConfig,
+    IDynamicTabSwitcherModel,
     TabContainerModelPersistOptions
 } from '@xh/hoist/cmp/tab/Types';
 import {
@@ -20,7 +20,7 @@ import {
     RenderMode,
     XH
 } from '@xh/hoist/core';
-import {DesktopDynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DesktopDynamicTabSwitcherModel';
+import {DynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DynamicTabSwitcherModel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
@@ -47,9 +47,9 @@ export interface TabContainerConfig {
 
     /**
      * Specification for type of switcher. Specify `dynamic` or config for user-configurable tabs.
-     * Default `static` for simple, static switcher.
+     * Default `{mode: 'static'}` for simple, static switcher.
      */
-    switcher?: 'static' | 'dynamic' | DynamicTabSwitcherConfig;
+    switcher?: TabSwitcherConfig;
 
     /**
      * True to enable activity tracking of tab views (default false).  Viewing of each tab will
@@ -107,12 +107,13 @@ export class TabContainerModel extends HoistModel {
     renderMode: RenderMode;
     refreshMode: RefreshMode;
     emptyText: ReactNode;
+    switcherConfig: TabSwitcherConfig;
 
     @managed
     refreshContextModel: RefreshContextModel;
 
     @managed
-    dynamicTabSwitcherModel: DynamicTabSwitcherModel;
+    dynamicTabSwitcherModel: IDynamicTabSwitcherModel;
 
     protected lastActiveTabId: string;
 
@@ -131,7 +132,7 @@ export class TabContainerModel extends HoistModel {
             persistWith,
             emptyText = 'No tabs to display.',
             xhImpl = false,
-            switcher = 'static'
+            switcher = {mode: 'static'}
         }: TabContainerConfig,
         depth = 0
     ) {
@@ -149,6 +150,7 @@ export class TabContainerModel extends HoistModel {
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
         this.refreshContextModel.xhImpl = xhImpl;
+        this.switcherConfig = switcher;
         this.dynamicTabSwitcherModel = this.parseSwitcher(switcher);
 
         if (route) {
@@ -388,12 +390,11 @@ export class TabContainerModel extends HoistModel {
         return null;
     }
 
-    private parseSwitcher(switcher: TabContainerConfig['switcher']): DynamicTabSwitcherModel {
-        if (!switcher || switcher === 'static') return null;
+    private parseSwitcher(switcher: TabContainerConfig['switcher']): IDynamicTabSwitcherModel {
+        if (!switcher || switcher.mode === 'static') return null;
         throwIf(XH.isMobileApp, 'DynamicTabSwitcherModel not supported for mobile TabContainer.');
-        const modelClass = DesktopDynamicTabSwitcherModel;
 
-        return this.markManaged(new modelClass(switcher === 'dynamic' ? {} : switcher, this));
+        return this.markManaged(new DynamicTabSwitcherModel(switcher, this));
     }
 
     private initPersist({

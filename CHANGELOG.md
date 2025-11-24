@@ -6,13 +6,15 @@
 
 * `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
   Some apps may need to update their imports.
-* `TabContainerConfig.switcher` has been moved to `TabContainerProps.switcher`.
+* `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
+  `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
 
 ### 🎁 New Features
 
 * Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
-  persist "favorited" tab state across sessions. See `TabContainerConfig.dynamicTabSwitcherModel`.
+  persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
+  supports context-menu items. See `TabContainerConfig.switcher`.
 
 ## 78.0.0 - 2025-11-21
 

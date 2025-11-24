@@ -1,10 +1,11 @@
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {
-    DynamicTabSwitcherConfig,
-    DynamicTabSwitcherMenuContext,
-    DynamicTabSwitcherModel
+    IDynamicTabSwitcherModel,
+    TabSwitcherConfig,
+    TabSwitcherMenuContext
 } from '@xh/hoist/cmp/tab/Types';
-import {HoistModel, isMenuItem, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
+import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
+import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import {compact, find} from 'lodash';
@@ -15,10 +16,10 @@ import React from 'react';
  * State management for the DynamicTabSwitcher component.
  * @internal
  */
-export class DesktopDynamicTabSwitcherModel extends HoistModel implements DynamicTabSwitcherModel {
-    declare config: DynamicTabSwitcherConfig;
+export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSwitcherModel {
+    declare config: TabSwitcherConfig;
 
-    private readonly extraMenuItems: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>;
+    private readonly extraMenuItems: Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>>;
     private readonly tabContainerModel: TabContainerModel;
     @observable.ref private visibleTabState: TabState[];
 
@@ -38,7 +39,7 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     }
 
     constructor(
-        {extraMenuItems = [], initialFavorites = []}: DynamicTabSwitcherConfig,
+        {extraMenuItems = [], initialFavorites = []}: TabSwitcherConfig,
         tabContainerModel: TabContainerModel
     ) {
         super();
@@ -97,7 +98,7 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
     getContextMenuItems(
         e: React.MouseEvent<HTMLDivElement, MouseEvent>,
         tab: TabModel
-    ): Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>> {
+    ): Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>> {
         const isFavorite = this.isTabFavorite(tab.id);
         return [
             {
@@ -105,7 +106,7 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
                 text: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
                 actionFn: () => this.toggleTabFavorite(tab.id)
             },
-            ...this.extraMenuItems.map(item => this.buildMenuItem(item, {contextMenuEvent: e, tab}))
+            ...this.extraMenuItems.map(item => getContextMenuItem(item, {contextMenuEvent: e, tab}))
         ];
     }
 
@@ -157,18 +158,6 @@ export class DesktopDynamicTabSwitcherModel extends HoistModel implements Dynami
 
     private isTabVisible(tabId: string): boolean {
         return this.visibleTabState.some(it => it.tabId === tabId);
-    }
-
-    private buildMenuItem(
-        item: MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>,
-        context: DynamicTabSwitcherMenuContext
-    ): MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext> {
-        if (!isMenuItem(item)) return item;
-        const ret = {...item};
-        if (item.actionFn) ret.actionFn = e => item.actionFn(e, context);
-        if (item.prepareFn) ret.prepareFn = e => item.prepareFn(e, context);
-        if (item.items) ret.items = item.items.map(it => this.buildMenuItem(it, context));
-        return ret;
     }
 }
 

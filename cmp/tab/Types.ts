@@ -11,24 +11,6 @@ import {
     Side
 } from '@xh/hoist/core';
 
-export interface TabContainerModelPersistOptions extends PersistOptions {
-    /** True (default) to persist the active tab ID or provide custom PersistOptions. */
-    persistActiveTabId?: boolean;
-    /** True (default) to persist favorite tab IDs or provide custom PersistOptions. */
-    persistFavoriteTabIds?: boolean;
-}
-
-export interface DynamicTabSwitcherConfig {
-    /** Additional menu items to include in tab context menus. */
-    extraMenuItems?: Array<MenuItemLike<MenuToken, DynamicTabSwitcherMenuContext>>; // TODO - consider making this `contextMenu` and having app-code spread the default
-    /** IDs of favorite tabs to display by default (in order). */
-    initialFavorites?: string[];
-}
-
-export interface DynamicTabSwitcherMenuContext extends MenuContext {
-    tab: TabModel;
-}
-
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */
     orientation?: Side;
@@ -55,8 +37,28 @@ export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProp
     tabMaxWidth?: number;
 }
 
+export interface TabSwitcherConfig {
+    /** Specification for type of switcher. Specify `dynamic`for user-configurable tabs */
+    mode: 'static' | 'dynamic';
+    /** Additional menu items to include in tab context menus. Only supported on desktop */
+    extraMenuItems?: Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>>;
+    /** IDs of favorite tabs to display by default (in order). Only for `dynamic` switchers */
+    initialFavorites?: string[];
+}
+
+export interface TabContainerModelPersistOptions extends PersistOptions {
+    /** True (default) to persist the active tab ID or provide custom PersistOptions. */
+    persistActiveTabId?: boolean;
+    /** True (default) to persist favorite tab IDs or provide custom PersistOptions. */
+    persistFavoriteTabIds?: boolean;
+}
+
+export interface TabSwitcherMenuContext extends MenuContext {
+    tab: TabModel;
+}
+
 /** Cross-platform interface for desktop and mobile (TBA) DynamicTabSwitcherModels. */
-export interface DynamicTabSwitcherModel extends HoistModel {
+export interface IDynamicTabSwitcherModel extends HoistModel {
     /** IDs of favorite tabs, in order. */
     get favoriteTabIds(): string[];
     /** Tabs displayed in switcher, in order. */
