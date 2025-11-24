@@ -39,9 +39,7 @@ export function initPersist(
                     new PersistableColumnState(gridModel.persistableColumnState),
                 setPersistableState: ({value}) =>
                     runInAction(() => {
-                        // Set columnState directly since GridModel.setColumnState will merge the
-                        // provided state with the current state, which is not what we want here.
-                        gridModel.columnState = gridModel.cleanColumnState(value);
+                        gridModel.setColumnState(value);
                         if (gridModel.autosizeOptions.mode === 'managed') {
                             const columns = gridModel.columnState
                                 .filter(it => !it.manuallySized)

@@ -98,6 +98,7 @@ import {
     pull,
     take
 } from 'lodash';
+import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
@@ -442,6 +443,7 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
+    @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
@@ -1147,19 +1149,11 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => ({
-            ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
-            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
-            // widths are not omitted from persistableColumnState. This is important because
-            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
-            // state in order to detect changes and restore initial state correctly.
-            // See https://github.com/xh/hoist-react/issues/4102.
-            manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
-        }));
+        this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
     }
 
-    setColumnState(colState: Partial<ColumnState>[]) {
-        this.applyColumnStateChanges(this.cleanColumnState(colState));
+    setColumnState(colState: ColumnState[]) {
+        this.columnState = this.cleanColumnState(colState);
     }
 
     showColChooser() {
@@ -1706,7 +1700,7 @@ export class GridModel extends HoistModel {
         );
     }
 
-    cleanColumnState(columnState) {
+    private cleanColumnState(columnState) {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
@@ -1715,9 +1709,9 @@ export class GridModel extends HoistModel {
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        gridCols.forEach(({colId}, idx) => {
-            if (!find(ret, {colId})) {
-                ret.splice(idx, 0, {colId});
+        gridCols.forEach((col, idx) => {
+            if (!find(ret, {colId: col.colId})) {
+                ret.splice(idx, 0, this.getDefaultStateForColumn(col));
             }
         });
 
@@ -1956,6 +1950,18 @@ export class GridModel extends HoistModel {
                     return true;
                 }
             }
+        };
+    }
+
+    private getDefaultStateForColumn(column: Column): ColumnState {
+        return {
+            ...pick(column, ['colId', 'width', 'hidden', 'pinned']),
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
+            // widths are not omitted from persistableColumnState. This is important because
+            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
+            // state in order to detect changes and restore initial state correctly.
+            // See https://github.com/xh/hoist-react/issues/4102.
+            manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
     }
 }

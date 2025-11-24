@@ -64,7 +64,7 @@ const tbar = hoistCmp.factory<DifferModel>(({model}) => {
             placeholder: 'https://remote-host/',
             enableCreate: true,
             createMessageFn: identity,
-            width: 250,
+            width: 350,
             options: model.remoteHosts
         }),
         button({
