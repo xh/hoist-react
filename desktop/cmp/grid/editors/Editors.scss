@@ -21,7 +21,7 @@
     }
 
     .xh-date-input__wrapper,
-    .bp5-popover-target > div {
+    .bp6-popover-target > div {
       display: flex;
       flex: 1;
       height: 100%;
@@ -32,13 +32,13 @@
       width: 100%;
       height: 100%;
 
-      .bp5-input-group {
+      .bp6-input-group {
         display: flex;
         flex: 1;
         height: 100%;
         width: 100%;
 
-        .bp5-input-action {
+        .bp6-input-action {
           button {
             min-height: 18px;
 
@@ -79,7 +79,7 @@
         justify-content: center;
         padding: 0;
 
-        .bp5-control-indicator {
+        .bp6-control-indicator {
           margin: 0;
         }
       }

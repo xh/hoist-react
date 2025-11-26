@@ -923,73 +923,59 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
-"@blueprintjs/colors@^5.1.8":
+"@blueprintjs/colors@^5.1.9":
   version "5.1.9"
   resolved "https://registry.yarnpkg.com/@blueprintjs/colors/-/colors-5.1.9.tgz#9b14e6181ac89b487c56a62b4cc82ce32cb33f8c"
   integrity sha512-gk9nlb2tc1qBK/BpVHkC0KQSAmd9PnF60D0iCDEyyh1R/3UzwhTYUvw9Q0XMLfFInNeVAbfsIbko41BmLptAaA==
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^5.10.5", "@blueprintjs/core@^5.19.1":
-  version "5.19.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-5.19.1.tgz#d17ed32b4eee90c25c308262ff9975c0cbd34a59"
-  integrity sha512-vjLd9jnuHPunW6zsZtx0f03zb33aRa/k6nnwH+N16NEIs7/wHWX5f5ljtEguSt/M1jx4IT0oescMQMAuXWXAWQ==
+"@blueprintjs/core@^6.3.2":
+  version "6.3.2"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.3.2.tgz#94e3b2c3d678975b40a26b851a9970bae67ce029"
+  integrity sha512-BZ46b0RxavATBfni9WcgAJAp8sFrqiNoUwoIIWoe1MTFlrI3IipOPKG6IcYKLGW1YAYa1jwc9ftaYiZVubll5A==
   dependencies:
-    "@blueprintjs/colors" "^5.1.8"
-    "@blueprintjs/icons" "^5.23.0"
+    "@blueprintjs/colors" "^5.1.9"
+    "@blueprintjs/icons" "^6.2.0"
     "@popperjs/core" "^2.11.8"
     classnames "^2.3.1"
     normalize.css "^8.0.1"
     react-popper "^2.3.0"
     react-transition-group "^4.4.5"
-    react-uid "^2.3.3"
     tslib "~2.6.2"
     use-sync-external-store "^1.2.0"
 
-"@blueprintjs/datetime2@^2.3.7":
-  version "2.3.33"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime2/-/datetime2-2.3.33.tgz#8e16824c0d4265e921e7c6025e4da083c97ca79f"
-  integrity sha512-23qvX2eytJ2LvwpR9jJv7+jJeQvWRYGJ9nngpuC7BU+DnX+1FYhwir0w4s5swJqKDnky346loO9O5Zd5mSlA2g==
+"@blueprintjs/datetime@^6.0.6":
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.0.6.tgz#d8a2d22a95906b3e5139c1930584f31b0e0f2cb4"
+  integrity sha512-TdG/YQ8dOTjM5FvZ0veROgs+6FSsWKUc46BPxAT8IQI6W47EnG7VVtjEcd2g+YjzWQa/ZZnVXXBXWbtxGLnEAw==
   dependencies:
-    "@blueprintjs/core" "^5.19.1"
-    "@blueprintjs/datetime" "^5.3.33"
-    "@blueprintjs/icons" "^5.23.0"
+    "@blueprintjs/core" "^6.3.2"
+    "@blueprintjs/icons" "^6.2.0"
+    "@blueprintjs/select" "^6.0.6"
     classnames "^2.3.1"
     date-fns "^2.28.0"
+    date-fns-tz "^2.0.0"
     react-day-picker "^8.10.0"
     react-innertext "^1.1.5"
     tslib "~2.6.2"
 
-"@blueprintjs/datetime@^5.3.33", "@blueprintjs/datetime@^5.3.7":
-  version "5.3.33"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-5.3.33.tgz#79f988acb38dddd8d339f59636525f15507c4973"
-  integrity sha512-Y+FD/bWTKxjFBwvHFSv1ZcAfwv6uyIjgQlI1zhh4CyloizDXoU0+LUvVfU1lrAkxjLYEBZ+PZuSTpRS/t3cF3Q==
-  dependencies:
-    "@blueprintjs/core" "^5.19.1"
-    "@blueprintjs/icons" "^5.23.0"
-    "@blueprintjs/select" "^5.3.21"
-    classnames "^2.3.1"
-    date-fns "^2.28.0"
-    date-fns-tz "^2.0.0"
-    react-day-picker "7.4.9"
-    tslib "~2.6.2"
-
-"@blueprintjs/icons@^5.23.0":
-  version "5.23.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-5.23.0.tgz#c01dc80fbadb4dfef20d34abdee14a23b6f5d00b"
-  integrity sha512-yxQ+A0V79/UsyIw4XYuEvaFqr3FIaRlp79rKh+ZdHLafedqPfp4LO6xtF6EziWFCvuHOTJdFCfSC8AoQeSENMw==
+"@blueprintjs/icons@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-6.2.0.tgz#96031c707caa5f888e1a5e8328684282a0d82455"
+  integrity sha512-iPM2nx1lYe1kT3C4oOS7NsxdJCc1kF3vluDLwF3chRrChwZfrSAF1aPD7dJLAZFaVgdaguElfTs89e9H13a9rQ==
   dependencies:
     change-case "^4.1.2"
     classnames "^2.3.1"
     tslib "~2.6.2"
 
-"@blueprintjs/select@^5.3.21":
-  version "5.3.21"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-5.3.21.tgz#9a5e1fc94389f382aab63da184c8b634ae7bdcfa"
-  integrity sha512-1mNWnS2Vb0VUP/M3Z9VhrXzAkbsROYrmiE+uRn20O2w/8skxRwtBZ6WRSSY9GPqzVqBqz7+G0VC0CSLBjvRklw==
+"@blueprintjs/select@^6.0.6":
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.0.6.tgz#8a61b74a3292f1c27152b0931d33f988d9874cea"
+  integrity sha512-1c4YaahEZZ+P1z/265bsvQCJvoIhBaP4eQambdFrHT3+7DbpleOnjjIN56FW5o8CaL30KQMD0bnUSOSGrTpSFw==
   dependencies:
-    "@blueprintjs/core" "^5.19.1"
-    "@blueprintjs/icons" "^5.23.0"
+    "@blueprintjs/core" "^6.3.2"
+    "@blueprintjs/icons" "^6.2.0"
     classnames "^2.3.1"
     tslib "~2.6.2"
 
@@ -6463,13 +6449,6 @@ react-dates@~21.8.0:
     react-with-styles "^4.1.0"
     react-with-styles-interface-css "^6.0.0"
 
-react-day-picker@7.4.9:
-  version "7.4.9"
-  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.4.9.tgz#ab556df9e838caa5bc988e55d1cb15318564149e"
-  integrity sha512-CcXf0p7p6gTYnG0+n/4wNGljZuQDXl4HhgcxsXB0nX+8D4LnRho9EclPA/aLz4WlvvVpfY+AEgj2ylgPj4nm/g==
-  dependencies:
-    prop-types "^15.6.2"
-
 react-day-picker@^8.10.0:
   version "8.10.1"
   resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-8.10.1.tgz#4762ec298865919b93ec09ba69621580835b8e80"
@@ -6638,13 +6617,6 @@ react-transition-group@^4.3.0, react-transition-group@^4.4.5, react-transition-g
     dom-helpers "^5.0.1"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
-
-react-uid@^2.3.3:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/react-uid/-/react-uid-2.4.0.tgz#ce48a3e2a044964900f3ad5181a0d377702c56c5"
-  integrity sha512-+MVs/25NrcZuGrmlVRWPOSsbS8y72GJOBsR7d68j3/wqOrRBF52U29XAw4+XSelw0Vm6s5VmGH5mCbTCPGVCVg==
-  dependencies:
-    tslib "^2.0.0"
 
 react-window@^1.8.6:
   version "1.8.11"

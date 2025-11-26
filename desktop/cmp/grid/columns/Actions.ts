@@ -69,7 +69,7 @@ export const actionCol: ColumnSpec = {
                 disabled,
                 tooltip,
                 intent,
-                className: classNames('bp5-small', 'xh-record-action-button', className),
+                className: classNames('bp6-small', 'xh-record-action-button', className),
                 onClick: ev => {
                     ev.stopPropagation();
                     action.call({record, selectedRecords: [record], gridModel, column});

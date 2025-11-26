@@ -3,28 +3,28 @@
 //------------------------
 // Tabs
 //------------------------
-.bp5-tab-panel > div {
+.bp6-tab-panel > div {
   margin: 0 !important; // TODO - investigate this....
 }
 
-.bp5-tab > svg:first-child {
+.bp6-tab > svg:first-child {
   margin-right: var(--xh-pad-half-px);
 }
 
 // Vertical tab lists fill their width
-.bp5-tabs.bp5-vertical .bp5-tab-list {
+.bp6-tabs.bp6-vertical .bp6-tab-list {
   flex: 1;
 }
 
 //------------------------
 // Dialogs, Popovers, Masking
 //------------------------
-.bp5-dialog {
+.bp6-dialog {
   padding-bottom: 0;
   border-radius: var(--xh-border-radius-px);
   border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
 
-  .bp5-dialog-header {
+  .bp6-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-family: var(--xh-popup-title-font-family);
@@ -33,8 +33,8 @@
     border-top-right-radius: var(--xh-border-radius-px);
     border-top-left-radius: var(--xh-border-radius-px);
 
-    .bp5-heading,
-    .bp5-icon {
+    .bp6-heading,
+    .bp6-icon {
       color: var(--xh-popup-title-text-color);
     }
 
@@ -43,7 +43,7 @@
     }
   }
 
-  .bp5-dialog-body {
+  .bp6-dialog-body {
     margin: 0;
     padding: var(--xh-pad-double-px);
     background: var(--xh-popup-bg);
@@ -55,7 +55,7 @@
 
     // Ensure that date numbers in the datepicker do not wrap if the datePicker portal is rendered
     // inside a dialogBody - e.g. `dateEditor` in a grid in a dialog. See comment on #862.
-    .bp5-datepicker {
+    .bp6-datepicker {
       overflow-wrap: normal;
     }
   }
@@ -63,8 +63,12 @@
 
 // Customized here for backdrops behind dialogs.
 // Note that masks use their own CSS var, set in Mask.scss.
-.bp5-overlay-backdrop:not(.bp5-popover-backdrop) {
-  background-color: var(--xh-backdrop-bg);
+.bp6-overlay {
+  transition: none;
+
+  &-backdrop:not(.bp6-popover-backdrop) {
+    background-color: var(--xh-backdrop-bg);
+  }
 }
 
 // On Popover and Tooltip components, squelch scale & opacity transition - unlike Dialog with its `transitionName` prop,
@@ -75,26 +79,26 @@
 // BlueprintJs' own Popover.minimal uses this same approach to disable its transitions.
 // (it appears from testing that overriding these rules with any value will squelch the transition, but
 // we might as well use the final values to be explicit.)
-.bp5-popover-transition-container {
-  &.bp5-popover-enter,
-  &.bp5-popover-appear {
+.bp6-popover-transition-container {
+  &.bp6-popover-enter,
+  &.bp6-popover-appear {
     opacity: 1;
   }
 
-  &.bp5-popover-exit {
+  &.bp6-popover-exit {
     opacity: 0;
   }
 
-  &.bp5-popover-enter,
-  &.bp5-popover-appear {
-    > .bp5-popover {
+  &.bp6-popover-enter,
+  &.bp6-popover-appear {
+    > .bp6-popover {
       transform: scale(1);
     }
   }
 
-  &.bp5-popover-exit-active,
-  &.bp5-popover-exit {
-    > .bp5-popover {
+  &.bp6-popover-exit-active,
+  &.bp6-popover-exit {
+    > .bp6-popover {
       transform: scale(0);
     }
   }
@@ -103,8 +107,8 @@
 //------------------------
 // Menus
 //------------------------
-.bp5-dark .bp5-menu,
-.bp5-menu {
+.bp6-dark .bp6-menu,
+.bp6-menu {
   background-color: var(--xh-menu-bg);
   border: var(--xh-menu-border);
   color: var(--xh-menu-item-text-color);
@@ -116,14 +120,14 @@
   max-height: calc(100vh - 100px);
   overflow-y: auto;
 
-  .bp5-menu-item {
+  .bp6-menu-item {
     // Default alignment of flex-start leaves Hoist icons shifted up - could target
     // more specifically if this is a problem in any other contexts.
     align-items: center;
     color: var(--xh-menu-item-text-color);
     padding: 5px 10px;
 
-    .bp5-menu-item-icon {
+    .bp6-menu-item-icon {
       color: inherit;
     }
 
@@ -132,47 +136,47 @@
       border-radius: 0;
     }
 
-    &.bp5-intent-primary {
+    &.bp6-intent-primary {
       color: var(--xh-intent-primary);
     }
 
-    &.bp5-intent-success {
+    &.bp6-intent-success {
       color: var(--xh-intent-success);
     }
 
-    &.bp5-intent-warning {
+    &.bp6-intent-warning {
       color: var(--xh-intent-warning);
     }
 
-    &.bp5-intent-danger {
+    &.bp6-intent-danger {
       color: var(--xh-intent-danger);
     }
 
     .xh-dark & {
-      &.bp5-intent-primary {
+      &.bp6-intent-primary {
         color: var(--xh-intent-primary-lighter);
       }
 
-      &.bp5-intent-success {
+      &.bp6-intent-success {
         color: var(--xh-intent-success-lighter);
       }
 
-      &.bp5-intent-warning {
+      &.bp6-intent-warning {
         color: var(--xh-intent-warning-lighter);
       }
 
-      &.bp5-intent-danger {
+      &.bp6-intent-danger {
         color: var(--xh-intent-danger-lighter);
       }
     }
   }
 
-  .bp5-submenu {
+  .bp6-submenu {
     padding: 0;
   }
 }
 
-.bp5-dark .bp5-menu-divider {
+.bp6-dark .bp6-menu-divider {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
@@ -182,7 +186,7 @@
 // See desktop/cmp/button/Button.scss for button styles.
 // Rule below applies only to buttons within BP inputs to disable default hover background-color
 // (which looks weird) and instead tweak the icon color to indicate it's active.
-.xh-app .xh-input .bp5-input-group .xh-button {
+.xh-app .xh-input .bp6-input-group .xh-button {
   &.xh-button--minimal,
   &.xh-button--outlined {
     &.xh-button--enabled {
@@ -200,43 +204,43 @@
 //------------------------
 // Tooltips
 //------------------------
-.bp5-tooltip {
-  &.bp5-intent-primary {
-    .bp5-popover-content {
+.bp6-tooltip {
+  &.bp6-intent-primary {
+    .bp6-popover-content {
       background-color: var(--xh-intent-primary);
     }
 
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-fill {
       fill: var(--xh-intent-primary);
     }
   }
 
-  &.bp5-intent-danger {
-    .bp5-popover-content {
+  &.bp6-intent-danger {
+    .bp6-popover-content {
       background-color: var(--xh-intent-danger);
     }
 
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-fill {
       fill: var(--xh-intent-danger);
     }
   }
 
-  &.bp5-intent-success {
-    .bp5-popover-content {
+  &.bp6-intent-success {
+    .bp6-popover-content {
       background-color: var(--xh-intent-success);
     }
 
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-fill {
       fill: var(--xh-intent-success);
     }
   }
 
-  &.bp5-intent-warning {
-    .bp5-popover-content {
+  &.bp6-intent-warning {
+    .bp6-popover-content {
       background-color: var(--xh-intent-warning);
     }
 
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-fill {
       fill: var(--xh-intent-warning);
     }
   }
@@ -245,11 +249,11 @@
 //------------------------
 // Forms + Inputs
 //------------------------
-.bp5-input,
-.bp5-dark .bp5-input,
-textarea.bp5-input,
-.bp5-dark textarea.bp5-input,
-.bp5-input-ghost {
+.bp6-input,
+.bp6-dark .bp6-input,
+textarea.bp6-input,
+.bp6-dark textarea.bp6-input,
+.bp6-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
   font-size: var(--xh-font-size);
@@ -260,7 +264,7 @@ textarea.bp5-input,
   }
 
   // Use Hoist theme vars for disabled input styles.
-  &.bp5-disabled,
+  &.bp6-disabled,
   &:disabled {
     background-color: var(--xh-input-disabled-bg);
     color: var(--xh-input-disabled-text-color);
@@ -268,25 +272,25 @@ textarea.bp5-input,
 }
 
 // Expose CSS var for box-shadow tweaking
-.bp5-input:not(.bp5-active):not(:focus) {
+.bp6-input:not(.bp6-active):not(:focus) {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp5-control,
-.bp5-dark .bp5-control {
-  input:focus ~ .bp5-control-indicator {
+.bp6-control,
+.bp6-dark .bp6-control {
+  input:focus ~ .bp6-control-indicator {
     outline: var(--xh-form-field-focused-border-color) solid 1px !important;
     outline-offset: 1px;
   }
 }
 
-.bp5-slider-handle:focus {
+.bp6-slider-handle:focus {
   outline: unset; // override browser default styles
   box-shadow: var(--xh-slider-handle-focused-box-shadow);
 }
 
-.bp5-input:focus,
-.bp5-dark .bp5-input:focus,
+.bp6-input:focus,
+.bp6-dark .bp6-input:focus,
 .bp5-dark textarea.bp5-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
