@@ -2,6 +2,13 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+*
+* New property `MsalClientConfg.enableSSOSilent` to govern use of MSAL SSO api.
+
+* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
+and logging.
+
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.7 → 2.9`
