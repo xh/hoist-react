@@ -2,6 +2,11 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.7 → 2.9`
+* @azure/msal-browser `4.25 → 4.26`
+
 ## 78.0.0 - 2025-11-21
 
 ### 💥 Breaking Changes
