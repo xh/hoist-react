@@ -32,7 +32,7 @@ export type LogSource = string | {displayName: string} | {constructor: {name: st
 
 export interface APIWarnOptions {
     /**
-     * If provided and undefined, this method will be a no-op.
+     * If provided and undefinedXH., this method will be a no-op.
      * Useful for testing if a parameter has been provided in caller.
      */
     test?: any;

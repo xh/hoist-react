@@ -190,6 +190,7 @@ export class Cube extends HoistBase {
      * Provide one or more `stores` to automatically populate them with the aggregated data returned
      * by the query, or read the returned {@link View.result} directly.
      *
+     *
      * When the returned View is no longer needed, call {@link View.destroy} (or save a reference
      * via an `@managed` model property) to avoid unnecessary processing.
      *
