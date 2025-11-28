@@ -181,27 +181,28 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
 
         // 2) Otherwise need to create a new session, either with SSO, or with login
-        let loggedIn = false;
 
-        // 2a) Ise`ssoSilent` API first, to potentially reuse logged-in user on other apps
+        // 2a) Try `ssoSilent` API first, to potentially reuse logged-in user on other apps
         // in same domain without interaction.  This should never trigger popup/redirect, and will
         // use an iFrame (3rd party cookies required). Must fail gently.
+        let ssoSucceeded = false;
         if (enableSSOSilent) {
             try {
                 this.logDebug('Attempting SSO');
                 await this.loginSsoAsync();
-                this.logDebug('Attempting SSO');
-                loggedIn = true;
+                this.logDebug('SSO succeeded');
+                ssoSucceeded = true;
             } catch (e) {
                 this.logDebug('SSO failed', e.message ?? e);
             }
         }
 
-        // 2b) If SSO did not succeed,  must do "interactive" login.  This may or may not require
+        // 2b) If SSO did not succeed, must do "interactive" login.  This may or may not require
         // user involvement but will require at least a redirect or cursory auto-closing popup.
-        if (!loggedIn) {
-            this.logDebug('Logging in');
+        if (!ssoSucceeded) {
+            this.logDebug('Attempting Login');
             await this.loginAsync();
+            this.logDebug('Login succeeded');
         }
 
         // 3) Return tokens
