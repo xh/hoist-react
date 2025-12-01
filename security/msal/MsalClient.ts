@@ -134,6 +134,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             initRefreshTokenExpirationOffsetSecs: -1,
             msalLogLevel: LogLevel.Warning,
             domainHint: null,
+            enableTelemetry: true,
+            enableSSOSilent: true,
             ...config
         });
     }
