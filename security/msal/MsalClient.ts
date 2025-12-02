@@ -12,10 +12,10 @@ import {
     InteractionRequiredAuthError,
     IPublicClientApplication,
     LogLevel,
-    PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {AppState, PlainObject, XH} from '@xh/hoist/core';
+import {CommonAuthorizationUrlRequest} from '@azure/msal-common';
+import {AppState, PlainObject, ReactionSpec, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {withFormattedTimestamps} from '@xh/hoist/format';
@@ -211,17 +211,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
-        const {client} = this,
-            opts: PopupRequest = {
-                loginHint: this.getSelectedUsername(),
-                domainHint: this.config.domainHint,
-                account: this.account,
-                scopes: this.loginScopes,
-                extraScopesToConsent: this.loginExtraScopesToConsent,
-                redirectUri: this.blankUrl
-            };
         try {
-            const ret = await client.acquireTokenPopup(opts);
+            const ret = await this.client.acquireTokenPopup(this.authRequestCore());
             this.setAccount(ret.account);
             this.noteAuthComplete('loginPopup');
         } catch (e) {
@@ -237,15 +228,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
-        const state = this.captureRedirectState();
-
         await this.client.acquireTokenRedirect({
-            state,
-            loginHint: this.getSelectedUsername(),
-            domainHint: this.config.domainHint,
-            account: this.account,
-            scopes: this.loginScopes,
-            extraScopesToConsent: this.loginExtraScopesToConsent,
+            ...this.authRequestCore(),
+            state: this.captureRedirectState(),
             redirectUri: this.redirectUrl
         });
 
@@ -327,7 +312,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                         {name, startTimeMs, durationMs, success, errorName, errorCode} = e,
                         eTime = startTimeMs ?? Date.now();
 
-                    const eResult = (events[name] ??= {
+                    const eResult: PlainObject = (events[name] ??= {
                         firstTime: eTime,
                         lastTime: eTime,
                         successCount: 0,
@@ -373,7 +358,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.addReaction({
             when: () => XH.appState === AppState.INITIALIZING_APP,
             run: () => XH.clientHealthService.addSource('msalClient', () => this.telemetry)
-        });
+        } as ReactionSpec);
 
         this.logDebug('Telemetry enabled');
     }
@@ -395,15 +380,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     // Private implementation
     //------------------------
     private async loginSsoAsync(): Promise<void> {
-        const result = await this.client.ssoSilent({
-            loginHint: this.getSelectedUsername(),
-            domainHint: this.config.domainHint,
-            account: this.account,
-            redirectUri: this.blankUrl,
-            scopes: this.loginScopes,
-            extraScopesToConsent: this.loginExtraScopesToConsent,
-            prompt: 'none'
-        });
+        const result = await this.client.ssoSilent(this.authRequestCore());
         this.setAccount(result.account);
     }
 
@@ -445,16 +422,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private logFromMsal(level: LogLevel, message: string) {
-        const {client} = this;
+        const source = this.client.constructor.name;
         switch (level) {
             case msal.LogLevel.Info:
-                return logInfo(message, client);
+                return logInfo(message, source);
             case msal.LogLevel.Warning:
-                return logWarn(message, client);
+                return logWarn(message, source);
             case msal.LogLevel.Error:
-                return logError(message, client);
+                return logError(message, source);
             default:
-                return logDebug(message, client);
+                return logDebug(message, source);
         }
     }
 
@@ -488,7 +465,28 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         if (this.telemetry) this.telemetry.authMethod = authMethod;
         this.logInfo(`Authenticated user ${this.account.username} via ${authMethod}`);
     }
+
+    private authRequestCore(): AuthRequestCore {
+        const ret: AuthRequestCore = {
+            domainHint: this.config.domainHint,
+            scopes: this.loginScopes,
+            extraScopesToConsent: this.loginExtraScopesToConsent,
+            redirectUri: this.blankUrl
+        };
+
+        if (this.account) {
+            ret.account = this.account;
+        } else if (this.getSelectedUsername()) {
+            ret.loginHint = this.getSelectedUsername();
+        }
+        return ret;
+    }
 }
+
+type AuthRequestCore = Pick<
+    CommonAuthorizationUrlRequest,
+    'domainHint' | 'scopes' | 'extraScopesToConsent' | 'account' | 'loginHint' | 'redirectUri'
+>;
 type AuthMethod = 'acquireSilent' | 'ssoSilent' | 'loginPopup' | 'loginRedirect';
 
 /**
