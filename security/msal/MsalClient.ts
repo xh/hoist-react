@@ -474,6 +474,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             redirectUri: this.blankUrl
         };
 
+        // Only send these critical hints if we have them.  Prioritize account, as that has
+        // more info, and MSAL source appears to let loginHint override that.
         if (this.account) {
             ret.account = this.account;
         } else if (this.getSelectedUsername()) {
