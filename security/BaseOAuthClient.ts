@@ -180,8 +180,8 @@ export abstract class BaseOAuthClient<
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        await this.doLogoutAsync();
         this.setSelectedUsername(null);
+        await this.doLogoutAsync();
     }
 
     /**

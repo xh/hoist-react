@@ -1,6 +1,16 @@
 # Changelog
 
-## 79.0.0-SNAPSHOT - unreleased
+## 78.1.0 - 2025-12-02
+
+### ⚙️ Technical
+* New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
+
+* Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
+
+* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
+ and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
+ This can be further modified by apps via the option
+ `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
 
 ### 📚 Libraries
 
