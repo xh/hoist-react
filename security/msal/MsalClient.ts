@@ -40,7 +40,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
 
     /**
      * True to enable support for built-in telemetry provided by this class's internal MSAL client.
-     * Captured performance events will be summarized as {@link MsalClientTelemetry}.
+     * Captured performance events will be summarized as {@link MsalClientTelemetry}. Default true.
      */
     enableTelemetry?: boolean;
 
@@ -75,7 +75,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      *  value -- `system.iFrameHashTimeout` -- at a relatively low value is critical.  Hoist
      *  defaults this value to 3000ms vs. the default 10000ms.
      */
-    enableSSOSilent?: boolean;
+    enableSsoSilent?: boolean;
 
     /** The log level of MSAL. Default is LogLevel.Warning. */
     msalLogLevel?: LogLevel;
@@ -135,7 +135,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             msalLogLevel: LogLevel.Warning,
             domainHint: null,
             enableTelemetry: true,
-            enableSSOSilent: true,
+            enableSsoSilent: true,
             ...config
         });
     }
@@ -145,7 +145,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     //-------------------------------------------
     protected override async doInitAsync(): Promise<TokenMap> {
         const client = (this.client = await this.createClientAsync()),
-            {enableTelemetry, enableSSOSilent} = this.config;
+            {enableTelemetry, enableSsoSilent} = this.config;
         if (enableTelemetry) {
             this.enableTelemetry();
         }
@@ -186,12 +186,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             }
         }
 
-        // 2) Otherwise need to create a new session, either with SSO, or with login
-
-        // 2a) Try `ssoSilent` API first, to potentially reuse logged-in user on other apps
+        // 2) Try `ssoSilent` API to potentially reuse logged-in user on other apps
         // in same domain without interaction.  This should never trigger popup/redirect, and will
         // use an iFrame (3rd party cookies required). Must fail gently.
-        if (enableSSOSilent) {
+        if (enableSsoSilent) {
             try {
                 this.logDebug('Attempting SSO');
                 await this.loginSsoAsync();
@@ -203,7 +201,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             }
         }
 
-        // 2b) If none of above succeeded, must do "interactive" login.  This may or may not require
+        // 3) If none of above succeeded, must do "interactive" login.  This may or may not require
         // user involvement but will require at least a redirect or cursory auto-closing popup.
         this.logDebug('Attempting Login');
         await this.loginAsync();
@@ -269,7 +267,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             isRedirect = loginMethod == 'REDIRECT',
             opts = {
                 account,
-                logoutHint: this.getSelectedUsername(),
                 postLogoutRedirectUri: isRedirect ? postLogoutRedirectUrl : this.blankUrl,
                 mainWindowRedirectUri: isRedirect ? undefined : postLogoutRedirectUrl
             };
