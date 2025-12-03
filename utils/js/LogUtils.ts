@@ -76,12 +76,13 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
         return;
     }
     _logLevel = level;
+    if (level != 'info') {
+        console.warn(`Client logging set to level '${level}'.`);
+    }
     if (persistMins > 0) {
         store.local.set('xhLogLevel', level);
         store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
-    }
-    if (level != 'info') {
-        console.warn(`Client logging set to level '${level}'.`);
+        console.warn(`Logging level '${level}' will persist for ${persistMins} minutes.`);
     }
 }
 
