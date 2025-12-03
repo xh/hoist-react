@@ -8,6 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {sortBy} from 'lodash';
 
 /**
  * State management for the ColChooser component.
@@ -113,8 +114,19 @@ export class ColChooserModel extends HoistModel {
     //------------------------
     syncChooserData() {
         const {gridModel, lrModel} = this,
-            {columnState} = gridModel,
-            hasGrouping = gridModel.getLeafColumns().some(it => it.chooserGroup);
+            hasGrouping = gridModel.getLeafColumns().some(it => it.chooserGroup),
+            columnState = sortBy(gridModel.columnState, it => {
+                const {pinned} = it;
+                if (pinned === 'left') {
+                    return 0;
+                }
+
+                if (pinned === 'right') {
+                    return 2;
+                }
+
+                return 1;
+            });
 
         const data = columnState.map((it, idx) => {
             const visible = !it.hidden,
