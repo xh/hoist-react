@@ -4,9 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, GridSorterLike} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
-import {HoistModel, HSide, managed, XH} from '@xh/hoist/core';
+import {HoistModel, HSide, managed, Some, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
@@ -29,12 +29,14 @@ export interface LeftRightChooserConfig {
 
     leftTitle?: string;
     leftSorted?: boolean;
+    leftSortBy?: Some<GridSorterLike>;
     leftGroupingEnabled?: boolean;
     leftGroupingExpanded?: boolean;
     leftEmptyText?: string;
 
     rightTitle?: string;
     rightSorted?: boolean;
+    rightSortBy?: Some<GridSorterLike>;
     rightGroupingEnabled?: boolean;
     rightGroupingExpanded?: boolean;
     rightEmptyText?: string;
@@ -125,12 +127,14 @@ export class LeftRightChooserModel extends HoistModel {
         ungroupedName = 'Ungrouped',
         leftTitle = 'Available',
         leftSorted = false,
+        leftSortBy = ['sortValue', 'text'],
         leftGroupingEnabled = true,
         leftGroupingExpanded = true,
         leftEmptyText = null,
         readonly = false,
         rightTitle = 'Selected',
         rightSorted = false,
+        rightSortBy = ['sortValue', 'text'],
         rightGroupingEnabled = true,
         rightGroupingExpanded = true,
         rightEmptyText = null,
@@ -192,7 +196,7 @@ export class LeftRightChooserModel extends HoistModel {
         this.leftModel = new GridModel({
             store,
             selModel: 'multiple',
-            sortBy: leftSorted ? ['sortValue', 'text'] : null,
+            sortBy: leftSorted ? leftSortBy : null,
             emptyText: leftEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [leftTextCol, groupCol, sortValueCol],
@@ -204,7 +208,7 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightModel = new GridModel({
             store,
             selModel: 'multiple',
-            sortBy: rightSorted ? ['sortValue', 'text'] : null,
+            sortBy: rightSorted ? rightSortBy : null,
             emptyText: rightEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
             columns: [rightTextCol, groupCol, sortValueCol],

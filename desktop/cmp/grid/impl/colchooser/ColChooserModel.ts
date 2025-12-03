@@ -55,6 +55,7 @@ export class ColChooserModel extends HoistModel {
             rightTitle: 'Displayed Columns',
             rightEmptyText: 'No columns will be visible.',
             leftSorted: true,
+            leftSortBy: 'text',
             rightSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
