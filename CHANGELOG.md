@@ -11,8 +11,6 @@
 
 * Allow cross-tab persistence of client log levels
 
-
-
 ## 78.1.0 - 2025-12-02
 
 ### ⚙️ Technical
