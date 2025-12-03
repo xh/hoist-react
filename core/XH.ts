@@ -370,13 +370,21 @@ export class XHApi {
     }
 
     /**
-     * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
-     * this adjustment for up to 1440 minutes in local storage.
-     *
-     * Hint: call this method from the console to adjust your app's log level while troubleshooting.
+     * Set the minimum severity for Hoist log utils.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
      */
     setLogLevel(level: LogLevel, persistMins: number = -1) {
         setLogLevel(level, persistMins);
+    }
+
+    /**
+     * Short cut to enable client-side logging at level `debug`.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
+     *
+     * Hint: call this method from the console to show more verbose data while troubleshooting.
+     */
+    enableDebugLogging(persistMins: number = -1) {
+        setLogLevel('debug', persistMins);
     }
 
     //----------------------

@@ -9,7 +9,6 @@ import {Exception} from '@xh/hoist/exception';
 import {castArray, isString, isUndefined} from 'lodash';
 import store from 'store2';
 import {intersperse} from './LangUtils';
-import {MINUTES} from '@xh/hoist/utils/datetime';
 
 /**
  * Utility functions providing managed, structured logging to Hoist apps.
@@ -79,7 +78,7 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
     _logLevel = level;
     if (persistMins > 0) {
         store.local.set('xhLogLevel', level);
-        store.local.set('xhLogLevelExpire', Date.now() + persistMins * MINUTES);
+        store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
     }
     if (level != 'info') {
         console.warn(`Client logging set to level '${level}'.`);

@@ -1,6 +1,6 @@
 # Changelog
 
-## 78.1.1 - 2025-12-03
+## 78.1.2 - 2025-12-03
 
 ### 🐞 Bug Fixes
 * Fix to Highchart timezone handling regression from version 77.  Applications should note that
