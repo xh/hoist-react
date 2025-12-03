@@ -1,10 +1,17 @@
 # Changelog
 
-## 79.0.0-SNAPSHOT - unreleased
+## 78.1.1 - 2025-12-03
+
+### 🐞 Bug Fixes
+* Fix to Highchart timezone handling regression from version 77.  Applications should note that
+  Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
+  should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
 
 ### ⚙️ Technical
 
-* Remove deprecated `useUTC: false` config from highchart implementation. Replace with `timezone: undefined` to preserve existing behavior.
+* Allow cross-tab persistence of client log levels
+
+
 
 ## 78.1.0 - 2025-12-02
 

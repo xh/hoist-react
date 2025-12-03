@@ -371,12 +371,12 @@ export class XHApi {
 
     /**
      * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
-     * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
+     * this adjustment for up to 1440 minutes in local storage.
      *
      * Hint: call this method from the console to adjust your app's log level while troubleshooting.
      */
-    setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
-        setLogLevel(level, persistInSessionStorage);
+    setLogLevel(level: LogLevel, persistMins: number = -1) {
+        setLogLevel(level, persistMins);
     }
 
     //----------------------
