@@ -64,6 +64,9 @@ export interface LeftRightChooserItem {
 
     /* True to exclude the item from the chooser entirely. */
     exclude?: boolean;
+
+    /* Value to use for sorting. If unset then sort order will be based solely on the text value. */
+    sortValue?: any;
 }
 
 /**
@@ -154,7 +157,8 @@ export class LeftRightChooserModel extends HoistModel {
                 {name: 'group', type: 'string'},
                 {name: 'side', type: 'string'},
                 {name: 'locked', type: 'bool'},
-                {name: 'exclude', type: 'bool'}
+                {name: 'exclude', type: 'bool'},
+                {name: 'sortValue'}
             ]
         };
 
@@ -179,15 +183,19 @@ export class LeftRightChooserModel extends HoistModel {
                 field: 'group',
                 headerName: 'Group',
                 hidden: true
+            },
+            sortValueCol = {
+                field: 'sortValue',
+                hidden: true
             };
 
         this.leftModel = new GridModel({
             store,
             selModel: 'multiple',
-            sortBy: leftSorted ? 'text' : null,
+            sortBy: leftSorted ? ['sortValue', 'text'] : null,
             emptyText: leftEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
-            columns: [leftTextCol, groupCol],
+            columns: [leftTextCol, groupCol, sortValueCol],
             contextMenu: false,
             expandLevel: leftGroupingExpanded ? 1 : 0,
             xhImpl: true
@@ -196,10 +204,10 @@ export class LeftRightChooserModel extends HoistModel {
         this.rightModel = new GridModel({
             store,
             selModel: 'multiple',
-            sortBy: rightSorted ? 'text' : null,
+            sortBy: rightSorted ? ['sortValue', 'text'] : null,
             emptyText: rightEmptyText,
             onRowDoubleClicked: e => this.onRowDoubleClicked(e),
-            columns: [rightTextCol, groupCol],
+            columns: [rightTextCol, groupCol, sortValueCol],
             contextMenu: false,
             expandLevel: rightGroupingExpanded ? 1 : 0,
             xhImpl: true

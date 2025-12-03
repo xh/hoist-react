@@ -55,6 +55,7 @@ export class ColChooserModel extends HoistModel {
             rightTitle: 'Displayed Columns',
             rightEmptyText: 'No columns will be visible.',
             leftSorted: true,
+            rightSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
                 if (this.commitOnChange) this.commit();
@@ -111,19 +112,22 @@ export class ColChooserModel extends HoistModel {
     //------------------------
     syncChooserData() {
         const {gridModel, lrModel} = this,
-            columns = gridModel.getLeafColumns(),
-            hasGrouping = columns.some(it => it.chooserGroup);
+            {columnState} = gridModel,
+            hasGrouping = gridModel.getLeafColumns().some(it => it.chooserGroup);
 
-        const data = columns.map(it => {
-            const visible = gridModel.isColumnVisible(it.colId);
+        const data = columnState.map((it, idx) => {
+            const visible = !it.hidden,
+                col = gridModel.getColumn(it.colId);
+
             return {
                 value: it.colId,
-                text: it.chooserName,
-                description: it.chooserDescription,
-                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
-                exclude: it.excludeFromChooser,
-                locked: visible && !it.hideable,
-                side: visible ? 'right' : 'left'
+                text: col.chooserName,
+                description: col.chooserDescription,
+                group: hasGrouping ? (col.chooserGroup ?? 'Ungrouped') : null,
+                exclude: col.excludeFromChooser,
+                locked: visible && !col.hideable,
+                side: visible ? 'right' : 'left',
+                sortValue: idx
             } as const;
         });
 

@@ -2,6 +2,10 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* The column chooser now displays columns in the same order as they appear in the grid.
+
 ## 78.1.0 - 2025-12-02
 
 ### ⚙️ Technical
