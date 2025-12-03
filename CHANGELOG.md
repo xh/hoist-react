@@ -4,7 +4,7 @@
 
 ### ⚙️ Technical
 
-* Remove deprecated `useUTC: false` config from high chart implementation. Replace with `timezone: undefined` to preserve existing behavior.
+* Remove deprecated `useUTC: false` config from highchart implementation. Replace with `timezone: undefined` to preserve existing behavior.
 
 ## 78.1.0 - 2025-12-02
 
