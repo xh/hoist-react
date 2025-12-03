@@ -78,7 +78,8 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
     }
     _logLevel = level;
     if (persistMins > 0) {
-        store.local.set('xhLogLevel', {level, expireAt: Date.now() + persistMins * MINUTES});
+        store.local.set('xhLogLevel', level);
+        store.local.set('xhLogLevelExpire', Date.now() + persistMins * MINUTES);
     }
     if (level != 'info') {
         console.warn(`Client logging set to level '${level}'.`);
@@ -281,6 +282,6 @@ function parseSource(source: LogSource): string {
 let _logLevel: LogLevel = 'info';
 const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
-const persisted = store.local.get('xhLogLevel'),
-    level = persisted?.expireAt > Date.now() ? persisted.level : 'info';
-setLogLevel(level);
+const level = store.local.get('xhLogLevel'),
+    expire = store.local.get('xhLogLevelExpire');
+setLogLevel(level && expire > Date.now() ? level : 'info');
