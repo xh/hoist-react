@@ -1,5 +1,7 @@
 # Changelog
 
+## 79.0.0-SNAPSHOT - unreleased
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
