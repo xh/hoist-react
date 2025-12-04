@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import type {Layout} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
@@ -117,6 +118,8 @@ export class DashCanvasModel
         return this.layout
             .map(it => {
                 const dashCanvasView = this.getView(it.i);
+
+                // `dashCanvasView` will not be found if `it` is a dropping element.
                 if (!dashCanvasView) return null;
 
                 const {autoHeight, viewSpec} = dashCanvasView;
@@ -280,19 +283,16 @@ export class DashCanvasModel
         opts: {
             title: string;
             state: any;
-            layout: {
-                x: number;
-                y: number;
-                w: number;
-                h: number;
-            };
+            layout: DashCanvasItemLayout;
         },
-        rglLayout: any[]
+        rglLayout: Layout[]
     ): DashCanvasViewModel {
         const newViewModel: DashCanvasViewModel = this.addViewInternal(specId, opts),
             droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+
         droppingItem.i = newViewModel.id;
         this.onRglLayoutChange(rglLayout);
+
         return newViewModel;
     }
 
@@ -419,8 +419,12 @@ export class DashCanvasModel
         return model;
     }
 
-    onRglLayoutChange(rglLayout) {
+    onRglLayoutChange(rglLayout: Layout[]) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
+
+        // Early out if RGL is changing layout as user is dragging droppable
+        // item around the canvas.  This will be called again once dragging
+        // has stopped and user has dropped the item onto the canvas.
         if (rglLayout.some(it => it.i === this.DROPPING_ELEM_ID)) return;
 
         this.setLayout(rglLayout);
