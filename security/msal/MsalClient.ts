@@ -72,7 +72,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      *
      *  In practice, and according to documentation, this operation is likely to fail for a
      *  number of reasons, and can often do so as timeout.  Therefore, keeping the timeout limit
-     *  value -- `system.iFrameHashTimeout` -- at a relatively low value is critical.  Hoist
+     *  value -- `system.iframeHashTimeout` -- at a relatively low value is critical.  Hoist
      *  defaults this value to 3000ms vs. the default 10000ms.
      */
     enableSsoSilent?: boolean;
@@ -385,37 +385,30 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const {clientId, authority, msalLogLevel, msalClientOptions, enableTelemetry} = this.config;
         throwIf(!authority, 'Missing MSAL authority. Please review your configuration.');
 
-        const mergedConf: Configuration = mergeDeep(
-            {
-                auth: {
-                    clientId,
-                    authority,
-                    postLogoutRedirectUri: this.postLogoutRedirectUrl
-                },
-                system: {
-                    loggerOptions: {
-                        loggerCallback: this.logFromMsal,
-                        logLevel: msalLogLevel
-                    },
-                    iFrameHashTimeout: 3000 // Prevent long pauses for sso failures.
-                },
-                cache: {
-                    cacheLocation: 'localStorage' // allows sharing auth info across tabs.
-                }
+        let conf: Configuration = {
+            auth: {
+                clientId,
+                authority,
+                postLogoutRedirectUri: this.postLogoutRedirectUrl
             },
-            msalClientOptions
-        );
+            system: {
+                loggerOptions: {
+                    loggerCallback: this.logFromMsal,
+                    logLevel: msalLogLevel
+                },
+                iframeHashTimeout: 3000 // Prevent long pauses for sso failures.
+            },
+            cache: {
+                cacheLocation: 'localStorage' // allows sharing auth info across tabs.
+            }
+        };
 
-        return msal.PublicClientApplication.createPublicClientApplication(
-            enableTelemetry
-                ? {
-                      ...mergedConf,
-                      telemetry: {
-                          client: new BrowserPerformanceClient(mergedConf)
-                      }
-                  }
-                : mergedConf
-        );
+        conf = mergeDeep(conf, msalClientOptions);
+        if (enableTelemetry) {
+            conf.telemetry = {client: new BrowserPerformanceClient(conf)};
+        }
+
+        return msal.PublicClientApplication.createPublicClientApplication(conf);
     }
 
     private logFromMsal(level: LogLevel, message: string) {
