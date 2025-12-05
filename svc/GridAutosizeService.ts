@@ -79,7 +79,7 @@ export class GridAutosizeService extends HoistService {
 
         runInAction(() => {
             // Apply calculated widths to grid.
-            gridModel.applyColumnStateChanges(requiredWidths);
+            gridModel.updateColumnState(requiredWidths);
             this.logDebug(
                 `Auto-sized ${requiredWidths.length} columns`,
                 `${records.length} records`
@@ -94,7 +94,7 @@ export class GridAutosizeService extends HoistService {
                     fillMode,
                     asManuallySized
                 );
-                gridModel.applyColumnStateChanges(fillWidths);
+                gridModel.updateColumnState(fillWidths);
                 this.logDebug(`Auto-sized ${fillWidths.length} columns using fillMode`);
             }
         });
