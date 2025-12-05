@@ -27,8 +27,8 @@ export function installHighcharts(HighchartsImpl) {
     }
 
     HighchartsImpl.setOptions({
-        global: {
-            useUTC: false
+        time: {
+            timezone: undefined
         },
         lang: {
             thousandsSep: ','

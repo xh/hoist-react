@@ -751,19 +751,22 @@ export class GridModel extends HoistModel {
 
     /**
      * Select records in the grid.
-     *
      * @param records - one or more record(s) / ID(s) to select.
-     * @param options - additional options containing the following keys:
-     *      ensureVisible - true to make selection visible if it is within a
-     *          collapsed node or outside of the visible scroll window. Default true.
-     *      clearSelection - true to clear previous selection (rather than
-     *          add to it). Default true.
+     * @param opts - additional post-selection options
      */
     async selectAsync(
         records: Some<StoreRecordOrId>,
-        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
+        opts: {
+            /**
+             * True (default) to scroll the grid or expand nodes as needed to make selection
+             * visible if it is within a collapsed node or outside of the visible scroll window.
+             */
+            ensureVisible?: boolean;
+            /** True (default) to clear previous selection (rather than add to it). */
+            clearSelection?: boolean;
+        } = {}
     ) {
-        const {ensureVisible = true, clearSelection = true} = opts ?? {};
+        const {ensureVisible = true, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
         if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
@@ -771,19 +774,25 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid.
      *
-     * See {@link preSelectFirstAsync} for a useful variant of this method.  preSelectFirstAsync()
-     * will not change the selection if there is already a selection, which is what applications
-     * typically want to do when loading/reloading a grid.
-     *
-     * @param opts -
-     *      expandParentGroups - set to true to expand nodes to allow selection when the
-     *          first selectable node is in a collapsed group. Default true.
-     *      ensureVisible - set to to true to scroll to the selected row if it is outside of the
-     *      visible scroll window. Default true.
-     *
+     * See {@link preSelectFirstAsync} for a useful variant of this method that will leave the
+     * any pre-existing selection unchanged, which is what apps typically want when reloading an
+     * already-populated grid.
      */
-    async selectFirstAsync(opts?: {expandParentGroups?: boolean; ensureVisible?: boolean}) {
-        const {expandParentGroups = true, ensureVisible = true} = opts ?? {};
+    async selectFirstAsync(
+        opts: {
+            /**
+             * True (default) to expand nodes as needed to allow selection when the first selectable
+             * node is in a collapsed group.
+             */
+            expandParentGroups?: boolean;
+            /**
+             * True (default) to scroll the grid or expand nodes as needed to make selection
+             * visible if it is outside of the visible scroll window.
+             */
+            ensureVisible?: boolean;
+        } = {}
+    ) {
+        const {expandParentGroups = true, ensureVisible = true} = opts;
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -803,7 +812,6 @@ export class GridModel extends HoistModel {
 
     /**
      * Select the first row in the grid, if no other selection present.
-     *
      * This method delegates to {@link selectFirstAsync}.
      */
     async preSelectFirstAsync() {

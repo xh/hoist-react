@@ -16,14 +16,44 @@
   persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
   supports context-menu items. See `TabContainerConfig.switcher`.
 
+### 🐞 Bug Fixes
+
+* Defaulted Highcharts font to Hoist default (--xh-font-family)
+
+## 78.1.3 - 2025-12-04
+
+### 🐞 Bug Fixes
+
+* Fixed timezone-related Highcharts regression from v77. Note that Highcharts has deprecated
+  `time.useUTC` in favor of `time.timezone` (https://api.highcharts.com/highcharts/time.useUTC).
+
+### ⚙️ Technical
+
+* Enabled cross-tab persistence of customized client logging level.
+
+## 78.1.0 - 2025-12-02
+
+### ⚙️ Technical
+
+* Improved `MsalClient` to maximize effectiveness of SSO and improved documentation and logging.
+  Updated the default timeout for iFrame interactions to 3 seconds (from 10 seconds) - customizable
+  if needed via `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+* Added new `MsalClientConfig.enableSsoSilent` option to govern use of the MSAL SSO API.
+* Defaulted `MsalClientConfig.enableTelemetry` to `true`.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.7 → 2.9`
+* @azure/msal-browser `4.25 → 4.26`
+
 ## 78.0.0 - 2025-11-21
 
 ### 💥 Breaking Changes
 
-* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
-  wholesale. Applications that were relying on the prior patching behavior will need to
-  call `GridModel.applyColumnStateChanges` instead.
-* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+* Modified `GridModel.setColumnState` to no longer patch existing column state but instead replace
+  it wholesale. Applications that were relying on the prior patching behavior will need to call
+  `GridModel.applyColumnStateChanges` instead.
+* Set `GridModel.cleanColumnState` to `private` (not expected to impact applications).
 
 ### 🎁 New Features
 
@@ -51,7 +81,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+* Apps that use and provide the `highcharts` library should be sure to update the version to
+  v12.4.0.
   Refer to `Bootstrap.js` in Toolbox for required import changes.
     * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 

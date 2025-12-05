@@ -59,11 +59,11 @@ export function getLogLevel() {
 
 /**
  * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
- * this adjustment to sessionStorage to maintain for the lifetime of the browser tab.
+ * this adjustment to localStorage for up to 24 hours.
  *
  * @internal - use public `XH.setLogLevel()`.
  */
-export function setLogLevel(level: LogLevel, persistInSessionStorage: boolean = false) {
+export function setLogLevel(level: LogLevel, persistMins: number = -1) {
     level = level.toLowerCase() as LogLevel;
 
     const validLevels = ['error', 'warn', 'info', 'debug'];
@@ -71,12 +71,18 @@ export function setLogLevel(level: LogLevel, persistInSessionStorage: boolean = 
         console.error(`Ignored invalid log level '${level}' - must be one of ${validLevels}`);
         return;
     }
-    _logLevel = level;
-    if (persistInSessionStorage) {
-        store.session.set('xhLogLevel', level);
+    if (persistMins > 1440) {
+        console.error(`Ignored invalid 'persistMins' value - must be less than 1440`);
+        return;
     }
+    _logLevel = level;
     if (level != 'info') {
         console.warn(`Client logging set to level '${level}'.`);
+    }
+    if (persistMins > 0) {
+        store.local.set('xhLogLevel', level);
+        store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
+        console.warn(`Logging level '${level}' will persist for ${persistMins} minutes.`);
     }
 }
 
@@ -276,4 +282,6 @@ function parseSource(source: LogSource): string {
 let _logLevel: LogLevel = 'info';
 const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
-setLogLevel(store.session.get('xhLogLevel', 'info'));
+const level = store.local.get('xhLogLevel'),
+    expire = store.local.get('xhLogLevelExpire');
+setLogLevel(level && expire > Date.now() ? level : 'info');
