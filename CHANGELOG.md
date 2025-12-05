@@ -6,6 +6,13 @@
 
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
 
+### ⚙️ Technical
+
+* Removed the following previously deprecated configs as planned:
+    * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
+    * `GroupingChooserProps.popoverTitle` - use `editorTitle`
+    * `RelativeTimestampProps.options` - provide directly as top-level props
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
