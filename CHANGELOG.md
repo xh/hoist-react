@@ -3,7 +3,9 @@
 ## 79.0.0-SNAPSHOT - unreleased
 
 ### 🐞 Bug Fixes
-* The column chooser now displays columns in the same order as they appear in the grid.
+
+* Fixed column chooser to display columns in the same order as they appear in the grid.
+* Defaulted Highcharts font to Hoist default (--xh-font-family)
 
 ## 78.1.3 - 2025-12-04
 
