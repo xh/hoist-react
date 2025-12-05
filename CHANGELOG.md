@@ -2,13 +2,16 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Defaulted Highcharts font to Hoist default (--xh-font-family)
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
 
 * Fixed timezone-related Highcharts regression from v77. Note that Highcharts has deprecated
   `time.useUTC` in favor of `time.timezone` (https://api.highcharts.com/highcharts/time.useUTC).
-* Default Highcharts font to Hoist default (--xh-font-family)
 
 ### ⚙️ Technical
 

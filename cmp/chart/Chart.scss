@@ -17,7 +17,7 @@
 
 // Default Highcharts font to match Hoist standard
 svg.highcharts-root {
-  font-family: var(--xh-chart-font-family, #{('InterVariable', system-ui, sans-serif)}) !important;
+  font-family: var(--xh-chart-font-family) !important;
 }
 
 // Convenience class for optional use when specifying custom chart tooltips.
