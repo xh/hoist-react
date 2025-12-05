@@ -1,8 +1,15 @@
 # Changelog
 
+## 78.1.4 - 2025-12-05
+
+### 🐞 Bug Fixes
+
+* Fix logging during MsalClient creation.
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
+
 * Fix to Highchart timezone handling regression from version 77.  Applications should note that
   Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
   should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
