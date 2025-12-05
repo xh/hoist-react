@@ -2,6 +2,10 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Defaulted Highcharts font to Hoist default (--xh-font-family)
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
