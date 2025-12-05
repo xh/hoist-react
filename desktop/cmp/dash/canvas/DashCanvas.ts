@@ -4,6 +4,12 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import ReactGridLayout, {
+    type ReactGridLayoutProps,
+    type DragOverEvent,
+    type Layout,
+    WidthProvider
+} from 'react-grid-layout';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -20,8 +26,6 @@ import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
-import type {ReactGridLayoutProps} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -87,7 +91,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         draggableHandle:
                             '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
                         draggableCancel: '.xh-button',
-                        onLayoutChange: layout => model.onRglLayoutChange(layout),
+                        onLayoutChange: (layout: Layout[]) => model.onRglLayoutChange(layout),
                         onResizeStart: () => (model.isResizing = true),
                         onResizeStop: () => (model.isResizing = false),
                         items: model.viewModels.map(vm =>
@@ -96,6 +100,10 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                 item: dashCanvasView({model: vm})
                             })
                         ),
+                        isDroppable: model.droppable,
+                        onDrop: (layout: Layout[], layoutItem: Layout, evt: Event) =>
+                            model.onDrop(layout, layoutItem, evt),
+                        onDropDragOver: (evt: DragOverEvent) => model.onDropDragOver(evt),
                         ...rglOptions
                     }),
                     emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})

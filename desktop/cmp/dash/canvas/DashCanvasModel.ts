@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import type {Layout} from 'react-grid-layout';
+import type {DragOverEvent, Layout} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
@@ -17,6 +17,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     defaultsDeep,
     find,
+    omit,
     uniqBy,
     times,
     without,
@@ -51,6 +52,25 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 
     /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
+
+    /**
+     * Whether the canvas should accept drag-and-drop of views from outside
+     * the canvas. Default false.
+     */
+    droppable?: boolean;
+
+    /**
+     * Optional Callback to invoke after a view is successfully dropped onto the canvas.
+     */
+    onDropDone?: (viewModel: DashCanvasViewModel) => void;
+
+    /**
+     * Optional callback to invoke when an item is dragged over the canvas. This may be used to
+     * customize how the size of the dropping placeholder is calculated. The callback should
+     * return an object with optional 'w' and 'h' properties indicating the desired width and height
+     * (in grid units) of the dropping placeholder. If not provided, Hoist's own default logic will be used.
+     */
+    onDropDragOver?: (e: DragOverEvent) => {w?: number; h?: number} | false | undefined;
 
     /**
      * Whether an overlay with an Add View button should be rendered
@@ -96,6 +116,9 @@ export class DashCanvasModel
     DROPPING_ELEM_ID = '__dropping-elem__';
     maxRows: number;
     showAddViewButtonWhenEmpty: boolean;
+    droppable: boolean;
+    onDropDone: (viewModel: DashCanvasViewModel) => void;
+    draggedInView: DashCanvasItemState;
 
     /** Current number of rows in canvas */
     get rows(): number {
@@ -155,7 +178,10 @@ export class DashCanvasModel
         maxRows = Infinity,
         containerPadding = margin,
         extraMenuItems,
-        showAddViewButtonWhenEmpty = true
+        showAddViewButtonWhenEmpty = true,
+        droppable = false,
+        onDropDone,
+        onDropDragOver
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
@@ -204,6 +230,10 @@ export class DashCanvasModel
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
         this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
+        this.droppable = droppable;
+        this.onDropDone = onDropDone;
+        // Override default onDropDragOver if provided
+        if (onDropDragOver) this.onDropDragOver = onDropDragOver;
 
         this.loadState(initialState);
         this.state = this.buildState();
@@ -278,24 +308,6 @@ export class DashCanvasModel
         return this.addViewInternal(specId, {title, layout, state});
     }
 
-    @action dropViewIntoCanvas(
-        specId: string,
-        opts: {
-            title: string;
-            state: any;
-            layout: DashCanvasItemLayout;
-        },
-        rglLayout: Layout[]
-    ): DashCanvasViewModel {
-        const newViewModel: DashCanvasViewModel = this.addViewInternal(specId, opts),
-            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
-
-        droppingItem.i = newViewModel.id;
-        this.onRglLayoutChange(rglLayout);
-
-        return newViewModel;
-    }
-
     /**
      * Remove a view from the DashCanvas
      * @param id - DashCanvasViewModel id to remove from the container
@@ -347,6 +359,31 @@ export class DashCanvasModel
         this.getView(id)?.ensureVisible();
     }
 
+    onDrop(rglLayout: Layout[], layoutItem: Layout, evt: Event) {
+        throwIf(
+            !this.draggedInView,
+            `No draggedInView set on DashCanvasModel prior to onDrop operation.
+            Typically a developer would set this in response to dragstart events from
+             a DashViewTray or similar component.`
+        );
+
+        const {viewSpecId, title, state} = this.draggedInView,
+            layout = omit(layoutItem, 'i'),
+            newViewModel = this.doDrop(viewSpecId, {title, state, layout}, rglLayout);
+
+        this.draggedInView = null;
+        this.onDropDone?.(newViewModel);
+    }
+
+    setDraggedInView(view?: DashCanvasItemState) {
+        this.draggedInView = view;
+    }
+
+    onDropDragOver(e: DragOverEvent): {w?: number; h?: number} | false | undefined {
+        if (!this.draggedInView) return false;
+        return {w: 6, h: 6};
+    }
+
     //------------------------
     // Persistable Interface
     //------------------------
@@ -362,6 +399,24 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
+    @action
+    private doDrop(
+        specId: string,
+        opts: {
+            title: string;
+            state: any;
+            layout: DashCanvasItemLayout;
+        },
+        rglLayout: Layout[]
+    ): DashCanvasViewModel {
+        const newViewModel: DashCanvasViewModel = this.addViewInternal(specId, opts),
+            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+
+        droppingItem.i = newViewModel.id;
+        this.onRglLayoutChange(rglLayout);
+        return newViewModel;
+    }
+
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':
