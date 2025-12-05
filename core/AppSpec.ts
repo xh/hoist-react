@@ -5,8 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {ElementFactory, HoistAppModel, HoistAuthModel, HoistProps, XH} from '@xh/hoist/core';
-import {apiDeprecated, throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isString, isUndefined} from 'lodash';
+import {throwIf} from '@xh/hoist/utils/js';
+import {isFunction, isNil, isString} from 'lodash';
 import {Component, ComponentClass, FunctionComponent} from 'react';
 
 /**
@@ -140,9 +140,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      */
     trackAppLoad?: boolean;
 
-    /** @deprecated - use {@link AppSpec.disableWebSockets} instead. */
-    webSocketsEnabled?: boolean;
-
     constructor({
         authModelClass = HoistAuthModel,
         checkAccess,
@@ -161,8 +158,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         loginMessage = null,
         modelClass,
         showBrowserContextMenu = false,
-        trackAppLoad = true,
-        webSocketsEnabled
+        trackAppLoad = true
     }) {
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
 
@@ -179,17 +175,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
             !isString(checkAccess) && !isFunction(checkAccess),
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
-
-        if (!isUndefined(webSocketsEnabled)) {
-            let msg: string;
-            if (webSocketsEnabled === false) {
-                disableWebSockets = true;
-                msg = `Specify disableWebSockets: true to continue actively disabling WebSockets if required.`;
-            } else {
-                msg = `WebSockets are now enabled by default - this property can be safely removed from your appSpec.`;
-            }
-            apiDeprecated('webSocketsEnabled', {msg, v: 'v78'});
-        }
 
         this.authModelClass = authModelClass;
         this.checkAccess = checkAccess;
@@ -209,6 +194,5 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.modelClass = modelClass;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.trackAppLoad = trackAppLoad;
-        this.webSocketsEnabled = !disableWebSockets;
     }
 }
