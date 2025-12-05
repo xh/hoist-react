@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
@@ -60,7 +61,7 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
 export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindFieldProps>({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
-    render({className, model, ...props}) {
+    render({className, model, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel(GridFindFieldImplModel);
 
@@ -72,7 +73,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                 textInput({
                     model: impl,
                     bind: 'query',
-                    ref: impl.inputRef,
+                    ref: composeRefs(impl.inputRef, ref),
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,

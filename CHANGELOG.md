@@ -2,6 +2,10 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
