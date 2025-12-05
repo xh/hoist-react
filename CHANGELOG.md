@@ -7,16 +7,26 @@
 * The column chooser now displays columns in the same order as they appear in the grid.
 
 ## 78.1.0 - 2025-12-02
+## 78.1.3 - 2025-12-04
+
+### 🐞 Bug Fixes
+
+* Fixed timezone-related Highcharts regression from v77. Note that Highcharts has deprecated
+  `time.useUTC` in favor of `time.timezone` (https://api.highcharts.com/highcharts/time.useUTC).
 
 ### ⚙️ Technical
-* New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
 
-* Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
+* Enabled cross-tab persistence of customized client logging level.
 
-* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
- and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
- This can be further modified by apps via the option
- `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+## 78.1.0 - 2025-12-02
+
+### ⚙️ Technical
+
+* Improved `MsalClient` to maximize effectiveness of SSO and improved documentation and logging.
+  Updated the default timeout for iFrame interactions to 3 seconds (from 10 seconds) - customizable
+  if needed via `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+* Added new `MsalClientConfig.enableSsoSilent` option to govern use of the MSAL SSO API.
+* Defaulted `MsalClientConfig.enableTelemetry` to `true`.
 
 ### 📚 Libraries
 
@@ -27,10 +37,10 @@
 
 ### 💥 Breaking Changes
 
-* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
-  wholesale. Applications that were relying on the prior patching behavior will need to
-  call `GridModel.applyColumnStateChanges` instead.
-* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+* Modified `GridModel.setColumnState` to no longer patch existing column state but instead replace
+  it wholesale. Applications that were relying on the prior patching behavior will need to call
+  `GridModel.applyColumnStateChanges` instead.
+* Set `GridModel.cleanColumnState` to `private` (not expected to impact applications).
 
 ### 🎁 New Features
 
@@ -58,7 +68,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+* Apps that use and provide the `highcharts` library should be sure to update the version to
+  v12.4.0.
   Refer to `Bootstrap.js` in Toolbox for required import changes.
     * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 
