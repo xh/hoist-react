@@ -116,7 +116,6 @@ export class HeaderFilterModel extends HoistModel {
         this.valuesTabModel = enableValues ? new ValuesTabModel(this) : null;
         this.customTabModel = new CustomTabModel(this);
         this.tabContainerModel = new TabContainerModel({
-            switcher: false,
             tabs: [
                 {
                     id: 'valuesFilter',

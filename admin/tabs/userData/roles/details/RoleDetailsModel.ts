@@ -69,7 +69,6 @@ export class RoleDetailsModel extends HoistModel {
 
     private createTabContainerModel(): TabContainerModel {
         return new TabContainerModel({
-            switcher: true,
             tabs: [
                 {
                     id: 'users',

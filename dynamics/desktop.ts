@@ -29,6 +29,7 @@ export let tabContainerImpl = null;
 export let useContextMenu = null;
 export let errorMessageImpl = null;
 export let maskImpl = null;
+export let DynamicTabSwitcherModel = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -50,4 +51,5 @@ export function installDesktopImpls(impls) {
     useContextMenu = impls.useContextMenu;
     errorMessageImpl = impls.errorMessageImpl;
     maskImpl = impls.maskImpl;
+    DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
 }

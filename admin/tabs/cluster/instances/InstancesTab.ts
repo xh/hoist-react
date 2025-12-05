@@ -53,7 +53,7 @@ export const detailPanel = hoistCmp.factory<InstancesTabModel>({
                 tabSwitcher()
             ],
             flex: 1,
-            item: tabContainer()
+            item: tabContainer({switcher: false})
         });
     }
 });
