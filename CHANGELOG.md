@@ -8,6 +8,7 @@
 
 * Fixed timezone-related Highcharts regression from v77. Note that Highcharts has deprecated
   `time.useUTC` in favor of `time.timezone` (https://api.highcharts.com/highcharts/time.useUTC).
+* Default Highcharts font to Hoist default (--xh-font-family)
 
 ### ⚙️ Technical
 
