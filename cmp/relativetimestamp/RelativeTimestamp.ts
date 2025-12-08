@@ -4,9 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {getLayoutProps} from '@xh/hoist/utils/react';
-import {inRange, isNil} from 'lodash';
-import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
@@ -21,7 +18,10 @@ import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logWarn, withDefault} from '@xh/hoist/utils/js';
+import {logWarn, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
+import {inRange, isNil} from 'lodash';
+import moment from 'moment';
 
 interface RelativeTimestampProps extends HoistProps, BoxProps, RelativeTimestampOptions {
     /**
@@ -32,13 +32,6 @@ interface RelativeTimestampProps extends HoistProps, BoxProps, RelativeTimestamp
 
     /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
     timestamp?: Date | number;
-
-    /**
-     * Formatting options.
-     *
-     * @deprecated - these options should be spread into this object directly.
-     */
-    options?: RelativeTimestampOptions;
 }
 
 export interface RelativeTimestampOptions {
@@ -133,16 +126,7 @@ class RelativeTimestampLocalModel extends HoistModel {
 
     @computed.struct
     get options(): RelativeTimestampOptions {
-        const {componentProps} = this;
-
-        apiDeprecated('options', {
-            test: componentProps.options,
-            msg: 'Spread options directly in this object instead',
-            v: `v78`,
-            source: RelativeTimestamp
-        });
-
-        return componentProps.options ?? componentProps;
+        return this.componentProps as RelativeTimestampProps;
     }
 
     constructor() {

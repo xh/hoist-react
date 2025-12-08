@@ -4,17 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {
-    CellClickedEvent,
-    CellContextMenuEvent,
-    CellDoubleClickedEvent,
-    CellEditingStartedEvent,
-    CellEditingStoppedEvent,
-    ColumnEvent,
-    AgColumnState,
-    RowClickedEvent,
-    RowDoubleClickedEvent
-} from '@xh/hoist/kit/ag-grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -56,15 +45,27 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
+import {
+    AgColumnState,
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent,
+    ColumnEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    sharePendingPromise,
+    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
+    sharePendingPromise,
     throwIf,
     warnIf,
     withDefault
@@ -1183,7 +1184,7 @@ export class GridModel extends HoistModel {
         );
 
         pull(colStateChanges, null);
-        this.applyColumnStateChanges(colStateChanges);
+        this.updateColumnState(colStateChanges);
     }
 
     @action
@@ -1214,7 +1215,7 @@ export class GridModel extends HoistModel {
         const col = this.findColumn(this.columns, colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
-        this.applyColumnStateChanges(colStateChanges);
+        this.updateColumnState(colStateChanges);
     }
 
     /**
@@ -1230,7 +1231,7 @@ export class GridModel extends HoistModel {
      *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]) {
+    updateColumnState(colStateChanges: Partial<ColumnState>[]): void {
         if (isEmpty(colStateChanges)) return;
 
         let columnState = cloneDeep(this.columnState);
@@ -1258,6 +1259,16 @@ export class GridModel extends HoistModel {
         if (!equal(this.columnState, columnState)) {
             this.columnState = columnState;
         }
+    }
+
+    /** @deprecated - use {@link updateColumnState} instead. */
+    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]): void {
+        apiDeprecated('GridModel.applyColumnStateChanges()', {
+            msg: 'Use updateColumnState() instead.',
+            v: '82',
+            source: GridModel
+        });
+        this.updateColumnState(colStateChanges);
     }
 
     getColumn(colId: string): Column {
@@ -1295,7 +1306,7 @@ export class GridModel extends HoistModel {
     }
 
     setColumnVisible(colId: string, visible: boolean) {
-        this.applyColumnStateChanges([{colId, hidden: !visible}]);
+        this.updateColumnState([{colId, hidden: !visible}]);
     }
 
     showColumn(colId: string) {
@@ -1307,7 +1318,7 @@ export class GridModel extends HoistModel {
     }
 
     setColumnGroupVisible(groupId: string, visible: boolean) {
-        this.applyColumnStateChanges(
+        this.updateColumnState(
             this.getColumnGroup(groupId)
                 .getLeafColumns()
                 .map(({colId}) => ({colId, hidden: !visible}))
