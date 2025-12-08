@@ -393,7 +393,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             },
             system: {
                 loggerOptions: {
-                    loggerCallback: this.logFromMsal,
+                    loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
                 },
                 iframeHashTimeout: 3000 // Prevent long pauses for sso failures.
@@ -412,7 +412,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 
     private logFromMsal(level: LogLevel, message: string) {
-        const source = this.client.constructor.name;
+        const source = this.client?.constructor.name;
         switch (level) {
             case msal.LogLevel.Info:
                 return logInfo(message, source);
