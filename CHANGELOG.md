@@ -2,6 +2,12 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
+  symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
+  scheduled for removal in v82.
+
 ### 🐞 Bug Fixes
 
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
