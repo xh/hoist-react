@@ -340,7 +340,9 @@ class TreeMapLocalModel extends HoistModel {
                                 // Disable default outlining via HC pseudo-property.
                                 textOutline: 'none',
                                 // Default to hidden, updated selectively in updateLabelVisibility().
-                                visibility: 'hidden'
+                                visibility: 'hidden',
+                                // Do not allow labels to elide, we want the full width for visibility calculation.
+                                textOverflow: 'none'
                             }
                         }
                     }
