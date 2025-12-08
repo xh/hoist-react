@@ -11,6 +11,7 @@
 ### 🐞 Bug Fixes
 
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 
 ### ⚙️ Technical
 
