@@ -51,7 +51,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, find, includes, isEmpty, isFunction} from 'lodash';
+import {compact, find, includes, isEmpty, isFunction, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 import {languages} from '@codemirror/language-data';
@@ -62,13 +62,6 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /** False to not commit on every change/keystroke, default true. */
     commitOnChange?: boolean;
-
-    // TODO not supported anymore do we want to make it backwards compatible?
-    /**
-     * Configuration object with any properties supported by the CodeMirror API.
-     * @see {@link https://codemirror.net/doc/manual.html#api_configuration|CodeMirror Docs}
-     */
-    editorProps?: PlainObject;
 
     /**
      * True to enable case-insensitive searching within the input. Default false, except in
@@ -122,6 +115,12 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /** False (default) to highlight active line in input. */
     highlightActiveLine?: boolean;
+
+    /** True (default) to add line numbers to gutter. */
+    lineNumbers?: boolean | PlainObject;
+
+    /** False (default) to add line numbers to gutter. */
+    lineWrapping?: boolean | PlainObject;
 }
 
 /**
@@ -419,8 +418,10 @@ class CodeInputModel extends HoistInputModel {
                 autoFocus,
                 language,
                 readonly,
-                highlightActiveLine: highlightActiveLineProp,
-                linter: userLinter
+                highlightActiveLine: propsHighlightActiveLine,
+                linter: propsLinter,
+                lineNumbers: propsLineNumbers = true,
+                lineWrapping: propsLineWrapping = false
             } = this.componentProps,
             extensions = [
                 // Theme
@@ -437,16 +438,15 @@ class CodeInputModel extends HoistInputModel {
                 this.highlightField,
                 // Editor UI
                 foldGutter(),
-                lineNumbers(),
                 lintGutter(),
                 indentOnInput(),
                 autocompletion(),
                 history(),
                 // Linter
-                userLinter
+                propsLinter
                     ? linter(async view => {
                           const text = view.state.doc.toString();
-                          return await userLinter(text);
+                          return await propsLinter(text);
                       })
                     : [],
                 // Key bindings
@@ -464,7 +464,14 @@ class CodeInputModel extends HoistInputModel {
                     }
                 ])
             ];
-        if (highlightActiveLineProp)
+
+        if (propsLineWrapping) extensions.push(EditorView.lineWrapping);
+        if (propsLineNumbers) {
+            isObject(propsLineNumbers)
+                ? extensions.push(lineNumbers(propsLineNumbers))
+                : extensions.push(lineNumbers());
+        }
+        if (propsHighlightActiveLine)
             extensions.push(highlightActiveLine(), highlightActiveLineGutter());
         if (autoFocus) extensions.push(this.autofocusExtension);
         if (language) extensions.push(await this.getLanguageExtensionAsync(language));
