@@ -13,7 +13,7 @@ import {View} from '../View';
 /**
  *  Row within a dataset produced by a Cube / View representing aggregated data on a dimension that
  *  has been further grouped into a dynamic child "bucket" - a subset of the dimension-level
- *  {@link AggregateRow} produced as per a specified {@link Query.bucketSpecFn}.
+ *  {@link AggregateRow} produced as per a specified {@link BucketSpecFn}.
  *
  * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */

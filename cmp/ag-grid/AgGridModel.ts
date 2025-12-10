@@ -408,8 +408,9 @@ export class AgGridModel extends HoistModel {
 
     /**
      * @returns the current row expansion state of the grid in a serializable form.
-     *      Returned object has keys for StoreRecordIds of top-level, expanded records and values
-     *      of either `true` or an object with keys of StoreRecordIds of expanded child records.
+     *      Returned object has keys for (stringified!) StoreRecordIds of all top-level
+     *      expanded rows and values of either `true` (if the row does not have any children, or
+     *      none are expanded) or a recursive object of the same shape (if children are expanded).
      */
     getExpandState(): PlainObject {
         this.throwIfNotReady();

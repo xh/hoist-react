@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "78.0.0-SNAPSHOT",
+  "version": "79.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": "github:xh/hoist-react",
   "homepage": "https://xh.io",
@@ -28,8 +28,8 @@
     ]
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "~2.7.0",
-    "@azure/msal-browser": "~4.25.0",
+    "@auth0/auth0-spa-js": "~2.9.1",
+    "@azure/msal-browser": "~4.26.2",
     "@blueprintjs/core": "^5.10.5",
     "@blueprintjs/datetime": "^5.3.7",
     "@blueprintjs/datetime2": "^2.3.7",

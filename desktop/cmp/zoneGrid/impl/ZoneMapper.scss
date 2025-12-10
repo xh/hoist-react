@@ -1,6 +1,6 @@
 .xh-zone-mapper {
   width: 350px;
-  height: 500px;
+  height: 550px;
 
   &__zone-picker {
     padding: var(--xh-pad-px);
@@ -25,8 +25,10 @@
       }
 
       &--selected {
-        box-shadow: var(--xh-form-field-focused-box-shadow);
-        background: var(--xh-grid-tree-group-bg);
+        box-shadow:
+          inset 0 0 0 1px var(--xh-intent-warning),
+          inset 0 1px 1px var(--xh-intent-warning);
+        background: var(--xh-intent-warning-trans1);
       }
 
       &.tl {
@@ -75,7 +77,11 @@
   }
 
   &__intro-text {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-pad-px) var(--xh-pad-px) 0 var(--xh-pad-px);
     font-size: var(--xh-font-size-small-px);
+
+    .xh-icon {
+      margin-right: 2px;
+    }
   }
 }

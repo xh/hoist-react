@@ -1,13 +1,111 @@
 # Changelog
 
-## 78.0.0-SNAPSHOT - unreleased
+## 79.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
-*  New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+### 💥 Breaking Changes
+
+* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
+  symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
+  scheduled for removal in v82.
 
 ### 🐞 Bug Fixes
-*  StoreRecord will no longer report `isModified` as `true` if a field has been edited and
-   then returned to its original value in a subsequent edit.
+
+* Fixed column chooser to display columns in the same order as they appear in the grid.
+* Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+
+### ⚙️ Technical
+
+* Removed the following previously deprecated configs as planned:
+    * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
+    * `GroupingChooserProps.popoverTitle` - use `editorTitle`
+    * `RelativeTimestampProps.options` - provide directly as top-level props
+
+## 78.1.4 - 2025-12-05
+
+### 🐞 Bug Fixes
+
+* Fix logging during MsalClient creation.
+
+## 78.1.3 - 2025-12-04
+
+### 🐞 Bug Fixes
+
+* Fix to Highchart timezone handling regression from version 77.  Applications should note that
+  Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
+  should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
+
+### ⚙️ Technical
+
+* Allow cross-tab persistence of client log levels
+
+## 78.1.0 - 2025-12-02
+
+### ⚙️ Technical
+* New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
+
+* Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
+
+* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
+ and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
+ This can be further modified by apps via the option
+ `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.7 → 2.9`
+* @azure/msal-browser `4.25 → 4.26`
+
+## 78.0.0 - 2025-11-21
+
+### 💥 Breaking Changes
+
+* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
+  wholesale. Applications that were relying on the prior patching behavior will need to
+  call `GridModel.applyColumnStateChanges` instead.
+* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+
+### 🎁 New Features
+
+* Added new `FieldFilter` operators `not begins` and `not ends`.
+* Added new optional `BucketSpec.dependentFields` config to the Cube API, allowing apps to ensure
+  proper re-bucketing of rows during data-only updates where those updates could affect bucketing
+  determinations made by the spec.
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
+  numerical ID.
+* Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+  chooser after loading grid state that was persisted before the columns were added to the grid.
+* Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
+  list and do not need to be manually repeated there.
+
+### ⚙️ Technical
+
+* Improved documentation on `BucketSpec` class.
+* Enhanced `FetchService` to recognize variants on the `application/json` content-type when
+  processing failed responses and decoding exceptions - e.g. `application/problem+json`.
+
+## 77.1.1 - 2025-11-12
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+  Refer to `Bootstrap.js` in Toolbox for required import changes.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+
+### 🎁 New Features
+
+* New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+
+### 🐞 Bug Fixes
+
+* StoreRecord will no longer report `isModified` as `true` if a field has been edited and
+  then returned to its original value in a subsequent edit.
+* Restore support for `TabModel.content` being nullable to support dynamic tab content.
+* Remove stray context menu from appearing when clicking on column group headers and other grid
+  empty space.
 
 ## 77.0.1 - 2025-10-29
 
@@ -36,7 +134,6 @@
 ### ⚙️ Technical
 
 * Support Grails 7 service name conventions in admin client (backward compatible)
-
 
 ## 76.2.0 - 2025-10-22
 
