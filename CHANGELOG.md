@@ -12,6 +12,7 @@
 
 * Fixed column chooser to display columns in the same order as they appear in the grid.
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Restore previous behavior of highcharts treemap labels with regard to visibilty and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 
 ### ⚙️ Technical
