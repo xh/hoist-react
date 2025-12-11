@@ -33,10 +33,6 @@
     }
   }
 
-  .highcharts-datalabels-group {
-    transform: translate(5px, 5px);
-  }
-
   .highcharts-data-label text {
     font-family: var(--xh-font-family);
     // Use of !important overrides default styles applied inline to the label elements by HC.
