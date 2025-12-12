@@ -46,5 +46,4 @@ export {
 };
 export * from './Wrappers';
 export * from './Dialog';
-export * from './ContextMenu';
 export const blueprintProvider = elementFactory(BlueprintProvider);
