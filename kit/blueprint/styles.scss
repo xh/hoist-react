@@ -291,25 +291,25 @@ textarea.bp6-input,
 
 .bp6-input:focus,
 .bp6-dark .bp6-input:focus,
-.bp5-dark textarea.bp5-input:focus {
+.bp6-dark textarea.bp6-input:focus {
   box-shadow: var(--xh-form-field-focused-box-shadow);
 }
 
 // Override Blueprint textarea and switch input dark theme
-.bp5-dark textarea.bp5-input {
+.bp6-dark textarea.bp6-input {
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
-.bp5-dark .bp5-control.bp5-switch input ~ .bp5-control-indicator {
+.bp6-dark .bp6-control.bp6-switch input ~ .bp6-control-indicator {
   box-shadow: var(--xh-form-field-box-shadow) !important;
 }
 
-.bp5-dark .bp5-control.bp5-switch:hover input ~ .bp5-control-indicator {
+.bp6-dark .bp6-control.bp6-switch:hover input ~ .bp6-control-indicator {
   background-color: #202b33;
 }
 
 /* Apply blueprint styling to non-blueprint icons within input groups */
-.bp5-input-group {
+.bp6-input-group {
   .xh-icon {
     position: absolute;
     top: 0;
@@ -326,15 +326,15 @@ textarea.bp6-input,
 
   // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
   // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
-  .bp5-input-action > .xh-icon {
+  .bp6-input-action > .xh-icon {
     position: relative;
     display: block;
   }
 
-  .bp5-button-group {
+  .bp6-button-group {
     margin-right: 3px;
 
-    .bp5-button {
+    .bp6-button {
       margin-right: 0;
       margin-left: 0;
     }
@@ -346,18 +346,18 @@ textarea.bp6-input,
 }
 
 /* Apply blueprint's z-index of 16 for icons within a control group */
-.bp5-control-group .bp5-input-group svg:not(.bp5-icon) {
+.bp6-control-group .bp6-input-group svg:not(.bp6-icon) {
   z-index: 16;
 }
 
 // Controls ship with default bottom and (inline) right margins. We expose variables
 // to customize and default those to 0 to avoid adding margins by default.
 // Hoist theme text-color applied to elements not styled with a more specific selector.
-.bp5-control {
+.bp6-control {
   color: var(--xh-text-color);
   margin-bottom: var(--xh-form-field-margin-bottom);
 
-  &.bp5-inline {
+  &.bp6-inline {
     margin-right: var(--xh-form-field-margin-right);
   }
 }
@@ -365,10 +365,10 @@ textarea.bp6-input,
 //------------------------
 // Misc
 //------------------------
-.bp5-hotkey-column {
+.bp6-hotkey-column {
   padding: var(--xh-pad-double-px);
 
-  .bp5-heading {
+  .bp6-heading {
     font-weight: normal;
     margin-top: 0;
   }
