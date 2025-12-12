@@ -174,6 +174,8 @@ export class TabModel extends HoistModel {
     // Implementation
     //------------------
     private parseContent(content: Content | TabContainerConfig | TabConfig[]): Content {
+        if (!content) return null;
+
         // Recognize if content is a child container spec.
         let childConfig: TabContainerConfig = null;
         if (isArray(content)) {

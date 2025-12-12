@@ -287,9 +287,15 @@ export abstract class HoistBase {
     }
 
     /**
-     * Clean up resources associated with this object
+     * Clean up resources associated with this object.
      */
     destroy() {
+        // If a model is being destroyed or has already been destroyed, no need to destroy it again.
+        // Prevents stack overflow in case this model gets a managed reference chain back to itself.
+        if (this.isDestroyed) {
+            this.logWarn('Destruction skipped - this model is already destroyed.');
+            return;
+        }
         this._destroyed = true;
         this.disposers.forEach(f => f());
         this.managedInstances.forEach(i => XH.safeDestroy(i));

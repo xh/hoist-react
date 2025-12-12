@@ -4,17 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {
-    CellClickedEvent,
-    CellContextMenuEvent,
-    CellDoubleClickedEvent,
-    CellEditingStartedEvent,
-    CellEditingStoppedEvent,
-    ColumnEvent,
-    AgColumnState,
-    RowClickedEvent,
-    RowDoubleClickedEvent
-} from '@xh/hoist/kit/ag-grid';
 import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
 import {
     Column,
@@ -56,15 +45,27 @@ import {
 import {ColChooserModel as DesktopColChooserModel} from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
+import {
+    AgColumnState,
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent,
+    ColumnEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent
+} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    sharePendingPromise,
+    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
+    sharePendingPromise,
     throwIf,
     warnIf,
     withDefault
@@ -98,6 +99,7 @@ import {
     pull,
     take
 } from 'lodash';
+import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridContextMenuSpec} from './GridContextMenu';
@@ -442,6 +444,7 @@ export class GridModel extends HoistModel {
     @observable.ref groupBy: string[] = null;
     @observable expandLevel: number = 0;
 
+    @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
@@ -749,19 +752,22 @@ export class GridModel extends HoistModel {
 
     /**
      * Select records in the grid.
-     *
      * @param records - one or more record(s) / ID(s) to select.
-     * @param options - additional options containing the following keys:
-     *      ensureVisible - true to make selection visible if it is within a
-     *          collapsed node or outside of the visible scroll window. Default true.
-     *      clearSelection - true to clear previous selection (rather than
-     *          add to it). Default true.
+     * @param opts - additional post-selection options
      */
     async selectAsync(
         records: Some<StoreRecordOrId>,
-        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
+        opts: {
+            /**
+             * True (default) to scroll the grid or expand nodes as needed to make selection
+             * visible if it is within a collapsed node or outside of the visible scroll window.
+             */
+            ensureVisible?: boolean;
+            /** True (default) to clear previous selection (rather than add to it). */
+            clearSelection?: boolean;
+        } = {}
     ) {
-        const {ensureVisible = true, clearSelection = true} = opts ?? {};
+        const {ensureVisible = true, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
         if (ensureVisible) await this.ensureSelectionVisibleAsync();
     }
@@ -769,19 +775,25 @@ export class GridModel extends HoistModel {
     /**
      * Select the first row in the grid.
      *
-     * See {@link preSelectFirstAsync} for a useful variant of this method.  preSelectFirstAsync()
-     * will not change the selection if there is already a selection, which is what applications
-     * typically want to do when loading/reloading a grid.
-     *
-     * @param opts -
-     *      expandParentGroups - set to true to expand nodes to allow selection when the
-     *          first selectable node is in a collapsed group. Default true.
-     *      ensureVisible - set to to true to scroll to the selected row if it is outside of the
-     *      visible scroll window. Default true.
-     *
+     * See {@link preSelectFirstAsync} for a useful variant of this method that will leave the
+     * any pre-existing selection unchanged, which is what apps typically want when reloading an
+     * already-populated grid.
      */
-    async selectFirstAsync(opts?: {expandParentGroups?: boolean; ensureVisible?: boolean}) {
-        const {expandParentGroups = true, ensureVisible = true} = opts ?? {};
+    async selectFirstAsync(
+        opts: {
+            /**
+             * True (default) to expand nodes as needed to allow selection when the first selectable
+             * node is in a collapsed group.
+             */
+            expandParentGroups?: boolean;
+            /**
+             * True (default) to scroll the grid or expand nodes as needed to make selection
+             * visible if it is outside of the visible scroll window.
+             */
+            ensureVisible?: boolean;
+        } = {}
+    ) {
+        const {expandParentGroups = true, ensureVisible = true} = opts;
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -801,7 +813,6 @@ export class GridModel extends HoistModel {
 
     /**
      * Select the first row in the grid, if no other selection present.
-     *
      * This method delegates to {@link selectFirstAsync}.
      */
     async preSelectFirstAsync() {
@@ -1147,19 +1158,11 @@ export class GridModel extends HoistModel {
         this.validateColumns(columns);
 
         this.columns = columns;
-        this.columnState = this.getLeafColumns().map(it => ({
-            ...pick(it, ['colId', 'width', 'hidden', 'pinned']),
-            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
-            // widths are not omitted from persistableColumnState. This is important because
-            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
-            // state in order to detect changes and restore initial state correctly.
-            // See https://github.com/xh/hoist-react/issues/4102.
-            manuallySized: !!(it.width && this.autosizeOptions.mode !== 'managed')
-        }));
+        this.columnState = this.getLeafColumns().map(it => this.getDefaultStateForColumn(it));
     }
 
-    setColumnState(colState: Partial<ColumnState>[]) {
-        this.applyColumnStateChanges(this.cleanColumnState(colState));
+    setColumnState(colState: ColumnState[]) {
+        this.columnState = this.cleanColumnState(colState);
     }
 
     showColChooser() {
@@ -1181,7 +1184,7 @@ export class GridModel extends HoistModel {
         );
 
         pull(colStateChanges, null);
-        this.applyColumnStateChanges(colStateChanges);
+        this.updateColumnState(colStateChanges);
     }
 
     @action
@@ -1212,7 +1215,7 @@ export class GridModel extends HoistModel {
         const col = this.findColumn(this.columns, colId);
         if (!width || !col || col.flex) return;
         const colStateChanges = [{colId, width, manuallySized: true}];
-        this.applyColumnStateChanges(colStateChanges);
+        this.updateColumnState(colStateChanges);
     }
 
     /**
@@ -1228,7 +1231,7 @@ export class GridModel extends HoistModel {
      *     columns are represented in these changes then the sort order will be applied as well.
      */
     @action
-    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]) {
+    updateColumnState(colStateChanges: Partial<ColumnState>[]): void {
         if (isEmpty(colStateChanges)) return;
 
         let columnState = cloneDeep(this.columnState);
@@ -1256,6 +1259,16 @@ export class GridModel extends HoistModel {
         if (!equal(this.columnState, columnState)) {
             this.columnState = columnState;
         }
+    }
+
+    /** @deprecated - use {@link updateColumnState} instead. */
+    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]): void {
+        apiDeprecated('GridModel.applyColumnStateChanges()', {
+            msg: 'Use updateColumnState() instead.',
+            v: '82',
+            source: GridModel
+        });
+        this.updateColumnState(colStateChanges);
     }
 
     getColumn(colId: string): Column {
@@ -1293,7 +1306,7 @@ export class GridModel extends HoistModel {
     }
 
     setColumnVisible(colId: string, visible: boolean) {
-        this.applyColumnStateChanges([{colId, hidden: !visible}]);
+        this.updateColumnState([{colId, hidden: !visible}]);
     }
 
     showColumn(colId: string) {
@@ -1305,7 +1318,7 @@ export class GridModel extends HoistModel {
     }
 
     setColumnGroupVisible(groupId: string, visible: boolean) {
-        this.applyColumnStateChanges(
+        this.updateColumnState(
             this.getColumnGroup(groupId)
                 .getLeafColumns()
                 .map(({colId}) => ({colId, hidden: !visible}))
@@ -1706,7 +1719,7 @@ export class GridModel extends HoistModel {
         );
     }
 
-    cleanColumnState(columnState) {
+    private cleanColumnState(columnState) {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
@@ -1715,9 +1728,9 @@ export class GridModel extends HoistModel {
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
-        gridCols.forEach(({colId}, idx) => {
-            if (!find(ret, {colId})) {
-                ret.splice(idx, 0, {colId});
+        gridCols.forEach((col, idx) => {
+            if (!find(ret, {colId: col.colId})) {
+                ret.splice(idx, 0, this.getDefaultStateForColumn(col));
             }
         });
 
@@ -1956,6 +1969,18 @@ export class GridModel extends HoistModel {
                     return true;
                 }
             }
+        };
+    }
+
+    private getDefaultStateForColumn(column: Column): ColumnState {
+        return {
+            ...pick(column, ['colId', 'width', 'hidden', 'pinned']),
+            // If not in managed auto-size mode, treat in-code column widths as manuallySized so
+            // widths are not omitted from persistableColumnState. This is important because
+            // PersistanceProvider.getPersistableState() expects a complete snapshot of initial
+            // state in order to detect changes and restore initial state correctly.
+            // See https://github.com/xh/hoist-react/issues/4102.
+            manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
     }
 }

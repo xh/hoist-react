@@ -8,6 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {sortBy} from 'lodash';
 
 /**
  * State management for the ColChooser component.
@@ -55,6 +56,8 @@ export class ColChooserModel extends HoistModel {
             rightTitle: 'Displayed Columns',
             rightEmptyText: 'No columns will be visible.',
             leftSorted: true,
+            leftSortBy: 'text',
+            rightSorted: true,
             rightGroupingEnabled: false,
             onChange: () => {
                 if (this.commitOnChange) this.commit();
@@ -95,7 +98,7 @@ export class ColChooserModel extends HoistModel {
             }
         });
 
-        gridModel.applyColumnStateChanges(colChanges);
+        gridModel.updateColumnState(colChanges);
         if (autosizeOnCommit && colChanges.length) gridModel.autosizeAsync({showMask: true});
     }
 
@@ -111,19 +114,33 @@ export class ColChooserModel extends HoistModel {
     //------------------------
     syncChooserData() {
         const {gridModel, lrModel} = this,
-            columns = gridModel.getLeafColumns(),
-            hasGrouping = columns.some(it => it.chooserGroup);
+            hasGrouping = gridModel.getLeafColumns().some(it => it.chooserGroup),
+            columnState = sortBy(gridModel.columnState, it => {
+                const {pinned} = it;
+                if (pinned === 'left') {
+                    return 0;
+                }
 
-        const data = columns.map(it => {
-            const visible = gridModel.isColumnVisible(it.colId);
+                if (pinned === 'right') {
+                    return 2;
+                }
+
+                return 1;
+            });
+
+        const data = columnState.map((it, idx) => {
+            const visible = !it.hidden,
+                col = gridModel.getColumn(it.colId);
+
             return {
                 value: it.colId,
-                text: it.chooserName,
-                description: it.chooserDescription,
-                group: hasGrouping ? (it.chooserGroup ?? 'Ungrouped') : null,
-                exclude: it.excludeFromChooser,
-                locked: visible && !it.hideable,
-                side: visible ? 'right' : 'left'
+                text: col.chooserName,
+                description: col.chooserDescription,
+                group: hasGrouping ? (col.chooserGroup ?? 'Ungrouped') : null,
+                exclude: col.excludeFromChooser,
+                locked: visible && !col.hideable,
+                side: visible ? 'right' : 'left',
+                sortValue: idx
             } as const;
         });
 
