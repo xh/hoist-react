@@ -197,6 +197,26 @@ export class LocalDate {
         return LocalDate.from(this.moment.subtract(value, unit));
     }
 
+    addWeekdays(value): LocalDate {
+        let ret: LocalDate = this;
+        while (value > 0) {
+            ret = ret.nextWeekday();
+            value--;
+        }
+
+        return ret;
+    }
+
+    subtractWeekdays(value): LocalDate {
+        let ret: LocalDate = this;
+        while (value > 0) {
+            ret = ret.previousWeekday();
+            value--;
+        }
+
+        return ret;
+    }
+
     startOf(unit): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.startOf(unit));
