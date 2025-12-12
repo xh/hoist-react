@@ -17,7 +17,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -48,9 +47,12 @@ import {
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
+import {showContextMenu} from '@blueprintjs/core';
 
-export interface DashContainerConfig
-    extends DashConfig<DashContainerViewSpec, DashContainerViewState> {
+export interface DashContainerConfig extends DashConfig<
+    DashContainerViewSpec,
+    DashContainerViewState
+> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 
@@ -490,7 +492,7 @@ export class DashContainerModel
             contextMenuEvent: e
         });
 
-        showContextMenu(menu, offset);
+        showContextMenu({content: menu, targetOffset: offset, isDarkTheme: XH.darkTheme});
     }
 
     //-----------------

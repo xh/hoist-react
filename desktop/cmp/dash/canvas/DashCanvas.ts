@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -13,7 +12,8 @@ import {
     HoistProps,
     refreshContextView,
     TestSupportProps,
-    uses
+    uses,
+    XH
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
@@ -25,6 +25,7 @@ import type {ReactGridLayoutProps} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
+import {showContextMenu} from '@blueprintjs/core';
 
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
@@ -136,14 +137,18 @@ const onContextMenu = (e, model) => {
             y = clientY + model.ref.current.scrollTop;
 
         consumeEvent(e);
-        showContextMenu(
-            dashCanvasContextMenu({
+        showContextMenu({
+            content: dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y},
                 contextMenuEvent: e
             }),
-            {left: clientX, top: clientY}
-        );
+            targetOffset: {
+                left: clientX,
+                top: clientY
+            },
+            isDarkTheme: XH.darkTheme
+        });
     }
 };
 

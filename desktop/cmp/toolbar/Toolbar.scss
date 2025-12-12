@@ -9,7 +9,7 @@
   flex-wrap: nowrap;
 
   // Overflow box
-  .bp5-overflow-list {
+  .bp6-overflow-list {
     flex: 1;
     align-items: center;
 
@@ -17,7 +17,7 @@
       white-space: nowrap;
 
       // The overflow space needs to be able to shrink - BP checks this to determine overflow
-      &:not(.bp5-overflow-list-spacer) {
+      &:not(.bp6-overflow-list-spacer) {
         flex-shrink: 0;
       }
 
@@ -108,11 +108,11 @@
     }
 
     // Compact toolbar buttons
-    .xh-app.xh-dark.bp5-dark &,
+    .xh-app.xh-dark.bp6-dark &,
     .xh-app & {
-      button.xh-button.bp5-button.xh-button--minimal,
-      button.xh-button.bp5-button.xh-button--standard,
-      button.xh-button.bp5-button.xh-button--outlined {
+      button.xh-button.bp6-button.xh-button--minimal,
+      button.xh-button.bp6-button.xh-button--standard,
+      button.xh-button.bp6-button.xh-button--outlined {
         padding: 3px var(--xh-pad-half-px);
         min-height: var(--xh-tbar-compact-item-height-px);
         max-height: var(--xh-tbar-compact-item-height-px);
@@ -129,9 +129,9 @@
       max-height: var(--xh-tbar-compact-item-height-px);
       min-height: var(--xh-tbar-compact-item-height-px);
 
-      .bp5-input-group {
+      .bp6-input-group {
         // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
-        .bp5-input:not(:first-child) {
+        .bp6-input:not(:first-child) {
           padding-left: 20px;
         }
 
@@ -148,7 +148,7 @@
         }
 
         // Inline input icons made smaller, lighter, and alignment tweaked.
-        svg:not(.bp5-icon) {
+        svg:not(.bp6-icon) {
           font-size: var(--xh-tbar-compact-font-size-px);
           margin: 5px 2px 5px 4px;
           opacity: 0.6;
@@ -159,13 +159,13 @@
         display: flex;
         align-items: center;
 
-        .bp5-control-indicator {
+        .bp6-control-indicator {
           margin-top: 1px;
           margin-right: var(--xh-pad-half-px);
         }
       }
 
-      &.xh-switch-input.bp5-align-right {
+      &.xh-switch-input.bp6-align-right {
         flex-direction: row-reverse;
         padding-right: 0;
       }
@@ -212,10 +212,10 @@
   }
 
   // Form field margins (if set) are not desired within Toolbars.
-  .bp5-control {
+  .bp6-control {
     margin-bottom: 0;
 
-    &.bp5-inline {
+    &.bp6-inline {
       margin-right: 0;
     }
   }
@@ -224,12 +224,12 @@
 .xh-toolbar-overflow-popover {
   border: 1px solid var(--xh-tbar-border-color);
 
-  .bp5-popover-arrow-border,
-  .bp5-popover-arrow-fill {
+  .bp6-popover-arrow-border,
+  .bp6-popover-arrow-fill {
     fill: var(--xh-tbar-border-color) !important;
   }
 
-  .bp5-popover-content {
+  .bp6-popover-content {
     color: var(--xh-tbar-text-color);
     background-color: var(--xh-tbar-bg);
 

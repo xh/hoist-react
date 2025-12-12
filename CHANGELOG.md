@@ -7,6 +7,7 @@
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
+* Renamed scss prefix `bp5` to `bp6`
 
 ### 🐞 Bug Fixes
 
@@ -16,10 +17,16 @@
 
 ### ⚙️ Technical
 
+* Removed `showContextMenu` wrapper previously necessary for proper rendering in a React 18 env.
+
 * Removed the following previously deprecated configs as planned:
     * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
     * `GroupingChooserProps.popoverTitle` - use `editorTitle`
     * `RelativeTimestampProps.options` - provide directly as top-level props
+
+### 📚 Libraries
+* @blueprintjs/core: 5.10.5 -> 6.3.2 ,
+* @blueprintjs/datetime: 5.3.7 -> 6.0.6,
 
 ## 78.1.4 - 2025-12-05
 
