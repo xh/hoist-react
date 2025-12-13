@@ -613,7 +613,7 @@ export class ZoneGridModel extends HoistModel {
 
         return {
             // Controlled properties
-            field: isLeft ? 'left_column' : 'right_column',
+            colId: isLeft ? 'left_column' : 'right_column',
             align: isLeft ? 'left' : 'right',
             isTreeColumn: gridModel?.treeMode && isLeft,
             flex: overrideSpec.width ? null : isLeft ? 2 : 1,
