@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '@xh/hoist/core';
+import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from '@xh/hoist/core';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 import {Store, StoreConfig} from './Store';
@@ -34,7 +34,7 @@ export class UrlStore extends Store implements Loadable {
         this.dataRoot = dataRoot;
     }
 
-    get loadObserver() {
+    get loadObserver(): TaskObserver {
         return this.loadSupport.loadObserver;
     }
     get loadModel() {

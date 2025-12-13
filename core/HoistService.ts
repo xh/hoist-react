@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from './';
+import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from './';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
@@ -66,7 +66,7 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadObserver() {
+    get loadObserver(): TaskObserver {
         return this.loadSupport?.loadObserver;
     }
     get loadModel() {
