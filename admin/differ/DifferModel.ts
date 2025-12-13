@@ -357,7 +357,7 @@ export class DifferModel extends HoistModel {
                 this.parentModel.gridModel.loadAsync();
                 this.detailModel.close();
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 

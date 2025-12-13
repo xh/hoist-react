@@ -149,7 +149,7 @@ export class ClusterObjectsModel extends HoistModel {
                 body: {
                     names: cacheRecords.map(it => it.id)
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
@@ -179,7 +179,7 @@ export class ClusterObjectsModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'clusterObjectsAdmin/clearAllHibernateCaches'
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast('All Hibernate Caches cleared.');

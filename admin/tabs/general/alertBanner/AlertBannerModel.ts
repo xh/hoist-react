@@ -106,7 +106,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveAsync() {
-        return this.saveInternalAsync().linkTo(this.loadModel).catchDefault();
+        return this.saveInternalAsync().linkTo(this.loadObserver).catchDefault();
     }
 
     resetForm() {

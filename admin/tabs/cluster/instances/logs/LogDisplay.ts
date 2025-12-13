@@ -36,7 +36,7 @@ export const logDisplay = hoistCmp.factory({
             model: model.panelModel,
             loadingIndicator: loadingIndicator({
                 message: 'Loading log contents...',
-                bind: model.loadModel
+                bind: model.loadObserver
             })
         });
     }

@@ -54,7 +54,7 @@ const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
             panel({
                 item: activityDetailView(),
                 mask: mask({
-                    bind: model.loadModel,
+                    bind: model.loadObserver,
                     spinner: true,
                     message: 'Loading activity...'
                 })

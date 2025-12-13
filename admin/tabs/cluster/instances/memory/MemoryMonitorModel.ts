@@ -61,7 +61,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('Updated snapshot loaded');
         } catch (e) {
@@ -74,7 +74,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('GC run complete');
         } catch (e) {
@@ -101,7 +101,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
                     instance: this.instanceName,
                     filename
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('Heap dumped successfully to ' + filename);
         } catch (e) {

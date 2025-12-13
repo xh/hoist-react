@@ -140,7 +140,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.refreshAsync();
             XH.successToast('Updated snapshot loaded.');
         } catch (e) {
@@ -153,7 +153,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.refreshAsync();
             XH.successToast('Connection pool stats reset.');
         } catch (e) {
