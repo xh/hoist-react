@@ -2,9 +2,24 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
+  symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
+  scheduled for removal in v82.
+
 ### 🐞 Bug Fixes
 
+* Fixed column chooser to display columns in the same order as they appear in the grid.
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+
+### ⚙️ Technical
+
+* Removed the following previously deprecated configs as planned:
+    * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
+    * `GroupingChooserProps.popoverTitle` - use `editorTitle`
+    * `RelativeTimestampProps.options` - provide directly as top-level props
 
 ## 78.1.4 - 2025-12-05
 

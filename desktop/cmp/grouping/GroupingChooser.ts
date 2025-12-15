@@ -26,10 +26,10 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {apiDeprecated, elemWithin, getTestId} from '@xh/hoist/utils/js';
+import {elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty, isNil, isUndefined} from 'lodash';
+import {isEmpty, isNil} from 'lodash';
 import './GroupingChooser.scss';
 import {ReactNode} from 'react';
 
@@ -54,9 +54,6 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
 
     /** Position of popover relative to target button. */
     popoverPosition?: 'bottom' | 'top';
-
-    /** @deprecated - use `editorTitle` instead */
-    popoverTitle?: ReactNode;
 
     /**
      * Width in pixels of the popover menu itself.
@@ -89,7 +86,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             favoritesTitle = 'Favorites',
             popoverWidth,
             popoverMinHeight,
-            popoverTitle,
             popoverPosition = 'bottom',
             styleButtonAsInput = true,
             testId,
@@ -103,15 +99,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             [layoutProps, buttonProps] = splitLayoutProps(rest),
             favesClassNameMod = `faves-${persistFavorites ? favoritesSide : 'disabled'}`,
             favesTB = isTB(favoritesSide);
-
-        if (!isUndefined(popoverTitle)) {
-            apiDeprecated('GroupingChooser.popoverTitle', {
-                msg: `Update to use 'editorTitle' instead`,
-                v: `v78`,
-                source: GroupingChooser
-            });
-            editorTitle = popoverTitle;
-        }
 
         popoverWidth = popoverWidth || (persistFavorites && !favesTB ? 500 : 250);
 
