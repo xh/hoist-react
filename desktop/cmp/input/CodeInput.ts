@@ -36,7 +36,7 @@ import {
     ViewPlugin,
     ViewUpdate
 } from '@codemirror/view';
-import {dracula, solarizedLight} from '@uiw/codemirror-themes-all';
+import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
@@ -479,7 +479,7 @@ class CodeInputModel extends HoistInputModel {
         return extensions.filter(it => !isEmpty(it));
     }
     private getThemeExtension() {
-        return XH.darkTheme ? dracula : solarizedLight;
+        return XH.darkTheme ? githubDark : githubLight;
     }
 
     private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
