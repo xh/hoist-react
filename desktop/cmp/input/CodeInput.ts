@@ -11,17 +11,8 @@ import {
     foldGutter,
     foldKeymap,
     indentOnInput,
-    LanguageSupport,
     syntaxHighlighting
 } from '@codemirror/language';
-// Import the languages you want to support
-import {javascript} from '@codemirror/lang-javascript';
-import {python} from '@codemirror/lang-python';
-import {html} from '@codemirror/lang-html';
-import {css} from '@codemirror/lang-css';
-import {json} from '@codemirror/lang-json';
-import {sql} from '@codemirror/lang-sql';
-
 import {linter, lintGutter} from '@codemirror/lint';
 import {highlightSelectionMatches, search} from '@codemirror/search';
 import {
@@ -61,17 +52,9 @@ import classNames from 'classnames';
 import {compact, isEmpty, isFunction, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
-// Map of supported language aliases to CodeMirror factories
-const LANGUAGE_EXTENSIONS: Record<string, () => LanguageSupport> = {
-    js: javascript,
-    javascript: javascript,
-    py: python,
-    python: python,
-    html: html,
-    css: css,
-    json: json,
-    sql: sql
-};
+import {javascript} from '@codemirror/lang-javascript';
+
+// import {languages} from '@codemirror/language-data';
 
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
@@ -491,7 +474,7 @@ class CodeInputModel extends HoistInputModel {
         if (propsHighlightActiveLine)
             extensions.push(highlightActiveLine(), highlightActiveLineGutter());
         if (autoFocus) extensions.push(this.autofocusExtension);
-        if (language) extensions.push(await this.getLanguageExtensionAsync(language));
+        if (language) extensions.push(javascript());
 
         return extensions.filter(it => !isEmpty(it));
     }
@@ -501,20 +484,19 @@ class CodeInputModel extends HoistInputModel {
         return XH.darkTheme ? oneDark : lightTheme;
     }
 
-    private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
-        if (!lang) return null;
-        const langFactory = LANGUAGE_EXTENSIONS[lang.toLowerCase()];
-        if (!langFactory) {
-            console.warn(`Language not found: ${lang}`);
-            return null;
-        }
-        try {
-            return langFactory();
-        } catch (err) {
-            console.error(`Failed to load language: ${lang}`, err);
-            return null;
-        }
-    }
+    // private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
+    //     try {
+    //         const langDesc: LanguageDescription | undefined = find(
+    //             languages,
+    //             it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
+    //         );
+    //         if (!langDesc) return null;
+    //         return await langDesc.load();
+    //     } catch (err) {
+    //         console.error(`Failed to load language: ${lang}`, err);
+    //         return null;
+    //     }
+    // }
 
     private autofocusExtension = ViewPlugin.fromClass(
         class {
