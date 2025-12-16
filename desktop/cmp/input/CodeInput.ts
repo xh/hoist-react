@@ -37,7 +37,6 @@ import {
     ViewPlugin,
     ViewUpdate
 } from '@codemirror/view';
-import {oneDark} from './impl/one-dark';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
@@ -55,11 +54,8 @@ import classNames from 'classnames';
 import {compact, find, includes, isEmpty, isFunction, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
-import {javascript} from '@codemirror/lang-javascript';
-import {json} from '@codemirror/lang-json';
-import {html} from '@codemirror/lang-html';
-import {sql} from '@codemirror/lang-sql';
-import {css} from '@codemirror/lang-css';
+import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
+
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
@@ -490,18 +486,8 @@ class CodeInputModel extends HoistInputModel {
     }
 
     private getThemeExtension() {
-        const lightTheme = EditorView.theme({}, {dark: false});
-        return XH.darkTheme ? oneDark : lightTheme;
+        return XH.darkTheme ? githubDark : githubLight;
     }
-
-    private LANGUAGE_EXTENSIONS: Record<string, () => LanguageSupport> = {
-        js: javascript,
-        javascript: javascript,
-        html: html,
-        css: css,
-        json: json,
-        sql: sql
-    };
 
     private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
         try {
