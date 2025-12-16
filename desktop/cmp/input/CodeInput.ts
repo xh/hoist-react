@@ -11,9 +11,11 @@ import {
     foldGutter,
     foldKeymap,
     indentOnInput,
+    LanguageDescription,
     LanguageSupport,
     syntaxHighlighting
 } from '@codemirror/language';
+import {languages} from '@codemirror/language-data';
 import {linter, lintGutter} from '@codemirror/lint';
 import {highlightSelectionMatches, search} from '@codemirror/search';
 import {
@@ -50,7 +52,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, isEmpty, isFunction, isObject} from 'lodash';
+import {compact, find, includes, isEmpty, isFunction, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 import {javascript} from '@codemirror/lang-javascript';
@@ -477,9 +479,9 @@ class CodeInputModel extends HoistInputModel {
             extensions.push(highlightActiveLine(), highlightActiveLineGutter());
         if (autoFocus) extensions.push(this.autofocusExtension);
         if (language) {
-            const langExt = this.getLanguageExtension(language);
+            const langExt = this.getLanguageExtensionAsync(language);
             if (langExt) {
-                extensions.push(langExt);
+                extensions.push(await langExt);
             } else {
                 console.warn('Failed to load language:', language);
             }
@@ -501,15 +503,14 @@ class CodeInputModel extends HoistInputModel {
         sql: sql
     };
 
-    private getLanguageExtension(lang: string): LanguageSupport {
-        if (!lang) return null;
-        const extFactory = this.LANGUAGE_EXTENSIONS[lang.toLowerCase()];
-        if (!extFactory) {
-            console.warn(`Language not found: ${lang}`);
-            return null;
-        }
+    private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
         try {
-            return extFactory(); // returns a LanguageSupport instance
+            const langDesc: LanguageDescription | undefined = find(
+                languages,
+                it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
+            );
+            if (!langDesc) return null;
+            return await langDesc.load();
         } catch (err) {
             console.error(`Failed to load language: ${lang}`, err);
             return null;
