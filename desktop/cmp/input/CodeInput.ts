@@ -11,6 +11,7 @@ import {
     foldGutter,
     foldKeymap,
     indentOnInput,
+    LanguageSupport,
     syntaxHighlighting
 } from '@codemirror/language';
 import {linter, lintGutter} from '@codemirror/lint';
@@ -53,10 +54,10 @@ import {compact, isEmpty, isFunction, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 import {javascript} from '@codemirror/lang-javascript';
-// import {json} from '@codemirror/lang-json';
-// import {html} from '@codemirror/lang-html';
-// import {sql} from '@codemirror/lang-sql';
-// import {css} from '@codemirror/lang-css';
+import {json} from '@codemirror/lang-json';
+import {html} from '@codemirror/lang-html';
+import {sql} from '@codemirror/lang-sql';
+import {css} from '@codemirror/lang-css';
 export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
@@ -418,6 +419,7 @@ class CodeInputModel extends HoistInputModel {
         const {
                 autoFocus,
                 readonly,
+                language,
                 highlightActiveLine: propsHighlightActiveLine,
                 linter: propsLinter,
                 lineNumbers: propsLineNumbers = true,
@@ -442,7 +444,6 @@ class CodeInputModel extends HoistInputModel {
                 indentOnInput(),
                 autocompletion(),
                 history(),
-                javascript(),
                 // Linter
                 propsLinter
                     ? linter(async view => {
@@ -475,14 +476,14 @@ class CodeInputModel extends HoistInputModel {
         if (propsHighlightActiveLine)
             extensions.push(highlightActiveLine(), highlightActiveLineGutter());
         if (autoFocus) extensions.push(this.autofocusExtension);
-        // if (language) {
-        //     const langExt = this.getLanguageExtension(language);
-        //     if (langExt) {
-        //         extensions.push(langExt);
-        //     } else {
-        //         console.warn('Failed to load language:', language);
-        //     }
-        // }
+        if (language) {
+            const langExt = this.getLanguageExtension(language);
+            if (langExt) {
+                extensions.push(langExt);
+            } else {
+                console.warn('Failed to load language:', language);
+            }
+        }
         return extensions.filter(it => !isEmpty(it));
     }
 
@@ -491,29 +492,29 @@ class CodeInputModel extends HoistInputModel {
         return XH.darkTheme ? oneDark : lightTheme;
     }
 
-    // private LANGUAGE_EXTENSIONS: Record<string, () => LanguageSupport> = {
-    //     js: javascript,
-    //     javascript: javascript,
-    //     html: html,
-    //     css: css,
-    //     json: json,
-    //     sql: sql
-    // };
+    private LANGUAGE_EXTENSIONS: Record<string, () => LanguageSupport> = {
+        js: javascript,
+        javascript: javascript,
+        html: html,
+        css: css,
+        json: json,
+        sql: sql
+    };
 
-    // private getLanguageExtension(lang: string): LanguageSupport {
-    //     if (!lang) return null;
-    //     const extFactory = this.LANGUAGE_EXTENSIONS[lang.toLowerCase()];
-    //     if (!extFactory) {
-    //         console.warn(`Language not found: ${lang}`);
-    //         return null;
-    //     }
-    //     try {
-    //         return extFactory(); // returns a LanguageSupport instance
-    //     } catch (err) {
-    //         console.error(`Failed to load language: ${lang}`, err);
-    //         return null;
-    //     }
-    // }
+    private getLanguageExtension(lang: string): LanguageSupport {
+        if (!lang) return null;
+        const extFactory = this.LANGUAGE_EXTENSIONS[lang.toLowerCase()];
+        if (!extFactory) {
+            console.warn(`Language not found: ${lang}`);
+            return null;
+        }
+        try {
+            return extFactory(); // returns a LanguageSupport instance
+        } catch (err) {
+            console.error(`Failed to load language: ${lang}`, err);
+            return null;
+        }
+    }
 
     private autofocusExtension = ViewPlugin.fromClass(
         class {
