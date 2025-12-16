@@ -21,9 +21,33 @@ import moment, {Moment, MomentInput} from 'moment';
  *
  * Unit accepted by manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date'].
  */
+
+type LocalDateUnit =
+    | 'year'
+    | 'years'
+    | 'quarter'
+    | 'quarters'
+    | 'month'
+    | 'months'
+    | 'week'
+    | 'weeks'
+    | 'day'
+    | 'days';
+
 export class LocalDate {
     private static _instances = new Map();
-    static VALID_UNITS = ['year', 'quarter', 'month', 'week', 'day', 'date'];
+    static VALID_UNITS: LocalDateUnit[] = [
+        'year',
+        'years',
+        'quarter',
+        'quarters',
+        'month',
+        'months',
+        'week',
+        'weeks',
+        'day',
+        'days'
+    ];
 
     private _isoString: string;
     private _moment: Moment;
@@ -187,17 +211,17 @@ export class LocalDate {
     //--------------------------
     // Manipulate/Calendar logic
     //--------------------------
-    add(value, unit = 'days'): LocalDate {
+    add(value, unit: LocalDateUnit = 'days'): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.add(value, unit));
     }
 
-    subtract(value, unit = 'days'): LocalDate {
+    subtract(value, unit: LocalDateUnit = 'days'): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.subtract(value, unit));
     }
 
-    startOf(unit): LocalDate {
+    startOf(unit: LocalDateUnit): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.startOf(unit));
     }
@@ -281,7 +305,7 @@ export class LocalDate {
         return this.isWeekday ? this : this.previousWeekday();
     }
 
-    diff(other: LocalDate, unit: moment.unitOfTime.Diff = 'days'): number {
+    diff(other: LocalDate, unit: LocalDateUnit = 'days'): number {
         this.ensureUnitValid(unit);
         return this._moment.diff(other._moment, unit);
     }
@@ -301,9 +325,7 @@ export class LocalDate {
         this._date = m.toDate();
     }
 
-    private ensureUnitValid(unit) {
-        // Units smaller than 'day'/'date' are irrelevant to LocalDate,
-        unit = moment.normalizeUnits(unit);
+    private ensureUnitValid(unit: LocalDateUnit) {
         throwIf(
             !LocalDate.VALID_UNITS.includes(unit),
             `Invalid unit for LocalDate adjustment: ${unit}`

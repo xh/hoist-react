@@ -7,6 +7,9 @@
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
+* More strictly enforce unit types in LocalDate. Previously, any string that Moment.js could normalize
+  into a unit equal to or larger than 'day' would be accepted. Callers are now expected to use the set
+  of units defined by the class (e.g. 'day', 'days', 'week', 'weeks', 'month', 'months', etc.).
 
 ### 🐞 Bug Fixes
 
