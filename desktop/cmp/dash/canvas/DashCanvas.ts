@@ -4,12 +4,15 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {DragEvent} from 'react';
 import ReactGridLayout, {
-    type ReactGridLayoutProps,
-    type DragOverEvent,
-    type Layout,
-    WidthProvider
+    type LayoutItem,
+    type GridLayoutProps,
+    useContainerWidth,
+    noCompactor,
+    verticalCompactor
 } from 'react-grid-layout';
+
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
@@ -31,6 +34,7 @@ import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import './DashCanvas.scss';
 
 export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSupportProps {
@@ -40,7 +44,7 @@ export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSuppor
      * {@link https://www.npmjs.com/package/react-grid-layout#grid-layout-props}
      * Note that some ReactGridLayout props are managed directly by DashCanvas and will be overridden if provided here.
      */
-    rglOptions?: ReactGridLayoutProps;
+    rglOptions?: GridLayoutProps;
 }
 
 /**
@@ -63,7 +67,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
             [padX, padY] = model.containerPadding;
-
+        const {width, containerRef, mounted} = useContainerWidth();
         return refreshContextView({
             model: model.refreshContextModel,
             item: div({
@@ -73,41 +77,51 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isResizable ? `${className}--resizable` : null
                 ),
                 style: {padding: `${padY}px ${padX}px`},
-                ref: composeRefs(ref, model.ref),
+                ref: composeRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
-                items: [
-                    reactGridLayout({
-                        layout: model.rglLayout,
-                        cols: model.columns,
-                        rowHeight: model.rowHeight,
-                        isDraggable,
-                        isResizable,
-                        compactType: model.compact ? 'vertical' : null,
-                        margin: model.margin,
-                        maxRows: model.maxRows,
-                        containerPadding: [0, 0], // Workaround for https://github.com/react-grid-layout/react-grid-layout/issues/1990
-                        autoSize: true,
-                        isBounded: true,
-                        draggableHandle:
-                            '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                        draggableCancel: '.xh-button',
-                        onLayoutChange: (layout: Layout[]) => model.onRglLayoutChange(layout),
-                        onResizeStart: () => (model.isResizing = true),
-                        onResizeStop: () => (model.isResizing = false),
-                        items: model.viewModels.map(vm =>
-                            div({
-                                key: vm.id,
-                                item: dashCanvasView({model: vm})
-                            })
-                        ),
-                        isDroppable: model.droppable,
-                        onDrop: (layout: Layout[], layoutItem: Layout, evt: Event) =>
-                            model.onDrop(layout, layoutItem, evt),
-                        onDropDragOver: (evt: DragOverEvent) => model.onDropDragOver(evt),
-                        ...rglOptions
-                    }),
-                    emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
-                ],
+                items: mounted
+                    ? [
+                          reactGridLayout({
+                              layout: model.rglLayout,
+                              width,
+                              gridConfig: {
+                                  cols: model.columns,
+                                  rowHeight: model.rowHeight,
+                                  margin: model.margin,
+                                  maxRows: model.maxRows
+                              },
+                              dragConfig: {
+                                  enabled: isDraggable,
+                                  handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                                  cancel: '.xh-button',
+                                  bounded: true
+                              },
+                              resizeConfig: {
+                                  enabled: isResizable
+                              },
+                              dropConfig: {
+                                  enabled: model.droppable,
+                                  defaultItem: {w: 6, h: 6}
+                              },
+                              compactor: model.compact ? verticalCompactor : noCompactor,
+                              onLayoutChange: (layout: LayoutItem[]) =>
+                                  model.onRglLayoutChange(layout),
+                              onResizeStart: () => (model.isResizing = true),
+                              onResizeStop: () => (model.isResizing = false),
+                              items: model.viewModels.map(vm =>
+                                  div({
+                                      key: vm.id,
+                                      item: dashCanvasView({model: vm})
+                                  })
+                              ),
+                              onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
+                              onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
+                                  model.onDrop(layout, layoutItem, evt),
+                              ...rglOptions
+                          }),
+                          emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
+                      ]
+                    : [],
                 [TEST_ID]: testId
             })
         });
@@ -155,4 +169,4 @@ const onContextMenu = (e, model) => {
     }
 };
 
-const reactGridLayout = elementFactory(WidthProvider(ReactGridLayout));
+const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);

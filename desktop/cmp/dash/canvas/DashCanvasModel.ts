@@ -4,7 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import type {DragOverEvent, Layout} from 'react-grid-layout';
+import {wait} from '@xh/hoist/promise';
+import {DragEvent} from 'react';
+import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
@@ -50,7 +52,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
+    /** Padding inside the container [x, y] in pixels. Default `[0, 0]`. */
     containerPadding?: [number, number];
 
     /**
@@ -67,10 +69,19 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /**
      * Optional callback to invoke when an item is dragged over the canvas. This may be used to
      * customize how the size of the dropping placeholder is calculated. The callback should
-     * return an object with optional 'w' and 'h' properties indicating the desired width and height
-     * (in grid units) of the dropping placeholder. If not provided, Hoist's own default logic will be used.
+     * return an object with optional properties indicating the desired width, height (in grid units),
+     * and offset (in pixels) of the dropping placeholder.
+     * If not provided, Hoist's own default logic will be used.
      */
-    onDropDragOver?: (e: DragOverEvent) => {w?: number; h?: number} | false | undefined;
+    onDropDragOver?: (e: DragEvent) =>
+        | {
+              w?: number;
+              h?: number;
+              dragOffsetX?: number;
+              dragOffsetY?: number;
+          }
+        | false
+        | void;
 
     /**
      * Whether an overlay with an Add View button should be rendered
@@ -109,13 +120,13 @@ export class DashCanvasModel
     @bindable compact: boolean;
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
+    @bindable showAddViewButtonWhenEmpty: boolean;
 
     //-----------------------------
     // Public properties
     //-----------------------------
     DROPPING_ELEM_ID = '__dropping-elem__';
     maxRows: number;
-    showAddViewButtonWhenEmpty: boolean;
     droppable: boolean;
     onDropDone: (viewModel: DashCanvasViewModel) => void;
     draggedInView: DashCanvasItemState;
@@ -176,7 +187,7 @@ export class DashCanvasModel
         compact = true,
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = margin,
+        containerPadding = [0, 0],
         extraMenuItems,
         showAddViewButtonWhenEmpty = true,
         droppable = false,
@@ -224,7 +235,6 @@ export class DashCanvasModel
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
         this.margin = margin;
-        this.containerPadding = containerPadding;
         this.compact = compact;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
@@ -359,7 +369,7 @@ export class DashCanvasModel
         this.getView(id)?.ensureVisible();
     }
 
-    onDrop(rglLayout: Layout[], layoutItem: Layout, evt: Event) {
+    onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
         throwIf(
             !this.draggedInView,
             `No draggedInView set on DashCanvasModel prior to onDrop operation.
@@ -369,19 +379,44 @@ export class DashCanvasModel
 
         const {viewSpecId, title, state} = this.draggedInView,
             layout = omit(layoutItem, 'i'),
-            newViewModel = this.doDrop(viewSpecId, {title, state, layout}, rglLayout);
+            newViewModel: DashCanvasViewModel = this.addViewInternal(viewSpecId, {
+                title,
+                state,
+                layout
+            }),
+            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
 
-        this.draggedInView = null;
-        this.onDropDone?.(newViewModel);
+        // Change ID of dropping item to the new view's id
+        // so that the new view goes where the dropping item is.
+        droppingItem.i = newViewModel.id;
+
+        // must wait a tick for RGL to settle
+        wait().then(() => {
+            this.draggedInView = null;
+            this.onRglLayoutChange(rglLayout);
+            this.onDropDone?.(newViewModel);
+        });
     }
 
     setDraggedInView(view?: DashCanvasItemState) {
         this.draggedInView = view;
     }
 
-    onDropDragOver(e: DragOverEvent): {w?: number; h?: number} | false | undefined {
+    onDropDragOver(evt: DragEvent):
+        | {
+              w?: number;
+              h?: number;
+              dragOffsetX?: number;
+              dragOffsetY?: number;
+          }
+        | false
+        | void {
         if (!this.draggedInView) return false;
-        return {w: 6, h: 6};
+
+        return {
+            w: this.draggedInView.layout.w,
+            h: this.draggedInView.layout.h
+        };
     }
 
     //------------------------
@@ -399,24 +434,6 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
-    @action
-    private doDrop(
-        specId: string,
-        opts: {
-            title: string;
-            state: any;
-            layout: DashCanvasItemLayout;
-        },
-        rglLayout: Layout[]
-    ): DashCanvasViewModel {
-        const newViewModel: DashCanvasViewModel = this.addViewInternal(specId, opts),
-            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
-
-        droppingItem.i = newViewModel.id;
-        this.onRglLayoutChange(rglLayout);
-        return newViewModel;
-    }
-
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':
@@ -474,7 +491,7 @@ export class DashCanvasModel
         return model;
     }
 
-    onRglLayoutChange(rglLayout: Layout[]) {
+    onRglLayoutChange(rglLayout: LayoutItem[]) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
         // Early out if RGL is changing layout as user is dragging droppable
@@ -486,7 +503,7 @@ export class DashCanvasModel
     }
 
     @action
-    private setLayout(layout) {
+    private setLayout(layout: LayoutItem[]) {
         layout = sortBy(layout, 'i');
         const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
@@ -588,6 +605,7 @@ export class DashCanvasModel
                 }
             }
         }
+
         const checkPosition = (originX, originY) => {
             for (let y = originY; y < originY + height; y++) {
                 for (let x = originX; x < originX + width; x++) {
