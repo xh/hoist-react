@@ -15,7 +15,7 @@ import {
     ReactElement,
     ReactNode
 } from 'react';
-import {PlainObject, Some, Thunkable} from './types/Types';
+import {PlainObject, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -45,10 +45,10 @@ export type ElementSpec<P> = Omit<P, 'items' | 'item' | 'omit'> & {
     // Enhanced attributes to support element factory
     //---------------------------------------------
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
-    items?: Some<ReactNode>;
+    items?: ReactNode;
 
     /**  Equivalent to `items`, offered for code clarity when only one child is needed. */
-    item?: Some<ReactNode>;
+    item?: ReactNode;
 
     /** True to exclude the Element. */
     omit?: Thunkable<boolean>;
