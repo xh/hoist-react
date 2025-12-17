@@ -4,7 +4,7 @@
 
 ### 🎁 New Features
 
-* Enhance LocalDate with addWeekdays and subtractWeekdays methods.
+* Enhance `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
 
 ### 💥 Breaking Changes
 

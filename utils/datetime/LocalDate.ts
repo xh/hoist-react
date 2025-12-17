@@ -198,6 +198,10 @@ export class LocalDate {
     }
 
     addWeekdays(value): LocalDate {
+        if (value < 0) {
+            return this.subtractWeekdays(Math.abs(value));
+        }
+
         let ret: LocalDate = this;
         while (value > 0) {
             ret = ret.nextWeekday();
@@ -208,6 +212,10 @@ export class LocalDate {
     }
 
     subtractWeekdays(value): LocalDate {
+        if (value < 0) {
+            return this.addWeekdays(Math.abs(value));
+        }
+
         let ret: LocalDate = this;
         while (value > 0) {
             ret = ret.previousWeekday();
