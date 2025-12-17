@@ -126,7 +126,7 @@ export function elementFactory<C extends ReactComponent>(component: C): ElementF
 export function elementFactory<P extends PlainObject>(component: ReactComponent): ElementFactory<P>;
 export function elementFactory(component: ReactComponent): ElementFactory {
     const ret = function (...args) {
-        return createElement(component, normalizeArgs(args, component));
+        return createElement(component, normalizeArgs(args));
     };
     ret.isElementFactory = true;
     return ret;
@@ -135,7 +135,7 @@ export function elementFactory(component: ReactComponent): ElementFactory {
 //------------------------
 // Implementation
 //------------------------
-function normalizeArgs(args: any[], type: any) {
+function normalizeArgs(args: any[]) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
