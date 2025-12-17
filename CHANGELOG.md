@@ -8,6 +8,10 @@
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
 
+### 🎁 New Features
+
+* DashCanvas component now supports dragging and dropping widgets in from an external container.
+
 ### 🐞 Bug Fixes
 
 * Fixed column chooser to display columns in the same order as they appear in the grid.
@@ -20,6 +24,10 @@
     * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
     * `GroupingChooserProps.popoverTitle` - use `editorTitle`
     * `RelativeTimestampProps.options` - provide directly as top-level props
+
+### 📚 Libraries
+
+* react-grid-layout `1.5.0 → 2.1.0`
 
 ## 78.1.4 - 2025-12-05
 
