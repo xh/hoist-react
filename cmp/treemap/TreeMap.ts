@@ -342,7 +342,7 @@ class TreeMapLocalModel extends HoistModel {
                                 textOutline: 'none',
                                 // Default to hidden, updated selectively in updateLabelVisibility().
                                 visibility: 'hidden',
-                                // // Do not allow labels to elide, we want the full width for visibility calculation.
+                                // Do not allow labels to elide, we want the full width for visibility calculation.
                                 textOverflow: 'clip'
                             }
                         }
