@@ -2,6 +2,10 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhance `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
+
 ### 💥 Breaking Changes
 
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
