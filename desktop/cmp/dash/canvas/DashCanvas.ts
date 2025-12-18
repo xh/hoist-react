@@ -45,7 +45,7 @@ export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSuppor
      * {@link https://www.npmjs.com/package/react-grid-layout#grid-layout-props}
      * Note that some ReactGridLayout props are managed directly by DashCanvas and will be overridden if provided here.
      */
-    rglOptions?: GridLayoutProps;
+    rglOptions?: Partial<GridLayoutProps>;
 }
 
 /**
