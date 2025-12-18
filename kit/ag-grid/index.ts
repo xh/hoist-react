@@ -60,7 +60,11 @@ export type {
     CellEditingStoppedEvent
 } from 'ag-grid-community';
 
-export type {CustomCellEditorProps, CustomMenuItemProps} from 'ag-grid-react';
+export type {
+    CustomCellEditorProps,
+    CustomCellRendererProps,
+    CustomMenuItemProps
+} from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 
 const MIN_VERSION = '34.2.0';
