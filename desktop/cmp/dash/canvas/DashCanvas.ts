@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {omit} from 'lodash';
 import {DragEvent} from 'react';
 import ReactGridLayout, {
     type LayoutItem,
@@ -66,8 +67,15 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     render({className, model, rglOptions, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
-            [padX, padY] = model.containerPadding;
-        const {width, containerRef, mounted} = useContainerWidth();
+            [padX, padY] = model.containerPadding,
+            topLevelRglOptions: Partial<GridLayoutProps> = omit(rglOptions ?? {}, [
+                'gridConfig',
+                'dragConfig',
+                'resizeConfig',
+                'dropConfig'
+            ]),
+            {width, containerRef, mounted} = useContainerWidth();
+
         return refreshContextView({
             model: model.refreshContextModel,
             item: div({
@@ -88,27 +96,31 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                   cols: model.columns,
                                   rowHeight: model.rowHeight,
                                   margin: model.margin,
-                                  maxRows: model.maxRows
+                                  maxRows: model.maxRows,
+                                  ...(rglOptions?.gridConfig ?? {})
                               },
                               dragConfig: {
                                   enabled: isDraggable,
                                   handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
                                   cancel: '.xh-button',
-                                  bounded: true
+                                  bounded: true,
+                                  ...(rglOptions?.dragConfig ?? {})
                               },
                               resizeConfig: {
-                                  enabled: isResizable
+                                  enabled: isResizable,
+                                  ...(rglOptions?.resizeConfig ?? {})
                               },
                               dropConfig: {
                                   enabled: model.contentLocked ? false : model.droppable,
-                                  defaultItem: {w: 6, h: 6}
+                                  defaultItem: {w: 6, h: 6},
+                                  ...(rglOptions?.dropConfig ?? {})
                               },
                               compactor: model.compact ? verticalCompactor : noCompactor,
                               onLayoutChange: (layout: LayoutItem[]) =>
                                   model.onRglLayoutChange(layout),
                               onResizeStart: () => (model.isResizing = true),
                               onResizeStop: () => (model.isResizing = false),
-                              items: model.viewModels.map(vm =>
+                              children: model.viewModels.map(vm =>
                                   div({
                                       key: vm.id,
                                       item: dashCanvasView({model: vm})
@@ -117,7 +129,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                               onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
                               onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
                                   model.onDrop(layout, layoutItem, evt),
-                              ...rglOptions
+                              ...topLevelRglOptions
                           }),
                           emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
                       ]
