@@ -5,3 +5,4 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 export * from './TabSwitcher';
+export * from './dynamic/DynamicTabSwitcher';

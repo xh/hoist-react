@@ -31,7 +31,7 @@ export const headerFilter = hoistCmp.factory({
             onClick: stopPropagation,
             onDoubleClick: stopPropagation,
             headerItems: [switcher()],
-            item: tabContainer(),
+            item: tabContainer({switcher: false}),
             bbar: bbar(),
             hotkeys: [
                 {
