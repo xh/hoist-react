@@ -100,7 +100,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                   enabled: isResizable
                               },
                               dropConfig: {
-                                  enabled: model.droppable,
+                                  enabled: model.contentLocked ? false : model.droppable,
                                   defaultItem: {w: 6, h: 6}
                               },
                               compactor: model.compact ? verticalCompactor : noCompactor,
