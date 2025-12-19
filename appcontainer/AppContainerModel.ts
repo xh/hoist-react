@@ -152,7 +152,7 @@ export class AppContainerModel extends HoistModel {
         if (this.initCalled) return;
         this.initCalled = true;
 
-        const {appSpec, appStateModel} = this,
+        const {appSpec} = this,
             {isPhone, isTablet, isDesktop} = this.userAgentModel,
             {isMobileApp} = appSpec;
 
@@ -207,8 +207,6 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('LOGIN_REQUIRED');
                 return;
             }
-            const authTime = appStateModel.timings[AppState.AUTHENTICATING];
-            this.logInfo(`Authenticated user '${XH.getUsername()}' in ${authTime}ms`);
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});

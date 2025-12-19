@@ -85,7 +85,7 @@ export class AppStateModel extends HoistModel {
         const {timings, loadStarted} = this;
         this.addReaction({
             when: () => this.state === 'RUNNING',
-            run: () =>
+            run: () => {
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
@@ -98,7 +98,9 @@ export class AppStateModel extends HoistModel {
                         screen: this.getScreenData()
                     },
                     omit: !XH.appSpec.trackAppLoad
-                })
+                });
+                this.logDebug('Load timings', this.timings);
+            }
         });
     }
 
