@@ -99,9 +99,9 @@ const innerToolbar = hoistCmp.factory({
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement<MaskProps>(mask, {bind: model.loadModel});
+        mask = cloneElement<MaskProps>(mask, {bind: model.loadObserver});
     } else if (mask === true) {
-        mask = model.loadModel;
+        mask = model.loadObserver;
     }
     return mask;
 }

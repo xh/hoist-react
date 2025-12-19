@@ -27,7 +27,7 @@ export class ViewPanelModel extends HoistModel {
     }
 
     get loadTask(): TaskObserver {
-        return this.parent.loadModel;
+        return this.parent.loadObserver;
     }
 
     constructor(parent: ManageDialogModel) {
