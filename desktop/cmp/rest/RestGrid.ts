@@ -21,8 +21,7 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
 export interface RestGridProps
-    extends HoistProps<RestGridModel>,
-        Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
+    extends HoistProps<RestGridModel>, Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * AG Grid API. Use with care - settings made here might be overwritten and/or interfere with
@@ -99,9 +98,9 @@ const innerToolbar = hoistCmp.factory({
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement<MaskProps>(mask, {bind: model.loadModel});
+        mask = cloneElement<MaskProps>(mask, {bind: model.loadObserver});
     } else if (mask === true) {
-        mask = model.loadModel;
+        mask = model.loadObserver;
     }
     return mask;
 }

@@ -33,7 +33,10 @@ export interface RecordActionSpec extends TestSupportProps {
     /** Function called on action execution. */
     actionFn?: (data: ActionFnData) => void;
 
-    /** Function called prior to showing this item. */
+    /**
+     * Function called to append / override display properties prior to each render. This function
+     * allows dynamic control over display properties.
+     * */
     displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
