@@ -37,7 +37,8 @@ export class SaveAsDialogModel extends HoistModel {
         formModel.init({
             name,
             group: src.group,
-            description: src.description,
+            // Do not copy description or visibility from source view
+            description: null,
             visibility: 'private',
             isPinned: !!src.info?.isPinned
         });
