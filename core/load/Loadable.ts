@@ -13,7 +13,7 @@ import {LoadSpec} from './';
 export interface Loadable {
     /**
      * For tracking the loading of this object.
-     * Note that this model will *not* track auto-refreshes.
+     * Note that this object will *not* track auto-refreshes.
      */
     loadObserver: TaskObserver;
 
