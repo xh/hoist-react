@@ -208,7 +208,7 @@ export class RestGridModel extends HoistModel {
         return this.store
             .deleteRecordAsync(record)
             .then(() => this.formModel.close())
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 
@@ -224,7 +224,7 @@ export class RestGridModel extends HoistModel {
 
                 XH.toast({intent, message});
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 

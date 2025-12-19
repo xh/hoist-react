@@ -12,6 +12,10 @@
 
 ### 💥 Breaking Changes
 
+* Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
+  `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
+  `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
+  v82. Applications should update their code to use `loadObserver` instead of `loadModel`.
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.

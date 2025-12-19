@@ -5,9 +5,9 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject} from '../';
+import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject, TaskObserver} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
@@ -97,8 +97,15 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
+    get loadObserver(): TaskObserver {
+        return this.loadSupport?.loadObserver;
+    }
     get loadModel() {
-        return this.loadSupport?.loadModel;
+        apiDeprecated('HoistModel.loadModel', {
+            v: 'v82',
+            msg: 'Use HoistModel.loadObserver instead.'
+        });
+        return this.loadSupport?.loadObserver;
     }
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;

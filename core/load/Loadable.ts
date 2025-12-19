@@ -15,7 +15,7 @@ export interface Loadable {
      * For tracking the loading of this object.
      * Note that this model will *not* track auto-refreshes.
      */
-    loadModel: TaskObserver;
+    loadObserver: TaskObserver;
 
     /** Date when last load was initiated. */
     lastLoadRequested: Date;
