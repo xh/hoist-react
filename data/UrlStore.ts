@@ -6,13 +6,13 @@
  */
 
 import {
-    XH,
-    managed,
-    LoadSupport,
-    LoadSpec,
     Loadable,
+    LoadSpec,
+    LoadSupport,
+    managed,
     PlainObject,
-    TaskObserver
+    TaskObserver,
+    XH
 } from '@xh/hoist/core';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
