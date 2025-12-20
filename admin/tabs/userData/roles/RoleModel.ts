@@ -197,7 +197,7 @@ export class RoleModel extends HoistModel {
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
-                    .linkTo(this.loadModel),
+                    .linkTo(this.loadObserver),
             recordsRequired: 1
         };
     }

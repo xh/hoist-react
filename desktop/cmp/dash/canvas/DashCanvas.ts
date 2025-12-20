@@ -12,12 +12,11 @@ import {
     HoistProps,
     refreshContextView,
     TestSupportProps,
-    uses,
-    XH
+    uses
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
@@ -25,7 +24,6 @@ import type {ReactGridLayoutProps} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
-import {showContextMenu} from '@blueprintjs/core';
 
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
@@ -137,18 +135,14 @@ const onContextMenu = (e, model) => {
             y = clientY + model.ref.current.scrollTop;
 
         consumeEvent(e);
-        showContextMenu({
-            content: dashCanvasContextMenu({
+        showContextMenu(
+            dashCanvasContextMenu({
                 dashCanvasModel: model,
                 position: {x, y},
                 contextMenuEvent: e
             }),
-            targetOffset: {
-                left: clientX,
-                top: clientY
-            },
-            isDarkTheme: XH.darkTheme
-        });
+            {left: clientX, top: clientY}
+        );
     }
 };
 

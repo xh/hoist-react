@@ -193,7 +193,6 @@ export class InstancesTabModel extends HoistModel {
     private createTabContainerModel() {
         return new TabContainerModel({
             route: 'default.servers.instances',
-            switcher: false,
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
@@ -230,7 +229,7 @@ export class InstancesTabModel extends HoistModel {
             params: {instance: instance.name}
         })
             .finally(() => this.loadAsync())
-            .linkTo({observer: this.loadModel, message: 'Attempting instance shutdown'})
+            .linkTo({observer: this.loadObserver, message: 'Attempting instance shutdown'})
             .catchDefault();
     }
 

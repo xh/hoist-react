@@ -47,7 +47,7 @@ import {
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
-import {showContextMenu} from '@blueprintjs/core';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
@@ -492,7 +492,7 @@ export class DashContainerModel
             contextMenuEvent: e
         });
 
-        showContextMenu({content: menu, targetOffset: offset, isDarkTheme: XH.darkTheme});
+        showContextMenu(menu, offset);
     }
 
     //-----------------

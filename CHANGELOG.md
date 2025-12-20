@@ -2,18 +2,36 @@
 
 ## 79.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Enhance `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
+  supports context-menu items. See `TabContainerConfig.switcher`.
+
 ### 💥 Breaking Changes
 
+* Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
+  `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
+  `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
+  v82. Applications should update their code to use `loadObserver` instead of `loadModel`.
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
-* Renamed scss prefix `bp5` to `bp6`
+* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
+  Some apps may need to update their imports.
+* `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
+  `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
+* Renamed css prefix `bp5` to `bp6`
 
 ### 🐞 Bug Fixes
 
 * Fixed column chooser to display columns in the same order as they appear in the grid.
 * Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Restore previous behavior of highcharts treemap labels with regard to visibilty and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+* Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 
 ### ⚙️ Technical
 

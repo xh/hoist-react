@@ -203,7 +203,7 @@ export class LogDisplayModel extends HoistModel {
         if (
             tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
-            !this.loadModel.isPending &&
+            !this.loadObserver.isPending &&
             this.parent.isVisible
         ) {
             this.loadLog();
