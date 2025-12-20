@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {LocalDateUnit, XH} from '@xh/hoist/core';
 import {computeOnce, throwIf} from '@xh/hoist/utils/js';
 import {isNil, isString} from 'lodash';
 import moment, {Moment, MomentInput} from 'moment';
@@ -18,25 +18,9 @@ import moment, {Moment, MomentInput} from 'moment';
  * For efficiency and to enable strict equality checks, instances of this class are memoized:
  * only a single version of the object will be created and returned for each calendar day,
  * as long as the caller uses one of the *public factory methods*, which they always should!
- *
- * Unit accepted by manipulation methods are ['year', 'quarter', 'month', 'week', 'day', 'date'].
  */
-
-type LocalDateUnit =
-    | 'year'
-    | 'years'
-    | 'quarter'
-    | 'quarters'
-    | 'month'
-    | 'months'
-    | 'week'
-    | 'weeks'
-    | 'day'
-    | 'days';
-
 export class LocalDate {
-    private static _instances = new Map();
-    static VALID_UNITS: LocalDateUnit[] = [
+    static readonly VALID_UNITS: Set<LocalDateUnit> = new Set([
         'year',
         'years',
         'quarter',
@@ -47,11 +31,13 @@ export class LocalDate {
         'weeks',
         'day',
         'days'
-    ];
+    ]);
 
-    private _isoString: string;
-    private _moment: Moment;
-    private _date: Date;
+    private static _instances: Map<string, LocalDate> = new Map();
+
+    private readonly _isoString: string;
+    private readonly _moment: Moment;
+    private readonly _date: Date;
 
     //------------------------
     // Factories
@@ -211,17 +197,17 @@ export class LocalDate {
     //--------------------------
     // Manipulate/Calendar logic
     //--------------------------
-    add(value, unit: LocalDateUnit = 'days'): LocalDate {
+    add(value: number, unit: LocalDateUnit = 'days'): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.add(value, unit));
     }
 
-    subtract(value, unit: LocalDateUnit = 'days'): LocalDate {
+    subtract(value: number, unit: LocalDateUnit = 'days'): LocalDate {
         this.ensureUnitValid(unit);
         return LocalDate.from(this.moment.subtract(value, unit));
     }
 
-    addWeekdays(value): LocalDate {
+    addWeekdays(value: number): LocalDate {
         if (value < 0) {
             return this.subtractWeekdays(Math.abs(value));
         }
@@ -235,7 +221,7 @@ export class LocalDate {
         return ret;
     }
 
-    subtractWeekdays(value): LocalDate {
+    subtractWeekdays(value: number): LocalDate {
         if (value < 0) {
             return this.addWeekdays(Math.abs(value));
         }
@@ -354,17 +340,11 @@ export class LocalDate {
     }
 
     private ensureUnitValid(unit: LocalDateUnit) {
-        throwIf(
-            !LocalDate.VALID_UNITS.includes(unit),
-            `Invalid unit for LocalDate adjustment: ${unit}`
-        );
+        throwIf(!LocalDate.VALID_UNITS.has(unit), `Invalid unit for LocalDate adjustment: ${unit}`);
     }
 }
 
-/**
- * Is the input value a local Date?
- * Convenience alias for LocalDate.isLocalDate()
- */
+/** @returns true if the input value is a `LocalDate` instance. */
 export function isLocalDate(val: any): val is LocalDate {
     return !!val?.isLocalDate;
 }
