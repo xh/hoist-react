@@ -43,6 +43,8 @@
     * `GroupingChooserProps.popoverTitle` - use `editorTitle`
     * `RelativeTimestampProps.options` - provide directly as top-level props
 
+* Improved the efficiency and logging of MsalClient.
+*
 ## 78.1.4 - 2025-12-05
 
 ### 🐞 Bug Fixes
