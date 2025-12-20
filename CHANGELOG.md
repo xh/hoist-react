@@ -9,6 +9,7 @@
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
   supports context-menu items. See `TabContainerConfig.switcher`.
+* Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
 
 ### 💥 Breaking Changes
 
@@ -19,7 +20,7 @@
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
-* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
+* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`.
   Some apps may need to update their imports.
 * `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
   `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
@@ -27,8 +28,8 @@
 ### 🐞 Bug Fixes
 
 * Fixed column chooser to display columns in the same order as they appear in the grid.
-* Defaulted Highcharts font to Hoist default (--xh-font-family)
-* Restore previous behavior of highcharts treemap labels with regard to visibilty and positioning.
+* Defaulted Highcharts font to Hoist default `--xh-font-family`.
+* Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 

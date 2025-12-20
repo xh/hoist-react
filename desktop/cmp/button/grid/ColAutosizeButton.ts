@@ -58,8 +58,8 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
 
         return button({
             ref,
-            icon: withDefault(icon, Icon.arrowsLeftRight()),
-            title: withDefault(title, 'Autosize Columns'),
+            icon: withDefault(icon, Icon.magic()),
+            title: withDefault(title, 'Autosize columns'),
             disabled: withDefault(disabled, gridModel?.empty),
             className,
             onClick,
