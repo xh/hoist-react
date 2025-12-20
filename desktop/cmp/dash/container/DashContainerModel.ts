@@ -49,8 +49,10 @@ import {
 } from './impl/DashContainerUtils';
 import {dashContainerView} from './impl/DashContainerView';
 
-export interface DashContainerConfig
-    extends DashConfig<DashContainerViewSpec, DashContainerViewState> {
+export interface DashContainerConfig extends DashConfig<
+    DashContainerViewSpec,
+    DashContainerViewState
+> {
     /** Strategy for rendering DashContainerViews. Can also be set per-view in `viewSpecs`*/
     renderMode?: RenderMode;
 

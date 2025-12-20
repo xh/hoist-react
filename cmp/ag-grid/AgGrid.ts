@@ -26,10 +26,7 @@ import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
 export interface AgGridProps
-    extends HoistProps<AgGridModel>,
-        GridOptions,
-        LayoutProps,
-        TestSupportProps {}
+    extends HoistProps<AgGridModel>, GridOptions, LayoutProps, TestSupportProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited

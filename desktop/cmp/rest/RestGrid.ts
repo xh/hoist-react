@@ -21,8 +21,7 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
 export interface RestGridProps
-    extends HoistProps<RestGridModel>,
-        Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
+    extends HoistProps<RestGridModel>, Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * AG Grid API. Use with care - settings made here might be overwritten and/or interfere with

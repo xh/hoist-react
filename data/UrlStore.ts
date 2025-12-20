@@ -5,7 +5,15 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from '@xh/hoist/core';
+import {
+    Loadable,
+    LoadSpec,
+    LoadSupport,
+    managed,
+    PlainObject,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 import {Store, StoreConfig} from './Store';
