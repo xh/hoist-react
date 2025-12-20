@@ -24,6 +24,9 @@
   Some apps may need to update their imports.
 * `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
   `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
+* Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
+  common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
+  `value` args to `number` where applicable.
 
 ### 🐞 Bug Fixes
 
@@ -50,7 +53,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fix to Highchart timezone handling regression from version 77.  Applications should note that
+* Fix to Highchart timezone handling regression from version 77. Applications should note that
   Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
   should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
 
@@ -61,14 +64,15 @@
 ## 78.1.0 - 2025-12-02
 
 ### ⚙️ Technical
+
 * New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
 
 * Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
 
-* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
- and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
- This can be further modified by apps via the option
- `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+* Improved use of MSAL client API, to maximize effectiveness of SSO. Improved documentation
+  and logging. Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
+  This can be further modified by apps via the option
+  `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
 
 ### 📚 Libraries
 
@@ -110,7 +114,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+* Apps that use and provide the `highcharts` library should be sure to update the version to
+  v12.4.0.
   Refer to `Bootstrap.js` in Toolbox for required import changes.
     * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 
