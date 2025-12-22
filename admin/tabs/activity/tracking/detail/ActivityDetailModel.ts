@@ -182,6 +182,7 @@ export class ActivityDetailModel extends HoistModel {
                 {...Col.browser, hidden},
                 {...Col.userAgent, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.clientAppCode, hidden},
                 {...Col.loadId, hidden},
                 {...Col.tabId},
                 {...Col.correlationId, hidden},

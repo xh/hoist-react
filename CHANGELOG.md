@@ -10,6 +10,7 @@
   persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
   supports context-menu items. See `TabContainerConfig.switcher`.
 * Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+* Support for tracking 'clientAppCode' in admin tracking.
 
 ### 💥 Breaking Changes
 
