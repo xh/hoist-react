@@ -232,14 +232,9 @@ export class AppContainerModel extends HoistModel {
             }
 
             // Complete initialization process
-            await installServicesAsync([
-                EnvironmentService,
-                ConfigService,
-                LocalStorageService,
-                SessionStorageService
-            ]);
+            await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
             await installServicesAsync(TrackService);
-            await installServicesAsync([PrefService, JsonBlobService]);
+            await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
             await installServicesAsync([
                 AlertBannerService,
