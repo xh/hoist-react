@@ -44,7 +44,9 @@
     * `RelativeTimestampProps.options` - provide directly as top-level props
 
 * Improved the efficiency and logging of MsalClient.
-*
+* Improved protections against running stale versions of client app code.
+
+
 ## 78.1.4 - 2025-12-05
 
 ### 🐞 Bug Fixes
