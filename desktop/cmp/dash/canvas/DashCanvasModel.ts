@@ -268,7 +268,6 @@ export class DashCanvasModel
         this.showGridBackground = showGridBackground;
         this.droppable = droppable;
         this.onDropDone = onDropDone;
-        // Override default onDropDragOver if provided
         if (onDropDragOver) this.onDropDragOver = onDropDragOver;
 
         this.loadState(initialState);
