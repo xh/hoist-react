@@ -15,7 +15,6 @@ import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
-    XH,
     elementFactory,
     hoistCmp,
     HoistProps,
@@ -131,8 +130,6 @@ const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
     displayName: 'DashCanvasGridBackgroundCells',
     model: uses(DashCanvasModel),
     render({model, width}) {
-        const gridBackgroundColor = XH.darkTheme ? '#0e1213' : '#f8f8f8';
-
         return gridBackground({
             className: 'xh-dash-canvas__grid-background',
             width,
@@ -141,7 +138,7 @@ const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
             rowHeight: model.rowHeight,
             margin: model.margin,
             rows: 'auto',
-            color: gridBackgroundColor,
+            color: 'var(--xh-dash-canvas-grid-cell-color)',
             borderRadius: 0
         });
     }
