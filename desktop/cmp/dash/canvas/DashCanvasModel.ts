@@ -4,7 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import type {LayoutItem, CompactType} from 'react-grid-layout';
+import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
@@ -43,19 +43,18 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /**
      * Whether views should "compact" vertically or horizontally
      * to condense space. Default `true` defaults to vertical compaction.
-     * Note: as of RGL 2.1.1, 'wrap' (an option that RGL claims to support, results in no compaction)
-     * so is omitted here as an allowed type.
+     * See react-grid-layout docs for more information.
      * */
-    compact?: boolean | Omit<CompactType, 'wrap'>;
+    compact?: boolean | 'vertical' | 'horizontal';
 
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
-    /** Maximum number of rows permitted for this container. Default `Infinity`. */
-    maxRows?: number;
-
     /** Padding inside the container [x, y] in pixels. Default `[0, 0]`. */
     containerPadding?: [number, number];
+
+    /** Maximum number of rows permitted for this container. Default `Infinity`. */
+    maxRows?: number;
 
     /**
      * Whether a grid background should be shown. Default false.
@@ -90,7 +89,7 @@ export class DashCanvasModel
     //------------------------------
     @bindable columns: number;
     @bindable rowHeight: number;
-    @bindable compact: CompactType;
+    @bindable compact: 'vertical' | 'horizontal';
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
     @bindable showGridBackground: boolean;
@@ -196,14 +195,7 @@ export class DashCanvasModel
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
         this.margin = margin;
-        this.compact = (
-            compact === true
-                ? 'vertical'
-                : // as of RGL 2.1.1, 'wrap' results in no compaction, so omit it here
-                  compact === false || compact === 'wrap'
-                  ? null
-                  : compact
-        ) as CompactType;
+        this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;

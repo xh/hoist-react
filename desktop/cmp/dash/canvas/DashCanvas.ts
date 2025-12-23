@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {omit} from 'lodash';
 import ReactGridLayout, {
     type LayoutItem,
     type GridLayoutProps,
@@ -27,7 +26,7 @@ import {
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
+import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
@@ -66,12 +65,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
             [padX, padY] = model.containerPadding,
-            topLevelRglOptions: Partial<GridLayoutProps> = omit(rglOptions ?? {}, [
-                'gridConfig',
-                'dragConfig',
-                'resizeConfig',
-                'dropConfig'
-            ]),
             {width, containerRef, mounted} = useContainerWidth();
 
         return refreshContextView({
@@ -93,36 +86,38 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     reactGridLayout({
                         omit: !mounted,
                         layout: model.rglLayout,
-                        width,
-                        gridConfig: {
-                            cols: model.columns,
-                            rowHeight: model.rowHeight,
-                            margin: model.margin,
-                            maxRows: model.maxRows,
-                            ...(rglOptions?.gridConfig ?? {})
-                        },
-                        dragConfig: {
-                            enabled: isDraggable,
-                            handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                            cancel: '.xh-button',
-                            bounded: true,
-                            ...(rglOptions?.dragConfig ?? {})
-                        },
-                        resizeConfig: {
-                            enabled: isResizable,
-                            ...(rglOptions?.resizeConfig ?? {})
-                        },
-                        compactor: getCompactor(model.compact, false, false),
-                        onLayoutChange: (layout: LayoutItem[]) => model.onRglLayoutChange(layout),
-                        onResizeStart: () => (model.isResizing = true),
-                        onResizeStop: () => (model.isResizing = false),
                         children: model.viewModels.map(vm =>
                             div({
                                 key: vm.id,
                                 item: dashCanvasView({model: vm})
                             })
                         ),
-                        ...topLevelRglOptions
+                        width,
+                        ...mergeDeep(
+                            {
+                                gridConfig: {
+                                    cols: model.columns,
+                                    rowHeight: model.rowHeight,
+                                    margin: model.margin,
+                                    maxRows: model.maxRows
+                                },
+                                dragConfig: {
+                                    enabled: isDraggable,
+                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                                    cancel: '.xh-button',
+                                    bounded: true
+                                },
+                                resizeConfig: {
+                                    enabled: isResizable
+                                },
+                                compactor: getCompactor(model.compact, false, false),
+                                onLayoutChange: (layout: LayoutItem[]) =>
+                                    model.onRglLayoutChange(layout),
+                                onResizeStart: () => (model.isResizing = true),
+                                onResizeStop: () => (model.isResizing = false)
+                            },
+                            rglOptions
+                        )
                     }),
                     emptyContainerOverlay({omit: !mounted})
                 ],
