@@ -34,6 +34,8 @@
 * Your app must update `compilerOptions.moduleResolution` to "bundler" in `tsconfig.json`
 * If using the `DashCanvas` `rglOptions` prop, you might have to update it to reflect changes in
   `react-grid-layout` v2+ (not common).
+* `DashCanvasModel.containerPadding` is now applied to the `react-grid-layout` div by RGL, not to the
+  hoist-react provided containing div.  This may affect printing layouts.
 
 ### 🐞 Bug Fixes
 
