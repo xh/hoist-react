@@ -64,7 +64,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * Whether the canvas should accept drag-and-drop of views from outside
      * the canvas. Default false.
      */
-    droppable?: boolean;
+    allowsDrop?: boolean;
 
     /**
      * Optional callback to invoke after a view is successfully dropped onto the canvas.
@@ -144,7 +144,7 @@ export class DashCanvasModel
     //-----------------------------
     DROPPING_ELEM_ID = '__dropping-elem__';
     maxRows: number;
-    droppable: boolean;
+    allowsDrop: boolean;
     onDropDone: (viewModel: DashCanvasViewModel) => void;
     draggedInView: DashCanvasItemState;
 
@@ -208,7 +208,7 @@ export class DashCanvasModel
         extraMenuItems,
         showAddViewButtonWhenEmpty = true,
         showGridBackground = false,
-        droppable = false,
+        allowsDrop = false,
         onDropDone,
         onDropDragOver
     }: DashCanvasConfig) {
@@ -266,7 +266,7 @@ export class DashCanvasModel
         this.extraMenuItems = extraMenuItems;
         this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
         this.showGridBackground = showGridBackground;
-        this.droppable = droppable;
+        this.allowsDrop = allowsDrop;
         this.onDropDone = onDropDone;
         if (onDropDragOver) this.onDropDragOver = onDropDragOver;
 

@@ -128,7 +128,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                   ...(rglOptions?.resizeConfig ?? {})
                               },
                               dropConfig: {
-                                  enabled: model.contentLocked ? false : model.droppable,
+                                  enabled: model.contentLocked ? false : model.allowsDrop,
                                   defaultItem: defaultDroppedItemDims,
                                   ...(rglOptions?.dropConfig ?? {})
                               },
