@@ -50,7 +50,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
-    /** Padding inside the container [x, y] in pixels. Default `[0, 0]`. */
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
     containerPadding?: [number, number];
 
     /** Maximum number of rows permitted for this container. Default `Infinity`. */
@@ -150,7 +150,7 @@ export class DashCanvasModel
         compact = 'vertical',
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = [0, 0],
+        containerPadding = margin,
         extraMenuItems,
         showGridBackground = false
     }: DashCanvasConfig) {

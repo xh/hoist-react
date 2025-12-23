@@ -63,7 +63,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     render({className, model, rglOptions, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
-            [padX, padY] = model.containerPadding,
             {width, containerRef, mounted} = useContainerWidth();
 
         return refreshContextView({
@@ -74,7 +73,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                style: {padding: `${padY}px ${padX}px`},
                 ref: composeRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
@@ -98,7 +96,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                     cols: model.columns,
                                     rowHeight: model.rowHeight,
                                     margin: model.margin,
-                                    maxRows: model.maxRows
+                                    maxRows: model.maxRows,
+                                    containerPadding: model.containerPadding
                                 },
                                 dragConfig: {
                                     enabled: isDraggable,
