@@ -77,21 +77,11 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * return an object with optional properties indicating the desired width, height (in grid units),
      * and offset (in pixels) of the dropping placeholder.  The method's signature is the same as
      * the `onDropDragOver` prop of ReactGridLayout.
-     * Returning `false` will prevent the dropping placeholder from being shown,
-     * but does not prevent a drop. Dropped items will be positioned as per the
-     * default behavior in `addView` ('nextAvailable').
+     * Returning `false` will prevent the dropping placeholder from being shown, and prevents a drop.
      * Returning `void` will use the default behavior, which is to size the placeholder as per the
      * `dropConfig.defaultItem` specification.
      */
-    onDropDragOver?: (e: DragEvent) =>
-        | {
-              w?: number;
-              h?: number;
-              dragOffsetX?: number;
-              dragOffsetY?: number;
-          }
-        | false
-        | void;
+    onDropDragOver?: (e: DragEvent) => OnDropDragOverResult;
 
     /**
      * Whether an overlay with an Add View button should be rendered
@@ -118,6 +108,16 @@ export interface DashCanvasItemLayout {
     w: number;
     h: number;
 }
+
+export type OnDropDragOverResult =
+    | {
+          w?: number;
+          h?: number;
+          dragOffsetX?: number;
+          dragOffsetY?: number;
+      }
+    | false
+    | void;
 
 /**
  * Model for {@link DashCanvas}, managing all configurable options for the component and publishing
@@ -414,14 +414,21 @@ export class DashCanvasModel
              a DashViewTray or similar component.`
         );
 
+        const droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+        if (!droppingItem) {
+            // if `onDropDragOver` returned false, we won't have a dropping item
+            // and we cancel the drop
+            this.draggedInView = null;
+            return;
+        }
+
         const {viewSpecId, title, state} = this.draggedInView,
             layout = omit(layoutItem, 'i'),
             newViewModel: DashCanvasViewModel = this.addViewInternal(viewSpecId, {
                 title,
                 state,
                 layout
-            }),
-            droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+            });
 
         // Change ID of dropping item to the new view's id
         // so that the new view goes where the dropping item is.
@@ -439,15 +446,7 @@ export class DashCanvasModel
         this.draggedInView = view;
     }
 
-    onDropDragOver(evt: DragEvent):
-        | {
-              w?: number;
-              h?: number;
-              dragOffsetX?: number;
-              dragOffsetY?: number;
-          }
-        | false
-        | void {
+    onDropDragOver(evt: DragEvent): OnDropDragOverResult {
         if (!this.draggedInView) return false;
 
         return {
