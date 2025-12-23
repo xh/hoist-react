@@ -6,14 +6,14 @@
  */
 import {wait} from '@xh/hoist/promise';
 import {DragEvent} from 'react';
-import type {LayoutItem} from 'react-grid-layout';
+import type {LayoutItem, CompactType} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, observeResize, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -43,8 +43,13 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      */
     rowHeight?: number;
 
-    /** Whether views should "compact" vertically to condense vertical space. Default `true`. */
-    compact?: boolean;
+    /**
+     * Whether views should "compact" vertically or horizontally
+     * to condense space. Default `true` defaults to vertical compaction.
+     * Note: as of RGL 2.1.1, 'wrap' (an option that RGL claims to support, results in no compaction)
+     * so is omitted here as an allowed type.
+     * */
+    compact?: boolean | Omit<CompactType, 'wrap'>;
 
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
@@ -62,7 +67,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     droppable?: boolean;
 
     /**
-     * Optional Callback to invoke after a view is successfully dropped onto the canvas.
+     * Optional callback to invoke after a view is successfully dropped onto the canvas.
      */
     onDropDone?: (viewModel: DashCanvasViewModel) => void;
 
@@ -70,8 +75,13 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * Optional callback to invoke when an item is dragged over the canvas. This may be used to
      * customize how the size of the dropping placeholder is calculated. The callback should
      * return an object with optional properties indicating the desired width, height (in grid units),
-     * and offset (in pixels) of the dropping placeholder.
-     * If not provided, Hoist's own default logic will be used.
+     * and offset (in pixels) of the dropping placeholder.  The method's signature is the same as
+     * the `onDropDragOver` prop of ReactGridLayout.
+     * Returning `false` will prevent the dropping placeholder from being shown,
+     * but does not prevent a drop. Dropped items will be positioned as per the
+     * default behavior in `addView` ('nextAvailable').
+     * Returning `void` will use the default behavior, which is to size the placeholder as per the
+     * `dropConfig.defaultItem` specification.
      */
     onDropDragOver?: (e: DragEvent) =>
         | {
@@ -88,6 +98,11 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * when the canvas is empty. Default true.
      */
     showAddViewButtonWhenEmpty?: boolean;
+
+    /**
+     * Whether a grid background should be shown. Default false.
+     */
+    showGridBackground?: boolean;
 }
 
 export interface DashCanvasItemState {
@@ -117,10 +132,12 @@ export class DashCanvasModel
     //------------------------------
     @bindable columns: number;
     @bindable rowHeight: number;
-    @bindable compact: boolean;
+    @bindable compact: CompactType;
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
     @bindable showAddViewButtonWhenEmpty: boolean;
+    @bindable showGridBackground: boolean;
+    @bindable rglHeight: number;
 
     //-----------------------------
     // Public properties
@@ -184,12 +201,13 @@ export class DashCanvasModel
         addViewButtonText = 'Add View',
         columns = 12,
         rowHeight = 50,
-        compact = true,
+        compact = 'vertical',
         margin = [10, 10],
         maxRows = Infinity,
         containerPadding = [0, 0],
         extraMenuItems,
         showAddViewButtonWhenEmpty = true,
+        showGridBackground = false,
         droppable = false,
         onDropDone,
         onDropDragOver
@@ -235,11 +253,19 @@ export class DashCanvasModel
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
         this.margin = margin;
-        this.compact = compact;
+        this.compact = (
+            compact === true
+                ? 'vertical'
+                : // as of RGL 2.1.1, 'wrap' results in no compaction, so omit it here
+                  compact === false || compact === 'wrap'
+                  ? null
+                  : compact
+        ) as CompactType;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
         this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
+        this.showGridBackground = showGridBackground;
         this.droppable = droppable;
         this.onDropDone = onDropDone;
         // Override default onDropDragOver if provided
@@ -262,6 +288,18 @@ export class DashCanvasModel
         this.addReaction({
             track: () => this.viewState,
             run: () => (this.state = this.buildState())
+        });
+
+        // Used to make the height of RGL available to the gridBackground component
+        this.addReaction({
+            when: () => !!this.ref.current,
+            run: () => {
+                this.rglResizeObserver = observeResize(
+                    rect => (this.rglHeight = rect.height),
+                    this.ref.current.querySelector('.react-grid-layout'),
+                    {debounce: 100}
+                );
+            }
         });
     }
 
@@ -434,6 +472,8 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
+    private rglResizeObserver: ResizeObserver;
+
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':

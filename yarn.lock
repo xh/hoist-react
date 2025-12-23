@@ -6564,10 +6564,10 @@ react-fast-compare@^3.0.1:
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.2.2.tgz#929a97a532304ce9fee4bcae44234f1ce2c21d49"
   integrity sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==
 
-react-grid-layout@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-2.1.0.tgz#544a1a7df3411dbfb29a886d398ed2c52b6ce149"
-  integrity sha512-d2UOqsTokpua1iaVN6wpxHxum6OE3+DOEKFzDn3UEOsSHxnb9m4Lzwkh3FaNTvQd4Z/2gjcqt1dfy3AnBfZiQw==
+react-grid-layout@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-2.1.1.tgz#3954897c7bf8741f9d3c39f8ce5d760917b30697"
+  integrity sha512-yIB96q80oUIDcZeML4arNAC8/0Bam9odjdnQwiAhtyL6DpUy69wyLpG0SSTf5oH69FbQn9VlXn6tNbBqBxZROA==
   dependencies:
     clsx "^2.1.1"
     fast-equals "^4.0.3"

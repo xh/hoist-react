@@ -10,14 +10,14 @@ import ReactGridLayout, {
     type LayoutItem,
     type GridLayoutProps,
     useContainerWidth,
-    noCompactor,
-    verticalCompactor
+    getCompactor
 } from 'react-grid-layout';
-
+import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
+    XH,
     elementFactory,
     hoistCmp,
     HoistProps,
@@ -74,7 +74,12 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 'resizeConfig',
                 'dropConfig'
             ]),
-            {width, containerRef, mounted} = useContainerWidth();
+            {width, containerRef, mounted} = useContainerWidth(),
+            defaultDroppedItemDims = {
+                w: Math.floor(model.columns / 3),
+                h: Math.floor(model.columns / 3)
+            },
+            gridBackgroundColor = XH.darkTheme ? '#2a2a2a' : '#f8f8f8';
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -89,6 +94,18 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 onContextMenu: e => onContextMenu(e, model),
                 items: mounted
                     ? [
+                          gridBackground({
+                              className: 'xh-dash-canvas__grid-background',
+                              omit: !model.showGridBackground,
+                              width,
+                              height: model.rglHeight,
+                              cols: model.columns,
+                              rowHeight: model.rowHeight,
+                              margin: model.margin,
+                              rows: 'auto',
+                              color: gridBackgroundColor,
+                              borderRadius: 0
+                          }),
                           reactGridLayout({
                               layout: model.rglLayout,
                               width,
@@ -112,10 +129,10 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                               },
                               dropConfig: {
                                   enabled: model.contentLocked ? false : model.droppable,
-                                  defaultItem: {w: 6, h: 6},
+                                  defaultItem: defaultDroppedItemDims,
                                   ...(rglOptions?.dropConfig ?? {})
                               },
-                              compactor: model.compact ? verticalCompactor : noCompactor,
+                              compactor: getCompactor(model.compact, false, false),
                               onLayoutChange: (layout: LayoutItem[]) =>
                                   model.onRglLayoutChange(layout),
                               onResizeStart: () => (model.isResizing = true),
@@ -182,3 +199,4 @@ const onContextMenu = (e, model) => {
 };
 
 const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);
+const gridBackground = elementFactory<GridBackgroundProps>(GridBackground);
