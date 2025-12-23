@@ -172,7 +172,6 @@ class TreeMapLocalModel extends HoistModel {
             this.prevConfig = cloneDeep(chartCfg);
             this.createChart(config);
         }
-
         this.updateLabelVisibility();
     }
 
@@ -199,9 +198,18 @@ class TreeMapLocalModel extends HoistModel {
         });
     }
 
+    // Reload series data by fully removing and re-adding the series.
+    // When treemap clustering is enabled, `setData()` & `series.update()` does not properly clear old cluster nodes,
+    // causing overlap or stale rendering. Removing and re-adding the series forces a full rebuild
+    // of the layout and clustering state, ensuring the chart is correctly redrawn.
     @logWithDebug
     reloadSeriesData(newData) {
-        this.chart?.series[0].setData(newData, true, false);
+        const {chart} = this;
+        if (!chart) return;
+        const oldSeries = chart.series[0],
+            series = Highcharts.merge(oldSeries.userOptions, {data: newData});
+        oldSeries.remove(false);
+        chart.addSeries(series, true);
     }
 
     startResize = ({width, height}) => {
@@ -327,12 +335,15 @@ class TreeMapLocalModel extends HoistModel {
                             allowOverlap: false,
                             align: 'left',
                             verticalAlign: 'top',
+                            padding: 4,
                             // See stylesheet for additional label style overrides.
                             style: {
                                 // Disable default outlining via HC pseudo-property.
                                 textOutline: 'none',
                                 // Default to hidden, updated selectively in updateLabelVisibility().
-                                visibility: 'hidden'
+                                visibility: 'hidden',
+                                // Do not allow labels to elide, we want the full width for visibility calculation.
+                                textOverflow: 'clip'
                             }
                         }
                     }

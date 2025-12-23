@@ -21,6 +21,7 @@ import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
+import type {ReactGridLayoutProps} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -28,7 +29,15 @@ import {dashCanvasView} from './impl/DashCanvasView';
 import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 
-export type DashCanvasProps = HoistProps<DashCanvasModel> & TestSupportProps;
+export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSupportProps {
+    /**
+     * Optional additional configuration options to pass through to the underlying ReactGridLayout component.
+     * See the RGL documentation for details:
+     * {@link https://www.npmjs.com/package/react-grid-layout#grid-layout-props}
+     * Note that some ReactGridLayout props are managed directly by DashCanvas and will be overridden if provided here.
+     */
+    rglOptions?: ReactGridLayoutProps;
+}
 
 /**
  * Dashboard-style container that allows users to drag-and-drop child widgets into flexible layouts.
@@ -46,7 +55,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     className: 'xh-dash-canvas',
     model: uses(DashCanvasModel),
 
-    render({className, model, testId}, ref) {
+    render({className, model, rglOptions, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
             [padX, padY] = model.containerPadding;
@@ -86,7 +95,8 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                 key: vm.id,
                                 item: dashCanvasView({model: vm})
                             })
-                        )
+                        ),
+                        ...rglOptions
                     }),
                     emptyContainerOverlay()
                 ],
@@ -129,7 +139,8 @@ const onContextMenu = (e, model) => {
         showContextMenu(
             dashCanvasContextMenu({
                 dashCanvasModel: model,
-                position: {x, y}
+                position: {x, y},
+                contextMenuEvent: e
             }),
             {left: clientX, top: clientY}
         );

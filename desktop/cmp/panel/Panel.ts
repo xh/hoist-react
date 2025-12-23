@@ -15,7 +15,8 @@ import {
     Some,
     TaskObserver,
     useContextModel,
-    uses
+    uses,
+    type ContextMenuSpec
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
@@ -27,7 +28,6 @@ import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
-import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -84,7 +84,7 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
     tbar?: Some<ReactNode>;
 
     /**
-     * A toolbar to be docked at the top of the panel.
+     * A toolbar to be docked at the bottom of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
     bbar?: Some<ReactNode>;
@@ -255,15 +255,15 @@ function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel
     if (isValidElement(propVal)) return propVal;
     if (propVal === true) return cmp({isDisplayed: true});
     if (propVal === 'onLoad') {
-        const loadModel = ctxModel?.loadModel;
-        if (!loadModel) {
+        const loadObserver = ctxModel?.loadObserver;
+        if (!loadObserver) {
             logWarn(
                 `Cannot use 'onLoad' for '${propName}'. The linked context model (${ctxModel?.constructor.name} ${ctxModel?.xhId}) must enable LoadSupport to support this feature.`,
                 Panel
             );
             return null;
         }
-        return cmp({bind: loadModel, spinner: true});
+        return cmp({bind: loadObserver, spinner: true});
     }
     return cmp({bind: propVal, spinner: true});
 }

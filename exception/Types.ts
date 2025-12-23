@@ -4,8 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {FetchOptions} from '@xh/hoist/svc';
+import type {PlainObject} from '@xh/hoist/core';
 
 /**
  * A Hoist optimized Javascript Error object.
@@ -37,26 +36,6 @@ export interface TimeoutException extends HoistException {
 
     /** Time in Milliseconds that was waited before exception was thrown.  */
     interval: number;
-}
-
-/**
- * Exception thrown to indicate an HTTP error resulting from a call to FetchService.
- */
-export interface FetchException extends HoistException {
-    /** Http Status code associated with exception. 0 if no response received. */
-    httpStatus: number;
-
-    /** Rich object or string containing details about the exception as sent by server. */
-    serverDetails: string | PlainObject;
-
-    /** Options of underlying fetch call. */
-    fetchOptions: FetchOptions;
-
-    /**
-     * True if exception resulted from the fetch being aborted by fetchService, or the application.
-     * @see FetchService.abort and FetchOptions.autoAbortKey.
-     */
-    isFetchAborted: boolean;
 }
 
 /**

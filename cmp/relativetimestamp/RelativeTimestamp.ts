@@ -4,8 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {inRange, isNil} from 'lodash';
-import moment from 'moment';
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
@@ -21,8 +19,11 @@ import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
+import {inRange, isNil} from 'lodash';
+import moment from 'moment';
 
-interface RelativeTimestampProps extends HoistProps, BoxProps {
+interface RelativeTimestampProps extends HoistProps, BoxProps, RelativeTimestampOptions {
     /**
      * Property on context model containing timestamp.
      * Specify as an alternative to direct `timestamp` prop (and minimize parent re-renders).
@@ -31,9 +32,6 @@ interface RelativeTimestampProps extends HoistProps, BoxProps {
 
     /** Date or milliseconds representing the starting time / time to compare. See also `bind`. */
     timestamp?: Date | number;
-
-    /** Formatting options */
-    options?: RelativeTimestampOptions;
 }
 
 export interface RelativeTimestampOptions {
@@ -91,13 +89,13 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, bind, timestamp, options, ...rest}, ref) {
-        const impl = useLocalModel(RelativeTimestampLocalModel);
-
+    render({className, bind, timestamp, ...rest}, ref) {
+        const impl = useLocalModel(RelativeTimestampLocalModel),
+            layoutProps = getLayoutProps(rest);
         return box({
             className,
             ref,
-            ...rest,
+            ...layoutProps,
             item: span({
                 className: 'xh-title-tip',
                 item: impl.display,
@@ -128,7 +126,7 @@ class RelativeTimestampLocalModel extends HoistModel {
 
     @computed.struct
     get options(): RelativeTimestampOptions {
-        return this.componentProps.options;
+        return this.componentProps as RelativeTimestampProps;
     }
 
     constructor() {

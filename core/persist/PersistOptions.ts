@@ -29,6 +29,11 @@ export interface PersistOptions {
     debounce?: DebounceSpec;
 
     /**
+     * Delay (in ms) to wait after state has been read before listening for further state changes.
+     */
+    settleTime?: number;
+
+    /**
      * Type of PersistenceProvider to create. Specify as one of the built-in string types,
      * or a subclass of PersistenceProvider.
      *
@@ -54,13 +59,13 @@ export interface PersistOptions {
 
     /**
      *  Function returning blob of data to be used for reading state.
-     *  Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     *  Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     getData?: () => any;
 
     /**
      * Function to be used to write blob of data representing state.
-     * Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     * Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     setData?: (data: object) => void;
 }

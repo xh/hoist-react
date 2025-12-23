@@ -130,6 +130,7 @@ export const deviceIcon: ColumnSpec = {
     chooserGroup: 'Client App / Browser',
     headerName: Icon.desktop(),
     headerTooltip: 'Device',
+    exportName: 'Device',
     tooltip: true,
     resizable: false,
     align: 'center',
@@ -253,7 +254,9 @@ export const instance: ColumnSpec = {
 export const loadId: ColumnSpec = {
     field: {
         name: 'loadId',
-        type: 'string'
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     chooserDescription:
         'A unique ID assigned to each load/init of the application. Refreshing the tab within your browser will result in a new Load ID.',
@@ -289,6 +292,7 @@ export const severityIcon: ColumnSpec = {
     field: severity.field,
     headerName: Icon.info(),
     headerTooltip: 'Severity',
+    exportName: 'Severity',
     tooltip: true,
     resizable: false,
     align: 'center',
@@ -317,7 +321,9 @@ function getSeverityIcon(severity: TrackSeverity): ReactElement {
 export const tabId: ColumnSpec = {
     field: {
         name: 'tabId',
-        type: 'string'
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     chooserDescription:
         'A new Tab ID is established within browser session storage and maintained for the lifetime of the tab. Refreshing the app within your browser will maintain the existing Tab ID',

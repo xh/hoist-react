@@ -1,12 +1,426 @@
 # Changelog
 
-## v74.0.0-SNAPSHOT - unreleased
+## 79.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Enhance `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
+  supports context-menu items. See `TabContainerConfig.switcher`.
+* Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+
+### 💥 Breaking Changes
+
+* Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
+  `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
+  `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
+  v82. Applications should update their code to use `loadObserver` instead of `loadModel`.
+* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
+  symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
+  scheduled for removal in v82.
+* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`.
+  Some apps may need to update their imports.
+* `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
+  `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
+* Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
+  common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
+  `value` args to `number` where applicable.
 
 ### 🐞 Bug Fixes
 
-* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Fixed column chooser to display columns in the same order as they appear in the grid.
+* Defaulted Highcharts font to Hoist default `--xh-font-family`.
+* Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
+* Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+* Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 * Improved `DashCanvas` persistence such that individual `ViewModel` state can be updated without
   reloading the entire canvas.
+
+### ⚙️ Technical
+
+* Removed the following previously deprecated configs as planned:
+    * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
+    * `GroupingChooserProps.popoverTitle` - use `editorTitle`
+    * `RelativeTimestampProps.options` - provide directly as top-level props
+
+* Improved the efficiency and logging of MsalClient.
+*
+## 78.1.4 - 2025-12-05
+
+### 🐞 Bug Fixes
+
+* Fix logging during MsalClient creation.
+
+## 78.1.3 - 2025-12-04
+
+### 🐞 Bug Fixes
+
+* Fix to Highchart timezone handling regression from version 77. Applications should note that
+  Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
+  should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
+
+### ⚙️ Technical
+
+* Allow cross-tab persistence of client log levels
+
+## 78.1.0 - 2025-12-02
+
+### ⚙️ Technical
+
+* New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
+
+* Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
+
+* Improved use of MSAL client API, to maximize effectiveness of SSO. Improved documentation
+  and logging. Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
+  This can be further modified by apps via the option
+  `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.7 → 2.9`
+* @azure/msal-browser `4.25 → 4.26`
+
+## 78.0.0 - 2025-11-21
+
+### 💥 Breaking Changes
+
+* `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
+  wholesale. Applications that were relying on the prior patching behavior will need to
+  call `GridModel.applyColumnStateChanges` instead.
+* `GridModel.cleanColumnState` is now private (not expected to impact applications).
+
+### 🎁 New Features
+
+* Added new `FieldFilter` operators `not begins` and `not ends`.
+* Added new optional `BucketSpec.dependentFields` config to the Cube API, allowing apps to ensure
+  proper re-bucketing of rows during data-only updates where those updates could affect bucketing
+  determinations made by the spec.
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
+  numerical ID.
+* Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+  chooser after loading grid state that was persisted before the columns were added to the grid.
+* Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
+  list and do not need to be manually repeated there.
+
+### ⚙️ Technical
+
+* Improved documentation on `BucketSpec` class.
+* Enhanced `FetchService` to recognize variants on the `application/json` content-type when
+  processing failed responses and decoding exceptions - e.g. `application/problem+json`.
+
+## 77.1.1 - 2025-11-12
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Apps that use and provide the `highcharts` library should be sure to update the version to
+  v12.4.0.
+  Refer to `Bootstrap.js` in Toolbox for required import changes.
+    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+
+### 🎁 New Features
+
+* New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+
+### 🐞 Bug Fixes
+
+* StoreRecord will no longer report `isModified` as `true` if a field has been edited and
+  then returned to its original value in a subsequent edit.
+* Restore support for `TabModel.content` being nullable to support dynamic tab content.
+* Remove stray context menu from appearing when clicking on column group headers and other grid
+  empty space.
+
+## 77.0.1 - 2025-10-29
+
+### 💥 Breaking Changes
+
+* Removed the `disableXssProtection` flag supported by `AppSpec` and `FieldSpec` and replaced with
+  its opposite, `enableXssProtection`, now an opt-in feature.
+    * While store-based XSS protection via DomPurify is still available to apps that can display
+      untrusted or potentially malicious data, this is an uncommon use case for Hoist apps and was
+      deemed to not provide enough benefit relative to potential performance pitfalls for most
+      applications. In addition, the core change to React-based AG Grid rendering has reduced the
+      attack surface for such exploits relative to when this system was first implemented.
+    * Apps that were previously opting-out via `disableXssProtection` should simply remove that
+      flag. Apps for which this protection remains important should enable at either the app level
+      or for selected Fields and/or Stores.
+
+### 🐞 Bug Fixes
+
+* Fixed regressions in grid context menus for filtering and copy/paste introduced by AG Grid v34.
+    * Note: AG Grid v34+ no longer supports HTML markup in context menus. Applications setting the
+      `text` or `secondaryText` properties of `RecordGridAction` to markup should be sure to use
+      React nodes for formatting instead.
+* Fixed `AgGridModel.getExpandState()` not returning a full representation of expanded groups -
+  an issue that primarily affected linked tree map visualizations.
+
+### ⚙️ Technical
+
+* Support Grails 7 service name conventions in admin client (backward compatible)
+
+## 76.2.0 - 2025-10-22
+
+### ⚙️ Technical
+
+* Implemented minor performance improvements within `Store` for large data sets.
+* Added new `ViewRowData.cubeRowType` property to support identifying bucketed rows.
+* Improved `waitFor` to accept a `null` value for its timeout.
+
+## 76.1.0 - 2025-10-17
+
+### 🎁 New Features
+
+* Added a public `@bindable titleDetails` config to `DashViewModel` to support displaying additional
+  information in the title bar of dashboard widgets. The new property is not persisted, allowing
+  apps to programmatically show dynamic info in a widget header without perturbing its saved state.
+* Enhanced grid column filtering to support sorting the list of available values.
+
+### ⚙️ Technical
+
+* Autofocus the user input when the impersonation bar is shown.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.4 → 2.7`
+* @azure/msal-browser `4.23 → 4.25`
+* dompurify `3.2 → 3.3`
+* mobx `6.13 → 6.15`
+
+## 76.0.0 - 2025-09-26
+
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - AG Grid update, Hoist React upgrade)
+
+* Hoist v76 **upgrades AG Grid to v34** (from v31), covering three major AG Grid releases with their
+  own potentially breaking changes.
+    * Fortunately, internal Hoist updates to our managed API wrappers mean that most apps will see
+      very minimal changes, although there are required adjustments to app-level `package.json` to
+      install updated grid dependencies and `Bootstrap.ts` to import and register your licensed grid
+      modules at their new import paths.
+    * Applications implementing `groupRowRenderer` should note that the `value` property passed
+      to this function is no longer stringified, but is instead the raw field value for the group.
+    * See AG's upgrade guides for more details:
+        * [Upgrade to v32](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-32/)
+        * [Upgrade to v33](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-33/)
+        * [Upgrade to v34](https://www.ag-grid.com/react-data-grid/upgrading-to-ag-grid-34/)
+* Modified the `TabModel` constructor to take its owning container as a second argument.
+    * Apps very rarely create `TabModels` directly, so this unlikely to require changes.
+* Moved the `Exception` class and `HoistException` type from `@xh\hoist\core` to a new lower-level
+  package `@xh\hoist\exception` to reduce the risk of circule dependencies within Hoist.
+    * Apps rarely interact with these directly, so also unlikely to require changes.
+
+### 🎁 New Features
+
+* Added `extraConfirmText` + `extraConfirmLabel` configs to `MessageOptions`. Use these new options
+  to require the specified text to be re-typed by a user when confirming a potentially destructive
+  or disruptive action. Note their usage within Hoist's Admin Console when deleting a role.
+* Updated grid column filters to apply on `Enter` / dismiss on `Esc`. Tweaked the filter popup
+  toolbar for clarity.
+* Added new ability to specify nested tab containers in a single declarative config. Apps may now
+  provide a spec for a nested tab container directly to the `TabConfig.content` property.
+* Improved `ViewManager` features:
+    * Enabled globally sharing a new view directly from the 'Save/Save As' dialog.
+    * Simplified presentation and management of view visibility via new "Visibility" control.
+    * Removed support for the `isDefaultPinned` attribute on global views. All global views will be
+      pinned (i.e. show up in user menus) by default. Users can still explicitly "unpin" any global
+      views to remove them from their menus.
+* Added a `validEmails` constraint rule to validate one or more email addresses in an input field.
+* Added `DashCanvas.rglOptions` prop - passed through to the underlying `react-grid-layout`.
+* Promoted experimental grid feature `enableFullWidthScroll` to a first-class `GridModel` config.
+  Set to true to ensure that the grid will have a single horizontal scrollbar spanning the width of
+  all columns, including any pinned columns.
+
+### 🐞 Bug Fixes
+
+* Handled an edge-case `ViewManager` bug where `enableDefault` changed to `false` after some user
+  state had already been persisted w/users pointed at in-code default view. The manager now calls
+  its configured `initialViewSpec` function as expected in this case.
+* Updated `XH.restoreDefaultsAsync` to clear basic view state, including the user's last selected
+  view. Views themselves will be preserved. Requires `hoist-core >= 32.0`.
+* Fixed bug where `GridModel.persistableColumnState` was not including default column `widths`.
+  This led to columns not being set to their expected widths when switching `ViewManager` views.
+* Fixed bug where a `Grid` with managed autosizing was not triggering an autosize as expected when
+  new column state was loaded (e.g. via `ViewManager`).
+
+### ⚙️ Technical
+
+* Added a new `@sharePendingPromise` decorator for returning a shared Promise across concurrent
+  async calls. Calls made to a decorated method while a prior call with the same args is still
+  pending won't kick off a new call, but will instead receive the same Promise as the first call.
+* Added `XH.logLevel` to define a minimum logging severity threshold for Hoist's client-side logging
+  utilities. Defaulted to 'info' to prevent possible memory and performance impacts of verbose
+  logging on 'debug'. Change at runtime via new `XH.setLogLevel()` when troubleshooting. See
+  `LogUtils.ts` for more info.
+* Added control to trigger browser GC from app footer. Useful for troubleshooting memory issues.
+  Requires running chromium-based browser via e.g. `start chrome --js-flags="--expose-gc`.
+
+### ⚙️ Typescript API Adjustments
+
+* Corrected `ColChooserConfig.width` and `height` types.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.3 → 2.4`
+* @azure/msal-browser `4.16 → 4.23`
+* typescript `5.8 → 5.9`
+
+## 75.0.1 - 2025-08-11
+
+### 🎁 New Features
+
+* Added new `GridModel.expandLevel` config to control the expansion state of tree/grouped grids.
+    * Replaces the use of the `agOptions.groupDefaultExpanded` on the component.
+    * The most recently expanded level is persistable with other grid state.
+    * The default grid context menu now supports a new item to allow users to expand/collapse out to
+      a specific level/depth. Set `GridModel.levelLabels` to activate this feature.
+    * A new `ExpandToLevelButton` menu component is also available for both desktop and mobile.
+      Provides easier discoverability on desktop and supports this feature on mobile, where we
+      don't have context menus.
+* Enhanced `FilterChooser` to better handle filters with different `op`s on the same field.
+    * Multiple "inclusive" ops (e.g. `=`, `like`) will be OR'ed together.
+    * Multiple "exclusive" ops (e.g. `!=`, `not like`) will be AND'ed together.
+    * Range ops (e.g. `<`, `>` ) use a heuristic to avoid creating a filter that could never match.
+    * This behavior is consistent with current behavior and user intuition and should maximize the
+      ability to create useful queries using this component.
+* Deprecated the `RelativeTimestamp.options` prop - all the same options are now top-level props.
+* Added new `GroupingChooserModel.sortDimensions` config. Set to `false` to respect the order in
+  which `dimensions` are provided to the model.
+* Added new `ClipboardButton.errorMessage` prop to customize or suppress a toast alert if the copy
+  operation fails. Set to `false` to fail silently (the behavior prior to this change).
+* Added new `Cube.modifyRecordsAsync` for modifying individual field values in a local uncommitted
+  state. Additionally enhanced `Store.modifyRecords` to return a `StoreChangeLog` of updates.
+* Cube Views now emit data objects of type `ViewRowData`, rather than an anonymous `PlainObject`.
+  This new object supports several documented properties, including a useful `cubeLeaves` property,
+  which can be activated via the `Query.provideLeaves` property.
+
+### 🐞 Bug Fixes
+
+* Fixed bugs where `Store.modifyRecords`, `Store.revertRecords` and `Store.revert` were not properly
+  handling changes to `SummaryRecords`.
+* Fixed minor `DashCanvas` issues with `allowAdd: false`, ensuring it does not block additions made
+  via `loadState()` and hiding the `Add` context menu item in views as intended.
+* Updated `DashCanvas` CSS to set `position: relative;`, ensuring that the empty state overlay is
+  positioned as intended and does not extend beyond the canvas.
+* Improved the core `useContextModel` hook to make it reactive to a change of an (observable)
+  resolved model. Previously this value was cached on first render.
+* Fixed framework components that bind to grids (e.g. `ColChooserButton`, `ColAutosizeButton`,
+  `GridFindField`), ensuring they automatically rebind to a new observable `GridModel` via context.
+
+### ⚙️ Technical
+
+* WebSockets are now enabled by default for client apps, as they have been on the server since Hoist
+  Core v20.2. Maintaining a WebSocket connection back to the Hoist server enables useful Admin
+  Console functionality and is recommended, but clients that must disable WebSockets can do so via
+  `AppSpec.disableWebSockets`. Note `AppSpec.webSocketsEnabled` is deprecated and can be removed.
+* Hoist now sets a reference to an app's singleton `AuthModel` on a static `instance` property of
+  the app-specified class. App developers can declare a typed static `instance` property on their
+  model class and use it to access the singleton with its proper type, vs. `XH.authModel`.
+    * The `XH.authModel` property is still set and available - this is a non-breaking change.
+    * This approach was already (and continues to be) used for services and the `AppModel`
+      singleton.
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - removing deprecations)
+
+* Removed deprecated `LoadSupport.isLoadSupport`
+* Removed deprecated `FileChooserModel.removeAllFiles`
+* Removed deprecated `FetchService.setDefaultHeaders`
+* Removed deprecated `FetchService.setDefaultTimeout`
+* Removed deprecated `IdentityService.logoutAsync`
+* Change to the row objects returned by `View`: the undocumented `_meta` and `buckets` properties
+  have been removed. Use the documented properties on the new `ViewRowData` class instead.
+
+### ✨ Styles
+
+* Upgraded the version of Hoist's default Inter UI font to a new major version, now v4.1. Note
+  that this brings slight differences to the font's appearance, including tweaks to internal
+  spacing and letterforms for tabular numbers. The name of the font face has also changed, from
+  `Inter Var` to `InterVariable`. The default value of the `--xh-font-family` CSS variable has been
+  updated to match, making this change transparent for most applications.
+
+### 📚 Libraries
+
+* @auth0/auth0-spa-js `2.1 → 2.3`
+* @azure/msal-browser `4.12 → 4.16`
+* filesize `6.4 → 11.0`
+* inter-ui `3.19 → 4.1`
+* mobx-react-lite `4.0 → 4.1`
+* qs `6.13 → 6.14`
+* react-markdown `9.0 → 10.1`
+* regenerator-runtime `0.13 → 0.14`
+* semver `7.6 → 7.7`
+* short-unique-id `5.2 → 5.3`
+* ua-parser-js `1.0 → 2.0`
+
+## v74.1.2 - 2025-07-03
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` layout issue, visible only when favorites are disabled.
+
+## v74.1.1 - 2025-07-02
+
+### 🎁 New Features
+
+* Further refinements to the `GroupingChooser` desktop UI.
+    * Added new props `favoritesSide` and `favoritesTitle`.
+    * Deprecated `popoverTitle` prop - use `editorTitle` instead.
+    * Moved "Save as Favorite" button to a new compact toolbar within the popover.
+
+### 🐞 Bug Fixes
+
+* Fixed a bug where `TrackService` was not properly verifying that tracked `data` was below the
+  configured `maxDataLength` limit.
+
+## v74.1.0 - 2025-06-30
+
+### 🎁 New Features
+
+* Updated the `GroupingChooser` UI to use a single popover for both updating the value and
+  selecting/managing favorite groupings (if enabled).
+    * Adjusted `GroupingChooserModel` API and some CSS class names and testIds of `GroupingChooser`
+      internals, although those changes are very unlikely to require app-level adjustments.
+    * Adjusted/removed (rarely used) desktop and mobile `GroupingChooser` props related to popover
+      sizing and titling.
+    * Updated the mobile UI to use a full-screen dialog, similar to `ColumnChooser`.
+* Added props to `ViewManager` to customize icons used for different types of views, and modified
+  default icons for Global and Shared views.
+* Added `ViewManager.extraMenuItems` prop to allow insertion of custom, app-specific items into the
+  component's standard menu.
+
+## v74.0.0 - 2025-06-11
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
+
+* Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
+* ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
+  `ChartModel.contextMenu` property instead.
+
+### 🎁 New Features
+
+* Added `ViewManagerModel.preserveUnsavedChanges` flag to opt-out of that behaviour.
+* Added `PersistOptions.settleTime` to configure time to wait for state to settle before persisting.
+* Support for grid column level `onCellClicked` events.
+* General improvements to `MenuItem` api
+    * New `MenuContext` object now sent as 2nd arg to `actionFn` and `prepareFn`.
+    * New `ChartModel.contextMenu` property provides a fully customizable context menu for charts.
+
+### 🐞 Bug Fixes
+
+* Improved `ViewManagerModel.settleTime` by delegating to individual `PersistenceProviders`.
+* Fixed bug where grid column state could become unintentionally dirty when columns were hidden.
+* Improved `WebsocketService` heartbeat detection to auto-reconnect when the socket reports as open
+  and heartbeats can be sent, but no heartbeat acknowledgements are being received from the server.
+* Restored zoom out with mouse right-to-left drag on Charts.
+
+## v73.0.1 - 2025-05-19
+
+### 🐞 Bug Fixes
+
+* Fixed a minor issue with Admin Console Role Management.
 
 ## v73.0.0 - 2025-05-16
 
@@ -29,7 +443,7 @@
     * Added ability to append terms to active filter *only* when `commitOnChage:false`
 * Added new `PopoverFilterChooser` component - wraps `FilterChooser` in a `Popover` to allow it to
   expand vertically when used in a `Toolbar` or other space-constrained, single-line layout.
- * Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
+* Enhanced OAuth clients with a new `reloginEnabled` config. Set to true to allow the client to do a
   potentially interactive popup login mid-session to re-establish auth if its refresh token has
   expired or been invalidated. Strongly recommended for all OAuth usages.
 * Significantly upgraded the Admin Console "User Activity" tab:
@@ -84,8 +498,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 
 * @xh/hoist-dev-utils `10.x → 11.x`
 * eslint `8.x → 9.x`
-  * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
-    configuration found in Toolbox's `eslint.config.js` as your new baseline.
+    * Apps making this update must also rename their `.eslintrc` file to `eslint.config.js`. See the
+      configuration found in Toolbox's `eslint.config.js` as your new baseline.
 * eslint-config-prettier `9.x → 10.x`
 * typescript `5.1 → 5.8`
 

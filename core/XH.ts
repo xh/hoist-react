@@ -31,6 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
+import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -39,16 +40,16 @@ import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
+import {Exception, HoistException} from '../exception';
+
 import {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
     HoistAppModel,
-    HoistException,
     HoistService,
     HoistServiceClass,
     HoistUser,
@@ -67,7 +68,7 @@ import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '30.1';
+export const MIN_HOIST_CORE_VERSION = '31.2';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -360,6 +361,32 @@ export class XHApi {
         this.reloadApp();
     }
 
+    /**
+     * Current minimum severity for Hoist log utils (default 'info').
+     * Messages logged via managed Hoist log utils with lower severity will be ignored.
+     */
+    get logLevel(): LogLevel {
+        return getLogLevel();
+    }
+
+    /**
+     * Set the minimum severity for Hoist log utils.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
+     */
+    setLogLevel(level: LogLevel, persistMins: number = -1) {
+        setLogLevel(level, persistMins);
+    }
+
+    /**
+     * Short cut to enable client-side logging at level `debug`.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
+     *
+     * Hint: call this method from the console to show more verbose data while troubleshooting.
+     */
+    enableDebugLogging(persistMins: number = -1) {
+        setLogLevel('debug', persistMins);
+    }
+
     //----------------------
     // App lifecycle support
     //----------------------
@@ -386,7 +413,6 @@ export class XHApi {
             clientAppCode: 'admin',
             clientAppName: `${this.appName} Admin`,
             isMobileApp: false,
-            webSocketsEnabled: true,
             checkAccess: 'HOIST_ADMIN_READER',
             ...appSpec
         });
@@ -773,11 +799,20 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**

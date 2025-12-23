@@ -54,7 +54,9 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
@@ -64,10 +66,16 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
+
+    static INCLUDE_LIKE_OPERATORS = ['=', 'like', 'begins', 'ends', 'includes'];
+    static EXCLUDE_LIKE_OPERATORS = ['!=', 'not like', 'excludes'];
+    static RANGE_LIKE_OPERATORS = ['>', '>=', '<', '<='];
 
     /**
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
@@ -157,9 +165,17 @@ export class FieldFilter extends Filter {
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 opFn = v => regExps.some(re => re.test(v));
                 break;
+            case 'not begins':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
+                break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 opFn = v => regExps.some(re => re.test(v));
+                break;
+            case 'not ends':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 opFn = v => !isNil(v) && v.some(it => value.includes(it));

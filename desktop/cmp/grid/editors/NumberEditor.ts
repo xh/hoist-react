@@ -7,7 +7,7 @@
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {useCallback, useEffect} from 'react';
-import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {numberInput, NumberInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';

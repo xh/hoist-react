@@ -13,7 +13,6 @@ import {throwIf} from '@xh/hoist/utils/js';
  * Type for use in identifying a model or set of models.  May be one of:
  *
  *  - class (or superclass) to match
- *  - class name (as a string)
  *  - `"*"` to accept any Model
  *  - boolean
  *  - function taking a model and returning any of the above.

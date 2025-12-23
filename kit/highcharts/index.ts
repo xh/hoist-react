@@ -5,12 +5,12 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+import {checkVersion, logError} from '@xh/hoist/utils/js';
 
 export let Highcharts = null;
 
-const MIN_VERSION = '11.1.0';
-const MAX_VERSION = '11.*.*';
+const MIN_VERSION = '12.4.0';
+const MAX_VERSION = '12.*.*';
 
 /**
  * Expose application versions of Highcharts to Hoist.
@@ -19,7 +19,7 @@ const MAX_VERSION = '11.*.*';
 export function installHighcharts(HighchartsImpl) {
     const {version} = HighchartsImpl;
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
-        console.error(
+        logError(
             `This version of Hoist requires a Highcharts version between ${MIN_VERSION} and ` +
                 `${MAX_VERSION}. Version ${version} detected. Highcharts will be unavailable.`
         );
@@ -27,11 +27,13 @@ export function installHighcharts(HighchartsImpl) {
     }
 
     HighchartsImpl.setOptions({
-        global: {
-            useUTC: false
+        time: {
+            timezone: undefined
         },
         lang: {
-            thousandsSep: ','
+            thousandsSep: ',',
+            // Repace default SI abbrev "G" (giga) with "b" for billions and lowercase "m" + "t"
+            numericSymbols: ['k', 'm', 'b', 't']
         }
     });
     Highcharts = HighchartsImpl;

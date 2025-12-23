@@ -7,11 +7,13 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {pluralize} from '@xh/hoist/utils/js';
 import {DifferModel} from '../../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../../regroup/RegroupDialogModel';
 
@@ -32,22 +34,30 @@ export class PrefEditorModel extends HoistModel {
         super();
         makeObservable(this);
 
-        const required = true,
+        const {regroupAction} = this.regroupDialogModel,
+            required = true,
             enableCreate = true,
             hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly: AppModel.readonly,
-            persistWith: this.persistWith,
+            // Core config
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('prefs')},
+            filterFields: ['name', 'groupName'],
+            groupBy: 'groupName',
+            persistWith: this.persistWith,
+            readonly: AppModel.readonly,
             selModel: 'multiple',
             showRefreshButton: true,
+            sortBy: 'name',
+            unit: 'preference',
+            // Store + fields
             store: {
                 url: 'rest/preferenceAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {...(Col.name.field as FieldSpec), required},
                     {
@@ -68,21 +78,7 @@ export class PrefEditorModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
-            sortBy: 'name',
-            groupBy: 'groupName',
-            unit: 'preference',
-            filterFields: ['name', 'groupName'],
-            actionWarning: {
-                del: records =>
-                    `Are you sure you want to delete ${records.length} preference(s)? Deleting preferences can break running apps.`
-            },
-            menuActions: [
-                addAction,
-                editAction,
-                deleteAction,
-                '-',
-                this.regroupDialogModel.regroupAction
-            ],
+            // Cols + Editors
             columns: [
                 {...Col.name},
                 {...Col.type},
@@ -100,7 +96,18 @@ export class PrefEditorModel extends HoistModel {
                 {field: 'notes', formField: {item: textArea({height: 100})}},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
-            ]
+            ],
+            // Actions
+            actionWarning: {
+                del: records =>
+                    fragment(
+                        `Are you sure you want to delete ${pluralize('selected preference', records.length, true)}?`,
+                        br(),
+                        br(),
+                        `Deleting preference definitions can break running apps.`
+                    )
+            },
+            menuActions: [addAction, editAction, deleteAction, '-', regroupAction]
         });
     }
 

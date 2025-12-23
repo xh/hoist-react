@@ -43,6 +43,7 @@ export class ClusterObjectsModel extends HoistModel {
     @managed gridModel = new GridModel({
         selModel: 'multiple',
         treeMode: true,
+        expandLevel: 2,
         autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
         enableExport: true,
         exportOptions: {filename: exportFilenameWithDate('cluster-objects'), columns: 'ALL'},
@@ -148,7 +149,7 @@ export class ClusterObjectsModel extends HoistModel {
                 body: {
                     names: cacheRecords.map(it => it.id)
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
@@ -178,7 +179,7 @@ export class ClusterObjectsModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'clusterObjectsAdmin/clearAllHibernateCaches'
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast('All Hibernate Caches cleared.');

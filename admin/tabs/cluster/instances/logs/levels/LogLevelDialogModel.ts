@@ -51,7 +51,7 @@ export class LogLevelDialogModel extends HoistModel {
             showRefreshButton: true,
             store: {
                 url: 'rest/logLevelAdmin',
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {
                         name: 'name',

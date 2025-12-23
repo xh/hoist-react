@@ -17,19 +17,13 @@ import {
 } from '@xh/hoist/core';
 import {action, computed, observable, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {startCase} from 'lodash';
-import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
+import {isArray, isUndefined, startCase} from 'lodash';
+import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {ReactElement, ReactNode} from 'react';
 
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
     id: string;
-
-    /**
-     *  Parent TabContainerModel. Provided by the container when constructing these models -
-     *  no need for application to specify directly.
-     */
-    containerModel?: TabContainerModel;
 
     /** Display title for the Tab in the container's TabSwitcher. */
     title?: ReactNode;
@@ -52,8 +46,10 @@ export interface TabConfig {
     /** Display an affordance to allow the user to remove this tab from its container.*/
     showRemoveAction?: boolean;
 
-    /** Item to be rendered by this tab.*/
-    content?: Content;
+    /**
+     * Item to be rendered by this tab, or specification for a child tab container for this tab.
+     */
+    content?: Content | TabConfig[] | TabContainerConfig;
 
     /**
      * Strategy for rendering this tab. If null, will default to its container's mode. See enum
@@ -91,30 +87,35 @@ export class TabModel extends HoistModel {
     showRemoveAction: boolean;
     content: Content;
 
-    private _renderMode: RenderMode;
-    private _refreshMode: RefreshMode;
-
     containerModel: TabContainerModel;
     @managed refreshContextModel: RefreshContextModel;
+
+    /** Child TabContainerModel. For nested TabContainers only. */
+    @managed childContainerModel: TabContainerModel;
+
+    private _renderMode: RenderMode;
+    private _refreshMode: RefreshMode;
 
     get isTabModel() {
         return true;
     }
 
-    constructor({
-        id,
-        containerModel,
-        title = startCase(id),
-        icon = null,
-        tooltip = null,
-        disabled = false,
-        excludeFromSwitcher = false,
-        showRemoveAction = false,
-        content,
-        refreshMode,
-        renderMode,
-        xhImpl = false
-    }: TabConfig) {
+    constructor(
+        {
+            id,
+            title = startCase(id),
+            icon = null,
+            tooltip = null,
+            disabled = false,
+            excludeFromSwitcher = false,
+            showRemoveAction = false,
+            content,
+            refreshMode,
+            renderMode,
+            xhImpl = false
+        }: TabConfig,
+        containerModel: TabContainerModel
+    ) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
@@ -125,20 +126,18 @@ export class TabModel extends HoistModel {
         );
 
         this.id = id.toString();
-        this.containerModel = containerModel;
         this.title = title;
         this.icon = icon;
         this.tooltip = tooltip;
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
-        this.content = content;
-
+        this.containerModel = containerModel;
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
-
         this.refreshContextModel = new ManagedRefreshContextModel(this);
         this.refreshContextModel.xhImpl = true;
+        this.content = this.parseContent(content);
     }
 
     activate() {
@@ -169,5 +168,49 @@ export class TabModel extends HoistModel {
         }
 
         this.disabled = disabled;
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    private parseContent(content: Content | TabContainerConfig | TabConfig[]): Content {
+        if (!content) return null;
+
+        // Recognize if content is a child container spec.
+        let childConfig: TabContainerConfig = null;
+        if (isArray(content)) {
+            childConfig = {tabs: content};
+        } else if ('tabs' in content) {
+            childConfig = content;
+        } else {
+            // ...otherwise just pass through
+            return content;
+        }
+
+        // It's a child container, create model and return
+        throwIf(XH.isMobileApp, 'Child Tabs not supported for Mobile TabContainer');
+        const {id} = this,
+            parent = this.containerModel;
+
+        childConfig = {
+            renderMode: parent.renderMode,
+            refreshMode: parent.refreshMode,
+            emptyText: parent.emptyText,
+            track: parent.track,
+            ...childConfig
+        };
+
+        // Trampoline nested routing OR persistence (TCM supports one or the other)
+        if (parent.route && !childConfig.route) {
+            childConfig.route = `${parent.route}.${id}`;
+        } else if (parent.persistWith && isUndefined(childConfig.persistWith)) {
+            childConfig.persistWith = {
+                ...parent.persistWith,
+                path: `${parent.persistWith.path}.${id}`
+            };
+        }
+
+        this.childContainerModel = new TabContainerModel(childConfig, parent.depth + 1);
+        return tabContainer({model: this.childContainerModel});
     }
 }

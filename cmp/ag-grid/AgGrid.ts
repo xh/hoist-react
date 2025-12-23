@@ -26,10 +26,7 @@ import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
 export interface AgGridProps
-    extends HoistProps<AgGridModel>,
-        GridOptions,
-        LayoutProps,
-        TestSupportProps {}
+    extends HoistProps<AgGridModel>, GridOptions, LayoutProps, TestSupportProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
@@ -100,7 +97,6 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             item: createElement(AgGridReact, {
                 ...AgGrid['DEFAULT_PROPS'],
                 // Default some ag-grid props, but allow overriding.
-                reactiveCustomComponents: true, // will be default in ag-grid v32
                 getRowHeight: impl.getRowHeight,
                 // Pass others on directly.
                 ...agGridProps,

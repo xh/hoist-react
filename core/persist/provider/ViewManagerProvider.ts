@@ -5,15 +5,12 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {PersistableState} from '@xh/hoist/core';
-import {olderThan} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager/ViewManagerModel';
 
 export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;
-    private lastReadTime: number;
 
     constructor(cfg: PersistenceProviderConfig<S>) {
         super(cfg);
@@ -26,20 +23,12 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     //----------------
     // Implementation
     //----------------
-    override read(): PersistableState<S> {
-        const ret = super.read();
-        this.lastReadTime = Date.now();
-        return ret;
-    }
-
     override readRaw() {
         return this.viewManagerModel.getValue();
     }
 
     override writeRaw(data: Record<typeof this.path, S>) {
-        if (olderThan(this.lastReadTime, this.viewManagerModel.settleTime)) {
-            this.viewManagerModel.setValue(data);
-        }
+        this.viewManagerModel.setValue(data);
     }
 
     override destroy() {

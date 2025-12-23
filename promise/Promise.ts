@@ -6,15 +6,15 @@
  */
 import {
     Thunkable,
-    Exception,
     ExceptionHandlerOptions,
     TaskObserver,
     TrackOptions,
     XH,
     Some,
-    Awaitable,
-    TimeoutExceptionConfig
+    Awaitable
 } from '@xh/hoist/core';
+import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
+
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
@@ -132,15 +132,15 @@ export function waitFor(
     condition: () => boolean,
     {interval = 50, timeout = 5 * SECONDS}: {interval?: number; timeout?: number} = {}
 ): Promise<void> {
-    if (!isNumber(interval) || interval <= 0) throw new Error('Invalid interval');
-    if (!isNumber(timeout) || timeout <= 0) throw new Error('Invalid timeout');
+    if (interval <= 0) throw new Error('Invalid interval');
+    if (timeout != null && timeout <= 0) throw new Error('Invalid timeout');
 
     const startTime = Date.now();
     return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
                 resolve();
-            } else if (olderThan(startTime, timeout)) {
+            } else if (timeout != null && olderThan(startTime, timeout)) {
                 reject(Exception.timeout({interval: Date.now() - startTime}));
             } else {
                 setTimeout(resolveOnMet, interval);
@@ -202,7 +202,11 @@ const enhancePromise = promisePrototype => {
             if (!options) return this;
 
             const startTime = Date.now(),
-                doTrack = (isError: boolean) => {
+                doTrack = (rejectReason: unknown = null) => {
+                    const exception = rejectReason != null ? Exception.create(rejectReason) : null;
+
+                    if (exception?.isRoutine) return;
+
                     const endTime = Date.now(),
                         opts: TrackOptions = isString(options) ? {message: options} : {...options};
                     opts.timestamp = startTime;
@@ -220,18 +224,25 @@ const enhancePromise = promisePrototype => {
                     ) {
                         opts.elapsed = null;
                     }
-                    if (isError) opts.severity = 'ERROR';
+                    if (exception) {
+                        opts.severity = 'ERROR';
+                        opts.data = {
+                            error: XH.exceptionHandler.sanitizeException(exception),
+                            data: opts.data
+                        };
+                        opts.correlationId = opts.correlationId ?? exception.correlationId;
+                    }
 
                     XH.track(opts);
                 };
 
             return this.then(
                 (v: T) => {
-                    doTrack(false);
+                    doTrack();
                     return v;
                 },
                 (t: unknown) => {
-                    doTrack(true);
+                    doTrack(t);
                     throw t;
                 }
             );
@@ -294,16 +305,3 @@ const enhancePromise = promisePrototype => {
 
 // Enhance canonical Promises.
 enhancePromise(Promise.prototype);
-
-// MS Edge returns a "native Promise" from async functions that won't get the enhancements above.
-// Check to see if we're in such an environment and enhance that prototype as well.
-// @see https://github.com/xh/hoist-react/issues/1411
-const asyncFnReturn = (async () => {})();
-if (!(asyncFnReturn instanceof Promise)) {
-    console.debug(
-        '"Native" Promise return detected as return from async function - enhancing prototype'
-    );
-
-    // @ts-ignore
-    enhancePromise(asyncFnReturn.__proto__);
-}

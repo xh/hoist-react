@@ -12,6 +12,7 @@ import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {wait} from '@xh/hoist/promise';
 import {stopPropagation} from '@xh/hoist/utils/js';
 import {HeaderFilterModel} from './HeaderFilterModel';
 
@@ -22,7 +23,7 @@ import {HeaderFilterModel} from './HeaderFilterModel';
  */
 export const headerFilter = hoistCmp.factory({
     model: creates(HeaderFilterModel),
-    render() {
+    render({model}) {
         return panel({
             title: `Filter`,
             className: 'xh-column-header-filter',
@@ -30,32 +31,49 @@ export const headerFilter = hoistCmp.factory({
             onClick: stopPropagation,
             onDoubleClick: stopPropagation,
             headerItems: [switcher()],
-            item: tabContainer(),
-            bbar: bbar()
+            item: tabContainer({switcher: false}),
+            bbar: bbar(),
+            hotkeys: [
+                {
+                    allowInInput: true,
+                    combo: 'enter',
+                    label: 'Apply',
+                    group: 'Column Filter',
+                    onKeyDown: () =>
+                        // Wait for debounced reaction in `ValuesTabModel` to run before committing
+                        wait(400).then(() => {
+                            if (model.isDirty) model.commit();
+                        })
+                }
+            ]
         });
     }
 });
 
 const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
-        const {commitOnChange} = model;
+        const {commitOnChange, hasFilter, isDirty} = model;
         return toolbar({
-            compact: true,
             items: [
-                filler(),
                 button({
                     icon: Icon.delete(),
-                    text: 'Clear Filter',
+                    text: 'Clear',
                     intent: 'danger',
-                    disabled: !model.hasFilter,
+                    disabled: !hasFilter,
                     onClick: () => model.clear()
+                }),
+                filler(),
+                button({
+                    omit: commitOnChange,
+                    text: 'Cancel',
+                    onClick: () => model.parent.close()
                 }),
                 button({
                     omit: commitOnChange,
-                    icon: Icon.check(),
-                    text: 'Apply Filter',
-                    intent: 'success',
-                    disabled: !model.hasFilter && !model.hasPendingFilter,
+                    text: 'Apply',
+                    disabled: !isDirty,
+                    intent: 'primary',
+                    minimal: false,
                     onClick: () => model.commit()
                 })
             ]

@@ -19,7 +19,7 @@ import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
 import {ReactNode} from 'react';
@@ -32,17 +32,12 @@ export interface ViewCreateSpec {
     group: string;
     description: string;
     isShared: boolean;
-    isPinned: boolean;
+    isGlobal: boolean;
+    isPinned?: boolean;
     value: PlainObject;
 }
 
-export interface ViewUpdateSpec {
-    name?: string;
-    group?: string;
-    description?: string;
-    isShared?: boolean;
-    isDefaultPinned?: boolean;
-}
+export type ViewUpdateSpec = Partial<Omit<ViewCreateSpec, 'value'>>;
 
 export interface ViewUserState {
     currentView?: string;
@@ -52,81 +47,93 @@ export interface ViewUserState {
 
 export interface ViewManagerConfig {
     /**
-     * True (default) to allow user to opt in to automatically saving changes to their current view.
-     */
-    enableAutoSave?: boolean;
-
-    /**
-     * True (default) to allow the user to select a "Default" option that restores all persisted
-     * objects to their in-code defaults. If not enabled, at least one saved view should be created
-     * in advance, so that there is a clear initial selection for users without any private views.
-     */
-    enableDefault?: boolean;
-
-    /**
-     * True (default) to enable "global" views - i.e. views that are not owned by a user and are
-     * available to all.
-     */
-    enableGlobal?: boolean;
-
-    /**
-     * True (default) to allow users to share their views with other users.
-     */
-    enableSharing?: boolean;
-
-    /**
-     * Function to determine the initial view for a user, when no view has already been persisted.
-     * Will be passed a list of views available to the current user.  Implementations where
-     * enableDefault is set false should typically return some view, if any views are
-     * available.  If no view is returned, the control will be forced to fall back on the default.
-     *
-     * Must be set when enableDefault is false.
-     */
-    initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
-
-    /**
-     * Delay (in ms) to wait after state has been set on associated components before listening for
-     * further state changes. The long default wait 1000ms is intended to avoid a false positive
-     * dirty indicator when linking to complex components such as dashboards or grids that can
-     * report immediate changes to state due to internal processing or rendering.
-     */
-    settleTime?: number;
-
-    /**
-     * True to allow the user to publish or edit the global views. Apps are expected to
-     * commonly set this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
-     */
-    manageGlobal?: Thunkable<boolean>;
-
-    /**
      * Required discriminator for the particular class of views to be loaded and managed by this
-     * model. Set to something descriptive and specific enough to be identifiable and allow for
-     * different viewManagers to be added to your app in the future - e.g. `portfolioGridView` or
+     * model. Used to set the `type` property on all JSONBlobs persisted by this model.
+     *
+     * Choose something descriptive and specific enough to be identifiable and allow for different
+     * ViewManagers to be added to your app in the future - e.g. `portfolioGridView` or
      * `tradeBlotterDashboard`.
      */
     type: string;
 
     /**
-     * Optional sub-discriminator for the particular location in your app this instance of the
-     * view manager appears in. A particular currentView and pendingValue will be maintained by
-     * instance, but all other options, and the available library of views will be shared by type.
+     * Optional user-facing qualifier (default "default") for the special in-code default view
+     * option, if enabled. Will be prepended to `typeDisplayName`.
+     *
+     * A use case is to support a ViewManager persisted Dashboard, where the in-code default is an
+     * empty layout, this config is set to "New", and the `typeDisplayName` is set to "Dashboard".
+     * This results in a "New Dashboard" option in the menu, allowing users to quickly access a
+     * blank dashboard to start building from scratch, while forcing a save-as to persist.
      */
-    instance?: string;
+    defaultDisplayName?: string;
+
+    /** True (default) to allow users to opt-in to auto-saving changes to their current view. */
+    enableAutoSave?: boolean;
 
     /**
-     * Optional user-facing display name for the view type, displayed in the ViewManager menu
-     * and associated management dialogs and prompts. Defaulted from `type` if not provided.
+     * True (default) to allow the user to select a special view from the menu that restores all
+     * persisted objects to their in-code defaults. If not enabled, at least one globally shared
+     * view should be added to provide an initial selection for users without any private views.
      */
-    typeDisplayName?: string;
+    enableDefault?: boolean;
 
     /**
-     * Optional user-facing display name for describing global views. Defaults to 'global'
+     * True (default) to enable "global" views - i.e. views that are not owned by a user and are
+     * available to all. At least some users should have `manageGlobal` set to true to allow
+     * creation and management of these views.
+     */
+    enableGlobal?: boolean;
+
+    /** True (default) to allow users to share their views with other users. */
+    enableSharing?: boolean;
+
+    /**
+     * User-facing qualifier for labelling globally shared views - default "global". A use case
+     * would be to set to the name of the company/team that manages these canonical views, e.g.
+     * "Acme Corp".
      */
     globalDisplayName?: string;
 
     /**
-     * Optional key to pass a method that returns a customized BlueprintJS `menuItem` for listing
-     * views in the ViewManager menu.
+     * Function to determine the initial view for a user, when they have no prior view already
+     * persisted. Called with a list of views available to the current user.
+     *
+     * Must be set when `enableDefault: false`. Developers should take care to return *some* view
+     * in this case, if any are available. If no view is returned, the control will be forced to
+     * fall back to the in-code default.
+     */
+    initialViewSpec?: (views: ViewInfo[]) => ViewInfo;
+
+    /**
+     * Optional discriminator for the particular area of an app in which this instance of the
+     * ViewManager appears, for apps that have multiple manager instances that load the same `type`
+     * of views. A particular `currentView` and `pendingValue` will be maintained for each instance,
+     * but all other options and the available library of views will be shared across the `type`.
+     */
+    instance?: string;
+
+    /**
+     * True to allow the user to creat and manage Global views. Apps are expected to commonly set
+     * this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     */
+    manageGlobal?: Thunkable<boolean>;
+
+    /**
+     * True (default) to save pending state to SessionStorage so that it can be restored across
+     * browser refreshes. Unlike auto-save, this does not write to the database.
+     */
+    preserveUnsavedChanges?: boolean;
+
+    /**
+     * User-facing display name for the type of views being managed - e.g. "report" or "dashboard".
+     * Displayed in the `ViewManager` menu and associated management dialogs and prompts.
+     * Defaulted from `type` if not provided.
+     */
+    typeDisplayName?: string;
+
+    /**
+     * Optional render function to customize the BlueprintJS `menuItem` shown for each view in the
+     * ViewManager menu.
      */
     viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
 }
@@ -170,14 +177,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly type: string;
     readonly instance: string;
     readonly typeDisplayName: string;
+    readonly defaultDisplayName: string;
     readonly globalDisplayName: string;
     readonly viewMenuItemFn: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
+    readonly preserveUnsavedChanges: boolean;
     readonly manageGlobal: boolean;
-    readonly settleTime: number;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
@@ -242,11 +250,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     get autoSaveUnavailableReason(): string {
-        const {view, isViewAutoSavable, typeDisplayName, globalDisplayName} = this;
+        const {view, isViewAutoSavable, typeDisplayName, globalDisplayName, defaultDisplayName} =
+            this;
         if (isViewAutoSavable) return null;
         if (view.isGlobal) return `Cannot auto-save ${globalDisplayName} ${typeDisplayName}.`;
         if (view.isShared) return `Cannot auto-save shared ${typeDisplayName}.`;
-        if (view.isDefault) return `Cannot auto-save default ${typeDisplayName}.`;
+        if (view.isDefault) return `Cannot auto-save ${defaultDisplayName} ${typeDisplayName}.`;
         if (XH.identityService.isImpersonating) return `Auto-save disabled during impersonation.`;
         return null;
     }
@@ -284,6 +293,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         type,
         instance = 'default',
         typeDisplayName,
+        defaultDisplayName = 'default',
         globalDisplayName = 'global',
         viewMenuItemFn,
         manageGlobal = false,
@@ -291,7 +301,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         enableDefault = true,
         enableGlobal = true,
         enableSharing = true,
-        settleTime = 1000,
+        preserveUnsavedChanges = true,
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
@@ -305,6 +315,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.type = type;
         this.instance = instance;
         this.typeDisplayName = lowerCase(typeDisplayName ?? genDisplayName(type));
+        this.defaultDisplayName = defaultDisplayName;
         this.globalDisplayName = globalDisplayName;
         this.viewMenuItemFn = viewMenuItemFn;
         this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
@@ -312,7 +323,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
         this.enableAutoSave = enableAutoSave;
-        this.settleTime = settleTime;
+        this.preserveUnsavedChanges = preserveUnsavedChanges;
         this.initialViewSpec = initialViewSpec;
 
         this.selectTask = TaskObserver.trackLast({
@@ -450,14 +461,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //-----------------
     // Management
     //-----------------
-    async validateViewNameAsync(name: string, existing: ViewInfo = null): Promise<string> {
+    /**
+     * Validate a name for a view.
+     * @param name - candidate name to validate
+     * @param existing - existing view that will have the name.  null if the name is for a new view.
+     * @param isGlobal - true if the name is for a global view.
+     */
+    async validateViewNameAsync(
+        name: string,
+        existing: ViewInfo,
+        isGlobal: boolean
+    ): Promise<string> {
         const maxLength = 50;
         name = name?.trim();
         if (!name) return 'Name is required';
         if (name.length > maxLength) {
             return `Name cannot be longer than ${maxLength} characters`;
         }
-        const views = existing?.isGlobal ? this.globalViews : this.ownedViews;
+        const views = isGlobal ? this.globalViews : this.ownedViews;
         if (views.some(view => view.name === name && view.token != existing?.token)) {
             return `A ${this.typeDisplayName} with name '${name}' already exists.`;
         }
@@ -467,11 +488,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         return this.dataAccess.updateViewInfoAsync(view, updates);
-    }
-
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        return this.dataAccess.makeViewGlobalAsync(view);
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
@@ -493,7 +509,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     //------------------
-    // Persistence
+    // Internal
     //------------------
     /**
      * Called by {@link ViewManagerProvider} to receive state changes from this model.
@@ -515,8 +531,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Implementation
     //------------------
     private async initAsync() {
-        let {dataAccess, pendingValueStorageKey} = this,
-            initialState;
+        let {dataAccess, pendingValueStorageKey, enableDefault} = this,
+            initialState: ViewUserState;
 
         try {
             // 1) Initialize views and related state
@@ -526,20 +542,28 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 this.views = views;
                 this.userPinned = state.userPinned;
                 this.autoSave = state.autoSave;
-                this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                if (this.preserveUnsavedChanges) {
+                    this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                }
             });
 
-            // 2) Initialize/choose initial view.  Null is ok, and will yield default.
+            // 2) Select the initial view.
             let initialView: ViewInfo,
                 initialTkn: string = initialState.currentView;
-            if (isUndefined(initialTkn)) {
+            if (isUndefined(initialTkn) || (isNull(initialTkn) && !enableDefault)) {
+                // Token undefined (no prior view) or null (in-code default *had* been loaded) but
+                // default no longer enabled - call initialViewSpec.
                 initialView = this.initialViewSpec?.(views);
             } else if (!isNull(initialTkn)) {
+                // Token provided - find the view, falling back to initialViewSpec if not found.
                 initialView = find(views, {token: initialTkn}) ?? this.initialViewSpec?.(views);
             } else {
+                // Token null - active signal to load in-code default.
                 initialView = null;
             }
 
+            // Note that the above routine failed to resolve a view, we will pass undefined here
+            // and load the in-code default, even if not enabled. We have no other choice!
             await this.loadViewAsync(initialView?.token, this.pendingValue);
         } catch (e) {
             // Always ensure at least default view is installed (other state defaults are fine)
@@ -548,13 +572,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         this.addReaction(
-            this.pendingValueReaction(),
+            this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
             ...this.stateReactions(initialState)
         );
     }
 
-    private pendingValueReaction(): ReactionSpec {
+    private unsavedChangesReaction(): ReactionSpec {
         return {
             track: () => this.pendingValue,
             run: v => XH.sessionStorageService.set(this.pendingValueStorageKey, v)
@@ -576,7 +600,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 track: () => this.userPinned,
                 run: userPinned => dataAccess.updateStateAsync({userPinned}),
                 equals: comparer.structural,
-                debounce: 1 * SECONDS
+                debounce: ONE_SECOND
             },
             {
                 track: () => this.autoSave,
@@ -634,7 +658,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
 
         // Ensure providers have a clean reference of the current view state.
-        this.providers.forEach(it => it.pushStateToTarget());
+        this.providers.forEach(it => it.read());
     }
 
     private handleException(e, opts: ExceptionHandlerOptions = {}) {
@@ -681,11 +705,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const latestInfo = latest.info,
             {typeDisplayName, globalDisplayName} = this,
             msgs: ReactNode[] = [`Save ${view.typedName}?`];
+
         if (isGlobal) {
             msgs.push(
                 span(
-                    `This is a ${globalDisplayName} ${typeDisplayName}. `,
-                    strong('Changes will be visible to all users.')
+                    strong(
+                        `This is a ${globalDisplayName} ${typeDisplayName}. Changes will be visible to all users.`
+                    )
                 )
             );
         }
@@ -701,7 +727,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         return XH.confirm({
             message: fragment(msgs.map(m => p(m))),
             confirmProps: {
-                text: 'Yes, save changes',
+                text: isGlobal
+                    ? `Yes, update ${globalDisplayName} ${typeDisplayName}`
+                    : 'Yes, save changes',
                 intent: 'primary',
                 outlined: true,
                 autoFocus: false

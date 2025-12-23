@@ -9,7 +9,7 @@
 @use 'helpers';
 @use '~inter-ui/variable' with (
   $inter-font-display: block,
-  $inter-font-path: '~inter-ui/Inter (web)'
+  $inter-font-path: '~inter-ui/variable'
 );
 
 @include variable.all;

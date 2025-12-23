@@ -136,7 +136,7 @@ export class LogDisplayModel extends HoistModel {
             hideHeaders: true,
             rowBorders: false,
             sizingMode: 'tiny',
-            emptyText: 'No log entries found...',
+            emptyText: 'No log entries found.',
             sortBy: 'rowNum|asc',
             autosizeOptions: {mode: 'disabled'},
             store: {
@@ -203,7 +203,7 @@ export class LogDisplayModel extends HoistModel {
         if (
             tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
-            !this.loadModel.isPending &&
+            !this.loadObserver.isPending &&
             this.parent.isVisible
         ) {
             this.loadLog();

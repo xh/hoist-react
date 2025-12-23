@@ -199,6 +199,7 @@ export class DashCanvasModel
             PersistenceProvider.create({
                 persistOptions: {
                     path: 'dashCanvas',
+                    settleTime: 1000,
                     ...persistWith
                 },
                 target: this
@@ -360,7 +361,7 @@ export class DashCanvasModel
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
         throwIf(
-            !viewSpec.allowAdd,
+            !this.isLoadingState && !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
         throwIf(

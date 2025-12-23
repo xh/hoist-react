@@ -7,17 +7,20 @@
 
 import {PlainObject, Some} from '@xh/hoist/core';
 import {BucketSpec} from '@xh/hoist/data/cube/BucketSpec';
+import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {compact, isEmpty, reduce} from 'lodash';
 import {View} from '../View';
 import {RowUpdate} from './RowUpdate';
 
 /**
- * Base class for a view row.
+ * Base class for a row within a dataset produced by a Cube / View.
+ *
+ * This is an internal data structure - {@link ViewRowData} is the public row-level data API.
  */
 export abstract class BaseRow {
     readonly view: View = null;
     readonly id: string = null;
-    readonly data: PlainObject;
+    readonly data: ViewRowData;
 
     // readonly, but set by subclasses
     parent: BaseRow = null;
@@ -38,37 +41,48 @@ export abstract class BaseRow {
     constructor(view: View, id: string) {
         this.view = view;
         this.id = id;
-        this.data = {id, _meta: this};
+        this.data = new ViewRowData(id);
     }
 
     //-----------------------
     // For all rows types
     //------------------------
     noteBucketed(bucketSpec: BucketSpec, bucketVal: any) {
-        this.data.buckets = this.data.buckets ?? {};
-        this.data.buckets[bucketSpec.name] = bucketVal;
+        this.data.cubeBuckets ??= {};
+        this.data.cubeBuckets[bucketSpec.name] = bucketVal;
         this.children?.forEach(it => it.noteBucketed(bucketSpec, bucketVal));
     }
 
     // Determine what should be exposed as the actual children in the
     // row data.  This where we lock, skip degenerate rows, etc.
-    getVisibleDatas(): Some<PlainObject> {
-        let {view, data, isLeaf} = this;
+    getVisibleDatas(): Some<ViewRowData> {
+        const {view, data, isLeaf} = this,
+            {query} = view,
+            {omitRedundantNodes, provideLeaves, includeLeaves} = query;
 
-        // 1) Get visible children nodes recursively
-        let dataChildren = this.getVisibleChildrenDatas();
+        // 1) Get children nodes recursively
+        let dataChildren = this.getChildrenDatas();
+
+        // End hierarchy at cube leaves, if so configured. But be sure to hold on to them if needed
+        if (dataChildren && !includeLeaves && dataChildren[0]?.isCubeLeaf) {
+            if (provideLeaves) {
+                data._cubeLeafChildren = dataChildren;
+            }
+            dataChildren = null;
+        }
 
         // 2) If omitting ourselves, we are done, return visible children.
-        if (!isLeaf && view.query.omitFn?.(this as any)) return dataChildren;
+        if (!isLeaf && query.omitFn?.(this as any)) return dataChildren;
 
         // 3) Otherwise, we can attach this data to the children data and return.
 
         // 3a) Before attaching examine that we don't have a chain of redundant nodes
         // (not sure if loop needed -- are these redundant relations transitive?)
-        if (view.query.omitRedundantNodes) {
+        if (omitRedundantNodes) {
+            const rowCache = view._rowCache;
             while (dataChildren?.length === 1) {
-                const childRow = dataChildren[0]._meta;
-                if (this.isRedundantChild(this, childRow)) {
+                const childRow = rowCache.get(dataChildren[0].id);
+                if (childRow && this.isRedundantChild(this, childRow)) {
                     dataChildren = childRow.data.children;
                 } else {
                     break;
@@ -76,22 +90,24 @@ export abstract class BaseRow {
             }
         }
 
+        // Wire up visible data children and leaves, as needed.
         data.children = dataChildren;
         return data;
     }
 
-    private getVisibleChildrenDatas(): PlainObject[] {
-        let {children, view} = this;
+    private getChildrenDatas(): ViewRowData[] {
+        let {children, view} = this,
+            {query} = view;
 
-        if (!children) return null;
-
-        // Skip all leaves from the data if the query is not configured to include leaves and
-        if (!view.query.includeLeaves && children[0]?.isLeaf) {
+        if (
+            isEmpty(children) ||
+            (children[0].isLeaf && !query.includeLeaves && !query.provideLeaves)
+        ) {
             return null;
         }
 
         // Skip all children in a locked node
-        if (view.query.lockFn?.(this as any)) {
+        if (query.lockFn?.(this as any)) {
             this.locked = true;
             return null;
         }

@@ -5,7 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistBase, isHoistException, managed, XH} from '@xh/hoist/core';
+import {isHoistException} from '@xh/hoist/exception';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -14,7 +15,7 @@ import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
+import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
@@ -179,8 +180,8 @@ export abstract class BaseOAuthClient<
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        await this.doLogoutAsync();
         this.setSelectedUsername(null);
+        await this.doLogoutAsync();
     }
 
     /**
@@ -260,7 +261,9 @@ export abstract class BaseOAuthClient<
     }
 
     protected get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
+        const {origin, pathname} = window.location,
+            firstSegment = head(compact(pathname.split('/')));
+        return firstSegment ? `${origin}/${firstSegment}/` : `${origin}/`;
     }
 
     protected get blankUrl() {

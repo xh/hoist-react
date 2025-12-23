@@ -24,7 +24,8 @@ import {
     remove as lodashRemove,
     uniq,
     first,
-    some
+    some,
+    partition
 } from 'lodash';
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
@@ -43,7 +44,7 @@ export interface StoreConfig {
      * Default configs applied to `Field` instances constructed internally by this Store.
      * @see FieldSpec
      */
-    fieldDefaults?: any;
+    fieldDefaults?: Omit<FieldSpec, 'name'>;
 
     /**
      * Specification for producing an immutable unique id for each record. May be provided as
@@ -151,6 +152,17 @@ export interface StoreTransaction {
      *  `update` property.
      */
     rawSummaryData?: Some<PlainObject>;
+}
+
+/**
+ * Collection of changes made to a Store's RecordSet. Unlike `StoreTransaction` which is used to
+ * specify changes, this object is used to report the actual changes made in a single transaction.
+ */
+export interface StoreChangeLog {
+    update?: StoreRecord[];
+    add?: StoreRecord[];
+    remove?: StoreRecordId[];
+    summaryRecords?: StoreRecord[];
 }
 
 export interface ChildRawData {
@@ -348,13 +360,13 @@ export class Store extends HoistBase {
      */
     @action
     @logWithDebug
-    updateData(rawData: PlainObject[] | StoreTransaction): PlainObject {
+    updateData(rawData: PlainObject[] | StoreTransaction): StoreChangeLog {
         if (isEmpty(rawData)) return null;
 
-        const changeLog: PlainObject = {};
+        const changeLog: StoreChangeLog = {};
 
         // Build a transaction object out of a flat list of adds and updates
-        let rawTransaction;
+        let rawTransaction: StoreTransaction;
         if (isArray(rawData)) {
             const update = [],
                 add = [];
@@ -381,7 +393,7 @@ export class Store extends HoistBase {
         throwIf(!isEmpty(other), 'Unknown argument(s) passed to updateData().');
 
         // 1) Pre-process updates and adds into Records
-        let updateRecs, addRecs;
+        let updateRecs: StoreRecord[], addRecs: Map<StoreRecordId, StoreRecord>;
         if (update) {
             updateRecs = update.map(it => {
                 const recId = this.idSpec(it),
@@ -426,7 +438,11 @@ export class Store extends HoistBase {
         }
 
         // 3) Apply changes
-        let rsTransaction: any = {};
+        let rsTransaction: {
+            update?: StoreRecord[];
+            add?: StoreRecord[];
+            remove?: StoreRecordId[];
+        } = {};
         if (!isEmpty(updateRecs)) rsTransaction.update = updateRecs;
         if (!isEmpty(addRecs)) rsTransaction.add = Array.from(addRecs.values());
         if (!isEmpty(remove)) rsTransaction.remove = remove;
@@ -499,10 +515,12 @@ export class Store extends HoistBase {
 
             return new StoreRecord({
                 id,
-                data: parsedData,
                 store: this,
+                raw: null,
+                data: parsedData,
+                committedData: null,
                 parent,
-                committedData: null
+                isSummary: false
             });
         });
 
@@ -545,13 +563,15 @@ export class Store extends HoistBase {
      *      Records in this Store. Each object in the list must have an `id` property identifying
      *      the StoreRecord to modify, plus any other properties with updated field values to apply,
      *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
+     * @returns changes applied, or null if no record changes were made.
      */
     @action
-    modifyRecords(modifications: Some<PlainObject>) {
+    modifyRecords(modifications: Some<PlainObject>): StoreChangeLog {
         modifications = castArray(modifications);
         if (isEmpty(modifications)) return;
 
-        const updateRecs = new Map();
+        // 1) Pre-process modifications into Records
+        const updateMap = new Map<StoreRecordId, StoreRecord>();
         let hadDupes = false;
         modifications.forEach(mod => {
             let {id} = mod;
@@ -559,7 +579,7 @@ export class Store extends HoistBase {
             // Ignore multiple updates for the same record - we are updating this Store in a
             // transaction after processing all modifications, so this method is not currently setup
             // to process more than one update for a given rec at a time.
-            if (updateRecs.has(id)) {
+            if (updateMap.has(id)) {
                 hadDupes = true;
                 return;
             }
@@ -567,30 +587,60 @@ export class Store extends HoistBase {
             const currentRec = this.getOrThrow(id),
                 updatedData = this.parseUpdate(currentRec.data, mod);
 
+            // If after parsing, data is deep equal, its a no-op
+            if (equal(updatedData, currentRec.data)) return;
+
+            // Previously updated record might now be reverted to clean, normalize
+            const committedData =
+                currentRec.isModified && equal(currentRec.committedData, updatedData)
+                    ? updatedData
+                    : currentRec.committedData;
+
             const updatedRec = new StoreRecord({
                 id: currentRec.id,
+                store: currentRec.store,
                 raw: currentRec.raw,
                 data: updatedData,
+                committedData: committedData,
                 parent: currentRec.parent,
-                store: currentRec.store,
-                committedData: currentRec.committedData
+                isSummary: currentRec.isSummary
             });
 
             if (!equal(currentRec.data, updatedRec.data)) {
-                updateRecs.set(id, updatedRec);
+                updateMap.set(id, updatedRec);
             }
         });
 
-        if (isEmpty(updateRecs)) return;
+        if (isEmpty(updateMap)) return null;
 
         warnIf(
             hadDupes,
             'Store.modifyRecords() called with multiple updates for the same Records. Only the first modification for each StoreRecord was processed.'
         );
 
-        this._current = this._current.withTransaction({update: Array.from(updateRecs.values())});
+        const updateRecs = Array.from(updateMap.values()),
+            changeLog: StoreChangeLog = {};
 
-        this.rebuildFiltered();
+        // 2) Pre-process summary records, peeling them out of updates if needed
+        const {summaryRecords} = this;
+        let summaryUpdateRecs: StoreRecord[];
+        if (!isEmpty(summaryRecords)) {
+            summaryUpdateRecs = lodashRemove(updateRecs, ({id}) => some(summaryRecords, {id}));
+        }
+
+        if (!isEmpty(summaryUpdateRecs)) {
+            this.summaryRecords = summaryUpdateRecs;
+            changeLog.summaryRecords = this.summaryRecords;
+        }
+
+        // 3) Apply changes
+        if (!isEmpty(updateRecs)) {
+            this._current = this._current.withTransaction({update: updateRecs});
+            changeLog.update = updateRecs;
+            this.rebuildFiltered();
+        }
+
+        return changeLog;
     }
 
     /**
@@ -606,13 +656,20 @@ export class Store extends HoistBase {
         records = castArray(records);
         if (isEmpty(records)) return;
 
-        const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it)));
+        const recs = records.map(it => (it instanceof StoreRecord ? it : this.getOrThrow(it))),
+            [summaryRecsToRevert, recsToRevert] = partition(recs, 'isSummary');
 
-        this._current = this._current
-            .withTransaction({update: recs.map(r => this.getCommittedOrThrow(r.id))})
-            .normalize(this._committed);
+        if (!isEmpty(summaryRecsToRevert)) {
+            this.revertSummaryRecords(summaryRecsToRevert);
+        }
 
-        this.rebuildFiltered();
+        if (!isEmpty(recsToRevert)) {
+            this._current = this._current
+                .withTransaction({update: recsToRevert.map(r => this.getCommittedOrThrow(r.id))})
+                .normalize(this._committed);
+
+            this.rebuildFiltered();
+        }
     }
 
     /**
@@ -625,6 +682,7 @@ export class Store extends HoistBase {
     @action
     revert() {
         this._current = this._committed;
+        if (this.summaryRecords) this.revertSummaryRecords(this.summaryRecords);
         this.rebuildFiltered();
     }
 
@@ -705,7 +763,10 @@ export class Store extends HoistBase {
     /** True if the store has changes which need to be committed. */
     @computed
     get isDirty(): boolean {
-        return this._current !== this._committed;
+        return (
+            this._current !== this._committed ||
+            (this.summaryRecords?.some(it => it.isModified) ?? false)
+        );
     }
 
     /** Alias for {@link Store.isDirty} */
@@ -931,17 +992,20 @@ export class Store extends HoistBase {
         this.summaryRecords = null;
     }
 
-    private parseFields(fields: any[], defaults: any): Field[] {
+    private parseFields(
+        fields: Array<string | FieldSpec | Field>,
+        defaults: Omit<FieldSpec, 'name'>
+    ): Field[] {
         const ret = fields.map(f => {
             if (f instanceof Field) return f;
 
-            if (isString(f)) f = {name: f};
+            let fieldSpec: FieldSpec = isString(f) ? {name: f} : f;
 
             if (!isEmpty(defaults)) {
-                f = defaultsDeep({}, f, defaults);
+                fieldSpec = defaultsDeep({}, fieldSpec, defaults);
             }
 
-            return new this.defaultFieldClass(f);
+            return new this.defaultFieldClass(fieldSpec);
         });
 
         throwIf(
@@ -986,7 +1050,15 @@ export class Store extends HoistBase {
         }
 
         data = this.parseRaw(data);
-        const ret = new StoreRecord({id, data, raw, parent, store: this, isSummary});
+        const ret = new StoreRecord({
+            id,
+            store: this,
+            raw,
+            data,
+            committedData: data,
+            parent,
+            isSummary
+        });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
         if (isSummary) ret.finalize();
@@ -994,24 +1066,34 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private createRecords(rawData: PlainObject[], parent: StoreRecord, recordMap = new Map()) {
+    private createRecords(
+        rawData: PlainObject[],
+        parent: StoreRecord,
+        recordMap: Map<StoreRecordId, StoreRecord> = new Map(),
+        summaryRecordIds: Set<StoreRecordId> = this.summaryRecordIds
+    ) {
         const {loadTreeData, loadTreeDataFrom} = this;
+
         rawData.forEach(raw => {
             const rec = this.createRecord(raw, parent),
                 {id} = rec;
 
             throwIf(
-                recordMap.has(id) || this.summaryRecords?.some(it => it.id === id),
+                recordMap.has(id) || summaryRecordIds.has(id),
                 `ID ${id} is not unique. Use the 'Store.idSpec' config to resolve a unique ID for each record.`
             );
 
             recordMap.set(id, rec);
 
             if (loadTreeData && raw[loadTreeDataFrom]) {
-                this.createRecords(raw[loadTreeDataFrom], rec, recordMap);
+                this.createRecords(raw[loadTreeDataFrom], rec, recordMap, summaryRecordIds);
             }
         });
         return recordMap;
+    }
+
+    private get summaryRecordIds(): Set<StoreRecordId> {
+        return new Set(this.summaryRecords?.map(it => it.id) ?? []);
     }
 
     private parseRaw(data: PlainObject): PlainObject {
@@ -1033,7 +1115,7 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private parseUpdate(data, update) {
+    private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
         const {_fieldMap} = this;
 
         // a) clone the existing object
@@ -1081,6 +1163,26 @@ export class Store extends HoistBase {
         throw XH.exception(
             'idSpec should be either a name of a field, or a function to generate an id.'
         );
+    }
+
+    @action
+    private revertSummaryRecords(records: StoreRecord[]) {
+        this.summaryRecords = this.summaryRecords.map(summaryRec => {
+            const recToRevert = records.find(it => it.id === summaryRec.id);
+            if (!recToRevert) return summaryRec;
+
+            const ret = new StoreRecord({
+                id: recToRevert.id,
+                store: this,
+                raw: recToRevert.raw,
+                data: recToRevert.committedData,
+                committedData: recToRevert.committedData,
+                parent: null,
+                isSummary: true
+            });
+            ret.finalize();
+            return ret;
+        });
     }
 }
 

@@ -6,9 +6,11 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
+import {p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {makeObservable, action, observable} from '@xh/hoist/mobx';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {some} from 'lodash';
 
 /**
  * Backing model for ViewManagerModel's SaveAs
@@ -30,15 +32,15 @@ export class SaveAsDialogModel extends HoistModel {
     open() {
         const {parent, formModel} = this,
             src = parent.view,
-            name = parent.ownedViews.some(it => it.name === src.name)
-                ? `Copy of ${src.name}`
-                : src.name;
+            name = some(parent.ownedViews, {name: src.name}) ? `Copy of ${src.name}` : src.name;
 
         formModel.init({
             name,
             group: src.group,
-            description: src.description,
-            isShared: false
+            // Do not copy description or visibility from source view
+            description: null,
+            visibility: 'private',
+            isPinned: !!src.info?.isPinned
         });
 
         this.isOpen = true;
@@ -52,7 +54,6 @@ export class SaveAsDialogModel extends HoistModel {
     async saveAsAsync() {
         try {
             await this.doSaveAsAsync().linkTo(this.parent.saveTask);
-            this.close();
         } catch (e) {
             XH.handleException(e);
         }
@@ -66,29 +67,60 @@ export class SaveAsDialogModel extends HoistModel {
             fields: [
                 {
                     name: 'name',
-                    rules: [({value}) => this.parent.validateViewNameAsync(value)]
+                    rules: [
+                        ({value}, {visibility}) => {
+                            return this.parent.validateViewNameAsync(
+                                value,
+                                null,
+                                visibility === 'global'
+                            );
+                        }
+                    ]
                 },
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isShared'}
+                {name: 'visibility'}
             ]
         });
     }
 
     private async doSaveAsAsync() {
         let {formModel, parent} = this,
-            {name, group, description, isShared} = formModel.getData(),
-            isValid = await formModel.validateAsync();
+            {typeDisplayName, globalDisplayName} = parent,
+            {name, group, description, visibility} = formModel.getData(),
+            isValid = await formModel.validateAsync(),
+            isGlobal = visibility === 'global',
+            isShared = visibility === 'shared';
 
         if (!isValid) return;
 
-        return parent.saveAsAsync({
+        if (isGlobal) {
+            const message = [
+                p(
+                    `This ${typeDisplayName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`
+                ),
+                p(strong('Are you sure you want to proceed?'))
+            ];
+            const confirmed = await XH.confirm({
+                message,
+                confirmProps: {
+                    text: `Yes, save ${globalDisplayName} ${typeDisplayName}`,
+                    outlined: true,
+                    autoFocus: false,
+                    intent: 'primary'
+                }
+            });
+            if (!confirmed) return;
+        }
+
+        await parent.saveAsAsync({
             name: name.trim(),
             group: group?.trim(),
             description: description?.trim(),
-            isPinned: true,
+            isGlobal,
             isShared,
             value: parent.getValue()
         });
+        this.close();
     }
 }

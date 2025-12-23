@@ -38,8 +38,8 @@ import {find, pull} from 'lodash';
 export class WebSocketService extends HoistService {
     static instance: WebSocketService;
 
-    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     /** Check connection and send a new heartbeat (which should be promptly ack'd) every 10s. */
+    readonly HEARTBEAT_TOPIC = 'xhHeartbeat';
     readonly HEARTBEAT_INTERVAL = 10 * SECONDS;
 
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
@@ -47,8 +47,8 @@ export class WebSocketService extends HoistService {
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
     readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
 
-    /** True if WebSockets generally enabled - set statically in code via {@link AppSpec}. */
-    enabled: boolean = XH.appSpec.webSocketsEnabled;
+    /** True if WebSockets not explicitly disabled via {@link AppSpec.disableWebSockets}. */
+    enabled: boolean = !XH.appSpec.disableWebSockets;
 
     /** Unique channel assigned by server upon successful connection. */
     @observable channelKey: string = null;
@@ -70,6 +70,9 @@ export class WebSocketService extends HoistService {
     private _socket: WebSocket;
     private _subsByTopic: Record<string, WebSocketSubscription[]> = {};
 
+    private _lastHeartbeatSent: number = null;
+    private _lastHeartbeatReceived: number = null;
+
     constructor() {
         super();
         makeObservable(this);
@@ -81,7 +84,7 @@ export class WebSocketService extends HoistService {
         const {environmentService} = XH;
         if (environmentService.get('webSocketsEnabled') === false) {
             this.logError(
-                `WebSockets enabled on this client app but disabled on server. Adjust your server-side config.`
+                `WebSockets enabled on this client app but disabled on server - unexpected! WebSockets will not be available, review and reconcile your server configuration.`
             );
             this.enabled = false;
             return;
@@ -177,6 +180,10 @@ export class WebSocketService extends HoistService {
                 if (s === this._socket) this.onMessage(data);
             };
             this._socket = s;
+
+            // Reset heartbeat tracking - any prior values no longer relevant.
+            this._lastHeartbeatReceived = null;
+            this._lastHeartbeatSent = null;
         } catch (e) {
             this.logError('Failure creating WebSocket', e);
         }
@@ -192,24 +199,41 @@ export class WebSocketService extends HoistService {
         this.updateConnectedStatus();
     }
 
+    private reconnect() {
+        this.disconnect();
+        this.connect();
+    }
+
     private heartbeatOrReconnect() {
         this.updateConnectedStatus();
-        if (this.connected) {
-            this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
-            this.noteTelemetryEvent('heartbeatSent');
-        } else {
-            this.logWarn('Heartbeat found websocket not connected - attempting to reconnect...');
+
+        // If there is a problem, attempt to reconnect and come back on the next cycle.
+        const {connected, heartbeatWasUnacknowledged} = this;
+        if (!connected || heartbeatWasUnacknowledged) {
+            this.logWarn(
+                `Heartbeat found ${!connected ? 'websocket not connected' : 'last heartbeat not acknowledged'} - attempting to reconnect...`
+            );
             this.noteTelemetryEvent('heartbeatReconnectAttempt');
-            this.disconnect();
-            this.connect();
+            this.reconnect();
+            return;
         }
+
+        // If all looks OK, send a heartbeat message.
+        this.sendMessage({topic: this.HEARTBEAT_TOPIC, data: 'ping'});
+        this.noteTelemetryEvent('heartbeatSent');
+        this._lastHeartbeatSent = Date.now();
+    }
+
+    // We expect the server to respond immediately to every heartbeat. There will be a tiny window
+    // while the message is round-tripping, but that's not material to our check on HEARTBEAT_INTERVAL.
+    private get heartbeatWasUnacknowledged() {
+        return this._lastHeartbeatSent > this._lastHeartbeatReceived;
     }
 
     private onServerInstanceChange() {
         this.logWarn('Server instance changed - attempting to connect to new instance.');
         this.noteTelemetryEvent('instanceChangeReconnectAttempt');
-        this.disconnect();
-        this.connect();
+        this.reconnect();
     }
 
     //------------------------
@@ -256,6 +280,7 @@ export class WebSocketService extends HoistService {
                     XH.clientHealthService.sendReportAsync();
                     break;
                 case this.HEARTBEAT_TOPIC:
+                    this._lastHeartbeatReceived = Date.now();
                     this.noteTelemetryEvent('heartbeatReceived');
                     break;
             }

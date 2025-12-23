@@ -146,7 +146,6 @@ const filterBar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
 });
 
 const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
-    const {gridModel} = model;
     return panel({
         collapsedTitle: 'Aggregate Activity',
         collapsedIcon: Icon.users(),
@@ -161,15 +160,12 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             items: [
                 groupingChooser({flex: 10, maxWidth: 300}),
                 filler(),
-                colChooserButton({gridModel}),
-                exportButton({gridModel})
+                colChooserButton(),
+                exportButton()
             ]
         }),
         items: [
-            grid({
-                flex: 1,
-                agOptions: {groupDefaultExpanded: 1}
-            }),
+            grid({flex: 1}),
             div({
                 className: 'xh-admin-activity-panel__max-rows-alert',
                 items: [

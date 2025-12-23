@@ -5,7 +5,8 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 
-import {checkVersion} from '@xh/hoist/utils/js/VersionUtils';
+import {checkVersion, logError} from '@xh/hoist/utils/js';
+import {Component} from 'react';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -44,20 +45,38 @@ export type {
     MenuItemDef,
     CellPosition,
     NavigateToNextCellParams,
+    ColumnEvent,
+    ColumnState as AgColumnState,
     Column as AgColumn,
-    ColumnGroup as AgColumnGroup
-} from '@ag-grid-community/core';
+    ColumnGroup as AgColumnGroup,
+    AgProvidedColumnGroup,
+    RowDoubleClickedEvent,
+    RowClickedEvent,
+    RowHeightParams,
+    CellClickedEvent,
+    CellContextMenuEvent,
+    CellDoubleClickedEvent,
+    CellEditingStartedEvent,
+    CellEditingStoppedEvent
+} from 'ag-grid-community';
 
-const MIN_VERSION = '31.2.0';
-const MAX_VERSION = '31.*.*';
+export type {
+    CustomCellEditorProps,
+    CustomCellRendererProps,
+    CustomMenuItemProps
+} from 'ag-grid-react';
+export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
+
+const MIN_VERSION = '34.2.0';
+const MAX_VERSION = '34.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
  * Typically called in the Bootstrap.js. of the application.
  */
-export function installAgGrid(ComponentReactWrapper, version: string) {
+export function installAgGrid(ComponentReactWrapper: Component, version: string) {
     if (!checkVersion(version, MIN_VERSION, MAX_VERSION)) {
-        console.error(
+        logError(
             `This version of Hoist requires an ag-Grid version between ${MIN_VERSION} and ` +
                 `${MAX_VERSION}. Version ${version} detected. ag-Grid will be unavailable.`
         );

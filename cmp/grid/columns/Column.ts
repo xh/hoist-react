@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
@@ -69,7 +68,9 @@ import type {
     ColDef,
     ITooltipParams,
     ValueGetterParams,
-    ValueSetterParams
+    ValueSetterParams,
+    CustomCellEditorProps,
+    CellClickedEvent
 } from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnSpec {
@@ -375,6 +376,12 @@ export interface ColumnSpec {
     actionsShowOnHoverOnly?: boolean;
 
     /**
+     * Callback when a cell within this column clicked.
+     * See also {@link GridConfig.onCellClicked}, called when any cell within the grid is clicked.
+     */
+    onCellClicked?: (e: CellClickedEvent) => void;
+
+    /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
      * options may be used / overwritten by the framework itself, and are not all guaranteed to be
      * compatible with its usages of Ag-Grid.
@@ -479,6 +486,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     omit: Thunkable<boolean>;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     gridModel: GridModel;
     agOptions: ColDef;
@@ -551,6 +559,7 @@ export class Column {
             actionsShowOnHoverOnly,
             actions,
             omit,
+            onCellClicked,
             agOptions,
             appData,
             ...rest
@@ -657,6 +666,7 @@ export class Column {
 
         this.actions = actions;
         this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
+        this.onCellClicked = onCellClicked;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -751,14 +761,19 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance?.reactSelect;
-                    if (reactSelect?.state.menuIsOpen) return true;
+                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
+                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
+                    // but loadedInputValue should be truthy when the menu is open
+                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                        return true;
+                    }
 
                     // Allow shift+enter to add newlines in certain editors
                     if (event.shiftKey && event.key === 'Enter') return true;
 
                     return false;
-                }
+                },
+                onCellClicked: this.onCellClicked
             };
 
         // We will change this setter as needed to install the renderer in the proper location

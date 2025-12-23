@@ -5,9 +5,16 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
-import {warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {DefaultHoistProps, HoistBase, LoadSpecConfig, managed, PlainObject} from '../';
+import {
+    DefaultHoistProps,
+    HoistBase,
+    LoadSpecConfig,
+    managed,
+    PlainObject,
+    TaskObserver
+} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
@@ -20,7 +27,7 @@ import {Class} from 'type-fest';
  *
  * The most common use of `HoistModel` is to support Hoist components. Components can be configured
  * to create or lookup an instance of an appropriate model subclass using the `model` config passed
- * to {@link hoistComponent.factory}. Hoist will automatically pass the resolved model instance as a
+ * to {@link hoistCmp.factory}. Hoist will automatically pass the resolved model instance as a
  * prop to the component's `render()` function, where the model's properties can be read/rendered
  * and any imperative APIs wired to buttons, callbacks, and other handlers.
  *
@@ -97,8 +104,15 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
+    get loadObserver(): TaskObserver {
+        return this.loadSupport?.loadObserver;
+    }
     get loadModel() {
-        return this.loadSupport?.loadModel;
+        apiDeprecated('HoistModel.loadModel', {
+            v: 'v82',
+            msg: 'Use HoistModel.loadObserver instead.'
+        });
+        return this.loadSupport?.loadObserver;
     }
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;

@@ -93,6 +93,10 @@ export class ZoneMapperModel extends HoistModel {
             });
     }
 
+    get headersAreHidden(): boolean {
+        return this.zoneGridModel.gridModel.hideHeaders;
+    }
+
     constructor(config: ZoneMapperConfig) {
         super();
         makeObservable(this);
@@ -279,6 +283,7 @@ export class ZoneMapperModel extends HoistModel {
         this.mappings = mappings;
     }
 
+    @action
     private removeZoneMapping(zone: Zone, field: string) {
         let mappings = cloneDeep(this.mappings);
         mappings[zone] = mappings[zone].filter(it => it.field !== field);

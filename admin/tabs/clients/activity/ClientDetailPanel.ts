@@ -40,11 +40,12 @@ const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
                         items: [
                             relativeTimestamp({
                                 timestamp: data.createdTime,
-                                options: {prefix: 'Session established'}
+                                prefix: 'Session established'
                             }),
                             relativeTimestamp({
                                 timestamp: data.lastReceivedTime,
-                                options: {prefix: 'Last heartbeat', emptyResult: 'No heartbeat yet'}
+                                prefix: 'Last heartbeat',
+                                emptyResult: 'No heartbeat yet'
                             })
                         ]
                     })
@@ -53,7 +54,7 @@ const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
             panel({
                 item: activityDetailView(),
                 mask: mask({
-                    bind: model.loadModel,
+                    bind: model.loadObserver,
                     spinner: true,
                     message: 'Loading activity...'
                 })

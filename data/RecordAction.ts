@@ -6,17 +6,17 @@
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
-import {ReactElement} from 'react';
-import {Intent, PlainObject, TestSupportProps} from '../core';
+import {ReactElement, ReactNode} from 'react';
+import {Intent, TestSupportProps} from '../core';
 import {StoreRecord} from './StoreRecord';
 import {Column, GridModel} from '../cmp/grid';
 
 export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */
-    text?: string;
+    text?: ReactNode;
 
     /** Additional label to be displayed, usually in a minimal fashion.*/
-    secondaryText?: string;
+    secondaryText?: ReactNode;
 
     /** Icon to be displayed.*/
     icon?: ReactElement;
@@ -33,8 +33,11 @@ export interface RecordActionSpec extends TestSupportProps {
     /** Function called on action execution. */
     actionFn?: (data: ActionFnData) => void;
 
-    /** Function called prior to showing this item. */
-    displayFn?: (data: DisplayFnData) => PlainObject;
+    /**
+     * Function called to append / override display properties prior to each render. This function
+     * allows dynamic control over display properties.
+     * */
+    displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */
     items?: RecordActionLike[];
@@ -83,7 +86,7 @@ export interface ActionFnData {
 
 /**
  * A RecordAction encapsulates a shared set of configuration for items within components such as
- * a Grid Context Menu nd RecordActionBar (aka grid context menus and action columns).
+ * a Grid Context Menu and RecordActionBar (aka grid context menus and action columns).
  *
  * Components passed these actions will render them with an appropriate UI (e.g. menu item, button)
  * and call their `actionFn` when clicked, passing it a data object (if available) sourced from the
@@ -100,15 +103,15 @@ export interface ActionFnData {
  * @see GridContextMenuSpec
  */
 export class RecordAction {
-    text: string;
-    secondaryText: string;
+    text: ReactNode;
+    secondaryText: ReactNode;
     icon: ReactElement;
     intent: Intent;
     className: string;
     tooltip: string;
     actionFn: (data: ActionFnData) => void;
-    displayFn: (data: DisplayFnData) => PlainObject;
-    items: Array<RecordAction | string>;
+    displayFn: (data: ActionFnData) => RecordActionSpec;
+    items: RecordActionLike[];
     disabled: boolean;
     hidden: boolean;
     recordsRequired: boolean | number;
@@ -152,11 +155,17 @@ export class RecordAction {
      * Called by UI elements to get the display configuration for rendering the action.
      * @internal
      */
-    getDisplaySpec({record, selectedRecords, gridModel, column, ...rest}: ActionFnData) {
+    getDisplaySpec({
+        record,
+        selectedRecords,
+        gridModel,
+        column,
+        ...rest
+    }: ActionFnData): RecordActionSpec {
         const recordCount =
             record && isEmpty(selectedRecords) ? 1 : selectedRecords ? selectedRecords.length : 0;
 
-        const defaultDisplay = {
+        const defaultDisplay: RecordActionSpec = {
             icon: this.icon,
             text: this.text,
             secondaryText: this.secondaryText,
@@ -206,9 +215,4 @@ export class RecordAction {
             (isNumber(required) && count === required)
         );
     }
-}
-
-interface DisplayFnData extends ActionFnData {
-    /** Default display config for the action */
-    defaultConfig?: PlainObject;
 }

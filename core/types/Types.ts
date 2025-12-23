@@ -34,6 +34,9 @@ export type Awaitable<T> = Promise<T> | T;
 /** Convenience type for a "plain", string-keyed object holding any kind of values. */
 export type PlainObject = Record<string, any>;
 
+/** Convenience type to make a set of keys optional in a given type. */
+export type SetOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 /**
  * Specification for debouncing in Hoist.
  *
@@ -59,6 +62,19 @@ export type Content =
     | (() => ReactElement);
 
 export type DateLike = Date | LocalDate | MomentInput;
+
+/** Valid units for the {@link LocalDate} adjustment methods. */
+export type LocalDateUnit =
+    | 'year'
+    | 'years'
+    | 'quarter'
+    | 'quarters'
+    | 'month'
+    | 'months'
+    | 'week'
+    | 'weeks'
+    | 'day'
+    | 'days';
 
 export type PageState =
     /**

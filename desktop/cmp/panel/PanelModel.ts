@@ -292,13 +292,14 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     setCollapsed(collapsed: boolean) {
         throwIf(collapsed && !this.collapsible, 'Panel does not support collapsing.');
 
-        // When opening we never want to shrink -- in that degenerate case restore default size.
-        // Can happen when no min height and title bar, and user has sized panel to be very small.
+        // When opening a rendered collapsed panel we never want to shrink it -- in that degenerate
+        // case restore default size. Can happen when no min height and title bar, and user has
+        // sized panel to be very small.
         if (this.collapsed && !collapsed) {
             const el = this._resizeRef?.current,
                 currSize = this.vertical ? el?.offsetHeight : el?.offsetWidth,
                 {size} = this;
-            if (isNil(currSize) || isNil(size) || (isNumber(size) && size < currSize)) {
+            if (!isNil(currSize) && (isNil(size) || (isNumber(size) && size < currSize))) {
                 this.size = this.defaultSize;
             }
         }
