@@ -31,6 +31,9 @@
 * Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
   common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
   `value` args to `number` where applicable.
+* Your app must update `compilerOptions.moduleResolution` to "bundler" in `tsconfig.json`
+* If using the `DashCanvas` `rglOptions` prop, you might have to update it to reflect changes in
+  `react-grid-layout` v2+ (not common).
 
 ### 🐞 Bug Fixes
 
