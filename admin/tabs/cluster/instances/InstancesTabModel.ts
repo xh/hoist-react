@@ -229,7 +229,7 @@ export class InstancesTabModel extends HoistModel {
             params: {instance: instance.name}
         })
             .finally(() => this.loadAsync())
-            .linkTo({observer: this.loadModel, message: 'Attempting instance shutdown'})
+            .linkTo({observer: this.loadObserver, message: 'Attempting instance shutdown'})
             .catchDefault();
     }
 

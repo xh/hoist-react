@@ -63,6 +63,19 @@ export type Content =
 
 export type DateLike = Date | LocalDate | MomentInput;
 
+/** Valid units for the {@link LocalDate} adjustment methods. */
+export type LocalDateUnit =
+    | 'year'
+    | 'years'
+    | 'quarter'
+    | 'quarters'
+    | 'month'
+    | 'months'
+    | 'week'
+    | 'weeks'
+    | 'day'
+    | 'days';
+
 export type PageState =
     /**
      * Window/tab is visible and focused.

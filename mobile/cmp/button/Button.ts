@@ -14,9 +14,7 @@ import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>
-    extends HoistProps<M>,
-        LayoutProps,
-        StyleProps {
+    extends HoistProps<M>, LayoutProps, StyleProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;

@@ -14,8 +14,7 @@ import {castArray, filter, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
-    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
-        HoistInputProps {
+    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>, HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.

@@ -42,7 +42,7 @@ export class ManageDialogModel extends HoistModel {
     readonly updateTask = TaskObserver.trackLast();
 
     get loadTask(): TaskObserver {
-        return this.viewManagerModel.loadModel;
+        return this.viewManagerModel.loadObserver;
     }
 
     get gridModel(): GridModel {

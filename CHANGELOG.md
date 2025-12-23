@@ -9,25 +9,35 @@
   allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
   persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
   supports context-menu items. See `TabContainerConfig.switcher`.
+* Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+* DashCanvas new features:
+  * supports dragging and dropping widgets in from an external container.
+  * supports showing a grid background.
+  * supports 2 compacting strategies: 'vertical' or 'horizontal'
+
 
 ### 💥 Breaking Changes
 
+* Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
+  `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
+  `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
+  v82. Applications should update their code to use `loadObserver` instead of `loadModel`.
 * Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
   symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
   scheduled for removal in v82.
-* `TabSwitcherProps` has moved to `cmp/tab/Types.ts` but is still exported from `cmp/tab/index.ts`.
+* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`.
   Some apps may need to update their imports.
 * `TabContainerConfig.switcher` has been repurposed to accept a `TabSwitcherConfig`. To pass
   `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
-
-### 🎁 New Features
-
-* DashCanvas component now supports dragging and dropping widgets in from an external container.
+* Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
+  common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
+  `value` args to `number` where applicable.
 
 ### 🐞 Bug Fixes
 
 * Fixed column chooser to display columns in the same order as they appear in the grid.
-* Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Defaulted Highcharts font to Hoist default `--xh-font-family`.
+* Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 
@@ -38,9 +48,11 @@
     * `GroupingChooserProps.popoverTitle` - use `editorTitle`
     * `RelativeTimestampProps.options` - provide directly as top-level props
 
+* Improved the efficiency and logging of MsalClient.
+
 ### 📚 Libraries
 
-* react-grid-layout `1.5.0 → 2.1.0`
+* react-grid-layout `1.5.0 → 2.1.1`
 
 ## 78.1.4 - 2025-12-05
 
@@ -52,7 +64,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fix to Highchart timezone handling regression from version 77.  Applications should note that
+* Fix to Highchart timezone handling regression from version 77. Applications should note that
   Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
   should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
 
@@ -63,14 +75,15 @@
 ## 78.1.0 - 2025-12-02
 
 ### ⚙️ Technical
+
 * New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
 
 * Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
 
-* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
- and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
- This can be further modified by apps via the option
- `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+* Improved use of MSAL client API, to maximize effectiveness of SSO. Improved documentation
+  and logging. Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
+  This can be further modified by apps via the option
+  `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
 
 ### 📚 Libraries
 
@@ -112,7 +125,8 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
+* Apps that use and provide the `highcharts` library should be sure to update the version to
+  v12.4.0.
   Refer to `Bootstrap.js` in Toolbox for required import changes.
     * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
 

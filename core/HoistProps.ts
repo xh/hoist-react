@@ -67,7 +67,8 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
  * which also supports this interface.  Eventually, they should be passed to a Box class.
  */
 export interface BoxProps
-    extends LayoutProps,
+    extends
+        LayoutProps,
         TestSupportProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 

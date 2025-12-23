@@ -197,7 +197,7 @@ export class AppContainerModel extends HoistModel {
 
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
-            XH.authModel = createSingleton(this.appSpec.authModelClass);
+            XH.authModel = createSingleton(appSpec.authModelClass);
             const isAuthenticated = await XH.authModel.completeAuthAsync();
             if (!isAuthenticated) {
                 throwIf(
