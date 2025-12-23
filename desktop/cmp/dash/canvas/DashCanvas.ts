@@ -34,7 +34,6 @@ import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
 import './DashCanvas.scss';
 
 export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSupportProps {
@@ -73,8 +72,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 'resizeConfig',
                 'dropConfig'
             ]),
-            {width, containerRef, mounted} = useContainerWidth(),
-            gridBackgroundColor = XH.darkTheme ? '#2a2a2a' : '#f8f8f8';
+            {width, containerRef, mounted} = useContainerWidth();
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -87,59 +85,69 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 style: {padding: `${padY}px ${padX}px`},
                 ref: composeRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
-                items: mounted
-                    ? [
-                          gridBackground({
-                              className: 'xh-dash-canvas__grid-background',
-                              omit: !model.showGridBackground,
-                              width,
-                              height: model.rglHeight,
-                              cols: model.columns,
-                              rowHeight: model.rowHeight,
-                              margin: model.margin,
-                              rows: 'auto',
-                              color: gridBackgroundColor,
-                              borderRadius: 0
-                          }),
-                          reactGridLayout({
-                              layout: model.rglLayout,
-                              width,
-                              gridConfig: {
-                                  cols: model.columns,
-                                  rowHeight: model.rowHeight,
-                                  margin: model.margin,
-                                  maxRows: model.maxRows,
-                                  ...(rglOptions?.gridConfig ?? {})
-                              },
-                              dragConfig: {
-                                  enabled: isDraggable,
-                                  handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                                  cancel: '.xh-button',
-                                  bounded: true,
-                                  ...(rglOptions?.dragConfig ?? {})
-                              },
-                              resizeConfig: {
-                                  enabled: isResizable,
-                                  ...(rglOptions?.resizeConfig ?? {})
-                              },
-                              compactor: getCompactor(model.compact, false, false),
-                              onLayoutChange: (layout: LayoutItem[]) =>
-                                  model.onRglLayoutChange(layout),
-                              onResizeStart: () => (model.isResizing = true),
-                              onResizeStop: () => (model.isResizing = false),
-                              children: model.viewModels.map(vm =>
-                                  div({
-                                      key: vm.id,
-                                      item: dashCanvasView({model: vm})
-                                  })
-                              ),
-                              ...topLevelRglOptions
-                          }),
-                          emptyContainerOverlay()
-                      ]
-                    : [],
+                items: [
+                    gridBackgroundCells({
+                        omit: !model.showGridBackground || !mounted,
+                        width
+                    }),
+                    reactGridLayout({
+                        omit: !mounted,
+                        layout: model.rglLayout,
+                        width,
+                        gridConfig: {
+                            cols: model.columns,
+                            rowHeight: model.rowHeight,
+                            margin: model.margin,
+                            maxRows: model.maxRows,
+                            ...(rglOptions?.gridConfig ?? {})
+                        },
+                        dragConfig: {
+                            enabled: isDraggable,
+                            handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                            cancel: '.xh-button',
+                            bounded: true,
+                            ...(rglOptions?.dragConfig ?? {})
+                        },
+                        resizeConfig: {
+                            enabled: isResizable,
+                            ...(rglOptions?.resizeConfig ?? {})
+                        },
+                        compactor: getCompactor(model.compact, false, false),
+                        onLayoutChange: (layout: LayoutItem[]) => model.onRglLayoutChange(layout),
+                        onResizeStart: () => (model.isResizing = true),
+                        onResizeStop: () => (model.isResizing = false),
+                        children: model.viewModels.map(vm =>
+                            div({
+                                key: vm.id,
+                                item: dashCanvasView({model: vm})
+                            })
+                        ),
+                        ...topLevelRglOptions
+                    }),
+                    emptyContainerOverlay({omit: !mounted})
+                ],
                 [TEST_ID]: testId
             })
+        });
+    }
+});
+
+const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
+    displayName: 'DashCanvasGridBackgroundCells',
+    model: uses(DashCanvasModel),
+    render({model, width}) {
+        const gridBackgroundColor = XH.darkTheme ? '#0e1213' : '#f8f8f8';
+
+        return gridBackground({
+            className: 'xh-dash-canvas__grid-background',
+            width,
+            height: model.rglHeight,
+            cols: model.columns,
+            rowHeight: model.rowHeight,
+            margin: model.margin,
+            rows: 'auto',
+            color: gridBackgroundColor,
+            borderRadius: 0
         });
     }
 });
