@@ -11,7 +11,6 @@
   supports context-menu items. See `TabContainerConfig.switcher`.
 * Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
 * DashCanvas new features:
-  * supports dragging and dropping widgets in from an external container.
   * supports showing a grid background.
   * supports 2 compacting strategies: 'vertical' or 'horizontal'
 

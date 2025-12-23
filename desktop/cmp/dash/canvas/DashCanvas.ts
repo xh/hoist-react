@@ -5,7 +5,6 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {omit} from 'lodash';
-import {DragEvent} from 'react';
 import ReactGridLayout, {
     type LayoutItem,
     type GridLayoutProps,
@@ -75,10 +74,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 'dropConfig'
             ]),
             {width, containerRef, mounted} = useContainerWidth(),
-            defaultDroppedItemDims = {
-                w: Math.floor(model.columns / 3),
-                h: Math.floor(model.columns / 3)
-            },
             gridBackgroundColor = XH.darkTheme ? '#2a2a2a' : '#f8f8f8';
 
         return refreshContextView({
@@ -127,11 +122,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                   enabled: isResizable,
                                   ...(rglOptions?.resizeConfig ?? {})
                               },
-                              dropConfig: {
-                                  enabled: model.contentLocked ? false : model.allowsDrop,
-                                  defaultItem: defaultDroppedItemDims,
-                                  ...(rglOptions?.dropConfig ?? {})
-                              },
                               compactor: getCompactor(model.compact, false, false),
                               onLayoutChange: (layout: LayoutItem[]) =>
                                   model.onRglLayoutChange(layout),
@@ -143,12 +133,9 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                       item: dashCanvasView({model: vm})
                                   })
                               ),
-                              onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
-                              onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
-                                  model.onDrop(layout, layoutItem, evt),
                               ...topLevelRglOptions
                           }),
-                          emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
+                          emptyContainerOverlay()
                       ]
                     : [],
                 [TEST_ID]: testId
