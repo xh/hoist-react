@@ -81,15 +81,6 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         width
                     }),
                     reactGridLayout({
-                        omit: !mounted,
-                        layout: model.rglLayout,
-                        children: model.viewModels.map(vm =>
-                            div({
-                                key: vm.id,
-                                item: dashCanvasView({model: vm})
-                            })
-                        ),
-                        width,
                         ...mergeDeep(
                             {
                                 gridConfig: {
@@ -115,7 +106,16 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                 onResizeStop: () => (model.isResizing = false)
                             },
                             rglOptions
-                        )
+                        ),
+                        omit: !mounted,
+                        layout: model.rglLayout,
+                        children: model.viewModels.map(vm =>
+                            div({
+                                key: vm.id,
+                                item: dashCanvasView({model: vm})
+                            })
+                        ),
+                        width
                     }),
                     emptyContainerOverlay({omit: !mounted})
                 ],
