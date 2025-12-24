@@ -4,6 +4,13 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import ReactGridLayout, {
+    type LayoutItem,
+    type GridLayoutProps,
+    useContainerWidth,
+    getCompactor
+} from 'react-grid-layout';
+import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -17,10 +24,8 @@ import {
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
-import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
+import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import ReactGridLayout, {WidthProvider} from 'react-grid-layout';
-import type {ReactGridLayoutProps} from 'react-grid-layout';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -32,10 +37,10 @@ export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSuppor
     /**
      * Optional additional configuration options to pass through to the underlying ReactGridLayout component.
      * See the RGL documentation for details:
-     * {@link https://www.npmjs.com/package/react-grid-layout#grid-layout-props}
+     * {@link https://www.npmjs.com/package/react-grid-layout#api-reference}
      * Note that some ReactGridLayout props are managed directly by DashCanvas and will be overridden if provided here.
      */
-    rglOptions?: ReactGridLayoutProps;
+    rglOptions?: Partial<GridLayoutProps>;
 }
 
 /**
@@ -57,7 +62,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     render({className, model, rglOptions, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
-            [padX, padY] = model.containerPadding;
+            {width, containerRef, mounted} = useContainerWidth();
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -67,40 +72,72 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                style: {padding: `${padY}px ${padX}px`},
-                ref: composeRefs(ref, model.ref),
+                ref: composeRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
+                    gridBackgroundCells({
+                        omit: !model.showGridBackground || !mounted,
+                        width
+                    }),
                     reactGridLayout({
+                        ...mergeDeep(
+                            {
+                                gridConfig: {
+                                    cols: model.columns,
+                                    rowHeight: model.rowHeight,
+                                    margin: model.margin,
+                                    maxRows: model.maxRows,
+                                    containerPadding: model.containerPadding
+                                },
+                                dragConfig: {
+                                    enabled: isDraggable,
+                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                                    cancel: '.xh-button',
+                                    bounded: true
+                                },
+                                resizeConfig: {
+                                    enabled: isResizable
+                                },
+                                compactor: getCompactor(model.compact, false, false),
+                                onLayoutChange: (layout: LayoutItem[]) =>
+                                    model.onRglLayoutChange(layout),
+                                onResizeStart: () => (model.isResizing = true),
+                                onResizeStop: () => (model.isResizing = false)
+                            },
+                            rglOptions
+                        ),
+                        omit: !mounted,
                         layout: model.rglLayout,
-                        cols: model.columns,
-                        rowHeight: model.rowHeight,
-                        isDraggable,
-                        isResizable,
-                        compactType: model.compact ? 'vertical' : null,
-                        margin: model.margin,
-                        maxRows: model.maxRows,
-                        containerPadding: [0, 0], // Workaround for https://github.com/react-grid-layout/react-grid-layout/issues/1990
-                        autoSize: true,
-                        isBounded: true,
-                        draggableHandle:
-                            '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                        draggableCancel: '.xh-button',
-                        onLayoutChange: layout => model.onRglLayoutChange(layout),
-                        onResizeStart: () => (model.isResizing = true),
-                        onResizeStop: () => (model.isResizing = false),
-                        items: model.viewModels.map(vm =>
+                        children: model.viewModels.map(vm =>
                             div({
                                 key: vm.id,
                                 item: dashCanvasView({model: vm})
                             })
                         ),
-                        ...rglOptions
+                        width
                     }),
-                    emptyContainerOverlay()
+                    emptyContainerOverlay({omit: !mounted})
                 ],
                 [TEST_ID]: testId
             })
+        });
+    }
+});
+
+const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
+    displayName: 'DashCanvasGridBackgroundCells',
+    model: uses(DashCanvasModel),
+    render({model, width}) {
+        return gridBackground({
+            className: 'xh-dash-canvas__grid-background',
+            width,
+            height: model.rglHeight,
+            cols: model.columns,
+            rowHeight: model.rowHeight,
+            margin: model.margin,
+            rows: 'auto',
+            color: 'var(--xh-dash-canvas-grid-cell-color)',
+            borderRadius: 0
         });
     }
 });
@@ -146,4 +183,5 @@ const onContextMenu = (e, model) => {
     }
 };
 
-const reactGridLayout = elementFactory(WidthProvider(ReactGridLayout));
+const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);
+const gridBackground = elementFactory<GridBackgroundProps>(GridBackground);

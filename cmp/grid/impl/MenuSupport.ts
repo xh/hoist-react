@@ -110,7 +110,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
         case 'autosizeColumns':
             return new RecordAction({
                 text: 'Autosize Columns',
-                icon: Icon.arrowsLeftRight(),
+                icon: Icon.magic(),
                 hidden: !gridModel?.autosizeEnabled,
                 actionFn: () => gridModel.autosizeAsync({showMask: true})
             });

@@ -4,13 +4,14 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, observeResize, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -39,17 +40,26 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      */
     rowHeight?: number;
 
-    /** Whether views should "compact" vertically to condense vertical space. Default `true`. */
-    compact?: boolean;
+    /**
+     * Whether views should "compact" vertically or horizontally
+     * to condense space. Default `true` defaults to vertical compaction.
+     * See react-grid-layout docs for more information.
+     * */
+    compact?: boolean | 'vertical' | 'horizontal';
 
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
+    containerPadding?: [number, number];
+
     /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
-    containerPadding?: [number, number];
+    /**
+     * Whether a grid background should be shown. Default false.
+     */
+    showGridBackground?: boolean;
 }
 
 export interface DashCanvasItemState {
@@ -79,9 +89,11 @@ export class DashCanvasModel
     //------------------------------
     @bindable columns: number;
     @bindable rowHeight: number;
-    @bindable compact: boolean;
+    @bindable compact: 'vertical' | 'horizontal';
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
+    @bindable showGridBackground: boolean;
+    @bindable rglHeight: number;
 
     //-----------------------------
     // Public properties
@@ -135,11 +147,12 @@ export class DashCanvasModel
         addViewButtonText = 'Add View',
         columns = 12,
         rowHeight = 50,
-        compact = true,
+        compact = 'vertical',
         margin = [10, 10],
         maxRows = Infinity,
         containerPadding = margin,
-        extraMenuItems
+        extraMenuItems,
+        showGridBackground = false
     }: DashCanvasConfig) {
         super();
         makeObservable(this);
@@ -182,11 +195,11 @@ export class DashCanvasModel
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
         this.margin = margin;
-        this.containerPadding = containerPadding;
-        this.compact = compact;
+        this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
+        this.showGridBackground = showGridBackground;
 
         this.loadState(initialState);
         this.state = this.buildState();
@@ -205,6 +218,18 @@ export class DashCanvasModel
         this.addReaction({
             track: () => this.viewState,
             run: () => (this.state = this.buildState())
+        });
+
+        // Used to make the height of RGL available to the gridBackground component
+        this.addReaction({
+            when: () => !!this.ref.current,
+            run: () => {
+                this.rglResizeObserver = observeResize(
+                    rect => (this.rglHeight = rect.height),
+                    this.ref.current.querySelector('.react-grid-layout'),
+                    {debounce: 100}
+                );
+            }
         });
     }
 
@@ -327,6 +352,8 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
+    private rglResizeObserver: ResizeObserver;
+
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':
@@ -384,13 +411,13 @@ export class DashCanvasModel
         return model;
     }
 
-    onRglLayoutChange(rglLayout) {
+    onRglLayoutChange(rglLayout: LayoutItem[]) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
         this.setLayout(rglLayout);
     }
 
     @action
-    private setLayout(layout) {
+    private setLayout(layout: LayoutItem[]) {
         layout = sortBy(layout, 'i');
         const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
@@ -492,6 +519,7 @@ export class DashCanvasModel
                 }
             }
         }
+
         const checkPosition = (originX, originY) => {
             for (let y = originY; y < originY + height; y++) {
                 for (let x = originX; x < originX + width; x++) {

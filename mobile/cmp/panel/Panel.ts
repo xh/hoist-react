@@ -29,7 +29,7 @@ import {logWarn} from '@xh/hoist/utils/js';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
-    bbar?: Some<ReactNode>;
+    bbar?: ReactNode;
 
     /** CSS class name specific to the panel's header. */
     headerClassName?: string;
@@ -62,7 +62,7 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     scrollable?: boolean;
 
     /** A toolbar to be docked at the top of the panel. */
-    tbar?: Some<ReactNode>;
+    tbar?: ReactNode;
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
