@@ -131,13 +131,14 @@ export class LogViewerModel extends BaseInstanceModel {
             if (!confirmed) return;
 
             const filenames = recs.map(r => r.data.filename);
-            await XH.fetch({
+            await XH.postJson({
                 url: 'logViewerAdmin/deleteFiles',
+                body: filenames,
                 params: {
                     filenames,
                     instance: this.instanceName
                 }
-            });
+            }).linkTo({observer: this.loadObserver, message: 'Deleting files'});
             await this.refreshAsync();
         } catch (e) {
             XH.handleException(e);

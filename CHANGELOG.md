@@ -44,6 +44,7 @@
 * Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
+* Supports deletion of large numbers of log files via POST (requires hoist-core v35.)
 
 ### ⚙️ Technical
 
@@ -57,6 +58,7 @@
 ### 📚 Libraries
 
 * react-grid-layout `1.5.0 → 2.1.1`
+* hoist-core `35.0.0`
 
 ## 78.1.4 - 2025-12-05
 
