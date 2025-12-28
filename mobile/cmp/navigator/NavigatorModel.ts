@@ -44,6 +44,11 @@ export interface NavigatorConfig {
      * See enum for description of supported modes.
      */
     refreshMode?: RefreshMode;
+
+    /**
+     * Base route name for this navigator, with the route for each page being "[route]/[page.id]".
+     */
+    route?: string;
 }
 
 /**
@@ -52,6 +57,9 @@ export interface NavigatorConfig {
  */
 export class NavigatorModel extends HoistModel {
     @bindable disableAppRefreshButton: boolean;
+
+    readonly route: string;
+    readonly routePrefix: string;
 
     @bindable.ref
     stack: PageModel[] = [];
@@ -89,6 +97,7 @@ export class NavigatorModel extends HoistModel {
 
     constructor({
         pages,
+        route,
         track = false,
         pullDownToRefresh = true,
         transitionMs = 500,
@@ -100,6 +109,9 @@ export class NavigatorModel extends HoistModel {
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');
+
+        this.route = route ?? '';
+        this.routePrefix = route ? route.substring(0, route.lastIndexOf('.') + 1) : '';
 
         this.pages = pages;
         this.track = track;
@@ -209,7 +221,7 @@ export class NavigatorModel extends HoistModel {
         this.stack = this.stack.slice(0, this._swiper.activeIndex + 1);
 
         // 2) Sync route to match the current page stack
-        const newRouteName = this.stack.map(it => it.id).join('.'),
+        const newRouteName = this.routePrefix + this.stack.map(it => it.id).join('.'),
             newRouteParams = mergeDeep({}, ...this.stack.map(it => it.props));
 
         XH.navigate(newRouteName, newRouteParams);
@@ -226,16 +238,17 @@ export class NavigatorModel extends HoistModel {
     };
 
     private onRouteChange(init: boolean = false) {
-        if (!this._swiper || !XH.routerState) return;
+        const {route: myRoute, routePrefix: myRoutePrefix, _swiper} = this;
+        if (!XH.routerState || (myRoute && !XH.router.isActive(myRoute)) || !_swiper) return;
 
-        // Break the current route name into parts, and collect any params for each part.
-        // Use meta.params to determine which params are associated with each route part.
-        // Save these params to use as props for the page.
+        // Break the current route name into parts, only looking at our part of it (myRoute and below).
+        // Collect any params for each part. Use meta.params to determine which params are associated
+        // with each route part. Save these params to use as props for the page.
         const {meta, name, params} = XH.routerState,
-            parts = name.split('.');
+            parts = name.replace(myRoutePrefix, '').split('.');
 
         const routeParts = parts.map((id, idx) => {
-            const metaKey = parts.slice(0, idx + 1).join('.'),
+            const metaKey = myRoutePrefix + parts.slice(0, idx + 1).join('.'),
                 props = {};
 
             // Extract props for this part
@@ -262,7 +275,7 @@ export class NavigatorModel extends HoistModel {
             // we drop the rest of the route and redirect to the route so far
             if (init && pageModelCfg.disableDirectLink) {
                 const completedRouteParts = routeParts.slice(0, i),
-                    newRouteName = completedRouteParts.map(it => it.id).join('.'),
+                    newRouteName = myRoutePrefix + completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = mergeDeep({}, ...completedRouteParts.map(it => it.props));
 
                 XH.navigate(newRouteName, newRouteParams, {replace: true});

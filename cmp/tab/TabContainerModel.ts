@@ -154,10 +154,10 @@ export class TabContainerModel extends HoistModel {
         this.dynamicTabSwitcherModel = this.parseSwitcher(switcher);
 
         if (route) {
-            if (XH.isMobileApp) {
-                this.logWarn('TabContainer routing is not supported for mobile applications.');
-                return;
-            }
+            // if (XH.isMobileApp) {
+            //     this.logWarn('TabContainer routing is not supported for mobile applications.');
+            //     return;
+            // }
 
             this.addReaction({
                 track: () => XH.routerState,
