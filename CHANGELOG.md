@@ -56,7 +56,6 @@
 * Improved the efficiency and logging of MsalClient.
 
 ### 📚 Libraries
-
 * react-grid-layout `1.5.0 → 2.1.1`
 * hoist-core `35.0.0`
 
