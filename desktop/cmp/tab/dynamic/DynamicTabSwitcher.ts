@@ -88,9 +88,9 @@ const tabs = hoistCmp.factory<TabsProps>({
                         className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
                         ref: composeRefs(provided.innerRef, ref),
                         item: div({
-                            className: classNames('bp5-tabs', isVertical && 'bp5-vertical'),
+                            className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
                             item: div({
-                                className: 'bp5-tab-list',
+                                className: 'bp6-tab-list',
                                 items: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
@@ -172,7 +172,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     div({
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
-                        className: 'bp5-tab',
+                        className: 'bp6-tab',
                         item: bpTooltip({
                             content: tooltip as ReactElement,
                             disabled: !tooltip,
