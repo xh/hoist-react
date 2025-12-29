@@ -17,6 +17,9 @@
 
 ### 💥 Breaking Changes
 
+* Blueprint has been upgraded from version 5 to version 6.  Most apps will not need to change,
+ but see https://github.com/palantir/blueprint/wiki/Blueprint-6.0 for more details.  Also note that
+ any custom css overrides to blueprint will need to be updated to refer to `bp6` instead of `bp5`.
 * Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
   `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
   `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
@@ -36,7 +39,7 @@
   `react-grid-layout` v2+ (not common).
 * `DashCanvasModel.containerPadding` is now applied to the `react-grid-layout` div by RGL, not to the
   hoist-react provided containing div.  This may affect printing layouts.
-* Renamed css prefix `bp5` to `bp6`
+
 
 ### 🐞 Bug Fixes
 
