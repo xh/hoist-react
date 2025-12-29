@@ -56,6 +56,9 @@
 * Improved the efficiency and logging of MsalClient.
 * Improved protections against running stale versions of client app code.
 
+* Grid performance optimizations introduced on an experimental basis.  See
+`GridExperimentalFlags.deltaSort` and `GridExperimentalFlags.disableScrollOptimization`
+
 
 ### 📚 Libraries
 * react-grid-layout `1.5.0 → 2.1.1`
