@@ -797,4 +797,13 @@ body {
       // to be blank/missing/glitched, even when light theme is active.
       --xh-viewport-bg: black;
     }
+
+  //------------------------
+  // DashCanvas
+  //------------------------
+  --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color, #{mc-muted('blue-grey', '50', 0%, 4%)});
+
+  &.xh-dark {
+    --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color,  var(--black, hsl(202, 17%, 8%)));
+  }
 }

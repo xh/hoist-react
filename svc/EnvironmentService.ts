@@ -11,10 +11,11 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
-import {checkMaxVersion, checkMinVersion, deepFreeze} from '@xh/hoist/utils/js';
+import {checkMinVersion, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {defaults, isFinite} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
+import {MIN_HOIST_CORE_VERSION} from '../core/XH';
 
 /**
  * Load and report on the client and server environment, including software versions, timezones, and
@@ -78,6 +79,8 @@ export class EnvironmentService extends HoistService {
 
         this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
+        this.ensureVersionRunnable();
+
         this.pollConfig = pollConfig;
         this.addReaction({
             when: () => XH.appIsRunning,
@@ -102,14 +105,6 @@ export class EnvironmentService extends HoistService {
 
     isTest(): boolean {
         return this.appEnvironment === 'Test';
-    }
-
-    isMinHoistCoreVersion(version: string): boolean {
-        return checkMinVersion(this.get('hoistCoreVersion'), version);
-    }
-
-    isMaxHoistCoreVersion(version: string): boolean {
-        return checkMaxVersion(this.get('hoistCoreVersion'), version);
     }
 
     /**
@@ -163,6 +158,31 @@ export class EnvironmentService extends HoistService {
     constructor() {
         super();
         makeObservable(this);
+    }
+
+    private ensureVersionRunnable() {
+        const hcVersion = this.get('hoistCoreVersion'),
+            clientVersion = this.get('appVersion'),
+            serverVersion = this.serverVersion;
+
+        // Check for client/server mismatch version.  It's an ok transitory state *during* the
+        // client app lifetime, but app should *never* start this way, would indicate caching issue.
+        throwIf(
+            clientVersion != serverVersion,
+            XH.exception(
+                `The version of this client (${clientVersion}) is out of sync with the
+                available server (${serverVersion}). Please reload to continue.`
+            )
+        );
+
+        // Confirm hoist-core/react version mismatch (developer issue)
+        throwIf(
+            !checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION),
+            XH.exception(
+                `This version of Hoist React requires the server to run
+                Hoist Core ≥ v${MIN_HOIST_CORE_VERSION}. Version ${hcVersion} detected.`
+            )
+        );
     }
 
     private startPolling() {

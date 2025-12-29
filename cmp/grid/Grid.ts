@@ -197,9 +197,10 @@ export class GridLocalModel extends HoistModel {
 
     private createDefaultAgOptions(): GridOptions {
         const {model} = this,
-            {clicksToEdit, selModel} = model;
+            {clicksToEdit, selModel, deltaSort} = model;
 
         let ret: GridOptions = {
+            deltaSort,
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
@@ -443,6 +444,7 @@ export class GridLocalModel extends HoistModel {
         // when node is rendered in viewport.
         const {model, agOptions} = this;
         return (
+            !model.disableScrollOptimization &&
             agOptions.getRowHeight &&
             !agOptions.rowHeight &&
             !model.getVisibleLeafColumns().some(c => c.autoHeight)
@@ -451,6 +453,7 @@ export class GridLocalModel extends HoistModel {
 
     applyScrollOptimization() {
         if (!this.useScrollOptimization) return;
+
         const {agApi} = this.model,
             {getRowHeight} = this.agOptions,
             params = {api: agApi, context: null} as any;
@@ -594,6 +597,14 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
+        // Early out if the data hasn't actually changed
+        if (
+            isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
+            isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
+        ) {
+            return;
+        }
+
         agApi.updateGridOptions({
             pinnedTopRowData,
             pinnedBottomRowData
@@ -679,7 +690,9 @@ export class GridLocalModel extends HoistModel {
             model.autosizeAsync({columns});
         }
 
-        model.noteAgExpandStateChange();
+        if (model.treeMode || !isEmpty(model.groupBy)) {
+            model.noteAgExpandStateChange();
+        }
 
         this.prevRs = newRs;
         this.applyScrollOptimization();

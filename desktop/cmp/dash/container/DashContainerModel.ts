@@ -17,7 +17,6 @@ import {
     XH
 } from '@xh/hoist/core';
 import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -48,6 +47,7 @@ import {
     getViewModelId,
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
+import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
