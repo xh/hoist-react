@@ -354,12 +354,19 @@ export interface GridConfig {
     enableFullWidthScroll?: boolean;
 
     /**
-     * Set to true to disable scroll optimization for large grids, where we proactively update the
-     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
-     * through large grids.
+     * Flags for experimental features. These features are designed for early client-access and
+     * testing, but are not yet part of the Hoist API.
      */
-    disableScrollOptimization?: boolean;
+    experimental?: GridExperimentalFlags;
 
+    /** Extra app-specific data for the GridModel. */
+    appData?: PlainObject;
+
+    /** @internal */
+    xhImpl?: boolean;
+}
+
+interface GridExperimentalFlags {
     /**
      * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
      * updated in configurations where rows have many siblings.
@@ -369,16 +376,11 @@ export interface GridConfig {
     deltaSort?: boolean;
 
     /**
-     * Flags for experimental features. These features are designed for early client-access and
-     * testing, but are not yet part of the Hoist API.
+     * Set to true to disable scroll optimization for large grids, where we proactively update the
+     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
+     * through large grids.
      */
-    experimental?: PlainObject;
-
-    /** Extra app-specific data for the GridModel. */
-    appData?: PlainObject;
-
-    /** @internal */
-    xhImpl?: boolean;
+    disableScrollOptimization?: boolean;
 }
 
 /**
@@ -421,8 +423,6 @@ export class GridModel extends HoistModel {
     enableColumnPinning: boolean;
     enableExport: boolean;
     enableFullWidthScroll: boolean;
-    disableScrollOptimization: boolean;
-    deltaSort: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
@@ -437,7 +437,7 @@ export class GridModel extends HoistModel {
     lockColumnGroups: boolean;
     headerMenuDisplay: 'always' | 'hover';
     colDefaults: Partial<ColumnSpec>;
-    experimental: PlainObject;
+    experimental: GridExperimentalFlags;
     onKeyDown: (e: KeyboardEvent) => void;
     onRowClicked: (e: RowClickedEvent) => void;
     onRowDoubleClicked: (e: RowDoubleClickedEvent) => void;
@@ -546,7 +546,6 @@ export class GridModel extends HoistModel {
             sortBy = [],
             groupBy = null,
             showGroupRowCounts = true,
-            deltaSort = false,
             externalSort = false,
             persistWith,
             sizingMode,
@@ -585,7 +584,6 @@ export class GridModel extends HoistModel {
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             enableFullWidthScroll = false,
-            disableScrollOptimization = false,
             experimental,
             appData,
             xhImpl,
@@ -611,10 +609,8 @@ export class GridModel extends HoistModel {
         this.contextMenu =
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
-        this.deltaSort = deltaSort;
         this.externalSort = externalSort;
         this.enableFullWidthScroll = enableFullWidthScroll;
-        this.disableScrollOptimization = disableScrollOptimization;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
@@ -1586,6 +1582,16 @@ export class GridModel extends HoistModel {
         return a.localeCompare(b);
     };
 
+    /** @internal */
+    get deltaSort() {
+        return !!this.experimental.deltaSort;
+    }
+
+    /** @internal */
+    get disableScrollOptimization() {
+        return !!this.experimental.disableScrollOptimization;
+    }
+
     //-----------------------
     // Implementation
     //-----------------------
@@ -1908,7 +1914,7 @@ export class GridModel extends HoistModel {
         return new GridFilterModel({bind: this.store, ...filterModel}, this);
     }
 
-    private parseExperimental(experimental) {
+    private parseExperimental(experimental: GridExperimentalFlags) {
         return {
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
