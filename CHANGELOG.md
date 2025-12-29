@@ -10,6 +10,10 @@
   persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
   supports context-menu items. See `TabContainerConfig.switcher`.
 * Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+* DashCanvas new features:
+  * supports showing a grid background.
+  * supports 2 compacting strategies: 'vertical' or 'horizontal'
+
 
 ### 💥 Breaking Changes
 
@@ -27,6 +31,11 @@
 * Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
   common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
   `value` args to `number` where applicable.
+* Your app must update `compilerOptions.moduleResolution` to "bundler" in `tsconfig.json`
+* If using the `DashCanvas` `rglOptions` prop, you might have to update it to reflect changes in
+  `react-grid-layout` v2+ (not common).
+* `DashCanvasModel.containerPadding` is now applied to the `react-grid-layout` div by RGL, not to the
+  hoist-react provided containing div.  This may affect printing layouts.
 
 ### 🐞 Bug Fixes
 
@@ -35,6 +44,7 @@
 * Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
+* Supports deletion of large numbers of log files via POST (requires hoist-core v35.)
 
 ### ⚙️ Technical
 
@@ -46,6 +56,10 @@
 * Improved the efficiency and logging of MsalClient.
 * Improved protections against running stale versions of client app code.
 
+
+### 📚 Libraries
+* react-grid-layout `1.5.0 → 2.1.1`
+* hoist-core `35.0.0`
 
 ## 78.1.4 - 2025-12-05
 
