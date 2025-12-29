@@ -354,6 +354,21 @@ export interface GridConfig {
     enableFullWidthScroll?: boolean;
 
     /**
+     * Set to true to disable scroll optimization for large grids, where we proactively update the
+     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
+     * through large grids.
+     */
+    disableScrollOptimization?: boolean;
+
+    /**
+     * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
+     * updated in configurations where rows have many siblings.
+     * See https://www.ag-grid.com/javascript-data-grid/grid-options/#reference-sort-deltaSort for
+     * more details on where this option may improve (or degrade) performance.
+     */
+    deltaSort?: boolean;
+
+    /**
      * Flags for experimental features. These features are designed for early client-access and
      * testing, but are not yet part of the Hoist API.
      */
@@ -406,6 +421,8 @@ export class GridModel extends HoistModel {
     enableColumnPinning: boolean;
     enableExport: boolean;
     enableFullWidthScroll: boolean;
+    disableScrollOptimization: boolean;
+    deltaSort: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
     useVirtualColumns: boolean;
@@ -529,6 +546,7 @@ export class GridModel extends HoistModel {
             sortBy = [],
             groupBy = null,
             showGroupRowCounts = true,
+            deltaSort = false,
             externalSort = false,
             persistWith,
             sizingMode,
@@ -567,6 +585,7 @@ export class GridModel extends HoistModel {
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
             enableFullWidthScroll = false,
+            disableScrollOptimization = false,
             experimental,
             appData,
             xhImpl,
@@ -592,8 +611,10 @@ export class GridModel extends HoistModel {
         this.contextMenu =
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
         this.useVirtualColumns = useVirtualColumns;
+        this.deltaSort = deltaSort;
         this.externalSort = externalSort;
         this.enableFullWidthScroll = enableFullWidthScroll;
+        this.disableScrollOptimization = disableScrollOptimization;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
