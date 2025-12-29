@@ -54,6 +54,8 @@
     * `RelativeTimestampProps.options` - provide directly as top-level props
 
 * Improved the efficiency and logging of MsalClient.
+* Improved protections against running stale versions of client app code.
+
 
 ### 📚 Libraries
 * react-grid-layout `1.5.0 → 2.1.1`
