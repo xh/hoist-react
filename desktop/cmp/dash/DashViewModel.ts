@@ -4,6 +4,7 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {createObservableRef} from '@xh/hoist/utils/react';
 import {isNil} from 'lodash';
 import {ReactElement} from 'react';
 import {
@@ -73,6 +74,9 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     @managed refreshContextModel;
     @bindable isActive: boolean;
 
+    hostNode: HTMLElement = this.createHostNode();
+    viewRef = createObservableRef<HTMLDivElement>();
+
     //-----------------------
     // Private, internal state.
     //-------------------------
@@ -104,6 +108,18 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         this.containerModel = containerModel;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+
+        this.addReaction({
+            track: () => this.viewRef.current,
+            run: elem => {
+                if (elem) {
+                    elem.appendChild(this.hostNode);
+                    window.dispatchEvent(new Event('resize'));
+                    window.dispatchEvent(new CustomEvent('xhGridRedrawRows'));
+                }
+            },
+            debounce: 0
+        });
     }
 
     /**
@@ -124,6 +140,11 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         this.setViewState({...this.viewState, [key]: value});
     }
 
+    override destroy() {
+        this.hostNode.remove();
+        super.destroy();
+    }
+
     //------------------
     // Persistence
     //------------------
@@ -141,6 +162,19 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
      */
     unregisterProvider(provider: DashViewProvider<any>) {
         this.providers = this.providers.filter(it => it !== provider);
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    /**
+     * @returns Empty div set to inherit all styling from its parent
+     */
+    private createHostNode(): HTMLElement {
+        const hostNode = document.createElement('div');
+        hostNode.style.all = 'inherit';
+        hostNode.classList.add('xh-dash-view__host');
+        return hostNode;
     }
 }
 

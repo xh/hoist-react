@@ -27,6 +27,9 @@
 * Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
   common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
   `value` args to `number` where applicable.
+* `DashContainerViewState.id` now represents a unique instance ID for a view within its container
+  rather than the ID of its `ViewSpec`. New `viewSpecId` property has been added for that purpose.
+  Apps persisting `DashContainer` state or specifying `initialState` must migrate accordingly.
 
 ### 🐞 Bug Fixes
 
@@ -35,8 +38,8 @@
 * Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
-* Improved `DashCanvas` persistence such that individual `ViewModel` state can be updated without
-  reloading the entire canvas.
+* Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
+  be updated without reloading the entire canvas.
 
 ### ⚙️ Technical
 

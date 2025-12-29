@@ -6,6 +6,7 @@
  */
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
+import {SetOptional} from 'type-fest';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -369,7 +370,7 @@ export class DashCanvasModel
             `Trying to add multiple instances of a DashCanvasViewSpec with unique=true. id=${specId}`
         );
 
-        const id = this.genViewId(),
+        const id = this.genViewId(viewSpec.id),
             model = new DashCanvasViewModel({
                 id,
                 viewSpec,
@@ -404,12 +405,21 @@ export class DashCanvasModel
     }
 
     @action
-    private loadState(state: DashCanvasItemState[]) {
+    private loadState(state: SetOptional<DashCanvasItemState, 'id'>[]) {
         this.isLoadingState = true;
         try {
-            state = state.map(it => ({id: this.genViewId(), ...it}));
-            const stateById = keyBy(state, 'id'),
-                [keep, remove] = partition(this.viewModels, viewModel => viewModel.id in stateById),
+            const ids = new Set<string>();
+            state = state.map(it => {
+                let id = it.id;
+                if (id && ids.has(id)) {
+                    this.logWarn(`Duplicate view id found in state: ${id}. Generating a new id.`);
+                    id = null;
+                }
+                id = id ?? this.genViewId(it.viewSpecId, ids);
+                ids.add(id);
+                return {id, ...it};
+            });
+            const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
                 existingViewModelsById = keyBy(keep, 'id');
 
             XH.safeDestroy(remove);
@@ -460,10 +470,6 @@ export class DashCanvasModel
                 ...state
             };
         });
-    }
-
-    private genViewId() {
-        return `${XH.genId()}_${Date.now()}`;
     }
 
     @computed.struct

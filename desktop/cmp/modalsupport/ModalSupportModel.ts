@@ -56,6 +56,7 @@ export class ModalSupportModel extends HoistModel {
                 const dest = this.isModal ? modalRef : inlineRef;
                 dest.current?.appendChild(hostNode);
                 window.dispatchEvent(new Event('resize'));
+                window.dispatchEvent(new CustomEvent('xhGridRedrawRows'));
             }
         });
     }

@@ -8,7 +8,6 @@ import GoldenLayout from 'golden-layout';
 import jquery from 'jquery';
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'golden-layout/src/css/goldenlayout-light-theme.css';
-import {uniqueId} from 'lodash';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {createRoot} from 'react-dom/client';
@@ -44,13 +43,13 @@ class ReactComponentHandlerPatched extends ReactComponentHandler {
         this._container.off('destroy', this._destroy, this);
     }
 
-    // Modify this to generate a unique id and pass it through.
+    // Modify this to pass id through.
     // Also ensures any state is provided to the DashContainerView via props.
     // This enables us to associate DashViewModels with GoldenLayout react component instances.
     _getReactComponent() {
-        const {icon, title, state} = this._container._config;
+        const {icon, title, state, id} = this._container._config;
         const props = {
-            id: uniqueId('gl-'),
+            id,
             icon,
             title,
             viewState: state,

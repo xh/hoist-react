@@ -15,10 +15,12 @@ import {
     uses
 } from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
+import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
 import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
 import {useContext} from 'react';
 import './DashContainer.scss';
+import {createPortal} from 'react-dom';
 import {DashContainerModel} from './DashContainerModel';
 import {dashContainerAddViewButton} from './impl/DashContainerContextMenu';
 
@@ -48,7 +50,10 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
             item: frame(
                 frame({className, ref, testId}),
                 mask({spinner: true, bind: model.loadingStateTask}),
-                emptyContainerOverlay()
+                emptyContainerOverlay(),
+                model.viewModels.map(vm =>
+                    createPortal(dashContainerView({model: vm}), vm.hostNode, vm.id)
+                )
             )
         });
     }

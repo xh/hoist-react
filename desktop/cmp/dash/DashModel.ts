@@ -4,13 +4,14 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {HoistModel, managed, RefreshContextModel} from '@xh/hoist/core';
 
 /**
  * Base Model for {@link DashCanvasModel} and {@link DashContainerModel}.
  */
-export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
+export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> extends HoistModel {
     //---------------------------
     // Core State
     //---------------------------
@@ -46,5 +47,19 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL> extends HoistModel {
         makeObservable(this);
 
         this.refreshContextModel = new RefreshContextModel();
+    }
+
+    /** Deterministically generate a unique view id for a view based on the provided viewSpecId */
+    protected genViewId(
+        viewSpecId: string,
+        existingIds: Set<string> = new Set(this.viewModels.map(vm => vm.id))
+    ): string {
+        let idx = 0,
+            ret = `${viewSpecId}_0`;
+        while (existingIds.has(ret)) {
+            idx++;
+            ret = `${viewSpecId}_${idx}`;
+        }
+        return ret;
     }
 }

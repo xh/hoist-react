@@ -7,7 +7,7 @@
 import {PlainObject} from '@xh/hoist/core';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {serializeIcon} from '@xh/hoist/icon';
-import {logDebug, throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
 import GoldenLayout, {ContentItem} from 'golden-layout';
@@ -46,9 +46,9 @@ function convertGLToStateInner(
         if (configItem.type === 'component') {
             const viewSpecId: string = configItem.component,
                 viewSpec = dashContainerModel.getViewSpec(viewSpecId),
-                viewModelId = getViewModelId(contentItem),
-                viewModel = dashContainerModel.getViewModel(viewModelId),
-                view = {type: 'view', id: viewSpecId} as PlainObject;
+                id = getViewModelId(contentItem),
+                viewModel = dashContainerModel.getViewModel(id),
+                view = {type: 'view', id, viewSpecId} as PlainObject;
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
@@ -91,10 +91,11 @@ export function convertStateToGL(state = [], dashContainerModel: DashContainerMo
     return !ret.length ? [{type: 'stack'}] : ret;
 }
 
-export function goldenLayoutConfig(spec: DashContainerViewSpec): any {
-    const {id, title, allowRemove} = spec;
+export function goldenLayoutConfig(spec: DashContainerViewSpec, id: string): any {
+    const {id: specId, title, allowRemove} = spec;
     return {
-        component: id,
+        id,
+        component: specId,
         type: 'react-component',
         title,
         isClosable: allowRemove
@@ -116,17 +117,17 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
         );
 
         if (type === 'view') {
-            const viewSpec = viewSpecs.find(v => v.id === item.id);
+            const viewSpec = viewSpecs.find(v => v.id === item.viewSpecId);
 
             if (!viewSpec) {
-                logDebug(
-                    `Attempted to load non-existent or omitted view from state: ${item.id}`,
+                logWarn(
+                    `Trying to add non-existent or omitted DashContainerViewSpec. id=${item.viewSpecId}`,
                     'DashContainer'
                 );
                 return null;
             }
 
-            const ret = goldenLayoutConfig(viewSpec);
+            const ret = goldenLayoutConfig(viewSpec, item.id);
 
             if (!isNil(item.icon)) ret.icon = item.icon;
             if (!isNil(item.title)) ret.title = item.title;

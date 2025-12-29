@@ -4,9 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {frame} from '@xh/hoist/cmp/layout';
 import {
     managed,
-    modelLookupContextProvider,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -32,6 +32,7 @@ import {
     isFinite,
     isNil,
     last,
+    partition,
     reject,
     startCase
 } from 'lodash';
@@ -47,7 +48,6 @@ import {
     getViewModelId,
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
-import {dashContainerView} from './impl/DashContainerView';
 
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
@@ -76,10 +76,12 @@ export interface DashContainerConfig extends DashConfig<
 export interface DashContainerViewState {
     type: 'row' | 'column' | 'stack' | 'view';
     id?: string;
+    viewSpecId?: string;
     content?: DashContainerViewState[];
     title?: string;
     width?: number | string;
     height?: number | string;
+    state?: string;
 }
 
 /**
@@ -118,17 +120,17 @@ export interface DashContainerViewState {
  *             type: 'stack',
  *             width: '200px',
  *             content: [
- *                 {type: 'view', id: 'viewId'},
- *                 {type: 'view', id: 'viewId'}
+ *                 {type: 'view', id: 'id1', viewSpecId: 'specId'},
+ *                 {type: 'view', id: 'id2', viewSpecId: 'specId'}
  *             ]
  *         },
  *         {
  *             type: 'column',
  *             content: [
  *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
- *                 {type: 'view', id: 'viewId', height: 40},
- *                 {type: 'view', id: 'viewId'},
- *                 {type: 'view', id: 'viewId'}
+ *                 {type: 'view', id: 'id3', viewSpecId: 'specId', height: 40},
+ *                 {type: 'view', id: 'id4', viewSpecId: 'specId'},
+ *                 {type: 'view', id: 'id5', viewSpecId: 'specId'}
  *             ]
  *         }
  *     ]
@@ -139,8 +141,8 @@ export interface DashContainerViewState {
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
 export class DashContainerModel
-    extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel>
-    implements Persistable<{state: DashViewState[]}>
+    extends DashModel<DashContainerViewSpec, DashContainerViewState, DashViewModel>
+    implements Persistable<{state: DashContainerViewState[]}>
 {
     //---------------------
     // Settable State
@@ -166,6 +168,8 @@ export class DashContainerModel
     containerRef = createObservableRef<HTMLElement>();
     modelLookupContext;
     @managed loadingStateTask = TaskObserver.trackLast();
+
+    private isDestroyingGoldenLayout = false;
 
     constructor({
         viewSpecs,
@@ -257,10 +261,18 @@ export class DashContainerModel
     }
 
     /** Load state into the DashContainer, recreating its layout and contents */
-    async loadStateAsync(state: DashViewState[]) {
+    async loadStateAsync(state: DashContainerViewState[]) {
+        const ids = new Set<string>();
+        state = this.withIds(state, ids);
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id));
+
         // Always save a reference to the state, even if the container is not yet rendered.
         // Allows ref reaction on this class to loop back and apply it once GL is ready.
-        runInAction(() => (this.state = state));
+        runInAction(() => {
+            this.state = state;
+            this.viewModels = keep;
+            XH.safeDestroy(remove);
+        });
 
         // DOM required from this point on to recreate GL with new state.
         const containerEl = this.containerRef.current;
@@ -318,7 +330,7 @@ export class DashContainerModel
         if (!container) container = goldenLayout.root.contentItems[0];
 
         if (!isFinite(index)) index = container.contentItems.length;
-        container.addChild(goldenLayoutConfig(viewSpec), index);
+        container.addChild(goldenLayoutConfig(viewSpec, this.genViewId(specId)), index);
         const stack = container.isStack ? container : last(container.contentItems);
         wait(1).then(() => this.onStackActiveItemChange(stack));
     }
@@ -358,11 +370,11 @@ export class DashContainerModel
     //------------------------
     // Persistable Interface
     //------------------------
-    getPersistableState(): PersistableState<{state: DashViewState[]}> {
+    getPersistableState(): PersistableState<{state: DashContainerViewState[]}> {
         return new PersistableState({state: this.state});
     }
 
-    setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
+    setPersistableState(persistableState: PersistableState<{state: DashContainerViewState[]}>) {
         const {state} = persistableState.value;
         if (state) this.loadStateAsync(state);
     }
@@ -396,7 +408,7 @@ export class DashContainerModel
     }
 
     private onItemDestroyed(item) {
-        if (!item.isComponent) return;
+        if (!item.isComponent || this.isDestroyingGoldenLayout) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
     }
@@ -633,30 +645,33 @@ export class DashContainerModel
                 let icon = data.icon;
                 if (icon) icon = deserializeIcon(icon);
 
-                const model = new DashViewModel({
-                    id,
-                    viewSpec,
-                    icon,
-                    title,
-                    viewState,
-                    containerModel: this
-                });
+                let model = this.viewModels.find(it => it.id === id);
+                if (model) {
+                    model.setViewState(viewState);
+                } else {
+                    model = new DashViewModel({
+                        id,
+                        viewSpec,
+                        icon,
+                        title,
+                        viewState,
+                        containerModel: this
+                    });
 
-                model.addReaction({
-                    track: () => model.fullTitle,
-                    run: () => {
-                        const item = this.getItemByViewModel(id),
-                            $titleEl = this.getTitleElement(item.tab.element);
+                    model.addReaction({
+                        track: () => model.fullTitle,
+                        run: () => {
+                            const item = this.getItemByViewModel(id),
+                                $titleEl = this.getTitleElement(item.tab.element);
 
-                        $titleEl.text(model.fullTitle);
-                    }
-                });
+                            $titleEl.text(model.fullTitle);
+                        }
+                    });
 
-                this.addViewModel(model);
-                return modelLookupContextProvider({
-                    value: this.modelLookupContext,
-                    item: dashContainerView({model})
-                });
+                    this.addViewModel(model);
+                }
+
+                return frame({ref: model.viewRef});
             });
         });
 
@@ -671,16 +686,50 @@ export class DashContainerModel
         return $el.find('.lm_title').first();
     }
 
+    /**
+     * Ensure all views in the provided state have IDs, generating as needed.
+     * Mutates existingIds to track used IDs.
+     */
+    private withIds(
+        state: DashContainerViewState[],
+        existingIds: Set<string>
+    ): DashContainerViewState[] {
+        if (!state) return state;
+        return state.map(curState => {
+            if (curState.type !== 'view') {
+                return {
+                    ...curState,
+                    content: this.withIds(curState.content, existingIds)
+                };
+            }
+
+            let id = curState.id;
+            if (id && existingIds.has(id)) {
+                this.logWarn(`Duplicate view id found in state: ${id}. Generating a new id.`);
+                id = null;
+            }
+            id = id ?? this.genViewId(curState.viewSpecId, existingIds);
+            existingIds.add(id);
+            return {...curState, id};
+        });
+    }
+
     @action
     private destroyGoldenLayout() {
-        XH.safeDestroy(this.goldenLayout);
-        XH.safeDestroy(this.viewModels);
-        this.goldenLayout = null;
-        this.viewModels = [];
+        // onItemDestroyed will be called for each item. Flag to avoid removing viewModels that
+        // could be re-used on next generation of GL.
+        this.isDestroyingGoldenLayout = true;
+        try {
+            XH.safeDestroy(this.goldenLayout);
+            this.goldenLayout = null;
+        } finally {
+            this.isDestroyingGoldenLayout = false;
+        }
     }
 
     override destroy() {
         this.destroyGoldenLayout();
+        XH.safeDestroy(this.viewModels);
         super.destroy();
     }
 }
