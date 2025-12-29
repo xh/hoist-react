@@ -11,7 +11,6 @@ import ReactGridLayout, {
     getCompactor
 } from 'react-grid-layout';
 import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -24,7 +23,7 @@ import {
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {DashCanvasModel} from './DashCanvasModel';
