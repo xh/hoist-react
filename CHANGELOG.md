@@ -54,7 +54,7 @@
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 * Supports deletion of large numbers of log files via POST (requires hoist-core v35.)
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
-  be updated without reloading the entire canvas.
+  be updated without reloading the entire dashboard and owned views.
 
 ### ⚙️ Technical
 
