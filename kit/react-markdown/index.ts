@@ -4,8 +4,8 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {elementFactory} from '@xh/hoist/core';
-import ReactMarkdown from 'react-markdown';
+import {type ElementFactory, elementFactory} from '@xh/hoist/core';
+import ReactMarkdown, {type Options} from 'react-markdown';
 
 export {ReactMarkdown};
-export const reactMarkdown = elementFactory(ReactMarkdown);
+export const reactMarkdown: ElementFactory<Readonly<Options>> = elementFactory(ReactMarkdown);

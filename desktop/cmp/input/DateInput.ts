@@ -6,7 +6,7 @@
  */
 import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
 import {TimePickerProps} from '@blueprintjs/datetime';
-import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
+import {ReactDayPickerSingleProps} from '@blueprintjs/datetime/src/common/reactDayPickerProps';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';

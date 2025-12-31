@@ -9,7 +9,7 @@ import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
 import {Options} from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
-import {PluggableList} from 'unified/lib';
+import type {PluggableList} from 'unified';
 
 interface MarkdownProps extends HoistProps {
     /** Markdown formatted string to render. */

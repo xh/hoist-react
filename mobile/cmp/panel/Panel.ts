@@ -29,7 +29,7 @@ import {logWarn} from '@xh/hoist/utils/js';
 
 export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     /** A toolbar to be docked at the bottom of the panel. */
-    bbar?: Some<ReactNode>;
+    bbar?: ReactNode;
 
     /** CSS class name specific to the panel's header. */
     headerClassName?: string;
@@ -62,7 +62,7 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
     scrollable?: boolean;
 
     /** A toolbar to be docked at the top of the panel. */
-    tbar?: Some<ReactNode>;
+    tbar?: ReactNode;
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
@@ -138,15 +138,15 @@ function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel
     if (propVal === true) return cmp({isDisplayed: true});
     if (isValidElement(propVal)) return propVal;
     if (propVal === 'onLoad') {
-        const loadModel = ctxModel?.loadModel;
-        if (!loadModel) {
+        const loadObserver = ctxModel?.loadObserver;
+        if (!loadObserver) {
             logWarn(
                 `Cannot use 'onLoad' for '${propName}'. The linked context model (${ctxModel?.constructor.name} ${ctxModel?.xhId}) must enable LoadSupport to support this feature.`,
                 Panel
             );
             return null;
         }
-        return cmp({bind: loadModel, spinner: true});
+        return cmp({bind: loadObserver, spinner: true});
     }
     return cmp({bind: propVal, spinner: true});
 }

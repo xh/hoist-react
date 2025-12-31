@@ -761,8 +761,12 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance?.reactSelect;
-                    if (reactSelect?.state.menuIsOpen) return true;
+                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
+                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
+                    // but loadedInputValue should be truthy when the menu is open
+                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                        return true;
+                    }
 
                     // Allow shift+enter to add newlines in certain editors
                     if (event.shiftKey && event.key === 'Enter') return true;

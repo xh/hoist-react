@@ -16,8 +16,7 @@ import {ReactNode} from 'react';
 import type {AgProvidedColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnGroupHeaderProps
-    extends HoistProps<ColumnGroupHeaderModel>,
-        IHeaderGroupParams {
+    extends HoistProps<ColumnGroupHeaderModel>, IHeaderGroupParams {
     gridModel: GridModel;
     xhColumnGroup: ColumnGroup;
 }

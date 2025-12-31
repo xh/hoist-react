@@ -15,7 +15,7 @@ import {
     ReactElement,
     ReactNode
 } from 'react';
-import {PlainObject, Some, Thunkable} from './types/Types';
+import {PlainObject, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to
@@ -45,10 +45,10 @@ export type ElementSpec<P> = Omit<P, 'items' | 'item' | 'omit'> & {
     // Enhanced attributes to support element factory
     //---------------------------------------------
     /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
-    items?: Some<ReactNode>;
+    items?: ReactNode;
 
     /**  Equivalent to `items`, offered for code clarity when only one child is needed. */
-    item?: Some<ReactNode>;
+    item?: ReactNode;
 
     /** True to exclude the Element. */
     omit?: Thunkable<boolean>;
@@ -126,7 +126,7 @@ export function elementFactory<C extends ReactComponent>(component: C): ElementF
 export function elementFactory<P extends PlainObject>(component: ReactComponent): ElementFactory<P>;
 export function elementFactory(component: ReactComponent): ElementFactory {
     const ret = function (...args) {
-        return createElement(component, normalizeArgs(args, component));
+        return createElement(component, normalizeArgs(args));
     };
     ret.isElementFactory = true;
     return ret;
@@ -135,7 +135,7 @@ export function elementFactory(component: ReactComponent): ElementFactory {
 //------------------------
 // Implementation
 //------------------------
-function normalizeArgs(args: any[], type: any) {
+function normalizeArgs(args: any[]) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {

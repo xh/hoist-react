@@ -23,11 +23,7 @@ import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>,
-        StyleProps,
-        LayoutProps,
-        TestSupportProps,
-        Omit<BpButtonProps, 'ref'> {
+    extends HoistProps<M>, StyleProps, LayoutProps, TestSupportProps, Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
