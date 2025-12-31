@@ -18,9 +18,8 @@ import {
     RenderMode
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {action} from 'mobx';
 import {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = PlainObject;
