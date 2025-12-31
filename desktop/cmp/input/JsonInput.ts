@@ -51,7 +51,9 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
 //----------------------
 function jsonLinterWrapper(jsonSchema?: PlainObject, ajvProps?: Options) {
     // No schema → only use JSONLint
-    if (!jsonSchema) return jsonLintOnly;
+    if (!jsonSchema) {
+        return (text: string) => jsonLintOnly(text);
+    }
 
     const ajv = new Ajv({...ajvProps}),
         validate = ajv.compile(jsonSchema);
@@ -84,9 +86,7 @@ function runJsonLint(text: string, annotations: any[]) {
 
     try {
         jsonlint.parse(text);
-    } catch {
-        // intentionally ignored: parseError handles reporting
-    }
+    } catch (ignored) {}
 }
 
 /** Run AJV schema validation and append errors to annotations */
@@ -94,7 +94,7 @@ function runAjvValidation(text: string, validate: ValidateFunction, annotations:
     let data: any;
     try {
         data = JSON.parse(text);
-    } catch {
+    } catch (ignored) {
         return;
     }
 

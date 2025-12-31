@@ -116,11 +116,17 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** False (default) to highlight active line in input. */
     highlightActiveLine?: boolean;
 
-    /** True (default) to add line numbers to gutter. */
+    /**
+     * True (default) to add line numbers to the gutter.
+     * If a PlainObject is provided, it will be passed to the CM6 lineNumbers extension.
+     * See CodeMirror 6 docs: https://codemirror.net/6/docs/ref/#gutter.lineNumbers
+     */
     lineNumbers?: boolean | PlainObject;
 
-    /** False (default) to add line numbers to gutter. */
-    lineWrapping?: boolean | PlainObject;
+    /**
+     * False (default) to enable line wrapping.
+     */
+    lineWrapping?: boolean;
 }
 
 /**
@@ -242,8 +248,7 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override select() {
-        if (!this.editor) return;
-        this.editor.dispatch({selection: {anchor: 0, head: this.editor.state.doc.length}});
+        this.editor?.dispatch({selection: {anchor: 0, head: this.editor.state.doc.length}});
     }
 
     constructor() {
