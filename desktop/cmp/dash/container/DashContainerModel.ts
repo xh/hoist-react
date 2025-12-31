@@ -81,7 +81,7 @@ export interface DashContainerViewState {
     title?: string;
     width?: number | string;
     height?: number | string;
-    state?: string;
+    state?: PlainObject;
 }
 
 /**
