@@ -80,7 +80,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     // Private, internal state.
     //-------------------------
     /**
-     * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
+     * Array of {@link DashViewProvider} instances bound to this model. Used to proactively push
      * state to the target components when new state is set on this model.
      */
     private providers: DashViewProvider<any>[] = [];
