@@ -42,6 +42,8 @@
 * `DashContainerViewState.id` now represents a unique instance ID for a view within its container
   rather than the ID of its `ViewSpec`. New `viewSpecId` property has been added for that purpose.
   Apps persisting `DashContainer` state or specifying `initialState` must migrate accordingly.
+* Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
+  Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
 ### 🐞 Bug Fixes
 

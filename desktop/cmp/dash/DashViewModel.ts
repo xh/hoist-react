@@ -173,7 +173,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     private createHostNode(): HTMLElement {
         const hostNode = document.createElement('div');
         hostNode.style.all = 'inherit';
-        hostNode.classList.add('xh-dash-view__host');
+        hostNode.classList.add('xh-dash-tab__content');
         return hostNode;
     }
 }

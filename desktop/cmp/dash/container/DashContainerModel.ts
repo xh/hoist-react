@@ -671,7 +671,7 @@ export class DashContainerModel
                     this.addViewModel(model);
                 }
 
-                return frame({ref: model.viewRef});
+                return frame({className: 'xh-dash-tab', ref: model.viewRef});
             });
         });
 

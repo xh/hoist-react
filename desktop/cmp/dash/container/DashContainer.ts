@@ -51,6 +51,8 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
                 frame({className, ref, testId}),
                 mask({spinner: true, bind: model.loadingStateTask}),
                 emptyContainerOverlay(),
+                // We want to preserve dashContainerViews between golden-layout mounts/unmounts, so
+                // we portal them into stable hostNodes rather than letting GL manage them directly.
                 model.viewModels.map(vm =>
                     createPortal(dashContainerView({model: vm}), vm.hostNode, vm.id)
                 )
