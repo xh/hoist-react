@@ -166,7 +166,6 @@ export class DashContainerModel
     //----------------------------
     @observable.ref goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    modelLookupContext;
     @managed loadingStateTask = TaskObserver.trackLast();
 
     private isDestroyingGoldenLayout = false;

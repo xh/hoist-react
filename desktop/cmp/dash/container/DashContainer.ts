@@ -6,19 +6,11 @@
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistProps,
-    ModelLookupContext,
-    refreshContextView,
-    TestSupportProps,
-    uses
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, refreshContextView, TestSupportProps, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {useOnMount, useOnResize} from '@xh/hoist/utils/react';
-import {useContext} from 'react';
+import {useOnResize} from '@xh/hoist/utils/react';
 import './DashContainer.scss';
 import {createPortal} from 'react-dom';
 import {DashContainerModel} from './DashContainerModel';
@@ -35,11 +27,6 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
     className: 'xh-dash-container',
 
     render({model, className, testId}, ref) {
-        // Store current ModelLookupContext in model, to be applied in views later
-        const context = useContext(ModelLookupContext);
-        useOnMount(() => (model.modelLookupContext = context));
-
-        // Get enhance container ref with GoldenLayout resize handling
         ref = composeRefs(
             ref,
             model.containerRef,
