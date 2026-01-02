@@ -401,5 +401,5 @@ will be filled in as soon as possible. These include planned notes on:
 
 ------------------------------------------
 
-📫☎️🌎 info@xh.io | https://xh.io/contact
-Copyright © 2026 Extremely Heavy Industries Inc. - all rights reserved
+☎️ info@xh.io | <https://xh.io>
+Copyright © 2026 Extremely Heavy Industries Inc.

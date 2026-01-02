@@ -156,5 +156,4 @@ from your TS upgrade:
 ------------------------------------------
 
 ☎️ info@xh.io | <https://xh.io>
-
 Copyright © 2026 Extremely Heavy Industries Inc.
