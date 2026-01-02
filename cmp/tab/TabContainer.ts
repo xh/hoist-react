@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {BoxProps, hoistCmp, HoistProps, refreshContextView, uses, XH} from '@xh/hoist/core';

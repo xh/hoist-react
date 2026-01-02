@@ -349,7 +349,7 @@ render method.
 
 Note that JSX is pre-processed (via Babel) into calls to React.createElement() before running in the
 browser. Ultimately this produces similar runtime Javascript to the element factory approach
-reccomended above.
+recommended above.
 
 
 ## Bundled and Managed Components
@@ -402,4 +402,4 @@ will be filled in as soon as possible. These include planned notes on:
 ------------------------------------------
 
 📫☎️🌎 info@xh.io | https://xh.io/contact
-Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved
+Copyright © 2026 Extremely Heavy Industries Inc. - all rights reserved
