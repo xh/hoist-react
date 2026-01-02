@@ -13,7 +13,7 @@
 * DashCanvas new features:
   * supports showing a grid background.
   * supports 2 compacting strategies: 'vertical' or 'horizontal'
-
+* Support for tracking 'clientAppCode' in admin tracking.
 
 ### 💥 Breaking Changes
 

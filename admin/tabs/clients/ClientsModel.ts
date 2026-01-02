@@ -197,7 +197,7 @@ export class ClientsModel extends BaseAdminTabModel {
                 {
                     headerName: 'Client App',
                     headerAlign: 'center',
-                    children: [Col.appVersion, Col.appBuild]
+                    children: [Col.clientAppCode, Col.appVersion, {...Col.appBuild, hidden}]
                 },
                 {
                     headerName: 'Send/Receive',

@@ -94,6 +94,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   return span(username, impSpan);
                               }
                           }),
+                          formField({field: 'clientAppCode'}),
                           formField({field: 'category'}),
                           formField({field: 'msg'}),
                           formField({

@@ -277,6 +277,16 @@ export const msg: ColumnSpec = {
     autosizeMaxWidth
 };
 
+export const clientAppCode: ColumnSpec = {
+    field: {
+        name: 'clientAppCode',
+        type: 'string',
+        displayName: 'Client App'
+    },
+    chooserGroup: 'Core Data',
+    width: 100
+};
+
 export const severity: ColumnSpec = {
     field: {
         name: 'severity',
