@@ -24,7 +24,10 @@ import {
     sortBy,
     pick,
     isEqual,
-    startCase
+    startCase,
+    partition,
+    keyBy,
+    compact
 } from 'lodash';
 
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
@@ -115,7 +118,6 @@ export class DashCanvasModel
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
-    private isLoadingState: boolean;
 
     get rglLayout() {
         return this.layout.map(it => {
@@ -384,7 +386,7 @@ export class DashCanvasModel
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
         throwIf(
-            !this.isLoadingState && !viewSpec.allowAdd,
+            !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
         throwIf(
@@ -392,7 +394,7 @@ export class DashCanvasModel
             `Trying to add multiple instances of a DashCanvasViewSpec with unique=true. id=${specId}`
         );
 
-        const id = this.genViewId(),
+        const id = this.genViewId(viewSpec.id),
             model = new DashCanvasViewModel({
                 id,
                 viewSpec,
@@ -417,32 +419,59 @@ export class DashCanvasModel
     }
 
     @action
-    private setLayout(layout: LayoutItem[]) {
+    private setLayout(layout: LayoutItem[], buildAndSetState = true) {
         layout = sortBy(layout, 'i');
         const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isLoadingState) this.state = this.buildState();
+        if (buildAndSetState) this.state = this.buildState();
     }
 
     @action
     private loadState(state: DashCanvasItemState[]) {
-        this.isLoadingState = true;
-        try {
-            this.clear();
-            state.forEach(state => {
-                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-                const {viewSpecId} = state;
-                if (this.hasSpec(viewSpecId)) {
-                    this.addViewInternal(viewSpecId, state);
-                } else {
-                    this.logWarn(`Unknown viewSpecId [${viewSpecId}] found in state - skipping.`);
-                }
+        const ids = new Set<string>(),
+            stateWithIds = state.map(it => {
+                const id = this.genViewId(it.viewSpecId, ids);
+                ids.add(id);
+                return {id, ...it};
             });
-        } finally {
-            this.isLoadingState = false;
-        }
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
+            existingViewModelsById = keyBy(keep, 'id');
+
+        XH.safeDestroy(remove);
+
+        this.viewModels = compact(
+            stateWithIds.map(it => {
+                const existingViewModel = existingViewModelsById[it.id];
+                if (existingViewModel) {
+                    existingViewModel.setViewState(it.state);
+                    existingViewModel.title = it.title;
+                    return existingViewModel;
+                }
+
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                if (!this.hasSpec(it.viewSpecId)) {
+                    this.logWarn(
+                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
+                    );
+                    return null;
+                }
+
+                return new DashCanvasViewModel({
+                    id: it.id,
+                    viewSpec: this.getSpec(it.viewSpecId),
+                    title: it.title,
+                    viewState: it.state,
+                    containerModel: this
+                });
+            })
+        );
+
+        this.setLayout(
+            stateWithIds.map(it => ({i: it.id, ...it.layout})),
+            false
+        );
     }
 
     private buildState(): DashCanvasItemState[] {
@@ -457,10 +486,6 @@ export class DashCanvasModel
                 ...state
             };
         });
-    }
-
-    private genViewId() {
-        return `${XH.genId()}_${Date.now()}`;
     }
 
     @computed.struct

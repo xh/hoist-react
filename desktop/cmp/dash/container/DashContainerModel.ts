@@ -4,9 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
+import {frame} from '@xh/hoist/cmp/layout';
 import {
     managed,
-    modelLookupContextProvider,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -16,6 +16,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
+import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -31,12 +32,13 @@ import {
     isFinite,
     isNil,
     last,
+    partition,
     reject,
     startCase
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
-import {DashViewModel, DashViewState} from '../DashViewModel';
+import {DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
@@ -46,7 +48,6 @@ import {
     getViewModelId,
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
-import {dashContainerView} from './impl/DashContainerView';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
 export interface DashContainerConfig extends DashConfig<
@@ -80,6 +81,7 @@ export interface DashContainerViewState {
     title?: string;
     width?: number | string;
     height?: number | string;
+    state?: PlainObject;
 }
 
 /**
@@ -139,8 +141,8 @@ export interface DashContainerViewState {
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
 export class DashContainerModel
-    extends DashModel<DashContainerViewSpec, DashViewState, DashViewModel>
-    implements Persistable<{state: DashViewState[]}>
+    extends DashModel<DashContainerViewSpec, DashContainerViewState, DashContainerViewModel>
+    implements Persistable<{state: DashContainerViewState[]}>
 {
     //---------------------
     // Settable State
@@ -164,8 +166,9 @@ export class DashContainerModel
     //----------------------------
     @observable.ref goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    modelLookupContext;
     @managed loadingStateTask = TaskObserver.trackLast();
+
+    private isDestroyingGoldenLayout = false;
 
     constructor({
         viewSpecs,
@@ -257,10 +260,18 @@ export class DashContainerModel
     }
 
     /** Load state into the DashContainer, recreating its layout and contents */
-    async loadStateAsync(state: DashViewState[]) {
+    async loadStateAsync(state: DashContainerViewState[]) {
+        const ids = new Set<string>(),
+            stateWithViewModelIds = this.withIds(state, ids);
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id));
+
         // Always save a reference to the state, even if the container is not yet rendered.
         // Allows ref reaction on this class to loop back and apply it once GL is ready.
-        runInAction(() => (this.state = state));
+        runInAction(() => {
+            this.state = stateWithViewModelIds;
+            this.viewModels = keep;
+            XH.safeDestroy(remove);
+        });
 
         // DOM required from this point on to recreate GL with new state.
         const containerEl = this.containerRef.current;
@@ -275,7 +286,7 @@ export class DashContainerModel
                 .thenAction(() => {
                     if (refIsStale()) return;
                     this.destroyGoldenLayout();
-                    this.goldenLayout = this.createGoldenLayout(containerEl, state);
+                    this.goldenLayout = this.createGoldenLayout(containerEl, stateWithViewModelIds);
                 })
                 // Since React v18, it's necessary to wait a short while for ViewModels to be available.
                 .wait(500)
@@ -318,14 +329,14 @@ export class DashContainerModel
         if (!container) container = goldenLayout.root.contentItems[0];
 
         if (!isFinite(index)) index = container.contentItems.length;
-        container.addChild(goldenLayoutConfig(viewSpec), index);
+        container.addChild(goldenLayoutConfig(viewSpec, this.genViewId(specId)), index);
         const stack = container.isStack ? container : last(container.contentItems);
         wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**
      * Remove a view from the container.
-     * @param id - DashViewModel id to remove from the container
+     * @param id - DashContainerViewModel id to remove from the container
      */
     removeView(id: string) {
         const view = this.getItemByViewModel(id);
@@ -335,7 +346,7 @@ export class DashContainerModel
 
     /**
      * Initiate field renaming for a given view
-     * @param id - DashViewModel id to rename
+     * @param id - DashContainerViewModel id to rename
      */
     renameView(id: string) {
         const view = this.getItemByViewModel(id);
@@ -351,18 +362,18 @@ export class DashContainerModel
         return this.viewSpecs.find(it => it.id === id);
     }
 
-    getViewModel(id: string): DashViewModel<DashContainerViewSpec> {
+    getViewModel(id: string): DashContainerViewModel {
         return find(this.viewModels, {id});
     }
 
     //------------------------
     // Persistable Interface
     //------------------------
-    getPersistableState(): PersistableState<{state: DashViewState[]}> {
+    getPersistableState(): PersistableState<{state: DashContainerViewState[]}> {
         return new PersistableState({state: this.state});
     }
 
-    setPersistableState(persistableState: PersistableState<{state: DashViewState[]}>) {
+    setPersistableState(persistableState: PersistableState<{state: DashContainerViewState[]}>) {
         const {state} = persistableState.value;
         if (state) this.loadStateAsync(state);
     }
@@ -396,7 +407,7 @@ export class DashContainerModel
     }
 
     private onItemDestroyed(item) {
-        if (!item.isComponent) return;
+        if (!item.isComponent || this.isDestroyingGoldenLayout) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
     }
@@ -416,9 +427,9 @@ export class DashContainerModel
         return this.getItems().filter(it => it.config.component === id);
     }
 
-    // Get the view instance with the given DashViewModel.id
+    // Get the view instance with the given DashContainerViewModel.id
     private getItemByViewModel(id: string) {
-        return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
+        return this.getItems().find(it => it.instance?._reactComponent?.props?.viewModelId === id);
     }
 
     //-----------------
@@ -426,14 +437,14 @@ export class DashContainerModel
     //-----------------
     get viewState() {
         const ret = {};
-        this.viewModels.map(({id, icon, title, viewState}) => {
+        this.viewModels.forEach(({id, icon, title, viewState}) => {
             ret[id] = {icon, title, viewState};
         });
         return ret;
     }
 
     @action
-    private addViewModel(viewModel: DashViewModel) {
+    private addViewModel(viewModel: DashContainerViewModel) {
         this.viewModels = [...this.viewModels, viewModel];
     }
 
@@ -472,7 +483,7 @@ export class DashContainerModel
         e: MouseEvent,
         $target: any,
         stack: any,
-        viewModel?: DashViewModel,
+        viewModel?: DashContainerViewModel,
         index?: number
     ) {
         if (this.contentLocked) return;
@@ -560,7 +571,7 @@ export class DashContainerModel
         });
     }
 
-    private insertTitleForm($el, viewModel: DashViewModel) {
+    private insertTitleForm($el, viewModel: DashContainerViewModel) {
         const formSelector = '.title-form';
         if ($el.find(formSelector).length) return;
 
@@ -584,7 +595,7 @@ export class DashContainerModel
         });
     }
 
-    private showTitleForm($tabEl, viewModel: DashViewModel) {
+    private showTitleForm($tabEl, viewModel: DashContainerViewModel) {
         if (this.renameLocked) return;
 
         const $inputEl = $tabEl.find('.title-form input').first(),
@@ -629,34 +640,37 @@ export class DashContainerModel
         // Register components
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, data => {
-                const {id, title, viewState} = data;
+                const {viewModelId, title, viewState} = data;
                 let icon = data.icon;
                 if (icon) icon = deserializeIcon(icon);
 
-                const model = new DashViewModel({
-                    id,
-                    viewSpec,
-                    icon,
-                    title,
-                    viewState,
-                    containerModel: this
-                });
+                let model = this.viewModels.find(it => it.id === viewModelId);
+                if (model) {
+                    model.setViewState(viewState);
+                } else {
+                    model = new DashContainerViewModel({
+                        id: viewModelId,
+                        viewSpec,
+                        icon,
+                        title,
+                        viewState,
+                        containerModel: this
+                    });
 
-                model.addReaction({
-                    track: () => model.fullTitle,
-                    run: () => {
-                        const item = this.getItemByViewModel(id),
-                            $titleEl = this.getTitleElement(item.tab.element);
+                    model.addReaction({
+                        track: () => model.fullTitle,
+                        run: () => {
+                            const item = this.getItemByViewModel(viewModelId),
+                                $titleEl = this.getTitleElement(item.tab.element);
 
-                        $titleEl.text(model.fullTitle);
-                    }
-                });
+                            $titleEl.text(model.fullTitle);
+                        }
+                    });
 
-                this.addViewModel(model);
-                return modelLookupContextProvider({
-                    value: this.modelLookupContext,
-                    item: dashContainerView({model})
-                });
+                    this.addViewModel(model);
+                }
+
+                return frame({className: 'xh-dash-tab', ref: model.viewRef});
             });
         });
 
@@ -671,16 +685,49 @@ export class DashContainerModel
         return $el.find('.lm_title').first();
     }
 
+    /**
+     * Generate and assign viewModelIds to each view in the provided state.
+     * Mutates existingIds to track used IDs.
+     */
+    private withIds(
+        state: DashContainerViewState[],
+        existingIds: Set<string>
+    ): DashContainerViewStateWithViewModelId[] {
+        if (!state) return state;
+        return state.map(curState => {
+            if (curState.type !== 'view') {
+                return {
+                    ...curState,
+                    content: this.withIds(curState.content, existingIds)
+                };
+            }
+
+            const viewModelId = this.genViewId(curState.id, existingIds);
+            existingIds.add(viewModelId);
+            return {...curState, viewModelId};
+        });
+    }
+
     @action
     private destroyGoldenLayout() {
-        XH.safeDestroy(this.goldenLayout);
-        XH.safeDestroy(this.viewModels);
-        this.goldenLayout = null;
-        this.viewModels = [];
+        // onItemDestroyed will be called for each item. Flag to avoid removing viewModels that
+        // could be re-used on next generation of GL.
+        this.isDestroyingGoldenLayout = true;
+        try {
+            XH.safeDestroy(this.goldenLayout);
+            this.goldenLayout = null;
+        } finally {
+            this.isDestroyingGoldenLayout = false;
+        }
     }
 
     override destroy() {
         this.destroyGoldenLayout();
+        XH.safeDestroy(this.viewModels);
         super.destroy();
     }
+}
+
+interface DashContainerViewStateWithViewModelId extends DashContainerViewState {
+    viewModelId?: string;
 }

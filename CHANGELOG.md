@@ -39,7 +39,8 @@
   `react-grid-layout` v2+ (not common).
 * `DashCanvasModel.containerPadding` is now applied to the `react-grid-layout` div by RGL, not to the
   hoist-react provided containing div.  This may affect printing layouts.
-
+* Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
+  Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
 ### 🐞 Bug Fixes
 
@@ -49,6 +50,8 @@
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
 * Supports deletion of large numbers of log files via POST (requires hoist-core v35.)
+* Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
+  be updated without reloading the entire dashboard and owned views.
 
 ### ⚙️ Technical
 

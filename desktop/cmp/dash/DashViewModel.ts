@@ -4,9 +4,11 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {isNil} from 'lodash';
+import {createObservableRef} from '@xh/hoist/utils/react';
+import {isNil, remove} from 'lodash';
 import {ReactElement} from 'react';
 import {
+    type DashViewProvider,
     HoistModel,
     managed,
     ManagedRefreshContextModel,
@@ -16,14 +18,14 @@ import {
     RenderMode
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, makeObservable, bindable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = PlainObject;
 
 /**
- * Model for a content item within a DashContainer or DashCanvas.
+ * Base model for a content item within a DashContainer or DashCanvas.
  * Supports state management, a refresh context, and active state.
  *
  * This model is not created directly within applications. Instead, specify a
@@ -33,7 +35,7 @@ export type DashViewState = PlainObject;
  * Content hosted within this view can use this model at runtime to access and set state
  * for the view or access other information.
  */
-export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
+export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
     id: string;
 
     /** DashViewSpec used to create this view. */
@@ -71,6 +73,17 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     @managed refreshContextModel;
     @bindable isActive: boolean;
 
+    viewRef = createObservableRef<HTMLDivElement>();
+
+    //-----------------------
+    // Private, internal state.
+    //-------------------------
+    /**
+     * Array of {@link DashViewProvider} instances bound to this model. Used to proactively push
+     * state to the target components when new state is set on this model.
+     */
+    private providers: DashViewProvider<any>[] = [];
+
     get renderMode(): RenderMode {
         return this.viewSpec.renderMode ?? this.containerModel.renderMode;
     }
@@ -96,10 +109,40 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     }
 
     /**
-     * Modify a single key on this model's viewState
+     * Modify the viewState of this model. This will push the new state to all registered
+     * {@link DashViewProvider} instances.
+     */
+    @action
+    setViewState(viewState: DashViewState) {
+        this.viewState = viewState;
+        this.providers.forEach(it => it.pushStateToTarget());
+    }
+
+    /**
+     * Modify a single key on this model's viewState. This will push the new state to all registered
+     * {@link DashViewProvider} instances.
      */
     setViewStateKey(key: string, value: any) {
-        this.viewState = {...this.viewState, [key]: value};
+        this.setViewState({...this.viewState, [key]: value});
+    }
+
+    //------------------
+    // Persistence
+    //------------------
+    /**
+     * Register a {@link DashViewProvider} to receive state changes.
+     * @internal
+     */
+    registerProvider(provider: DashViewProvider<any>) {
+        this.providers.push(provider);
+    }
+
+    /**
+     * Unregister a {@link DashViewProvider} to stop receiving state changes.
+     * @internal
+     */
+    unregisterProvider(provider: DashViewProvider<any>) {
+        remove(this.providers, provider);
     }
 }
 
