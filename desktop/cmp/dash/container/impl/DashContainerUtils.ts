@@ -17,7 +17,7 @@ import GoldenLayout, {ContentItem} from 'golden-layout';
  */
 export function getViewModelId(view) {
     if (!view || !view.isInitialised || !view.isComponent) return;
-    return view.instance?._reactComponent?.props?.id;
+    return view.instance?._reactComponent?.props?.viewModelId;
 }
 
 /**
@@ -46,9 +46,9 @@ function convertGLToStateInner(
         if (configItem.type === 'component') {
             const viewSpecId: string = configItem.component,
                 viewSpec = dashContainerModel.getViewSpec(viewSpecId),
-                id = getViewModelId(contentItem),
-                viewModel = dashContainerModel.getViewModel(id),
-                view = {type: 'view', id, viewSpecId} as PlainObject;
+                viewModelId = getViewModelId(contentItem),
+                viewModel = dashContainerModel.getViewModel(viewModelId),
+                view = {type: 'view', viewModelId, id: viewSpecId} as PlainObject;
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
@@ -91,11 +91,11 @@ export function convertStateToGL(state = [], dashContainerModel: DashContainerMo
     return !ret.length ? [{type: 'stack'}] : ret;
 }
 
-export function goldenLayoutConfig(spec: DashContainerViewSpec, id: string): any {
-    const {id: specId, title, allowRemove} = spec;
+export function goldenLayoutConfig(spec: DashContainerViewSpec, viewModelId: string): any {
+    const {id, title, allowRemove} = spec;
     return {
-        id,
-        component: specId,
+        viewModelId,
+        component: id,
         type: 'react-component',
         title,
         isClosable: allowRemove
@@ -117,17 +117,17 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
         );
 
         if (type === 'view') {
-            const viewSpec = viewSpecs.find(v => v.id === item.viewSpecId);
+            const viewSpec = viewSpecs.find(v => v.id === item.id);
 
             if (!viewSpec) {
                 logWarn(
-                    `Trying to add non-existent or omitted DashContainerViewSpec. id=${item.viewSpecId}`,
+                    `Trying to add non-existent or omitted DashContainerViewSpec. id=${item.id}`,
                     'DashContainer'
                 );
                 return null;
             }
 
-            const ret = goldenLayoutConfig(viewSpec, item.id);
+            const ret = goldenLayoutConfig(viewSpec, item.viewModelId);
 
             if (!isNil(item.icon)) ret.icon = item.icon;
             if (!isNil(item.title)) ret.title = item.title;

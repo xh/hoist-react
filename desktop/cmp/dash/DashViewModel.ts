@@ -5,7 +5,7 @@
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {isNil} from 'lodash';
+import {isNil, remove} from 'lodash';
 import {ReactElement} from 'react';
 import {
     type DashViewProvider,
@@ -25,7 +25,7 @@ import {DashViewSpec} from './DashViewSpec';
 export type DashViewState = PlainObject;
 
 /**
- * Model for a content item within a DashContainer or DashCanvas.
+ * Base model for a content item within a DashContainer or DashCanvas.
  * Supports state management, a refresh context, and active state.
  *
  * This model is not created directly within applications. Instead, specify a
@@ -35,7 +35,7 @@ export type DashViewState = PlainObject;
  * Content hosted within this view can use this model at runtime to access and set state
  * for the view or access other information.
  */
-export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
+export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistModel {
     id: string;
 
     /** DashViewSpec used to create this view. */
@@ -73,7 +73,6 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
     @managed refreshContextModel;
     @bindable isActive: boolean;
 
-    hostNode: HTMLElement = this.createHostNode();
     viewRef = createObservableRef<HTMLDivElement>();
 
     //-----------------------
@@ -107,18 +106,6 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         this.containerModel = containerModel;
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
-
-        this.addReaction({
-            track: () => this.viewRef.current,
-            run: elem => {
-                if (elem) {
-                    elem.appendChild(this.hostNode);
-                    window.dispatchEvent(new Event('resize'));
-                    window.dispatchEvent(new CustomEvent('xhGridRedrawRows'));
-                }
-            },
-            debounce: 0
-        });
     }
 
     /**
@@ -139,11 +126,6 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
         this.setViewState({...this.viewState, [key]: value});
     }
 
-    override destroy() {
-        this.hostNode.remove();
-        super.destroy();
-    }
-
     //------------------
     // Persistence
     //------------------
@@ -160,20 +142,7 @@ export class DashViewModel<T extends DashViewSpec = DashViewSpec> extends HoistM
      * @internal
      */
     unregisterProvider(provider: DashViewProvider<any>) {
-        this.providers = this.providers.filter(it => it !== provider);
-    }
-
-    //------------------
-    // Implementation
-    //------------------
-    /**
-     * @returns Empty div set to inherit all styling from its parent
-     */
-    private createHostNode(): HTMLElement {
-        const hostNode = document.createElement('div');
-        hostNode.style.all = 'inherit';
-        hostNode.classList.add('xh-dash-tab__content');
-        return hostNode;
+        remove(this.providers, provider);
     }
 }
 

@@ -20,6 +20,7 @@ import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/Co
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
+import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
@@ -58,6 +59,7 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
+    DashContainerViewModel,
     errorMessageImpl,
     maskImpl,
     DynamicTabSwitcherModel

@@ -7,7 +7,6 @@
 import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {SetOptional} from 'type-fest';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -67,7 +66,6 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 }
 
 export interface DashCanvasItemState {
-    id: string;
     layout: DashCanvasItemLayout;
     title?: string;
     viewSpecId: string;
@@ -120,7 +118,6 @@ export class DashCanvasModel
     @observable.ref layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
-    private isLoadingState: boolean;
 
     get rglLayout() {
         return this.layout.map(it => {
@@ -389,7 +386,7 @@ export class DashCanvasModel
             `Trying to add non-existent or omitted DashCanvasViewSpec. id=${specId}`
         );
         throwIf(
-            !this.isLoadingState && !viewSpec.allowAdd,
+            !viewSpec.allowAdd,
             `Trying to add DashCanvasViewSpec with allowAdd=false. id=${specId}`
         );
         throwIf(
@@ -422,66 +419,59 @@ export class DashCanvasModel
     }
 
     @action
-    private setLayout(layout: LayoutItem[]) {
+    private setLayout(layout: LayoutItem[], buildAndSetState = true) {
         layout = sortBy(layout, 'i');
         const layoutChanged = !isEqual(layout, this.layout);
         if (!layoutChanged) return;
 
         this.layout = layout;
-        if (!this.isLoadingState) this.state = this.buildState();
+        if (buildAndSetState) this.state = this.buildState();
     }
 
     @action
-    private loadState(state: SetOptional<DashCanvasItemState, 'id'>[]) {
-        this.isLoadingState = true;
-        try {
-            const ids = new Set<string>();
-            state = state.map(it => {
-                let id = it.id;
-                if (id && ids.has(id)) {
-                    this.logWarn(`Duplicate view id found in state: ${id}. Generating a new id.`);
-                    id = null;
-                }
-                id = id ?? this.genViewId(it.viewSpecId, ids);
+    private loadState(state: DashCanvasItemState[]) {
+        const ids = new Set<string>(),
+            stateWithIds = state.map(it => {
+                const id = this.genViewId(it.viewSpecId, ids);
                 ids.add(id);
                 return {id, ...it};
             });
-            const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
-                existingViewModelsById = keyBy(keep, 'id');
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
+            existingViewModelsById = keyBy(keep, 'id');
 
-            XH.safeDestroy(remove);
+        XH.safeDestroy(remove);
 
-            this.viewModels = compact(
-                state.map(it => {
-                    const existingViewModel = existingViewModelsById[it.id];
-                    if (existingViewModel) {
-                        existingViewModel.setViewState(it.state);
-                        existingViewModel.title = it.title;
-                        return existingViewModel;
-                    }
+        this.viewModels = compact(
+            stateWithIds.map(it => {
+                const existingViewModel = existingViewModelsById[it.id];
+                if (existingViewModel) {
+                    existingViewModel.setViewState(it.state);
+                    existingViewModel.title = it.title;
+                    return existingViewModel;
+                }
 
-                    // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-                    if (!this.hasSpec(it.viewSpecId)) {
-                        this.logWarn(
-                            `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
-                        );
-                        return null;
-                    }
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                if (!this.hasSpec(it.viewSpecId)) {
+                    this.logWarn(
+                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
+                    );
+                    return null;
+                }
 
-                    return new DashCanvasViewModel({
-                        id: it.id,
-                        viewSpec: this.getSpec(it.viewSpecId),
-                        title: it.title,
-                        viewState: it.state,
-                        containerModel: this
-                    });
-                })
-            );
+                return new DashCanvasViewModel({
+                    id: it.id,
+                    viewSpec: this.getSpec(it.viewSpecId),
+                    title: it.title,
+                    viewState: it.state,
+                    containerModel: this
+                });
+            })
+        );
 
-            this.setLayout(state.map(it => ({i: it.id, ...it.layout})));
-        } finally {
-            this.isLoadingState = false;
-        }
+        this.setLayout(
+            stateWithIds.map(it => ({i: it.id, ...it.layout})),
+            false
+        );
     }
 
     private buildState(): DashCanvasItemState[] {
@@ -492,7 +482,6 @@ export class DashCanvasModel
                 state = viewState[viewId];
 
             return {
-                id: viewId,
                 layout: {x, y, w, h},
                 ...state
             };

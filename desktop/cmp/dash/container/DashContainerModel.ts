@@ -16,6 +16,7 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
+import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -37,7 +38,7 @@ import {
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
 import {DashConfig, DashModel} from '../';
-import {DashViewModel, DashViewState} from '../DashViewModel';
+import {DashViewState} from '../DashViewModel';
 import {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
@@ -76,7 +77,6 @@ export interface DashContainerConfig extends DashConfig<
 export interface DashContainerViewState {
     type: 'row' | 'column' | 'stack' | 'view';
     id?: string;
-    viewSpecId?: string;
     content?: DashContainerViewState[];
     title?: string;
     width?: number | string;
@@ -120,17 +120,17 @@ export interface DashContainerViewState {
  *             type: 'stack',
  *             width: '200px',
  *             content: [
- *                 {type: 'view', id: 'id1', viewSpecId: 'specId'},
- *                 {type: 'view', id: 'id2', viewSpecId: 'specId'}
+ *                 {type: 'view', id: 'viewId'},
+ *                 {type: 'view', id: 'viewId'}
  *             ]
  *         },
  *         {
  *             type: 'column',
  *             content: [
  *                 // Relative height of 40%. The remaining 60% will be split equally by the other views.
- *                 {type: 'view', id: 'id3', viewSpecId: 'specId', height: 40},
- *                 {type: 'view', id: 'id4', viewSpecId: 'specId'},
- *                 {type: 'view', id: 'id5', viewSpecId: 'specId'}
+ *                 {type: 'view', id: 'viewId', height: 40},
+ *                 {type: 'view', id: 'viewId'},
+ *                 {type: 'view', id: 'viewId'}
  *             ]
  *         }
  *     ]
@@ -141,7 +141,7 @@ export interface DashContainerViewState {
  * @see http://golden-layout.com/tutorials/getting-started-react.html
  */
 export class DashContainerModel
-    extends DashModel<DashContainerViewSpec, DashContainerViewState, DashViewModel>
+    extends DashModel<DashContainerViewSpec, DashContainerViewState, DashContainerViewModel>
     implements Persistable<{state: DashContainerViewState[]}>
 {
     //---------------------
@@ -261,14 +261,14 @@ export class DashContainerModel
 
     /** Load state into the DashContainer, recreating its layout and contents */
     async loadStateAsync(state: DashContainerViewState[]) {
-        const ids = new Set<string>();
-        state = this.withIds(state, ids);
+        const ids = new Set<string>(),
+            stateWithViewModelIds = this.withIds(state, ids);
         const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id));
 
         // Always save a reference to the state, even if the container is not yet rendered.
         // Allows ref reaction on this class to loop back and apply it once GL is ready.
         runInAction(() => {
-            this.state = state;
+            this.state = stateWithViewModelIds;
             this.viewModels = keep;
             XH.safeDestroy(remove);
         });
@@ -286,7 +286,7 @@ export class DashContainerModel
                 .thenAction(() => {
                     if (refIsStale()) return;
                     this.destroyGoldenLayout();
-                    this.goldenLayout = this.createGoldenLayout(containerEl, state);
+                    this.goldenLayout = this.createGoldenLayout(containerEl, stateWithViewModelIds);
                 })
                 // Since React v18, it's necessary to wait a short while for ViewModels to be available.
                 .wait(500)
@@ -336,7 +336,7 @@ export class DashContainerModel
 
     /**
      * Remove a view from the container.
-     * @param id - DashViewModel id to remove from the container
+     * @param id - DashContainerViewModel id to remove from the container
      */
     removeView(id: string) {
         const view = this.getItemByViewModel(id);
@@ -346,7 +346,7 @@ export class DashContainerModel
 
     /**
      * Initiate field renaming for a given view
-     * @param id - DashViewModel id to rename
+     * @param id - DashContainerViewModel id to rename
      */
     renameView(id: string) {
         const view = this.getItemByViewModel(id);
@@ -362,7 +362,7 @@ export class DashContainerModel
         return this.viewSpecs.find(it => it.id === id);
     }
 
-    getViewModel(id: string): DashViewModel<DashContainerViewSpec> {
+    getViewModel(id: string): DashContainerViewModel {
         return find(this.viewModels, {id});
     }
 
@@ -427,9 +427,9 @@ export class DashContainerModel
         return this.getItems().filter(it => it.config.component === id);
     }
 
-    // Get the view instance with the given DashViewModel.id
+    // Get the view instance with the given DashContainerViewModel.id
     private getItemByViewModel(id: string) {
-        return this.getItems().find(it => it.instance?._reactComponent?.props?.id === id);
+        return this.getItems().find(it => it.instance?._reactComponent?.props?.viewModelId === id);
     }
 
     //-----------------
@@ -437,14 +437,14 @@ export class DashContainerModel
     //-----------------
     get viewState() {
         const ret = {};
-        this.viewModels.map(({id, icon, title, viewState}) => {
+        this.viewModels.forEach(({id, icon, title, viewState}) => {
             ret[id] = {icon, title, viewState};
         });
         return ret;
     }
 
     @action
-    private addViewModel(viewModel: DashViewModel) {
+    private addViewModel(viewModel: DashContainerViewModel) {
         this.viewModels = [...this.viewModels, viewModel];
     }
 
@@ -483,7 +483,7 @@ export class DashContainerModel
         e: MouseEvent,
         $target: any,
         stack: any,
-        viewModel?: DashViewModel,
+        viewModel?: DashContainerViewModel,
         index?: number
     ) {
         if (this.contentLocked) return;
@@ -571,7 +571,7 @@ export class DashContainerModel
         });
     }
 
-    private insertTitleForm($el, viewModel: DashViewModel) {
+    private insertTitleForm($el, viewModel: DashContainerViewModel) {
         const formSelector = '.title-form';
         if ($el.find(formSelector).length) return;
 
@@ -595,7 +595,7 @@ export class DashContainerModel
         });
     }
 
-    private showTitleForm($tabEl, viewModel: DashViewModel) {
+    private showTitleForm($tabEl, viewModel: DashContainerViewModel) {
         if (this.renameLocked) return;
 
         const $inputEl = $tabEl.find('.title-form input').first(),
@@ -640,16 +640,16 @@ export class DashContainerModel
         // Register components
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, data => {
-                const {id, title, viewState} = data;
+                const {viewModelId, title, viewState} = data;
                 let icon = data.icon;
                 if (icon) icon = deserializeIcon(icon);
 
-                let model = this.viewModels.find(it => it.id === id);
+                let model = this.viewModels.find(it => it.id === viewModelId);
                 if (model) {
                     model.setViewState(viewState);
                 } else {
-                    model = new DashViewModel({
-                        id,
+                    model = new DashContainerViewModel({
+                        id: viewModelId,
                         viewSpec,
                         icon,
                         title,
@@ -660,7 +660,7 @@ export class DashContainerModel
                     model.addReaction({
                         track: () => model.fullTitle,
                         run: () => {
-                            const item = this.getItemByViewModel(id),
+                            const item = this.getItemByViewModel(viewModelId),
                                 $titleEl = this.getTitleElement(item.tab.element);
 
                             $titleEl.text(model.fullTitle);
@@ -686,13 +686,13 @@ export class DashContainerModel
     }
 
     /**
-     * Ensure all views in the provided state have IDs, generating as needed.
+     * Generate and assign viewModelIds to each view in the provided state.
      * Mutates existingIds to track used IDs.
      */
     private withIds(
         state: DashContainerViewState[],
         existingIds: Set<string>
-    ): DashContainerViewState[] {
+    ): DashContainerViewStateWithViewModelId[] {
         if (!state) return state;
         return state.map(curState => {
             if (curState.type !== 'view') {
@@ -702,14 +702,9 @@ export class DashContainerModel
                 };
             }
 
-            let id = curState.id;
-            if (id && existingIds.has(id)) {
-                this.logWarn(`Duplicate view id found in state: ${id}. Generating a new id.`);
-                id = null;
-            }
-            id = id ?? this.genViewId(curState.viewSpecId, existingIds);
-            existingIds.add(id);
-            return {...curState, id};
+            const viewModelId = this.genViewId(curState.id, existingIds);
+            existingIds.add(viewModelId);
+            return {...curState, viewModelId};
         });
     }
 
@@ -731,4 +726,8 @@ export class DashContainerModel
         XH.safeDestroy(this.viewModels);
         super.destroy();
     }
+}
+
+interface DashContainerViewStateWithViewModelId extends DashContainerViewState {
+    viewModelId?: string;
 }

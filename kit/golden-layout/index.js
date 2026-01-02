@@ -43,13 +43,13 @@ class ReactComponentHandlerPatched extends ReactComponentHandler {
         this._container.off('destroy', this._destroy, this);
     }
 
-    // Modify this to pass id through.
+    // Modify this to pass viewModelId through.
     // Also ensures any state is provided to the DashContainerView via props.
     // This enables us to associate DashViewModels with GoldenLayout react component instances.
     _getReactComponent() {
-        const {icon, title, state, id} = this._container._config;
+        const {icon, title, state, viewModelId} = this._container._config;
         const props = {
-            id,
+            viewModelId,
             icon,
             title,
             viewState: state,

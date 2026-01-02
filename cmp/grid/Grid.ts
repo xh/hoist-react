@@ -26,7 +26,12 @@ import {
     XH
 } from '@xh/hoist/core';
 import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
-import {colChooser as desktopColChooser, gridFilterDialog} from '@xh/hoist/dynamics/desktop';
+import {
+    colChooser as desktopColChooser,
+    gridFilterDialog,
+    ModalSupportModel,
+    DashContainerViewModel
+} from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 
@@ -170,7 +175,6 @@ export class GridLocalModel extends HoistModel {
     constructor() {
         super();
         GridLocalModel.addFocusFixListener();
-        window.addEventListener('xhGridRedrawRows', this.redrawRows);
     }
 
     override onLinked() {
@@ -184,15 +188,12 @@ export class GridLocalModel extends HoistModel {
             this.groupReaction(),
             this.rowHeightReaction(),
             this.sizingModeReaction(),
-            this.validationDisplayReaction()
+            this.validationDisplayReaction(),
+            this.modalReaction(),
+            this.dashContainerReaction()
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
-    }
-
-    override destroy() {
-        window.removeEventListener('xhGridRedrawRows', this.redrawRows);
-        super.destroy();
     }
 
     private createDefaultAgOptions(): GridOptions {
@@ -581,6 +582,34 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    modalReaction() {
+        // Force Grid to redraw rows when switching between inline and modal views
+        const modalSupportModel = ModalSupportModel ? this.lookupModel(ModalSupportModel) : null;
+        if (!modalSupportModel) return null;
+
+        return {
+            track: () => (modalSupportModel as any).isModal,
+            run: () => this.model.agApi.redrawRows(),
+            debounce: 0
+        };
+    }
+
+    dashContainerReaction() {
+        // Force Grid to redraw rows when parent DashContainer view ref changes
+        const dashContainerViewModel = DashContainerViewModel
+            ? this.lookupModel(DashContainerViewModel)
+            : null;
+        if (!dashContainerViewModel) return null;
+
+        return {
+            track: () => (dashContainerViewModel as any).viewRef.current,
+            run: elem => {
+                if (elem) this.model.agApi.redrawRows();
+            },
+            debounce: 0
+        };
+    }
+
     updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
@@ -867,8 +896,6 @@ export class GridLocalModel extends HoistModel {
             consumeEvent(event);
         }
     };
-
-    private redrawRows = () => wait().then(() => this.model.agApi?.redrawRows());
 
     /**
      * When a `Grid` context menu is open at the same time as a BP `Overlay2` with `enforceFocus`,
