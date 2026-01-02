@@ -30,7 +30,7 @@ export class ThemeModel extends HoistModel {
     setDarkTheme(value: boolean) {
         const classList = document.body.classList;
         classList.toggle('xh-dark', value);
-        classList.toggle('bp5-dark', value);
+        classList.toggle('bp6-dark', value);
         this.darkTheme = value;
     }
 

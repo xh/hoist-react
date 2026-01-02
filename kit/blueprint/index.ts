@@ -10,7 +10,6 @@ import {
     Dialog,
     FocusStyleManager,
     type HotkeyConfig,
-    Overlay2 as Overlay,
     OverlayToaster,
     Popover,
     PopoverInteractionKind,
@@ -20,7 +19,6 @@ import {
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
-import '@blueprintjs/datetime2/lib/css/blueprint-datetime2.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 
@@ -29,11 +27,9 @@ import './styles.scss';
 FocusStyleManager.onlyShowFocusOnTabs();
 
 // Disable fade/scale-in transitions.
-// See also popover-related override in ./styles.scss.
+// See also popover & overlay related overrides in ./styles.scss.
 Dialog.defaultProps.transitionDuration = 0;
 Dialog.defaultProps.transitionName = 'none';
-Overlay.defaultProps.transitionDuration = 0;
-Overlay.defaultProps.transitionName = 'none';
 Popover.defaultProps.transitionDuration = 0;
 
 //---------------------
@@ -51,4 +47,5 @@ export {
 export * from './Wrappers';
 export * from './Dialog';
 export * from './ContextMenu';
+
 export const blueprintProvider = elementFactory(BlueprintProvider);

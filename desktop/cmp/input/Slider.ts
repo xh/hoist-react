@@ -70,7 +70,7 @@ class SliderInputModel extends HoistInputModel {
     override xhImpl = true;
 
     get sliderHandle(): HTMLElement {
-        return this.domEl?.querySelector('.bp5-slider-handle');
+        return this.domEl?.querySelector('.bp6-slider-handle');
     }
 
     override blur() {

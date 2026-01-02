@@ -4,26 +4,14 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {OverlayToasterProps} from '@blueprintjs/core';
 import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
-import {
-    elementFactory,
-    hoistCmp,
-    HoistModel,
-    lookup,
-    PlainObject,
-    useLocalModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {OverlayToaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
 import {getOrCreate} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
-import {RefAttributes} from 'react';
-import {createRoot} from 'react-dom/client';
 import {wait} from '../../promise';
 import './Toast.scss';
 
@@ -108,39 +96,8 @@ class ToastSourceLocalModel extends HoistModel {
         const toasterMap = this._toasterMap,
             toasters = getOrCreate(toasterMap, container, () => ({}));
         if (!toasters[position]) {
-            toasters[position] = await this.createToaster({position, className}, container);
+            toasters[position] = await OverlayToaster.create({position, className}, {container});
         }
         return toasters[position];
     }
-
-    /**
-     * Workaround to avoid calling OverlayToaster.create(). It uses ReactDOM.render
-     * that gives a warning because it is deprecated in React 18.
-     *
-     * The use of ReactDOM.render set to be removed from OverlayToaster.create() in Blueprint v6.0
-     * https://github.com/palantir/blueprint/issues/5212#issuecomment-1294958195
-     */
-    private createToaster(props: PlainObject, container: HTMLElement): Promise<OverlayToaster> {
-        const containerElement = document.createElement('div');
-        container.appendChild(containerElement);
-        const root = createRoot(containerElement);
-        return new Promise((resolve, reject) => {
-            root.render(
-                overlayToaster({
-                    ...props,
-                    usePortal: false,
-                    ref: instance => {
-                        instance
-                            ? resolve(instance)
-                            : reject(XH.exception('Unable to create Blueprint toaster.'));
-                    }
-                })
-            );
-        });
-    }
 }
-
-// `OverlayToasterProps` does not include `ref` prop, so we need to add it manually
-const overlayToaster = elementFactory<OverlayToasterProps & RefAttributes<OverlayToaster>>(
-    OverlayToaster
-);

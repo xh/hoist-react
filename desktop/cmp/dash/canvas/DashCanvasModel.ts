@@ -4,9 +4,9 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {wait} from '@xh/hoist/promise';
 import {DragEvent} from 'react';
-import type {LayoutItem, CompactType} from 'react-grid-layout';
+import {wait} from '@xh/hoist/promise';
+import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
@@ -46,19 +46,23 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /**
      * Whether views should "compact" vertically or horizontally
      * to condense space. Default `true` defaults to vertical compaction.
-     * Note: as of RGL 2.1.1, 'wrap' (an option that RGL claims to support, results in no compaction)
-     * so is omitted here as an allowed type.
+     * See react-grid-layout docs for more information.
      * */
-    compact?: boolean | Omit<CompactType, 'wrap'>;
+    compact?: boolean | 'vertical' | 'horizontal';
 
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
+    /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
+    containerPadding?: [number, number];
+
     /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /** Padding inside the container [x, y] in pixels. Default `[0, 0]`. */
-    containerPadding?: [number, number];
+    /**
+     * Whether a grid background should be shown. Default false.
+     */
+    showGridBackground?: boolean;
 
     /**
      * Whether the canvas should accept drag-and-drop of views from outside
@@ -88,11 +92,6 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * when the canvas is empty. Default true.
      */
     showAddViewButtonWhenEmpty?: boolean;
-
-    /**
-     * Whether a grid background should be shown. Default false.
-     */
-    showGridBackground?: boolean;
 }
 
 export interface DashCanvasItemState {
@@ -132,12 +131,12 @@ export class DashCanvasModel
     //------------------------------
     @bindable columns: number;
     @bindable rowHeight: number;
-    @bindable compact: CompactType;
+    @bindable compact: 'vertical' | 'horizontal';
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
-    @bindable showAddViewButtonWhenEmpty: boolean;
     @bindable showGridBackground: boolean;
     @bindable rglHeight: number;
+    @bindable showAddViewButtonWhenEmpty: boolean;
 
     //-----------------------------
     // Public properties
@@ -204,10 +203,10 @@ export class DashCanvasModel
         compact = 'vertical',
         margin = [10, 10],
         maxRows = Infinity,
-        containerPadding = [0, 0],
+        containerPadding = margin,
         extraMenuItems,
-        showAddViewButtonWhenEmpty = true,
         showGridBackground = false,
+        showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,
         onDropDragOver
@@ -253,19 +252,12 @@ export class DashCanvasModel
         this.maxRows = maxRows;
         this.containerPadding = containerPadding;
         this.margin = margin;
-        this.compact = (
-            compact === true
-                ? 'vertical'
-                : // as of RGL 2.1.1, 'wrap' results in no compaction, so omit it here
-                  compact === false || compact === 'wrap'
-                  ? null
-                  : compact
-        ) as CompactType;
+        this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
-        this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
         this.showGridBackground = showGridBackground;
+        this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
         this.allowsDrop = allowsDrop;
         this.onDropDone = onDropDone;
         if (onDropDragOver) this.onDropDragOver = onDropDragOver;

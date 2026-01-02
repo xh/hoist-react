@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {omit} from 'lodash';
 import {DragEvent} from 'react';
 import ReactGridLayout, {
     type LayoutItem,
@@ -13,11 +12,9 @@ import ReactGridLayout, {
     getCompactor
 } from 'react-grid-layout';
 import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
-    XH,
     elementFactory,
     hoistCmp,
     HoistProps,
@@ -27,22 +24,21 @@ import {
 } from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {consumeEvent, TEST_ID} from '@xh/hoist/utils/js';
+import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
+import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
 import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
 import './DashCanvas.scss';
 
 export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSupportProps {
     /**
      * Optional additional configuration options to pass through to the underlying ReactGridLayout component.
      * See the RGL documentation for details:
-     * {@link https://www.npmjs.com/package/react-grid-layout#grid-layout-props}
+     * {@link https://www.npmjs.com/package/react-grid-layout#api-reference}
      * Note that some ReactGridLayout props are managed directly by DashCanvas and will be overridden if provided here.
      */
     rglOptions?: Partial<GridLayoutProps>;
@@ -67,19 +63,11 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
     render({className, model, rglOptions, testId}, ref) {
         const isDraggable = !model.layoutLocked,
             isResizable = !model.layoutLocked,
-            [padX, padY] = model.containerPadding,
-            topLevelRglOptions: Partial<GridLayoutProps> = omit(rglOptions ?? {}, [
-                'gridConfig',
-                'dragConfig',
-                'resizeConfig',
-                'dropConfig'
-            ]),
             {width, containerRef, mounted} = useContainerWidth(),
             defaultDroppedItemDims = {
                 w: Math.floor(model.columns / 3),
                 h: Math.floor(model.columns / 3)
-            },
-            gridBackgroundColor = XH.darkTheme ? '#2a2a2a' : '#f8f8f8';
+            };
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -89,70 +77,83 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                     isDraggable ? `${className}--draggable` : null,
                     isResizable ? `${className}--resizable` : null
                 ),
-                style: {padding: `${padY}px ${padX}px`},
                 ref: composeRefs(ref, model.ref, containerRef),
                 onContextMenu: e => onContextMenu(e, model),
-                items: mounted
-                    ? [
-                          gridBackground({
-                              className: 'xh-dash-canvas__grid-background',
-                              omit: !model.showGridBackground,
-                              width,
-                              height: model.rglHeight,
-                              cols: model.columns,
-                              rowHeight: model.rowHeight,
-                              margin: model.margin,
-                              rows: 'auto',
-                              color: gridBackgroundColor,
-                              borderRadius: 0
-                          }),
-                          reactGridLayout({
-                              layout: model.rglLayout,
-                              width,
-                              gridConfig: {
-                                  cols: model.columns,
-                                  rowHeight: model.rowHeight,
-                                  margin: model.margin,
-                                  maxRows: model.maxRows,
-                                  ...(rglOptions?.gridConfig ?? {})
-                              },
-                              dragConfig: {
-                                  enabled: isDraggable,
-                                  handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
-                                  cancel: '.xh-button',
-                                  bounded: true,
-                                  ...(rglOptions?.dragConfig ?? {})
-                              },
-                              resizeConfig: {
-                                  enabled: isResizable,
-                                  ...(rglOptions?.resizeConfig ?? {})
-                              },
-                              dropConfig: {
-                                  enabled: model.contentLocked ? false : model.allowsDrop,
-                                  defaultItem: defaultDroppedItemDims,
-                                  ...(rglOptions?.dropConfig ?? {})
-                              },
-                              compactor: getCompactor(model.compact, false, false),
-                              onLayoutChange: (layout: LayoutItem[]) =>
-                                  model.onRglLayoutChange(layout),
-                              onResizeStart: () => (model.isResizing = true),
-                              onResizeStop: () => (model.isResizing = false),
-                              children: model.viewModels.map(vm =>
-                                  div({
-                                      key: vm.id,
-                                      item: dashCanvasView({model: vm})
-                                  })
-                              ),
-                              onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
-                              onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
-                                  model.onDrop(layout, layoutItem, evt),
-                              ...topLevelRglOptions
-                          }),
-                          emptyContainerOverlay({omit: !model.showAddViewButtonWhenEmpty})
-                      ]
-                    : [],
+                items: [
+                    gridBackgroundCells({
+                        omit: !model.showGridBackground || !mounted,
+                        width
+                    }),
+                    reactGridLayout({
+                        ...mergeDeep(
+                            {
+                                gridConfig: {
+                                    cols: model.columns,
+                                    rowHeight: model.rowHeight,
+                                    margin: model.margin,
+                                    maxRows: model.maxRows,
+                                    containerPadding: model.containerPadding
+                                },
+                                dragConfig: {
+                                    enabled: isDraggable,
+                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                                    cancel: '.xh-button',
+                                    bounded: true
+                                },
+                                resizeConfig: {
+                                    enabled: isResizable
+                                },
+                                dropConfig: {
+                                    enabled: model.contentLocked ? false : model.allowsDrop,
+                                    defaultItem: defaultDroppedItemDims,
+                                    ...(rglOptions?.dropConfig ?? {})
+                                },
+                                onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
+                                onDrop: (
+                                    layout: LayoutItem[],
+                                    layoutItem: LayoutItem,
+                                    evt: Event
+                                ) => model.onDrop(layout, layoutItem, evt),
+                                compactor: getCompactor(model.compact, false, false),
+                                onLayoutChange: (layout: LayoutItem[]) =>
+                                    model.onRglLayoutChange(layout),
+                                onResizeStart: () => (model.isResizing = true),
+                                onResizeStop: () => (model.isResizing = false)
+                            },
+                            rglOptions
+                        ),
+                        omit: !mounted,
+                        layout: model.rglLayout,
+                        children: model.viewModels.map(vm =>
+                            div({
+                                key: vm.id,
+                                item: dashCanvasView({model: vm})
+                            })
+                        ),
+                        width
+                    }),
+                    emptyContainerOverlay({omit: !mounted || !model.showAddViewButtonWhenEmpty})
+                ],
                 [TEST_ID]: testId
             })
+        });
+    }
+});
+
+const gridBackgroundCells = hoistCmp.factory<DashCanvasModel>({
+    displayName: 'DashCanvasGridBackgroundCells',
+    model: uses(DashCanvasModel),
+    render({model, width}) {
+        return gridBackground({
+            className: 'xh-dash-canvas__grid-background',
+            width,
+            height: model.rglHeight,
+            cols: model.columns,
+            rowHeight: model.rowHeight,
+            margin: model.margin,
+            rows: 'auto',
+            color: 'var(--xh-dash-canvas-grid-cell-color)',
+            borderRadius: 0
         });
     }
 });

@@ -18,6 +18,9 @@
 
 ### 💥 Breaking Changes
 
+* Blueprint has been upgraded from version 5 to version 6.  Most apps will not need to change,
+ but see https://github.com/palantir/blueprint/wiki/Blueprint-6.0 for more details.  Also note that
+ any custom css overrides to blueprint will need to be updated to refer to `bp6` instead of `bp5`.
 * Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
   `TaskObserver` instance, not a `HoistModel`. The getter methods `HoistModel.loadModel` and
   `HoistService.loadModel` remain as aliases but are now deprecated and scheduled for removal in
@@ -32,6 +35,12 @@
 * Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
   common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
   `value` args to `number` where applicable.
+* Your app must update `compilerOptions.moduleResolution` to "bundler" in `tsconfig.json`
+* If using the `DashCanvas` `rglOptions` prop, you might have to update it to reflect changes in
+  `react-grid-layout` v2+ (not common).
+* `DashCanvasModel.containerPadding` is now applied to the `react-grid-layout` div by RGL, not to the
+  hoist-react provided containing div.  This may affect printing layouts.
+
 
 ### 🐞 Bug Fixes
 
@@ -40,6 +49,7 @@
 * Restore previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
 * Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
+* Supports deletion of large numbers of log files via POST (requires hoist-core v35.)
 
 ### ⚙️ Technical
 
@@ -49,10 +59,17 @@
     * `RelativeTimestampProps.options` - provide directly as top-level props
 
 * Improved the efficiency and logging of MsalClient.
+* Improved protections against running stale versions of client app code.
+
+* Grid performance optimizations introduced on an experimental basis.  See
+  `GridExperimentalFlags.deltaSort` and `GridExperimentalFlags.disableScrollOptimization`
+
 
 ### 📚 Libraries
-
 * react-grid-layout `1.5.0 → 2.1.1`
+* hoist-core `35.0.0`
+* @blueprintjs/core: 5.10.5 -> 6.3.2 ,
+* @blueprintjs/datetime: 5.3.7 -> 6.0.6,
 
 ## 78.1.4 - 2025-12-05
 

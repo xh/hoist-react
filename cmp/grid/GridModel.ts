@@ -357,13 +357,30 @@ export interface GridConfig {
      * Flags for experimental features. These features are designed for early client-access and
      * testing, but are not yet part of the Hoist API.
      */
-    experimental?: PlainObject;
+    experimental?: GridExperimentalFlags;
 
     /** Extra app-specific data for the GridModel. */
     appData?: PlainObject;
 
     /** @internal */
     xhImpl?: boolean;
+}
+
+interface GridExperimentalFlags {
+    /**
+     * Set to true to enable more optimal row sorting in cases where only small subsets of rows are
+     * updated in configurations where rows have many siblings.
+     * See https://www.ag-grid.com/javascript-data-grid/grid-options/#reference-sort-deltaSort for
+     * more details on where this option may improve (or degrade) performance.
+     */
+    deltaSort?: boolean;
+
+    /**
+     * Set to true to disable scroll optimization for large grids, where we proactively update the
+     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
+     * through large grids.
+     */
+    disableScrollOptimization?: boolean;
 }
 
 /**
@@ -420,7 +437,7 @@ export class GridModel extends HoistModel {
     lockColumnGroups: boolean;
     headerMenuDisplay: 'always' | 'hover';
     colDefaults: Partial<ColumnSpec>;
-    experimental: PlainObject;
+    experimental: GridExperimentalFlags;
     onKeyDown: (e: KeyboardEvent) => void;
     onRowClicked: (e: RowClickedEvent) => void;
     onRowDoubleClicked: (e: RowDoubleClickedEvent) => void;
@@ -1425,9 +1442,9 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param opts.record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
-     * @param colId - ID of column on which to start editing. If unspecified, the first
+     * @param opts.colId - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
      */
     async beginEditAsync(opts: {record?: StoreRecordOrId; colId?: string} = {}) {
@@ -1564,6 +1581,16 @@ export class GridModel extends HoistModel {
         if (b === '') return -1;
         return a.localeCompare(b);
     };
+
+    /** @internal */
+    get deltaSort() {
+        return !!this.experimental.deltaSort;
+    }
+
+    /** @internal */
+    get disableScrollOptimization() {
+        return !!this.experimental.disableScrollOptimization;
+    }
 
     //-----------------------
     // Implementation
@@ -1887,7 +1914,7 @@ export class GridModel extends HoistModel {
         return new GridFilterModel({bind: this.store, ...filterModel}, this);
     }
 
-    private parseExperimental(experimental) {
+    private parseExperimental(experimental: GridExperimentalFlags) {
         return {
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental

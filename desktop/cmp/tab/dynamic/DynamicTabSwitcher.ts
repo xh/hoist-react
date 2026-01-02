@@ -16,7 +16,7 @@ import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
-import {showContextMenu, tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
+import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent} from '@xh/hoist/utils/js';
@@ -88,9 +88,9 @@ const tabs = hoistCmp.factory<TabsProps>({
                         className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
                         ref: composeRefs(provided.innerRef, ref),
                         item: div({
-                            className: classNames('bp5-tabs', isVertical && 'bp5-vertical'),
+                            className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
                             item: div({
-                                className: 'bp5-tab-list',
+                                className: 'bp6-tab-list',
                                 items: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
@@ -172,7 +172,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     div({
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
-                        className: 'bp5-tab',
+                        className: 'bp6-tab',
                         item: bpTooltip({
                             content: tooltip as ReactElement,
                             disabled: !tooltip,

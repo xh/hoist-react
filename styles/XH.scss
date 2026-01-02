@@ -205,8 +205,8 @@ body.xh-app {
   &--framed {
     border: 1px solid var(--xh-popup-border-color);
 
-    .bp5-popover-arrow-border,
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-border,
+    .bp6-popover-arrow-fill {
       fill: var(--xh-popup-border-color) !important;
     }
   }

@@ -119,7 +119,7 @@ export class TabContainerModel extends HoistModel {
 
     /**
      * @param config - TabContainer configuration.
-     * @param [depth] - Depth in hierarchy of nested TabContainerModels. Not for application use.
+     * @param depth - Depth in hierarchy of nested TabContainerModels. Not for application use.
      */
     constructor(
         {

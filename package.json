@@ -30,9 +30,8 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.9.1",
     "@azure/msal-browser": "~4.26.2",
-    "@blueprintjs/core": "^5.10.5",
-    "@blueprintjs/datetime": "^5.3.7",
-    "@blueprintjs/datetime2": "^2.3.7",
+    "@blueprintjs/core": "^6.3.2",
+    "@blueprintjs/datetime": "^6.0.6",
     "@fortawesome/fontawesome-pro": "^6.6.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/pro-light-svg-icons": "^6.6.0",
