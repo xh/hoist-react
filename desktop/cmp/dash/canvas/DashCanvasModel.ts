@@ -4,7 +4,6 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {DragEvent} from 'react';
 import {wait} from '@xh/hoist/promise';
 import type {LayoutItem} from 'react-grid-layout';
 import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
@@ -44,11 +43,12 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     rowHeight?: number;
 
     /**
-     * Whether views should "compact" vertically or horizontally
+     * Whether views should "compact" vertically, horizontally or wrap
      * to condense space. Default `true` defaults to vertical compaction.
+     * Use `wrap` with caution.  It only works well if all items are 1 row high.
      * See react-grid-layout docs for more information.
-     * */
-    compact?: boolean | 'vertical' | 'horizontal';
+     */
+    compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
 
     /** Between items [x,y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
@@ -131,7 +131,7 @@ export class DashCanvasModel
     //------------------------------
     @bindable columns: number;
     @bindable rowHeight: number;
-    @bindable compact: 'vertical' | 'horizontal';
+    @bindable compact: 'vertical' | 'horizontal' | 'wrap';
     @bindable.ref margin: [number, number]; // [x, y]
     @bindable.ref containerPadding: [number, number]; // [x, y]
     @bindable showGridBackground: boolean;

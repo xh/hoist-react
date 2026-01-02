@@ -4,14 +4,13 @@
  *
  * Copyright © 2025 Extremely Heavy Industries Inc.
  */
-import {DragEvent} from 'react';
 import ReactGridLayout, {
     type LayoutItem,
     type GridLayoutProps,
     useContainerWidth,
     getCompactor
 } from 'react-grid-layout';
-import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras';
+import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
 import composeRefs from '@seznam/compose-react-refs';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
@@ -106,15 +105,17 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                 dropConfig: {
                                     enabled: model.contentLocked ? false : model.allowsDrop,
                                     defaultItem: defaultDroppedItemDims,
-                                    ...(rglOptions?.dropConfig ?? {})
+                                    onDragOver: (evt: DragEvent) => model.onDropDragOver(evt)
                                 },
-                                onDropDragOver: (evt: DragEvent) => model.onDropDragOver(evt),
                                 onDrop: (
                                     layout: LayoutItem[],
                                     layoutItem: LayoutItem,
                                     evt: Event
                                 ) => model.onDrop(layout, layoutItem, evt),
-                                compactor: getCompactor(model.compact, false, false),
+                                compactor:
+                                    model.compact === 'wrap'
+                                        ? wrapCompactor
+                                        : getCompactor(model.compact, false, false),
                                 onLayoutChange: (layout: LayoutItem[]) =>
                                     model.onRglLayoutChange(layout),
                                 onResizeStart: () => (model.isResizing = true),
