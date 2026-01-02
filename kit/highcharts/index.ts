@@ -31,7 +31,9 @@ export function installHighcharts(HighchartsImpl) {
             timezone: undefined
         },
         lang: {
-            thousandsSep: ','
+            thousandsSep: ',',
+            // Repace default SI abbrev "G" (giga) with "b" for billions and lowercase "m" + "t"
+            numericSymbols: ['k', 'm', 'b', 't']
         }
     });
     Highcharts = HighchartsImpl;

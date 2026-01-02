@@ -9,7 +9,7 @@
     "lib": ["dom", "es2022"],
 
     "jsx": "react",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
 
     "allowSyntheticDefaultImports": true,

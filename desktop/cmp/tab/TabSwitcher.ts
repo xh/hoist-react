@@ -312,7 +312,7 @@ class TabSwitcherLocalModel extends HoistModel {
 
     get tabEls() {
         if (!this.el) return [];
-        return Array.from(this.el.querySelectorAll('.bp5-tab'));
+        return Array.from(this.el.querySelectorAll('.bp6-tab'));
     }
 
     getTabDimensions(tab) {
