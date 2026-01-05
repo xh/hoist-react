@@ -30,7 +30,7 @@ import {
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
-import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
+import {StoreValidationMessagesMap, StoreValidator} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
@@ -859,7 +859,7 @@ export class Store extends HoistBase {
         return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.validator.errors;
     }
 
@@ -868,9 +868,23 @@ export class Store extends HoistBase {
         return this.validator.errorCount;
     }
 
+    get warnings(): StoreValidationMessagesMap {
+        return this.validator.warnings;
+    }
+
+    /** Count of all validation warnings for the store. */
+    get warningCount(): number {
+        return this.validator.warningCount;
+    }
+
     /** Array of all errors for this store. */
     get allErrors(): string[] {
         return uniq(flatMapDeep(this.errors, values));
+    }
+
+    /** Array of all warnings for this store. */
+    get allWarnings(): string[] {
+        return uniq(flatMapDeep(this.warnings, values));
     }
 
     /**
@@ -935,9 +949,14 @@ export class Store extends HoistBase {
         return ret ? ret : [];
     }
 
-    /** True if the store is confirmed to be Valid. */
+    /** True if the store is confirmed to be Valid (with or without warnings). */
     get isValid(): boolean {
         return this.validator.isValid;
+    }
+
+    /** True if the store is confirmed to be Valid but has warnings. */
+    get isValidWithWarnings(): boolean {
+        return this.validator.isValidWithWarnings;
     }
 
     /** True if the store is confirmed to be NotValid. */

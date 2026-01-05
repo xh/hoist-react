@@ -27,13 +27,14 @@ export class Rule {
  *
  * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
- * @returns String(s) or array of strings describing errors, or null or undefined if rule passes
- * successfully. May return a Promise of strings for async validation.
+ * @returns String or array of strings describing errors, or ValidationIssue or an array of
+ * ValidationIssues, or null or undefined if rule passes successfully. May return a Promise
+ * resolving to same for async validation.
  */
 export type Constraint<T = any> = (
     fieldState: FieldState<T>,
     allValues: PlainObject
-) => Awaitable<Some<string>>;
+) => Awaitable<Some<string | ValidationIssue>>;
 
 /**
  * Function to determine when to perform validation on a value.
@@ -74,3 +75,10 @@ export interface RuleSpec {
 }
 
 export type RuleLike = RuleSpec | Constraint | Rule;
+
+export interface ValidationIssue {
+    severity: ValidationSeverity;
+    message: string;
+}
+
+export type ValidationSeverity = 'error' | 'warning';

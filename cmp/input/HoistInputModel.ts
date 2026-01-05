@@ -337,12 +337,20 @@ export function useHoistInputModel(
 
     const field = inputModel.getField(),
         validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
+        warningClass =
+            field?.isValidWithWarnings && field?.validationDisplayed ? 'xh-input-warning' : null,
         disabledClass = props.disabled ? 'xh-input-disabled' : null;
 
     return component({
         ...props,
         model: inputModel,
         ref: inputModel.domRef,
-        className: classNames('xh-input', validityClass, disabledClass, props.className)
+        className: classNames(
+            'xh-input',
+            validityClass,
+            warningClass,
+            disabledClass,
+            props.className
+        )
     });
 }

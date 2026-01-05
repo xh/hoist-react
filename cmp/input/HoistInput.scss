@@ -11,4 +11,10 @@
       border: var(--xh-form-field-invalid-border);
     }
   }
+
+  &.xh-input-warning {
+    input {
+      border: var(--xh-form-field-warning-border);
+    }
+  }
 }

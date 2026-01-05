@@ -26,7 +26,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
 
@@ -124,8 +124,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             disabled = props.disabled || model?.disabled,
             validationDisplayed = model?.validationDisplayed || false,
             notValid = model?.isNotValid || false,
+            validWithWarnings = model?.isValidWithWarnings || false,
             displayNotValid = validationDisplayed && notValid,
+            displayWithWarnings = validationDisplayed && validWithWarnings,
             errors = model?.errors || [],
+            warnings = model?.warnings || [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -170,6 +173,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (displayWithWarnings) classes.push('xh-form-field-warning');
 
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
@@ -190,6 +194,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       childId,
                       disabled,
                       displayNotValid,
+                      displayWithWarnings,
                       leftErrorIcon,
                       commitOnChange,
                       testId: getTestId(testId, 'input')
@@ -198,13 +203,17 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) {
             childEl = tooltip({
                 item: childEl,
-                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                className: classNames(
+                    'xh-input',
+                    displayNotValid && 'xh-input-invalid',
+                    displayWithWarnings && 'xh-input-warning'
+                ),
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
-                disabled: !displayNotValid,
-                content: getErrorTooltipContent(errors)
+                disabled: !displayNotValid && !displayWithWarnings,
+                content: getValidationTooltipContent(errors, warnings)
             });
         }
 
@@ -239,11 +248,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: info
                         }),
                         tooltip({
-                            omit: minimal || !displayNotValid,
+                            omit: minimal || !(displayNotValid || displayWithWarnings),
                             openOnTargetFocus: false,
-                            className: 'xh-form-field-error-msg',
-                            item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors) as ReactElement
+                            className: displayNotValid
+                                ? 'xh-form-field-error-msg'
+                                : 'xh-form-field-warning-msg',
+                            item: first(errors) ?? first(warnings),
+                            content: getValidationTooltipContent(errors, warnings) as ReactElement
                         })
                     ]
                 })
@@ -359,21 +370,29 @@ function getValidChild(children) {
     return child;
 }
 
-function getErrorTooltipContent(errors: string[]): ReactElement | string {
-    // If no errors, something other than null must be returned.
+function getValidationTooltipContent(errors: string[], warnings: string[]): ReactElement | string {
+    // If no issues, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.
     // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
     // TextInput component to lose focus when its validation state changes, which is undesirable.
     // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
     // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
-    if (isEmpty(errors)) return 'Is Valid';
-
-    if (errors.length === 1) return errors[0];
-    return ul({
-        className: 'xh-form-field-error-tooltip',
-        items: errors.map((it, idx) => li({key: idx, item: it}))
-    });
+    if (!isEmpty(errors)) {
+        if (errors.length === 1) return errors[0];
+        return ul({
+            className: 'xh-form-field-error-tooltip',
+            items: errors.map((it, idx) => li({key: idx, item: it}))
+        });
+    } else if (!isEmpty(warnings)) {
+        if (warnings.length === 1) return warnings[0];
+        return ul({
+            className: 'xh-form-field-warning-tooltip',
+            items: warnings.map((it, idx) => li({key: idx, item: it}))
+        });
+    } else {
+        return 'Is Valid';
+    }
 }
 
 function defaultProp<N extends keyof Partial<FormFieldProps>>(

@@ -869,18 +869,20 @@ export class Column {
 
                 // Override with validation errors, if present
                 if (editor) {
-                    const errors = record.errors[field];
-                    if (!isEmpty(errors)) {
+                    const errors = record.errors[field],
+                        warnings = record.warnings[field],
+                        validationMessages = !isEmpty(errors) ? errors : warnings;
+                    if (!isEmpty(validationMessages)) {
                         return div({
                             ref: wrapperRef,
                             item: ul({
                                 className: classNames(
                                     'xh-grid-tooltip--validation',
-                                    errors.length === 1
+                                    validationMessages.length === 1
                                         ? 'xh-grid-tooltip--validation--single'
                                         : null
                                 ),
-                                items: errors.map((it, idx) => li({key: idx, item: it}))
+                                items: validationMessages.map((it, idx) => li({key: idx, item: it}))
                             })
                         });
                     }
@@ -1010,6 +1012,12 @@ export class Column {
                 'xh-cell--invalid': agParams => {
                     const record = agParams.data;
                     return record && !isEmpty(record.errors[field]);
+                },
+                'xh-cell--warning': agParams => {
+                    const record = agParams.data;
+                    return (
+                        record && isEmpty(record.errors[field]) && !isEmpty(record.warnings[field])
+                    );
                 },
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);

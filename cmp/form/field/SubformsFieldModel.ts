@@ -119,6 +119,12 @@ export class SubformsFieldModel extends BaseFieldModel {
         return [...this.errors, ...subErrs];
     }
 
+    @computed
+    override get allWarnings(): string[] {
+        const subWarns = flatMap(this.value, s => s.allWarnings);
+        return [...this.warnings, ...subWarns];
+    }
+
     @override
     override reset() {
         super.reset();

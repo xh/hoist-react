@@ -15,7 +15,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
+import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
@@ -67,8 +67,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             disabled = props.disabled || model?.disabled,
             validationDisplayed = model?.validationDisplayed || false,
             notValid = model?.isNotValid || false,
+            validWithWarnings = model?.isValidWithWarnings || false,
             displayNotValid = validationDisplayed && notValid,
+            displayWithWarnings = validationDisplayed && validWithWarnings,
             errors = model?.errors || [],
+            warnings = model?.warnings || [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -102,6 +105,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (displayWithWarnings) classes.push('xh-form-field-warning');
 
         let childEl =
             readonly || !child
@@ -145,9 +149,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: 'Validating...'
                         }),
                         div({
-                            omit: minimal || !displayNotValid,
-                            className: 'xh-form-field-error-msg',
-                            items: notValid ? errors[0] : null
+                            omit: minimal || !(displayNotValid || displayWithWarnings),
+                            className: displayNotValid
+                                ? 'xh-form-field-error-msg'
+                                : 'xh-form-field-warning-msg',
+                            item: first(errors) ?? first(warnings)
                         })
                     ]
                 })

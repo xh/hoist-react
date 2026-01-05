@@ -9,7 +9,7 @@ import {HoistBase} from '@xh/hoist/core';
 import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
 import {sumBy, chunk} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
-import {RecordErrorMap, RecordValidator} from './RecordValidator';
+import {RecordValidationMessagesMap, RecordValidator} from './RecordValidator';
 import {ValidationState} from '../validation/ValidationState';
 import {Store} from '../Store';
 import {StoreRecordId} from '../StoreRecord';
@@ -21,10 +21,16 @@ import {StoreRecordId} from '../StoreRecord';
 export class StoreValidator extends HoistBase {
     store: Store;
 
-    /** True if the store is confirmed to be Valid. */
+    /** True if the store is confirmed to be Valid (with or without warnings). */
     @computed
     get isValid(): boolean {
-        return this.validationState === 'Valid';
+        return this.validationState === 'Valid' || this.validationState === 'ValidWithWarnings';
+    }
+
+    /** True if the store is confirmed to be Valid but has warnings. */
+    @computed
+    get isValidWithWarnings(): boolean {
+        return this.validationState === 'ValidWithWarnings';
     }
 
     /** True if the store is confirmed to be NotValid. */
@@ -41,7 +47,7 @@ export class StoreValidator extends HoistBase {
 
     /** Map of StoreRecord IDs to StoreRecord-level error maps. */
     @computed.struct
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.getErrorMap();
     }
 
@@ -49,6 +55,18 @@ export class StoreValidator extends HoistBase {
     @computed
     get errorCount(): number {
         return sumBy(this.validators, 'errorCount');
+    }
+
+    /** Map of StoreRecord IDs to StoreRecord-level warning maps. */
+    @computed.struct
+    get warnings(): StoreValidationMessagesMap {
+        return this.getWarningMap();
+    }
+
+    /** Count of all validation warnings for the store. */
+    @computed
+    get warningCount(): number {
+        return sumBy(this.validators, 'warningCount');
     }
 
     /** True if any records are currently recomputing their validation state. */
@@ -88,13 +106,20 @@ export class StoreValidator extends HoistBase {
         const states = this.mapValidators(v => v.validationState);
         if (states.includes('NotValid')) return 'NotValid';
         if (states.includes('Unknown')) return 'Unknown';
+        if (states.includes('ValidWithWarnings')) return 'ValidWithWarnings';
         return 'Valid';
     }
 
     /** @returns map of StoreRecord IDs to StoreRecord-level error maps. */
-    getErrorMap(): StoreErrorMap {
-        const ret = {};
+    getErrorMap(): StoreValidationMessagesMap {
+        const ret: StoreValidationMessagesMap = {};
         this._validators.forEach(v => (ret[v.id] = v.errors));
+        return ret;
+    }
+
+    getWarningMap(): StoreValidationMessagesMap {
+        const ret: StoreValidationMessagesMap = {};
+        this._validators.forEach(v => (ret[v.id] = v.warnings));
         return ret;
     }
 
@@ -157,4 +182,4 @@ export class StoreValidator extends HoistBase {
 }
 
 /** Map of StoreRecord IDs to StoreRecord-level error maps. */
-export type StoreErrorMap = Record<StoreRecordId, RecordErrorMap>;
+export type StoreValidationMessagesMap = Record<StoreRecordId, RecordValidationMessagesMap>;

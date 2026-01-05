@@ -133,9 +133,14 @@ export class StoreRecord {
         return this.store.getAncestorsById(this.id, false);
     }
 
-    /** True if the record is confirmed to be Valid. */
+    /** True if the record is confirmed to be Valid (with or without warnings). */
     get isValid(): boolean {
-        return this.validationState === 'Valid';
+        return this.validationState === 'Valid' || this.validationState === 'ValidWithWarnings';
+    }
+
+    /** True if the record is confirmed to be Valid but has warnings. */
+    get isValidWithWarnings(): boolean {
+        return this.validationState === 'ValidWithWarnings';
     }
 
     /** True if the record is confirmed to be NotValid. */
@@ -153,14 +158,29 @@ export class StoreRecord {
         return this.validator?.errors ?? {};
     }
 
+    /** Map of field names to list of warnings. */
+    get warnings(): Record<string, string[]> {
+        return this.validator?.warnings ?? {};
+    }
+
     /** Array of all errors for this record. */
     get allErrors() {
         return flatMap(this.errors);
     }
 
+    /** Array of all warnings for this record. */
+    get allWarnings() {
+        return flatMap(this.warnings);
+    }
+
     /** Count of all validation errors for the record. */
     get errorCount(): number {
         return this.validator?.errorCount ?? 0;
+    }
+
+    /** Count of all validation warnings for the record. */
+    get warningCount(): number {
+        return this.validator?.warningCount ?? 0;
     }
 
     /** True if any fields are currently recomputing their validation state. */

@@ -245,6 +245,7 @@ export class FormModel extends HoistModel {
         const states = map(this.fields, m => m.validationState);
         if (states.includes('NotValid')) return 'NotValid';
         if (states.includes('Unknown')) return 'Unknown';
+        if (states.includes('ValidWithWarnings')) return 'ValidWithWarnings';
         return 'Valid';
     }
 
@@ -256,7 +257,7 @@ export class FormModel extends HoistModel {
 
     /** True if all fields are valid. */
     get isValid(): boolean {
-        return this.validationState == 'Valid';
+        return this.validationState === 'Valid' || this.validationState === 'ValidWithWarnings';
     }
 
     /** List of all validation errors for this form. */

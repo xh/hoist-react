@@ -15,4 +15,8 @@
   &.xh-input-invalid {
     border: var(--xh-form-field-invalid-border);
   }
+
+  &.xh-input-warning {
+    border: var(--xh-form-field-warning-border);
+  }
 }

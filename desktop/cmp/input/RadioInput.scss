@@ -17,6 +17,14 @@
       margin: -1px;
     }
   }
+
+  &.xh-input-warning .xh-radio-input-option .bp6-control-indicator {
+    border: var(--xh-form-field-warning-border);
+
+    &::before {
+      margin: -1px;
+    }
+  }
 }
 
 // Toolbar specific style

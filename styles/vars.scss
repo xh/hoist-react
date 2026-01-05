@@ -417,6 +417,12 @@ body {
   --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
   --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
   --xh-form-field-margin-right: var(--form-field-margin-right, 0);
+  --xh-form-field-warning-border-color: var(--form-field-warning-border-color, var(--xh-intent-warning));
+  --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
+  --xh-form-field-warning-border-width: var(--form-field-warning-border-width, 1);
+  --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
+  --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
+  --xh-form-field-warning-message-text-color: var(--form-field-warning-message-text-color, var(--xh-intent-warning));
 
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});

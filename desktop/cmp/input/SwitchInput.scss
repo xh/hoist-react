@@ -14,3 +14,13 @@
     }
   }
 }
+
+.xh-switch-input.xh-input-warning {
+  .bp6-control-indicator {
+    border: var(--xh-form-field-warning-border);
+
+    &::before {
+      margin: 1px;
+    }
+  }
+}

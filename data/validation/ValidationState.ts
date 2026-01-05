@@ -8,7 +8,8 @@
 export const ValidationState = Object.freeze({
     Unknown: 'Unknown',
     NotValid: 'NotValid',
-    Valid: 'Valid'
+    Valid: 'Valid',
+    ValidWithWarnings: 'ValidWithWarnings'
 });
 // eslint-disable-next-line
 export type ValidationState = (typeof ValidationState)[keyof typeof ValidationState];

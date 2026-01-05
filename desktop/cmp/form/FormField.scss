@@ -48,7 +48,8 @@
   }
 
   .xh-form-field-info,
-  .xh-form-field-error-msg {
+  .xh-form-field-error-msg,
+  .xh-form-field-warning-msg {
     font-size: var(--xh-font-size-small-px);
     line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
     white-space: nowrap;
@@ -58,6 +59,10 @@
 
   .xh-form-field-error-msg {
     color: var(--xh-red);
+  }
+
+  .xh-form-field-warning-msg {
+    color: var(--xh-orange);
   }
 
   &.xh-form-field-inline {
@@ -85,7 +90,8 @@
       }
     }
 
-    .xh-form-field-error-msg {
+    .xh-form-field-error-msg,
+    .xh-form-field-warning-msg {
       display: none;
     }
 
@@ -126,6 +132,32 @@
       border: var(--xh-form-field-invalid-border) !important;
     }
   }
+
+  &.xh-form-field-warning:not(.xh-form-field-readonly) {
+    .xh-check-box span {
+      box-shadow: var(--xh-form-field-warning-box-shadow) !important;
+    }
+
+    .xh-button-group-input button.xh-button {
+      box-shadow: var(--xh-form-field-warning-box-shadow);
+    }
+
+    .xh-slider span {
+      box-shadow: var(--xh-form-field-warning-box-shadow);
+    }
+
+    div.xh-select__control {
+      border: var(--xh-form-field-warning-border);
+    }
+
+    .xh-text-input > svg {
+      color: var(--xh-intent-warning);
+    }
+
+    .xh-text-area.textarea {
+      border: var(--xh-form-field-warning-border) !important;
+    }
+  }
 }
 
 ul.xh-form-field-error-tooltip {
@@ -146,7 +178,8 @@ ul.xh-form-field-error-tooltip {
     align-items: center;
   }
 
-  .xh-form-field-error-msg {
+  .xh-form-field-error-msg,
+  .xh-form-field-warning-msg {
     margin: 0 var(--xh-pad-px);
   }
 }
