@@ -1,6 +1,6 @@
 # Changelog
 
-## 79.0.0-SNAPSHOT - unreleased
+## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes
 
