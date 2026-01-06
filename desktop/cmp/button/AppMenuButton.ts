@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -11,6 +12,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isObject} from 'lodash';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -50,6 +52,9 @@ export interface AppMenuButtonProps extends ButtonProps {
 
     /** True to hide the Theme Toggle button. */
     hideThemeItem?: boolean;
+
+    /** True to replace the hamburger icon with user initials for the right nav button . */
+    userInitials?: boolean | ((userName: string) => string);
 }
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
@@ -70,19 +75,28 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             disabled,
+            userInitials,
             ...rest
         } = props;
+
+        const item = userInitials
+            ? button({
+                  icon: buildUserIcon(userInitials),
+                  disabled,
+                  ...rest
+              })
+            : button({
+                  icon: Icon.menu(),
+                  disabled,
+                  ...rest
+              });
 
         return popover({
             className,
             disabled,
             position: 'bottom-right',
             minimal: true,
-            item: button({
-                icon: Icon.menu(),
-                disabled,
-                ...rest
-            }),
+            item,
             popoverClassName: 'xh-app-menu-popover',
             content: menu({
                 className: 'xh-app-menu',
@@ -91,6 +105,19 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         });
     }
 });
+
+function buildUserIcon(userInitials: boolean | ((userName: string) => string)) {
+    let initials = XH.getUsername().charAt(0).toUpperCase();
+    if (isObject(userInitials)) {
+        initials = (userInitials as (userName: string) => string)(XH.getUsername());
+        // Do not allow more than two characters
+        initials = initials.substring(0, 2).toUpperCase();
+    }
+    return div({
+        className: 'xh-user-profile-button',
+        item: initials
+    });
+}
 
 //---------------------------
 // Implementation
