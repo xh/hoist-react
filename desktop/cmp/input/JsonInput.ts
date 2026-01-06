@@ -17,13 +17,13 @@ export interface JsonInputProps extends CodeInputProps {
      * supported by AJV, such as `type`, `properties`, `required`, and `additionalProperties`.
      * @see https://ajv.js.org/json-schema.html
      */
-    jsonSchema?: SchemaObject;
+    ajvSchema?: SchemaObject;
 
     /**
      * Configuration object with any properties supported by the AJV API.
      * @see {@link https://ajv.js.org/options.html}
      */
-    ajvProps?: Options;
+    ajvOptions?: Options;
 }
 
 /**
@@ -33,10 +33,10 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     displayName: 'JsonInput',
     className: 'xh-json-input',
     render(props, ref) {
-        const {jsonSchema, ajvProps, ...rest} = props;
+        const {ajvSchema, ajvOptions, ...rest} = props;
 
         return codeInput({
-            linter: jsonLinterWrapper(jsonSchema, ajvProps),
+            linter: jsonLinterWrapper(ajvSchema, ajvOptions),
             formatter: fmtJson,
             language: 'json',
             ...rest,

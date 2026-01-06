@@ -4,20 +4,28 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {autocompletion} from '@codemirror/autocomplete';
-import {defaultKeymap, history, historyKeymap, indentWithTab} from '@codemirror/commands';
+import {autocompletion as autocompletionExtension} from '@codemirror/autocomplete';
+import {
+    defaultKeymap,
+    history as historyExtension,
+    historyKeymap,
+    indentWithTab
+} from '@codemirror/commands';
 import {
     defaultHighlightStyle,
-    foldGutter,
+    foldGutter as foldGutterExtension,
     foldKeymap,
-    indentOnInput,
+    indentOnInput as indentOnInputExtension,
     LanguageDescription,
     LanguageSupport,
-    syntaxHighlighting
+    syntaxHighlighting as syntaxHighlightingExtension
 } from '@codemirror/language';
 import {languages} from '@codemirror/language-data';
-import {linter, lintGutter} from '@codemirror/lint';
-import {highlightSelectionMatches, search} from '@codemirror/search';
+import {linter as linterExtension, lintGutter as lintGutterExtension} from '@codemirror/lint';
+import {
+    highlightSelectionMatches as highlightSelectionMatchesExtension,
+    search as searchExtension
+} from '@codemirror/search';
 import {
     Compartment,
     EditorState,
@@ -30,10 +38,10 @@ import {
     Decoration,
     DecorationSet,
     EditorView,
-    highlightActiveLine,
-    highlightActiveLineGutter,
+    highlightActiveLine as highlightActiveLineExtension,
+    highlightActiveLineGutter as highlightActiveLineGutterExtension,
     keymap,
-    lineNumbers,
+    lineNumbers as lineNumbersExtension,
     ViewPlugin,
     ViewUpdate
 } from '@codemirror/view';
@@ -51,7 +59,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, find, includes, isEmpty, isFunction, isObject} from 'lodash';
+import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './CodeInput.scss';
 import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
@@ -84,7 +92,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
      * ({@link https://github.com/codemirror/language-data/blob/main/src/language-data.ts}) regarding available languages.
-     * String can be the alias or name
+     * String can be the alias or name (E.G. `JSON`, `JavaScript`, `js`, `sql`, `XML`, ect.)
      */
     language?: string;
 
@@ -113,7 +121,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      */
     showToolbar?: boolean;
 
-    /** False (default) to highlight active line in input. */
+    /** True to highlight active line in input. (Default false) */
     highlightActiveLine?: boolean;
 
     /**
@@ -124,7 +132,7 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     lineNumbers?: boolean | PlainObject;
 
     /**
-     * False (default) to enable line wrapping.
+     *  True to enable line wrapping. (Default false)
      */
     lineWrapping?: boolean;
 }
@@ -157,6 +165,7 @@ class CodeInputModel extends HoistInputModel {
     @managed
     modalSupportModel: ModalSupportModel = new ModalSupportModel();
 
+    @managed
     editor: EditorView;
 
     // Support for internal search feature.
@@ -164,9 +173,9 @@ class CodeInputModel extends HoistInputModel {
     @bindable query: string = '';
     @observable currentMatchIdx: number = -1;
     @observable.ref matches: {from: number; to: number}[] = [];
-
     private updateMatchesEffect = StateEffect.define<void>();
     private highlightField: StateField<DecorationSet>;
+
     private themeCompartment = new Compartment();
 
     get fullScreen(): boolean {
@@ -286,19 +295,22 @@ class CodeInputModel extends HoistInputModel {
         this.addReaction({
             track: () => XH.darkTheme,
             run: () => {
-                if (!this.editor) return;
-                this.editor.dispatch({
-                    effects: this.themeCompartment.reconfigure(this.getThemeExtension())
-                });
+                const {editor} = this;
+                if (editor) {
+                    editor.dispatch({
+                        effects: this.themeCompartment.reconfigure(this.getThemeExtension())
+                    });
+                }
             }
         });
 
         this.addReaction({
             track: () => this.renderValue,
             run: val => {
-                if (this.editor && this.editor.state.doc.toString() !== val) {
-                    this.editor.dispatch({
-                        changes: {from: 0, to: this.editor.state.doc.length, insert: val ?? ''}
+                const {editor} = this;
+                if (editor && editor.state.doc.toString() !== val) {
+                    editor.dispatch({
+                        changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
                     });
                 }
             }
@@ -307,8 +319,9 @@ class CodeInputModel extends HoistInputModel {
         this.addReaction({
             track: () => this.componentProps.readonly || this.componentProps.disabled,
             run: readOnly => {
-                if (this.editor)
-                    this.editor.dispatch({
+                const {editor} = this;
+                if (editor)
+                    editor.dispatch({
                         effects: StateEffect.appendConfig.of(EditorView.editable.of(!readOnly))
                     });
             }
@@ -317,8 +330,11 @@ class CodeInputModel extends HoistInputModel {
         this.addReaction({
             track: () => this.query,
             run: query => {
-                if (query?.trim()) this.findAll();
-                else this.clearSearchResults();
+                if (query?.trim()) {
+                    this.findAll();
+                } else {
+                    this.clearSearchResults();
+                }
             },
             debounce: 300
         });
@@ -338,48 +354,38 @@ class CodeInputModel extends HoistInputModel {
         this.editor.dispatch({changes: {from: 0, to: this.editor.state.doc.length, insert: val}});
     }
 
-    tryPrettyPrint(str: string) {
-        try {
-            return this.componentProps.formatter?.(str) ?? str;
-        } catch (e) {
-            return str;
-        }
-    }
-
     toggleFullScreen() {
         this.modalSupportModel.toggleIsModal();
     }
 
+    //------------------------
+    // Local Searching
+    //------------------------
     @action
     findAll() {
-        if (!this.editor || !this.query?.trim()) return;
+        const {query, editor} = this;
+        if (!editor || !query?.trim()) return;
 
-        let doc = this.editor.state.doc.toString(),
+        let doc = editor.state.doc.toString(),
             matches = [],
-            idx = doc.indexOf(this.query);
+            idx = doc.indexOf(query);
         while (idx !== -1) {
-            matches.push({from: idx, to: idx + this.query.length});
-            idx = doc.indexOf(this.query, idx + 1);
+            matches.push({from: idx, to: idx + query.length});
+            idx = doc.indexOf(query, idx + 1);
         }
         this.matches = matches;
-        this.currentMatchIdx = matches.length ? 0 : -1;
+        this.currentMatchIdx = -1;
         this.updateMatchDecorations();
-
-        if (matches.length) {
-            const match = matches[0];
-            this.editor.dispatch({
-                selection: {anchor: match.from, head: match.to},
-                scrollIntoView: true
-            });
-        }
+        this.findNext();
     }
 
     @action
     findNext() {
-        if (!this.editor || !this.matches.length) return;
-        this.currentMatchIdx = (this.currentMatchIdx + 1) % this.matches.length;
-        const match = this.matches[this.currentMatchIdx];
-        this.editor.dispatch({
+        const {editor, matches} = this;
+        if (!editor || !matches.length) return;
+        this.currentMatchIdx = (this.currentMatchIdx + 1) % matches.length;
+        const match = matches[this.currentMatchIdx];
+        editor.dispatch({
             selection: {anchor: match.from, head: match.to},
             scrollIntoView: true
         });
@@ -387,11 +393,11 @@ class CodeInputModel extends HoistInputModel {
 
     @action
     findPrevious() {
-        if (!this.editor || !this.matches.length) return;
-        this.currentMatchIdx =
-            (this.currentMatchIdx - 1 + this.matches.length) % this.matches.length;
-        const match = this.matches[this.currentMatchIdx];
-        this.editor.dispatch({
+        const {editor, matches} = this;
+        if (!editor || !matches.length) return;
+        this.currentMatchIdx = (this.currentMatchIdx - 1 + matches.length) % matches.length;
+        const match = matches[this.currentMatchIdx];
+        editor.dispatch({
             selection: {anchor: match.from, head: match.to},
             scrollIntoView: true
         });
@@ -399,8 +405,7 @@ class CodeInputModel extends HoistInputModel {
 
     @action
     updateMatchDecorations() {
-        if (!this.editor) return;
-        this.editor.dispatch({effects: this.updateMatchesEffect.of()});
+        this.editor?.dispatch({effects: this.updateMatchesEffect.of()});
     }
 
     @action
@@ -408,11 +413,6 @@ class CodeInputModel extends HoistInputModel {
         this.matches = [];
         this.currentMatchIdx = -1;
         this.updateMatchDecorations();
-    }
-
-    override destroy() {
-        this.editor?.destroy();
-        super.destroy();
     }
 
     //------------------------
@@ -423,10 +423,10 @@ class CodeInputModel extends HoistInputModel {
                 autoFocus,
                 readonly,
                 language,
-                highlightActiveLine: propsHighlightActiveLine,
-                linter: propsLinter,
-                lineNumbers: propsLineNumbers = true,
-                lineWrapping: propsLineWrapping = false
+                highlightActiveLine,
+                linter,
+                lineNumbers = true,
+                lineWrapping = false
             } = this.componentProps,
             extensions = [
                 // Theme
@@ -437,23 +437,16 @@ class CodeInputModel extends HoistInputModel {
                     if (update.docChanged) this.noteValueChange(update.state.doc.toString());
                 }),
                 // Search & custom highlight
-                search(),
-                syntaxHighlighting(defaultHighlightStyle),
-                highlightSelectionMatches(),
+                searchExtension(),
+                syntaxHighlightingExtension(defaultHighlightStyle),
+                highlightSelectionMatchesExtension(),
                 this.highlightField,
                 // Editor UI
-                foldGutter(),
-                lintGutter(),
-                indentOnInput(),
-                autocompletion(),
-                history(),
+                indentOnInputExtension(),
+                autocompletionExtension(),
+                historyExtension(),
                 // Linter
-                propsLinter
-                    ? linter(async view => {
-                          const text = view.state.doc.toString();
-                          return await propsLinter(text);
-                      })
-                    : [],
+                linter ? linterExtension(view => linter(view.state.doc.toString())) : null,
                 // Key bindings
                 keymap.of([
                     ...defaultKeymap,
@@ -470,24 +463,35 @@ class CodeInputModel extends HoistInputModel {
                 ])
             ];
 
-        if (propsLineWrapping) extensions.push(EditorView.lineWrapping);
-        if (propsLineNumbers) {
-            isObject(propsLineNumbers)
-                ? extensions.push(lineNumbers(propsLineNumbers))
-                : extensions.push(lineNumbers());
+        if (lineWrapping) {
+            extensions.push(EditorView.lineWrapping);
         }
-        if (propsHighlightActiveLine)
-            extensions.push(highlightActiveLine(), highlightActiveLineGutter());
-        if (autoFocus) extensions.push(this.autofocusExtension);
+
+        if (highlightActiveLine) {
+            extensions.push(highlightActiveLineExtension(), highlightActiveLineGutterExtension());
+        }
+        if (autoFocus) {
+            extensions.push(this.autofocusExtension);
+        }
         if (language) {
-            const langExt = this.getLanguageExtensionAsync(language);
+            const langExt = await this.getLanguageExtensionAsync(language);
             if (langExt) {
-                extensions.push(await langExt);
+                extensions.push(langExt);
             } else {
                 console.warn('Failed to load language:', language);
             }
         }
-        return extensions.filter(it => !isEmpty(it));
+
+        // Gutters are rendered in the editor in the order they are added to the extensions array.
+        // The order determines their left-to-right placement in the UI.
+        if (lineNumbers) {
+            extensions.push(
+                isObject(lineNumbers) ? lineNumbersExtension(lineNumbers) : lineNumbersExtension()
+            );
+        }
+        extensions.push(foldGutterExtension());
+        extensions.push(lintGutterExtension());
+        return extensions.filter(it => !isNil(it));
     }
 
     private getThemeExtension() {
@@ -496,7 +500,7 @@ class CodeInputModel extends HoistInputModel {
 
     private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
         try {
-            const langDesc: LanguageDescription | undefined = find(
+            const langDesc: LanguageDescription = find(
                 languages,
                 it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
             );
@@ -515,6 +519,14 @@ class CodeInputModel extends HoistInputModel {
             }
         }
     );
+
+    private tryPrettyPrint(str: string) {
+        try {
+            return this.componentProps.formatter?.(str) ?? str;
+        } catch (e) {
+            return str;
+        }
+    }
 }
 
 const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref) => {
@@ -581,9 +593,13 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
                 commitOnChange: true,
                 onKeyDown: e => {
                     if (e.key !== 'Enter') return;
-                    if (!matches.length) model.findAll();
-                    else if (e.shiftKey) model.findPrevious();
-                    else model.findNext();
+                    if (!matchCount) {
+                        model.findAll();
+                    } else if (e.shiftKey) {
+                        model.findPrevious();
+                    } else {
+                        model.findNext();
+                    }
                 }
             })
         }),
