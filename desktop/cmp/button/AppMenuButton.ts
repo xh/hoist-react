@@ -53,7 +53,12 @@ export interface AppMenuButtonProps extends ButtonProps {
     /** True to hide the Theme Toggle button. */
     hideThemeItem?: boolean;
 
-    /** True to replace the hamburger icon with user initials for the right nav button . */
+    /**
+     * Replace the hamburger icon with user initials for the right nav button.
+     * TRUE to show first initial from the user's "username" prop.
+     * Provide a getter method to transform the username into custom initials (e.g. first and last initial).
+     *   - Note that this will be capped at two letters and transformed to uppercase.
+     */
     userInitials?: boolean | ((userName: string) => string);
 }
 
@@ -79,24 +84,17 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             ...rest
         } = props;
 
-        const item = userInitials
-            ? button({
-                  icon: buildUserIcon(userInitials),
-                  disabled,
-                  ...rest
-              })
-            : button({
-                  icon: Icon.menu(),
-                  disabled,
-                  ...rest
-              });
-
         return popover({
             className,
             disabled,
             position: 'bottom-right',
             minimal: true,
-            item,
+            item: button({
+                className: userInitials ? 'xh-user-profile-button' : null,
+                icon: userInitials ? buildUserIcon(userInitials) : Icon.menu(),
+                disabled,
+                ...rest
+            }),
             popoverClassName: 'xh-app-menu-popover',
             content: menu({
                 className: 'xh-app-menu',
@@ -114,7 +112,7 @@ function buildUserIcon(userInitials: boolean | ((userName: string) => string)) {
         initials = initials.substring(0, 2).toUpperCase();
     }
     return div({
-        className: 'xh-user-profile-button',
+        className: 'xh-user-profile-initials',
         item: initials
     });
 }
