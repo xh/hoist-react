@@ -342,9 +342,6 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
 
     /** True to skip this item. May be set dynamically via prepareFn. Alias for hidden.  */
     omit?: Thunkable<boolean>;
-
-    /** Needed when rendering nested child menu items */
-    key?: string;
 }
 
 /**

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isMenuItem, MenuItemLike, XH} from '@xh/hoist/core';
+import {ElementSpec, isMenuItem, MenuItemLike} from '@xh/hoist/core';
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
@@ -43,9 +43,8 @@ export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: MenuItemProps & {key?: string} = {
+            const cfg: ElementSpec<MenuItemProps> = {
                 text: item.text,
-                key: item.key ?? XH.genId(),
                 icon: item.icon,
                 intent: item.intent,
                 className: item.className,
@@ -55,7 +54,7 @@ export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
 
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
-                cfg.children = parseMenuItems(item.items);
+                cfg.items = parseMenuItems(item.items);
                 cfg.popoverProps = {openOnTargetFocus: false};
             }
 
