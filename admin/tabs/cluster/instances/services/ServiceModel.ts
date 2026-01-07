@@ -91,7 +91,7 @@ export class ServiceModel extends BaseInstanceModel {
     }
 
     async clearCachesAsync(entireCluster: boolean) {
-        const {gridModel, instanceName, loadModel} = this,
+        const {gridModel, instanceName, loadObserver} = this,
             {selectedRecords} = gridModel;
 
         if (isEmpty(selectedRecords)) return;
@@ -125,7 +125,7 @@ export class ServiceModel extends BaseInstanceModel {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            }).linkTo(loadModel);
+            }).linkTo(loadObserver);
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');
         } catch (e) {

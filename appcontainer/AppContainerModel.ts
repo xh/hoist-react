@@ -76,7 +76,7 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
-    @managed appLoadModel = TaskObserver.trackAll();
+    @managed appLoadObserver = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -250,7 +250,7 @@ export class AppContainerModel extends HoistModel {
 
             // init all models other than Router
             const models = [
-                this.appLoadModel,
+                this.appLoadObserver,
                 this.appStateModel,
                 this.pageStateModel,
                 this.routerModel,
@@ -271,7 +271,7 @@ export class AppContainerModel extends HoistModel {
             ];
             models.forEach((m: any) => m.init?.());
 
-            this.bindInitSequenceToAppLoadModel();
+            this.bindInitSequenceToAppLoadObserver();
 
             this.setDocTitle();
 
@@ -359,10 +359,10 @@ export class AppContainerModel extends HoistModel {
         this.appStateModel.setAppState(nextState);
     }
 
-    private bindInitSequenceToAppLoadModel() {
+    private bindInitSequenceToAppLoadObserver() {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
-        loadingPromise.linkTo(this.appLoadModel);
+        loadingPromise.linkTo(this.appLoadObserver);
     }
 
     private setViewportContent(content: string) {
