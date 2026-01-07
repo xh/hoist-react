@@ -174,7 +174,7 @@ class CodeInputModel extends HoistInputModel {
     @observable currentMatchIdx: number = -1;
     @observable.ref matches: {from: number; to: number}[] = [];
     private updateMatchesEffect = StateEffect.define<void>();
-    private highlightField: StateField<DecorationSet>;
+    private highlightStateFieldExtension: StateField<DecorationSet>;
 
     private themeCompartment = new Compartment();
 
@@ -264,7 +264,7 @@ class CodeInputModel extends HoistInputModel {
         super();
         makeObservable(this);
 
-        this.highlightField = StateField.define<DecorationSet>({
+        this.highlightStateFieldExtension = StateField.define<DecorationSet>({
             create: () => Decoration.none,
             update: (deco, tr) => {
                 deco = deco.map(tr.changes);
@@ -298,7 +298,7 @@ class CodeInputModel extends HoistInputModel {
                 const {editor} = this;
                 if (editor) {
                     editor.dispatch({
-                        effects: this.themeCompartment.reconfigure(this.getThemeExtension())
+                        effects: this.themeCompartment.reconfigure(this.getTheme())
                     });
                 }
             }
@@ -430,7 +430,7 @@ class CodeInputModel extends HoistInputModel {
             } = this.componentProps,
             extensions = [
                 // Theme
-                this.themeCompartment.of(this.getThemeExtension()),
+                this.getThemeExtension(),
                 // Editor state
                 EditorView.editable.of(!readonly),
                 EditorView.updateListener.of((update: ViewUpdate) => {
@@ -440,7 +440,7 @@ class CodeInputModel extends HoistInputModel {
                 searchExtension(),
                 syntaxHighlightingExtension(defaultHighlightStyle),
                 highlightSelectionMatchesExtension(),
-                this.highlightField,
+                this.highlightStateFieldExtension,
                 // Editor UI
                 indentOnInputExtension(),
                 autocompletionExtension(),
@@ -495,6 +495,10 @@ class CodeInputModel extends HoistInputModel {
     }
 
     private getThemeExtension() {
+        return this.themeCompartment.of(this.getTheme());
+    }
+
+    private getTheme() {
         return XH.darkTheme ? githubDark : githubLight;
     }
 
