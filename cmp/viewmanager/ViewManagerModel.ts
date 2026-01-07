@@ -281,8 +281,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** True if any async tasks are pending. */
     get isLoading(): boolean {
-        const {loadModel, saveTask, selectTask} = this;
-        return loadModel.isPending || saveTask.isPending || selectTask.isPending;
+        const {loadObserver, saveTask, selectTask} = this;
+        return loadObserver.isPending || saveTask.isPending || selectTask.isPending;
     }
 
     /**
