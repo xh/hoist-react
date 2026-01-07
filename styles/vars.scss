@@ -423,6 +423,12 @@ body {
   --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
   --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
   --xh-form-field-warning-message-text-color: var(--form-field-warning-message-text-color, var(--xh-intent-warning));
+  --xh-form-field-info-border-color: var(--form-field-info-border-color, var(--xh-intent-primary));
+  --xh-form-field-info-box-shadow: var(--form-field-info-border-color, #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)});
+  --xh-form-field-info-border-width: var(--form-field-info-border-width, 1);
+  --xh-form-field-info-border-width-px: calc(var(--xh-form-field-info-border-width) * 1px);
+  --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
+  --xh-form-field-info-message-text-color: var(--form-field-info-message-text-color, var(--xh-intent-primary));
 
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});

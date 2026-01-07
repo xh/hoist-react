@@ -41,6 +41,12 @@
     }
   }
 
+  &.xh-input-info {
+    div.CodeMirror {
+      border: var(--xh-form-field-info-border);
+    }
+  }
+
   &.xh-input-disabled {
     .CodeMirror {
       background-color: var(--xh-input-disabled-bg);

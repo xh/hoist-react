@@ -106,7 +106,8 @@
 
   // Render badge on cells with validation issues
   .ag-cell.xh-cell--invalid,
-  .xh-cell--warning {
+  .ag-cell.xh-cell--warning,
+  .ag-cell.xh-cell--info {
     &::before {
       content: '';
       position: absolute;
@@ -134,6 +135,11 @@
     border-top-color: var(--xh-intent-warning);
   }
 
+  .ag-cell.xh-cell--info::before {
+    border-right-color: var(--xh-intent-primary);
+    border-top-color: var(--xh-intent-primary);
+  }
+
   // Render left / right group borders
   .ag-cell.xh-cell--group-border-left {
     @include AgGrid.group-border(left);
@@ -146,28 +152,32 @@
   .xh-ag-grid {
     &--tiny {
       .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before {
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 3px;
       }
     }
 
     &--compact {
       .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before {
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 4px;
       }
     }
 
     &--standard {
       .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before {
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 5px;
       }
     }
 
     &--large {
       .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before {
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 6px;
       }
     }

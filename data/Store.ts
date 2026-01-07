@@ -30,7 +30,11 @@ import {
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
-import {StoreValidationMessagesMap, StoreValidator} from './impl/StoreValidator';
+import {
+    StoreValidationMessagesMap,
+    StoreValidationsMap,
+    StoreValidator
+} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';
@@ -863,18 +867,13 @@ export class Store extends HoistBase {
         return this.validator.errors;
     }
 
+    get validations(): StoreValidationsMap {
+        return this.validator.validations;
+    }
+
     /** Count of all validation errors for the store. */
     get errorCount(): number {
         return this.validator.errorCount;
-    }
-
-    get warnings(): StoreValidationMessagesMap {
-        return this.validator.warnings;
-    }
-
-    /** Count of all validation warnings for the store. */
-    get warningCount(): number {
-        return this.validator.warningCount;
     }
 
     /** Array of all errors for this store. */
@@ -882,9 +881,9 @@ export class Store extends HoistBase {
         return uniq(flatMapDeep(this.errors, values));
     }
 
-    /** Array of all warnings for this store. */
-    get allWarnings(): string[] {
-        return uniq(flatMapDeep(this.warnings, values));
+    /** Array of all validations for this store. */
+    get allValidations(): string[] {
+        return uniq(flatMapDeep(this.validations, values));
     }
 
     /**
@@ -949,14 +948,9 @@ export class Store extends HoistBase {
         return ret ? ret : [];
     }
 
-    /** True if the store is confirmed to be Valid (with or without warnings). */
+    /** True if the store is confirmed to be Valid. */
     get isValid(): boolean {
         return this.validator.isValid;
-    }
-
-    /** True if the store is confirmed to be Valid but has warnings. */
-    get isValidWithWarnings(): boolean {
-        return this.validator.isValidWithWarnings;
     }
 
     /** True if the store is confirmed to be NotValid. */

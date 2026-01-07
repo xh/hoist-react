@@ -19,6 +19,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {Validation, ValidationSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -26,7 +27,17 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {
+    first,
+    groupBy,
+    isBoolean,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isUndefined,
+    kebabCase
+} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
 
@@ -124,11 +135,18 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             disabled = props.disabled || model?.disabled,
             validationDisplayed = model?.validationDisplayed || false,
             notValid = model?.isNotValid || false,
-            validWithWarnings = model?.isValidWithWarnings || false,
+            validationsBySeverity = groupBy(model?.validations, 'severity') as Record<
+                ValidationSeverity,
+                Validation[]
+            >,
+            validWithWarnings = !notValid && !isEmpty(validationsBySeverity.warning),
+            validWithInfo = !notValid && !validWithWarnings && !isEmpty(validationsBySeverity.info),
             displayNotValid = validationDisplayed && notValid,
             displayWithWarnings = validationDisplayed && validWithWarnings,
+            displayWithInfo = validationDisplayed && validWithInfo,
             errors = model?.errors || [],
-            warnings = model?.warnings || [],
+            warnings = validationsBySeverity.warning?.map(v => v.message) ?? [],
+            infos = validationsBySeverity.info?.map(v => v.message) ?? [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -174,6 +192,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
         if (displayWithWarnings) classes.push('xh-form-field-warning');
+        if (displayWithInfo) classes.push('xh-form-field-info');
 
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
@@ -195,6 +214,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       disabled,
                       displayNotValid,
                       displayWithWarnings,
+                      displayWithInfo,
                       leftErrorIcon,
                       commitOnChange,
                       testId: getTestId(testId, 'input')
@@ -206,14 +226,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 className: classNames(
                     'xh-input',
                     displayNotValid && 'xh-input-invalid',
-                    displayWithWarnings && 'xh-input-warning'
+                    displayWithWarnings && 'xh-input-warning',
+                    displayWithInfo && 'xh-input-info'
                 ),
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
-                disabled: !displayNotValid && !displayWithWarnings,
-                content: getValidationTooltipContent(errors, warnings)
+                disabled: !displayNotValid && !displayWithWarnings && !displayWithInfo,
+                content: getValidationTooltipContent(errors, warnings, infos)
             });
         }
 
@@ -248,13 +269,21 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: info
                         }),
                         tooltip({
-                            omit: minimal || !(displayNotValid || displayWithWarnings),
+                            omit:
+                                minimal ||
+                                !(displayNotValid || displayWithWarnings || displayWithInfo),
                             openOnTargetFocus: false,
-                            className: displayNotValid
-                                ? 'xh-form-field-error-msg'
-                                : 'xh-form-field-warning-msg',
-                            item: first(errors) ?? first(warnings),
-                            content: getValidationTooltipContent(errors, warnings) as ReactElement
+                            className: classNames(
+                                displayNotValid && 'xh-form-field-error-msg',
+                                displayWithWarnings && 'xh-form-field-warning-msg',
+                                displayWithInfo && 'xh-form-field-info-msg'
+                            ),
+                            item: first(errors) ?? first(warnings) ?? first(infos),
+                            content: getValidationTooltipContent(
+                                errors,
+                                warnings,
+                                infos
+                            ) as ReactElement
                         })
                     ]
                 })
@@ -370,28 +399,40 @@ function getValidChild(children) {
     return child;
 }
 
-function getValidationTooltipContent(errors: string[], warnings: string[]): ReactElement | string {
-    // If no issues, something other than null must be returned.
+function getValidationTooltipContent(
+    errors: string[],
+    warnings: string[],
+    infos: string[]
+): ReactElement | string {
+    // If no validations, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.
     // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
     // TextInput component to lose focus when its validation state changes, which is undesirable.
     // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
     // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
+    let messages: string[] = [],
+        className: string;
     if (!isEmpty(errors)) {
-        if (errors.length === 1) return errors[0];
-        return ul({
-            className: 'xh-form-field-error-tooltip',
-            items: errors.map((it, idx) => li({key: idx, item: it}))
-        });
+        messages = errors;
+        className = 'xh-form-field-error-tooltip';
     } else if (!isEmpty(warnings)) {
-        if (warnings.length === 1) return warnings[0];
-        return ul({
-            className: 'xh-form-field-warning-tooltip',
-            items: warnings.map((it, idx) => li({key: idx, item: it}))
-        });
-    } else {
+        messages = warnings;
+        className = 'xh-form-field-warning-tooltip';
+    } else if (!isEmpty(infos)) {
+        messages = infos;
+        className = 'xh-form-field-info-tooltip';
+    }
+
+    if (isEmpty(messages)) {
         return 'Is Valid';
+    } else if (messages.length === 1) {
+        return messages[0];
+    } else {
+        return ul({
+            className,
+            items: messages.map((it, idx) => li({key: idx, item: it}))
+        });
     }
 }
 

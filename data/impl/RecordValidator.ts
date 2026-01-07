@@ -4,14 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    Field,
-    Rule,
-    StoreRecord,
-    StoreRecordId,
-    ValidationIssue,
-    ValidationState
-} from '@xh/hoist/data';
+import {Field, Rule, StoreRecord, StoreRecordId, Validation, ValidationState} from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
 import {TaskObserver} from '../../core';
@@ -23,7 +16,7 @@ import {TaskObserver} from '../../core';
 export class RecordValidator {
     record: StoreRecord;
 
-    @observable.ref private fieldValidationIssues: RecordValidationIssueMap = null;
+    @observable.ref private fieldValidations: RecordValidationsMap = null;
     private validationTask = TaskObserver.trackLast();
     private validationRunId = 0;
 
@@ -31,16 +24,10 @@ export class RecordValidator {
         return this.record.id;
     }
 
-    /** True if the record is confirmed to be Valid (with or without warnings). */
+    /** True if the record is confirmed to be Valid. */
     @computed
     get isValid(): boolean {
-        return this.validationState === 'Valid' || this.validationState === 'ValidWithWarnings';
-    }
-
-    /** True if the record is confirmed to be Valid but has warnings. */
-    @computed
-    get isValidWithWarnings(): boolean {
-        return this.validationState === 'ValidWithWarnings';
+        return this.validationState === 'Valid';
     }
 
     /** True if the record is confirmed to be NotValid. */
@@ -58,29 +45,21 @@ export class RecordValidator {
     /** Map of field names to field-level errors. */
     @computed.struct
     get errors(): RecordValidationMessagesMap {
-        return mapValues(this.fieldValidationIssues ?? {}, issues =>
+        return mapValues(this.fieldValidations ?? {}, issues =>
             compact(issues.map(it => (it?.severity === 'error' ? it?.message : null)))
         );
     }
 
-    /** Map of field names to field-level warnings. */
+    /** Map of field names to field-level validations. */
     @computed.struct
-    get warnings(): RecordValidationMessagesMap {
-        return mapValues(this.fieldValidationIssues ?? {}, issues =>
-            compact(issues.map(it => (it?.severity === 'warning' ? it?.message : null)))
-        );
+    get validations(): RecordValidationsMap {
+        return this.fieldValidations ?? {};
     }
 
     /** Count of all validation errors for the record. */
     @computed
     get errorCount(): number {
         return flatten(values(this.errors)).length;
-    }
-
-    /** Count of all validation warnings for the record. */
-    @computed
-    get warningCount(): number {
-        return flatten(values(this.warnings)).length;
     }
 
     /** True if any fields are currently recomputing their validation state. */
@@ -117,24 +96,19 @@ export class RecordValidator {
         if (runId !== this.validationRunId) return;
         fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
 
-        runInAction(() => (this.fieldValidationIssues = fieldErrors));
+        runInAction(() => (this.fieldValidations = fieldErrors));
 
         return this.isValid;
     }
 
     /** The current validation state for the record. */
     getValidationState(): ValidationState {
-        if (this.fieldValidationIssues === null) return 'Unknown'; // Before executing any rules
+        if (this.fieldValidations === null) return 'Unknown'; // Before executing any rules
         if (this.errorCount) return 'NotValid';
-        if (this.warningCount) return 'ValidWithWarnings';
         return 'Valid';
     }
 
-    async evaluateRuleAsync(
-        record: StoreRecord,
-        field: Field,
-        rule: Rule
-    ): Promise<ValidationIssue[]> {
+    async evaluateRuleAsync(record: StoreRecord, field: Field, rule: Rule): Promise<Validation[]> {
         const values = record.getValues(),
             {name, displayName} = field,
             value = record.get(name);
@@ -158,6 +132,7 @@ export class RecordValidator {
     }
 }
 
-/** Map of Field names to Field-level ValidationIssue lists. */
-export type RecordValidationIssueMap = Record<string, ValidationIssue[]>;
+/** Map of Field names to Field-level Validation lists. */
+export type RecordValidationsMap = Record<string, Validation[]>;
+/** Map of Field names to Field-level validation message lists. */
 export type RecordValidationMessagesMap = Record<string, string[]>;

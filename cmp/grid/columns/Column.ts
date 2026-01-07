@@ -12,7 +12,9 @@ import {
     genDisplayName,
     RecordAction,
     RecordActionSpec,
-    StoreRecord
+    StoreRecord,
+    Validation,
+    ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -21,6 +23,7 @@ import {
     clone,
     find,
     get,
+    groupBy,
     isArray,
     isEmpty,
     isFinite,
@@ -869,9 +872,15 @@ export class Column {
 
                 // Override with validation errors, if present
                 if (editor) {
-                    const errors = record.errors[field],
-                        warnings = record.warnings[field],
-                        validationMessages = !isEmpty(errors) ? errors : warnings;
+                    const validationsBySeverity = groupBy(
+                            record.validations[field],
+                            'severity'
+                        ) as Record<ValidationSeverity, Validation[]>,
+                        validationMessages = (
+                            validationsBySeverity.error ??
+                            validationsBySeverity.warning ??
+                            validationsBySeverity.info
+                        )?.map(v => v.message);
                     if (!isEmpty(validationMessages)) {
                         return div({
                             ref: wrapperRef,
@@ -1014,9 +1023,28 @@ export class Column {
                     return record && !isEmpty(record.errors[field]);
                 },
                 'xh-cell--warning': agParams => {
-                    const record = agParams.data;
+                    const record = agParams.data,
+                        validationsBySeverity = groupBy(
+                            record.validations[field],
+                            'severity'
+                        ) as Record<ValidationSeverity, Validation[]>;
                     return (
-                        record && isEmpty(record.errors[field]) && !isEmpty(record.warnings[field])
+                        record &&
+                        isEmpty(validationsBySeverity.error) &&
+                        !isEmpty(validationsBySeverity.warning)
+                    );
+                },
+                'xh-cell--info': agParams => {
+                    const record = agParams.data,
+                        validationsBySeverity = groupBy(
+                            record.validations[field],
+                            'severity'
+                        ) as Record<ValidationSeverity, Validation[]>;
+                    return (
+                        record &&
+                        isEmpty(validationsBySeverity.error) &&
+                        isEmpty(validationsBySeverity.warning) &&
+                        !isEmpty(validationsBySeverity.info)
                     );
                 },
                 'xh-cell--editable': agParams => {

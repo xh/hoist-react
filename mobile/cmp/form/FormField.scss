@@ -24,7 +24,8 @@
   .xh-form-field-info,
   .xh-form-field-error-msg,
   .xh-form-field-pending-msg,
-  .xh-form-field-warning-msg {
+  .xh-form-field-warning-msg,
+  .xh-form-field-info-msg {
     font-size: var(--xh-font-size-small-px);
     line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
     color: var(--xh-text-color-muted);
@@ -41,13 +42,18 @@
     color: var(--xh-orange);
   }
 
+  .xh-form-field-info-msg {
+    color: var(--xh-blue);
+  }
+
   &.xh-form-field-invalid .xh-form-field-label {
     color: var(--xh-red);
   }
 
   &.xh-form-field-readonly {
     .xh-form-field-error-msg,
-    .xh-form-field-warning-msg {
+    .xh-form-field-warning-msg,
+    .xh-form-field-info-msg {
       display: none;
     }
 

@@ -8,6 +8,7 @@ import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {Validation, ValidationSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -15,7 +16,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
+import {first, groupBy, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
@@ -67,11 +68,18 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             disabled = props.disabled || model?.disabled,
             validationDisplayed = model?.validationDisplayed || false,
             notValid = model?.isNotValid || false,
-            validWithWarnings = model?.isValidWithWarnings || false,
+            validationsBySeverity = groupBy(model?.validations, 'severity') as Record<
+                ValidationSeverity,
+                Validation[]
+            >,
+            validWithWarnings = !notValid && !isEmpty(validationsBySeverity.warning),
+            validWithInfo = !notValid && !validWithWarnings && !isEmpty(validationsBySeverity.info),
             displayNotValid = validationDisplayed && notValid,
             displayWithWarnings = validationDisplayed && validWithWarnings,
+            displayWithInfo = validationDisplayed && validWithInfo,
             errors = model?.errors || [],
-            warnings = model?.warnings || [],
+            warnings = validationsBySeverity.warning?.map(v => v.message) ?? [],
+            infos = validationsBySeverity.info?.map(v => v.message) ?? [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -106,6 +114,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (disabled) classes.push('xh-form-field-disabled');
         if (displayNotValid) classes.push('xh-form-field-invalid');
         if (displayWithWarnings) classes.push('xh-form-field-warning');
+        if (displayWithInfo) classes.push('xh-form-field-info');
 
         let childEl =
             readonly || !child
@@ -149,11 +158,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: 'Validating...'
                         }),
                         div({
-                            omit: minimal || !(displayNotValid || displayWithWarnings),
-                            className: displayNotValid
-                                ? 'xh-form-field-error-msg'
-                                : 'xh-form-field-warning-msg',
-                            item: first(errors) ?? first(warnings)
+                            omit:
+                                minimal ||
+                                !(displayNotValid || displayWithWarnings || displayWithInfo),
+                            className: classNames(
+                                displayNotValid && 'xh-form-field-error-msg',
+                                displayWithWarnings && 'xh-form-field-warning-msg',
+                                displayWithInfo && 'xh-form-field-info-msg'
+                            ),
+                            item: first(errors) ?? first(warnings) ?? first(infos)
                         })
                     ]
                 })

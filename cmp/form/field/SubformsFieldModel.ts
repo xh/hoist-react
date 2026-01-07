@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {managed, PlainObject, XH} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {Validation, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
@@ -120,9 +120,9 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @computed
-    override get allWarnings(): string[] {
-        const subWarns = flatMap(this.value, s => s.allWarnings);
-        return [...this.warnings, ...subWarns];
+    override get allValidations(): Validation[] {
+        const subVals = flatMap(this.value, s => s.allValidations);
+        return [...this.validations, ...subVals];
     }
 
     @override

@@ -31,7 +31,7 @@ this release, but is not strictly required.
   `react-grid-layout` v2+ (not common).
 * Modified `DashCanvasModel.containerPadding` to apply to the `react-grid-layout` div created by the
   library, instead of the Hoist-created containing div. This may affect printing layouts.
-* Enhanced `Field.rules` to support warnings, handled via `Grid` and `Form` validation APIs.
+* Enhanced `Field.rules` to support `warning` and `info` severity.
 
 ### 🎁 New Features
 

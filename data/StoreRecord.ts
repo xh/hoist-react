@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {Validation} from '@xh/hoist/data/validation/Rule';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
 import {Store} from './Store';
@@ -133,14 +134,9 @@ export class StoreRecord {
         return this.store.getAncestorsById(this.id, false);
     }
 
-    /** True if the record is confirmed to be Valid (with or without warnings). */
+    /** True if the record is confirmed to be Valid. */
     get isValid(): boolean {
-        return this.validationState === 'Valid' || this.validationState === 'ValidWithWarnings';
-    }
-
-    /** True if the record is confirmed to be Valid but has warnings. */
-    get isValidWithWarnings(): boolean {
-        return this.validationState === 'ValidWithWarnings';
+        return this.validationState === 'Valid';
     }
 
     /** True if the record is confirmed to be NotValid. */
@@ -158,9 +154,9 @@ export class StoreRecord {
         return this.validator?.errors ?? {};
     }
 
-    /** Map of field names to list of warnings. */
-    get warnings(): Record<string, string[]> {
-        return this.validator?.warnings ?? {};
+    /** Map of field names to list of validations. */
+    get validations(): Record<string, Validation[]> {
+        return this.validator?.validations ?? {};
     }
 
     /** Array of all errors for this record. */
@@ -168,19 +164,14 @@ export class StoreRecord {
         return flatMap(this.errors);
     }
 
-    /** Array of all warnings for this record. */
-    get allWarnings() {
-        return flatMap(this.warnings);
+    /** Array of all validations for this record. */
+    get allValidations(): Validation[] {
+        return flatMap(this.validations);
     }
 
     /** Count of all validation errors for the record. */
     get errorCount(): number {
         return this.validator?.errorCount ?? 0;
-    }
-
-    /** Count of all validation warnings for the record. */
-    get warningCount(): number {
-        return this.validator?.warningCount ?? 0;
     }
 
     /** True if any fields are currently recomputing their validation state. */
