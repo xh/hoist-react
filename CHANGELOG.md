@@ -2,11 +2,21 @@
 
 ## 80.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Completed the refactoring away from `loadModel` to `loadObserver` started in v79:
+    * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
+      deprecated and scheduled for removal in v82.
+    * Renamed `AppContainerModel.loadModel` to `loadObserver`. This is primarily an internal model,
+      so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
+    * Removed additional references to deprecated `loadModel` within Hoist itself.
+
 ### 🎁 New Features
 
 * DashCanvas:
     * supports dragging and dropping widgets in from an external container.
     * supports new compacting strategy: 'wrap'
+* new elementFactory tags: `fieldset`, `legend`
 
 ### 📚 Libraries
 
@@ -79,8 +89,8 @@ this release, but is not strictly required.
 
 ### 📚 Libraries
 
-* @blueprintjs/core: `5.10 -> 6.3`
-* @blueprintjs/datetime: `5.3 -> 6.0`
+* @blueprintjs/core: `5.10 → 6.3`
+* @blueprintjs/datetime: `5.3 → 6.0`
 * react-grid-layout `1.5 → 2.1`
 
 ## 78.1.4 - 2025-12-05
@@ -866,8 +876,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### 📚 Libraries
 
 * @azure/msal-browser `3.17 → 3.23`
-* mobx  `6.9.1 -> 6.13.2`,
-* mobx-react-lite  `3.4.3 -> 4.0.7`,
+* mobx  `6.9 → 6.13`,
+* mobx-react-lite  `3.4 → 4.0`,
 
 ## 67.0.0 - 2024-09-03
 

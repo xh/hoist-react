@@ -86,7 +86,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         buttonSide = 'right',
         extraMenuItems = []
     }: ViewManagerProps) {
-        const {loadModel} = model,
+        const {loadObserver} = model,
             locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
             save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
             revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
@@ -103,7 +103,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                     }),
                     ...menuButtonProps
                 }),
-                content: loadModel.isPending
+                content: loadObserver.isPending
                     ? box({
                           item: spinner({compact: true}),
                           alignItems: 'center',
