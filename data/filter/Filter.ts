@@ -5,8 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Store} from '../Store';
-import {FilterSpec, FilterTestFn} from './Types';
+import {
+    CompoundFilter,
+    FieldFilter,
+    FilterSpec,
+    FilterTestFn,
+    FunctionFilter,
+    Store
+} from '@xh/hoist/data';
 
 /**
  * Base class for Hoist data package Filters.
@@ -20,6 +26,22 @@ import {FilterSpec, FilterTestFn} from './Types';
  *      via an `AND` or `OR` operator.
  */
 export abstract class Filter {
+    static isFilter(v: any): v is Filter {
+        return v?.isFilter === true;
+    }
+
+    static isFieldFilter(f: Filter): f is FieldFilter {
+        return (f as any)?.isFieldFilter === true;
+    }
+
+    static isCompoundFilter(f: Filter): f is CompoundFilter {
+        return (f as any)?.isCompoundFilter === true;
+    }
+
+    static isFunctionFilter(f: Filter): f is FunctionFilter {
+        return (f as any)?.isFunctionFilter === true;
+    }
+
     get isFilter() {
         return true;
     }

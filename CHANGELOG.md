@@ -11,6 +11,13 @@
       so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
     * Removed additional references to deprecated `loadModel` within Hoist itself.
 
+### ⚙️ Technical
+
+* Introduced new `FilterBindTarget` and `FilterValueSource` interfaces to generalize the data
+  sources that could be used with `FilterChooserModel` and `GridFilterModel`. Both `Store` and
+  `View` implement these interfaces, meaning no changes are required for apps, but it is now
+  possible to use these models with other, alternate implementations if needed.
+
 ## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes

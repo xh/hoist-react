@@ -117,11 +117,11 @@ export class GridFilterModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
-    toDisplayValue(value) {
+    toDisplayValue(value: any): any {
         return isNil(value) || value === '' ? GridFilterModel.BLANK_PLACEHOLDER : value;
     }
 
-    fromDisplayValue(value) {
+    fromDisplayValue(value: any): any {
         return value === GridFilterModel.BLANK_PLACEHOLDER ? null : value;
     }
 
@@ -135,7 +135,7 @@ export class GridFilterModel extends HoistModel {
         this.dialogOpen = false;
     }
 
-    setFilter(filter) {
+    setFilter(filter: Filter) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
@@ -161,11 +161,10 @@ export class GridFilterModel extends HoistModel {
         });
     }
 
-    private getOuterCompoundFilter(filter, field) {
-        if (!filter?.isCompoundFilter) return null;
+    private getOuterCompoundFilter(filter: Filter, field: string) {
+        if (!Filter.isCompoundFilter(filter)) return null;
 
-        // This is the outer compound filter if all its children
-        // are FieldFilters on the matching field.
+        // This is the outer compound filter if all children are FieldFilters on the matching field.
         if (every(filter.filters, {field})) {
             return filter;
         }
