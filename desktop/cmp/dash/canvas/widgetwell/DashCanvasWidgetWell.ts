@@ -25,7 +25,10 @@ export interface DashCanvasWidgetWellProps extends HoistProps {
  * Widget Well from which to add items to a DashCanvas by drag-and-drop.
  *
  * Available view specs are listed in their defined order,
- * grouped by their 'groupName' property if present
+ * grouped by their 'groupName' property if present.
+ *
+ * Typically, an app developer would place this inside a collapsible panel to the side of
+ * a DashCanvas.
  */
 export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
     hoistCmp.withFactory<DashCanvasWidgetWellProps>({
