@@ -50,6 +50,14 @@
     color: var(--xh-red);
   }
 
+  &.xh-form-field-warning .xh-form-field-label {
+    color: var(--xh-orange);
+  }
+
+  &.xh-form-field-info .xh-form-field-label {
+    color: var(--xh-blue);
+  }
+
   &.xh-form-field-readonly {
     .xh-form-field-error-msg,
     .xh-form-field-warning-msg,

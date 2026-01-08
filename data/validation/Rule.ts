@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Awaitable, PlainObject, Some} from '../../core';
-import {castArray} from 'lodash';
+import {castArray, groupBy, isEmpty} from 'lodash';
 import {StoreRecord} from '../StoreRecord';
 import {BaseFieldModel} from '../../cmp/form';
 
@@ -23,13 +23,27 @@ export class Rule {
 }
 
 /**
+ * Utility to determine the maximum severity from a list of validations.
+ *
+ * @param validations - list of Validation objects
+ * @returns The highest severity level found, or null if none.
+ */
+export function maxSeverity(validations: Validation[]): ValidationSeverity {
+    if (isEmpty(validations)) return null;
+    const bySeverity = groupBy(validations, 'severity');
+    if ('error' in bySeverity) return 'error';
+    if ('warning' in bySeverity) return 'warning';
+    if ('info' in bySeverity) return 'info';
+    return null;
+}
+
+/**
  * Function to validate a value.
  *
  * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
- * @returns String or array of strings describing errors, or Validation object or an array of
- * Validation objects, or null or undefined if rule passes successfully. May return a Promise
- * resolving to same for async validation.
+ * @returns Validation(s) or string(s) describing errors or null / undefined if rule passes.
+ * May return a Promise resolving to the same for async validation.
  */
 export type Constraint<T = any> = (
     fieldState: FieldState<T>,

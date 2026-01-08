@@ -6,6 +6,7 @@
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {Validation} from '@xh/hoist/data/validation/Rule';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -882,7 +883,7 @@ export class Store extends HoistBase {
     }
 
     /** Array of all validations for this store. */
-    get allValidations(): string[] {
+    get allValidations(): Validation[] {
         return uniq(flatMapDeep(this.validations, values));
     }
 

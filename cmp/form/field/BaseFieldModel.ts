@@ -182,11 +182,7 @@ export abstract class BaseFieldModel extends HoistModel {
     /** All validation errors for this field. */
     @computed
     get errors(): string[] {
-        return compact(
-            flatten(this.validationResults).map(it =>
-                it?.severity === 'error' ? it.message : null
-            )
-        );
+        return this.validations.filter(it => it.severity === 'error').map(it => it.message);
     }
 
     /** All validations for this field. */

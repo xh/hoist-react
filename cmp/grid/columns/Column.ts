@@ -10,6 +10,7 @@ import {
     CubeFieldSpec,
     FieldSpec,
     genDisplayName,
+    maxSeverity,
     RecordAction,
     RecordActionSpec,
     StoreRecord,
@@ -870,7 +871,7 @@ export class Column {
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
-                // Override with validation errors, if present
+                // Override with validation errors, if present -- only show highest-severity level
                 if (editor) {
                     const validationsBySeverity = groupBy(
                             record.validations[field],
@@ -1018,35 +1019,12 @@ export class Column {
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': agParams => {
-                    const record = agParams.data;
-                    return record && !isEmpty(record.errors[field]);
-                },
-                'xh-cell--warning': agParams => {
-                    const record = agParams.data,
-                        validationsBySeverity = groupBy(
-                            record.validations[field],
-                            'severity'
-                        ) as Record<ValidationSeverity, Validation[]>;
-                    return (
-                        record &&
-                        isEmpty(validationsBySeverity.error) &&
-                        !isEmpty(validationsBySeverity.warning)
-                    );
-                },
-                'xh-cell--info': agParams => {
-                    const record = agParams.data,
-                        validationsBySeverity = groupBy(
-                            record.validations[field],
-                            'severity'
-                        ) as Record<ValidationSeverity, Validation[]>;
-                    return (
-                        record &&
-                        isEmpty(validationsBySeverity.error) &&
-                        isEmpty(validationsBySeverity.warning) &&
-                        !isEmpty(validationsBySeverity.info)
-                    );
-                },
+                'xh-cell--invalid': agParams =>
+                    maxSeverity(agParams.data.validations[field]) === 'error',
+                'xh-cell--warning': agParams =>
+                    maxSeverity(agParams.data.validations[field]) === 'warning',
+                'xh-cell--info': agParams =>
+                    maxSeverity(agParams.data.validations[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },

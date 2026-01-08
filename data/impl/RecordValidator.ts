@@ -46,7 +46,7 @@ export class RecordValidator {
     @computed.struct
     get errors(): RecordValidationMessagesMap {
         return mapValues(this.fieldValidations ?? {}, issues =>
-            compact(issues.map(it => (it?.severity === 'error' ? it?.message : null)))
+            compact(issues.map(it => (it?.severity === 'error' ? it.message : null)))
         );
     }
 

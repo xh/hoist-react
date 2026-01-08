@@ -6,11 +6,11 @@
  */
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
-import {Validation, ValidationSeverity} from '@xh/hoist/data';
+import {maxSeverity} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {groupBy, isEmpty, isEqual} from 'lodash';
+import {isEqual} from 'lodash';
 import {FocusEvent, ForwardedRef, ReactElement, ReactInstance, useImperativeHandle} from 'react';
 import {findDOMNode} from 'react-dom';
 import './HoistInput.scss';
@@ -337,19 +337,7 @@ export function useHoistInputModel(
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
-        validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
-        validationsBySeverity = groupBy(field?.validations, 'severity') as Record<
-            ValidationSeverity,
-            Validation[]
-        >,
-        warningClass =
-            !isEmpty(validationsBySeverity.warning) && field?.validationDisplayed
-                ? 'xh-input-warning'
-                : null,
-        infoClass =
-            !isEmpty(validationsBySeverity.info) && field?.validationDisplayed
-                ? 'xh-input-info'
-                : null,
+        severityToDisplay = field?.validationDisplayed && maxSeverity(field?.validations),
         disabledClass = props.disabled ? 'xh-input-disabled' : null;
 
     return component({
@@ -358,7 +346,8 @@ export function useHoistInputModel(
         ref: inputModel.domRef,
         className: classNames(
             'xh-input',
-            validityClass ?? warningClass ?? infoClass,
+            severityToDisplay &&
+                `xh-input-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`,
             disabledClass,
             props.className
         )
