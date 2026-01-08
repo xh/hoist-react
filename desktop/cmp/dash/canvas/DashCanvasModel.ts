@@ -447,6 +447,10 @@ export class DashCanvasModel
         };
     }
 
+    getViewsBySpecId(id) {
+        return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
     //------------------------
     // Persistable Interface
     //------------------------
@@ -610,10 +614,6 @@ export class DashCanvasModel
 
     private hasSpec(id) {
         return some(this.viewSpecs, {id});
-    }
-
-    private getViewsBySpecId(id) {
-        return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
     private getNextAvailablePosition({
