@@ -31,7 +31,7 @@ import {
     WebSocketService,
     ClientHealthService
 } from '@xh/hoist/svc';
-import {getLogLevel, setLogLevel, LogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, setLogLevel, LogLevel, apiDeprecated} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -164,10 +164,18 @@ export class XHApi {
     //----------------------------
     /**
      * Tracks globally loading promises.
-     * Apps should link any async operations that should mask the entire viewport to this model.
+     * Apps should link any async operations that should mask the entire viewport to this observer.
      */
+    get appLoadObserver(): TaskObserver {
+        return this.acm.appLoadObserver;
+    }
+
     get appLoadModel(): TaskObserver {
-        return this.acm.appLoadModel;
+        apiDeprecated('XH.appLoadModel', {
+            v: 'v82',
+            msg: 'Use XH.appLoadObserver instead.'
+        });
+        return this.appLoadObserver;
     }
 
     /** Root level application model. */
@@ -439,7 +447,7 @@ export class XHApi {
      */
     @action
     reloadApp(opts?: ReloadAppOptions | string) {
-        never().linkTo(this.appLoadModel);
+        never().linkTo(this.appLoadObserver);
 
         opts = isString(opts) ? {path: opts} : (opts ?? {});
 

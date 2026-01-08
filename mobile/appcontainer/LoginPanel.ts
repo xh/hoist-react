@@ -26,7 +26,7 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {isValid, loadModel, warning, loginInProgress} = model;
+            {isValid, loadObserver, warning, loginInProgress} = model;
 
         return panel({
             className: 'xh-login',
@@ -34,7 +34,7 @@ export const loginPanel = hoistCmp.factory({
                 toolbar(filler(), XH.clientAppName, filler()),
                 panel({
                     className: 'xh-login__body',
-                    mask: loadModel,
+                    mask: loadObserver,
                     items: [
                         form({
                             className: 'xh-login__fields',

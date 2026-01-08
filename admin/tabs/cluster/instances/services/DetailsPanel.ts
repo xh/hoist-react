@@ -35,9 +35,9 @@ export const detailsPanel = hoistCmp.factory({
 
 const stats = hoistCmp.factory<DetailsModel>({
     render({model}) {
-        const {stats, lastLoadException, loadModel} = model;
+        const {stats, lastLoadException, loadObserver} = model;
 
-        if (!loadModel.isPending && lastLoadException) {
+        if (!loadObserver.isPending && lastLoadException) {
             return errorMessage({
                 error: lastLoadException,
                 detailsFn: e => XH.exceptionHandler.showExceptionDetails(e)
@@ -46,7 +46,7 @@ const stats = hoistCmp.factory<DetailsModel>({
 
         return isEmpty(stats)
             ? placeholder(
-                  ...(loadModel.isPending
+                  ...(loadObserver.isPending
                       ? []
                       : [Icon.questionCircle(), 'This service does not report any admin stats.'])
               )
