@@ -3,9 +3,9 @@
 ## 80.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Added `jsonSchema` and `ajvProps` configs to JsonInputProps.
-    * `jsonSchema` - Used to validate the input Json
-    * `ajvProps` - Used to configure AJV Object
+* Added `ajvSchema` and `ajvOptions` configs to JsonInputProps.
+    * `ajvSchema` - Used to validate the input JSON
+    * `ajvOptions` - Options to be passed to Ajv constructor (JSON schema validator)
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Code mirror v6 update)
 * Hoist v80 **upgrades CodeMirror to v6** (from v5)
@@ -23,13 +23,13 @@
     * Removed additional references to deprecated `loadModel` within Hoist itself.
 
 ### 📚 Libraries
-* @codemirror/view `6.39.4`
-* @codemirror/commands `6.10.0`
-* @codemirror/language `6.11.3`
-* @codemirror/lint `6.9.2`
-* @codemirror/search `6.5.11`
+* @codemirror/commands `6.10.1`
+* @codemirror/language `6.12.1`
 * @codemirror/language-data `6.5.2`
-* @uiw/codemirror-theme-github `^4.25.4`,
+* @codemirror/lint `6.9.2`
+* @codemirror/state `6.5.3`
+* @codemirror/view `6.39.9`
+* @uiw/codemirror-theme-github `4.25.4`,
 * ajv `8.17.1`,
 
 ## 79.0.0 - 2026-01-05

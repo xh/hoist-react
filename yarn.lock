@@ -1023,10 +1023,10 @@
     "@codemirror/view" "^6.17.0"
     "@lezer/common" "^1.0.0"
 
-"@codemirror/commands@6.10.0":
-  version "6.10.0"
-  resolved "https://registry.yarnpkg.com/@codemirror/commands/-/commands-6.10.0.tgz#b3206984fec8443c4d910565eb2e9d591c7d80b2"
-  integrity sha512-2xUIc5mHXQzT16JnyOFkh8PvfeXuIut3pslWGfsGOhxP/lpgRm9HOl/mpzLErgt5mXDovqA0d11P21gofRLb9w==
+"@codemirror/commands@~6.10.1":
+  version "6.10.1"
+  resolved "https://registry.yarnpkg.com/@codemirror/commands/-/commands-6.10.1.tgz#a17a48f846947f48150b9670a3de8c4352b69256"
+  integrity sha512-uWDWFypNdQmz2y1LaNJzK7fL7TYKLeUAU0npEC685OKTF3KcQ2Vu3klIM78D7I6wGhktme0lh3CuQLv0ZCrD9Q==
   dependencies:
     "@codemirror/language" "^6.0.0"
     "@codemirror/state" "^6.4.0"
@@ -1268,7 +1268,7 @@
     "@lezer/lr" "^1.0.0"
     "@lezer/yaml" "^1.0.0"
 
-"@codemirror/language-data@6.5.2":
+"@codemirror/language-data@~6.5.2":
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/@codemirror/language-data/-/language-data-6.5.2.tgz#404dc3d50a80d0f76bc8f81f93cc1d82e322417c"
   integrity sha512-CPkWBKrNS8stYbEU5kwBwTf3JB1kghlbh4FSAwzGW2TEscdeHHH4FGysREW86Mqnj3Qn09s0/6Ea/TutmoTobg==
@@ -1297,7 +1297,7 @@
     "@codemirror/language" "^6.0.0"
     "@codemirror/legacy-modes" "^6.4.0"
 
-"@codemirror/language@^6.0.0", "@codemirror/language@^6.3.0", "@codemirror/language@^6.4.0", "@codemirror/language@^6.6.0", "@codemirror/language@^6.8.0":
+"@codemirror/language@^6.0.0", "@codemirror/language@^6.3.0", "@codemirror/language@^6.4.0", "@codemirror/language@^6.6.0", "@codemirror/language@^6.8.0", "@codemirror/language@~6.12.1":
   version "6.12.1"
   resolved "https://registry.yarnpkg.com/@codemirror/language/-/language-6.12.1.tgz#d615f7b099a39248312feaaf0bfafce4418aac1b"
   integrity sha512-Fa6xkSiuGKc8XC8Cn96T+TQHYj4ZZ7RdFmXA3i9xe/3hLHfwPZdM+dqfX0Cp0zQklBKhVD8Yzc8LS45rkqcwpQ==
@@ -1316,7 +1316,7 @@
   dependencies:
     "@codemirror/language" "^6.0.0"
 
-"@codemirror/lint@6.9.2", "@codemirror/lint@^6.0.0":
+"@codemirror/lint@^6.0.0", "@codemirror/lint@~6.9.2":
   version "6.9.2"
   resolved "https://registry.yarnpkg.com/@codemirror/lint/-/lint-6.9.2.tgz#09ed0aedec13381c9e36e1ac5d126027740c3ef4"
   integrity sha512-sv3DylBiIyi+xKwRCJAAsBZZZWo82shJ/RTMymLabAdtbkV5cSKwWDeCgtUq3v8flTaXS2y1kKkICuRYtUswyQ==
@@ -1325,23 +1325,14 @@
     "@codemirror/view" "^6.35.0"
     crelt "^1.0.5"
 
-"@codemirror/search@6.5.11":
-  version "6.5.11"
-  resolved "https://registry.yarnpkg.com/@codemirror/search/-/search-6.5.11.tgz#a324ffee36e032b7f67aa31c4fb9f3e6f9f3ed63"
-  integrity sha512-KmWepDE6jUdL6n8cAAqIpRmLPBZ5ZKnicE8oGU/s3QrAVID+0VhLFrzUucVKHG5035/BSykhExDL/Xm7dHthiA==
-  dependencies:
-    "@codemirror/state" "^6.0.0"
-    "@codemirror/view" "^6.0.0"
-    crelt "^1.0.5"
-
-"@codemirror/state@^6.0.0", "@codemirror/state@^6.4.0", "@codemirror/state@^6.5.0":
+"@codemirror/state@^6.0.0", "@codemirror/state@^6.4.0", "@codemirror/state@^6.5.0", "@codemirror/state@~6.5.3":
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/@codemirror/state/-/state-6.5.3.tgz#256e256d466f49ed0879d462031de8bd541e1403"
   integrity sha512-MerMzJzlXogk2fxWFU1nKp36bY5orBG59HnPiz0G9nLRebWa0zXuv2siH6PLIHBvv5TH8CkQRqjBs0MlxCZu+A==
   dependencies:
     "@marijn/find-cluster-break" "^1.0.0"
 
-"@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0", "@codemirror/view@^6.23.0", "@codemirror/view@^6.27.0", "@codemirror/view@^6.35.0":
+"@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0", "@codemirror/view@^6.23.0", "@codemirror/view@^6.27.0", "@codemirror/view@^6.35.0", "@codemirror/view@~6.39.9":
   version "6.39.9"
   resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.39.9.tgz#66c93ca2591b941784fc154c6c5d48a5244a8453"
   integrity sha512-miGSIfBOKC1s2oHoa80dp+BjtsL8sXsrgGlQnQuOcfvaedcQUtqddTmKbJSDkLl4mkgPvZyXuKic2HDNYcJLYA==
@@ -2511,7 +2502,7 @@
     "@typescript-eslint/types" "8.52.0"
     eslint-visitor-keys "^4.2.1"
 
-"@uiw/codemirror-theme-github@^4.25.4":
+"@uiw/codemirror-theme-github@~4.25.4":
   version "4.25.4"
   resolved "https://registry.yarnpkg.com/@uiw/codemirror-theme-github/-/codemirror-theme-github-4.25.4.tgz#c4f31cdc0d77526180423bf3f5bf3f0824de0331"
   integrity sha512-M5zRT2vIpNsuKN0Lz+DwLnmhHW8Eddp1M9zC0hm3V+bvffmaSn/pUDey1eqGIv5xNNmjhqvDAz0a90xLYCzvSw==

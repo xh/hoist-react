@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {autocompletion as autocompletionExtension} from '@codemirror/autocomplete';
 import {
     defaultKeymap,
     history as historyExtension,
@@ -12,20 +11,15 @@ import {
     indentWithTab
 } from '@codemirror/commands';
 import {
-    defaultHighlightStyle,
     foldGutter as foldGutterExtension,
     foldKeymap,
     indentOnInput as indentOnInputExtension,
     LanguageDescription,
-    LanguageSupport,
-    syntaxHighlighting as syntaxHighlightingExtension
+    LanguageSupport
 } from '@codemirror/language';
 import {languages} from '@codemirror/language-data';
 import {linter as linterExtension, lintGutter as lintGutterExtension} from '@codemirror/lint';
-import {
-    highlightSelectionMatches as highlightSelectionMatchesExtension,
-    search as searchExtension
-} from '@codemirror/search';
+
 import {
     Compartment,
     EditorState,
@@ -56,7 +50,7 @@ import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
@@ -84,10 +78,8 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      */
     formatter?: (str: string) => string;
 
-    /**
-     * A CodeMirror linter to provide error detection and hinting in the gutter.
-     */
-    linter?: (text: string) => any[];
+    /** True to highlight active line in input. (Default false) */
+    highlightActiveLine?: boolean;
 
     /**
      * A CodeMirror language mode - default none (plain-text). See the CodeMirror docs
@@ -95,6 +87,23 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * String can be the alias or name (E.G. `JSON`, `JavaScript`, `js`, `sql`, `XML`, ect.)
      */
     language?: string;
+
+    /**
+     * True (default) to add line numbers to the gutter.
+     * If a PlainObject is provided, it will be passed to the CM6 lineNumbers extension.
+     * See CodeMirror 6 docs: https://codemirror.net/6/docs/ref/#gutter.lineNumbers
+     */
+    lineNumbers?: boolean | PlainObject;
+
+    /**
+     * True to enable line wrapping. (Default false)
+     */
+    lineWrapping?: boolean;
+
+    /**
+     * A CodeMirror linter to provide error detection and hinting in the gutter.
+     */
+    linter?: (text: string) => any[];
 
     /**
      * True to prevent user modification of editor contents, while still allowing user to
@@ -120,21 +129,6 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
      * action buttons show only when the input focused and float in the bottom-right corner.
      */
     showToolbar?: boolean;
-
-    /** True to highlight active line in input. (Default false) */
-    highlightActiveLine?: boolean;
-
-    /**
-     * True (default) to add line numbers to the gutter.
-     * If a PlainObject is provided, it will be passed to the CM6 lineNumbers extension.
-     * See CodeMirror 6 docs: https://codemirror.net/6/docs/ref/#gutter.lineNumbers
-     */
-    lineNumbers?: boolean | PlainObject;
-
-    /**
-     *  True to enable line wrapping. (Default false)
-     */
-    lineWrapping?: boolean;
 }
 
 /**
@@ -174,7 +168,6 @@ class CodeInputModel extends HoistInputModel {
     @observable currentMatchIdx: number = -1;
     @observable.ref matches: {from: number; to: number}[] = [];
     private updateMatchesEffect = StateEffect.define<void>();
-    private highlightStateFieldExtension: StateField<DecorationSet>;
 
     private themeCompartment = new Compartment();
 
@@ -263,27 +256,6 @@ class CodeInputModel extends HoistInputModel {
     constructor() {
         super();
         makeObservable(this);
-
-        this.highlightStateFieldExtension = StateField.define<DecorationSet>({
-            create: () => Decoration.none,
-            update: (deco, tr) => {
-                deco = deco.map(tr.changes);
-                if (tr.effects.some(e => e.is(this.updateMatchesEffect))) {
-                    const builder = new RangeSetBuilder<Decoration>();
-                    this.matches.forEach(match => {
-                        builder.add(
-                            match.from,
-                            match.to,
-                            Decoration.mark({class: 'xh-code-input--highlight'})
-                        );
-                    });
-                    deco = builder.finish();
-                }
-                return deco;
-            },
-            provide: f => EditorView.decorations.from(f)
-        });
-
         this.addReaction({
             track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),
@@ -292,52 +264,51 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override onLinked() {
-        this.addReaction({
-            track: () => XH.darkTheme,
-            run: () => {
-                const {editor} = this;
-                if (editor) {
-                    editor.dispatch({
-                        effects: this.themeCompartment.reconfigure(this.getTheme())
-                    });
-                }
-            }
-        });
-
-        this.addReaction({
-            track: () => this.renderValue,
-            run: val => {
-                const {editor} = this;
-                if (editor && editor.state.doc.toString() !== val) {
-                    editor.dispatch({
-                        changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
-                    });
-                }
-            }
-        });
-
-        this.addReaction({
-            track: () => this.componentProps.readonly || this.componentProps.disabled,
-            run: readOnly => {
-                const {editor} = this;
-                if (editor)
-                    editor.dispatch({
-                        effects: StateEffect.appendConfig.of(EditorView.editable.of(!readOnly))
-                    });
-            }
-        });
-
-        this.addReaction({
-            track: () => this.query,
-            run: query => {
-                if (query?.trim()) {
-                    this.findAll();
-                } else {
-                    this.clearSearchResults();
+        this.addReaction(
+            {
+                track: () => XH.darkTheme,
+                run: () => {
+                    const {editor} = this;
+                    if (editor) {
+                        editor.dispatch({
+                            effects: this.themeCompartment.reconfigure(this.getTheme())
+                        });
+                    }
                 }
             },
-            debounce: 300
-        });
+            {
+                track: () => this.renderValue,
+                run: val => {
+                    const {editor} = this;
+                    if (editor && editor.state.doc.toString() !== val) {
+                        editor.dispatch({
+                            changes: {from: 0, to: editor.state.doc.length, insert: val ?? ''}
+                        });
+                    }
+                }
+            },
+            {
+                track: () => this.componentProps.readonly || this.componentProps.disabled,
+                run: readOnly => {
+                    const {editor} = this;
+                    if (editor)
+                        editor.dispatch({
+                            effects: StateEffect.appendConfig.of(EditorView.editable.of(!readOnly))
+                        });
+                }
+            },
+            {
+                track: () => this.query,
+                run: query => {
+                    if (query?.trim()) {
+                        this.findAll();
+                    } else {
+                        this.clearSearchResults();
+                    }
+                },
+                debounce: 300
+            }
+        );
     }
 
     createCodeEditor = async (container: HTMLElement) => {
@@ -375,7 +346,6 @@ class CodeInputModel extends HoistInputModel {
         }
         this.matches = matches;
         this.currentMatchIdx = -1;
-        this.updateMatchDecorations();
         this.findNext();
     }
 
@@ -385,6 +355,7 @@ class CodeInputModel extends HoistInputModel {
         if (!editor || !matches.length) return;
         this.currentMatchIdx = (this.currentMatchIdx + 1) % matches.length;
         const match = matches[this.currentMatchIdx];
+        this.updateMatchDecorations();
         editor.dispatch({
             selection: {anchor: match.from, head: match.to},
             scrollIntoView: true
@@ -397,6 +368,7 @@ class CodeInputModel extends HoistInputModel {
         if (!editor || !matches.length) return;
         this.currentMatchIdx = (this.currentMatchIdx - 1 + matches.length) % matches.length;
         const match = matches[this.currentMatchIdx];
+        this.updateMatchDecorations();
         editor.dispatch({
             selection: {anchor: match.from, head: match.to},
             scrollIntoView: true
@@ -429,25 +401,37 @@ class CodeInputModel extends HoistInputModel {
                 lineWrapping = false
             } = this.componentProps,
             extensions = [
-                // Theme
+                // Switches between dark/light theme using GitHub theme presets.
                 this.getThemeExtension(),
-                // Editor state
+
+                // Makes the editor read-only if `readonly` is true.
                 EditorView.editable.of(!readonly),
+
+                // Listens for changes in the document.
+                // - Calls `noteValueChange` to update the Hoist input model.
+                // - Clears custom search results when document changes.
                 EditorView.updateListener.of((update: ViewUpdate) => {
-                    if (update.docChanged) this.noteValueChange(update.state.doc.toString());
+                    if (update.docChanged) {
+                        this.noteValueChange(update.state.doc.toString());
+                        this.clearSearchResults();
+                    }
                 }),
-                // Search & custom highlight
-                searchExtension(),
-                syntaxHighlightingExtension(defaultHighlightStyle),
-                highlightSelectionMatchesExtension(),
-                this.highlightStateFieldExtension,
-                // Editor UI
+
+                // Custom search highlight
+                this.getStateFieldHighlightExtension(),
+
+                // Auto-indent on enter
                 indentOnInputExtension(),
-                autocompletionExtension(),
+
+                // Provides undo/redo (Ctrl+Z / Ctrl+Shift+Z)
                 historyExtension(),
-                // Linter
+
+                // If a linter function is provided, this shows gutter hints and inline messages.
                 linter ? linterExtension(view => linter(view.state.doc.toString())) : null,
-                // Key bindings
+
+                // -----------------------------
+                // Key bindings - standard CodeMirror keymaps plus custom tab and auto format support.
+                // -----------------------------
                 keymap.of([
                     ...defaultKeymap,
                     ...historyKeymap,
@@ -466,7 +450,6 @@ class CodeInputModel extends HoistInputModel {
         if (lineWrapping) {
             extensions.push(EditorView.lineWrapping);
         }
-
         if (highlightActiveLine) {
             extensions.push(highlightActiveLineExtension(), highlightActiveLineGutterExtension());
         }
@@ -478,7 +461,11 @@ class CodeInputModel extends HoistInputModel {
             if (langExt) {
                 extensions.push(langExt);
             } else {
-                console.warn('Failed to load language:', language);
+                logWarn(
+                    `Language "${language}" is not recognized. ` +
+                        `See the list of supported languages and aliases: ` +
+                        `https://github.com/codemirror/language-data/blob/main/src/language-data.ts`
+                );
             }
         }
 
@@ -503,17 +490,59 @@ class CodeInputModel extends HoistInputModel {
     }
 
     private async getLanguageExtensionAsync(lang: string): Promise<LanguageSupport> {
+        const langDesc: LanguageDescription = find(
+            languages,
+            it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
+        );
+
+        if (!langDesc) return null;
+
         try {
-            const langDesc: LanguageDescription = find(
-                languages,
-                it => includes(it.alias, lang) || it.name.toLowerCase() === lang.toLowerCase()
-            );
-            if (!langDesc) return null;
+            // Attempt to dynamically import the language module
             return await langDesc.load();
         } catch (err) {
-            console.error(`Failed to load language: ${lang}`, err);
+            logError(
+                `Failed to dynamically load CodeMirror language module for "${langDesc.name}":`,
+                err
+            );
             return null;
         }
+    }
+
+    /**
+     * Tracks the current search matches (`this.matches`) and highlights them in the editor.
+     * Rebuilds the highlight decorations whenever `updateMatchesEffect` is dispatched.
+     * Provides these highlights to CodeMirror as a DecorationSet applied via EditorView.decorations.
+     */
+
+    private getStateFieldHighlightExtension() {
+        return StateField.define<DecorationSet>({
+            create: () => Decoration.none,
+            update: (deco, tr) => {
+                deco = deco.map(tr.changes);
+
+                if (tr.effects.some(e => e.is(this.updateMatchesEffect))) {
+                    const builder = new RangeSetBuilder<Decoration>();
+                    this.matches.forEach((match, idx) => {
+                        const isActive = idx === this.currentMatchIdx;
+                        // DEBUG
+                        console.log(isActive);
+                        builder.add(
+                            match.from,
+                            match.to,
+                            Decoration.mark({
+                                class: isActive
+                                    ? 'xh-code-input--highlight-active'
+                                    : 'xh-code-input--highlight'
+                            })
+                        );
+                    });
+                    deco = builder.finish();
+                }
+                return deco;
+            },
+            provide: f => EditorView.decorations.from(f)
+        });
     }
 
     private autofocusExtension = ViewPlugin.fromClass(
@@ -558,6 +587,7 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
         items: [
             div({
                 className: 'xh-code-input__inner-wrapper',
+                // We pass the container via ref to createCodeEditor, which initializes the editor inside it.
                 ref: model.createCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()

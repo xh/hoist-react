@@ -21,7 +21,7 @@ export interface JsonInputProps extends CodeInputProps {
 
     /**
      * Configuration object with any properties supported by the AJV API.
-     * @see {@link https://ajv.js.org/options.html}
+     * @sees https://ajv.js.org/options.html
      */
     ajvOptions?: Options;
 }
@@ -49,14 +49,14 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
 //----------------------
 // JSON Linter helper
 //----------------------
-function jsonLinterWrapper(jsonSchema?: PlainObject, ajvProps?: Options) {
+function jsonLinterWrapper(ajvSchema?: PlainObject, ajvOptions?: Options) {
     // No schema → only use JSONLint
-    if (!jsonSchema) {
+    if (!ajvSchema) {
         return (text: string) => jsonLintOnly(text);
     }
 
-    const ajv = new Ajv({...ajvProps}),
-        validate = ajv.compile(jsonSchema);
+    const ajv = new Ajv({...ajvOptions}),
+        validate = ajv.compile(ajvSchema);
 
     return (text: string) => {
         const annotations: any[] = [];
