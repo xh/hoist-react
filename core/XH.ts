@@ -361,6 +361,20 @@ export class XHApi {
     }
 
     /**
+     * @returns Default user initials to display in the app menu button, when it is configured to show
+     * a user profile instead of a hamburger icon
+     */
+    getUserInitials(): string {
+        const displayNameRaw = this.getUser().displayName;
+        const [displayName] = displayNameRaw.split('@');
+        const nameParts = displayName.split(/[\s.]+/);
+        return nameParts
+            .map(part => part.charAt(0).toUpperCase())
+            .join('')
+            .substring(0, 3);
+    }
+
+    /**
      * Logout the current user.
      * @see HoistAuthModel.logoutAsync
      */

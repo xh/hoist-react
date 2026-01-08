@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -57,10 +57,12 @@ export interface AppMenuButtonProps extends ButtonProps {
      * Replace the hamburger icon with user initials for the right nav button.
      * TRUE to show first initial from the user's "username" prop.
      * Provide a getter method to transform the username into custom initials (e.g. first and last initial).
-     *   - Note that this will be capped at two letters and transformed to uppercase.
+     *   - Note that this will be capped at three letters and transformed to uppercase.
      */
-    userInitials?: boolean | ((userName: string) => string);
+    renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
+
+type RenderWithUserProfileCustomFn = (user: HoistUser) => string;
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
@@ -80,7 +82,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             disabled,
-            userInitials,
+            renderWithUserProfile,
             ...rest
         } = props;
 
@@ -90,8 +92,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             position: 'bottom-right',
             minimal: true,
             item: button({
-                className: userInitials ? 'xh-user-profile-button' : null,
-                icon: userInitials ? buildUserIcon(userInitials) : Icon.menu(),
+                className: renderWithUserProfile ? 'xh-app-menu-button--user-profile' : null,
+                text: renderWithUserProfile ? buildUserIcon(renderWithUserProfile) : Icon.menu(),
                 disabled,
                 ...rest
             }),
@@ -104,12 +106,12 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
     }
 });
 
-function buildUserIcon(userInitials: boolean | ((userName: string) => string)) {
-    let initials = XH.getUsername().charAt(0).toUpperCase();
-    if (isObject(userInitials)) {
-        initials = (userInitials as (userName: string) => string)(XH.getUsername());
-        // Do not allow more than two characters
-        initials = initials.substring(0, 2).toUpperCase();
+function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
+    let initials = XH.getUserInitials();
+    if (isObject(renderWithUserProfile)) {
+        initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
+        // Do not allow more than three characters to prevent overflow of the element
+        initials = initials.substring(0, 3).toUpperCase();
     }
     return div({
         className: 'xh-user-profile-initials',
