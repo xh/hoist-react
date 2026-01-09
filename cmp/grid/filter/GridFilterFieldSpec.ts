@@ -7,7 +7,13 @@
 import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
-import {FieldFilterOperator, Filter, parseFilter} from '@xh/hoist/data';
+import {
+    CompoundFilter,
+    FieldFilter,
+    FieldFilterOperator,
+    Filter,
+    parseFilter
+} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
@@ -112,13 +118,13 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
     // Recursively modify a Filter|CompoundFilter to remove all FieldFilters referencing this column
     private cleanFilter(filter: Filter): Filter {
-        if (Filter.isCompoundFilter(filter)) {
+        if (CompoundFilter.isCompoundFilter(filter)) {
             const {filters, op} = filter;
             const ret = compact(filters.map(it => this.cleanFilter(it)));
             return !isEmpty(ret) ? parseFilter({op, filters: ret}) : null;
         }
 
-        if (Filter.isFieldFilter(filter) && filter.field === this.field) {
+        if (FieldFilter.isFieldFilter(filter) && filter.field === this.field) {
             return null;
         }
 

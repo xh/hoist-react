@@ -17,8 +17,8 @@ import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types'
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-    get isCompoundFilter() {
-        return true;
+    static isCompoundFilter(f: unknown): f is CompoundFilter {
+        return f instanceof CompoundFilter;
     }
 
     readonly filters: Filter[];
@@ -63,7 +63,7 @@ export class CompoundFilter extends Filter {
             other instanceof CompoundFilter &&
             other.op === this.op &&
             isEqualWith(other.filters, this.filters, (a, b) =>
-                a.isFilter && b.isFilter ? a.equals(b) : undefined
+                Filter.isFilter(a) && Filter.isFilter(b) ? a.equals(b) : undefined
             )
         );
     }

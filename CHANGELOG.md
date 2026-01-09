@@ -10,13 +10,15 @@
     * Renamed `AppContainerModel.loadModel` to `loadObserver`. This is primarily an internal model,
       so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
     * Removed additional references to deprecated `loadModel` within Hoist itself.
+* Removed the `Filter.isFilter` getter - use new static typeguards on `Filter` and subclasses.
 
-### ⚙️ Technical
+### ⚙️ Typescript API Adjustments
 
 * Introduced new `FilterBindTarget` and `FilterValueSource` interfaces to generalize the data
   sources that could be used with `FilterChooserModel` and `GridFilterModel`. Both `Store` and
   `View` implement these interfaces, meaning no changes are required for apps, but it is now
   possible to use these models with other, alternate implementations if needed.
+* Added new static typeguard methods on `Filter` and its subclasses.
 
 ## 79.0.0 - 2026-01-05
 

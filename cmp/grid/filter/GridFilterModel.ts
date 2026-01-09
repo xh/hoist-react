@@ -162,7 +162,7 @@ export class GridFilterModel extends HoistModel {
     }
 
     private getOuterCompoundFilter(filter: Filter, field: string) {
-        if (!Filter.isCompoundFilter(filter)) return null;
+        if (!CompoundFilter.isCompoundFilter(filter)) return null;
 
         // This is the outer compound filter if all children are FieldFilters on the matching field.
         if (every(filter.filters, {field})) {
