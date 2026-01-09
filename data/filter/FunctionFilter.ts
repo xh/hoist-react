@@ -19,8 +19,8 @@ import {FunctionFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FunctionFilter extends Filter {
-    get isFunctionFilter() {
-        return true;
+    static isFunctionFilter(obj: unknown): obj is FunctionFilter {
+        return obj instanceof FunctionFilter;
     }
 
     readonly key: string;
