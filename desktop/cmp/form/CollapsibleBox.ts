@@ -9,14 +9,16 @@ import classNames from 'classnames';
 import {castArray} from 'lodash';
 import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useState} from 'react';
 import {hoistCmp} from '@xh/hoist/core';
-import type {HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {fieldset} from '@xh/hoist/cmp/layout';
 import {collapsibleBoxButton} from '@xh/hoist/desktop/cmp/button/CollapsibleBoxButton';
+import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './CollapsibleBox.scss';
 
 export interface CollapsibleBoxProps
-    extends FieldsetHTMLAttributes<HTMLFieldSetElement>, HoistProps {
+    extends FieldsetHTMLAttributes<HTMLFieldSetElement>, HoistProps, TestSupportProps, LayoutProps {
     icon?: ReactElement;
     label: ReactNode;
     tooltip?: JSX.Element | string;
@@ -40,8 +42,22 @@ export const [CollapsibleBox, collapsibleBox] = hoistCmp.withFactory<Collapsible
         hideItemCount,
         className,
         disabled,
+        display = 'flex',
+        flexDirection = 'column',
+        flexWrap = 'wrap',
         ...rest
     }) {
+        // Note `model` destructured off of non-layout props to avoid setting
+        // model as a bogus DOM attribute. This low-level component may easily be passed one from
+        // a parent that has not properly managed its own props.
+        let [layoutProps, {model, testId, ...restProps}] = splitLayoutProps(rest);
+
+        restProps = mergeDeep(
+            {style: {display, flexDirection, flexWrap, ...layoutProps}},
+            {[TEST_ID]: testId},
+            restProps
+        );
+
         const [isCollapsed, setIsCollapsed] = useState<boolean>(collapsed === true),
             items = castArray(children),
             itemCount = hideItemCount === true ? '' : ` (${items.length})`,
@@ -80,7 +96,7 @@ export const [CollapsibleBox, collapsibleBox] = hoistCmp.withFactory<Collapsible
                 ...(isCollapsed ? [] : items)
             ],
             disabled,
-            ...rest
+            ...restProps
         });
     }
 });
