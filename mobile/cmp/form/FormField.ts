@@ -66,9 +66,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
             disabled = props.disabled || model?.disabled,
-            severityToDisplay = model?.validationDisplayed ? maxSeverity(model.validations) : null,
-            validationsToDisplay = severityToDisplay
-                ? model.validations.filter(v => v.severity === severityToDisplay)
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
                 : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
@@ -151,7 +153,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                         div({
                             omit: minimal || !severityToDisplay,
                             className: `xh-form-field-${severityToDisplay}-msg`,
-                            item: first(validationsToDisplay)?.message
+                            item: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })

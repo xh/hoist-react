@@ -337,7 +337,7 @@ export function useHoistInputModel(
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
-        severityToDisplay = field?.validationDisplayed && maxSeverity(field?.validations),
+        severityToDisplay = field?.validationDisplayed && maxSeverity(field?.validationResults),
         disabledClass = props.disabled ? 'xh-input-disabled' : null;
 
     return component({

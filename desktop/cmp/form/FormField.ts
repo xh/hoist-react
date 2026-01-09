@@ -19,7 +19,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {maxSeverity, Validation} from '@xh/hoist/data';
+import {maxSeverity, ValidationResult} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -123,9 +123,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
             disabled = props.disabled || model?.disabled,
-            severityToDisplay = model?.validationDisplayed ? maxSeverity(model.validations) : null,
-            validationsToDisplay = severityToDisplay
-                ? model.validations.filter(v => v.severity === severityToDisplay)
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
                 : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
@@ -212,7 +214,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
                 disabled: !severityToDisplay,
-                content: getValidationTooltipContent(validationsToDisplay)
+                content: getValidationTooltipContent(validationResultsToDisplay)
             });
         }
 
@@ -250,9 +252,9 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             omit: minimal || !severityToDisplay,
                             openOnTargetFocus: false,
                             className: `xh-form-field-${severityToDisplay}-msg`,
-                            item: first(validationsToDisplay)?.message,
+                            item: first(validationResultsToDisplay)?.message,
                             content: getValidationTooltipContent(
-                                validationsToDisplay
+                                validationResultsToDisplay
                             ) as ReactElement
                         })
                     ]
@@ -369,23 +371,23 @@ function getValidChild(children) {
     return child;
 }
 
-function getValidationTooltipContent(validations: Validation[]): ReactElement | string {
-    // If no validations, something other than null must be returned.
+function getValidationTooltipContent(validationResults: ValidationResult[]): ReactElement | string {
+    // If no ValidationResults, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.
     // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
     // TextInput component to lose focus when its validation state changes, which is undesirable.
     // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
     // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
-    if (isEmpty(validations)) {
+    if (isEmpty(validationResults)) {
         return 'Is Valid';
-    } else if (validations.length === 1) {
-        return first(validations).message;
+    } else if (validationResults.length === 1) {
+        return first(validationResults).message;
     } else {
-        const severity = first(validations).severity;
+        const severity = first(validationResults).severity;
         return ul({
             className: `xh-form-field-${severity}-tooltip`,
-            items: validations.map((it, idx) => li({key: idx, item: it.message}))
+            items: validationResults.map((it, idx) => li({key: idx, item: it.message}))
         });
     }
 }

@@ -13,13 +13,13 @@ import type {Rule, StoreRecord, StoreRecordId} from '@xh/hoist/data';
  *
  * @param fieldState - context w/value for the constraint's target Field.
  * @param allValues - current values for all fields in form, keyed by field name.
- * @returns Validation(s) or string(s) describing errors or null / undefined if rule passes.
+ * @returns ValidationResult(s) or string(s) describing errors or null / undefined if rule passes.
  * May return a Promise resolving to the same for async validation.
  */
 export type Constraint<T = any> = (
     fieldState: FieldState<T>,
     allValues: PlainObject
-) => Awaitable<Some<string | Validation>>;
+) => Awaitable<Some<string | ValidationResult>>;
 
 /**
  * Function to determine when to perform validation on a value.
@@ -61,7 +61,7 @@ export interface RuleSpec {
 
 export type RuleLike = RuleSpec | Constraint | Rule;
 
-export interface Validation {
+export interface ValidationResult {
     severity: ValidationSeverity;
     message: string;
 }
@@ -71,11 +71,11 @@ export type ValidationSeverity = 'error' | 'warning' | 'info';
 /** Map of StoreRecord IDs to StoreRecord-level messages maps. */
 export type StoreValidationMessagesMap = Record<StoreRecordId, RecordValidationMessagesMap>;
 
-/** Map of StoreRecord IDs to StoreRecord-level validations maps. */
-export type StoreValidationsMap = Record<StoreRecordId, RecordValidationsMap>;
+/** Map of StoreRecord IDs to StoreRecord-level ValidationResults maps. */
+export type StoreValidationResultsMap = Record<StoreRecordId, RecordValidationResultsMap>;
 
 /** Map of Field names to Field-level Validation lists. */
-export type RecordValidationsMap = Record<string, Validation[]>;
+export type RecordValidationResultsMap = Record<string, ValidationResult[]>;
 
 /** Map of Field names to Field-level validation message lists. */
 export type RecordValidationMessagesMap = Record<string, string[]>;

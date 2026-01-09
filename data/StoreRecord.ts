@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
-import {Validation} from '@xh/hoist/data/validation/Types';
+import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
 import {Store} from './Store';
@@ -154,9 +154,9 @@ export class StoreRecord {
         return this.validator?.errors ?? {};
     }
 
-    /** Map of field names to list of validations. */
-    get validations(): Record<string, Validation[]> {
-        return this.validator?.validations ?? {};
+    /** Map of field names to list of ValidationResults. */
+    get validationResults(): Record<string, ValidationResult[]> {
+        return this.validator?.validationResults ?? {};
     }
 
     /** Array of all errors for this record. */
@@ -164,9 +164,9 @@ export class StoreRecord {
         return flatMap(this.errors);
     }
 
-    /** Array of all validations for this record. */
-    get allValidations(): Validation[] {
-        return flatMap(this.validations);
+    /** Array of all ValidationResults for this record. */
+    get allValidationResults(): ValidationResult[] {
+        return flatMap(this.validationResults);
     }
 
     /** Count of all validation errors for the record. */

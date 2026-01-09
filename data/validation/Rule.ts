@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Constraint, RuleSpec, Validation, ValidationSeverity, When} from '@xh/hoist/data';
+import {Constraint, RuleSpec, ValidationResult, ValidationSeverity, When} from '@xh/hoist/data';
 import {castArray, groupBy, isEmpty} from 'lodash';
 
 /**
@@ -21,14 +21,14 @@ export class Rule {
 }
 
 /**
- * Utility to determine the maximum severity from a list of validations.
+ * Utility to determine the maximum severity from a list of ValidationResults.
  *
- * @param validations - list of Validation objects
+ * @param validationResults - list of ValidationResults to evaluate.
  * @returns The highest severity level found, or null if none.
  */
-export function maxSeverity(validations: Validation[]): ValidationSeverity {
-    if (isEmpty(validations)) return null;
-    const bySeverity = groupBy(validations, 'severity');
+export function maxSeverity(validationResults: ValidationResult[]): ValidationSeverity {
+    if (isEmpty(validationResults)) return null;
+    const bySeverity = groupBy(validationResults, 'severity');
     if ('error' in bySeverity) return 'error';
     if ('warning' in bySeverity) return 'warning';
     if ('info' in bySeverity) return 'info';

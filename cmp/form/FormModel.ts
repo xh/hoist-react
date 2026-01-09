@@ -264,7 +264,7 @@ export class FormModel extends HoistModel {
         return flatMap(this.fields, s => s.allErrors);
     }
 
-    /** Recompute all validations and return true if the form is valid. */
+    /** Recompute all ValidationResults and return true if the form is valid. */
     async validateAsync(opts?: FormValidateOptions): Promise<boolean> {
         const {display = true} = opts ?? {},
             promises = map(this.fields, m => m.validateAsync({display}));

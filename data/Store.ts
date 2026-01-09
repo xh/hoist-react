@@ -18,8 +18,8 @@ import {
     StoreRecordId,
     StoreRecordOrId,
     StoreValidationMessagesMap,
-    StoreValidationsMap,
-    Validation
+    StoreValidationResultsMap,
+    ValidationResult
 } from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -900,8 +900,8 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
         return this.validator.errors;
     }
 
-    get validations(): StoreValidationsMap {
-        return this.validator.validations;
+    get validationResults(): StoreValidationResultsMap {
+        return this.validator.validationResults;
     }
 
     /** Count of all validation errors for the store. */
@@ -914,9 +914,9 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
         return uniq(flatMapDeep(this.errors, values));
     }
 
-    /** Array of all validations for this store. */
-    get allValidations(): Validation[] {
-        return uniq(flatMapDeep(this.validations, values));
+    /** Array of all ValidationResults for this store. */
+    get allValidationResults(): ValidationResult[] {
+        return uniq(flatMapDeep(this.validationResults, values));
     }
 
     /**
@@ -991,7 +991,7 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
         return this.validator.isNotValid;
     }
 
-    /** Recompute validations for all records and return true if the store is valid. */
+    /** Recompute ValidationResults for all records and return true if the store is valid. */
     async validateAsync(): Promise<boolean> {
         return this.validator.validateAsync();
     }

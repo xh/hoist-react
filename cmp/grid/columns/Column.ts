@@ -14,7 +14,7 @@ import {
     RecordAction,
     RecordActionSpec,
     StoreRecord,
-    Validation,
+    ValidationResult,
     ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
@@ -874,9 +874,9 @@ export class Column {
                 // Override with validation errors, if present -- only show highest-severity level
                 if (editor) {
                     const validationsBySeverity = groupBy(
-                            record.validations[field],
+                            record.validationResults[field],
                             'severity'
-                        ) as Record<ValidationSeverity, Validation[]>,
+                        ) as Record<ValidationSeverity, ValidationResult[]>,
                         validationMessages = (
                             validationsBySeverity.error ??
                             validationsBySeverity.warning ??
@@ -1020,11 +1020,11 @@ export class Column {
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
                 'xh-cell--invalid': agParams =>
-                    maxSeverity(agParams.data.validations[field]) === 'error',
+                    maxSeverity(agParams.data.validationResults[field]) === 'error',
                 'xh-cell--warning': agParams =>
-                    maxSeverity(agParams.data.validations[field]) === 'warning',
+                    maxSeverity(agParams.data.validationResults[field]) === 'warning',
                 'xh-cell--info': agParams =>
-                    maxSeverity(agParams.data.validations[field]) === 'info',
+                    maxSeverity(agParams.data.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },

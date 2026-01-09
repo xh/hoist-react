@@ -7,11 +7,11 @@
 import {
     Field,
     RecordValidationMessagesMap,
-    RecordValidationsMap,
+    RecordValidationResultsMap,
     Rule,
     StoreRecord,
     StoreRecordId,
-    Validation,
+    ValidationResult,
     ValidationState
 } from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
@@ -25,7 +25,7 @@ import {TaskObserver} from '../../core';
 export class RecordValidator {
     record: StoreRecord;
 
-    @observable.ref private fieldValidations: RecordValidationsMap = null;
+    @observable.ref private fieldValidations: RecordValidationResultsMap = null;
     private validationTask = TaskObserver.trackLast();
     private validationRunId = 0;
 
@@ -59,9 +59,9 @@ export class RecordValidator {
         );
     }
 
-    /** Map of field names to field-level validations. */
+    /** Map of field names to field-level ValidationResults. */
     @computed.struct
-    get validations(): RecordValidationsMap {
+    get validationResults(): RecordValidationResultsMap {
         return this.fieldValidations ?? {};
     }
 
@@ -85,7 +85,7 @@ export class RecordValidator {
     }
 
     /**
-     * Recompute validations for the record and return true if valid.
+     * Recompute ValidationResults for the record and return true if valid.
      */
     async validateAsync(): Promise<boolean> {
         let runId = ++this.validationRunId,
@@ -117,7 +117,11 @@ export class RecordValidator {
         return 'Valid';
     }
 
-    async evaluateRuleAsync(record: StoreRecord, field: Field, rule: Rule): Promise<Validation[]> {
+    async evaluateRuleAsync(
+        record: StoreRecord,
+        field: Field,
+        rule: Rule
+    ): Promise<ValidationResult[]> {
         const values = record.getValues(),
             {name, displayName} = field,
             value = record.get(name);
