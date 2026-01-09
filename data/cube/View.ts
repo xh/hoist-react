@@ -67,7 +67,10 @@ export interface DimensionValue {
  * Applications should create via the {@link Cube.createView} factory.
  */
 export class View extends HoistBase implements FilterBindTarget, FilterValueSource {
-    readonly isView = true;
+    static isView(obj: unknown): obj is View {
+        return obj instanceof View;
+    }
+
     readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */

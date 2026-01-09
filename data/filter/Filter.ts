@@ -20,8 +20,8 @@ import type {FilterSpec, FilterTestFn} from './Types';
  *      via an `AND` or `OR` operator.
  */
 export abstract class Filter {
-    static isFilter(f: unknown): f is Filter {
-        return f instanceof Filter;
+    static isFilter(obj: unknown): obj is Filter {
+        return obj instanceof Filter;
     }
 
     /**

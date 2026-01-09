@@ -17,8 +17,8 @@ import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types'
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-    static isCompoundFilter(f: unknown): f is CompoundFilter {
-        return f instanceof CompoundFilter;
+    static isCompoundFilter(obj: unknown): obj is CompoundFilter {
+        return obj instanceof CompoundFilter;
     }
 
     readonly filters: Filter[];

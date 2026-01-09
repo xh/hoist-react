@@ -189,7 +189,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  * A managed and observable set of local, in-memory Records.
  */
 export class Store extends HoistBase implements FilterBindTarget, FilterValueSource {
-    readonly isStore = true;
+    static isStore(obj: unknown): obj is Store {
+        return obj instanceof Store;
+    }
+
     readonly isFilterValueSource = true;
 
     fields: Field[] = null;
