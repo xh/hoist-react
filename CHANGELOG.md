@@ -2,8 +2,19 @@
 
 ## 80.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 🎁 New Features
+* Added `ajvSchema` and `ajvOptions` configs to JsonInputProps.
+    * `ajvSchema` - Used to validate the input JSON
+    * `ajvOptions` - Options to be passed to Ajv constructor (JSON schema validator)
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Code mirror v6 update)
+* Hoist v80 **upgrades CodeMirror to v6** (from v5)
+    * editorProps deprecated:
+      The v5-style editorProps object (which accepted any CodeMirror config keys) is no longer
+      supported. Most former editorProps use cases are now supported via first-class CodeInput props,
+      such as, `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+    * `mode` to set the language of code input now changed to `language` prop.
+        * Check [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts) for language string (alias and name allowed)
 * Completed the refactoring away from `loadModel` to `loadObserver` started in v79:
     * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
       deprecated and scheduled for removal in v82.
@@ -22,6 +33,16 @@
   `View` implement these interfaces, meaning no changes are required for apps, but it is now
   possible to use these models with other, alternate implementations if needed.
 * Added new static typeguard methods on `Store`, `View`, and `Filter` + subclasses.
+
+### 📚 Libraries
+* @codemirror/commands `6.10.1`
+* @codemirror/language `6.12.1`
+* @codemirror/language-data `6.5.2`
+* @codemirror/lint `6.9.2`
+* @codemirror/state `6.5.3`
+* @codemirror/view `6.39.9`
+* @uiw/codemirror-theme-github `4.25.4`,
+* ajv `8.17.1`,
 
 ## 79.0.0 - 2026-01-05
 
