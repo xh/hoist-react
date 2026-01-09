@@ -55,8 +55,8 @@ export interface AppMenuButtonProps extends ButtonProps {
 
     /**
      * Replace the hamburger icon with user initials for the right nav button.
-     * TRUE to show first initial from the user's "username" prop.
-     * Provide a getter method to transform the username into custom initials (e.g. first and last initial).
+     * TRUE to show initials from the user's "displayName" prop.
+     * Provide a getter method to transform the users HoistUser data into custom initials (e.g. first and last initial).
      *   - Note that this will be capped at three letters and transformed to uppercase.
      */
     renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
@@ -106,7 +106,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
     }
 });
 
-function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
+export function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
     let initials = XH.getUserInitials();
     if (isObject(renderWithUserProfile)) {
         initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());

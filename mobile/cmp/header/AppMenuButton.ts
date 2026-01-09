@@ -4,11 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isObject} from 'lodash';
 
 export interface AppMenuButtonProps extends MenuButtonProps {
     /** Array of app-specific MenuItems or configs to create them. */
@@ -37,7 +39,17 @@ export interface AppMenuButtonProps extends MenuButtonProps {
 
     /** True to hide the About button */
     hideAboutItem?: boolean;
+
+    /**
+     * Replace the hamburger icon with user initials for the right nav button.
+     * TRUE to show initials from the user's "displayName" prop.
+     * Provide a getter method to transform the users HoistUser data into custom initials (e.g. first and last initial).
+     *   - Note that this will be capped at two letters and transformed to uppercase.
+     */
+    renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
+
+type RenderWithUserProfileCustomFn = (user: HoistUser) => string;
 
 /**
  * A top-level application drop down menu, which installs a standard set of menu items for common
@@ -62,11 +74,18 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             hideAboutItem,
+            renderWithUserProfile,
             ...rest
         } = props;
 
         return menuButton({
             className,
+            icon: div({
+                className: renderWithUserProfile
+                    ? 'xh-app-menu-button--user-profile__mobile'
+                    : null,
+                item: renderWithUserProfile ? buildUserIcon(renderWithUserProfile) : Icon.menu()
+            }),
             menuItems: buildMenuItems(props),
             menuClassName: 'xh-app-menu',
             popoverProps: {popoverClassName: 'xh-app-menu-popover'},
@@ -74,6 +93,19 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         });
     }
 });
+
+function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
+    let initials = XH.getUserInitials();
+    if (isObject(renderWithUserProfile)) {
+        initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
+        // Do not allow more than two characters on mobile to prevent overflow of the element
+        initials = initials.substring(0, 2).toUpperCase();
+    }
+    return div({
+        className: 'xh-user-profile-initials',
+        item: initials
+    });
+}
 
 //---------------------------
 // Implementation
