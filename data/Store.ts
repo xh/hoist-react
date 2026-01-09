@@ -6,6 +6,18 @@
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    Field,
+    FieldSpec,
+    Filter,
+    FilterBindTarget,
+    FilterLike,
+    FilterValueSource,
+    parseFilter,
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId
+} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -13,6 +25,7 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    first,
     flatMapDeep,
     isArray,
     isEmpty,
@@ -20,21 +33,15 @@ import {
     isNil,
     isNull,
     isString,
-    values,
+    partition,
     remove as lodashRemove,
-    uniq,
-    first,
     some,
-    partition
+    uniq,
+    values
 } from 'lodash';
-import {Field, FieldSpec} from './Field';
-import {parseFilter} from './filter/Utils';
+import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
-import {instanceManager} from '../core/impl/InstanceManager';
-import {Filter} from './filter/Filter';
-import {FilterLike} from './filter/Types';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -181,10 +188,12 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistBase {
-    get isStore() {
-        return true;
+export class Store extends HoistBase implements FilterBindTarget, FilterValueSource {
+    static isStore(obj: unknown): obj is Store {
+        return obj instanceof Store;
     }
+
+    readonly isFilterValueSource = true;
 
     fields: Field[] = null;
     idSpec: (data: PlainObject) => StoreRecordId;
@@ -809,6 +818,31 @@ export class Store extends HoistBase {
     recordIsFiltered(recOrId: StoreRecordOrId): boolean {
         const id = recOrId instanceof StoreRecord ? recOrId.id : recOrId;
         return !this.getById(id, true) && !!this.getById(id, false);
+    }
+
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[] {
+        const field = this.getField(fieldName);
+        if (!field) return [];
+
+        let recs = this.allRecords;
+        if (filter) {
+            const testFn = filter.getTestFn(this);
+            recs = recs.filter(testFn);
+        }
+
+        const ret = new Set();
+        recs.forEach(rec => {
+            const val = rec.get(fieldName);
+            if (!isNil(val)) {
+                if (field.type === 'tags') {
+                    val.forEach(it => ret.add(it));
+                } else {
+                    ret.add(val);
+                }
+            }
+        });
+
+        return Array.from(ret);
     }
 
     /**

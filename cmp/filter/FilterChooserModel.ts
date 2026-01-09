@@ -18,9 +18,10 @@ import {
     CompoundFilter,
     FieldFilter,
     Filter,
+    FilterBindTarget,
+    FilterValueSource,
+    isFilterValueSource,
     parseFilter,
-    Store,
-    View,
     withFilterByTypes
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
@@ -66,17 +67,26 @@ export interface FilterChooserConfig {
     fieldSpecDefaults?: Partial<FilterChooserFieldSpecConfig>;
 
     /**
-     * Store or cube View that should actually be filtered as this model's value changes.
-     * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
-     * with other filters, send it to the server, or otherwise observe and handle value changes manually.
+     * Target (typically a {@link Store} or Cube {@link View}) to which this model's filter should
+     * be automatically applied as it changes.
+     *
+     * Note this binding is bi-directional - the target's filter will also be *set onto* this model
+     * if it changes on the target, to support e.g. sync'd filtering between a FilterChooser and
+     * Grid filtering bound to the same target Store.
+     *
+     * Leave undefined if you wish to combine this model's values with other filters, send it to
+     * the server, or otherwise observe and handle value changes manually.
      */
-    bind?: Store | View;
+    bind?: FilterBindTarget;
 
     /**
-     * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
-     * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
+     * Source (typically a {@link Store} or Cube {@link View}) from which this model can lookup
+     * matching Field-level defaults for `fieldSpecs` and provide suggested data values (if so
+     * configured) from user input.
+     *
+     * Defaults to {@link bind} if the a bind target is provided and is a valid source.
      */
-    valueSource?: Store | View;
+    valueSource?: FilterValueSource;
 
     /**
      * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
@@ -124,8 +134,8 @@ export interface FilterChooserConfig {
 export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
-    bind: Store | View;
-    valueSource: Store | View;
+    bind: FilterBindTarget;
+    valueSource: FilterValueSource;
 
     @managed fieldSpecs: FilterChooserFieldSpec[] = [];
 
@@ -155,7 +165,7 @@ export class FilterChooserModel extends HoistModel {
         fieldSpecs,
         fieldSpecDefaults,
         bind = null,
-        valueSource = bind,
+        valueSource,
         initialValue = null,
         initialFavorites = [],
         suggestFieldsWhenEmpty = true,
@@ -169,7 +179,12 @@ export class FilterChooserModel extends HoistModel {
         makeObservable(this);
 
         this.bind = bind;
+
         this.valueSource = valueSource;
+        if (!this.valueSource && isFilterValueSource(bind)) {
+            this.valueSource = bind;
+        }
+
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.suggestFieldsWhenEmpty = !!suggestFieldsWhenEmpty;
         this.sortFieldSuggestions = sortFieldSuggestions;
