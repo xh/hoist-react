@@ -143,7 +143,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
 });
 
 const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
-    mask({bind: model.appLoadModel, spinner: true})
+    mask({bind: model.appLoadObserver, spinner: true})
 );
 
 const bannerList = hoistCmp.factory<AppContainerModel>({

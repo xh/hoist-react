@@ -10,7 +10,9 @@ import {
     Cube,
     CubeField,
     Filter,
+    FilterBindTarget,
     FilterLike,
+    FilterValueSource,
     Query,
     QueryConfig,
     Store,
@@ -64,10 +66,12 @@ export interface DimensionValue {
  * Primary interface for consuming grouped and aggregated data from the cube.
  * Applications should create via the {@link Cube.createView} factory.
  */
-export class View extends HoistBase {
-    get isView() {
-        return true;
+export class View extends HoistBase implements FilterBindTarget, FilterValueSource {
+    static isView(obj: unknown): obj is View {
+        return obj instanceof View;
     }
+
+    readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */
     @observable.ref
@@ -220,6 +224,13 @@ export class View extends HoistBase {
         } else {
             this.info = this.cube.info;
         }
+    }
+
+    //----------------------------
+    // FilterValueSource interface
+    //----------------------------
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[] {
+        return this.cube.store.getValuesForFieldFilter(fieldName, filter);
     }
 
     //------------------------

@@ -36,8 +36,8 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FieldFilter extends Filter {
-    get isFieldFilter() {
-        return true;
+    static isFieldFilter(obj: unknown): obj is FieldFilter {
+        return obj instanceof FieldFilter;
     }
 
     readonly field: string;

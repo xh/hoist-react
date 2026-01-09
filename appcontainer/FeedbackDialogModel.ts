@@ -51,20 +51,18 @@ export class FeedbackDialogModel extends HoistModel {
      * Submit the feedback entry to the activity tracking system.
      */
     async submitAsync() {
-        const {message} = this,
-            {trackService} = XH;
-
+        const {message} = this;
         if (!message) this.hide();
 
         try {
-            trackService.track({
+            XH.trackService.track({
                 category: 'Feedback',
                 message: 'User submitted feedback',
                 data: {
                     userMessage: this.message
                 }
             });
-            trackService.pushPendingAsync().linkTo(XH.appLoadModel);
+            await XH.trackService.pushPendingAsync().linkTo(XH.appLoadObserver);
             XH.successToast('Thank you - your feedback has been sent.');
             this.hide();
         } catch (e) {
