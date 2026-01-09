@@ -193,7 +193,9 @@ export abstract class BaseFieldModel extends HoistModel {
 
     /** All validation errors for this field and its sub-forms. */
     get allErrors(): string[] {
-        return this.errors;
+        return this.allValidationResults
+            .filter(it => it.severity === 'error')
+            .map(it => it.message);
     }
 
     /** All ValidationResults for this field and its sub-forms. */
