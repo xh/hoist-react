@@ -1,15 +1,17 @@
 .xh-dash-canvas-widget-well {
-  padding: 0 var(--xh-pad-px);
+  padding: 0 var(--xh-pad-half-px);
 
   .xh-collapsible-box {
-    margin: var(--xh-pad-half-px) 0;
+    padding: 0 var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
+    margin: var(--xh-pad-half-px);
   }
 
   .xh-dash-canvas-draggable-widget {
     border: var(--xh-border-dotted);
     background-color: var(--xh-bg-alt);
     padding: var(--xh-pad-half-px);
-    margin: var(--xh-pad-half-px) 0;
+    margin: var(--xh-pad-half-px);
+    text-wrap-mode: nowrap;
     cursor: grab;
 
     &.is-dragging {
@@ -21,6 +23,12 @@
 
     &:active {
       cursor: grabbing;
+    }
+  }
+
+  &--row {
+    .xh-dash-canvas-draggable-widget {
+      align-self: flex-start;
     }
   }
 }

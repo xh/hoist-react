@@ -8,7 +8,7 @@
 import {uniqBy} from 'lodash';
 import classNames from 'classnames';
 import type {ReactElement} from 'react';
-import {div, vframe} from '@xh/hoist/cmp/layout';
+import {div, frame} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetWellModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetwell/DashCanvasWidgetWellModel';
@@ -19,6 +19,8 @@ import './DashCanvasWidgetWell.scss';
 export interface DashCanvasWidgetWellProps extends HoistProps {
     /** DashCanvasModel for which this widget well should allow the user to add views from. */
     dashCanvasModel?: DashCanvasModel;
+    /** Defaults to `column` */
+    flexDirection?: 'row' | 'column';
 }
 
 /**
@@ -35,13 +37,18 @@ export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
         displayName: 'DashCanvasWidgetWell',
         model: creates(DashCanvasWidgetWellModel),
         className: 'xh-dash-canvas-widget-well',
-        render({dashCanvasModel, className}) {
+        render({dashCanvasModel, flexDirection, className}) {
             if (!dashCanvasModel) return;
 
-            return vframe({
-                className: classNames(className),
-                overflow: 'auto',
-                items: createDraggableItems(dashCanvasModel)
+            const classes = [];
+            if (flexDirection === 'row') classes.push('xh-dash-canvas-widget-well--row');
+
+            return frame({
+                className: classNames(className, classes),
+                overflowY: 'auto',
+                flexDirection: flexDirection || 'column',
+                flexWrap: flexDirection === 'row' ? 'wrap' : 'nowrap',
+                items: createDraggableItems(dashCanvasModel, flexDirection)
             });
         }
     });
@@ -70,7 +77,7 @@ const draggableWidget = hoistCmp.factory<DashCanvasWidgetWellModel>({
  * Used to create draggable items (for adding views)
  * @internal
  */
-function createDraggableItems(dashCanvasModel: DashCanvasModel): any[] {
+function createDraggableItems(dashCanvasModel: DashCanvasModel, flexDirection): any[] {
     if (!dashCanvasModel.ref.current) return [];
 
     const groupedItems = {},
@@ -118,6 +125,7 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel): any[] {
                 icon,
                 collapsed: false,
                 label,
+                flexDirection,
                 items: items.map(it => it.item)
             });
         }),
