@@ -43,14 +43,16 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 
 /**
  * Apps should NOT instantiate this class directly.
- * Instead, provide a config for this object to the GridModel's `filterModel` config.
+ * Instead, provide a config for this object via {@link GridConfig.filterModel} config.
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     filterModel: GridFilterModel;
     renderer: ColumnRenderer;
     inputProps: PlainObject;
     defaultOp: FieldFilterOperator;
-    valueCount: number;
+
+    /** Total number of unique values for this field in the source, regardless of other filters. */
+    allValuesCount: number;
 
     constructor({
         filterModel,
@@ -111,9 +113,9 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
         this.values = values.sort();
 
-        // ValueCount always reflects total possible values for this field, allowing the UI
+        // Note count of all possible values for this field - allows ValuesTabModel
         // to indicate to the user if some values are hidden due to other active filters.
-        this.valueCount = allValues.length;
+        this.allValuesCount = allValues.length;
     }
 
     // Recursively modify a Filter|CompoundFilter to remove all FieldFilters referencing this column
