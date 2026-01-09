@@ -6,15 +6,11 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
+import {StoreValidationMessagesMap, StoreValidationsMap, ValidationState} from '@xh/hoist/data';
 import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
 import {sumBy, chunk} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
-import {
-    RecordValidationMessagesMap,
-    RecordValidationsMap,
-    RecordValidator
-} from './RecordValidator';
-import {ValidationState} from '../validation/ValidationState';
+import {RecordValidator} from './RecordValidator';
 import {Store} from '../Store';
 import {StoreRecordId} from '../StoreRecord';
 
@@ -171,8 +167,3 @@ export class StoreValidator extends HoistBase {
         return Array.from(this._validators.values(), fn);
     }
 }
-
-/** Map of StoreRecord IDs to StoreRecord-level messages maps. */
-export type StoreValidationMessagesMap = Record<StoreRecordId, RecordValidationMessagesMap>;
-/** Map of StoreRecord IDs to StoreRecord-level validations maps. */
-export type StoreValidationsMap = Record<StoreRecordId, RecordValidationsMap>;

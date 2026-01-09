@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
-import {Validation} from '@xh/hoist/data/validation/Rule';
+import {Validation} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
 import {Store} from './Store';

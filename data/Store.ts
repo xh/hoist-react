@@ -6,7 +6,11 @@
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
-import {Validation} from '@xh/hoist/data/validation/Rule';
+import {
+    StoreValidationMessagesMap,
+    StoreValidationsMap,
+    Validation
+} from '@xh/hoist/data/validation/Types';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -31,11 +35,7 @@ import {
 import {Field, FieldSpec} from './Field';
 import {parseFilter} from './filter/Utils';
 import {RecordSet} from './impl/RecordSet';
-import {
-    StoreValidationMessagesMap,
-    StoreValidationsMap,
-    StoreValidator
-} from './impl/StoreValidator';
+import {StoreValidator} from './impl/StoreValidator';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {Filter} from './filter/Filter';

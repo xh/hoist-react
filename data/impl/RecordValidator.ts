@@ -4,7 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Field, Rule, StoreRecord, StoreRecordId, Validation, ValidationState} from '@xh/hoist/data';
+import {
+    Field,
+    RecordValidationMessagesMap,
+    RecordValidationsMap,
+    Rule,
+    StoreRecord,
+    StoreRecordId,
+    Validation,
+    ValidationState
+} from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
 import {TaskObserver} from '../../core';
@@ -131,8 +140,3 @@ export class RecordValidator {
         return !when || when(field, record.getValues());
     }
 }
-
-/** Map of Field names to Field-level Validation lists. */
-export type RecordValidationsMap = Record<string, Validation[]>;
-/** Map of Field names to Field-level validation message lists. */
-export type RecordValidationMessagesMap = Record<string, string[]>;

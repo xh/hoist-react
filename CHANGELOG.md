@@ -31,7 +31,8 @@ this release, but is not strictly required.
   `react-grid-layout` v2+ (not common).
 * Modified `DashCanvasModel.containerPadding` to apply to the `react-grid-layout` div created by the
   library, instead of the Hoist-created containing div. This may affect printing layouts.
-* Enhanced `Field.rules` to support `warning` and `info` severity.
+* Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
+  validation scenarios, such as providing guidance to users without preventing form submission.
 
 ### 🎁 New Features
 
@@ -68,7 +69,7 @@ this release, but is not strictly required.
 
 ### ⚙️ Typescript API Adjustments
 
-* Removed `RecordErrorMap` type (not expected to impact most applications).
+* Removed `RecordErrorMap`/reorganized validation types (not expected to impact most applications).
 
 ### 📚 Libraries
 

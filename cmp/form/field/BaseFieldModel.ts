@@ -98,9 +98,8 @@ export abstract class BaseFieldModel extends HoistModel {
 
     boundInputRef = createObservableRef();
 
-    // An array with the result of evaluating each rule.  Each element will be array of strings
-    // containing any validation errors for the rule.  If validation for the rule has not
-    // completed will contain null
+    // An array with the result of evaluating each rule. Each element will be an array of Validation
+    // failure objects for the rule. If validation for the rule has not completed will contain null.
     @observable
     private validationResults: Validation[][];
 
