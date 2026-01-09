@@ -8,6 +8,7 @@ import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -15,7 +16,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
+import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
@@ -65,10 +66,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
             disabled = props.disabled || model?.disabled,
-            validationDisplayed = model?.validationDisplayed || false,
-            notValid = model?.isNotValid || false,
-            displayNotValid = validationDisplayed && notValid,
-            errors = model?.errors || [],
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
+                : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -101,7 +104,10 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
-        if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (severityToDisplay)
+            classes.push(
+                `xh-form-field-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
+            );
 
         let childEl =
             readonly || !child
@@ -140,14 +146,14 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: info
                         }),
                         div({
-                            omit: minimal || !isPending || !validationDisplayed,
+                            omit: minimal || !isPending || !severityToDisplay,
                             className: 'xh-form-field-pending-msg',
                             item: 'Validating...'
                         }),
                         div({
-                            omit: minimal || !displayNotValid,
-                            className: 'xh-form-field-error-msg',
-                            items: notValid ? errors[0] : null
+                            omit: minimal || !severityToDisplay,
+                            className: `xh-form-field-${severityToDisplay}-msg`,
+                            item: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })

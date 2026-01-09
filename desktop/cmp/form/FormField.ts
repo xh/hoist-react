@@ -19,6 +19,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {maxSeverity, ValidationResult} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -26,7 +27,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
 import './FormField.scss';
 
@@ -122,10 +123,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
             disabled = props.disabled || model?.disabled,
-            validationDisplayed = model?.validationDisplayed || false,
-            notValid = model?.isNotValid || false,
-            displayNotValid = validationDisplayed && notValid,
-            errors = model?.errors || [],
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
+                : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
@@ -169,7 +172,10 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
-        if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (severityToDisplay)
+            classes.push(
+                `xh-form-field-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
+            );
 
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
@@ -189,7 +195,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       childIsSizeable,
                       childId,
                       disabled,
-                      displayNotValid,
+                      displayNotValid: severityToDisplay === 'error',
                       leftErrorIcon,
                       commitOnChange,
                       testId: getTestId(testId, 'input')
@@ -198,13 +204,17 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) {
             childEl = tooltip({
                 item: childEl,
-                className: `xh-input ${displayNotValid ? 'xh-input-invalid' : ''}`,
+                className: classNames(
+                    'xh-input',
+                    severityToDisplay &&
+                        `xh-input-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
+                ),
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
                 position: tooltipPosition,
                 boundary: tooltipBoundary,
-                disabled: !displayNotValid,
-                content: getErrorTooltipContent(errors)
+                disabled: !severityToDisplay,
+                content: getValidationTooltipContent(validationResultsToDisplay)
             });
         }
 
@@ -239,11 +249,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             item: info
                         }),
                         tooltip({
-                            omit: minimal || !displayNotValid,
+                            omit: minimal || !severityToDisplay,
                             openOnTargetFocus: false,
-                            className: 'xh-form-field-error-msg',
-                            item: errors ? errors[0] : null,
-                            content: getErrorTooltipContent(errors) as ReactElement
+                            className: `xh-form-field-${severityToDisplay}-msg`,
+                            item: first(validationResultsToDisplay)?.message,
+                            content: getValidationTooltipContent(
+                                validationResultsToDisplay
+                            ) as ReactElement
                         })
                     ]
                 })
@@ -359,21 +371,25 @@ function getValidChild(children) {
     return child;
 }
 
-function getErrorTooltipContent(errors: string[]): ReactElement | string {
-    // If no errors, something other than null must be returned.
+function getValidationTooltipContent(validationResults: ValidationResult[]): ReactElement | string {
+    // If no ValidationResults, something other than null must be returned.
     // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
     // when content changes from null <-> not null.
     // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
     // TextInput component to lose focus when its validation state changes, which is undesirable.
     // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
     // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
-    if (isEmpty(errors)) return 'Is Valid';
-
-    if (errors.length === 1) return errors[0];
-    return ul({
-        className: 'xh-form-field-error-tooltip',
-        items: errors.map((it, idx) => li({key: idx, item: it}))
-    });
+    if (isEmpty(validationResults)) {
+        return 'Is Valid';
+    } else if (validationResults.length === 1) {
+        return first(validationResults).message;
+    } else {
+        const severity = first(validationResults).severity;
+        return ul({
+            className: `xh-form-field-${severity}-tooltip`,
+            items: validationResults.map((it, idx) => li({key: idx, item: it.message}))
+        });
+    }
 }
 
 function defaultProp<N extends keyof Partial<FormFieldProps>>(
