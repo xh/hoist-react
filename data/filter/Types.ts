@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
-import {Filter} from './Filter';
-import {StoreRecord, Field, FieldType} from '../';
+import type {PlainObject} from '@xh/hoist/core';
+import type {Filter} from './Filter';
+import type {StoreRecord, Field, FieldType} from '../';
 
 export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];
 
@@ -82,7 +82,6 @@ export interface FilterBindTarget {
  * values from within a dataset for display / suggestion to users.
  */
 export interface FilterValueSource {
-    isFilterValueSource: true;
     /** Names of all fields available in the source. */
     fieldNames: string[];
     /** @returns the Field instance for the given field name. */
@@ -91,6 +90,8 @@ export interface FilterValueSource {
     getValuesForFieldFilter(fieldName: string, filter?: Filter): any[];
     /** Observable timestamp for the source's data, to trigger consumers to re-query values. */
     lastUpdated: number;
+    /** For the {@link isFilterValueSource} typeguard. */
+    isFilterValueSource: true;
 }
 
 export function isFilterValueSource(v: unknown): v is FilterValueSource {
