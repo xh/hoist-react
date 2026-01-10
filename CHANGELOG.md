@@ -23,6 +23,17 @@
   possible to use these models with other, alternate implementations if needed.
 * Added new static typeguard methods on `Store`, `View`, and `Filter` + subclasses.
 
+### 🎁 New Features
+
+* DashCanvas:
+    * supports dragging and dropping widgets in from an external container.
+    * supports new compacting strategy: 'wrap'
+* new elementFactory tags: `fieldset`, `legend`
+
+### 📚 Libraries
+
+* react-grid-layout `2.1 → 2.2.2`
+
 ## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes
