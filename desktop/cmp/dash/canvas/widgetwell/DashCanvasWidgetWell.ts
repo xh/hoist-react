@@ -9,14 +9,14 @@ import {uniqBy} from 'lodash';
 import classNames from 'classnames';
 import type {ReactElement} from 'react';
 import {div, frame} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetWellModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetwell/DashCanvasWidgetWellModel';
 import {collapsibleBox} from '@xh/hoist/desktop/cmp/form/CollapsibleBox';
 
 import './DashCanvasWidgetWell.scss';
 
-export interface DashCanvasWidgetWellProps extends HoistProps {
+export interface DashCanvasWidgetWellProps extends HoistProps, TestSupportProps {
     /** DashCanvasModel for which this widget well should allow the user to add views from. */
     dashCanvasModel?: DashCanvasModel;
     /** Defaults to `column` */
@@ -37,7 +37,7 @@ export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
         displayName: 'DashCanvasWidgetWell',
         model: creates(DashCanvasWidgetWellModel),
         className: 'xh-dash-canvas-widget-well',
-        render({dashCanvasModel, flexDirection, className}) {
+        render({dashCanvasModel, flexDirection, className, testId}) {
             if (!dashCanvasModel) return;
 
             const classes = [];
@@ -48,7 +48,8 @@ export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
                 overflowY: 'auto',
                 flexDirection: flexDirection || 'column',
                 flexWrap: flexDirection === 'row' ? 'wrap' : 'nowrap',
-                items: createDraggableItems(dashCanvasModel, flexDirection)
+                items: createDraggableItems(dashCanvasModel, flexDirection),
+                testId
             });
         }
     });
