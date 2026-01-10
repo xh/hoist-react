@@ -4,13 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isObject} from 'lodash';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -50,7 +52,17 @@ export interface AppMenuButtonProps extends ButtonProps {
 
     /** True to hide the Theme Toggle button. */
     hideThemeItem?: boolean;
+
+    /**
+     * Replace the hamburger icon with user initials for the right nav button.
+     * TRUE to show initials from the user's "displayName" prop.
+     * Provide a getter method to transform the users HoistUser data into custom initials (e.g. first and last initial).
+     *   - Note that this will be capped at three letters and transformed to uppercase.
+     */
+    renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
+
+type RenderWithUserProfileCustomFn = (user: HoistUser) => string;
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
@@ -70,6 +82,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             disabled,
+            renderWithUserProfile,
             ...rest
         } = props;
 
@@ -79,7 +92,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             position: 'bottom-right',
             minimal: true,
             item: button({
-                icon: Icon.menu(),
+                className: renderWithUserProfile ? 'xh-app-menu-button--user-profile' : null,
+                text: renderWithUserProfile ? buildUserIcon(renderWithUserProfile) : Icon.menu(),
                 disabled,
                 ...rest
             }),
@@ -91,6 +105,19 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         });
     }
 });
+
+export function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
+    let initials = XH.getUserInitials();
+    if (isObject(renderWithUserProfile)) {
+        initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
+        // Do not allow more than three characters to prevent overflow of the element
+        initials = initials.substring(0, 3).toUpperCase();
+    }
+    return div({
+        className: 'xh-user-profile-initials',
+        item: initials
+    });
+}
 
 //---------------------------
 // Implementation

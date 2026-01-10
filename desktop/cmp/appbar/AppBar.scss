@@ -20,6 +20,28 @@
     font-size: var(--xh-appbar-title-font-size-px);
     margin-right: var(--xh-pad-px);
   }
+
+  // When the hamburger menu is replaced with user initials for
+  // the top bar right nav popover button
+  .xh-app-menu-button--user-profile:hover .xh-user-profile-initials {
+    color: var(--xh-orange);
+    border-color: var(--xh-orange);
+    background-color: transparent;
+
+    svg {
+      color: var(--xh-oranger);
+    }
+  }
+
+  .xh-user-profile-initials {
+    border-radius: 50%;
+    border: var(--xh-border-solid);
+    cursor: pointer;
+    height: 32px;
+    line-height: 31px;
+    text-align: center;
+    width: 32px;
+  }
 }
 
 //------------------------

@@ -18,6 +18,17 @@
     display: flex;
   }
 
+  .xh-user-profile-initials {
+    border-radius: 50%;
+    border: var(--xh-border-solid);
+    cursor: pointer;
+    height: 28px;
+    font-size: var(--xh-font-size-small-em);
+    line-height: 27px;
+    text-align: center;
+    width: 28px;
+  }
+
   .xh-button {
     background: transparent !important;
     color: var(--xh-appbar-title-color) !important;
