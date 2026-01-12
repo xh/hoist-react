@@ -15,6 +15,7 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
+export let collapsibleSetButton = null;
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
@@ -37,6 +38,7 @@ export let DynamicTabSwitcherModel = null;
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
+    collapsibleSetButton = impls.collapsibleSetButton;
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;

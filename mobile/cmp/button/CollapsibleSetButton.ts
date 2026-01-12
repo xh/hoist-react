@@ -7,13 +7,14 @@
 
 import {type ReactElement, type ReactNode, type JSX, useState} from 'react';
 import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {Intent, HoistProps} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {legend} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon/Icon';
 
-export interface CollapsibleBoxButtonProps extends HoistProps {
+export interface CollapsibleSetButtonProps extends HoistProps {
     icon?: ReactElement;
     text: ReactNode;
     tooltip?: JSX.Element | string;
@@ -23,16 +24,15 @@ export interface CollapsibleBoxButtonProps extends HoistProps {
     disabled?: boolean;
 }
 
-export const [CollapsibleBoxButton, collapsibleBoxButton] =
-    hoistCmp.withFactory<CollapsibleBoxButtonProps>({
-        displayName: 'CollapsibleBoxButton',
+export const [CollapsibleSetButton, collapsibleSetButton] =
+    hoistCmp.withFactory<CollapsibleSetButtonProps>({
+        displayName: 'CollapsibleSetButton',
         model: false,
         render({icon, text, tooltip, intent, clickHandler, collapsed, disabled}) {
             const [isCollapsed, setIsCollapsed] = useState<boolean>(collapsed === true),
                 btn = button({
-                    text,
+                    text: fragment(text, isCollapsed ? Icon.angleDown() : Icon.angleUp()),
                     icon,
-                    rightIcon: isCollapsed ? Icon.angleDown() : Icon.angleUp(),
                     outlined: isCollapsed && !intent,
                     minimal: !intent || (intent && !isCollapsed),
                     intent,

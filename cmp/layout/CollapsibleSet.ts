@@ -8,16 +8,17 @@
 import classNames from 'classnames';
 import {castArray} from 'lodash';
 import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useState} from 'react';
-import {hoistCmp} from '@xh/hoist/core';
+import {XH, hoistCmp} from '@xh/hoist/core';
 import type {HoistProps, Intent, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {fieldset} from '@xh/hoist/cmp/layout';
-import {collapsibleBoxButton} from '@xh/hoist/desktop/cmp/button/CollapsibleBoxButton';
 import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {collapsibleSetButton as desktopCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/desktop';
+import {collapsibleSetButton as mobileCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/mobile';
 
-import './CollapsibleBox.scss';
+import './CollapsibleSet.scss';
 
-export interface CollapsibleBoxProps
+export interface CollapsibleSetProps
     extends FieldsetHTMLAttributes<HTMLFieldSetElement>, HoistProps, TestSupportProps, LayoutProps {
     icon?: ReactElement;
     label: ReactNode;
@@ -28,10 +29,10 @@ export interface CollapsibleBoxProps
     hideItemCount?: boolean;
 }
 
-export const [CollapsibleBox, collapsibleBox] = hoistCmp.withFactory<CollapsibleBoxProps>({
-    displayName: 'FieldsetCollapseButton',
+export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<CollapsibleSetProps>({
+    displayName: 'CollapsibleSet',
     model: false,
-    className: 'xh-collapsible-box',
+    className: 'xh-collapsible-set',
     render({
         icon,
         label,
@@ -64,27 +65,30 @@ export const [CollapsibleBox, collapsibleBox] = hoistCmp.withFactory<Collapsible
             classes = [];
 
         if (isCollapsed) {
-            classes.push('xh-collapsible-box--collapsed');
+            classes.push('xh-collapsible-set--collapsed');
         } else {
-            classes.push('xh-collapsible-box--expanded');
+            classes.push('xh-collapsible-set--expanded');
         }
 
         if (disabled) {
-            classes.push('xh-collapsible-box--disabled');
+            classes.push('xh-collapsible-set--disabled');
         } else {
-            classes.push('xh-collapsible-box--enabled');
+            classes.push('xh-collapsible-set--enabled');
         }
 
         if (intent) {
-            classes.push(`xh-collapsible-box--intent-${intent}`);
+            classes.push(`xh-collapsible-set--intent-${intent}`);
         } else {
-            classes.push(`xh-collapsible-box--intent-none`);
+            classes.push(`xh-collapsible-set--intent-none`);
         }
 
+        const btn = XH.isMobileApp
+            ? mobileCollapsibleSetButtonImpl
+            : desktopCollapsibleSetButtonImpl;
         return fieldset({
             className: classNames(className, classes),
             items: [
-                collapsibleBoxButton({
+                btn({
                     icon,
                     text: `${label}${itemCount}`,
                     tooltip,

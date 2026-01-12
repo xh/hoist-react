@@ -5,37 +5,37 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-.xh-collapsible-box {
+.xh-collapsible-set {
   &--collapsed {
     border-bottom: none;
     border-left: none;
     border-right: none;
   }
 
-  &.xh-collapsible-box--intent-primary {
+  &.xh-collapsible-set--intent-primary {
     border-color: var(--xh-intent-primary-trans2);
-    &.xh-collapsible-box--enabled {
+    &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-primary);
     }
   }
 
-  &.xh-collapsible-box--intent-success {
+  &.xh-collapsible-set--intent-success {
     border-color: var(--xh-intent-success-trans2);
-    &.xh-collapsible-box--enabled {
+    &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-success);
     }
   }
 
-  &.xh-collapsible-box--intent-warning {
+  &.xh-collapsible-set--intent-warning {
     border-color: var(--xh-intent-warning-trans2);
-    &.xh-collapsible-box--enabled {
+    &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-warning);
     }
   }
 
-  &.xh-collapsible-box--intent-danger {
+  &.xh-collapsible-set--intent-danger {
     border-color: var(--xh-intent-danger-trans2);
-    &.xh-collapsible-box--enabled {
+    &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-danger);
     }
   }
