@@ -205,13 +205,14 @@ body {
   //---------
   --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
   --xh-appbar-border-color: var(--appbar-border-color, transparent);
+  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
   --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
   --xh-appbar-height: var(--appbar-height, 42);
   --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
   --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
   --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
   --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
-  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
+  --xh-appbar-user-profile-hover-color: var(--appbar-user-profile-hover-color, var(--xh-orange));
 
   &.xh-dark {
     --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});

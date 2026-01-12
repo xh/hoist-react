@@ -19,6 +19,9 @@
 
 * Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
   validation scenarios, such as providing guidance to users without preventing form submission.
+* Added new `AppMenuButton.renderWithUserProfile` prop as a built-in alternative to the default
+  hamburger menu. Set to `true` to render the current user's initials instead or provide a function
+  to render a custom element for the user.
 
 ### ⚙️ Typescript API Adjustments
 
