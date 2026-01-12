@@ -179,11 +179,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             if (displayInvalid) classes.push('xh-form-field--invalid');
         }
 
+        // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
-        // generate actual element child to render
+        // Generate actual element child to render
         let childEl: ReactElement =
             !child || readonly
                 ? readonlyChild({
@@ -220,6 +221,28 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             });
         }
 
+        // Generate inlined validation messages, if any to show and not rendering in minimal mode.
+        let validationMsgEl: ReactElement = null;
+        if (severityToDisplay && !minimal) {
+            const validationMsgCls = `xh-form-field__inner__validation-msg xh-form-field__inner__validation-msg--${severityToDisplay}`,
+                firstMsg = first(validationResultsToDisplay)?.message;
+
+            validationMsgEl =
+                validationResultsToDisplay.length > 1
+                    ? tooltip({
+                          openOnTargetFocus: false,
+                          className: validationMsgCls,
+                          item: firstMsg + ' (...)',
+                          content: getValidationTooltipContent(
+                              validationResultsToDisplay
+                          ) as ReactElement
+                      })
+                    : div({
+                          className: validationMsgCls,
+                          item: firstMsg
+                      });
+        }
+
         return box({
             ref,
             key: model?.xhId,
@@ -252,15 +275,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             omit: !info,
                             item: info
                         }),
-                        tooltip({
-                            omit: minimal || !severityToDisplay,
-                            openOnTargetFocus: false,
-                            className: `xh-form-field__inner__validation-msg xh-form-field__inner__validation-msg--${severityToDisplay}`,
-                            item: first(validationResultsToDisplay)?.message,
-                            content: getValidationTooltipContent(
-                                validationResultsToDisplay
-                            ) as ReactElement
-                        })
+                        validationMsgEl
                     ]
                 })
             ]
