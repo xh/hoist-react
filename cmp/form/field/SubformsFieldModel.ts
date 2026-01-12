@@ -114,12 +114,6 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @computed
-    override get allErrors(): string[] {
-        const subErrs = flatMap(this.value, s => s.allErrors);
-        return [...this.errors, ...subErrs];
-    }
-
-    @computed
     override get allValidationResults(): ValidationResult[] {
         const subVals = flatMap(this.value, s => s.allValidations);
         return [...this.validationResults, ...subVals];
