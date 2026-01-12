@@ -6,6 +6,12 @@
  */
 
 .xh-input {
+  // Override browser user agent styles on input elements.
+  input {
+    font-family: var(--xh-input-font-family);
+    font-feature-settings: var(--xh-input-font-feature-settings);
+  }
+
   &.xh-input--invalid {
     input {
       border: var(--xh-form-field-invalid-border);

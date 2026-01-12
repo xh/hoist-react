@@ -34,6 +34,11 @@
 
 ### ✨ Styles
 
+* Applied the app-wide `--xh-font-family` to `input` elements. Previously these had continued to
+  take a default font defined by the browser stylesheet.
+    * Customize for inputs if needed via `--xh-input-font-family`.
+    * Note that the switch to Hoist's default Inter font w/tabular numbers might require some
+      inputs w/tight sizing to be made wider to avoid clipping.
 * Updated + added validation-related input and form-field CSS classes and variables to account for
   new `info` and `warning` validation levels.
     * ⚠️Pre-existing `xh-input-invalid` and `xh-form-field-invalid` CSS classes have been updated to

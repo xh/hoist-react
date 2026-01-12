@@ -380,6 +380,10 @@ body {
   --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
 
+  // Control font features such as tabular numbers.
+  // For Hoist's default Inter font, see https://rsms.me/inter/#features
+  --xh-font-feature-settings: var(--font-feature-settings, 'tnum');
+
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
   --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
@@ -575,6 +579,8 @@ body {
   --xh-input-bg: var(--input-bg, var(--xh-bg));
   --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
   --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
+  --xh-input-font-family: var(--input-font-family, var(--xh-font-family));
+  --xh-input-font-feature-settings: var(--input-font-feature-settings, var(--xh-font-feature-settings));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
   --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
   --xh-input-disabled-checkmark-svg: var(--input-disabled-checkmark-svg, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e"));
