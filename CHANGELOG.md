@@ -11,9 +11,15 @@
       so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
     * Removed additional references to deprecated `loadModel` within Hoist itself.
 * Removed the following instance getters - use new static typeguards instead:
-  * `Store.isStore`
-  * `View.isView`
-  * `Filter.isFilter`
+    * `Store.isStore`
+    * `View.isView`
+    * `Filter.isFilter`
+
+### 🎁 New Features
+
+* Added new `AppMenuButton.renderWithUserProfile` prop as a built-in alternative to the default
+  hamburger menu. Set to `true` to render the current user's initials instead or provide a function
+  to render a custom element for the user.
 
 ### ⚙️ Typescript API Adjustments
 
