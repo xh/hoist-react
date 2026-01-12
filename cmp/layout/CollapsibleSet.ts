@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import {castArray} from 'lodash';
 import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useState} from 'react';
 import {XH, hoistCmp} from '@xh/hoist/core';
-import type {HoistProps, Intent, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps, RenderMode, TestSupportProps} from '@xh/hoist/core';
 import {fieldset} from '@xh/hoist/cmp/layout';
 import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -27,6 +27,7 @@ export interface CollapsibleSetProps
     clickHandler?: () => void;
     collapsed?: boolean;
     hideItemCount?: boolean;
+    renderMode?: RenderMode;
 }
 
 export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<CollapsibleSetProps>({
@@ -46,6 +47,7 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
         display = 'flex',
         flexDirection = 'column',
         flexWrap = 'wrap',
+        renderMode = 'unmountOnHide',
         ...rest
     }) {
         // Note `model` destructured off of non-layout props to avoid setting
@@ -60,6 +62,7 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
         );
 
         const [isCollapsed, setIsCollapsed] = useState<boolean>(collapsed === true),
+            [expandCount, setExpandCount] = useState<number>(!collapsed ? 1 : 0),
             items = castArray(children),
             itemCount = hideItemCount === true ? '' : ` (${items.length})`,
             classes = [];
@@ -85,6 +88,29 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
         const btn = XH.isMobileApp
             ? mobileCollapsibleSetButtonImpl
             : desktopCollapsibleSetButtonImpl;
+
+        let content;
+        switch (renderMode) {
+            case 'always':
+                content = items;
+                if (isCollapsed) {
+                    classes.push('xh-collapsible-set--collapsed--render-mode--always');
+                }
+                break;
+
+            case 'lazy':
+                content = isCollapsed && !expandCount ? [] : items;
+                if (isCollapsed) {
+                    classes.push('xh-collapsible-set--collapsed--render-mode--lazy');
+                }
+                break;
+
+            // unmountOnHide
+            default:
+                content = isCollapsed ? [] : items;
+                break;
+        }
+
         return fieldset({
             className: classNames(className, classes),
             items: [
@@ -93,11 +119,14 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
                     text: `${label}${itemCount}`,
                     tooltip,
                     intent,
-                    clickHandler: val => setIsCollapsed(val),
+                    clickHandler: val => {
+                        setIsCollapsed(val);
+                        setExpandCount(expandCount + 1);
+                    },
                     collapsed: isCollapsed,
                     disabled
                 }),
-                ...(isCollapsed ? [] : items)
+                ...content
             ],
             disabled,
             ...restProps

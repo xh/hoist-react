@@ -10,6 +10,13 @@
     border-bottom: none;
     border-left: none;
     border-right: none;
+
+    &--render-mode--always,
+    &--render-mode--lazy {
+      > *:not(:first-child) {
+        display: none;
+      }
+    }
   }
 
   &.xh-collapsible-set--intent-primary {
