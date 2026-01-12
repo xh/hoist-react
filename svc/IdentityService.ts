@@ -4,10 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -32,14 +30,26 @@ export class IdentityService extends HoistService {
         }
     }
 
-    /** Current acting user (see authUser for notes on impersonation) */
+    /** @returns current acting user (see authUser for notes on impersonation) */
     get user(): HoistUser {
         return this._apparentUser;
     }
 
-    /** Current acting user's username. */
+    /** @returns current acting user's username. */
     get username(): string {
         return this.user?.username ?? null;
+    }
+
+    /** @returns current acting user's initials, based on displayName. */
+    get userInitials(): string {
+        // Handle common case of displayName being left as an email address.
+        const [displayName] = this.user.displayName.split('@'),
+            nameParts = displayName.split(/[\s.]+/);
+
+        return nameParts
+            .map(part => part.charAt(0).toUpperCase())
+            .join('')
+            .substring(0, XH.isMobileApp ? 2 : 3);
     }
 
     /**
@@ -82,23 +92,6 @@ export class IdentityService extends HoistService {
      */
     get canAuthUserImpersonate(): boolean {
         return this.canUserImpersonate(this._authUser);
-    }
-
-    /**
-     * @Returns the user's displayName as initials (e.g. "John Q. User" -> "JQU")
-     * @see XH.getUserInitials
-     */
-    get userInitials(): ReactNode {
-        const displayNameRaw = this.user.displayName;
-        const trimLen = XH.isMobileApp ? 2 : 3;
-        const [displayName] = displayNameRaw.split('@');
-        const nameParts = displayName.split(/[\s.]+/);
-        return div(
-            nameParts
-                .map(part => part.charAt(0).toUpperCase())
-                .join('')
-                .substring(0, trimLen)
-        );
     }
 
     /**

@@ -14,6 +14,7 @@ import {
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
+    ClientHealthService,
     ConfigService,
     EnvironmentService,
     FetchOptions,
@@ -28,14 +29,13 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
-    WebSocketService,
-    ClientHealthService
+    WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, setLogLevel, LogLevel, apiDeprecated} from '@xh/hoist/utils/js';
+import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
-import {ReactNode} from 'react';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import ShortUniqueId from 'short-unique-id';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
@@ -67,7 +67,6 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import ShortUniqueId from 'short-unique-id';
 
 export const MIN_HOIST_CORE_VERSION = '31.2';
 
@@ -361,12 +360,9 @@ export class XHApi {
         return this.identityService?.username ?? null;
     }
 
-    /**
-     * @returns Default user initials to display in the app menu button, when it is configured to show
-     * a user profile instead of a hamburger icon
-     */
-    getUserInitials(): ReactNode {
-        return this.identityService?.userInitials;
+    /** @returns the current acting user's initials. */
+    getUserInitials(): string {
+        return this.identityService?.userInitials ?? null;
     }
 
     /**

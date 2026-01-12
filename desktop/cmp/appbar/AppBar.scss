@@ -6,11 +6,6 @@
  */
 
 .xh-appbar {
-  // Menu button might be on left or right of appBar - add right margin when on left only.
-  .xh-app-menu-button:first-child {
-    margin-right: var(--xh-pad-px);
-  }
-
   .xh-appbar-icon {
     margin-right: var(--xh-pad-px);
   }
@@ -21,22 +16,28 @@
     margin-right: var(--xh-pad-px);
   }
 
-  // When the hamburger menu is replaced with user initials for
-  // the top bar right nav popover button
-  .xh-app-menu-button--user-profile:hover .xh-user-profile-initials {
-    color: var(--xh-orange);
-    border-color: var(--xh-orange);
-    background-color: transparent;
-  }
+  .xh-app-menu-button {
+    // Menu button might be on left or right of appBar - add right margin when on left only.
+    &:first-child {
+      margin-right: var(--xh-pad-px);
+    }
 
-  .xh-user-profile-initials {
-    border-radius: 50%;
-    border: var(--xh-border-solid);
-    cursor: pointer;
-    height: 32px;
-    line-height: 31px;
-    text-align: center;
-    width: 32px;
+    &__user-profile {
+      border-radius: 50%;
+      border: var(--xh-border-solid);
+      cursor: pointer;
+      height: 32px;
+      line-height: 31px;
+      text-align: center;
+      width: 32px;
+    }
+
+    // Trigger profile-specific hover styles on parent button hover
+    &:hover .xh-app-menu-button__user-profile {
+      color: var(--xh-appbar-user-profile-hover-color);
+      border-color: var(--xh-appbar-user-profile-hover-color);
+      background-color: transparent;
+    }
   }
 }
 

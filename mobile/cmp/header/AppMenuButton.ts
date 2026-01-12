@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
@@ -42,10 +42,9 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     hideAboutItem?: boolean;
 
     /**
-     * Replace the hamburger icon with user initials for the right nav button.
-     * TRUE to show initials from the user's "displayName" prop.
-     * Provide a getter method to transform the users HoistUser data into custom initials (e.g. first and last initial).
-     *   - Note that this will be capped at two letters and transformed to uppercase.
+     * Replace the default hamburger icon with a user profile representation. Set to true to render
+     * the user's initials from their `HoistUser.displayName`. Alternately, provide a custom
+     * function to render an alternate compact string or element for the current user.
      */
     renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
@@ -81,9 +80,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 
         return menuButton({
             className,
-            icon: div({
-                item: renderWithUserProfile ? buildUserIcon(renderWithUserProfile) : Icon.menu()
-            }),
+            icon: renderWithUserProfile ? userProfile({renderWithUserProfile}) : Icon.menu(),
             menuItems: buildMenuItems(props),
             menuClassName: 'xh-app-menu',
             popoverProps: {popoverClassName: 'xh-app-menu-popover'},
@@ -92,20 +89,23 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
     }
 });
 
-function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
-    let initials = XH.getUserInitials();
-    if (isFunction(renderWithUserProfile)) {
-        initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
-    }
-    return div({
-        className: 'xh-user-profile-initials',
-        item: initials
-    });
-}
-
 //---------------------------
 // Implementation
 //---------------------------
+const userProfile = hoistCmp.factory<
+    HoistProps & {renderWithUserProfile: true | RenderWithUserProfileCustomFn}
+>({
+    model: false,
+    render({renderWithUserProfile}) {
+        return div({
+            className: 'xh-app-menu-button__user-profile',
+            item: isFunction(renderWithUserProfile)
+                ? renderWithUserProfile(XH.getUser())
+                : XH.getUserInitials()
+        });
+    }
+});
+
 function buildMenuItems({
     hideOptionsItem,
     hideFeedbackItem,

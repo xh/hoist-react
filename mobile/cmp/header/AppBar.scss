@@ -18,9 +18,9 @@
     display: flex;
   }
 
-  .xh-user-profile-initials {
+  .xh-app-menu-button__user-profile {
     border-radius: 50%;
-    border: var(--xh-border-solid);
+    border: 1px solid var(--xh-appbar-title-color);
     cursor: pointer;
     height: 28px;
     font-size: var(--xh-font-size-small-em);
