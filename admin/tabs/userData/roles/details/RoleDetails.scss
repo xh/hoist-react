@@ -6,7 +6,7 @@
       margin: 0;
       padding: 2px var(--xh-pad-px);
 
-      &.xh-form-field-readonly .xh-form-field-readonly-display {
+      &.xh-form-field--readonly .xh-form-field__readonly-display {
         padding: var(--xh-pad-half-px);
       }
 
@@ -15,7 +15,7 @@
       }
     }
 
-    .xh-form-field-label {
+    .xh-form-field__label {
       font-size: var(--xh-font-size-small-px);
       padding: 0;
     }
