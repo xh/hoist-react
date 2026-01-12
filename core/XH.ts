@@ -33,6 +33,7 @@ import {
 } from '@xh/hoist/svc';
 import {getLogLevel, setLogLevel, LogLevel, apiDeprecated} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
+import {ReactNode} from 'react';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
 import {SetOptional} from 'type-fest';
@@ -364,14 +365,8 @@ export class XHApi {
      * @returns Default user initials to display in the app menu button, when it is configured to show
      * a user profile instead of a hamburger icon
      */
-    getUserInitials(): string {
-        const displayNameRaw = this.getUser().displayName;
-        const [displayName] = displayNameRaw.split('@');
-        const nameParts = displayName.split(/[\s.]+/);
-        return nameParts
-            .map(part => part.charAt(0).toUpperCase())
-            .join('')
-            .substring(0, 3);
+    getUserInitials(): ReactNode {
+        return this.identityService?.userInitials;
     }
 
     /**

@@ -10,7 +10,8 @@ import {Icon} from '@xh/hoist/icon';
 import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isObject} from 'lodash';
+import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends MenuButtonProps {
     /** Array of app-specific MenuItems or configs to create them. */
@@ -49,7 +50,7 @@ export interface AppMenuButtonProps extends MenuButtonProps {
     renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
 
-type RenderWithUserProfileCustomFn = (user: HoistUser) => string;
+type RenderWithUserProfileCustomFn = (user: HoistUser) => ReactNode;
 
 /**
  * A top-level application drop down menu, which installs a standard set of menu items for common
@@ -81,9 +82,6 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
         return menuButton({
             className,
             icon: div({
-                className: renderWithUserProfile
-                    ? 'xh-app-menu-button--user-profile__mobile'
-                    : null,
                 item: renderWithUserProfile ? buildUserIcon(renderWithUserProfile) : Icon.menu()
             }),
             menuItems: buildMenuItems(props),
@@ -96,10 +94,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 
 function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
     let initials = XH.getUserInitials();
-    if (isObject(renderWithUserProfile)) {
+    if (isFunction(renderWithUserProfile)) {
         initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
-        // Do not allow more than two characters on mobile to prevent overflow of the element
-        initials = initials.substring(0, 2).toUpperCase();
     }
     return div({
         className: 'xh-user-profile-initials',

@@ -12,7 +12,8 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
-import {isObject} from 'lodash';
+import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -62,7 +63,7 @@ export interface AppMenuButtonProps extends ButtonProps {
     renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
 
-type RenderWithUserProfileCustomFn = (user: HoistUser) => string;
+type RenderWithUserProfileCustomFn = (user: HoistUser) => ReactNode;
 
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
@@ -108,10 +109,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 
 export function buildUserIcon(renderWithUserProfile: boolean | RenderWithUserProfileCustomFn) {
     let initials = XH.getUserInitials();
-    if (isObject(renderWithUserProfile)) {
+    if (isFunction(renderWithUserProfile)) {
         initials = (renderWithUserProfile as RenderWithUserProfileCustomFn)(XH.getUser());
-        // Do not allow more than three characters to prevent overflow of the element
-        initials = initials.substring(0, 3).toUpperCase();
     }
     return div({
         className: 'xh-user-profile-initials',

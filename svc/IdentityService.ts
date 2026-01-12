@@ -4,8 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {div} from '@xh/hoist/cmp/layout';
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {ReactNode} from 'react';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -80,6 +82,23 @@ export class IdentityService extends HoistService {
      */
     get canAuthUserImpersonate(): boolean {
         return this.canUserImpersonate(this._authUser);
+    }
+
+    /**
+     * @Returns the user's displayName as initials (e.g. "John Q. User" -> "JQU")
+     * @see XH.getUserInitials
+     */
+    get userInitials(): ReactNode {
+        const displayNameRaw = this.user.displayName;
+        const trimLen = XH.isMobileApp ? 2 : 3;
+        const [displayName] = displayNameRaw.split('@');
+        const nameParts = displayName.split(/[\s.]+/);
+        return div(
+            nameParts
+                .map(part => part.charAt(0).toUpperCase())
+                .join('')
+                .substring(0, trimLen)
+        );
     }
 
     /**
