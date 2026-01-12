@@ -78,7 +78,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 isRequired && !readonly && requiredStr
                     ? span({
                           item: ' ' + requiredStr,
-                          className: 'xh-form-field-required-indicator'
+                          className: 'xh-form-field__required-indicator'
                       })
                     : null,
             isPending = model && model.isValidationPending;
@@ -101,10 +101,10 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Styles
         const classes = [];
-        if (isRequired) classes.push('xh-form-field-required');
-        if (minimal) classes.push('xh-form-field-minimal');
-        if (readonly) classes.push('xh-form-field-readonly');
-        if (disabled) classes.push('xh-form-field-disabled');
+        if (isRequired) classes.push('xh-form-field--required');
+        if (minimal) classes.push('xh-form-field--minimal');
+        if (readonly) classes.push('xh-form-field--readonly');
+        if (disabled) classes.push('xh-form-field--disabled');
         if (severityToDisplay) {
             classes.push(`xh-form-field--${severityToDisplay}`);
             if (displayInvalid) classes.push('xh-form-field--invalid');
@@ -131,19 +131,21 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             items: [
                 labelCmp({
                     omit: !label,
-                    className: 'xh-form-field-label',
+                    className: 'xh-form-field__label',
                     items: [label, requiredIndicator]
                 }),
                 div({
                     className: classNames(
-                        'xh-form-field-inner',
-                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                        'xh-form-field__inner',
+                        childIsSizeable
+                            ? 'xh-form-field__inner--flex'
+                            : 'xh-form-field__inner--block'
                     ),
                     items: [
                         childEl,
                         div({
                             omit: !info,
-                            className: 'xh-form-field-info',
+                            className: 'xh-form-field__info-msg',
                             item: info
                         }),
                         div({
@@ -173,7 +175,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     render({model, readonlyRenderer}) {
         const value = model ? model['value'] : null;
         return div({
-            className: 'xh-form-field-readonly-display',
+            className: 'xh-form-field__readonly-display',
             item: readonlyRenderer(value, model)
         });
     }

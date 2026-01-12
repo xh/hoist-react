@@ -39,6 +39,7 @@
     * ⚠️Pre-existing `xh-input-invalid` and `xh-form-field-invalid` CSS classes have been updated to
       better follow BEM conventions with `--` modifier. They are now `xh-input--invalid` and
       `xh-form-field--invalid`.
+    * TODO - document other form CSS changes
 
 ## 79.0.0 - 2026-01-05
 

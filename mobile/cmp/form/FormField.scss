@@ -2,11 +2,11 @@
   display: flex;
   flex-direction: column;
 
-  .xh-form-field-label {
+  &__label {
     padding: 0 0 3px;
   }
 
-  .xh-form-field-inner {
+  &__inner {
     // Used for unsizeable children
     &--block {
       display: block;
@@ -21,7 +21,7 @@
     }
   }
 
-  .xh-form-field-info,
+  &__info-msg,
   &__validation-msg {
     font-size: var(--xh-font-size-small-px);
     line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
@@ -45,24 +45,24 @@
     }
   }
 
-  &--invalid .xh-form-field-label {
+  &--invalid .xh-form-field__label {
     color: var(--xh-form-field-invalid-color);
   }
 
-  &--warning .xh-form-field-label {
+  &--warning .xh-form-field__label {
     color: var(--xh-form-field-warning-color);
   }
 
-  &--info .xh-form-field-label {
+  &--info .xh-form-field__label {
     color: var(--xh-form-field-info-color);
   }
 
-  &.xh-form-field-readonly {
+  &.xh-form-field--readonly {
     .xh-form-field__validation-msg {
       display: none;
     }
 
-    .xh-form-field-readonly-display {
+    .xh-form-field__readonly-display {
       padding: var(--xh-pad-px) 0;
     }
   }

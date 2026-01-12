@@ -135,7 +135,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 isRequired && !readonly && requiredStr
                     ? span({
                           item: ' ' + requiredStr,
-                          className: 'xh-form-field-required-indicator'
+                          className: 'xh-form-field__required-indicator'
                       })
                     : null;
 
@@ -167,23 +167,24 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Styles
         const classes = [];
-        if (childElementName) classes.push(`xh-form-field-${kebabCase(childElementName)}`);
-        if (isRequired) classes.push('xh-form-field-required');
-        if (inline) classes.push('xh-form-field-inline');
-        if (minimal) classes.push('xh-form-field-minimal');
-        if (readonly) classes.push('xh-form-field-readonly');
-        if (disabled) classes.push('xh-form-field-disabled');
+        if (childElementName) classes.push(`xh-form-field--${kebabCase(childElementName)}`);
+        if (isRequired) classes.push('xh-form-field--required');
+        if (inline) classes.push('xh-form-field--inline');
+        if (minimal) classes.push('xh-form-field--minimal');
+        if (readonly) classes.push('xh-form-field--readonly');
+        if (disabled) classes.push('xh-form-field--disabled');
 
         if (severityToDisplay) {
             classes.push(`xh-form-field--${severityToDisplay}`);
             if (displayInvalid) classes.push('xh-form-field--invalid');
         }
 
+        // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
-        // generate actual element child to render
+        // Generate actual element child to render
         let childEl: ReactElement =
             !child || readonly
                 ? readonlyChild({
@@ -220,6 +221,28 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             });
         }
 
+        // Generate inlined validation messages, if any to show and not rendering in minimal mode.
+        let validationMsgEl: ReactElement = null;
+        if (severityToDisplay && !minimal) {
+            const validationMsgCls = `xh-form-field__inner__validation-msg xh-form-field__inner__validation-msg--${severityToDisplay}`,
+                firstMsg = first(validationResultsToDisplay)?.message;
+
+            validationMsgEl =
+                validationResultsToDisplay.length > 1
+                    ? tooltip({
+                          openOnTargetFocus: false,
+                          className: validationMsgCls,
+                          item: firstMsg + ' (...)',
+                          content: getValidationTooltipContent(
+                              validationResultsToDisplay
+                          ) as ReactElement
+                      })
+                    : div({
+                          className: validationMsgCls,
+                          item: firstMsg
+                      });
+        }
+
         return box({
             ref,
             key: model?.xhId,
@@ -229,7 +252,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             items: [
                 labelEl({
                     omit: !label,
-                    className: 'xh-form-field-label',
+                    className: 'xh-form-field__label',
                     items: [label, requiredIndicator],
                     htmlFor: clickableLabel ? childId : null,
                     style: {
@@ -240,25 +263,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 }),
                 div({
                     className: classNames(
-                        'xh-form-field-inner',
-                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                        'xh-form-field__inner',
+                        childIsSizeable
+                            ? 'xh-form-field__inner--flex'
+                            : 'xh-form-field__inner--block'
                     ),
                     items: [
                         childEl,
                         div({
-                            className: 'xh-form-field-info',
+                            className: 'xh-form-field__inner__info-msg',
                             omit: !info,
                             item: info
                         }),
-                        tooltip({
-                            omit: minimal || !severityToDisplay,
-                            openOnTargetFocus: false,
-                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
-                            item: first(validationResultsToDisplay)?.message,
-                            content: getValidationTooltipContent(
-                                validationResultsToDisplay
-                            ) as ReactElement
-                        })
+                        validationMsgEl
                     ]
                 })
             ]
@@ -276,7 +293,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     render({model, readonlyRenderer, testId}) {
         const value = model ? model['value'] : null;
         return div({
-            className: 'xh-form-field-readonly-display',
+            className: 'xh-form-field__readonly-display',
             [TEST_ID]: testId,
             item: readonlyRenderer(value, model)
         });
