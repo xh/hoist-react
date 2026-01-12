@@ -11,9 +11,14 @@
       so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
     * Removed additional references to deprecated `loadModel` within Hoist itself.
 * Removed the following instance getters - use new static typeguards instead:
-  * `Store.isStore`
-  * `View.isView`
-  * `Filter.isFilter`
+    * `Store.isStore`
+    * `View.isView`
+    * `Filter.isFilter`
+
+### 🎁 New Features
+
+* Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
+  validation scenarios, such as providing guidance to users without preventing form submission.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -22,6 +27,15 @@
   `View` implement these interfaces, meaning no changes are required for apps, but it is now
   possible to use these models with other, alternate implementations if needed.
 * Added new static typeguard methods on `Store`, `View`, and `Filter` + subclasses.
+* Removed `RecordErrorMap` + reorganized validation types (not expected to impact most apps).
+
+### ✨ Styles
+
+* Updated + added validation-related input and form-field CSS classes and variables to account for
+  new `info` and `warning` validation levels.
+    * ⚠️Pre-existing `xh-input-invalid` and `xh-form-field-invalid` CSS classes have been updated to
+      better follow BEM conventions with `--` modifier. They are now `xh-input--invalid` and
+      `xh-form-field--invalid`.
 
 ## 79.0.0 - 2026-01-05
 
@@ -54,8 +68,6 @@ this release, but is not strictly required.
   `react-grid-layout` v2+ (not common).
 * Modified `DashCanvasModel.containerPadding` to apply to the `react-grid-layout` div created by the
   library, instead of the Hoist-created containing div. This may affect printing layouts.
-* Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
-  validation scenarios, such as providing guidance to users without preventing form submission.
 
 ### 🎁 New Features
 
@@ -89,10 +101,6 @@ this release, but is not strictly required.
   and restored by the browser).
 * Introduced opt-in `Grid` performance optimizations on an experimental basis with
   `GridExperimentalFlags.deltaSort` and `GridExperimentalFlags.disableScrollOptimization`
-
-### ⚙️ Typescript API Adjustments
-
-* Removed `RecordErrorMap`/reorganized validation types (not expected to impact most applications).
 
 ### 📚 Libraries
 

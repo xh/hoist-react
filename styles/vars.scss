@@ -404,31 +404,35 @@ body {
   //------------------------
   // Form Fields
   //------------------------
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
-  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
-  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
-  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
-  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
-  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
-  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
-  --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
-  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
-  --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
   --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
   --xh-form-field-margin-right: var(--form-field-margin-right, 0);
-  --xh-form-field-warning-border-color: var(--form-field-warning-border-color, var(--xh-intent-warning));
-  --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
-  --xh-form-field-warning-border-width: var(--form-field-warning-border-width, 1);
-  --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
-  --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
-  --xh-form-field-warning-message-text-color: var(--form-field-warning-message-text-color, var(--xh-intent-warning));
+
+  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
+  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
+  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
+  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
+
+  --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
   --xh-form-field-info-border-color: var(--form-field-info-border-color, var(--xh-intent-primary));
-  --xh-form-field-info-box-shadow: var(--form-field-info-border-color, #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)});
   --xh-form-field-info-border-width: var(--form-field-info-border-width, 1);
   --xh-form-field-info-border-width-px: calc(var(--xh-form-field-info-border-width) * 1px);
-  --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
-  --xh-form-field-info-message-text-color: var(--form-field-info-message-text-color, var(--xh-intent-primary));
+  --xh-form-field-info-box-shadow: var(--form-field-info-border-color, #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)});
+  --xh-form-field-info-color: var(--form-field-info-color, var(--xh-intent-primary));
+
+  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
+  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
+  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
+  --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
+  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
+  --xh-form-field-invalid-color: var(--form-field-invalid-color, var(--xh-intent-danger));
+
+  --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
+  --xh-form-field-warning-border-color: var(--form-field-warning-border-color, var(--xh-intent-warning));
+  --xh-form-field-warning-border-width: var(--form-field-warning-border-width, 1);
+  --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
+  --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
+  --xh-form-field-warning-color: var(--form-field-warning-color, var(--xh-intent-warning));
 
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});

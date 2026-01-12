@@ -338,6 +338,7 @@ export function useHoistInputModel(
 
     const field = inputModel.getField(),
         severityToDisplay = field?.validationDisplayed && maxSeverity(field?.validationResults),
+        displayInvalid = severityToDisplay === 'error',
         disabledClass = props.disabled ? 'xh-input-disabled' : null;
 
     return component({
@@ -346,8 +347,8 @@ export function useHoistInputModel(
         ref: inputModel.domRef,
         className: classNames(
             'xh-input',
-            severityToDisplay &&
-                `xh-input-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`,
+            severityToDisplay && `xh-input--${severityToDisplay}`,
+            displayInvalid && 'xh-input--invalid',
             disabledClass,
             props.className
         )

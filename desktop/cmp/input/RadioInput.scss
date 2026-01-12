@@ -10,23 +10,23 @@
     margin-right: var(--xh-pad-double-px);
   }
 
-  &.xh-input-invalid,
-  &.xh-input-warning,
-  &.xh-input-info {
+  &.xh-input--invalid,
+  &.xh-input--warning,
+  &.xh-input--info {
     .xh-radio-input-option .bp6-control-indicator::before {
       margin: -1px;
     }
   }
 
-  &.xh-input-invalid .xh-radio-input-option .bp6-control-indicator {
+  &.xh-input--invalid .xh-radio-input-option .bp6-control-indicator {
     border: var(--xh-form-field-invalid-border);
   }
 
-  &.xh-input-warning .xh-radio-input-option .bp6-control-indicator {
+  &.xh-input--warning .xh-radio-input-option .bp6-control-indicator {
     border: var(--xh-form-field-warning-border);
   }
 
-  &.xh-input-info .xh-radio-input-option .bp6-control-indicator {
+  &.xh-input--info .xh-radio-input-option .bp6-control-indicator {
     border: var(--xh-form-field-info-border);
   }
 }
