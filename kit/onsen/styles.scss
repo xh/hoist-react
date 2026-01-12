@@ -24,19 +24,19 @@
     border: var(--xh-border-solid);
     border-radius: var(--xh-border-radius-px);
 
-    &:not(.xh-input-invalid):not(.xh-input-warning):not(.xh-input-info):focus-within {
+    &:not(.xh-input--invalid):not(.xh-input--warning):not(.xh-input--info):focus-within {
       border-color: var(--xh-focus-outline-color);
     }
 
-    &.xh-input-invalid {
+    &.xh-input--invalid {
       border: var(--xh-form-field-invalid-border);
     }
 
-    &.xh-input-warning {
+    &.xh-input--warning {
       border: var(--xh-form-field-warning-border);
     }
 
-    &.xh-input-info {
+    &.xh-input--info {
       border: var(--xh-form-field-info-border);
     }
   }

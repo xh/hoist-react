@@ -69,6 +69,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
                 : null,
+            displayInvalid = severityToDisplay === 'error',
             validationResultsToDisplay = severityToDisplay
                 ? model.validationResults.filter(v => v.severity === severityToDisplay)
                 : [],
@@ -104,10 +105,10 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
-        if (severityToDisplay)
-            classes.push(
-                `xh-form-field-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
-            );
+        if (severityToDisplay) {
+            classes.push(`xh-form-field--${severityToDisplay}`);
+            if (displayInvalid) classes.push('xh-form-field--invalid');
+        }
 
         let childEl =
             readonly || !child
@@ -147,12 +148,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                         }),
                         div({
                             omit: minimal || !isPending || !severityToDisplay,
-                            className: 'xh-form-field-pending-msg',
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--pending`,
                             item: 'Validating...'
                         }),
                         div({
                             omit: minimal || !severityToDisplay,
-                            className: `xh-form-field-${severityToDisplay}-msg`,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
                             item: first(validationResultsToDisplay)?.message
                         })
                     ]

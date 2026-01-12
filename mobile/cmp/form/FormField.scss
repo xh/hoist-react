@@ -22,10 +22,7 @@
   }
 
   .xh-form-field-info,
-  .xh-form-field-error-msg,
-  .xh-form-field-pending-msg,
-  .xh-form-field-warning-msg,
-  .xh-form-field-info-msg {
+  &__validation-msg {
     font-size: var(--xh-font-size-small-px);
     line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
     color: var(--xh-text-color-muted);
@@ -34,34 +31,34 @@
     overflow: hidden;
   }
 
-  .xh-form-field-error-msg {
-    color: var(--xh-red);
+  &__validation-msg {
+    &--error {
+      color: var(--xh-form-field-invalid-color);
+    }
+
+    &--info {
+      color: var(--xh-form-field-info-color);
+    }
+
+    &--warning {
+      color: var(--xh-form-field-warning-color);
+    }
   }
 
-  .xh-form-field-warning-msg {
-    color: var(--xh-orange);
+  &--invalid .xh-form-field-label {
+    color: var(--xh-form-field-invalid-color);
   }
 
-  .xh-form-field-info-msg {
-    color: var(--xh-blue);
+  &--warning .xh-form-field-label {
+    color: var(--xh-form-field-warning-color);
   }
 
-  &.xh-form-field-invalid .xh-form-field-label {
-    color: var(--xh-red);
-  }
-
-  &.xh-form-field-warning .xh-form-field-label {
-    color: var(--xh-orange);
-  }
-
-  &.xh-form-field-info .xh-form-field-label {
-    color: var(--xh-blue);
+  &--info .xh-form-field-label {
+    color: var(--xh-form-field-info-color);
   }
 
   &.xh-form-field-readonly {
-    .xh-form-field-error-msg,
-    .xh-form-field-warning-msg,
-    .xh-form-field-info-msg {
+    .xh-form-field__validation-msg {
       display: none;
     }
 

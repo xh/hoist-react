@@ -126,6 +126,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
                 : null,
+            displayInvalid = severityToDisplay === 'error',
             validationResultsToDisplay = severityToDisplay
                 ? model.validationResults.filter(v => v.severity === severityToDisplay)
                 : [],
@@ -172,10 +173,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field-minimal');
         if (readonly) classes.push('xh-form-field-readonly');
         if (disabled) classes.push('xh-form-field-disabled');
-        if (severityToDisplay)
-            classes.push(
-                `xh-form-field-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
-            );
+
+        if (severityToDisplay) {
+            classes.push(`xh-form-field--${severityToDisplay}`);
+            if (displayInvalid) classes.push('xh-form-field--invalid');
+        }
 
         const testId = getFormFieldTestId(props, formContext, model?.name);
         useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
@@ -206,8 +208,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 item: childEl,
                 className: classNames(
                     'xh-input',
-                    severityToDisplay &&
-                        `xh-input-${severityToDisplay === 'error' ? 'invalid' : severityToDisplay}`
+                    severityToDisplay && `xh-input--${severityToDisplay}`,
+                    displayInvalid && 'xh-input--invalid'
                 ),
                 targetTagName:
                     !blockChildren.includes(childElementName) || childWidth ? 'span' : 'div',
@@ -251,7 +253,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                         tooltip({
                             omit: minimal || !severityToDisplay,
                             openOnTargetFocus: false,
-                            className: `xh-form-field-${severityToDisplay}-msg`,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
                             item: first(validationResultsToDisplay)?.message,
                             content: getValidationTooltipContent(
                                 validationResultsToDisplay
@@ -335,7 +337,6 @@ const editableChild = hoistCmp.factory<FieldModel>({
 //--------------------------------
 // Helper Functions
 //---------------------------------
-
 export function defaultReadonlyRenderer(value: any): ReactNode {
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
@@ -386,7 +387,7 @@ function getValidationTooltipContent(validationResults: ValidationResult[]): Rea
     } else {
         const severity = first(validationResults).severity;
         return ul({
-            className: `xh-form-field-${severity}-tooltip`,
+            className: `xh-form-field__validation-tooltip xh-form-field__validation-tooltip--${severity}`,
             items: validationResults.map((it, idx) => li({key: idx, item: it.message}))
         });
     }
