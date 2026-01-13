@@ -152,11 +152,13 @@ export abstract class BaseRow {
                 if (appliedDimensions.hasOwnProperty(name)) {
                     ret[name] = false;
                 } else {
-                    const {aggregator, canAggregateFn} = field;
+                    const {aggregator, canAggregateFn} = field,
+                        ctx = view._aggContext;
+
                     ret[name] =
                         aggregator &&
                         (!canAggregateFn ||
-                            canAggregateFn(dimOrBucketName, val, appliedDimensions));
+                            canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
                 }
                 return ret;
             },

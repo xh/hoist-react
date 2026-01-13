@@ -19,6 +19,7 @@ export * from './filter/FunctionFilter';
 export * from './filter/Types';
 export * from './filter/Utils';
 
+export * from './cube/aggregate/AggregationContext';
 export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
