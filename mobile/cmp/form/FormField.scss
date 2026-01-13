@@ -1,9 +1,27 @@
 .xh-form-field {
   display: flex;
   flex-direction: column;
+  padding: var(--xh-form-field-padding);
+  margin: var(--xh-form-field-margin);
 
   &__label {
-    padding: 0 0 3px;
+    color: var(--xh-form-field-label-color);
+    font-size: var(--xh-form-field-label-font-size);
+    font-style: var(--xh-form-field-label-font-style);
+    font-weight: var(--xh-form-field-label-font-weight);
+    text-transform: var(--xh-form-field-label-text-transform);
+
+    // Borders + padding (not inline)
+    border-bottom: var(--xh-form-field-label-border-bottom);
+    margin: var(--xh-form-field-label-margin);
+    padding: var(--xh-form-field-label-padding);
+
+    // Borders + padding (inline)
+    .xh-form-field--inline & {
+      border-bottom: var(--xh-form-field-label-inline-border-bottom);
+      margin: var(--xh-form-field-label-inline-margin);
+      padding: var(--xh-form-field-label-inline-padding);
+    }
   }
 
   &__inner {

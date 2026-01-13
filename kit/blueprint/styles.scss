@@ -350,15 +350,15 @@ textarea.bp6-input,
   z-index: 16;
 }
 
-// Controls ship with default bottom and (inline) right margins. We expose variables
-// to customize and default those to 0 to avoid adding margins by default.
+// Controls ship with default bottom and (inline) right margins.
+// We zero those out here so padding can be re-applied at HoistInput or FormField layer.
 // Hoist theme text-color applied to elements not styled with a more specific selector.
 .bp6-control {
   color: var(--xh-text-color);
-  margin-bottom: var(--xh-form-field-margin-bottom);
+  margin-bottom: 0;
 
   &.bp6-inline {
-    margin-right: var(--xh-form-field-margin-right);
+    margin-inline-end: 0;
   }
 }
 
