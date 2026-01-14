@@ -42,3 +42,4 @@ export * from './cube/ViewRowData';
 export * from './validation/constraints';
 export * from './validation/Rule';
 export * from './validation/ValidationState';
+export * from './validation/Types';

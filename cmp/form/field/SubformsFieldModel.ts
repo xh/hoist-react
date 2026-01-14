@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {managed, PlainObject, XH} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {ValidationResult, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
@@ -47,7 +47,7 @@ export interface SubformAddOptions {
  * all existing form contents to new values. Call {@link add} or {@link remove} on one of these
  * fields to adjust the contents of its collection while preserving existing state.
  *
- * Validation rules for the entire collection may be specified as for any field, but validations on
+ * Validation rules for the entire collection may be specified as for any field, but ValidationResults on
  * the subforms will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
@@ -114,9 +114,9 @@ export class SubformsFieldModel extends BaseFieldModel {
     }
 
     @computed
-    override get allErrors(): string[] {
-        const subErrs = flatMap(this.value, s => s.allErrors);
-        return [...this.errors, ...subErrs];
+    override get allValidationResults(): ValidationResult[] {
+        const subVals = flatMap(this.value, s => s.allValidations);
+        return [...this.validationResults, ...subVals];
     }
 
     @override

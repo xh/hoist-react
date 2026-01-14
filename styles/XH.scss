@@ -19,6 +19,7 @@ body.xh-app {
   border-color: var(--xh-border-color);
   color: var(--xh-text-color);
   font-family: var(--xh-font-family);
+  font-feature-settings: var(--xh-font-feature-settings);
   // Important for default Inter font to ensure numbers are constant-width and line up properly.
   font-variant-numeric: tabular-nums;
   font-size: var(--xh-font-size-px);

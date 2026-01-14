@@ -6,11 +6,15 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
+import {
+    StoreValidationMessagesMap,
+    StoreValidationResultsMap,
+    ValidationState
+} from '@xh/hoist/data';
 import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
 import {sumBy, chunk} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
-import {RecordErrorMap, RecordValidator} from './RecordValidator';
-import {ValidationState} from '../validation/ValidationState';
+import {RecordValidator} from './RecordValidator';
 import {Store} from '../Store';
 import {StoreRecordId} from '../StoreRecord';
 
@@ -41,7 +45,7 @@ export class StoreValidator extends HoistBase {
 
     /** Map of StoreRecord IDs to StoreRecord-level error maps. */
     @computed.struct
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.getErrorMap();
     }
 
@@ -49,6 +53,12 @@ export class StoreValidator extends HoistBase {
     @computed
     get errorCount(): number {
         return sumBy(this.validators, 'errorCount');
+    }
+
+    /** Map of StoreRecord IDs to StoreRecord-level ValidationResults maps. */
+    @computed.struct
+    get validationResults(): StoreValidationResultsMap {
+        return this.getValidationResultsMap();
     }
 
     /** True if any records are currently recomputing their validation state. */
@@ -76,7 +86,7 @@ export class StoreValidator extends HoistBase {
     }
 
     /**
-     * Recompute validations for the store and return true if valid.
+     * Recompute ValidationResults for the store and return true if valid.
      */
     async validateAsync(): Promise<boolean> {
         await this.validateInChunksAsync(this.validators);
@@ -92,9 +102,15 @@ export class StoreValidator extends HoistBase {
     }
 
     /** @returns map of StoreRecord IDs to StoreRecord-level error maps. */
-    getErrorMap(): StoreErrorMap {
-        const ret = {};
+    getErrorMap(): StoreValidationMessagesMap {
+        const ret: StoreValidationMessagesMap = {};
         this._validators.forEach(v => (ret[v.id] = v.errors));
+        return ret;
+    }
+
+    getValidationResultsMap(): StoreValidationResultsMap {
+        const ret: StoreValidationResultsMap = {};
+        this._validators.forEach(v => (ret[v.id] = v.validationResults));
         return ret;
     }
 
@@ -155,6 +171,3 @@ export class StoreValidator extends HoistBase {
         return Array.from(this._validators.values(), fn);
     }
 }
-
-/** Map of StoreRecord IDs to StoreRecord-level error maps. */
-export type StoreErrorMap = Record<StoreRecordId, RecordErrorMap>;

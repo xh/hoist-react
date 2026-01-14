@@ -16,8 +16,12 @@ import {
     parseFilter,
     StoreRecord,
     StoreRecordId,
-    StoreRecordOrId
+    StoreRecordOrId,
+    StoreValidationMessagesMap,
+    StoreValidationResultsMap,
+    ValidationResult
 } from '@xh/hoist/data';
+import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -41,7 +45,6 @@ import {
 } from 'lodash';
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
-import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -893,8 +896,12 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
         return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.validator.errors;
+    }
+
+    get validationResults(): StoreValidationResultsMap {
+        return this.validator.validationResults;
     }
 
     /** Count of all validation errors for the store. */
@@ -905,6 +912,11 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
     /** Array of all errors for this store. */
     get allErrors(): string[] {
         return uniq(flatMapDeep(this.errors, values));
+    }
+
+    /** Array of all ValidationResults for this store. */
+    get allValidationResults(): ValidationResult[] {
+        return uniq(flatMapDeep(this.validationResults, values));
     }
 
     /**
@@ -979,7 +991,7 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
         return this.validator.isNotValid;
     }
 
-    /** Recompute validations for all records and return true if the store is valid. */
+    /** Recompute ValidationResults for all records and return true if the store is valid. */
     async validateAsync(): Promise<boolean> {
         return this.validator.validateAsync();
     }
