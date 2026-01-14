@@ -425,6 +425,13 @@ body {
   --xh-form-field-margin: var(--form-field-margin, 0 0 var(--xh-pad-px) 0);
   --xh-form-field-padding: var(--form-field-padding, 3px);
 
+  // Box shadow + focus border
+  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
+  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
+  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
+  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
+
   // Label styling (shared)
   --xh-form-field-label-color: var(--form-field-label-color, var(--xh-text-color));
   --xh-form-field-label-font-size: var(--form-field-label-font-size, var(--xh-font-size-px));
@@ -440,12 +447,13 @@ body {
   --xh-form-field-label-inline-margin: var(--form-field-label-inline-margin, 0);
   --xh-form-field-label-inline-padding: var(--form-field-label-inline-padding, 0);
 
-  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
-  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
-  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
+  // Messages (general info text + validation results)
+  --xh-form-field-msg-font-size: var(--form-field-msg-font-size, var(--xh-font-size-small-px));
+  --xh-form-field-msg-line-height: var(--form-field-msg-line-height, 1.5em);
+  --xh-form-field-msg-margin: var(--form-field-msg-margin, var(--xh-pad-half-px) 0 0 0);
+  --xh-form-field-msg-text-transform: var(--form-field-msg-text-transform, none);
 
+  // Validation colors + borders
   --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
   --xh-form-field-info-border-color: var(--form-field-info-border-color, var(--xh-intent-primary-text-color));
   --xh-form-field-info-border-width: var(--form-field-info-border-width, 1);

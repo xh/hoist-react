@@ -64,9 +64,10 @@
 
     &__info-msg,
     &__validation-msg {
-      font-size: var(--xh-font-size-small-px);
-      line-height: 1.5em;
-      margin-top: var(--xh-pad-half-px);
+      font-size: var(--xh-form-field-msg-font-size);
+      line-height: var(--xh-form-field-msg-line-height);
+      margin: var(--xh-form-field-msg-margin);
+      text-transform: var(--xh-form-field-msg-text-transform);
     }
 
     &__validation-msg {
