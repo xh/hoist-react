@@ -5,12 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
-import {genDisplayName, required, Rule, RuleLike, ValidationState} from '@xh/hoist/data';
+import {
+    genDisplayName,
+    required,
+    Rule,
+    RuleLike,
+    ValidationResult,
+    ValidationState
+} from '@xh/hoist/data';
 import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {compact, flatten, isEmpty, isEqual, isFunction, isNil} from 'lodash';
+import {compact, flatten, isEmpty, isEqual, isFunction, isNil, isString} from 'lodash';
 import {FormModel} from '../FormModel';
 
 export interface BaseFieldConfig {
@@ -91,11 +98,11 @@ export abstract class BaseFieldModel extends HoistModel {
 
     boundInputRef = createObservableRef();
 
-    // An array with the result of evaluating each rule.  Each element will be array of strings
-    // containing any validation errors for the rule.  If validation for the rule has not
-    // completed will contain null
+    // An array with the result of evaluating each rule. Each element will be an array of
+    // ValidationResults for the rule. If validation for the rule has not completed will contain
+    // null.
     @observable
-    private _errors: string[][];
+    private validationResultsInternal: ValidationResult[][];
 
     @managed
     private validationTask = TaskObserver.trackLast();
@@ -118,7 +125,7 @@ export abstract class BaseFieldModel extends HoistModel {
         this._disabled = disabled;
         this._readonly = readonly;
         this.rules = this.processRuleSpecs(rules);
-        this._errors = this.rules.map(() => null);
+        this.validationResultsInternal = this.rules.map(() => null);
     }
 
     //-----------------------------
@@ -175,12 +182,25 @@ export abstract class BaseFieldModel extends HoistModel {
     /** All validation errors for this field. */
     @computed
     get errors(): string[] {
-        return compact(flatten(this._errors));
+        return this.validationResults.filter(it => it.severity === 'error').map(it => it.message);
+    }
+
+    /** All ValidationResults for this field. */
+    @computed
+    get validationResults(): ValidationResult[] {
+        return compact(flatten(this.validationResultsInternal));
     }
 
     /** All validation errors for this field and its sub-forms. */
     get allErrors(): string[] {
-        return this.errors;
+        return this.allValidationResults
+            .filter(it => it.severity === 'error')
+            .map(it => it.message);
+    }
+
+    /** All ValidationResults for this field and its sub-forms. */
+    get allValidationResults(): ValidationResult[] {
+        return this.validationResults;
     }
 
     /**
@@ -202,7 +222,7 @@ export abstract class BaseFieldModel extends HoistModel {
 
         // Force an immediate 'Unknown' state -- the async recompute leaves the old state in place until it completed.
         // (We want that for a value change, but not reset/init)  Force the recompute only if needed.
-        this._errors.fill(null);
+        this.validationResultsInternal.fill(null);
         wait().then(() => {
             if (!this.isValidationPending && this.validationState === 'Unknown') {
                 this.computeValidationAsync();
@@ -300,7 +320,7 @@ export abstract class BaseFieldModel extends HoistModel {
     }
 
     /**
-     * Recompute all validations and return true if the field is valid.
+     * Recompute all ValidationResults and return true if the field is valid.
      *
      * @param display - true to trigger the display of validation errors (if any)
      *      by the bound FormField component after validation is complete.
@@ -339,13 +359,13 @@ export abstract class BaseFieldModel extends HoistModel {
         const promises = this.rules.map(async (rule, idx) => {
             const result = await this.evaluateRuleAsync(rule);
             if (runId === this.validationRunId) {
-                runInAction(() => (this._errors[idx] = result));
+                runInAction(() => (this.validationResultsInternal[idx] = result));
             }
         });
         await Promise.all(promises);
     }
 
-    private async evaluateRuleAsync(rule): Promise<string[]> {
+    private async evaluateRuleAsync(rule: Rule): Promise<ValidationResult[]> {
         if (this.ruleIsActive(rule)) {
             const promises = rule.check.map(async constraint => {
                 const {value, name, displayName} = this,
@@ -355,7 +375,9 @@ export abstract class BaseFieldModel extends HoistModel {
             });
 
             const ret = await Promise.all(promises);
-            return compact(flatten(ret));
+            return compact(flatten(ret)).map(issue =>
+                isString(issue) ? {message: issue, severity: 'error'} : issue
+            );
         }
         return [];
     }
@@ -367,10 +389,8 @@ export abstract class BaseFieldModel extends HoistModel {
     }
 
     protected deriveValidationState(): ValidationState {
-        const {_errors} = this;
-
-        if (_errors.some(e => !isEmpty(e))) return 'NotValid';
-        if (_errors.some(e => isNil(e))) return 'Unknown';
+        if (!isEmpty(this.errors)) return 'NotValid';
+        if (this.validationResultsInternal.some(e => isNil(e))) return 'Unknown';
         return 'Valid';
     }
 }

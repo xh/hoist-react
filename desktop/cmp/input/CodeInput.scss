@@ -29,9 +29,21 @@
 .xh-code-input {
   height: 100px;
 
-  &.xh-input-invalid {
+  &.xh-input--invalid {
     div.CodeMirror {
       border: var(--xh-form-field-invalid-border);
+    }
+  }
+
+  &.xh-input--warning {
+    div.CodeMirror {
+      border: var(--xh-form-field-warning-border);
+    }
+  }
+
+  &.xh-input--info {
+    div.CodeMirror {
+      border: var(--xh-form-field-info-border);
     }
   }
 

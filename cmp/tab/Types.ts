@@ -48,9 +48,9 @@ export interface TabSwitcherConfig {
 
 export interface TabContainerModelPersistOptions extends PersistOptions {
     /** True (default) to persist the active tab ID or provide custom PersistOptions. */
-    persistActiveTabId?: boolean;
+    persistActiveTabId?: boolean | PersistOptions;
     /** True (default) to persist favorite tab IDs or provide custom PersistOptions. */
-    persistFavoriteTabIds?: boolean;
+    persistFavoriteTabIds?: boolean | PersistOptions;
 }
 
 export interface TabSwitcherMenuContext extends MenuContext {

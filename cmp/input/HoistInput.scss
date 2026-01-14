@@ -6,9 +6,27 @@
  */
 
 .xh-input {
-  &.xh-input-invalid {
+  // Override browser user agent styles on input elements.
+  input {
+    font-family: var(--xh-input-font-family);
+    font-feature-settings: var(--xh-input-font-feature-settings);
+  }
+
+  &.xh-input--invalid {
     input {
       border: var(--xh-form-field-invalid-border);
+    }
+  }
+
+  &.xh-input--warning {
+    input {
+      border: var(--xh-form-field-warning-border);
+    }
+  }
+
+  &.xh-input--info {
+    input {
+      border: var(--xh-form-field-info-border);
     }
   }
 }

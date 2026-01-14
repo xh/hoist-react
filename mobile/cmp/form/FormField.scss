@@ -1,12 +1,30 @@
 .xh-form-field {
   display: flex;
   flex-direction: column;
+  padding: var(--xh-form-field-padding);
+  margin: var(--xh-form-field-margin);
 
-  .xh-form-field-label {
-    padding: 0 0 3px;
+  &__label {
+    color: var(--xh-form-field-label-color);
+    font-size: var(--xh-form-field-label-font-size);
+    font-style: var(--xh-form-field-label-font-style);
+    font-weight: var(--xh-form-field-label-font-weight);
+    text-transform: var(--xh-form-field-label-text-transform);
+
+    // Borders + padding (not inline)
+    border-bottom: var(--xh-form-field-label-border-bottom);
+    margin: var(--xh-form-field-label-margin);
+    padding: var(--xh-form-field-label-padding);
+
+    // Borders + padding (inline)
+    .xh-form-field--inline & {
+      border-bottom: var(--xh-form-field-label-inline-border-bottom);
+      margin: var(--xh-form-field-label-inline-margin);
+      padding: var(--xh-form-field-label-inline-padding);
+    }
   }
 
-  .xh-form-field-inner {
+  &__inner {
     // Used for unsizeable children
     &--block {
       display: block;
@@ -21,31 +39,46 @@
     }
   }
 
-  .xh-form-field-info,
-  .xh-form-field-error-msg,
-  .xh-form-field-pending-msg {
-    font-size: var(--xh-font-size-small-px);
-    line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-    color: var(--xh-text-color-muted);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+  &__info-msg,
+  &__validation-msg {
+    font-size: var(--xh-form-field-msg-font-size);
+    line-height: var(--xh-form-field-msg-line-height);
+    margin: var(--xh-form-field-msg-margin);
+    text-transform: var(--xh-form-field-msg-text-transform);
   }
 
-  .xh-form-field-error-msg {
-    color: var(--xh-red);
+  &__validation-msg {
+    &--error {
+      color: var(--xh-form-field-invalid-color);
+    }
+
+    &--info {
+      color: var(--xh-form-field-info-color);
+    }
+
+    &--warning {
+      color: var(--xh-form-field-warning-color);
+    }
   }
 
-  &.xh-form-field-invalid .xh-form-field-label {
-    color: var(--xh-red);
+  &--invalid .xh-form-field__label {
+    color: var(--xh-form-field-invalid-color);
   }
 
-  &.xh-form-field-readonly {
-    .xh-form-field-error-msg {
+  &--warning .xh-form-field__label {
+    color: var(--xh-form-field-warning-color);
+  }
+
+  &--info .xh-form-field__label {
+    color: var(--xh-form-field-info-color);
+  }
+
+  &.xh-form-field--readonly {
+    .xh-form-field__validation-msg {
       display: none;
     }
 
-    .xh-form-field-readonly-display {
+    .xh-form-field__readonly-display {
       padding: var(--xh-pad-px) 0;
     }
   }
