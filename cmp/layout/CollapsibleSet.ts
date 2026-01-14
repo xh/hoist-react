@@ -5,16 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {fieldset, vbox} from '@xh/hoist/cmp/layout';
+import type {HoistProps, Intent, LayoutProps, RenderMode, TestSupportProps} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, XH} from '@xh/hoist/core';
+import {collapsibleSetButton as desktopCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/desktop';
+import {collapsibleSetButton as mobileCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/mobile';
+import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray} from 'lodash';
 import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useState} from 'react';
-import {XH, hoistCmp} from '@xh/hoist/core';
-import type {HoistProps, Intent, LayoutProps, RenderMode, TestSupportProps} from '@xh/hoist/core';
-import {fieldset} from '@xh/hoist/cmp/layout';
-import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {collapsibleSetButton as desktopCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/desktop';
-import {collapsibleSetButton as mobileCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/mobile';
 
 import './CollapsibleSet.scss';
 
@@ -22,12 +22,13 @@ export interface CollapsibleSetProps
     extends FieldsetHTMLAttributes<HTMLFieldSetElement>, HoistProps, TestSupportProps, LayoutProps {
     icon?: ReactElement;
     label: ReactNode;
-    tooltip?: JSX.Element | string;
+    tooltip?: ReactElement | string;
     intent?: Intent;
     clickHandler?: () => void;
     collapsed?: boolean;
     hideItemCount?: boolean;
     renderMode?: RenderMode;
+    innerBoxProps?: BoxProps;
 }
 
 export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<CollapsibleSetProps>({
@@ -44,10 +45,8 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
         hideItemCount,
         className,
         disabled,
-        display = 'flex',
-        flexDirection = 'column',
-        flexWrap = 'wrap',
         renderMode = 'unmountOnHide',
+        innerBoxProps = {},
         ...rest
     }) {
         // Note `model` destructured off of non-layout props to avoid setting
@@ -55,11 +54,7 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
         // a parent that has not properly managed its own props.
         let [layoutProps, {model, testId, ...restProps}] = splitLayoutProps(rest);
 
-        restProps = mergeDeep(
-            {style: {display, flexDirection, flexWrap, ...layoutProps}},
-            {[TEST_ID]: testId},
-            restProps
-        );
+        restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId}, restProps);
 
         const [isCollapsed, setIsCollapsed] = useState<boolean>(collapsed === true),
             [expandCount, setExpandCount] = useState<number>(!collapsed ? 1 : 0),
@@ -89,25 +84,26 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
             ? mobileCollapsibleSetButtonImpl
             : desktopCollapsibleSetButtonImpl;
 
+        if (isCollapsed) {
+            classes.push('xh-collapsible-set--collapsed');
+        }
+
         let content;
         switch (renderMode) {
             case 'always':
                 content = items;
-                if (isCollapsed) {
-                    classes.push('xh-collapsible-set--collapsed--render-mode--always');
-                }
+                classes.push('xh-collapsible-set--render-mode-always');
                 break;
 
             case 'lazy':
                 content = isCollapsed && !expandCount ? [] : items;
-                if (isCollapsed) {
-                    classes.push('xh-collapsible-set--collapsed--render-mode--lazy');
-                }
+                classes.push('xh-collapsible-set--render-mode-lazy');
                 break;
 
             // unmountOnHide
             default:
                 content = isCollapsed ? [] : items;
+                classes.push('xh-collapsible-set--render-mode-unmount-on-hide');
                 break;
         }
 
@@ -126,7 +122,13 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
                     collapsed: isCollapsed,
                     disabled
                 }),
-                ...content
+                vbox({
+                    className: 'xh-collapsible-set__content',
+                    items: content,
+                    display: isCollapsed ? 'none' : 'flex',
+                    flexWrap: 'wrap',
+                    ...innerBoxProps
+                })
             ],
             disabled,
             ...restProps

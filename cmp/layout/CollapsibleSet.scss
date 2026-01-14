@@ -6,41 +6,37 @@
  */
 
 .xh-collapsible-set {
+  border-color: var(--xh-border-color);
+  border-width: var(--xh-border-width-px);
+
   &--collapsed {
     border-bottom: none;
     border-left: none;
     border-right: none;
-
-    &--render-mode--always,
-    &--render-mode--lazy {
-      > *:not(:first-child) {
-        display: none;
-      }
-    }
   }
 
-  &.xh-collapsible-set--intent-primary {
+  &--intent-primary {
     border-color: var(--xh-intent-primary-trans2);
     &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-primary);
     }
   }
 
-  &.xh-collapsible-set--intent-success {
+  &--intent-success {
     border-color: var(--xh-intent-success-trans2);
     &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-success);
     }
   }
 
-  &.xh-collapsible-set--intent-warning {
+  &--intent-warning {
     border-color: var(--xh-intent-warning-trans2);
     &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-warning);
     }
   }
 
-  &.xh-collapsible-set--intent-danger {
+  &--intent-danger {
     border-color: var(--xh-intent-danger-trans2);
     &.xh-collapsible-set--enabled {
       border-color: var(--xh-intent-danger);

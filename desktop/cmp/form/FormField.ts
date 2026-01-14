@@ -14,12 +14,14 @@ import {
     HoistProps,
     HSide,
     TestSupportProps,
+    useContextModel,
     uses,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
+import {FieldSetModel} from '@xh/hoist/desktop/cmp/form/fieldset/FieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -28,7 +30,15 @@ import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/ho
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
-import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
+import {
+    Children,
+    cloneElement,
+    ReactElement,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState
+} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {
@@ -118,6 +128,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (!model) {
             logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`, FormField);
         }
+
+        // If within a FieldSet, register with its model for validation grouping
+        const fieldSetModel = useContextModel(FieldSetModel);
+        useEffect(() => {
+            if (fieldSetModel && model) {
+                fieldSetModel.addFieldModel(model);
+                return () => fieldSetModel.removeFieldModel(model);
+            }
+        }, [fieldSetModel, model]);
 
         // Model related props
         const isRequired = model?.isRequired || false,
