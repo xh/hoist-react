@@ -27,6 +27,7 @@ import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/imp
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
+import {collapsibleSetButton} from '@xh/hoist/desktop/cmp/button/CollapsibleSetButton';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
@@ -46,6 +47,7 @@ import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
 installDesktopImpls({
+    collapsibleSetButton,
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,

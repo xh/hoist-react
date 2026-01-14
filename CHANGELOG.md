@@ -54,6 +54,17 @@
 * Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
   styling text with Hoist intent colors to enhance legibility in dark mode.
 
+### 🎁 New Features
+
+* DashCanvas:
+    * supports dragging and dropping widgets in from an external container.
+    * supports new compacting strategy: 'wrap'
+* new elementFactory tags: `fieldset`, `legend`
+
+### 📚 Libraries
+
+* react-grid-layout `2.1 → 2.2.2`
+
 ## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes

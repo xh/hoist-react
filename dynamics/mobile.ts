@@ -15,6 +15,7 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
+export let collapsibleSetButton = null;
 export let ColChooserModel = null;
 export let colChooser = null;
 export let zoneMapper = null;
@@ -30,6 +31,7 @@ export let maskImpl = null;
  * Not for Application use.
  */
 export function installMobileImpls(impls) {
+    collapsibleSetButton = impls.collapsibleSetButton;
     ColChooserModel = impls.ColChooserModel;
     colChooser = impls.colChooser;
     zoneMapper = impls.zoneMapper;
