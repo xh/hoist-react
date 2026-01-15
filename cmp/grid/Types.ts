@@ -20,10 +20,10 @@ import type {
     RowClassParams,
     ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
-import {ReactElement, ReactNode} from 'react';
-import {Column} from './columns/Column';
-import {ColumnGroup} from './columns/ColumnGroup';
-import {GridModel} from './GridModel';
+import type {ReactElement, ReactNode} from 'react';
+import type {Column, ColumnSpec} from './columns/Column';
+import type {ColumnGroup, ColumnGroupSpec} from './columns/ColumnGroup';
+import type {GridModel} from './GridModel';
 
 export interface ColumnState {
     colId: string;
@@ -87,8 +87,9 @@ export interface GridModelPersistOptions extends PersistOptions {
 
 export interface GridFilterModelConfig {
     /**
-     * Target ( filtered as column filters are applied. Defaulted to the
-     * gridModel's store.
+     * Target (typically a {@link Store} or Cube {@link View}) to be filtered as column filters
+     * are applied and used as a source for unique values displayed in the filtering UI when
+     * applicable. Defaulted to the gridModel's store.
      */
     bind?: GridFilterBindTarget;
 
@@ -142,6 +143,13 @@ export interface ColChooserConfig {
 
     /** Chooser height for popover and dialog. Desktop only. */
     height?: string | number;
+}
+
+export type ColumnOrGroup = Column | ColumnGroup;
+export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
+
+export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
+    return !(spec as ColumnGroupSpec).children;
 }
 
 /**
@@ -250,7 +258,7 @@ export type ColumnTooltipFn<T = any> = (
  * @returns CSS class(es) to use.
  */
 export type ColumnHeaderClassFn = (context: {
-    column: Column | ColumnGroup;
+    column: ColumnOrGroup;
     gridModel: GridModel;
     agParams: HeaderClassParams;
 }) => Some<string>;

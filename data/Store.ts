@@ -46,7 +46,7 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
-export interface sStoreConfig {
+export interface StoreConfig {
     /** Field names, configs, or instances. */
     fields?: Array<string | FieldSpec | Field>;
 

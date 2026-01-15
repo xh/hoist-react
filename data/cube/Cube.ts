@@ -6,20 +6,19 @@
  */
 
 import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
-import {Field} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField, CubeFieldSpec} from './CubeField';
-import {ViewRowData} from './ViewRowData';
-import {Query, QueryConfig} from './Query';
-import {View} from './View';
+import {defaultsDeep, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
-import {AggregateRow} from './row/AggregateRow';
-import {BucketRow} from './row/BucketRow';
-import {BaseRow} from './row/BaseRow';
 import {BucketSpec} from './BucketSpec';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {CubeField, CubeFieldSpec} from './CubeField';
+import {Query, QueryConfig} from './Query';
+import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
+import {BucketRow} from './row/BucketRow';
+import {View} from './View';
+import {ViewRowData} from './ViewRowData';
 
 export interface CubeConfig {
     fields: CubeField[] | CubeFieldSpec[];
