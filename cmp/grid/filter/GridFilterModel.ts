@@ -5,7 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterFieldSpec, GridFilterModelConfig} from '@xh/hoist/cmp/grid';
+import {
+    GridFilterFieldSpec,
+    GridFilterFieldSpecConfig,
+    GridFilterModelConfig
+} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {
     CompoundFilter,
@@ -144,7 +148,7 @@ export class GridFilterModel extends HoistModel {
     //--------------------------------
     // Implementation
     //--------------------------------
-    private parseFieldSpecs(specs, fieldSpecDefaults) {
+    private parseFieldSpecs(specs: Array<string | GridFilterFieldSpecConfig>, fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>) {
         const {bind} = this;
 
         // If no specs provided, include all source fields.

@@ -6,6 +6,7 @@
  */
 
 import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import {Field} from '@xh/hoist/data';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {CubeField, CubeFieldSpec} from './CubeField';
@@ -158,6 +159,10 @@ export class Cube extends HoistBase {
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;
+    }
+
+    getField(name: string): CubeField {
+        return this.store.getField(name) as CubeField;
     }
 
     //------------------

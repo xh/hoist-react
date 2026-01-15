@@ -7,23 +7,23 @@
 
 import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
 import {HSide, PersistOptions, Some} from '@xh/hoist/core';
-import {Store, StoreRecord, View} from '@xh/hoist/data';
-import {ReactElement, ReactNode} from 'react';
-import {Column} from './columns/Column';
-import {ColumnGroup} from './columns/ColumnGroup';
-import {GridModel} from './GridModel';
+import {FilterBindTarget, FilterValueSource, Store, StoreRecord} from '@xh/hoist/data';
 
 import type {
     CellClassParams,
+    CustomCellEditorProps,
     HeaderClassParams,
     HeaderValueGetterParams,
     ICellRendererParams,
     IRowNode,
     ITooltipParams,
     RowClassParams,
-    ValueSetterParams,
-    CustomCellEditorProps
+    ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
+import {ReactElement, ReactNode} from 'react';
+import {Column} from './columns/Column';
+import {ColumnGroup} from './columns/ColumnGroup';
+import {GridModel} from './GridModel';
 
 export interface ColumnState {
     colId: string;
@@ -87,10 +87,10 @@ export interface GridModelPersistOptions extends PersistOptions {
 
 export interface GridFilterModelConfig {
     /**
-     * Store / Cube View to be filtered as column filters are applied. Defaulted to the
+     * Target ( filtered as column filters are applied. Defaulted to the
      * gridModel's store.
      */
-    bind?: Store | View;
+    bind?: GridFilterBindTarget;
 
     /**
      * True to update filters immediately after each change made in the column-based filter UI.
@@ -100,14 +100,16 @@ export interface GridFilterModelConfig {
 
     /**
      * Specifies the fields this model supports for filtering. Should be configs for
-     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
-     * entirely to indicate that all fields should be filter-enabled.
+     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or
+     * omitted entirely to indicate that all fields should be filter-enabled.
      */
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
     fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
 }
+
+export type GridFilterBindTarget = FilterBindTarget & FilterValueSource;
 
 /**
  * Renderer for a group row

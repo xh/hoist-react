@@ -1167,7 +1167,7 @@ export class GridModel extends HoistModel {
     }
 
     @action
-    setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
+    setColumns(colConfigs: GridConfig['columns']) {
         this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
@@ -1686,7 +1686,7 @@ export class GridModel extends HoistModel {
     // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
     // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
     // in this case GridModel should work out the required Store fields from column definitions.
-    private parseAndSetColumnsAndStore(colConfigs, store = {}) {
+    private parseAndSetColumnsAndStore(colConfigs: GridConfig['columns'], store: GridConfig['store'] = {}) {
         // 1) Validate configs.
         this.validateStoreConfig(store);
         this.validateColConfigs(colConfigs);
@@ -1711,14 +1711,14 @@ export class GridModel extends HoistModel {
         this.store = newStore;
     }
 
-    private validateStoreConfig(store) {
+    private validateStoreConfig(store: GridConfig['store']) {
         throwIf(
             !(store instanceof Store || isPlainObject(store)),
             'GridModel.store config must be either an instance of a Store or a config to create one.'
         );
     }
 
-    private validateColConfigs(colConfigs) {
+    private validateColConfigs(colConfigs: GridConfig['columns']) {
         throwIf(!isArray(colConfigs), 'GridModel.columns config must be an array.');
         throwIf(
             colConfigs.some(c => !isPlainObject(c)),
@@ -1782,7 +1782,8 @@ export class GridModel extends HoistModel {
 
     // Selectively enhance raw column configs with field-level metadata from store.fields and/or
     // field config partials provided by the column configs themselves.
-    private enhanceColConfigsFromStore(colConfigs, storeOrConfig?) {
+    // TODO - add types here and resolve errors
+    private enhanceColConfigsFromStore(colConfigs, storeOrConfig?): GridConfig['columns'] {
         const store = storeOrConfig || this.store,
             storeFields = store?.fields,
             fieldsByName = {};
@@ -1886,31 +1887,33 @@ export class GridModel extends HoistModel {
         return sizingMode;
     }
 
-    private parseSelModel(selModel): StoreSelectionModel {
-        const {store} = this;
-        selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
-
+    private parseSelModel(selModel: GridConfig['selModel']): StoreSelectionModel {
+        // Return actual instance directly.
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
 
-        if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel({...selModel, store, xhImpl: true}));
+        // Default unspecified based on platform, treat explicit null as disabled.
+        if (selModel === undefined) {
+            selModel = XH.isMobileApp ? 'disabled' : 'single';
+        } else if (selModel === null) {
+            selModel = 'disabled';
         }
 
-        // Assume its just the mode...
-        let mode: any = 'single';
+        // Strings specify the mode.
         if (isString(selModel)) {
-            mode = selModel;
-        } else if (selModel === null) {
-            mode = 'disabled';
+            selModel = {mode: selModel};
         }
-        return this.markManaged(new StoreSelectionModel({mode, store, xhImpl: true}));
+
+        return this.markManaged(
+            new StoreSelectionModel({...selModel, store: this.store, xhImpl: true})
+        );
     }
 
-    private parseFilterModel(filterModel) {
+    private parseFilterModel(filterModel: GridConfig['filterModel']) {
         if (XH.isMobileApp || !filterModel) return null;
-        filterModel = isPlainObject(filterModel) ? filterModel : {};
+
+        filterModel = filterModel === true ? {} : filterModel;
         return new GridFilterModel({bind: this.store, ...filterModel}, this);
     }
 
@@ -1921,14 +1924,12 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parseChooserModel(chooserModel): HoistModel {
+    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): HoistModel {
+        if (!chooserModel) return null;
+
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
-
-        if (isPlainObject(chooserModel)) {
-            return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
-        }
-
-        return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
+        chooserModel = chooserModel === true ? {} : chooserModel;
+        return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
     }
 
     private isGroupSpec(col: ColumnGroupSpec | ColumnSpec): col is ColumnGroupSpec {
