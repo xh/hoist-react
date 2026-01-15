@@ -5,16 +5,41 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {CollapsibleSetModel} from '@xh/hoist/cmp/collapsibleset/CollapsibleSetModel';
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {HoistModel} from '@xh/hoist/core';
+import {type PersistOptions} from '@xh/hoist/core';
 import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
 import {makeObservable} from '@xh/hoist/mobx';
 import {uniq} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
-export class CollapsibleFieldSetModel extends HoistModel {
-    @observable.ref private fieldModelRegistry: FieldModel[] = [];
+export interface CollapsibleFieldSetConfig {
+    /** Default collapsed state. */
+    defaultCollapsed?: boolean;
+
+    /** True to disable all descendant fields. */
+    disabled?: boolean;
+
+    /** Options governing persistence. */
+    persistWith?: PersistOptions;
+}
+
+export class CollapsibleFieldSetModel extends CollapsibleSetModel {
+    declare config: CollapsibleFieldSetConfig;
+
+    @observable.ref parent: CollapsibleFieldSetModel | null;
+
+    //-----------------
+    // Implementation
+    //-----------------
     @observable.ref private collapsibleFieldSetModelRegistry: CollapsibleFieldSetModel[] = [];
+    @observable.ref private fieldModelRegistry: FieldModel[] = [];
+    @observable private isDisabled: boolean;
+
+    @computed
+    get disabled(): boolean {
+        return this.isDisabled || this.ancestors.some(it => it.isDisabled);
+    }
 
     @computed
     get displayedSeverity(): ValidationSeverity {
@@ -40,6 +65,25 @@ export class CollapsibleFieldSetModel extends HoistModel {
         return ret;
     }
 
+    constructor({disabled = false, ...rest}: CollapsibleFieldSetConfig = {}) {
+        super({...rest, renderMode: 'always'});
+        makeObservable(this);
+        this.isDisabled = disabled;
+    }
+
+    @action
+    setDisabled(disabled: boolean) {
+        this.isDisabled = disabled;
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    @computed
+    private get ancestors(): CollapsibleFieldSetModel[] {
+        return this.parent ? [this.parent, ...this.parent.ancestors] : [];
+    }
+
     @computed
     private get fieldModels(): FieldModel[] {
         return [
@@ -48,31 +92,30 @@ export class CollapsibleFieldSetModel extends HoistModel {
         ];
     }
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
+    /** @internal */
     @action
-    addFieldModel(fieldModel: FieldModel) {
+    registerChildFieldModel(fieldModel: FieldModel) {
         this.fieldModelRegistry = uniq([...this.fieldModelRegistry, fieldModel]);
     }
 
+    /** @internal */
     @action
-    removeFieldModel(fieldModel: FieldModel) {
+    unregisterChildFieldModel(fieldModel: FieldModel) {
         this.fieldModelRegistry = this.fieldModelRegistry.filter(it => it !== fieldModel);
     }
 
+    /** @internal */
     @action
-    addCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
+    registerChildCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
         this.collapsibleFieldSetModelRegistry = uniq([
             ...this.collapsibleFieldSetModelRegistry,
             collapsibleFieldSetModel
         ]);
     }
 
+    /** @internal */
     @action
-    removeCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
+    unregisterChildCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
         this.collapsibleFieldSetModelRegistry = this.collapsibleFieldSetModelRegistry.filter(
             it => it !== collapsibleFieldSetModel
         );

@@ -133,15 +133,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const fieldSetModel = useContextModel(CollapsibleFieldSetModel);
         useEffect(() => {
             if (fieldSetModel && model) {
-                fieldSetModel.addFieldModel(model);
-                return () => fieldSetModel.removeFieldModel(model);
+                fieldSetModel.registerChildFieldModel(model);
+                return () => fieldSetModel.unregisterChildFieldModel(model);
             }
         }, [fieldSetModel, model]);
 
         // Model related props
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
-            disabled = props.disabled || model?.disabled,
+            disabled = props.disabled || model?.disabled || fieldSetModel?.disabled,
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
                 : null,

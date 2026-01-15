@@ -6,18 +6,19 @@
  */
 
 import {li, ul} from '@xh/hoist/cmp/layout';
-import {collapsibleSet} from '@xh/hoist/cmp/layout/CollapsibleSet';
+import {collapsibleSet} from '@xh/hoist/cmp/collapsibleset/CollapsibleSet';
 import {
-    creates,
     hoistCmp,
     HoistProps,
     Intent,
     type LayoutProps,
     type TestSupportProps,
-    useContextModel
+    useContextModel,
+    uses
 } from '@xh/hoist/core';
 import {ValidationSeverity} from '@xh/hoist/data';
 import {CollapsibleFieldSetModel} from '@xh/hoist/desktop/cmp/form/collapsiblefieldset/CollapsibleFieldSetModel';
+import {runInAction} from 'mobx';
 import {type FieldsetHTMLAttributes, ReactElement, type ReactNode, useEffect} from 'react';
 import './CollapsibleFieldSet.scss';
 
@@ -29,22 +30,30 @@ export interface CollapsibleFieldSetProps
         LayoutProps {
     icon?: ReactElement;
     label: ReactNode;
-    clickHandler?: () => void;
-    collapsed?: boolean;
-    hideItemCount?: boolean;
 }
 
 export const [CollapsibleFieldSet, collapsibleFieldSet] =
     hoistCmp.withFactory<CollapsibleFieldSetProps>({
         displayName: 'CollapsibleFieldSet',
-        model: creates(CollapsibleFieldSetModel, {publishMode: 'limited'}),
+        model: uses(CollapsibleFieldSetModel, {
+            fromContext: false,
+            publishMode: 'limited',
+            createDefault: true
+        }),
         render({model, ...props}) {
             // Handle nested CollapsibleFieldSets
             const collapsibleFieldSetModel = useContextModel(CollapsibleFieldSetModel);
             useEffect(() => {
                 if (collapsibleFieldSetModel) {
-                    collapsibleFieldSetModel.addCollapsibleFieldSetModel(model);
-                    return () => collapsibleFieldSetModel.removeCollapsibleFieldSetModel(model);
+                    runInAction(() => {
+                        collapsibleFieldSetModel.registerChildCollapsibleFieldSetModel(model);
+                        model.parent = collapsibleFieldSetModel;
+                    });
+                    return () =>
+                        runInAction(() => {
+                            collapsibleFieldSetModel.unregisterChildCollapsibleFieldSetModel(model);
+                            model.parent = null;
+                        });
                 }
             }, [collapsibleFieldSetModel, model]);
 
@@ -65,8 +74,8 @@ export const [CollapsibleFieldSet, collapsibleFieldSet] =
             }
 
             return collapsibleSet({
+                hideItemCount: true,
                 intent: intentForSeverity(displayedSeverity),
-                renderMode: 'always',
                 tooltip,
                 model,
                 ...props

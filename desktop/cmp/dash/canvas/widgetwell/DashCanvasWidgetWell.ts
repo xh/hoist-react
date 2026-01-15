@@ -12,7 +12,7 @@ import {div, frame} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetWellModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetwell/DashCanvasWidgetWellModel';
-import {collapsibleSet} from '@xh/hoist/cmp/layout/CollapsibleSet';
+import {collapsibleSet} from '@xh/hoist/cmp/collapsibleset/CollapsibleSet';
 
 import './DashCanvasWidgetWell.scss';
 
@@ -124,7 +124,6 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel, flexDirection): 
 
             return collapsibleSet({
                 icon,
-                collapsed: false,
                 label,
                 flexDirection,
                 items: items.map(it => it.item)

@@ -6,7 +6,7 @@
  */
 
 import {fieldset, vbox} from '@xh/hoist/cmp/layout';
-import type {HoistProps, Intent, LayoutProps, RenderMode, TestSupportProps} from '@xh/hoist/core';
+import {HoistProps, Intent, LayoutProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {BoxProps, hoistCmp, XH} from '@xh/hoist/core';
 import {collapsibleSetButton as desktopCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/desktop';
 import {collapsibleSetButton as mobileCollapsibleSetButtonImpl} from '@xh/hoist/dynamics/mobile';
@@ -14,55 +14,64 @@ import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray} from 'lodash';
-import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useState} from 'react';
+import {type FieldsetHTMLAttributes, type ReactElement, type ReactNode, useRef} from 'react';
+import {CollapsibleSetModel} from './CollapsibleSetModel';
 
 import './CollapsibleSet.scss';
 
 export interface CollapsibleSetProps
-    extends FieldsetHTMLAttributes<HTMLFieldSetElement>, HoistProps, TestSupportProps, LayoutProps {
+    extends
+        HoistProps<CollapsibleSetModel>,
+        FieldsetHTMLAttributes<HTMLFieldSetElement>,
+        TestSupportProps,
+        LayoutProps {
+    /** An icon placed left of the label. */
     icon?: ReactElement;
+    /** The label to display. */
     label: ReactNode;
+    /** Tooltip to show when hovering over the label. */
     tooltip?: ReactElement | string;
+    /** Intent to apply to the label and border. */
     intent?: Intent;
-    clickHandler?: () => void;
-    collapsed?: boolean;
+    /** True to hide the item count in the label. */
     hideItemCount?: boolean;
-    renderMode?: RenderMode;
+    /** Additional props to pass to the inner content box. */
     innerBoxProps?: BoxProps;
 }
 
 export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<CollapsibleSetProps>({
     displayName: 'CollapsibleSet',
-    model: false,
+    model: uses(CollapsibleSetModel, {
+        fromContext: false,
+        publishMode: 'limited',
+        createDefault: true
+    }),
     className: 'xh-collapsible-set',
     render({
         icon,
         label,
         tooltip,
         intent,
-        collapsed,
         children,
         hideItemCount,
         className,
         disabled,
-        renderMode = 'unmountOnHide',
         innerBoxProps = {},
+        model,
         ...rest
     }) {
-        // Note `model` destructured off of non-layout props to avoid setting
-        // model as a bogus DOM attribute. This low-level component may easily be passed one from
-        // a parent that has not properly managed its own props.
-        let [layoutProps, {model, testId, ...restProps}] = splitLayoutProps(rest);
+        const wasDisplayed = useRef(false),
+            {collapsed, renderMode} = model;
+
+        let [layoutProps, {testId, ...restProps}] = splitLayoutProps(rest);
 
         restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId}, restProps);
 
-        const [isCollapsed, setIsCollapsed] = useState<boolean>(collapsed === true),
-            [expandCount, setExpandCount] = useState<number>(!collapsed ? 1 : 0),
-            items = castArray(children),
+        const items = castArray(children),
             itemCount = hideItemCount === true ? '' : ` (${items.length})`,
             classes = [];
 
-        if (isCollapsed) {
+        if (collapsed) {
             classes.push('xh-collapsible-set--collapsed');
         } else {
             classes.push('xh-collapsible-set--expanded');
@@ -84,11 +93,13 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
             ? mobileCollapsibleSetButtonImpl
             : desktopCollapsibleSetButtonImpl;
 
-        if (isCollapsed) {
+        if (collapsed) {
             classes.push('xh-collapsible-set--collapsed');
+        } else {
+            wasDisplayed.current = true;
         }
 
-        let content;
+        let content: ReactNode[];
         switch (renderMode) {
             case 'always':
                 content = items;
@@ -96,13 +107,13 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
                 break;
 
             case 'lazy':
-                content = isCollapsed && !expandCount ? [] : items;
+                content = collapsed && !wasDisplayed.current ? [] : items;
                 classes.push('xh-collapsible-set--render-mode-lazy');
                 break;
 
             // unmountOnHide
             default:
-                content = isCollapsed ? [] : items;
+                content = collapsed ? [] : items;
                 classes.push('xh-collapsible-set--render-mode-unmount-on-hide');
                 break;
         }
@@ -115,17 +126,13 @@ export const [CollapsibleSet, collapsibleSet] = hoistCmp.withFactory<Collapsible
                     text: `${label}${itemCount}`,
                     tooltip,
                     intent,
-                    clickHandler: val => {
-                        setIsCollapsed(val);
-                        setExpandCount(expandCount + 1);
-                    },
-                    collapsed: isCollapsed,
+                    collapsed,
                     disabled
                 }),
                 vbox({
                     className: 'xh-collapsible-set__content',
                     items: content,
-                    display: isCollapsed ? 'none' : 'flex',
+                    display: collapsed ? 'none' : 'flex',
                     flexWrap: 'wrap',
                     ...innerBoxProps
                 })
