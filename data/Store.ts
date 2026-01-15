@@ -6,6 +6,22 @@
  */
 
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    Field,
+    FieldSpec,
+    Filter,
+    FilterBindTarget,
+    FilterLike,
+    FilterValueSource,
+    parseFilter,
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreValidationMessagesMap,
+    StoreValidationResultsMap,
+    ValidationResult
+} from '@xh/hoist/data';
+import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -13,6 +29,7 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    first,
     flatMapDeep,
     isArray,
     isEmpty,
@@ -20,21 +37,14 @@ import {
     isNil,
     isNull,
     isString,
-    values,
+    partition,
     remove as lodashRemove,
-    uniq,
-    first,
     some,
-    partition
+    uniq,
+    values
 } from 'lodash';
-import {Field, FieldSpec} from './Field';
-import {parseFilter} from './filter/Utils';
-import {RecordSet} from './impl/RecordSet';
-import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {Filter} from './filter/Filter';
-import {FilterLike} from './filter/Types';
+import {RecordSet} from './impl/RecordSet';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -181,10 +191,12 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistBase {
-    get isStore() {
-        return true;
+export class Store extends HoistBase implements FilterBindTarget, FilterValueSource {
+    static isStore(obj: unknown): obj is Store {
+        return obj instanceof Store;
     }
+
+    readonly isFilterValueSource = true;
 
     fields: Field[] = null;
     idSpec: (data: PlainObject) => StoreRecordId;
@@ -811,6 +823,31 @@ export class Store extends HoistBase {
         return !this.getById(id, true) && !!this.getById(id, false);
     }
 
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[] {
+        const field = this.getField(fieldName);
+        if (!field) return [];
+
+        let recs = this.allRecords;
+        if (filter) {
+            const testFn = filter.getTestFn(this);
+            recs = recs.filter(testFn);
+        }
+
+        const ret = new Set();
+        recs.forEach(rec => {
+            const val = rec.get(fieldName);
+            if (!isNil(val)) {
+                if (field.type === 'tags') {
+                    val.forEach(it => ret.add(it));
+                } else {
+                    ret.add(val);
+                }
+            }
+        });
+
+        return Array.from(ret);
+    }
+
     /**
      * Set whether the root should be loaded as summary data in loadData().
      */
@@ -859,8 +896,12 @@ export class Store extends HoistBase {
         return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.validator.errors;
+    }
+
+    get validationResults(): StoreValidationResultsMap {
+        return this.validator.validationResults;
     }
 
     /** Count of all validation errors for the store. */
@@ -871,6 +912,11 @@ export class Store extends HoistBase {
     /** Array of all errors for this store. */
     get allErrors(): string[] {
         return uniq(flatMapDeep(this.errors, values));
+    }
+
+    /** Array of all ValidationResults for this store. */
+    get allValidationResults(): ValidationResult[] {
+        return uniq(flatMapDeep(this.validationResults, values));
     }
 
     /**
@@ -945,7 +991,7 @@ export class Store extends HoistBase {
         return this.validator.isNotValid;
     }
 
-    /** Recompute validations for all records and return true if the store is valid. */
+    /** Recompute ValidationResults for all records and return true if the store is valid. */
     async validateAsync(): Promise<boolean> {
         return this.validator.validateAsync();
     }

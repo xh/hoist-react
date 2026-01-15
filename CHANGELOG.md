@@ -2,12 +2,13 @@
 
 ## 80.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
-* Added `ajvSchema` and `ajvOptions` configs to JsonInputProps.
-    * `ajvSchema` - Used to validate the input JSON
-    * `ajvOptions` - Options to be passed to Ajv constructor (JSON schema validator)
+### 💥 Breaking Changes
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - Code mirror v6 update)
+* Modified several CSS classes related to `FormField` to better follow BEM conventions.
+    * ⚠️The commonly targeted `xh-form-field-label` class is now `xh-form-field__label`, although
+      please review new CSS vars (below) and consider using those instead of class-based selectors.
+    * Modifier classes now follow BEM conventions (e.g. `xh-form-field-invalid` is now
+      `xh-form-field--invalid`).
 * Hoist v80 **upgrades CodeMirror to v6** (from v5)
     * editorProps deprecated:
       The v5-style editorProps object (which accepted any CodeMirror config keys) is no longer
@@ -15,12 +16,53 @@
       such as, `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
     * `mode` to set the language of code input now changed to `language` prop.
         * Check [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts) for language string (alias and name allowed)
-* Completed the refactoring away from `loadModel` to `loadObserver` started in v79:
+* Completed the refactoring from `loadModel` to `loadObserver` started in v79:
     * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
       deprecated and scheduled for removal in v82.
     * Renamed `AppContainerModel.loadModel` to `loadObserver`. This is primarily an internal model,
       so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
     * Removed additional references to deprecated `loadModel` within Hoist itself.
+* Removed the following instance getters - use new static typeguards instead:
+    * `Store.isStore`
+    * `View.isView`
+    * `Filter.isFilter`
+
+### 🎁 New Features
+
+* Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
+  validation scenarios, such as providing guidance to users without preventing form submission.
+* Added new `AppMenuButton.renderWithUserProfile` prop as a built-in alternative to the default
+  hamburger menu. Set to `true` to render the current user's initials instead or provide a function
+  to render a custom element for the user.
+* Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
+* Added `ajvSchema` and `ajvOptions` configs to JsonInputProps.
+    * `ajvSchema` - Used to validate the input JSON
+    * `ajvOptions` - Options to be passed to Ajv constructor (JSON schema validator)
+
+### ⚙️ Typescript API Adjustments
+
+* Introduced new `FilterBindTarget` and `FilterValueSource` interfaces to generalize the data
+  sources that could be used with `FilterChooserModel` and `GridFilterModel`. Both `Store` and
+  `View` implement these interfaces, meaning no changes are required for apps, but it is now
+  possible to use these models with alternate implementations.
+* Added new static typeguard methods on `Store`, `View`, and `Filter` + its subclasses.
+* Removed `RecordErrorMap` + reorganized validation types (not expected to impact most apps).
+
+### ✨ Styles
+
+* Applied the app-wide `--xh-font-family` to `input` elements. Previously these had continued to
+  take a default font defined by the browser stylesheet.
+    * Customize for inputs if needed via `--xh-input-font-family`.
+    * Note that the switch to Hoist's default Inter font w/tabular numbers might require some
+      inputs w/tight sizing to be made wider to avoid clipping (e.g. `DateInputs` sized to fit).
+* Updated + added validation-related `FormField` CSS classes and variables to account for new `info`
+  and `warning` validation levels. Additionally validation messages and the `info` text element no
+  longer clip at a single line - they will wrap as needed.
+* Added new CSS variables for `FormField` to allow easier customization of commonly adjusted styles,
+  with a focus on labels. See `vars.scss` for the full list. Consider replacing existing class-based
+  CSS overrides with overrides to variables where possible.
+* Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
+  styling text with Hoist intent colors to enhance legibility in dark mode.
 
 ### 📚 Libraries
 * @codemirror/commands `6.10.1`

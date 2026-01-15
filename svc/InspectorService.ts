@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, managed, persist, XH} from '@xh/hoist/core';
+import {Store} from '@xh/hoist/data';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
@@ -59,8 +60,8 @@ export class InspectorService extends HoistService {
     @managed
     statsUpdateTimer: Timer;
 
-    private _syncRun = 0;
-    private _idToSyncRun = new Map();
+    private _syncRun: number = 0;
+    private _idToSyncRun = new Map<string, number>();
 
     constructor() {
         super();
@@ -196,7 +197,7 @@ export class InspectorService extends HoistService {
                     created: inst._created,
                     isHoistService: inst.isHoistService,
                     isHoistModel: inst.isHoistModel,
-                    isStore: inst.isStore,
+                    isStore: Store.isStore(inst),
                     isLinked: inst.isLinked,
                     isXhImpl: inst.xhImpl,
                     hasLoadSupport: inst.loadSupport != null,
@@ -211,7 +212,7 @@ export class InspectorService extends HoistService {
     }
 
     @action
-    setActiveInstances(ai) {
+    setActiveInstances(ai: InspectorInstanceData[]) {
         this.activeInstances = ai;
     }
 
@@ -229,7 +230,7 @@ export class InspectorService extends HoistService {
 
 interface InspectorInstanceData {
     className: string;
-    created: Date;
+    created: number;
     isHoistModel: boolean;
     isHoistService: boolean;
     isStore: boolean;

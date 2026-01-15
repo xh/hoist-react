@@ -8,14 +8,39 @@
 .xh-form-field {
   display: flex;
   flex-direction: column;
-  padding: 3px;
-  margin: 0 0 var(--xh-pad-px);
+  padding: var(--xh-form-field-padding);
+  margin: var(--xh-form-field-margin);
 
-  .xh-form-field-label {
-    padding: 0 0 3px;
+  &__label {
+    // Common label attrs
+    color: var(--xh-form-field-label-color);
+    font-size: var(--xh-form-field-label-font-size);
+    font-style: var(--xh-form-field-label-font-style);
+    font-weight: var(--xh-form-field-label-font-weight);
+    text-transform: var(--xh-form-field-label-text-transform);
+
+    // Borders + padding - editable, not inline - the default case.
+    border-bottom: var(--xh-form-field-label-border-bottom);
+    margin: var(--xh-form-field-label-margin);
+    padding: var(--xh-form-field-label-padding);
+
+    // Borders + padding - readonly, not inline - commonly used to add bottom border when using
+    // forms as a kind of detail view, as readonly fields often lack other visual boundaries.
+    .xh-form-field--readonly:not(.xh-form-field--inline) & {
+      border-bottom: var(--xh-form-field-readonly-label-border-bottom);
+      margin: var(--xh-form-field-readonly-label-margin);
+      padding: var(--xh-form-field-readonly-label-padding);
+    }
+
+    // Borders + padding - inline, both editable and readonly.
+    .xh-form-field--inline & {
+      border-bottom: var(--xh-form-field-inline-label-border-bottom);
+      margin: var(--xh-form-field-inline-label-margin);
+      padding: var(--xh-form-field-inline-label-padding);
+    }
   }
 
-  .xh-form-field-inner {
+  &__inner {
     // Used for unsizeable children
     &--block {
       display: block;
@@ -45,63 +70,72 @@
         flex: 1;
       }
     }
+
+    &__info-msg,
+    &__validation-msg {
+      font-size: var(--xh-form-field-msg-font-size);
+      line-height: var(--xh-form-field-msg-line-height);
+      margin: var(--xh-form-field-msg-margin);
+      text-transform: var(--xh-form-field-msg-text-transform);
+    }
+
+    &__validation-msg {
+      &--error {
+        color: var(--xh-form-field-invalid-color);
+      }
+
+      &--info {
+        color: var(--xh-form-field-info-color);
+      }
+
+      &--warning {
+        color: var(--xh-form-field-warning-color);
+      }
+    }
   }
 
-  .xh-form-field-info,
-  .xh-form-field-error-msg {
-    font-size: var(--xh-font-size-small-px);
-    line-height: calc(var(--xh-font-size-small-px) + var(--xh-pad-px));
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-
-  .xh-form-field-error-msg {
-    color: var(--xh-red);
-  }
-
-  &.xh-form-field-inline {
+  &--inline {
     flex-direction: row;
     align-items: baseline;
 
-    &.xh-form-field-json-input {
+    &.xh-form-field--json-input {
       align-items: start;
     }
 
-    .xh-form-field-label {
+    .xh-form-field__label {
       padding: 0 var(--xh-pad-half-px) 0 0;
     }
   }
 
-  &.xh-form-field-readonly {
-    &.xh-form-field-json-input {
-      .xh-form-field-inner {
-        &--flex {
-          border: var(--xh-border-solid);
-          padding: var(--xh-pad-half-px);
-          background-color: var(--xh-input-disabled-bg);
-          font-family: var(--xh-font-family-mono);
-        }
-      }
-    }
-
-    .xh-form-field-error-msg {
+  &--readonly {
+    .xh-form-field__validation-msg {
       display: none;
     }
 
-    .xh-form-field-inner {
-      &--flex {
-        overflow-y: auto;
-      }
+    .xh-form-field__inner--flex {
+      overflow-y: auto;
     }
 
-    .xh-form-field-readonly-display {
+    .xh-form-field__readonly-display {
       padding: 6px 0;
       white-space: pre-wrap;
     }
+
+    &.xh-form-field--json-input {
+      .xh-form-field__inner--flex {
+        background-color: var(--xh-input-disabled-bg);
+        border: var(--xh-border-solid);
+        font-family: var(--xh-font-family-mono);
+        padding: var(--xh-pad-half-px);
+      }
+    }
   }
 
-  &.xh-form-field-invalid:not(.xh-form-field-readonly) {
+  &.xh-form-field--invalid:not(.xh-form-field--readonly) {
+    .xh-form-field__label {
+      color: var(--xh-form-field-invalid-color);
+    }
+
     .xh-check-box span {
       box-shadow: var(--xh-form-field-invalid-box-shadow) !important;
     }
@@ -119,16 +153,76 @@
     }
 
     .xh-text-input > svg {
-      color: var(--xh-intent-danger);
+      color: var(--xh-form-field-invalid-color);
     }
 
     .xh-text-area.textarea {
       border: var(--xh-form-field-invalid-border) !important;
     }
   }
+
+  &.xh-form-field--warning:not(.xh-form-field--readonly) {
+    .xh-form-field__label {
+      color: var(--xh-form-field-warning-color);
+    }
+
+    .xh-check-box span {
+      box-shadow: var(--xh-form-field-warning-box-shadow) !important;
+    }
+
+    .xh-button-group-input button.xh-button {
+      box-shadow: var(--xh-form-field-warning-box-shadow);
+    }
+
+    .xh-slider span {
+      box-shadow: var(--xh-form-field-warning-box-shadow);
+    }
+
+    div.xh-select__control {
+      border: var(--xh-form-field-warning-border);
+    }
+
+    .xh-text-input > svg {
+      color: var(--xh-form-field-warning-color);
+    }
+
+    .xh-text-area.textarea {
+      border: var(--xh-form-field-warning-border) !important;
+    }
+  }
+
+  &.xh-form-field--info:not(.xh-form-field--readonly) {
+    .xh-form-field__label {
+      color: var(--xh-form-field-info-color);
+    }
+
+    .xh-check-box span {
+      box-shadow: var(--xh-form-field-info-box-shadow) !important;
+    }
+
+    .xh-button-group-input button.xh-button {
+      box-shadow: var(--xh-form-field-info-box-shadow);
+    }
+
+    .xh-slider span {
+      box-shadow: var(--xh-form-field-info-box-shadow);
+    }
+
+    div.xh-select__control {
+      border: var(--xh-form-field-info-border);
+    }
+
+    .xh-text-input > svg {
+      color: var(--xh-form-field-info-color);
+    }
+
+    .xh-text-area.textarea {
+      border: var(--xh-form-field-info-border) !important;
+    }
+  }
 }
 
-ul.xh-form-field-error-tooltip {
+ul.xh-form-field__validation-tooltip {
   margin: 0;
   padding: 0 1em 0 2em;
 }
@@ -141,12 +235,12 @@ ul.xh-form-field-error-tooltip {
   align-items: baseline;
   overflow: visible !important;
 
-  .xh-form-field-inner--flex {
+  .xh-form-field__inner--flex {
     flex-direction: row;
     align-items: center;
   }
 
-  .xh-form-field-error-msg {
+  .xh-form-field__validation-msg {
     margin: 0 var(--xh-pad-px);
   }
 }

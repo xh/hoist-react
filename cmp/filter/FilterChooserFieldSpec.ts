@@ -4,17 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {parseFieldValue} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
-import {parseFieldValue, View} from '@xh/hoist/data';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
+import {isFunction} from 'lodash';
+import {isValidElement, ReactNode} from 'react';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**
@@ -120,7 +120,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         return 'value';
     }
 
-    parseValueParser(valueParser) {
+    parseValueParser(valueParser: FilterChooserValueParser): FilterChooserValueParser {
         // Default numeric parser
         if (!valueParser && (this.fieldType === 'int' || this.fieldType === 'number')) {
             return input => parseNumber(input);
@@ -129,24 +129,7 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
     }
 
     loadValuesFromSource() {
-        const {field, source} = this,
-            values = new Set();
-
-        // Note use of unfiltered recordset here to source suggest values. This allows chooser to
-        // suggest values from already-filtered fields that will expand the results when selected.
-        const sourceStore = source instanceof View ? source.cube.store : source;
-        sourceStore.allRecords.forEach(rec => {
-            const val = rec.get(field);
-            if (!isNil(val)) {
-                if (sourceStore.getField(field).type === 'tags') {
-                    val.forEach(it => values.add(it));
-                } else {
-                    values.add(val);
-                }
-            }
-        });
-
-        this.values = Array.from(values);
+        this.values = this.source.getValuesForFieldFilter(this.field);
     }
 }
 

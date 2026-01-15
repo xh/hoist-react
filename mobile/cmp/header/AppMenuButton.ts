@@ -4,11 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, MenuItemLike, XH} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
+import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends MenuButtonProps {
     /** Array of app-specific MenuItems or configs to create them. */
@@ -37,7 +40,16 @@ export interface AppMenuButtonProps extends MenuButtonProps {
 
     /** True to hide the About button */
     hideAboutItem?: boolean;
+
+    /**
+     * Replace the default hamburger icon with a user profile representation. Set to true to render
+     * the user's initials from their `HoistUser.displayName`. Alternately, provide a custom
+     * function to render an alternate compact string or element for the current user.
+     */
+    renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
+
+type RenderWithUserProfileCustomFn = (user: HoistUser) => ReactNode;
 
 /**
  * A top-level application drop down menu, which installs a standard set of menu items for common
@@ -62,11 +74,13 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             hideAboutItem,
+            renderWithUserProfile,
             ...rest
         } = props;
 
         return menuButton({
             className,
+            icon: renderWithUserProfile ? userProfile({renderWithUserProfile}) : Icon.menu(),
             menuItems: buildMenuItems(props),
             menuClassName: 'xh-app-menu',
             popoverProps: {popoverClassName: 'xh-app-menu-popover'},
@@ -78,6 +92,20 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 //---------------------------
 // Implementation
 //---------------------------
+const userProfile = hoistCmp.factory<
+    HoistProps & {renderWithUserProfile: true | RenderWithUserProfileCustomFn}
+>({
+    model: false,
+    render({renderWithUserProfile}) {
+        return div({
+            className: 'xh-app-menu-button__user-profile',
+            item: isFunction(renderWithUserProfile)
+                ? renderWithUserProfile(XH.getUser())
+                : XH.getUserInitials()
+        });
+    }
+});
+
 function buildMenuItems({
     hideOptionsItem,
     hideFeedbackItem,

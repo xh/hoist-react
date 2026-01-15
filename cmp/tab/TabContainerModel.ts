@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     TabSwitcherConfig,
     IDynamicTabSwitcherModel,
     TabContainerModelPersistOptions
@@ -14,7 +14,6 @@ import {
     managed,
     PersistableState,
     PersistenceProvider,
-    PersistOptions,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
@@ -41,7 +40,7 @@ export interface TabContainerConfig {
 
     /**
      * Base route name for this container. If set, this container will be route-enabled, with the
-     * route for each tab being "[route]/[tab.id]".  Cannot be used with `persistWith`.
+     * route for each tab being "[route]/[tab.id]".
      */
     route?: string;
 
@@ -69,8 +68,13 @@ export interface TabContainerConfig {
      */
     refreshMode?: RefreshMode;
 
-    /** Options governing persistence. Cannot be used with `route`. */
-    persistWith?: PersistOptions;
+    /**
+     * Options governing persistence. Tab containers can persist their last-active tab as well
+     * as favorite tabs for the dynamic `switcher` option. Note that this must be left unset or
+     * its nested `persistActiveTabId` option must be set to false if also using `route`, to avoid
+     * a possible conflict between an initial route and persisted last active tab.
+     */
+    persistWith?: TabContainerModelPersistOptions;
 
     /**
      * Placeholder to display if no tabs are provided or all tabs have been removed via
