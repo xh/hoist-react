@@ -21,7 +21,7 @@ import {
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {FieldSetModel} from '@xh/hoist/desktop/cmp/form/fieldset/FieldSetModel';
+import {CollapsibleFieldSetModel} from '@xh/hoist/desktop/cmp/form/collapsiblefieldset/CollapsibleFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -130,7 +130,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         }
 
         // If within a FieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(FieldSetModel);
+        const fieldSetModel = useContextModel(CollapsibleFieldSetModel);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.addFieldModel(model);

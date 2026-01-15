@@ -1,2 +1,2 @@
 export * from './FormField';
-export * from './fieldset/FieldSet';
+export * from '@xh/hoist/desktop/cmp/form/collapsiblefieldset/CollapsibleFieldSet';

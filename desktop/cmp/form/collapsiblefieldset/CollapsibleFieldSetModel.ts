@@ -12,9 +12,9 @@ import {makeObservable} from '@xh/hoist/mobx';
 import {uniq} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
-export class FieldSetModel extends HoistModel {
+export class CollapsibleFieldSetModel extends HoistModel {
     @observable.ref private fieldModelRegistry: FieldModel[] = [];
-    @observable.ref private fieldSetModelRegistry: FieldSetModel[] = [];
+    @observable.ref private collapsibleFieldSetModelRegistry: CollapsibleFieldSetModel[] = [];
 
     @computed
     get displayedSeverity(): ValidationSeverity {
@@ -44,7 +44,7 @@ export class FieldSetModel extends HoistModel {
     private get fieldModels(): FieldModel[] {
         return [
             ...this.fieldModelRegistry,
-            ...this.fieldSetModelRegistry.flatMap(it => it.fieldModels)
+            ...this.collapsibleFieldSetModelRegistry.flatMap(it => it.fieldModels)
         ];
     }
 
@@ -64,12 +64,17 @@ export class FieldSetModel extends HoistModel {
     }
 
     @action
-    addFieldSetModel(fieldSetModel: FieldSetModel) {
-        this.fieldSetModelRegistry = uniq([...this.fieldSetModelRegistry, fieldSetModel]);
+    addCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
+        this.collapsibleFieldSetModelRegistry = uniq([
+            ...this.collapsibleFieldSetModelRegistry,
+            collapsibleFieldSetModel
+        ]);
     }
 
     @action
-    removeFieldSetModel(fieldSetModel: FieldSetModel) {
-        this.fieldSetModelRegistry = this.fieldSetModelRegistry.filter(it => it !== fieldSetModel);
+    removeCollapsibleFieldSetModel(collapsibleFieldSetModel: CollapsibleFieldSetModel) {
+        this.collapsibleFieldSetModelRegistry = this.collapsibleFieldSetModelRegistry.filter(
+            it => it !== collapsibleFieldSetModel
+        );
     }
 }
