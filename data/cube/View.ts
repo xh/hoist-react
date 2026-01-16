@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
 import {
     Cube,
@@ -66,7 +67,10 @@ export interface DimensionValue {
  * Primary interface for consuming grouped and aggregated data from the cube.
  * Applications should create via the {@link Cube.createView} factory.
  */
-export class View extends HoistBase implements FilterBindTarget, FilterValueSource {
+export class View
+    extends HoistBase
+    implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
+{
     static isView(obj: unknown): obj is View {
         return obj instanceof View;
     }
