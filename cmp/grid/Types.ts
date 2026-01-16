@@ -110,7 +110,11 @@ export interface GridFilterModelConfig {
     fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
 }
 
-export type GridFilterBindTarget = FilterBindTarget & FilterValueSource;
+/**
+ * {@link GridFilterModel} currently accepts a single `bind` target that also provides available
+ * values. Note that both `Store` and `View` satisfy this intersection.
+ */
+export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSource {}
 
 /**
  * Renderer for a group row
