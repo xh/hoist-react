@@ -153,7 +153,7 @@ export type ColumnOrGroup = Column | ColumnGroup;
 export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
 
 export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
-    return !(spec as ColumnGroupSpec).children;
+    return !('children' in spec);
 }
 
 /**
