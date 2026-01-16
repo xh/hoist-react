@@ -153,6 +153,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 className: classNames(
                     'xh-dynamic-tab-switcher__tabs__tab',
                     isActive && 'xh-dynamic-tab-switcher__tabs__tab--active',
+                    isFavorite && 'xh-dynamic-tab-switcher__tabs__tab--favorite',
                     snapshot.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
                 ),
                 onClick: () => {
