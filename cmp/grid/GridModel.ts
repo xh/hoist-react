@@ -38,6 +38,7 @@ import {
 import {
     Field,
     FieldSpec,
+    getFieldName,
     Store,
     StoreConfig,
     StoreRecord,
@@ -1811,7 +1812,7 @@ export class GridModel extends HoistModel {
                 };
             }
 
-            const colFieldName = isString(col.field) ? col.field : col.field?.name,
+            const colFieldName = getFieldName(col.field),
                 field = fieldsByName[colFieldName];
 
             if (!field) return col;
@@ -1841,7 +1842,7 @@ export class GridModel extends HoistModel {
     // config object, not an instance.
     private enhanceStoreConfigFromColumns(storeConfig: StoreConfig) {
         const fields = storeConfig.fields ?? [],
-            storeFieldNames = fields.map(it => (isString(it) ? it : it.name)),
+            storeFieldNames = fields.map(it => getFieldName(it)),
             leafColsByFieldName = this.leafColsByFieldName();
 
         const newFields: FieldSpec[] = [];
