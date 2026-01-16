@@ -25,6 +25,7 @@ import {
     Awaitable,
     HoistModel,
     HSide,
+    LoadSpec,
     managed,
     PlainObject,
     SizingMode,
@@ -1149,7 +1150,7 @@ export class GridModel extends HoistModel {
         this.sortBy = newSorters;
     }
 
-    override async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         // Delegate to any store that has load support
         return (this.store as any).loadSupport?.loadAsync(loadSpec);
     }
@@ -1612,9 +1613,7 @@ export class GridModel extends HoistModel {
         if (this.isGroupSpec(config)) {
             if (config.borders !== false) borderedGroup = config;
             const children = compact(config.children.map(c => this.buildColumn(c, borderedGroup)));
-            return !isEmpty(children)
-                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
-                : null;
+            return !isEmpty(children) ? new ColumnGroup(config, this, children) : null;
         }
 
         if (borderedGroup) {
