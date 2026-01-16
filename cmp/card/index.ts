@@ -4,8 +4,4 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-
-ul.xh-collapsible-field-set-tooltip {
-  margin: 0;
-  padding: 0 1em 0 2em;
-}
+export * from './Card';

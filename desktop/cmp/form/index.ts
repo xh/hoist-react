@@ -1,2 +1,2 @@
 export * from './FormField';
-export * from './collapsiblefieldset';
+export * from './formfieldset';

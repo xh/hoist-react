@@ -18,7 +18,7 @@ import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
-import {collapsibleSetButton} from '@xh/hoist/mobile/cmp/button/CollapsibleSetButton';
+import {collapseToggleButton} from '@xh/hoist/mobile/cmp/button/card/CollapseToggleButton';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -35,7 +35,7 @@ import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
 installMobileImpls({
-    collapsibleSetButton,
+    collapseToggleButton,
     tabContainerImpl,
     storeFilterFieldImpl,
     pinPadImpl,

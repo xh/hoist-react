@@ -21,7 +21,7 @@ import {
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {CollapsibleFieldSetModel} from '@xh/hoist/desktop/cmp/form/collapsiblefieldset/CollapsibleFieldSetModel';
+import {FormFieldSetModel} from '@xh/hoist/desktop/cmp/form/formfieldset/FormFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -129,8 +129,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`, FormField);
         }
 
-        // If within a FieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(CollapsibleFieldSetModel);
+        // If within a FormFieldSet, register with its model for validation grouping
+        const fieldSetModel = useContextModel(FormFieldSetModel);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.registerChildFieldModel(model);

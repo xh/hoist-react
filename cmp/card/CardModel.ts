@@ -16,7 +16,10 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {isNil} from 'lodash';
 
-export interface CollapsibleSetConfig {
+export interface CardConfig {
+    /** Can card be collapsed? */
+    collapsible?: boolean;
+
     /** Default collapsed state. */
     defaultCollapsed?: boolean;
 
@@ -27,23 +30,21 @@ export interface CollapsibleSetConfig {
     persistWith?: PersistOptions;
 }
 
-export interface CollapsibleSetPersistState {
+export interface CardPersistState {
     collapsed: boolean;
 }
 
 /**
- * CollapsibleSetModel supports configuration and state-management for user-driven expand/collapse,
+ * CardModel supports configuration and state-management for user-driven expand/collapse,
  * along with support for saving this state via a configured PersistenceProvider.
  */
-export class CollapsibleSetModel
-    extends HoistModel
-    implements Persistable<CollapsibleSetPersistState>
-{
-    declare config: CollapsibleSetConfig;
+export class CardModel extends HoistModel implements Persistable<CardPersistState> {
+    declare config: CardConfig;
 
     //-----------------------
     // Immutable Properties
     //-----------------------
+    readonly collapsible: boolean;
     readonly defaultCollapsed: boolean;
     readonly renderMode: RenderMode;
 
@@ -54,19 +55,22 @@ export class CollapsibleSetModel
     collapsed: boolean = false;
 
     constructor({
+        collapsible = true,
         defaultCollapsed = false,
         renderMode = 'unmountOnHide',
         persistWith = null
-    }: CollapsibleSetConfig = {}) {
+    }: CardConfig = {}) {
         super();
         makeObservable(this);
 
-        this.collapsed = this.defaultCollapsed = defaultCollapsed;
+        this.collapsible = collapsible;
+        this.collapsed = this.defaultCollapsed = collapsible && defaultCollapsed;
         this.renderMode = renderMode;
+
         if (persistWith) {
             PersistenceProvider.create({
                 persistOptions: {
-                    path: 'collapsibleSet',
+                    path: 'card',
                     ...persistWith
                 },
                 target: this
@@ -77,11 +81,11 @@ export class CollapsibleSetModel
     //---------------------
     // Persistable Interface
     //---------------------
-    getPersistableState(): PersistableState<CollapsibleSetPersistState> {
+    getPersistableState(): PersistableState<CardPersistState> {
         return new PersistableState({collapsed: this.collapsed});
     }
 
-    setPersistableState(state: PersistableState<CollapsibleSetPersistState>) {
+    setPersistableState(state: PersistableState<CardPersistState>) {
         const {collapsed} = state.value;
         if (!isNil(collapsed)) {
             this.collapsed = collapsed;

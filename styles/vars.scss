@@ -354,6 +354,15 @@ body {
   }
 
   //------------------------
+  // Cards
+  //------------------------
+  --xh-card-danger-color: var(--card-danger-color, var(--xh-intent-danger-text-color));
+  --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
+  --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
+  --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+
+
+  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--menu-bg, var(--xh-bg));
