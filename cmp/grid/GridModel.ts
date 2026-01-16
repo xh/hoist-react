@@ -91,7 +91,6 @@ import {
     isEmpty,
     isFunction,
     isNil,
-    isPlainObject,
     isString,
     isUndefined,
     keysIn,
@@ -1172,7 +1171,6 @@ export class GridModel extends HoistModel {
 
     @action
     setColumns(colConfigs: ColumnOrGroupSpec[]) {
-        this.validateColConfigs(colConfigs);
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
         const columns = compact(colConfigs.map(c => this.buildColumn(c)));
@@ -1694,45 +1692,26 @@ export class GridModel extends HoistModel {
     // in this case GridModel should work out the required Store fields from column definitions.
     private parseAndSetColumnsAndStore(
         colConfigs: ColumnOrGroupSpec[],
-        store: Store | StoreConfig = {}
+        storeOrConfig: Store | StoreConfig = {}
     ) {
-        // 1) Validate configs.
-        this.validateStoreConfig(store);
-        this.validateColConfigs(colConfigs);
+        // Enhance colConfigs with field-level metadata provided by store, if any.
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs, storeOrConfig);
 
-        // 2) Enhance colConfigs with field-level metadata provided by store, if any.
-        colConfigs = this.enhanceColConfigsFromStore(colConfigs, store);
-
-        // 3) Create and set columns with (possibly) enhanced configs.
+        // Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        let newStore: Store;
-        // 4) Create store if needed
-        if (isPlainObject(store)) {
-            store = this.enhanceStoreConfigFromColumns(store);
-            newStore = new Store({loadTreeData: this.treeMode, ...store});
-            newStore.xhImpl = this.xhImpl;
-            this.markManaged(newStore);
+        // Set or create Store as needed.
+        let store: Store;
+        if (storeOrConfig instanceof Store) {
+            store = storeOrConfig;
         } else {
-            newStore = store as Store;
+            storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
+            store = new Store({loadTreeData: this.treeMode, ...storeOrConfig});
+            store.xhImpl = this.xhImpl;
+            this.markManaged(store);
         }
 
-        this.store = newStore;
-    }
-
-    private validateStoreConfig(store: Store | StoreConfig) {
-        throwIf(
-            !(store instanceof Store || isPlainObject(store)),
-            'GridModel.store config must be either an instance of a Store or a config to create one.'
-        );
-    }
-
-    private validateColConfigs(colConfigs: ColumnOrGroupSpec[]) {
-        throwIf(!isArray(colConfigs), 'GridModel.columns config must be an array.');
-        throwIf(
-            colConfigs.some(c => !isPlainObject(c)),
-            'GridModel.columns config only accepts plain objects for Column or ColumnGroup configs.'
-        );
+        this.store = store;
     }
 
     private validateColumns(cols: ColumnOrGroup[]) {
