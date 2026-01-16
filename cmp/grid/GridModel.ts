@@ -10,10 +10,13 @@ import {
     ColumnCellClassRuleFn,
     ColumnGroup,
     ColumnGroupSpec,
+    ColumnOrGroup,
+    ColumnOrGroupSpec,
     ColumnSpec,
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
+    isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
@@ -22,6 +25,7 @@ import {
     Awaitable,
     HoistModel,
     HSide,
+    LoadSpec,
     managed,
     PlainObject,
     SizingMode,
@@ -32,7 +36,9 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
+    Field,
     FieldSpec,
+    getFieldName,
     Store,
     StoreConfig,
     StoreRecord,
@@ -87,7 +93,6 @@ import {
     isEmpty,
     isFunction,
     isNil,
-    isPlainObject,
     isString,
     isUndefined,
     keysIn,
@@ -117,7 +122,7 @@ import {
 
 export interface GridConfig {
     /** Columns for this grid. */
-    columns?: Array<ColumnSpec | ColumnGroupSpec>;
+    columns?: ColumnOrGroupSpec[];
 
     /**  Column configs to be set on all columns.  Merges deeply. */
     colDefaults?: Partial<ColumnSpec>;
@@ -454,7 +459,7 @@ export class GridModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref columns: Array<ColumnGroup | Column> = [];
+    @observable.ref columns: ColumnOrGroup[] = [];
     @observable.ref columnState: ColumnState[] = [];
     @observable.ref expandState: any = {};
     @observable.ref sortBy: GridSorter[] = [];
@@ -1146,7 +1151,7 @@ export class GridModel extends HoistModel {
         this.sortBy = newSorters;
     }
 
-    override async doLoadAsync(loadSpec) {
+    override async doLoadAsync(loadSpec: LoadSpec) {
         // Delegate to any store that has load support
         return (this.store as any).loadSupport?.loadAsync(loadSpec);
     }
@@ -1167,8 +1172,7 @@ export class GridModel extends HoistModel {
     }
 
     @action
-    setColumns(colConfigs: Array<ColumnSpec | ColumnGroupSpec>) {
-        this.validateColConfigs(colConfigs);
+    setColumns(colConfigs: ColumnOrGroupSpec[]) {
         colConfigs = this.enhanceColConfigsFromStore(colConfigs);
 
         const columns = compact(colConfigs.map(c => this.buildColumn(c)));
@@ -1362,7 +1366,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Return matching leaf-level Column object from the provided collection. */
-    findColumn(cols: Array<Column | ColumnGroup>, colId: string): Column {
+    findColumn(cols: ColumnOrGroup[], colId: string): Column {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
                 const ret = this.findColumn(col.children, colId);
@@ -1375,7 +1379,7 @@ export class GridModel extends HoistModel {
     }
 
     /** Return matching ColumnGroup from the provided collection. */
-    findColumnGroup(cols: Array<Column | ColumnGroup>, groupId: string): ColumnGroup {
+    findColumnGroup(cols: ColumnOrGroup[], groupId: string): ColumnGroup {
         for (let col of cols) {
             if (col instanceof ColumnGroup) {
                 if (col.groupId === groupId) return col;
@@ -1595,7 +1599,7 @@ export class GridModel extends HoistModel {
     //-----------------------
     // Implementation
     //-----------------------
-    private buildColumn(config: ColumnGroupSpec | ColumnSpec, borderedGroup?: ColumnGroupSpec) {
+    private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
         // Merge leaf config with defaults.
         // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
@@ -1609,12 +1613,8 @@ export class GridModel extends HoistModel {
 
         if (this.isGroupSpec(config)) {
             if (config.borders !== false) borderedGroup = config;
-            const children = compact(
-                config.children.map(c => this.buildColumn(c, borderedGroup))
-            ) as Array<ColumnGroup | Column>;
-            return !isEmpty(children)
-                ? new ColumnGroup(config as ColumnGroupSpec, this, children)
-                : null;
+            const children = compact(config.children.map(c => this.buildColumn(c, borderedGroup)));
+            return !isEmpty(children) ? new ColumnGroup(config, this, children) : null;
         }
 
         if (borderedGroup) {
@@ -1649,19 +1649,23 @@ export class GridModel extends HoistModel {
         }
     }
 
-    private gatherLeaves(columns, leaves = []) {
+    private gatherLeaves(columns: ColumnOrGroup[], leaves: Column[] = []): Column[] {
         columns.forEach(col => {
-            if (col.groupId) this.gatherLeaves(col.children, leaves);
-            if (col.colId) leaves.push(col);
+            if (col instanceof ColumnGroup) {
+                this.gatherLeaves(col.children, leaves);
+            } else {
+                leaves.push(col);
+            }
         });
 
         return leaves;
     }
 
-    private collectIds(cols, ids = []) {
+    private collectIds(cols: ColumnOrGroup[], ids: string[] = []) {
         cols.forEach(col => {
-            if (col.colId) ids.push(col.colId);
-            if (col.groupId) {
+            if (col instanceof Column) {
+                ids.push(col.colId);
+            } else {
                 ids.push(col.groupId);
                 this.collectIds(col.children, ids);
             }
@@ -1686,47 +1690,31 @@ export class GridModel extends HoistModel {
     // so it can be better re-used across Hoist APIs such as `Filter` and `FormModel`. However for
     // convenience, a `GridModel.store` config can also be very minimal (or non-existent), and
     // in this case GridModel should work out the required Store fields from column definitions.
-    private parseAndSetColumnsAndStore(colConfigs, store = {}) {
-        // 1) Validate configs.
-        this.validateStoreConfig(store);
-        this.validateColConfigs(colConfigs);
+    private parseAndSetColumnsAndStore(
+        colConfigs: ColumnOrGroupSpec[],
+        storeOrConfig: Store | StoreConfig = {}
+    ) {
+        // Enhance colConfigs with field-level metadata provided by store, if any.
+        colConfigs = this.enhanceColConfigsFromStore(colConfigs, storeOrConfig);
 
-        // 2) Enhance colConfigs with field-level metadata provided by store, if any.
-        colConfigs = this.enhanceColConfigsFromStore(colConfigs, store);
-
-        // 3) Create and set columns with (possibly) enhanced configs.
+        // Create and set columns with (possibly) enhanced configs.
         this.setColumns(colConfigs);
 
-        let newStore: Store;
-        // 4) Create store if needed
-        if (isPlainObject(store)) {
-            store = this.enhanceStoreConfigFromColumns(store);
-            newStore = new Store({loadTreeData: this.treeMode, ...store});
-            newStore.xhImpl = this.xhImpl;
-            this.markManaged(newStore);
+        // Set or create Store as needed.
+        let store: Store;
+        if (storeOrConfig instanceof Store) {
+            store = storeOrConfig;
         } else {
-            newStore = store as Store;
+            storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
+            store = new Store({loadTreeData: this.treeMode, ...storeOrConfig});
+            store.xhImpl = this.xhImpl;
+            this.markManaged(store);
         }
 
-        this.store = newStore;
+        this.store = store;
     }
 
-    private validateStoreConfig(store) {
-        throwIf(
-            !(store instanceof Store || isPlainObject(store)),
-            'GridModel.store config must be either an instance of a Store or a config to create one.'
-        );
-    }
-
-    private validateColConfigs(colConfigs) {
-        throwIf(!isArray(colConfigs), 'GridModel.columns config must be an array.');
-        throwIf(
-            colConfigs.some(c => !isPlainObject(c)),
-            'GridModel.columns config only accepts plain objects for Column or ColumnGroup configs.'
-        );
-    }
-
-    private validateColumns(cols) {
+    private validateColumns(cols: ColumnOrGroup[]) {
         if (isEmpty(cols)) return;
 
         const ids = this.collectIds(cols);
@@ -1782,16 +1770,30 @@ export class GridModel extends HoistModel {
 
     // Selectively enhance raw column configs with field-level metadata from store.fields and/or
     // field config partials provided by the column configs themselves.
-    private enhanceColConfigsFromStore(colConfigs, storeOrConfig?) {
+    private enhanceColConfigsFromStore(
+        colConfigs: ColumnOrGroupSpec[],
+        storeOrConfig?: Store | StoreConfig
+    ): ColumnOrGroupSpec[] {
         const store = storeOrConfig || this.store,
             storeFields = store?.fields,
-            fieldsByName = {};
+            fieldsByName: Record<string, Field | FieldSpec> = {};
 
         // Extract field definitions in all supported forms: pull Field instances/configs from
-        // storeFields first, then fill in with any col-level `field` config objects.
-        storeFields?.forEach(sf => (fieldsByName[sf.name] = sf));
+        // storeFields first...
+        storeFields?.forEach(sf => {
+            if (sf && !isString(sf)) {
+                fieldsByName[sf.name] = sf;
+            }
+        });
+
+        // Then fill in with any col-level `field` config objects.
         colConfigs.forEach(cc => {
-            if (isPlainObject(cc.field) && !fieldsByName[cc.field.name]) {
+            if (
+                isColumnSpec(cc) &&
+                cc.field &&
+                !isString(cc.field) &&
+                !fieldsByName[cc.field.name]
+            ) {
                 fieldsByName[cc.field.name] = cc.field;
             }
         });
@@ -1800,16 +1802,17 @@ export class GridModel extends HoistModel {
 
         const numTypes = ['int', 'number'],
             dateTypes = ['date', 'localDate'];
+
         return colConfigs.map(col => {
             // Recurse into children for column groups
-            if (col.children) {
+            if (!isColumnSpec(col)) {
                 return {
                     ...col,
                     children: this.enhanceColConfigsFromStore(col.children, storeOrConfig)
                 };
             }
 
-            const colFieldName = isPlainObject(col.field) ? col.field.name : col.field,
+            const colFieldName = getFieldName(col.field),
                 field = fieldsByName[colFieldName];
 
             if (!field) return col;
@@ -1837,9 +1840,9 @@ export class GridModel extends HoistModel {
     // Ensure store config has a complete set of fields for all configured columns. Note this
     // requires columns to have been constructed and set, and will only work with a raw store
     // config object, not an instance.
-    private enhanceStoreConfigFromColumns(storeConfig) {
+    private enhanceStoreConfigFromColumns(storeConfig: StoreConfig) {
         const fields = storeConfig.fields ?? [],
-            storeFieldNames = fields.map(it => it.name ?? it),
+            storeFieldNames = fields.map(it => getFieldName(it)),
             leafColsByFieldName = this.leafColsByFieldName();
 
         const newFields: FieldSpec[] = [];
@@ -1886,31 +1889,33 @@ export class GridModel extends HoistModel {
         return sizingMode;
     }
 
-    private parseSelModel(selModel): StoreSelectionModel {
-        const {store} = this;
-        selModel = withDefault(selModel, XH.isMobileApp ? 'disabled' : 'single');
-
+    private parseSelModel(selModel: GridConfig['selModel']): StoreSelectionModel {
+        // Return actual instance directly.
         if (selModel instanceof StoreSelectionModel) {
             return selModel;
         }
 
-        if (isPlainObject(selModel)) {
-            return this.markManaged(new StoreSelectionModel({...selModel, store, xhImpl: true}));
+        // Default unspecified based on platform, treat explicit null as disabled.
+        if (selModel === undefined) {
+            selModel = XH.isMobileApp ? 'disabled' : 'single';
+        } else if (selModel === null) {
+            selModel = 'disabled';
         }
 
-        // Assume its just the mode...
-        let mode: any = 'single';
+        // Strings specify the mode.
         if (isString(selModel)) {
-            mode = selModel;
-        } else if (selModel === null) {
-            mode = 'disabled';
+            selModel = {mode: selModel};
         }
-        return this.markManaged(new StoreSelectionModel({mode, store, xhImpl: true}));
+
+        return this.markManaged(
+            new StoreSelectionModel({...selModel, store: this.store, xhImpl: true})
+        );
     }
 
-    private parseFilterModel(filterModel) {
+    private parseFilterModel(filterModel: GridConfig['filterModel']) {
         if (XH.isMobileApp || !filterModel) return null;
-        filterModel = isPlainObject(filterModel) ? filterModel : {};
+
+        filterModel = filterModel === true ? {} : filterModel;
         return new GridFilterModel({bind: this.store, ...filterModel}, this);
     }
 
@@ -1921,17 +1926,15 @@ export class GridModel extends HoistModel {
         };
     }
 
-    private parseChooserModel(chooserModel): HoistModel {
+    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): HoistModel {
+        if (!chooserModel) return null;
+
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
-
-        if (isPlainObject(chooserModel)) {
-            return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
-        }
-
-        return chooserModel ? this.markManaged(new modelClass({gridModel: this})) : null;
+        chooserModel = chooserModel === true ? {} : chooserModel;
+        return this.markManaged(new modelClass({...chooserModel, gridModel: this}));
     }
 
-    private isGroupSpec(col: ColumnGroupSpec | ColumnSpec): col is ColumnGroupSpec {
+    private isGroupSpec(col: ColumnOrGroupSpec): col is ColumnGroupSpec {
         return 'children' in col;
     }
 
