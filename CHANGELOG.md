@@ -54,6 +54,13 @@
 * Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
   styling text with Hoist intent colors to enhance legibility in dark mode.
 
+### 📚 Libraries
+
+* Added a direct dependency and forced resolution to pin to `jquery@3.x`. This is a transitive
+  dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
+  causing a break if upgraded to jQuery's new 4.x release.
+  * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
+
 ## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes
