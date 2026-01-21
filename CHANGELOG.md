@@ -20,6 +20,10 @@
     * `View.isView`
     * `Filter.isFilter`
 
+### 🐞 Bug Fixes
+
+* Fixed error encountered when attempting to `store.revert()` on a store with summary records.
+
 ### 🎁 New Features
 
 * Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking

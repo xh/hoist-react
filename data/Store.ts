@@ -1221,12 +1221,14 @@ export class Store
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
+            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
+            const data = {...recToRevert.committedData};
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
                 raw: recToRevert.raw,
-                data: recToRevert.committedData,
-                committedData: recToRevert.committedData,
+                data,
+                committedData: data,
                 parent: null,
                 isSummary: true
             });
