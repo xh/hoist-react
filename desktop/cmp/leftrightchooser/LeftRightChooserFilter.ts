@@ -52,8 +52,8 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
     @bindable
     value = null;
 
-    get matchMode() {
-        return this.componentProps.matchMode;
+    get matchMode(): FilterMatchMode {
+        return this.componentProps.matchMode ?? 'startWord';
     }
 
     constructor() {
@@ -83,7 +83,7 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
 
     private getRegex(searchTerm: string): RegExp {
         searchTerm = escapeRegExp(searchTerm);
-        switch (this.matchMode ?? 'startWord') {
+        switch (this.matchMode) {
             case 'any':
                 return new RegExp(searchTerm, 'i');
             case 'start':
