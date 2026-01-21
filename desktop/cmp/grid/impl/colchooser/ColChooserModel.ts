@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColChooserConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -29,8 +29,9 @@ export class ColChooserModel extends HoistModel {
     commitOnChange: boolean;
     showRestoreDefaults: boolean;
     autosizeOnCommit: boolean;
-    width: number;
-    height: number;
+    width: string | number;
+    height: string | number;
+    filterMatchMode: 'start' | 'startWord' | 'any';
 
     constructor({
         gridModel,
@@ -38,8 +39,9 @@ export class ColChooserModel extends HoistModel {
         showRestoreDefaults = true,
         autosizeOnCommit = false,
         width = !commitOnChange && showRestoreDefaults ? 600 : 520,
-        height = 300
-    }) {
+        height = 300,
+        filterMatchMode = 'startWord'
+    }: ColChooserConfig) {
         super();
         makeObservable(this);
 
@@ -49,6 +51,7 @@ export class ColChooserModel extends HoistModel {
         this.autosizeOnCommit = autosizeOnCommit;
         this.width = width;
         this.height = height;
+        this.filterMatchMode = filterMatchMode;
 
         this.lrModel = new LeftRightChooserModel({
             leftTitle: 'Available Columns',

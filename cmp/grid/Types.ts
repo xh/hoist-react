@@ -124,6 +124,9 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
 export interface ColChooserConfig {
+    /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
+    gridModel?: GridModel;
+
     /**
      * Immediately render changed columns on grid (default true).
      * Set to false to enable Save button for committing changes on save. Desktop only.
@@ -147,6 +150,9 @@ export interface ColChooserConfig {
 
     /** Chooser height for popover and dialog. Desktop only. */
     height?: string | number;
+
+    /** Mode to use when filtering. Desktop only (default 'startWord'). */
+    filterMatchMode?: 'start' | 'startWord' | 'any';
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;
