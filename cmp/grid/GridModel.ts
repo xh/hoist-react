@@ -146,7 +146,7 @@ export interface GridConfig {
     filterModel?: GridFilterModelConfig | boolean;
 
     /** Config with which to create a ColChooserModel, or boolean `true` to enable default.*/
-    colChooserModel?: ColChooserConfig | boolean;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean;
 
     /**
      * Function to be called when the user triggers GridModel.restoreDefaultsAsync(). This
