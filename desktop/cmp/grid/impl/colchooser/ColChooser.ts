@@ -32,14 +32,14 @@ export const colChooser = hoistCmp.factory<ColChooserProps>({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {commitOnChange, showRestoreDefaults, width, height} = model;
+        const {commitOnChange, showRestoreDefaults, width, height, filterMatchMode} = model;
 
         return panel({
             className,
             items: [
                 leftRightChooser({width, height}),
                 toolbar(
-                    leftRightChooserFilter(),
+                    leftRightChooserFilter({matchMode: filterMatchMode}),
                     filler(),
                     button({
                         omit: !showRestoreDefaults,

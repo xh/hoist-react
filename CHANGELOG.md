@@ -19,6 +19,8 @@
     * `Store.isStore`
     * `View.isView`
     * `Filter.isFilter`
+* Replaced `LeftRightChooserFilter.anyMatch` with `matchMode`. Changes are not expected to be
+  required as apps typically do not create this component directly.
 
 ### 🐞 Bug Fixes
 
@@ -32,6 +34,8 @@
   hamburger menu. Set to `true` to render the current user's initials instead or provide a function
   to render a custom element for the user.
 * Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
+* Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
+  `startWord`, or `any`.
 
 ### ⚙️ Typescript API Adjustments
 

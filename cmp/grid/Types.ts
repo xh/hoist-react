@@ -5,10 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
-import {HSide, PersistOptions, Some} from '@xh/hoist/core';
-import {FilterBindTarget, FilterValueSource, Store, StoreRecord} from '@xh/hoist/data';
-
+import type {HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {
+    FilterBindTarget,
+    FilterMatchMode,
+    FilterValueSource,
+    Store,
+    StoreRecord
+} from '@xh/hoist/data';
 import type {
     CellClassParams,
     CustomCellEditorProps,
@@ -23,6 +27,7 @@ import type {
 import type {ReactElement, ReactNode} from 'react';
 import type {Column, ColumnSpec} from './columns/Column';
 import type {ColumnGroup, ColumnGroupSpec} from './columns/ColumnGroup';
+import type {GridFilterFieldSpecConfig} from './filter/GridFilterFieldSpec';
 import type {GridModel} from './GridModel';
 
 export interface ColumnState {
@@ -124,6 +129,9 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
 export interface ColChooserConfig {
+    /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
+    gridModel?: GridModel;
+
     /**
      * Immediately render changed columns on grid (default true).
      * Set to false to enable Save button for committing changes on save. Desktop only.
@@ -147,6 +155,9 @@ export interface ColChooserConfig {
 
     /** Chooser height for popover and dialog. Desktop only. */
     height?: string | number;
+
+    /** Mode to use when filtering (default 'startWord'). Desktop only. */
+    filterMatchMode?: FilterMatchMode;
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;
