@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -17,7 +18,7 @@ export interface LeftRightChooserFilterProps extends HoistProps<LeftRightChooser
     fields?: string[];
 
     /** Mode to use when filtering (default 'startWord'). */
-    matchMode?: 'start' | 'startWord' | 'any';
+    matchMode?: FilterMatchMode;
 }
 
 /**

@@ -6,6 +6,7 @@
  */
 import {ColChooserConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {sortBy} from 'lodash';
@@ -31,7 +32,7 @@ export class ColChooserModel extends HoistModel {
     autosizeOnCommit: boolean;
     width: string | number;
     height: string | number;
-    filterMatchMode: 'start' | 'startWord' | 'any';
+    filterMatchMode: FilterMatchMode;
 
     constructor({
         gridModel,
