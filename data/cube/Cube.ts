@@ -227,6 +227,13 @@ export class Cube extends HoistBase {
         this._connectedViews.delete(view);
     }
 
+    /** Connect a View to this Cube for live updates. */
+    reconnectView(view: View) {
+        if (this.viewIsConnected(view)) return;
+
+        this._connectedViews.add(view);
+    }
+
     //-------------------
     // Data Loading API
     //-------------------

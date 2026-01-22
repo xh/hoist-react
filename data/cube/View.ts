@@ -156,6 +156,21 @@ export class View
         this.cube.disconnectView(this);
     }
 
+    /** Reconnect to the associated Cube to resume receiving of live updates. */
+    @action
+    reconnect() {
+        if (this.isConnected) return;
+
+        const {cube} = this;
+        cube.reconnectView(this);
+
+        // If the Cube has been updated since we disconnected then perform a full update
+        if (this.info !== cube.info) {
+            this._rowCache.clear();
+            this.fullUpdate();
+        }
+    }
+
     /**
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *

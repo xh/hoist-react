@@ -1,6 +1,24 @@
 # Changelog
 
+<<<<<<< Updated upstream
 ## 80.0.0-SNAPSHOT - unreleased
+=======
+## 79.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Enhance `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
+  supports context-menu items. See `TabContainerConfig.switcher`.
+* Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+* DashCanvas new features:
+  * supports showing a grid background.
+  * supports 2 compacting strategies: 'vertical' or 'horizontal'
+* Added support for reconnecting a `View` to its associated `Cube`
+
+>>>>>>> Stashed changes
 
 ### 💥 Breaking Changes
 
