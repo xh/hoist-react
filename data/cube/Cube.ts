@@ -228,10 +228,15 @@ export class Cube extends HoistBase {
     }
 
     /** Connect a View to this Cube for live updates. */
-    reconnectView(view: View) {
+    connectView(view: View) {
         if (this.viewIsConnected(view)) return;
 
         this._connectedViews.add(view);
+
+        // If the view is not up-to-date with the current cube data, then reload the view
+        if (view.info !== this.info) {
+            view.noteCubeLoaded();
+        }
     }
 
     //-------------------

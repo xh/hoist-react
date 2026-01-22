@@ -159,16 +159,7 @@ export class View
     /** Reconnect to the associated Cube to resume receiving of live updates. */
     @action
     reconnect() {
-        if (this.isConnected) return;
-
-        const {cube} = this;
-        cube.reconnectView(this);
-
-        // If the Cube has been updated since we disconnected then perform a full update
-        if (this.info !== cube.info) {
-            this._rowCache.clear();
-            this.fullUpdate();
-        }
+        this.cube.connectView(this);
     }
 
     /**
