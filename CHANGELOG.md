@@ -36,6 +36,7 @@
 * Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
 * Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
   `startWord`, or `any`.
+* Added support for reconnecting a `View` to its associated `Cube`
 
 ### ⚙️ Typescript API Adjustments
 
