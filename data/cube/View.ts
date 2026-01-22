@@ -179,7 +179,6 @@ export class View
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
-        throwIf(overrides.cube, 'Cannot redirect view to a different cube in updateQuery().');
         const oldQuery = this.query,
             newQuery = oldQuery.clone(overrides);
         if (oldQuery.equals(newQuery)) return;
