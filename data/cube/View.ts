@@ -156,9 +156,9 @@ export class View
         this.cube.disconnectView(this);
     }
 
-    /** Reconnect to the associated Cube to resume receiving of live updates. */
+    /** Connect to the associated Cube to begin receiving live updates. */
     @action
-    reconnect() {
+    connect() {
         this.cube.connectView(this);
     }
 
