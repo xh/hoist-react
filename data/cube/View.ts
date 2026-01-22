@@ -176,8 +176,13 @@ export class View
 
         this.query = newQuery;
 
-        // Must clear row cache if we have complex aggregates or more than filter changing.
-        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
+        // Must clear row cache if the cube changed, we have complex aggregates or more than filter
+        // changing.
+        if (
+            oldQuery.cube !== newQuery.cube ||
+            !this.aggregatorsAreSimple ||
+            !oldQuery.equalsExcludingFilter(newQuery)
+        ) {
             this._rowCache.clear();
         }
 
