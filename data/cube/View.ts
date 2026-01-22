@@ -165,24 +165,38 @@ export class View
     /**
      * Change the query in some way, re-computing the data in this View to reflect the new query.
      *
-     * @param overrides - changes to be applied to the query. May include any arguments to the query
-     *      constructor except `cube`, which cannot be changed once set via the initial query.
+     * @param overrides - changes to be applied to the query. If changing the `cube` and currently
+     *      connected, then we will disconnect from the old cube and connect to the new one.
      */
     @action
     updateQuery(overrides: Partial<QueryConfig>) {
         const oldQuery = this.query,
             newQuery = oldQuery.clone(overrides);
+
         if (oldQuery.equals(newQuery)) return;
 
         this.query = newQuery;
 
-        // Must clear row cache if the cube changed, we have complex aggregates or more than filter
-        // changing.
-        if (
-            oldQuery.cube !== newQuery.cube ||
-            !this.aggregatorsAreSimple ||
-            !oldQuery.equalsExcludingFilter(newQuery)
-        ) {
+        // If the cube is changing then we need to clear the row cache, and potentially disconnect
+        // from the old cube and connect to the new one
+        const {cube: oldCube} = oldQuery,
+            {cube: newCube} = newQuery;
+
+        if (oldCube !== newCube) {
+            this.info = null;
+            this._rowCache.clear();
+
+            if (oldCube.viewIsConnected(this)) {
+                oldCube.disconnectView(this);
+                newCube.connectView(this);
+
+                // Connecting to the new cube will have triggered a full update so we early out
+                return;
+            }
+        }
+
+        // Must clear row cache if we have complex aggregates or more than filter changing.
+        if (!this.aggregatorsAreSimple || !oldQuery.equalsExcludingFilter(newQuery)) {
             this._rowCache.clear();
         }
 
