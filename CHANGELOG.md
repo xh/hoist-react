@@ -61,6 +61,8 @@
   CSS overrides with overrides to variables where possible.
 * Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
   styling text with Hoist intent colors to enhance legibility in dark mode.
+* Tweaked styling of `DashContainer` tab controls, adding a left border to the control surface and
+  improving the visibility of the tab overflow dropdown.
 
 ### 📚 Libraries
 
