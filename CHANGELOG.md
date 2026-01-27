@@ -1,6 +1,8 @@
 # Changelog
 
-## 80.0.0-SNAPSHOT - unreleased
+## 81.0.0-SNAPSHOT - unreleased
+
+## 80.0.0 - 2026-01-27
 
 ### 💥 Breaking Changes
 
