@@ -239,7 +239,7 @@ export class Cube extends HoistBase {
         this._connectedViews.add(view);
 
         // If the view is not up-to-date with the current cube data, then reload the view
-        if (view.cubeDataUpdated !== this.lastUpdated) {
+        if (view.cubeUpdated !== this.lastUpdated) {
             view.noteCubeLoaded();
         }
     }

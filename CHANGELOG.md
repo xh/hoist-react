@@ -1,6 +1,10 @@
 # Changelog
 
-## 81.0.0-SNAPSHOT - unreleased
+## 81.0.1 - 2026-01-28
+
+### ⚙️ Technical
+* New properties `Cube.lastUpdated` and `View.cubeUpdated` support more efficient updating of
+  connected cube views.
 
 ## 80.0.0 - 2026-01-27
 
