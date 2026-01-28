@@ -3,6 +3,7 @@
 ## 81.0.1 - 2026-01-28
 
 ### ⚙️ Technical
+
 * New properties `Cube.lastUpdated` and `View.cubeUpdated` support more efficient updating of
   connected cube views.
 
