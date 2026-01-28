@@ -74,17 +74,6 @@
   causing a break if upgraded to jQuery's new 4.x release.
   * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
 
-### 🎁 New Features
-
-* DashCanvas:
-    * supports dragging and dropping widgets in from an external container.
-    * supports new compacting strategy: 'wrap'
-* new elementFactory tags: `fieldset`, `legend`
-
-### 📚 Libraries
-
-* react-grid-layout `2.1 → 2.2.2`
-
 ## 79.0.0 - 2026-01-05
 
 ### 💥 Breaking Changes
