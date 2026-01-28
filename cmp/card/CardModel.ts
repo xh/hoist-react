@@ -16,7 +16,7 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {isNil} from 'lodash';
 
-export interface CardConfig {
+export interface CardModelConfig {
     /** Can card be collapsed? */
     collapsible?: boolean;
 
@@ -39,7 +39,7 @@ export interface CardPersistState {
  * along with support for saving this state via a configured PersistenceProvider.
  */
 export class CardModel extends HoistModel implements Persistable<CardPersistState> {
-    declare config: CardConfig;
+    declare config: CardModelConfig;
 
     //-----------------------
     // Immutable Properties
@@ -59,7 +59,7 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
         defaultCollapsed = false,
         renderMode = 'unmountOnHide',
         persistWith = null
-    }: CardConfig = {}) {
+    }: CardModelConfig = {}) {
         super();
         makeObservable(this);
 

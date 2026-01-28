@@ -45,6 +45,7 @@ export interface CardProps extends HoistProps<CardModel>, TestSupportProps, Layo
  * A bounded container for grouping related content, with optional inline header and collapsibility.
  * Children are arranged vertically in a flexbox container by default. innerBoxProps can be
  * passed to control the flex direction and other layout aspects of the inner container.
+ * This component leverages an HTML fieldset and legend to provide base styling.
  */
 export const [Card, card] = hoistCmp.withFactory<CardProps>({
     displayName: 'Card',
@@ -79,6 +80,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
             classes.push('xh-card--collapsed');
         } else {
             classes.push('xh-card--expanded');
+            wasDisplayed.current = true;
         }
 
         if (intent) {
@@ -91,28 +93,19 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
             ? mobileCollapseToggleButtonImpl
             : desktopCollapseToggleButtonImpl;
 
-        if (collapsed) {
-            classes.push('xh-card--collapsed');
-        } else {
-            wasDisplayed.current = true;
-        }
-
         let content: ReactNode[];
         switch (renderMode) {
             case 'always':
                 content = items;
-                classes.push('xh-card--render-mode-always');
                 break;
 
             case 'lazy':
                 content = collapsed && !wasDisplayed.current ? [] : items;
-                classes.push('xh-card--render-mode-lazy');
                 break;
 
             // unmountOnHide
             default:
                 content = collapsed ? [] : items;
-                classes.push('xh-card--render-mode-unmount-on-hide');
                 break;
         }
 
