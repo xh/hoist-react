@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH, lookup} from '@xh/hoist/core';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {HoistModel, lookup, XH} from '@xh/hoist/core';
+import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {CompoundFilter, FilterLike, Store, withFilterByKey} from '@xh/hoist/data';
-import {action, makeObservable, comparer} from '@xh/hoist/mobx';
+import {action, comparer, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     debounce,
@@ -33,8 +34,12 @@ export class StoreFilterFieldImplModel extends HoistModel {
     gridModel: GridModel;
     store: Store;
 
-    filter;
-    bufferedApplyFilter;
+    private filter: (rec: StoreRecord) => boolean;
+    private bufferedApplyFilter;
+
+    get matchMode(): FilterMatchMode {
+        return this.componentProps.matchMode ?? 'startWord';
+    }
 
     constructor() {
         super();
@@ -59,29 +64,30 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
         this.bufferedApplyFilter = debounce(() => this.applyFilter(), filterBuffer);
 
-        this.addReaction({
-            track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
-            run: () => this.regenerateFilter(),
-            fireImmediately: true
-        });
-
-        this.addReaction({
-            track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
-            run: () => this.regenerateFilter(),
-            equals: comparer.structural
-        });
+        this.addReaction(
+            {
+                track: () => [this.filterText, gridModel?.columns, gridModel?.groupBy],
+                run: () => this.regenerateFilter(),
+                fireImmediately: true
+            },
+            {
+                track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
+                run: () => this.regenerateFilter(),
+                equals: comparer.structural
+            }
+        );
     }
 
     //------------------------------------------------------------------
     // Trampoline value to bindable -- from bound model, or store
     //------------------------------------------------------------------
-    get filterText() {
+    get filterText(): string {
         const {bind, model} = this.componentProps;
         return bind ? model[bind] : this.store.xhFilterText;
     }
 
     @action
-    setFilterText(v) {
+    setFilterText(v: string) {
         const {bind, model} = this.componentProps;
         if (bind) {
             model.setBindable(bind, v);
@@ -122,7 +128,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         if (filterText && !isEmpty(activeFields)) {
             const regex = this.getRegex(filterText),
                 valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
-            newFilter = rec => valGetters.some(fn => regex.test(fn(rec)));
+            newFilter = (rec: StoreRecord) => valGetters.some(fn => regex.test(fn(rec)));
         }
 
         if (filter === newFilter) return;
@@ -140,9 +146,9 @@ export class StoreFilterFieldImplModel extends HoistModel {
         }
     }
 
-    getRegex(searchTerm) {
+    getRegex(searchTerm: string): RegExp {
         searchTerm = escapeRegExp(searchTerm);
-        switch (this.componentProps.matchMode ?? 'startWord') {
+        switch (this.matchMode) {
             case 'any':
                 return new RegExp(searchTerm, 'i');
             case 'start':
@@ -153,11 +159,11 @@ export class StoreFilterFieldImplModel extends HoistModel {
         throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
-    getActiveFields() {
+    getActiveFields(): string[] {
         const {gridModel, store, componentProps} = this,
             {includeFields, excludeFields} = componentProps;
 
-        let ret = store ? ['id', ...store.fields.map(f => f.name)] : [];
+        let ret = store ? ['id', ...store.fieldNames] : [];
         if (includeFields) ret = store ? intersection(ret, includeFields) : includeFields;
         if (excludeFields) ret = without(ret, ...excludeFields);
 
@@ -196,7 +202,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return ret;
     }
 
-    getValGetters(fieldName) {
+    getValGetters(fieldName: string) {
         const {gridModel} = this;
 
         // If a GridModel has been configured, the user is looking at rendered values in a grid and
@@ -219,7 +225,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
                 return cols.map(column => {
                     const {renderer, getValueFn} = column;
-                    return record => {
+                    return (record: StoreRecord) => {
                         const ctx = {
                                 record,
                                 field: field.name,
@@ -239,7 +245,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
         // Otherwise just match raw.
         // Use expensive get() only when needed to support dot-separated paths.
         return fieldName.includes('.')
-            ? rec => get(rec.data, fieldName)
-            : rec => rec.data[fieldName];
+            ? (rec: StoreRecord) => get(rec.data, fieldName)
+            : (rec: StoreRecord) => rec.data[fieldName];
     }
 }

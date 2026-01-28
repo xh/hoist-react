@@ -181,3 +181,8 @@ export function genDisplayName(fieldName: string): string {
     // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
     return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
 }
+
+/** Convenience function to return the name of a field from one of several common inputs. */
+export function getFieldName(field: string | Field | FieldSpec): string {
+    return field ? (isString(field) ? field : field.name) : null;
+}

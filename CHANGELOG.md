@@ -1,6 +1,8 @@
 # Changelog
 
-## 80.0.0-SNAPSHOT - unreleased
+## 81.0.0-SNAPSHOT - unreleased
+
+## 80.0.0 - 2026-01-27
 
 ### 💥 Breaking Changes
 
@@ -19,6 +21,12 @@
     * `Store.isStore`
     * `View.isView`
     * `Filter.isFilter`
+* Replaced `LeftRightChooserFilter.anyMatch` with `matchMode`. Changes are not expected to be
+  required as apps typically do not create this component directly.
+
+### 🐞 Bug Fixes
+
+* Fixed error encountered when attempting to `store.revert()` on a store with summary records.
 
 ### 🎁 New Features
 
@@ -28,6 +36,9 @@
   hamburger menu. Set to `true` to render the current user's initials instead or provide a function
   to render a custom element for the user.
 * Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
+* Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
+  `startWord`, or `any`.
+* Added support for reconnecting a `View` to its associated `Cube`
 
 ### ⚙️ Typescript API Adjustments
 
@@ -53,6 +64,15 @@
   CSS overrides with overrides to variables where possible.
 * Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
   styling text with Hoist intent colors to enhance legibility in dark mode.
+* Tweaked styling of `DashContainer` tab controls, adding a left border to the control surface and
+  improving the visibility of the tab overflow dropdown.
+
+### 📚 Libraries
+
+* Added a direct dependency and forced resolution to pin to `jquery@3.x`. This is a transitive
+  dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
+  causing a break if upgraded to jQuery's new 4.x release.
+  * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
 
 ### 🎁 New Features
 

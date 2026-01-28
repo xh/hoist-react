@@ -183,6 +183,9 @@ export class ExceptionHandler {
      * @returns true if message was successfully sent to server.
      */
     async logOnServerAsync(options: ExceptionHandlerLoggingOptions): Promise<boolean> {
+        // Simply can't log on server if this happened too early in life cycle.
+        if (!XH.trackService) return false;
+
         const {exception, userAlerted, userMessage} = options;
         try {
             const username = XH.getUsername();
