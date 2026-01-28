@@ -155,6 +155,11 @@ export class Cube extends HoistBase {
         return this.store.empty;
     }
 
+    /** Timestamp (ms) of when the Cube data was last updated */
+    get lastUpdated(): number {
+        return this.store.lastUpdated;
+    }
+
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;
@@ -234,7 +239,7 @@ export class Cube extends HoistBase {
         this._connectedViews.add(view);
 
         // If the view is not up-to-date with the current cube data, then reload the view
-        if (view.info !== this.info) {
+        if (view.cubeDataUpdated !== this.lastUpdated) {
             view.noteCubeLoaded();
         }
     }
