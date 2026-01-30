@@ -39,16 +39,16 @@ export class LoginPanelModel extends HoistModel {
 
         try {
             this.loginInProgress = true;
-            const success = await XH.authModel
+            const identity = await XH.authModel
                 .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
                     hideParams: ['password']
                 });
 
-            if (success) {
+            if (identity) {
                 this.warning = '';
-                await XH.appContainerModel.completeInitAsync();
+                await XH.appContainerModel.completeInitAsync(identity);
             } else {
                 this.warning = 'Login incorrect.';
             }

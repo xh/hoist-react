@@ -2,6 +2,15 @@
 
 ## 81.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+* Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
+a `boolean`.  For most apps this will require a trivial change to the signature of the
+implementation of `completeAuthAsync`.
+
+### ⚙️ Technical
+* Improve the efficiency of initialization by reducing the number of server requests required
+  to get user identity.
+
 ## 80.0.1 - 2026-01-28
 
 ### ⚙️ Technical
