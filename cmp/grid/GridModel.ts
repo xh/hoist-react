@@ -1446,9 +1446,9 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     * @param opts.record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
      *      will be used, if any, or the first overall StoreRecord in the grid.
-     * @param colId - ID of column on which to start editing. If unspecified, the first
+     * @param opts.colId - ID of column on which to start editing. If unspecified, the first
      *      editable column will be used.
      */
     async beginEditAsync(opts: {record?: StoreRecordOrId; colId?: string} = {}) {
