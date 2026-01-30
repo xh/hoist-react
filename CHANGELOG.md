@@ -2,12 +2,17 @@
 
 ## 81.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes - (upgrade difficulty: 🟢 LOW, requires Hoist Core v36.)
-
 ### ⚙️ Technical
 
 * Improve the efficiency of initialization by reducing the number of server requests required
   to get user identity.
+
+## 80.0.1 - 2026-01-28
+
+### ⚙️ Technical
+
+* New properties `Cube.lastUpdated` and `View.cubeUpdated` support more efficient updating of
+  connected cube views.
 
 ## 80.0.0 - 2026-01-27
 

@@ -91,11 +91,15 @@ export class View
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
-    /** The source {@link Cube.info} as of the last time this View was updated. */
+    /** The source {@link Cube.info} as of the last time the view was updated. */
     @observable.ref
     info: PlainObject = null;
 
-    /** Timestamp (ms) of the last time this view's data was changed. */
+    /** The source {@link Cube.lastUpdated} as of the last time the view was updated. */
+    @observable
+    cubeUpdated: number;
+
+    /** Timestamp (ms) when the view was last updated. */
     @observable
     lastUpdated: number;
 
@@ -184,6 +188,7 @@ export class View
 
         if (oldCube !== newCube) {
             this.info = null;
+            this.cubeUpdated = null;
             this._rowCache.clear();
 
             if (oldCube.viewIsConnected(this)) {
@@ -251,6 +256,7 @@ export class View
             this.dataOnlyUpdate(simpleUpdates);
         } else {
             this.info = this.cube.info;
+            this.cubeUpdated = this.cube.lastUpdated;
         }
     }
 
@@ -309,6 +315,7 @@ export class View
         const {_leafMap, _rowDatas} = this;
         this.result = {rows: _rowDatas, leafMap: _leafMap};
         this.info = this.cube.info;
+        this.cubeUpdated = this.cube.lastUpdated;
         this.lastUpdated = Date.now();
     }
 
