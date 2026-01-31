@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
@@ -335,12 +335,15 @@ class TreeMapLocalModel extends HoistModel {
                             allowOverlap: false,
                             align: 'left',
                             verticalAlign: 'top',
+                            padding: 4,
                             // See stylesheet for additional label style overrides.
                             style: {
                                 // Disable default outlining via HC pseudo-property.
                                 textOutline: 'none',
                                 // Default to hidden, updated selectively in updateLabelVisibility().
-                                visibility: 'hidden'
+                                visibility: 'hidden',
+                                // Do not allow labels to elide, we want the full width for visibility calculation.
+                                textOverflow: 'clip'
                             }
                         }
                     }

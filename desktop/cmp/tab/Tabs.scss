@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-tab-container {
@@ -43,7 +43,7 @@
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
-    .bp5-tab[aria-selected='true'] {
+    .bp6-tab[aria-selected='true'] {
       box-shadow: inset 0 3px 0 currentColor;
     }
   }
@@ -54,7 +54,7 @@
     max-height: 100%;
 
     // Make overflow button full width
-    .bp5-popover-target {
+    .bp6-popover-target {
       display: block;
 
       .xh-button {
@@ -67,6 +67,7 @@
     align-items: baseline;
     font-family: var(--xh-tab-font-family);
     font-size: var(--xh-tab-font-size-px);
+    user-select: none;
 
     & > svg:first-child {
       margin: 0 0.4em 0 0;
@@ -100,7 +101,7 @@
     }
   }
 
-  .bp5-tab {
+  .bp6-tab {
     color: var(--xh-tab-text-color);
 
     &[aria-disabled='true'] {
@@ -108,20 +109,20 @@
     }
 
     // Tooltip
-    .bp5-popover-target {
+    .bp6-popover-target {
       width: 100%;
     }
   }
 
   // Active/hover color override
-  .bp5-tab[aria-selected='true'],
-  .bp5-tab:not([aria-disabled='true']):hover {
+  .bp6-tab[aria-selected='true'],
+  .bp6-tab:not([aria-disabled='true']):hover {
     .xh-tab-switcher__tab {
       color: var(--xh-tab-active-text-color);
     }
   }
 
-  .bp5-tab[aria-selected='true'] {
+  .bp6-tab[aria-selected='true'] {
     box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
   }
 }

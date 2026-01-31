@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
@@ -203,7 +203,7 @@ export class LogDisplayModel extends HoistModel {
         if (
             tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
-            !this.loadModel.isPending &&
+            !this.loadObserver.isPending &&
             this.parent.isVisible
         ) {
             this.loadLog();

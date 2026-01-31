@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
@@ -794,7 +794,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
             // contain Selects.
             const target = e?.target as HTMLElement;
-            if (target && elemWithin(target, 'bp5-popover')) {
+            if (target && elemWithin(target, 'bp6-popover')) {
                 e.stopPropagation();
             }
         },

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
@@ -275,6 +275,16 @@ export const msg: ColumnSpec = {
     chooserGroup: 'Core Data',
     width: 250,
     autosizeMaxWidth
+};
+
+export const clientAppCode: ColumnSpec = {
+    field: {
+        name: 'clientAppCode',
+        type: 'string',
+        displayName: 'Client App'
+    },
+    chooserGroup: 'Core Data',
+    width: 100
 };
 
 export const severity: ColumnSpec = {

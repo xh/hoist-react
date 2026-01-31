@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @use 'vars';
@@ -19,6 +19,7 @@ body.xh-app {
   border-color: var(--xh-border-color);
   color: var(--xh-text-color);
   font-family: var(--xh-font-family);
+  font-feature-settings: var(--xh-font-feature-settings);
   // Important for default Inter font to ensure numbers are constant-width and line up properly.
   font-variant-numeric: tabular-nums;
   font-size: var(--xh-font-size-px);
@@ -205,8 +206,8 @@ body.xh-app {
   &--framed {
     border: 1px solid var(--xh-popup-border-color);
 
-    .bp5-popover-arrow-border,
-    .bp5-popover-arrow-fill {
+    .bp6-popover-arrow-border,
+    .bp6-popover-arrow-fill {
       fill: var(--xh-popup-border-color) !important;
     }
   }

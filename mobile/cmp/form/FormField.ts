@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
@@ -15,7 +16,7 @@ import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
+import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext} from 'react';
 import './FormField.scss';
 
@@ -65,16 +66,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const isRequired = model?.isRequired || false,
             readonly = model?.readonly || false,
             disabled = props.disabled || model?.disabled,
-            validationDisplayed = model?.validationDisplayed || false,
-            notValid = model?.isNotValid || false,
-            displayNotValid = validationDisplayed && notValid,
-            errors = model?.errors || [],
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            displayInvalid = severityToDisplay === 'error',
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
+                : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
                           item: ' ' + requiredStr,
-                          className: 'xh-form-field-required-indicator'
+                          className: 'xh-form-field__required-indicator'
                       })
                     : null,
             isPending = model && model.isValidationPending;
@@ -97,11 +101,14 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Styles
         const classes = [];
-        if (isRequired) classes.push('xh-form-field-required');
-        if (minimal) classes.push('xh-form-field-minimal');
-        if (readonly) classes.push('xh-form-field-readonly');
-        if (disabled) classes.push('xh-form-field-disabled');
-        if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (isRequired) classes.push('xh-form-field--required');
+        if (minimal) classes.push('xh-form-field--minimal');
+        if (readonly) classes.push('xh-form-field--readonly');
+        if (disabled) classes.push('xh-form-field--disabled');
+        if (severityToDisplay) {
+            classes.push(`xh-form-field--${severityToDisplay}`);
+            if (displayInvalid) classes.push('xh-form-field--invalid');
+        }
 
         let childEl =
             readonly || !child
@@ -124,30 +131,32 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             items: [
                 labelCmp({
                     omit: !label,
-                    className: 'xh-form-field-label',
+                    className: 'xh-form-field__label',
                     items: [label, requiredIndicator]
                 }),
                 div({
                     className: classNames(
-                        'xh-form-field-inner',
-                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                        'xh-form-field__inner',
+                        childIsSizeable
+                            ? 'xh-form-field__inner--flex'
+                            : 'xh-form-field__inner--block'
                     ),
                     items: [
                         childEl,
                         div({
                             omit: !info,
-                            className: 'xh-form-field-info',
+                            className: 'xh-form-field__info-msg',
                             item: info
                         }),
                         div({
-                            omit: minimal || !isPending || !validationDisplayed,
-                            className: 'xh-form-field-pending-msg',
+                            omit: minimal || !isPending || !severityToDisplay,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--pending`,
                             item: 'Validating...'
                         }),
                         div({
-                            omit: minimal || !displayNotValid,
-                            className: 'xh-form-field-error-msg',
-                            items: notValid ? errors[0] : null
+                            omit: minimal || !severityToDisplay,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
+                            item: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })
@@ -166,7 +175,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     render({model, readonlyRenderer}) {
         const value = model ? model['value'] : null;
         return div({
-            className: 'xh-form-field-readonly-display',
+            className: 'xh-form-field__readonly-display',
             item: readonlyRenderer(value, model)
         });
     }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
@@ -61,7 +61,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('Updated snapshot loaded');
         } catch (e) {
@@ -74,7 +74,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             await XH.fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('GC run complete');
         } catch (e) {
@@ -101,7 +101,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
                     instance: this.instanceName,
                     filename
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
             await this.loadAsync();
             XH.successToast('Heap dumped successfully to ' + filename);
         } catch (e) {

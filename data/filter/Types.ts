@@ -2,20 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
-import {Filter} from './Filter';
-import {StoreRecord, Field, FieldType} from '../';
+import type {PlainObject} from '@xh/hoist/core';
+import type {Filter} from './Filter';
+import type {StoreRecord, Field, FieldType} from '../';
 
-export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
-export interface CompoundFilterSpec {
-    /** Collection of Filters or configs to create. */
-    filters: FilterLike[];
+export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];
 
-    /** logical operator 'AND' (default) or 'OR'. */
-    op?: CompoundFilterOperator;
+export type FilterSpec = FieldFilterSpec | FunctionFilterSpec | CompoundFilterSpec;
+
+export interface FieldFilterSpec {
+    /** Name of Field to filter or Field instance. */
+    field: string | Field;
+
+    /** One of the supported operators to use for comparison. */
+    op: FieldFilterOperator;
+
+    value: any;
+
+    /** For internal serialization only. */
+    valueType?: FieldType;
 }
 
 export type FieldFilterOperator =
@@ -33,18 +41,16 @@ export type FieldFilterOperator =
     | 'not ends'
     | 'includes'
     | 'excludes';
-export interface FieldFilterSpec {
-    /** Name of Field to filter or Field instance. */
-    field: string | Field;
 
-    /** One of the supported operators to use for comparison. */
-    op: FieldFilterOperator;
+export interface CompoundFilterSpec {
+    /** Collection of Filters or configs to create. */
+    filters: FilterLike[];
 
-    value: any;
-
-    /** For internal serialization only. */
-    valueType?: FieldType;
+    /** logical operator 'AND' (default) or 'OR'. */
+    op?: CompoundFilterOperator;
 }
+
+export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
 
 export interface FunctionFilterSpec {
     /** Key used to identify this FunctionFilter.*/
@@ -61,6 +67,41 @@ export interface FunctionFilterSpec {
  */
 export type FilterTestFn = (candidate: PlainObject | StoreRecord) => boolean;
 
-export type FilterSpec = FieldFilterSpec | FunctionFilterSpec | CompoundFilterSpec;
+/**
+ * Target (typically a {@link Store} or Cube {@link View}) that can be used by filtering models
+ * such as {@link FilterChooserModel} and {@link GridFilterModel} to get and set filters.
+ */
+export interface FilterBindTarget {
+    filter: Filter;
+    setFilter(filter: FilterLike): unknown;
+}
 
-export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];
+/**
+ * Data provider (typically a {@link Store} or Cube {@link View}) that can be used by filtering
+ * models such as {@link FilterChooserModel} and {@link GridFilterModel} to source available
+ * values from within a dataset for display / suggestion to users.
+ */
+export interface FilterValueSource {
+    /** Names of all fields available in the source. */
+    fieldNames: string[];
+    /** @returns the Field instance for the given field name. */
+    getField(fieldName: string): Field;
+    /** @returns unique values for the given field, applying the given filter if provided. */
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[];
+    /** Observable timestamp for the source's data, to trigger consumers to re-query values. */
+    lastUpdated: number;
+    /** For the {@link isFilterValueSource} typeguard. */
+    isFilterValueSource: true;
+}
+
+export function isFilterValueSource(v: unknown): v is FilterValueSource {
+    return (v as any)?.isFilterValueSource === true;
+}
+
+/**
+ * Option to customize matching behavior for {@link StoreFilterField} and related components.
+ *   - `start`: match beginning of candidate strings only.
+ *   - `startWord`: match beginning of words within candidate strings.
+ *   - `any`: match anywhere within candidate strings.
+ */
+export type FilterMatchMode = 'start' | 'startWord' | 'any';

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
@@ -10,9 +10,12 @@ import {
     CubeFieldSpec,
     FieldSpec,
     genDisplayName,
+    maxSeverity,
     RecordAction,
     RecordActionSpec,
-    StoreRecord
+    StoreRecord,
+    ValidationResult,
+    ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -21,6 +24,7 @@ import {
     clone,
     find,
     get,
+    groupBy,
     isArray,
     isEmpty,
     isFinite,
@@ -761,8 +765,12 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance?.reactSelect;
-                    if (reactSelect?.state.menuIsOpen) return true;
+                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
+                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
+                    // but loadedInputValue should be truthy when the menu is open
+                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                        return true;
+                    }
 
                     // Allow shift+enter to add newlines in certain editors
                     if (event.shiftKey && event.key === 'Enter') return true;
@@ -863,20 +871,28 @@ export class Column {
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
-                // Override with validation errors, if present
+                // Override with validation errors, if present -- only show highest-severity level
                 if (editor) {
-                    const errors = record.errors[field];
-                    if (!isEmpty(errors)) {
+                    const validationsBySeverity = groupBy(
+                            record.validationResults[field],
+                            'severity'
+                        ) as Record<ValidationSeverity, ValidationResult[]>,
+                        validationMessages = (
+                            validationsBySeverity.error ??
+                            validationsBySeverity.warning ??
+                            validationsBySeverity.info
+                        )?.map(v => v.message);
+                    if (!isEmpty(validationMessages)) {
                         return div({
                             ref: wrapperRef,
                             item: ul({
                                 className: classNames(
                                     'xh-grid-tooltip--validation',
-                                    errors.length === 1
+                                    validationMessages.length === 1
                                         ? 'xh-grid-tooltip--validation--single'
                                         : null
                                 ),
-                                items: errors.map((it, idx) => li({key: idx, item: it}))
+                                items: validationMessages.map((it, idx) => li({key: idx, item: it}))
                             })
                         });
                     }
@@ -1003,10 +1019,12 @@ export class Column {
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': agParams => {
-                    const record = agParams.data;
-                    return record && !isEmpty(record.errors[field]);
-                },
+                'xh-cell--invalid': agParams =>
+                    maxSeverity(agParams.data.validationResults[field]) === 'error',
+                'xh-cell--warning': agParams =>
+                    maxSeverity(agParams.data.validationResults[field]) === 'warning',
+                'xh-cell--info': agParams =>
+                    maxSeverity(agParams.data.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },

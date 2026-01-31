@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
@@ -281,8 +281,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** True if any async tasks are pending. */
     get isLoading(): boolean {
-        const {loadModel, saveTask, selectTask} = this;
-        return loadModel.isPending || saveTask.isPending || selectTask.isPending;
+        const {loadObserver, saveTask, selectTask} = this;
+        return loadObserver.isPending || saveTask.isPending || selectTask.isPending;
     }
 
     /**

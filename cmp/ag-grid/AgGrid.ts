@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame, placeholder} from '@xh/hoist/cmp/layout';
 import {
@@ -26,10 +26,7 @@ import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
 export interface AgGridProps
-    extends HoistProps<AgGridModel>,
-        GridOptions,
-        LayoutProps,
-        TestSupportProps {}
+    extends HoistProps<AgGridModel>, GridOptions, LayoutProps, TestSupportProps {}
 
 /**
  * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited

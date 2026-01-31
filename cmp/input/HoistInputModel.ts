@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
+import {maxSeverity} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -336,13 +337,20 @@ export function useHoistInputModel(
     useImperativeHandle(ref, () => inputModel);
 
     const field = inputModel.getField(),
-        validityClass = field?.isNotValid && field?.validationDisplayed ? 'xh-input-invalid' : null,
+        severityToDisplay = field?.validationDisplayed && maxSeverity(field?.validationResults),
+        displayInvalid = severityToDisplay === 'error',
         disabledClass = props.disabled ? 'xh-input-disabled' : null;
 
     return component({
         ...props,
         model: inputModel,
         ref: inputModel.domRef,
-        className: classNames('xh-input', validityClass, disabledClass, props.className)
+        className: classNames(
+            'xh-input',
+            severityToDisplay && `xh-input--${severityToDisplay}`,
+            displayInvalid && 'xh-input--invalid',
+            disabledClass,
+            props.className
+        )
     });
 }

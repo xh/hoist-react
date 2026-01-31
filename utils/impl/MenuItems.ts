@@ -1,4 +1,10 @@
-import {isMenuItem, MenuItemLike} from '@xh/hoist/core';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import {ElementSpec, isMenuItem, MenuItemLike} from '@xh/hoist/core';
 import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
@@ -37,7 +43,7 @@ export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: MenuItemProps = {
+            const cfg: ElementSpec<MenuItemProps> = {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,
@@ -48,7 +54,7 @@ export function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
 
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
-                cfg.children = parseMenuItems(item.items);
+                cfg.items = parseMenuItems(item.items);
                 cfg.popoverProps = {openOnTargetFocus: false};
             }
 

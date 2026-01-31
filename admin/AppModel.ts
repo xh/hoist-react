@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
@@ -37,7 +37,6 @@ export class AppModel extends HoistAppModel {
 
         this.tabModel = new TabContainerModel({
             route: 'default',
-            switcher: false,
             tabs: this.createTabs()
         });
 
@@ -130,7 +129,6 @@ export class AppModel extends HoistAppModel {
                 id: 'general',
                 icon: Icon.info(),
                 content: {
-                    switcher: {orientation: 'left', testId: 'general-tab-switcher'},
                     tabs: [
                         {id: 'about', icon: Icon.info(), content: aboutPanel},
                         {id: 'config', icon: Icon.settings(), content: configPanel},
@@ -142,7 +140,6 @@ export class AppModel extends HoistAppModel {
                 id: 'servers',
                 icon: Icon.server(),
                 content: {
-                    switcher: {orientation: 'left', testId: 'cluster-tab-switcher'},
                     tabs: [
                         {id: 'instances', icon: Icon.server(), content: instancesTab},
                         {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
@@ -163,7 +160,6 @@ export class AppModel extends HoistAppModel {
                 id: 'userData',
                 icon: Icon.users(),
                 content: {
-                    switcher: {orientation: 'left', testId: 'user-data-tab-switcher'},
                     refreshMode: 'onShowAlways',
                     tabs: [
                         {

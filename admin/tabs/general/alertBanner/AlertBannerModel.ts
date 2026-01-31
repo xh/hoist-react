@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
@@ -106,7 +106,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveAsync() {
-        return this.saveInternalAsync().linkTo(this.loadModel).catchDefault();
+        return this.saveInternalAsync().linkTo(this.loadObserver).catchDefault();
     }
 
     resetForm() {

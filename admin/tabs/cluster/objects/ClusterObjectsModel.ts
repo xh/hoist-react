@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -149,7 +149,7 @@ export class ClusterObjectsModel extends HoistModel {
                 body: {
                     names: cacheRecords.map(it => it.id)
                 }
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
@@ -179,7 +179,7 @@ export class ClusterObjectsModel extends HoistModel {
         try {
             await XH.fetchJson({
                 url: 'clusterObjectsAdmin/clearAllHibernateCaches'
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
             await this.refreshAsync();
             XH.successToast('All Hibernate Caches cleared.');

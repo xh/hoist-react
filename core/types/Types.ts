@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ElementFactory} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -62,6 +62,19 @@ export type Content =
     | (() => ReactElement);
 
 export type DateLike = Date | LocalDate | MomentInput;
+
+/** Valid units for the {@link LocalDate} adjustment methods. */
+export type LocalDateUnit =
+    | 'year'
+    | 'years'
+    | 'quarter'
+    | 'quarters'
+    | 'month'
+    | 'months'
+    | 'week'
+    | 'weeks'
+    | 'day'
+    | 'days';
 
 export type PageState =
     /**

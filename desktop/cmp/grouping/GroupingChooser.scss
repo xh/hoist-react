@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-grouping-chooser {
@@ -25,12 +25,12 @@
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
-  .bp5-popover-target,
+  .bp6-popover-target,
   .xh-grouping-chooser-button {
     width: 100%;
   }
 
-  .bp5-popover-target span {
+  .bp6-popover-target span {
     position: relative;
   }
 
@@ -148,7 +148,7 @@
 
     --xh-menu-border: none;
 
-    .bp5-menu {
+    .bp6-menu {
       padding: 0;
     }
 

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import * as msal from '@azure/msal-browser';
 import {
@@ -170,17 +170,19 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         const account =
             accounts.length == 1
                 ? accounts[0]
-                : accounts.find(a => (a.username = this.getSelectedUsername()));
+                : accounts.find(a => a.username == this.getSelectedUsername());
+        let trySsoSilent = enableSsoSilent;
         if (account) {
             this.setAccount(account);
             try {
-                this.initialTokenLoad = true;
                 this.logDebug('Attempting silent token load.');
+                this.initialTokenLoad = true;
                 const ret = await this.fetchAllTokensAsync({eagerOnly: true});
                 this.noteAuthComplete('acquireSilent');
                 return ret;
             } catch (e) {
-                this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
+                if (e instanceof InteractionRequiredAuthError) trySsoSilent = false;
+                this.logDebug('AcquireSilent failed', e.message ?? e);
             } finally {
                 this.initialTokenLoad = false;
             }
@@ -189,15 +191,18 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // 2) Try `ssoSilent` API to potentially reuse logged-in user on other apps
         // in same domain without interaction.  This should never trigger popup/redirect, and will
         // use an iFrame (3rd party cookies required). Must fail gently.
-        if (enableSsoSilent) {
+        if (trySsoSilent) {
             try {
                 this.logDebug('Attempting SSO');
                 await this.loginSsoAsync();
+                this.initialTokenLoad = true;
                 const ret = await this.fetchAllTokensAsync({eagerOnly: true});
                 this.noteAuthComplete('ssoSilent');
                 return ret;
             } catch (e) {
                 this.logDebug('SSO failed', e.message ?? e);
+            } finally {
+                this.initialTokenLoad = false;
             }
         }
 
@@ -453,7 +458,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
 
     private noteAuthComplete(authMethod: AuthMethod) {
         if (this.telemetry) this.telemetry.authMethod = authMethod;
-        this.logInfo(`Authenticated user ${this.account.username} via ${authMethod}`);
+        this.logInfo(`Authenticated user '${this.account.username}' via ${authMethod}`);
     }
 
     private authRequestCore(): AuthRequestCore {

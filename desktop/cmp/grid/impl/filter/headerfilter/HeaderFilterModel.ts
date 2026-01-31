@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {Column, GridFilterFieldSpec, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
@@ -116,7 +116,6 @@ export class HeaderFilterModel extends HoistModel {
         this.valuesTabModel = enableValues ? new ValuesTabModel(this) : null;
         this.customTabModel = new CustomTabModel(this);
         this.tabContainerModel = new TabContainerModel({
-            switcher: false,
             tabs: [
                 {
                     id: 'valuesFilter',

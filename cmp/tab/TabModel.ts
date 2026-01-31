@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     XH,
@@ -196,7 +196,6 @@ export class TabModel extends HoistModel {
             renderMode: parent.renderMode,
             refreshMode: parent.refreshMode,
             emptyText: parent.emptyText,
-            switcher: parent.switcher,
             track: parent.track,
             ...childConfig
         };
@@ -211,7 +210,7 @@ export class TabModel extends HoistModel {
             };
         }
 
-        this.childContainerModel = new TabContainerModel(childConfig);
+        this.childContainerModel = new TabContainerModel(childConfig, parent.depth + 1);
         return tabContainer({model: this.childContainerModel});
     }
 }

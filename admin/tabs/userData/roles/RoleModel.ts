@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
@@ -197,7 +197,7 @@ export class RoleModel extends HoistModel {
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
-                    .linkTo(this.loadModel),
+                    .linkTo(this.loadObserver),
             recordsRequired: 1
         };
     }

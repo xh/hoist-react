@@ -2,10 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '@xh/hoist/core';
+import {
+    Loadable,
+    LoadSpec,
+    LoadSupport,
+    managed,
+    PlainObject,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 import {Store, StoreConfig} from './Store';
 
@@ -33,8 +42,15 @@ export class UrlStore extends Store implements Loadable {
         this.dataRoot = dataRoot;
     }
 
+    get loadObserver(): TaskObserver {
+        return this.loadSupport.loadObserver;
+    }
     get loadModel() {
-        return this.loadSupport.loadModel;
+        apiDeprecated('UrlStore.loadModel', {
+            v: 'v82',
+            msg: 'Use UrlStore.loadObserver instead.'
+        });
+        return this.loadSupport.loadObserver;
     }
     get lastLoadRequested() {
         return this.loadSupport.lastLoadRequested;

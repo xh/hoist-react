@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
@@ -10,23 +10,24 @@ import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen'
 import '@xh/hoist/mobile/register';
 import {debounced, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isEmpty, isNull, isObject} from 'lodash';
 import {tab} from './Tab';
 import './Tabs.scss';
-import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
+import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 
 /**
  * Mobile Implementation of TabContainer.
  *
  * @internal
  */
-export function tabContainerImpl({model, className}: TabContainerProps) {
-    const {activeTab, switcher} = model,
+export function tabContainerImpl({model, className, ...props}: TabContainerProps) {
+    const switcherProps = getSwitcherProps(props),
+        {activeTab} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
         impl = useLocalModel(TabContainerLocalModel);
 
     throwIf(
-        switcher && !['top', 'bottom'].includes(switcher.orientation),
+        switcherProps && !['top', 'bottom'].includes(switcherProps.orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
 
@@ -38,17 +39,23 @@ export function tabContainerImpl({model, className}: TabContainerProps) {
     }
 
     return onsenTabbar({
-        className: classNames(className, `xh-tab-container--${switcher?.orientation}`),
-        position: switcher?.orientation,
+        className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
+        position: switcherProps?.orientation,
         activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: (idx, ref) => {
             impl.setSwiper(ref);
             return tabs.map(renderTabModel);
         },
         onPreChange: e => model.activateTab(tabs[e.index].id),
-        hideTabs: !switcher,
-        ...switcher
+        hideTabs: !switcherProps,
+        ...switcherProps
     });
+}
+
+function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProps {
+    const {switcher} = tabContainerProps;
+    if (isObject(switcher)) return switcher;
+    return switcher === false || isNull(switcher) ? null : {orientation: 'bottom'};
 }
 
 function renderTabModel(tabModel: TabModel) {

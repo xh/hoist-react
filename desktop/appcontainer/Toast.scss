@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-toast-container {
@@ -29,16 +29,16 @@
       margin: 0 0 0 var(--xh-pad-half-px);
     }
 
-    .bp5-toast-message {
+    .bp6-toast-message {
       overflow-wrap: break-word;
     }
 
     // High level of specificity here required to override built-in BP styles
-    &.bp5-toast .bp5-button {
+    &.bp6-toast .bp6-button {
       background: none !important;
       color: white !important;
 
-      .bp5-icon {
+      .bp6-icon {
         color: white !important;
       }
     }

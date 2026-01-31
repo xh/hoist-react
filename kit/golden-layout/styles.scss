@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @import '../../styles/helpers';
@@ -14,16 +14,6 @@
     display: flex;
     background: rgba(0, 0, 0, 0.06);
     min-height: 25px;
-
-    .xh-dash-container-add-button {
-      padding: 5px;
-      color: #999;
-
-      &:hover {
-        cursor: pointer;
-        color: var(--xh-text-color);
-      }
-    }
 
     .lm_tabs {
       flex: 1;
@@ -37,9 +27,21 @@
       display: flex;
       align-items: center;
 
+      // Add left border to visually structure the control area and help it stand out.
+      border-left: var(--xh-border-solid);
+      padding-left: 3px;
+
+      > li {
+        // Avoid muted opacity on controls - we want users to be able to see these.
+        opacity: 1;
+      }
+
       .lm_tabdropdown {
         &::before {
-          color: var(--xh-button-text-color);
+          // Set warning intent on tab dropdown - this is a tiny V arrow icon that appears when a
+          // tabbed stack is too small to render all tabs. This is the only clue to the user that
+          // there are more widgets in the layout!
+          color: var(--xh-intent-primary-text-color);
         }
       }
     }
@@ -116,6 +118,7 @@
       border: none;
       margin: 0;
       height: 30px;
+      padding: 0 8px;
 
       &:hover {
         background-color: var(--xh-menu-item-highlight-bg);

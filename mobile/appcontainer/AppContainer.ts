@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
@@ -143,7 +143,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
 });
 
 const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
-    mask({bind: model.appLoadModel, spinner: true})
+    mask({bind: model.appLoadObserver, spinner: true})
 );
 
 const bannerList = hoistCmp.factory<AppContainerModel>({

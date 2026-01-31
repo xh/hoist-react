@@ -2,23 +2,23 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField, CubeFieldSpec} from './CubeField';
-import {ViewRowData} from './ViewRowData';
-import {Query, QueryConfig} from './Query';
-import {View} from './View';
+import {defaultsDeep, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
-import {AggregateRow} from './row/AggregateRow';
-import {BucketRow} from './row/BucketRow';
-import {BaseRow} from './row/BaseRow';
 import {BucketSpec} from './BucketSpec';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {CubeField, CubeFieldSpec} from './CubeField';
+import {Query, QueryConfig} from './Query';
+import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
+import {BucketRow} from './row/BucketRow';
+import {View} from './View';
+import {ViewRowData} from './ViewRowData';
 
 export interface CubeConfig {
     fields: CubeField[] | CubeFieldSpec[];
@@ -155,9 +155,18 @@ export class Cube extends HoistBase {
         return this.store.empty;
     }
 
+    /** Timestamp (ms) of when the Cube data was last updated */
+    get lastUpdated(): number {
+        return this.store.lastUpdated;
+    }
+
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;
+    }
+
+    getField(name: string): CubeField {
+        return this.store.getField(name) as CubeField;
     }
 
     //------------------
@@ -221,6 +230,18 @@ export class Cube extends HoistBase {
     /** Cease pushing further updates to this Cube's data into a previously connected View. */
     disconnectView(view: View) {
         this._connectedViews.delete(view);
+    }
+
+    /** Connect a View to this Cube for live updates. */
+    connectView(view: View) {
+        if (this.viewIsConnected(view)) return;
+
+        this._connectedViews.add(view);
+
+        // If the view is not up-to-date with the current cube data, then reload the view
+        if (view.cubeUpdated !== this.lastUpdated) {
+            view.noteCubeLoaded();
+        }
     }
 
     //-------------------

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, HoistUser, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
@@ -30,14 +30,26 @@ export class IdentityService extends HoistService {
         }
     }
 
-    /** Current acting user (see authUser for notes on impersonation) */
+    /** @returns current acting user (see authUser for notes on impersonation) */
     get user(): HoistUser {
         return this._apparentUser;
     }
 
-    /** Current acting user's username. */
+    /** @returns current acting user's username. */
     get username(): string {
         return this.user?.username ?? null;
+    }
+
+    /** @returns current acting user's initials, based on displayName. */
+    get userInitials(): string {
+        // Handle common case of displayName being left as an email address.
+        const [displayName] = this.user.displayName.split('@'),
+            nameParts = displayName.split(/[\s.]+/);
+
+        return nameParts
+            .map(part => part.charAt(0).toUpperCase())
+            .join('')
+            .substring(0, XH.isMobileApp ? 2 : 3);
     }
 
     /**

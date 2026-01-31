@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 //--------------------
 // Blueprint Imports
@@ -49,7 +49,7 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker3 as DatePicker} from '@blueprintjs/datetime2';
+import {DatePicker} from '@blueprintjs/datetime';
 import {elementFactory} from '@xh/hoist/core';
 
 //---------------------

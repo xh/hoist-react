@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
@@ -86,7 +86,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         buttonSide = 'right',
         extraMenuItems = []
     }: ViewManagerProps) {
-        const {loadModel} = model,
+        const {loadObserver} = model,
             locModel = useLocalModel(() => new ViewManagerLocalModel(model)),
             save = saveButton({model: locModel, mode: showSaveButton, ...saveButtonProps}),
             revert = revertButton({model: locModel, mode: showRevertButton, ...revertButtonProps}),
@@ -103,7 +103,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                     }),
                     ...menuButtonProps
                 }),
-                content: loadModel.isPending
+                content: loadObserver.isPending
                     ? box({
                           item: spinner({compact: true}),
                           alignItems: 'center',

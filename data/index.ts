@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 export * from './Field';
@@ -19,6 +19,7 @@ export * from './filter/FunctionFilter';
 export * from './filter/Types';
 export * from './filter/Utils';
 
+export * from './cube/aggregate/AggregationContext';
 export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
@@ -41,3 +42,4 @@ export * from './cube/ViewRowData';
 export * from './validation/constraints';
 export * from './validation/Rule';
 export * from './validation/ValidationState';
+export * from './validation/Types';

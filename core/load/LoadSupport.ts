@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     HoistBase,
@@ -32,7 +32,7 @@ export class LoadSupport extends HoistBase implements Loadable {
     lastSucceeded: LoadSpec = null;
 
     @managed
-    loadModel: TaskObserver = TaskObserver.trackLast();
+    loadObserver: TaskObserver = TaskObserver.trackLast();
 
     @observable.ref
     lastLoadRequested: Date = null;
@@ -71,13 +71,13 @@ export class LoadSupport extends HoistBase implements Loadable {
     }
 
     async doLoadAsync(loadSpec: LoadSpec) {
-        let {target, loadModel} = this;
+        let {target, loadObserver} = this;
 
         // Auto-refresh:
-        // Skip if we have a pending triggered refresh, and never link to loadModel
+        // Skip if we have a pending triggered refresh, and never link to loadObserver
         if (loadSpec.isAutoRefresh) {
-            if (loadModel.isPending) return;
-            loadModel = null;
+            if (loadObserver.isPending) return;
+            loadObserver = null;
         }
 
         runInAction(() => (this.lastLoadRequested = new Date()));
@@ -87,7 +87,7 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         return target
             .doLoadAsync(loadSpec)
-            .linkTo(loadModel)
+            .linkTo(loadObserver)
             .catch(e => {
                 exception = e;
                 throw e;

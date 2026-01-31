@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
@@ -33,7 +33,10 @@ export interface RecordActionSpec extends TestSupportProps {
     /** Function called on action execution. */
     actionFn?: (data: ActionFnData) => void;
 
-    /** Function called prior to showing this item. */
+    /**
+     * Function called to append / override display properties prior to each render. This function
+     * allows dynamic control over display properties.
+     * */
     displayFn?: (data: ActionFnData) => RecordActionSpec;
 
     /** Sub-actions for this action. */

@@ -1,18 +1,138 @@
 # Changelog
 
-## 79.0.0-SNAPSHOT - unreleased
+## 81.0.0-SNAPSHOT - unreleased
+
+## 80.0.1 - 2026-01-28
+
+### ⚙️ Technical
+
+* New properties `Cube.lastUpdated` and `View.cubeUpdated` support more efficient updating of
+  connected cube views.
+
+## 80.0.0 - 2026-01-27
 
 ### 💥 Breaking Changes
 
-* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
-  symmetry with `setColumnState()`. The prior method remains as an alias but is now deprecated and
-  scheduled for removal in v82.
+* Modified several CSS classes related to `FormField` to better follow BEM conventions.
+    * ⚠️The commonly targeted `xh-form-field-label` class is now `xh-form-field__label`, although
+      please review new CSS vars (below) and consider using those instead of class-based selectors.
+    * Modifier classes now follow BEM conventions (e.g. `xh-form-field-invalid` is now
+      `xh-form-field--invalid`).
+* Completed the refactoring from `loadModel` to `loadObserver` started in v79:
+    * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
+      deprecated and scheduled for removal in v82.
+    * Renamed `AppContainerModel.loadModel` to `loadObserver`. This is primarily an internal model,
+      so there is no deprecated alias. Any app usages should swap to `XH.appLoadObserver`.
+    * Removed additional references to deprecated `loadModel` within Hoist itself.
+* Removed the following instance getters - use new static typeguards instead:
+    * `Store.isStore`
+    * `View.isView`
+    * `Filter.isFilter`
+* Replaced `LeftRightChooserFilter.anyMatch` with `matchMode`. Changes are not expected to be
+  required as apps typically do not create this component directly.
 
 ### 🐞 Bug Fixes
 
-* Fixed column chooser to display columns in the same order as they appear in the grid.
-* Defaulted Highcharts font to Hoist default (--xh-font-family)
+* Fixed error encountered when attempting to `store.revert()` on a store with summary records.
+
+### 🎁 New Features
+
+* Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
+  validation scenarios, such as providing guidance to users without preventing form submission.
+* Added new `AppMenuButton.renderWithUserProfile` prop as a built-in alternative to the default
+  hamburger menu. Set to `true` to render the current user's initials instead or provide a function
+  to render a custom element for the user.
+* Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
+* Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
+  `startWord`, or `any`.
+* Added support for reconnecting a `View` to its associated `Cube`
+
+### ⚙️ Typescript API Adjustments
+
+* Introduced new `FilterBindTarget` and `FilterValueSource` interfaces to generalize the data
+  sources that could be used with `FilterChooserModel` and `GridFilterModel`. Both `Store` and
+  `View` implement these interfaces, meaning no changes are required for apps, but it is now
+  possible to use these models with alternate implementations.
+* Added new static typeguard methods on `Store`, `View`, and `Filter` + its subclasses.
+* Removed `RecordErrorMap` + reorganized validation types (not expected to impact most apps).
+
+### ✨ Styles
+
+* Applied the app-wide `--xh-font-family` to `input` elements. Previously these had continued to
+  take a default font defined by the browser stylesheet.
+    * Customize for inputs if needed via `--xh-input-font-family`.
+    * Note that the switch to Hoist's default Inter font w/tabular numbers might require some
+      inputs w/tight sizing to be made wider to avoid clipping (e.g. `DateInputs` sized to fit).
+* Updated + added validation-related `FormField` CSS classes and variables to account for new `info`
+  and `warning` validation levels. Additionally validation messages and the `info` text element no
+  longer clip at a single line - they will wrap as needed.
+* Added new CSS variables for `FormField` to allow easier customization of commonly adjusted styles,
+  with a focus on labels. See `vars.scss` for the full list. Consider replacing existing class-based
+  CSS overrides with overrides to variables where possible.
+* Added new CSS variables `--xh-intent-danger-text-color` (and others). Consider using these when
+  styling text with Hoist intent colors to enhance legibility in dark mode.
+* Tweaked styling of `DashContainer` tab controls, adding a left border to the control surface and
+  improving the visibility of the tab overflow dropdown.
+
+### 📚 Libraries
+
+* Added a direct dependency and forced resolution to pin to `jquery@3.x`. This is a transitive
+  dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
+  causing a break if upgraded to jQuery's new 4.x release.
+  * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
+
+## 79.0.0 - 2026-01-05
+
+### 💥 Breaking Changes
+
+Note that a server-side upgrade to `hoist-core >= 35` is recommended to support several changes in
+this release, but is not strictly required.
+
+* Upgraded Blueprint from version 5 to version 6. Most apps will not need to change, but
+  see https://github.com/palantir/blueprint/wiki/Blueprint-6.0 for more details.
+    * ⚠️ Note that any custom CSS overrides to BP classes will need to replace the `bp5` prefix with
+      `bp6` and should be reviewed for accuracy/neccessity.
+* Renamed `LoadSupport.loadModel` to `LoadSupport.loadObserver` for clarity. This property is a
+  `TaskObserver` instance, not a `HoistModel`.
+    * The getter methods `HoistModel.loadModel` and `HoistService.loadModel` remain as aliases but
+      are deprecated and scheduled for removal in v82.
+    * Apps should update their code to use `loadObserver` instead of `loadModel`.
+* Renamed `GridModel.applyColumnStateChanges()` to `updateColumnState()` for clarity and better
+  symmetry with `setColumnState()`.
+    * The prior method remains as an alias but is deprecated and scheduled for removal in v82.
+* Moved `TabSwitcherProps` to `cmp/tab/Types.ts` but maintained export from `cmp/tab/index.ts`.
+  Some apps may need to update their imports.
+* Repurposed `TabContainerConfig.switcher` to accept a `TabSwitcherConfig`. To pass
+  `TabSwitcherProps` via a parent `TabContainer`, use `TabContainerProps.switcher`.
+* Tightened the typing of `LocalDate` adjustment methods with new `LocalDateUnit` type. Some less
+  common or ambiguous units (e.g. `date` or `d`) are no longer supported. Also typed the adjustment
+  `value` args to `number` where applicable.
+* Your app must update `compilerOptions.moduleResolution` to "bundler" in `tsconfig.json`
+* If using the `DashCanvas.rglOptions` prop, you might have to update it to reflect changes in
+  `react-grid-layout` v2+ (not common).
+* Modified `DashCanvasModel.containerPadding` to apply to the `react-grid-layout` div created by the
+  library, instead of the Hoist-created containing div. This may affect printing layouts.
+
+### 🎁 New Features
+
+* Added new `DynamicTabSwitcher` component, a more user-customizable version of `TabSwitcher` that
+  allows for dynamic addition, removal, and drag-and-drop reordering of tabs with the ability to
+  persist "favorited" tab state across sessions. Additionally, existing static `TabSwitcher` now
+  supports context-menu items. See `TabContainerConfig.switcher`.
+* Enhanced `LocalDate` with `addWeekdays` and `subtractWeekdays` methods.
+* Upgraded `DashCanvas` with support for a gridded background to match widget sizing/snapping
+  settings, plus two compacting strategies: 'vertical' and 'horizontal'.
+* Changed the icon used for the Grid autosize buttons and menu option (to 🪄).
+* Added `clientAppCode` to Activity Tracking logs. Requires `hoist-core >= 35`.
+
+### 🐞 Bug Fixes
+
+* Fixed the column chooser to display columns in the same order as they appear in the grid.
+* Defaulted Highcharts font to Hoist default `--xh-font-family`.
+* Restored previous behavior of Highcharts treemap labels with regard to visibility and positioning.
 * Tweaked `GridFindField` to forward a provided `ref` to its underlying `TextInput`.
+* Fixed bug where `SelectEditor` with `queryFn` would not commit on enter keydown.
+* Enabled deletion of larger numbers of log files via Admin Console. Requires `hoist-core >= 35`.
 
 ### ⚙️ Technical
 
@@ -20,36 +140,46 @@
     * `AppSpec.websocketsEnabled` - enabled by default, disable via `disableWebSockets`
     * `GroupingChooserProps.popoverTitle` - use `editorTitle`
     * `RelativeTimestampProps.options` - provide directly as top-level props
+* Improved the efficiency and logging of `MsalClient`.
+* Improved protections against server/app version mismatches (i.e. a stale client app version cached
+  and restored by the browser).
+* Introduced opt-in `Grid` performance optimizations on an experimental basis with
+  `GridExperimentalFlags.deltaSort` and `GridExperimentalFlags.disableScrollOptimization`
+
+### 📚 Libraries
+
+* @blueprintjs/core: `5.10 → 6.3`
+* @blueprintjs/datetime: `5.3 → 6.0`
+* react-grid-layout `1.5 → 2.1`
 
 ## 78.1.4 - 2025-12-05
 
 ### 🐞 Bug Fixes
 
-* Fix logging during MsalClient creation.
+* Fixed logging during `MsalClient` creation.
 
 ## 78.1.3 - 2025-12-04
 
 ### 🐞 Bug Fixes
 
-* Fix to Highchart timezone handling regression from version 77.  Applications should note that
-  Highcharts has deprecated the `time.useUTC` option and its functioning seem suspect. Apps
-  should set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
+* Fixed Highcharts timezone handling regression from version 77.
+    * Note that Highcharts has deprecated the `time.useUTC` option and its functioning seem
+      suspect - set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
 
 ### ⚙️ Technical
 
-* Allow cross-tab persistence of client log levels
+* Enabled cross-tab persistence of client logging-level customizations.
 
 ## 78.1.0 - 2025-12-02
 
 ### ⚙️ Technical
-* New property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO api.
 
-* Existing property `MsalClientConfig.enableTelemetry` now defaults to `true`.
-
-* Improved use of MSAL client API, to maximize effectiveness of SSO.  Improved documentation
- and logging.  Iframe attempts will now time out by default after 3 seconds vs. 10 seconds.
- This can be further modified by apps via the option
- `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`
+* Added new property `MsalClientConfig.enableSsoSilent` to govern use of MSAL SSO API.
+* Changed default for `MsalClientConfig.enableTelemetry` to `true`.
+* Improved use of MSAL client API to maximize effectiveness of SSO, along with updates to docs and
+  logging.
+    * Note that Iframe attempts will now time out by default after 3s (vs. 10s). Customize if needed
+      via `MsalClientConfig.msalClientOptions.system.iFrameHashTimeout`.
 
 ### 📚 Libraries
 
@@ -74,8 +204,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed `GridModel` not appending children to the parents correctly when loaded data uses a
-  numerical ID.
+* Fixed `GridModel` not appending children to the parents correctly when recs have numeric IDs.
 * Fixed issue where newly added columns appearing in the Displayed Columns section of the column
   chooser after loading grid state that was persisted before the columns were added to the grid.
 * Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
@@ -91,21 +220,21 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Apps that use and provide the `highcharts` library should be sure to update the version to v12.4.0.
-  Refer to `Bootstrap.js` in Toolbox for required import changes.
-    * Visit https://www.highcharts.com/blog/changelog/ for specific changes.
+* Upgraded Highcharts to v12.
+    * Refer to Toolbox's `Bootstrap.js` for required changes to imports and chart initialization.
+    * Visit https://www.highcharts.com/blog/changelog/ for additional details on the upgrade.
 
 ### 🎁 New Features
 
-* New method `StoreRecord.getModifiedValues()` to gather edited data from a store record.
+* Added `StoreRecord.getModifiedValues()` to return an object with edited field values only.
 
 ### 🐞 Bug Fixes
 
-* StoreRecord will no longer report `isModified` as `true` if a field has been edited and
-  then returned to its original value in a subsequent edit.
-* Restore support for `TabModel.content` being nullable to support dynamic tab content.
-* Remove stray context menu from appearing when clicking on column group headers and other grid
-  empty space.
+* Improved `StoreRecord.isModified` to no return `true` after a field has been edited but then
+  returned to its original value in a subsequent edit.
+* Restored support for `TabModel.content` set to `null`, to support dynamic tab content.
+* Fixed and issue where stray context menus could appear when clicking on column group headers and
+  other grid empty space.
 
 ## 77.0.1 - 2025-10-29
 
@@ -806,8 +935,8 @@ build. That said, we *strongly* recommend taking these same changes into your ap
 ### 📚 Libraries
 
 * @azure/msal-browser `3.17 → 3.23`
-* mobx  `6.9.1 -> 6.13.2`,
-* mobx-react-lite  `3.4.3 -> 4.0.7`,
+* mobx  `6.9 → 6.13`,
+* mobx-react-lite  `3.4 → 4.0`,
 
 ## 67.0.0 - 2024-09-03
 
@@ -6947,5 +7076,5 @@ and AG Grid upgrade, and more. 🚀
 
 ------------------------------------------
 
-📫☎️🌎 info@xh.io | https://xh.io/contact
-Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved
+☎️ info@xh.io | <https://xh.io>
+Copyright © 2026 Extremely Heavy Industries Inc.

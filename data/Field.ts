@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
+import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Rule, RuleLike} from './validation/Rule';
+import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
@@ -179,4 +180,9 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
 export function genDisplayName(fieldName: string): string {
     // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
     return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
+}
+
+/** Convenience function to return the name of a field from one of several common inputs. */
+export function getFieldName(field: string | Field | FieldSpec): string {
+    return field ? (isString(field) ? field : field.name) : null;
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {clock} from '@xh/hoist/cmp/clock';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -36,7 +36,7 @@ export const logDisplay = hoistCmp.factory({
             model: model.panelModel,
             loadingIndicator: loadingIndicator({
                 message: 'Loading log contents...',
-                bind: model.loadModel
+                bind: model.loadObserver
             })
         });
     }

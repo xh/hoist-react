@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, PlainObject, XH} from './';
 
@@ -33,7 +33,7 @@ export class HoistAuthModel extends HoistModel {
      * to the server.
      *
      * The default implementation of this method simply checks the auth status on the server, which
-     * may be appropriate for fully SSO (e.g. NTLM) based solutions. Override to consult or
+     * may be appropriate for fully SSO based solutions. Override to consult or
      * initialize third-party client resources such as OAuth.
      *
      * @returns true if the user has an authenticated session with the server, false if not.

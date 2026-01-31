@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
@@ -613,7 +613,7 @@ export class ZoneGridModel extends HoistModel {
 
         return {
             // Controlled properties
-            field: isLeft ? 'left_column' : 'right_column',
+            colId: isLeft ? 'left_column' : 'right_column',
             align: isLeft ? 'left' : 'right',
             isTreeColumn: gridModel?.treeMode && isLeft,
             flex: overrideSpec.width ? null : isLeft ? 2 : 1,

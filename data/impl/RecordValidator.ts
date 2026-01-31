@@ -2,11 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Field, Rule, StoreRecord, StoreRecordId, ValidationState} from '@xh/hoist/data';
+import {
+    Field,
+    RecordValidationMessagesMap,
+    RecordValidationResultsMap,
+    Rule,
+    StoreRecord,
+    StoreRecordId,
+    ValidationResult,
+    ValidationState
+} from '@xh/hoist/data';
 import {computed, observable, makeObservable, runInAction} from '@xh/hoist/mobx';
-import {compact, flatten, isEmpty, mapValues, values} from 'lodash';
+import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
 import {TaskObserver} from '../../core';
 
 /**
@@ -16,9 +25,9 @@ import {TaskObserver} from '../../core';
 export class RecordValidator {
     record: StoreRecord;
 
-    @observable.ref _fieldErrors: RecordErrorMap = null;
-    _validationTask = TaskObserver.trackLast();
-    _validationRunId = 0;
+    @observable.ref private fieldValidations: RecordValidationResultsMap = null;
+    private validationTask = TaskObserver.trackLast();
+    private validationRunId = 0;
 
     get id(): StoreRecordId {
         return this.record.id;
@@ -44,20 +53,28 @@ export class RecordValidator {
 
     /** Map of field names to field-level errors. */
     @computed.struct
-    get errors(): RecordErrorMap {
-        return this._fieldErrors ?? {};
+    get errors(): RecordValidationMessagesMap {
+        return mapValues(this.fieldValidations ?? {}, issues =>
+            compact(issues.map(it => (it?.severity === 'error' ? it.message : null)))
+        );
+    }
+
+    /** Map of field names to field-level ValidationResults. */
+    @computed.struct
+    get validationResults(): RecordValidationResultsMap {
+        return this.fieldValidations ?? {};
     }
 
     /** Count of all validation errors for the record. */
     @computed
     get errorCount(): number {
-        return flatten(values(this._fieldErrors)).length;
+        return flatten(values(this.errors)).length;
     }
 
     /** True if any fields are currently recomputing their validation state. */
     @computed
     get isPending(): boolean {
-        return this._validationTask.isPending;
+        return this.validationTask.isPending;
     }
 
     private _validators = [];
@@ -68,41 +85,43 @@ export class RecordValidator {
     }
 
     /**
-     * Recompute validations for the record and return true if valid.
+     * Recompute ValidationResults for the record and return true if valid.
      */
     async validateAsync(): Promise<boolean> {
-        let runId = ++this._validationRunId,
-            fieldErrors = {},
+        let runId = ++this.validationRunId,
+            fieldValidations = {},
             {record} = this,
             fieldsToValidate = record.store.fields.filter(it => !isEmpty(it.rules));
 
         const promises = fieldsToValidate.flatMap(field => {
-            fieldErrors[field.name] = [];
+            fieldValidations[field.name] = [];
             return field.rules.map(async rule => {
                 const result = await this.evaluateRuleAsync(record, field, rule);
-                fieldErrors[field.name].push(result);
+                fieldValidations[field.name].push(result);
             });
         });
-        await Promise.all(promises).linkTo(this._validationTask);
+        await Promise.all(promises).linkTo(this.validationTask);
 
-        if (runId !== this._validationRunId) return;
-        fieldErrors = mapValues(fieldErrors, it => compact(flatten(it)));
+        if (runId !== this.validationRunId) return;
+        fieldValidations = mapValues(fieldValidations, it => compact(flatten(it)));
 
-        runInAction(() => (this._fieldErrors = fieldErrors));
+        runInAction(() => (this.fieldValidations = fieldValidations));
 
         return this.isValid;
     }
 
     /** The current validation state for the record. */
     getValidationState(): ValidationState {
-        const {_fieldErrors} = this;
-
-        if (_fieldErrors === null) return 'Unknown'; // Before executing any rules
-
-        return values(_fieldErrors).some(errors => !isEmpty(errors)) ? 'NotValid' : 'Valid';
+        if (this.fieldValidations === null) return 'Unknown'; // Before executing any rules
+        if (this.errorCount) return 'NotValid';
+        return 'Valid';
     }
 
-    async evaluateRuleAsync(record: StoreRecord, field: Field, rule: Rule): Promise<string[]> {
+    async evaluateRuleAsync(
+        record: StoreRecord,
+        field: Field,
+        rule: Rule
+    ): Promise<ValidationResult[]> {
         const values = record.getValues(),
             {name, displayName} = field,
             value = record.get(name);
@@ -114,7 +133,9 @@ export class RecordValidator {
             });
 
             const ret = await Promise.all(promises);
-            return compact(flatten(ret));
+            return compact(flatten(ret)).map(issue =>
+                isString(issue) ? {message: issue, severity: 'error'} : issue
+            );
         }
     }
 
@@ -123,6 +144,3 @@ export class RecordValidator {
         return !when || when(field, record.getValues());
     }
 }
-
-/** Map of Field names to Field-level error lists. */
-export type RecordErrorMap = Record<string, string[]>;

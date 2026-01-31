@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
 import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {FilterTestFn, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
@@ -53,7 +53,7 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
     includeFields?: string[];
 
     /** Mode to use when filtering (default 'startWord'). */
-    matchMode?: 'start' | 'startWord' | 'any';
+    matchMode?: FilterMatchMode;
 
     /** Optional model for raw value binding - see comments on the `bind` prop for details. */
     model?: HoistModel;

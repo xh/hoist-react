@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
@@ -31,7 +31,9 @@ export function installHighcharts(HighchartsImpl) {
             timezone: undefined
         },
         lang: {
-            thousandsSep: ','
+            thousandsSep: ',',
+            // Repace default SI abbrev "G" (giga) with "b" for billions and lowercase "m" + "t"
+            numericSymbols: ['k', 'm', 'b', 't']
         }
     });
     Highcharts = HighchartsImpl;

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
@@ -25,7 +25,7 @@ import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilter
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
-import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
@@ -59,7 +59,8 @@ installDesktopImpls({
     useContextMenu,
     ModalSupportModel,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    DynamicTabSwitcherModel
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -170,7 +171,7 @@ const appContainerView = hoistCmp.factory({
 });
 
 const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
-    mask({bind: model.appLoadModel, spinner: true})
+    mask({bind: model.appLoadObserver, spinner: true})
 );
 
 const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));

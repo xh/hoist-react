@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {TaskObserver} from '../';
 import {LoadSpec} from './';
@@ -13,9 +13,9 @@ import {LoadSpec} from './';
 export interface Loadable {
     /**
      * For tracking the loading of this object.
-     * Note that this model will *not* track auto-refreshes.
+     * Note that this object will *not* track auto-refreshes.
      */
-    loadModel: TaskObserver;
+    loadObserver: TaskObserver;
 
     /** Date when last load was initiated. */
     lastLoadRequested: Date;

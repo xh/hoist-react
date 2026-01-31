@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, Some, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
 import {MaskProps} from '@xh/hoist/cmp/mask';
 import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -21,8 +21,7 @@ import {restGridToolbar} from './impl/RestGridToolbar';
 import {RestGridModel} from './RestGridModel';
 
 export interface RestGridProps
-    extends HoistProps<RestGridModel>,
-        Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
+    extends HoistProps<RestGridModel>, Omit<PanelProps, 'model' | 'modelConfig' | 'modelRef'> {
     /**
      * This constitutes an 'escape hatch' for applications that need to get to the underlying
      * AG Grid API. Use with care - settings made here might be overwritten and/or interfere with
@@ -34,7 +33,7 @@ export interface RestGridProps
      * Optional components rendered adjacent to the top toolbar's action buttons.
      * See also {@link tbar} to take full control of the toolbar.
      */
-    extraToolbarItems?: Some<ReactNode> | (() => Some<ReactNode>);
+    extraToolbarItems?: ReactNode | (() => ReactNode);
 
     /** Classname to be passed to RestForm. */
     formClassName?: string;
@@ -51,7 +50,7 @@ export interface RestGridProps
      * configs `toolbarActions`, `filterFields`, and `showRefreshButton`. If specified as an array,
      * will be passed as children to a Toolbar component.
      */
-    tbar?: Some<ReactNode>;
+    tbar?: ReactNode;
 }
 
 export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
@@ -99,9 +98,9 @@ const innerToolbar = hoistCmp.factory({
 
 function getMaskFromProp(model, mask) {
     if (isValidElement(mask)) {
-        mask = cloneElement<MaskProps>(mask, {bind: model.loadModel});
+        mask = cloneElement<MaskProps>(mask, {bind: model.loadObserver});
     } else if (mask === true) {
-        mask = model.loadModel;
+        mask = model.loadObserver;
     }
     return mask;
 }

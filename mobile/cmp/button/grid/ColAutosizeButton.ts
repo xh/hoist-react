@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {GridModel, GridAutosizeOptions} from '@xh/hoist/cmp/grid';
@@ -57,7 +57,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
                 }));
 
         return button({
-            icon: withDefault(icon, Icon.arrowsLeftRight()),
+            icon: withDefault(icon, Icon.magic()),
             disabled: withDefault(disabled, gridModel?.empty),
             className,
             onClick,

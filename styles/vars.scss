@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @use "sass:color";
@@ -199,19 +199,33 @@ body {
   --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
+  // Add -text variants - customized to lighter values for dark theme to optimize for legibility and contrast.
+  --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary));
+  --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success));
+  --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning));
+  --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger));
+
+  &.xh-dark {
+    --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary-lighter));
+    --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success-lighter));
+    --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning-lighter));
+    --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger-lighter));
+  }
+
 
   //---------
   // AppBar
   //---------
   --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
   --xh-appbar-border-color: var(--appbar-border-color, transparent);
+  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
   --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
   --xh-appbar-height: var(--appbar-height, 42);
   --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
   --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
   --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
   --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
-  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
+  --xh-appbar-user-profile-hover-color: var(--appbar-user-profile-hover-color, var(--xh-orange));
 
   &.xh-dark {
     --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
@@ -379,6 +393,10 @@ body {
   --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
   --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
 
+  // Control font features such as tabular numbers.
+  // For Hoist's default Inter font, see https://rsms.me/inter/#features
+  --xh-font-feature-settings: var(--font-feature-settings, 'tnum');
+
   --xh-font-size: var(--font-size, 13);
   --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
   --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
@@ -404,19 +422,65 @@ body {
   //------------------------
   // Form Fields
   //------------------------
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
+  --xh-form-field-margin: var(--form-field-margin, 0 0 var(--xh-pad-px) 0);
+  --xh-form-field-padding: var(--form-field-padding, 3px);
+
+  // Box shadow + focus border
   --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
+  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
+  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
   --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
   --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
-  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger));
-  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
+
+  // Label styling - common to all variants
+  --xh-form-field-label-color: var(--form-field-label-color, var(--xh-text-color));
+  --xh-form-field-label-font-size: var(--form-field-label-font-size, var(--xh-font-size-px));
+  --xh-form-field-label-font-style: var(--form-field-label-font-style, normal);
+  --xh-form-field-label-font-weight: var(--form-field-label-font-weight, normal);
+  --xh-form-field-label-text-transform: var(--form-field-label-text-transform, none);
+
+  // Label borders + padding - editable, not inline - the default case.
+  --xh-form-field-label-border-bottom: var(--form-field-label-border-bottom, none);
+  --xh-form-field-label-margin: var(--form-field-label-margin, 0 0 3px 0);
+  --xh-form-field-label-padding: var(--form-field-label-padding, 0);
+
+  // Label borders + padding - readonly, not inline
+  --xh-form-field-readonly-label-border-bottom: var(--form-field-readonly-label-border-bottom, var(--xh-form-field-label-border-bottom));
+  --xh-form-field-readonly-label-margin: var(--form-field-readonly-label-margin, var(--xh-form-field-label-margin));
+  --xh-form-field-readonly-label-padding: var(--form-field-readonly-label-padding, var(--xh-form-field-label-padding));
+
+  // Label borders + padding - inline, both editable and readonly
+  --xh-form-field-inline-label-border-bottom: var(--form-field-inline-label-border-bottom, var(--xh-form-field-label-border-bottom));
+  --xh-form-field-inline-label-margin: var(--form-field-inline-label-margin, 0); // Defaulted to zero for inline
+  --xh-form-field-inline-label-padding: var(--form-field-inline-label-padding, var(--xh-form-field-label-padding));
+
+  // Messages (general info text + validation results)
+  --xh-form-field-msg-font-size: var(--form-field-msg-font-size, var(--xh-font-size-small-px));
+  --xh-form-field-msg-line-height: var(--form-field-msg-line-height, 1.5em);
+  --xh-form-field-msg-margin: var(--form-field-msg-margin, var(--xh-pad-half-px) 0 0 0);
+  --xh-form-field-msg-text-transform: var(--form-field-msg-text-transform, none);
+
+  // Validation colors + borders
+  --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
+  --xh-form-field-info-border-color: var(--form-field-info-border-color, var(--xh-intent-primary-text-color));
+  --xh-form-field-info-border-width: var(--form-field-info-border-width, 1);
+  --xh-form-field-info-border-width-px: calc(var(--xh-form-field-info-border-width) * 1px);
+  --xh-form-field-info-box-shadow: var(--form-field-info-border-color, #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)});
+  --xh-form-field-info-color: var(--form-field-info-color, var(--xh-intent-primary-text-color));
+
+  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
+  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger-text-color));
   --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
   --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
-  --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
-  --xh-form-field-invalid-message-text-color: var(--form-field-invalid-message-text-color, var(--xh-intent-danger));
-  --xh-form-field-margin-bottom: var(--form-field-margin-bottom, 0);
-  --xh-form-field-margin-right: var(--form-field-margin-right, 0);
+  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
+  --xh-form-field-invalid-color: var(--form-field-invalid-color, var(--xh-intent-danger-text-color));
+
+  --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
+  --xh-form-field-warning-border-color: var(--form-field-warning-border-color, var(--xh-intent-warning-text-color));
+  --xh-form-field-warning-border-width: var(--form-field-warning-border-width, 1);
+  --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
+  --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
+  --xh-form-field-warning-color: var(--form-field-warning-color, var(--xh-intent-warning-text-color));
 
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
@@ -556,16 +620,18 @@ body {
   // Inputs
   //------------------------
   --xh-input-bg: var(--input-bg, var(--xh-bg));
-  --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
-  --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(92, 112, 128, 0.5));
+  --xh-input-disabled-bg: var(--input-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: var(--input-disabled-text-color, rgba(92, 112, 128, 0.5));
+  --xh-input-font-family: var(--input-font-family, var(--xh-font-family));
+  --xh-input-font-feature-settings: var(--input-font-feature-settings, var(--xh-font-feature-settings));
   --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
   --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
   --xh-input-disabled-checkmark-svg: var(--input-disabled-checkmark-svg, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e"));
 
   &.xh-dark {
     --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
-    --xh-input-disabled-bg: var(--form-field-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
-    --xh-input-disabled-text-color: var(--form-field-disabled-text-color, rgba(191, 204, 214, 0.5));
+    --xh-input-disabled-bg: var(--input-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
+    --xh-input-disabled-text-color: var(--input-disabled-text-color, rgba(191, 204, 214, 0.5));
     --xh-input-disabled-checkmark-svg: var(--input-disabled-checkmark-svg, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(191, 204, 214, 0.5)'/%3e%3c/svg%3e"));
   }
 
@@ -797,4 +863,13 @@ body {
       // to be blank/missing/glitched, even when light theme is active.
       --xh-viewport-bg: black;
     }
+
+  //------------------------
+  // DashCanvas
+  //------------------------
+  --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color, #{mc-muted('blue-grey', '50', 0%, 4%)});
+
+  &.xh-dark {
+    --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color,  var(--black, hsl(202, 17%, 8%)));
+  }
 }

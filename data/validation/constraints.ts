@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {Constraint} from '@xh/hoist/data';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isString, uniq} from 'lodash';
 import moment from 'moment';
-import {Constraint} from './Rule';
+
 /**
  * A set of validation functions to assist in form field validation.
  */

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import {
@@ -23,11 +23,7 @@ import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>,
-        StyleProps,
-        LayoutProps,
-        TestSupportProps,
-        Omit<BpButtonProps, 'ref'> {
+    extends HoistProps<M>, StyleProps, LayoutProps, TestSupportProps, Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;

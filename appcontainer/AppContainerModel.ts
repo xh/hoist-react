@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     AppSpec,
@@ -40,7 +40,7 @@ import {
     TrackService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {checkMinVersion, createSingleton, throwIf} from '@xh/hoist/utils/js';
+import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -60,7 +60,6 @@ import {AppStateModel} from './AppStateModel';
 import {PageStateModel} from './PageStateModel';
 import {RouterModel} from './RouterModel';
 import {installServicesAsync} from '../core/impl/InstallServices';
-import {MIN_HOIST_CORE_VERSION} from '../core/XH';
 
 /**
  * Root object for Framework GUI State.
@@ -77,7 +76,7 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
-    @managed appLoadModel = TaskObserver.trackAll();
+    @managed appLoadObserver = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -197,7 +196,7 @@ export class AppContainerModel extends HoistModel {
 
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
-            XH.authModel = createSingleton(this.appSpec.authModelClass);
+            XH.authModel = createSingleton(appSpec.authModelClass);
             const isAuthenticated = await XH.authModel.completeAuthAsync();
             if (!isAuthenticated) {
                 throwIf(
@@ -233,16 +232,14 @@ export class AppContainerModel extends HoistModel {
             }
 
             // Complete initialization process
-            await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
+            await installServicesAsync([LocalStorageService, SessionStorageService]);
+            await installServicesAsync([
+                EnvironmentService,
+                ConfigService,
+                PrefService,
+                JsonBlobService
+            ]);
             await installServicesAsync(TrackService);
-            await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
-
-            // Confirm hoist-core version after environment service loaded.
-            const hcVersion = XH.getEnv('hoistCoreVersion');
-            throwIf(
-                !checkMinVersion(hcVersion, MIN_HOIST_CORE_VERSION),
-                `This version of Hoist React requires the server to run Hoist Core ≥ v${MIN_HOIST_CORE_VERSION}. Version ${hcVersion} detected.`
-            );
 
             await installServicesAsync([
                 AlertBannerService,
@@ -258,7 +255,7 @@ export class AppContainerModel extends HoistModel {
 
             // init all models other than Router
             const models = [
-                this.appLoadModel,
+                this.appLoadObserver,
                 this.appStateModel,
                 this.pageStateModel,
                 this.routerModel,
@@ -279,7 +276,7 @@ export class AppContainerModel extends HoistModel {
             ];
             models.forEach((m: any) => m.init?.());
 
-            this.bindInitSequenceToAppLoadModel();
+            this.bindInitSequenceToAppLoadObserver();
 
             this.setDocTitle();
 
@@ -367,10 +364,10 @@ export class AppContainerModel extends HoistModel {
         this.appStateModel.setAppState(nextState);
     }
 
-    private bindInitSequenceToAppLoadModel() {
+    private bindInitSequenceToAppLoadObserver() {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
-        loadingPromise.linkTo(this.appLoadModel);
+        loadingPromise.linkTo(this.appLoadObserver);
     }
 
     private setViewportContent(content: string) {
