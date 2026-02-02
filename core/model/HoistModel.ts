@@ -90,7 +90,7 @@ import {Class} from 'type-fest';
  * - Calling {@link lookupModel} before the model is linked (create via {@link creates}/{@link useLocalModel},
  *   and call during/after {@link onLinked}).
  * - Overriding the constructor and forgetting to call `super()`.
- * - Implementing {@link doLoadAsync} but mutating observables outside MobX actions.
+ * - Mutating `@observables` outside MobX actions.
  *
  * CANONICAL USAGE
  * ```ts
