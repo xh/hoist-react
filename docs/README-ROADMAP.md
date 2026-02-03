@@ -12,6 +12,7 @@ documentation for all developers.
 | `/` (root) | Done | CLAUDE.md provides AI-focused project guidance |
 | `/cmp/grid/` | Done | Comprehensive grid documentation (322 lines) |
 | `/core/` | Done | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH |
+| `/data/` | Done | Store, StoreRecord, Field, filters, validation, Cube |
 
 ## Priority 1 - Core Framework
 
@@ -21,7 +22,7 @@ is essential for working effectively with any part of hoist-react.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | **Done** |
-| `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | Planned |
+| `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | **Done** |
 | `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | Planned |
 
 ## Priority 2 - Component System
@@ -123,3 +124,17 @@ _Use this section to track discussions, decisions, and context between documenta
   - Element factory system (alternative to JSX)
   - XH singleton overview
   - Decorator reference and common patterns
+
+### 2026-02-03
+- Completed `/data/README.md` covering:
+  - Store, StoreRecord, Field core classes with architecture diagram
+  - Store configuration table with all key properties
+  - Data loading (loadData, updateData) and local modifications (add/modify/remove)
+  - Filter system (FieldFilter, CompoundFilter, FunctionFilter, multi-value matching)
+  - Validation system (rules, constraints, severity levels: error/warning/info)
+  - Tree/hierarchical data support and summary records
+  - Cube aggregation system with View data access patterns (result vs connected stores)
+  - Integration with GridModel
+  - Common patterns (record reuse, processRawData, idSpec)
+  - Common pitfalls section
+- Updated `Store.ts` doc comment for `reuseRecords` to clarify default vs optimized behavior
