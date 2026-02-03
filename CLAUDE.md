@@ -140,3 +140,18 @@ Components in `/desktop/` and `/mobile/` are platform-specific. Shared code live
 - **Blueprint** - UI component library
 - **Router5** - Client-side routing
 - **Highcharts** - Charting (requires separate license)
+
+## Reference Implementation: Toolbox
+
+Toolbox is XH's example application showcasing hoist-react patterns and components. It provides
+real-world usage examples of models, components, services, and other framework features.
+
+- **GitHub**: https://github.com/xh/toolbox
+- **Local checkout**: `../toolbox` (relative to hoist-react root) - likely exists for Hoist library
+  developers only. Note that the client-side code that uses hoist-react is in the `../toolbox/client-app/src`
+  directory - focus your attention there.
+
+When working on hoist-react library code or documentation, reference Toolbox for practical examples
+of how features are used in applications. Note that the local checkout is specific to the Hoist
+development environment and would not be available to general application developers who have
+hoist-react as a dependency.
