@@ -3,9 +3,10 @@
 ## 81.0.0-SNAPSHOT - unreleased
 
 ### 💥 Breaking Changes
+* Requires hoist-core `v36.1` or greater.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
 a `boolean`.  For most apps this will require a trivial change to the signature of the
-implementation of `completeAuthAsync`.
+implementation of `HoistAuthModel.completeAuthAsync`.
 
 ### ⚙️ Technical
 * Improve the efficiency of initialization by reducing the number of server requests required

@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {deepFreeze} from '@xh/hoist/utils/js';
 import {HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
 
 /**
@@ -91,7 +90,7 @@ export class HoistAuthModel extends HoistModel {
     /**
      * Create a client-side HoistUser.
      *
-     * Application subclasses may override this method, but should typically call the super
+     * Application subclasses may override this method, but should first call the super
      * implementation.
      */
     protected createUser(rawUser: PlainObject, roles: string[]): HoistUser {
@@ -102,7 +101,21 @@ export class HoistAuthModel extends HoistModel {
         rawUser.isHoistAdminReader = rawUser.hasRole('HOIST_ADMIN_READER');
         rawUser.isHoistRoleManager = rawUser.hasRole('HOIST_ROLE_MANAGER');
         rawUser.hasGate = gate => this.hasGate(gate, rawUser);
-        return deepFreeze(rawUser) as HoistUser;
+        return rawUser as HoistUser;
+    }
+
+    /**
+     * Convert raw identity info as delivered by server into client-side IdentityInfo.
+     */
+    protected parseIdentityInfo(data: PlainObject): IdentityInfo {
+        let authUser, apparentUser: HoistUser;
+        if (data.user) {
+            authUser = apparentUser = this.createUser(data.user, data.roles);
+        } else {
+            authUser = this.createUser(data.authUser, data.authUserRoles);
+            apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
+        }
+        return {authUser, apparentUser};
     }
 
     //------------------------
@@ -120,16 +133,5 @@ export class HoistAuthModel extends HoistModel {
             if (match && this.hasGate(match[1], user)) return true;
         }
         return false;
-    }
-
-    private parseIdentityInfo(data: PlainObject): IdentityInfo {
-        let authUser, apparentUser: HoistUser;
-        if (data.user) {
-            authUser = apparentUser = this.createUser(data.user, data.roles);
-        } else {
-            authUser = this.createUser(data.authUser, data.authUserRoles);
-            apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
-        }
-        return {authUser, apparentUser};
     }
 }
