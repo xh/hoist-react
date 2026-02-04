@@ -13,6 +13,7 @@ documentation for all developers.
 | `/cmp/grid/` | Done | Comprehensive grid documentation (322 lines) |
 | `/core/` | Done | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH |
 | `/data/` | Done | Store, StoreRecord, Field, filters, validation, Cube |
+| `/svc/` | Done | All 18 built-in services, configuration keys, common patterns |
 
 ## Priority 1 - Core Framework
 
@@ -23,7 +24,7 @@ is essential for working effectively with any part of hoist-react.
 |---------|-------|-------------|--------|
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | **Done** |
 | `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | **Done** |
-| `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | Planned |
+| `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | **Done** |
 
 ## Priority 2 - Component System
 
@@ -138,3 +139,18 @@ _Use this section to track discussions, decisions, and context between documenta
   - Common patterns (record reuse, processRawData, idSpec)
   - Common pitfalls section
 - Updated `Store.ts` doc comment for `reuseRecords` to clarify default vs optimized behavior
+- Completed `/svc/README.md` covering:
+  - Overview of services architecture and singleton lifecycle
+  - Service installation pattern (XH.installServicesAsync)
+  - All 18 built-in services organized by category:
+    - Core Data Access: FetchService, ConfigService, PrefService
+    - User & Environment: IdentityService, EnvironmentService
+    - Activity & Monitoring: TrackService, ClientHealthService, InspectorService
+    - Communication: WebSocketService, AlertBannerService
+    - Grid Support: GridExportService, GridAutosizeService
+    - Persistence: JsonBlobService, LocalStorageService, SessionStorageService
+    - App Lifecycle: IdleService, AutoRefreshService, ChangelogService
+  - Configuration keys reference table
+  - User preference keys reference table
+  - Common patterns (loadSpec usage, debounced search with auto-abort, WebSocket subscriptions)
+  - Common pitfalls section
