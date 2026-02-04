@@ -17,7 +17,7 @@ import {FormConfig} from '../FormModel';
 export interface SubformsFieldConfig extends BaseFieldConfig {
     /**
      * Config for a {@link FormModel} to be auto-created to manage and validate the data for each
-     *
+     * object in this field's collection.
      */
     subforms: FormConfig;
 
