@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, XH} from './';
+import {HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
 
 /**
  *  Base class for managing authentication lifecycle.
@@ -36,33 +36,35 @@ export class HoistAuthModel extends HoistModel {
      * may be appropriate for fully SSO based solutions. Override to consult or
      * initialize third-party client resources such as OAuth.
      *
-     * @returns true if the user has an authenticated session with the server, false if not.
+     * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async completeAuthAsync(): Promise<boolean> {
+    async completeAuthAsync(): Promise<IdentityInfo> {
         return this.getAuthStatusFromServerAsync();
     }
 
     /**
-     * @returns true if the user has an authenticated session with the server, false if not.
+     * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return XH.fetchJson({url: 'xh/authStatus'})
-            .then(r => r.authenticated)
-            .catch(e => {
-                if (e.httpStatus === 401) return false;
-                throw e;
-            });
+    async getAuthStatusFromServerAsync(): Promise<IdentityInfo> {
+        try {
+            const {authenticated, identity} = await XH.fetchJson({url: 'xh/authStatus'});
+            return authenticated ? this.parseIdentityInfo(identity) : null;
+        } catch (e) {
+            if (e.httpStatus === 401) return null;
+            throw e;
+        }
     }
 
     /**
      * Process a manual login, submitted by user via form.
-     * @returns true if the user was successfully logged in, false if not.
+     * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
-    async loginWithCredentialsAsync(username: string, password: string): Promise<boolean> {
-        return XH.fetchJson({
+    async loginWithCredentialsAsync(username: string, password: string): Promise<IdentityInfo> {
+        const {success, identity} = await XH.fetchJson({
             url: 'xh/login',
             params: {username, password}
-        }).then(r => r.success);
+        });
+        return success ? this.parseIdentityInfo(identity) : null;
     }
 
     /**
@@ -83,5 +85,53 @@ export class HoistAuthModel extends HoistModel {
      */
     async loadConfigAsync(): Promise<PlainObject> {
         return XH.fetchService.getJson({url: 'xh/authConfig'});
+    }
+
+    /**
+     * Create a client-side HoistUser.
+     *
+     * Application subclasses may override this method, but should first call the super
+     * implementation.
+     */
+    protected createUser(rawUser: PlainObject, roles: string[]): HoistUser {
+        if (!rawUser) return null;
+        rawUser.roles = roles;
+        rawUser.hasRole = role => rawUser.roles.includes(role);
+        rawUser.isHoistAdmin = rawUser.hasRole('HOIST_ADMIN');
+        rawUser.isHoistAdminReader = rawUser.hasRole('HOIST_ADMIN_READER');
+        rawUser.isHoistRoleManager = rawUser.hasRole('HOIST_ROLE_MANAGER');
+        rawUser.hasGate = gate => this.hasGate(gate, rawUser);
+        return rawUser as HoistUser;
+    }
+
+    /**
+     * Convert raw identity info as delivered by server into client-side IdentityInfo.
+     */
+    protected parseIdentityInfo(data: PlainObject): IdentityInfo {
+        let authUser, apparentUser: HoistUser;
+        if (data.user) {
+            authUser = apparentUser = this.createUser(data.user, data.roles);
+        } else {
+            authUser = this.createUser(data.authUser, data.authUserRoles);
+            apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
+        }
+        return {authUser, apparentUser};
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private hasGate(gate, user): boolean {
+        const gateUsers = XH.getConf(gate, '').trim(),
+            tokens = gateUsers.split(',').map(it => it.trim()),
+            groupPattern = /\[([\w-]+)\]/;
+
+        if (gateUsers === '*' || tokens.includes(user.username)) return true;
+
+        for (let i = 0; i < tokens.length; i++) {
+            const match = groupPattern.exec(tokens[i]);
+            if (match && this.hasGate(match[1], user)) return true;
+        }
+        return false;
     }
 }

@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, HoistUser, XH} from '@xh/hoist/core';
-import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {HoistService, HoistUser, IdentityInfo, XH} from '@xh/hoist/core';
+import {throwIf} from '@xh/hoist/utils/js';
 
 /**
  * Provides basic information related to the authenticated user, including application roles.
@@ -17,22 +17,11 @@ import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 export class IdentityService extends HoistService {
     static instance: IdentityService;
 
-    private _authUser: HoistUser;
-    private _apparentUser: HoistUser;
-
-    override async initAsync() {
-        const data = await XH.fetchJson({url: 'xh/getIdentity'});
-        if (data.user) {
-            this._apparentUser = this._authUser = this.createUser(data.user, data.roles);
-        } else {
-            this._apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
-            this._authUser = this.createUser(data.authUser, data.authUserRoles);
-        }
-    }
+    private identity: IdentityInfo;
 
     /** @returns current acting user (see authUser for notes on impersonation) */
     get user(): HoistUser {
-        return this._apparentUser;
+        return this.identity?.apparentUser;
     }
 
     /** @returns current acting user's username. */
@@ -59,7 +48,7 @@ export class IdentityService extends HoistService {
      * administrator, whereas `this.user` will return the user they are impersonating.
      */
     get authUser(): HoistUser {
-        return this._authUser;
+        return this.identity?.authUser;
     }
 
     get authUsername(): string {
@@ -71,7 +60,7 @@ export class IdentityService extends HoistService {
     //------------------------
     /** Is an impersonation session currently active? */
     get isImpersonating(): boolean {
-        return this._authUser !== this._apparentUser;
+        return this.identity && this.authUser !== this.user;
     }
 
     /**
@@ -91,7 +80,7 @@ export class IdentityService extends HoistService {
      * affordances and to trigger impersonation actions.
      */
     get canAuthUserImpersonate(): boolean {
-        return this.canUserImpersonate(this._authUser);
+        return this.canUserImpersonate(this.authUser);
     }
 
     /**
@@ -128,34 +117,16 @@ export class IdentityService extends HoistService {
         }
     }
 
-    //------------------------
+    /**
+     * @internal -- for framework use onlu.
+     */
+    initIdentity(identity: IdentityInfo) {
+        this.identity = identity;
+    }
+
+    //-------------------
     // Implementation
-    //------------------------
-    private createUser(user, roles): HoistUser {
-        if (!user) return null;
-        user.roles = roles;
-        user.hasRole = role => user.roles.includes(role);
-        user.isHoistAdmin = user.hasRole('HOIST_ADMIN');
-        user.isHoistAdminReader = user.hasRole('HOIST_ADMIN_READER');
-        user.isHoistRoleManager = user.hasRole('HOIST_ROLE_MANAGER');
-        user.hasGate = gate => this.hasGate(gate, user);
-        return deepFreeze(user) as HoistUser;
-    }
-
-    private hasGate(gate, user): boolean {
-        const gateUsers = XH.getConf(gate, '').trim(),
-            tokens = gateUsers.split(',').map(it => it.trim()),
-            groupPattern = /\[([\w-]+)\]/;
-
-        if (gateUsers === '*' || tokens.includes(user.username)) return true;
-
-        for (let i = 0; i < tokens.length; i++) {
-            const match = groupPattern.exec(tokens[i]);
-            if (match && this.hasGate(match[1], user)) return true;
-        }
-        return false;
-    }
-
+    //-------------------
     private canUserImpersonate(user: HoistUser): boolean {
         return user.hasRole(`HOIST_IMPERSONATOR`) && XH.getConf('xhEnableImpersonation');
     }
