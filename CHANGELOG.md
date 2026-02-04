@@ -12,6 +12,10 @@ implementation of `HoistAuthModel.completeAuthAsync`.
 * Improve the efficiency of initialization by reducing the number of server requests required
   to get user identity.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
+
 ## 80.0.1 - 2026-01-28
 
 ### ⚙️ Technical
