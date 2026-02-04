@@ -12,6 +12,9 @@ implementation of `HoistAuthModel.completeAuthAsync`.
 * Improve the efficiency of initialization by reducing the number of server requests required
   to get user identity.
 
+### ⚙️ Typescript API Adjustments
+* Updated `GridFilterModel.setFilter` signature to accept `FilterLike` rather than `Filter`.
+
 ## 80.0.1 - 2026-01-28
 
 ### ⚙️ Technical

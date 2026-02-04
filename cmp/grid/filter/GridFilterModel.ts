@@ -138,7 +138,7 @@ export class GridFilterModel extends HoistModel {
         this.dialogOpen = false;
     }
 
-    setFilter(filter: Filter) {
+    setFilter(filter: FilterLike) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
