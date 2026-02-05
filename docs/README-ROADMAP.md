@@ -61,6 +61,16 @@ Smaller packages that provide important but more specialized functionality.
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | Planned |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | Planned |
 
+## Concepts
+
+Cross-cutting concepts that don't map directly to a single sub-package. These documents explain
+patterns and systems that span multiple packages.
+
+| Concept | Description | Status |
+|---------|-------------|--------|
+| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others. | Planned |
+| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking. | Planned |
+
 ## Documentation Guidelines
 
 Each README should follow the pattern established in `/cmp/grid/README.md`:

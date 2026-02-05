@@ -107,7 +107,10 @@ All Hoist artifacts extend `HoistBase`, which provides:
 - `@observable` MobX decorator - Marks properties as observable state
 - `@action` MobX decorator - Marks methods that modify observable state
 - `@bindable` Hoist decorator - Marks properties as observable and generates setter methods automatically
-  marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator)
+  marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator).
+  **Setter convention:** If a class defines an explicit public `setFoo()` method, call it (it likely
+  has additional logic). Otherwise for auto-generated `@bindable` setters, prefer direct assignment
+  (`model.myProp = value`) over calling the generated setter (`model.setMyProp(value)`).
 - `@computed` MobX decorator - Marks getter properties as derived/computed state
 
 #### Memory/lifecycle Management Conventions

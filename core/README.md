@@ -377,7 +377,6 @@ export const statusBadge = hoistCmp.factory({
 - Model receives `onLinked`/`afterLinked` callbacks
 
 **`uses(selector)`** - Component receives model from outside:
-- Looks for model in props, then context
 - Selector can be: class, `'*'` (any), `true`, or predicate function
 - Options control fallback behavior:
 
@@ -388,6 +387,56 @@ uses(GridModel, {createDefault: true})             // Create if not found
 uses(GridModel, {createFromConfig: true})          // Create from modelConfig prop
 uses('*')                                          // Accept any model from context
 ```
+
+**Model Resolution and Context Lookup:**
+
+When a component specifies `uses(ModelClass)`, the model is resolved in this order:
+
+1. **Explicit prop** - A model instance passed directly via the `model` prop
+2. **Context lookup** - Search ancestor components for a matching published model
+3. **Default creation** - If `createDefault: true`, create a new instance as fallback
+
+Context lookup is enabled by default (`fromContext: true`), and `creates()` components publish
+their models to context by default (`publishMode: 'default'`). This means child components can
+automatically find their parent's model without explicit prop passing.
+
+A common pattern: a panel model creates a `GridModel` and assigns it to a public property. The
+component renders `grid()` with no model prop - the Grid component's `uses(GridModel)` spec
+automatically finds the GridModel in context:
+
+```typescript
+// Model creates and holds a GridModel
+class PortfolioPanelModel extends HoistModel {
+    @managed gridModel: GridModel;
+
+    constructor() {
+        super();
+        this.gridModel = new GridModel({
+            columns: [{field: 'name'}, {field: 'value'}]
+        });
+    }
+}
+
+// Component renders grid() - no model prop needed!
+const [PortfolioPanel, portfolioPanel] = hoistCmp.withFactory({
+    model: creates(PortfolioPanelModel),
+    render() {
+        return panel({
+            title: 'Portfolio',
+            item: grid()  // GridModel found via context lookup
+        });
+    }
+});
+```
+
+This works because:
+1. `PortfolioPanelModel` is published to context when `PortfolioPanel` renders
+2. `grid()` uses `uses(GridModel)` internally and searches context for a GridModel
+3. Context lookup traverses ancestor models' public properties, finding `gridModel`
+
+This pattern enables clean component hierarchies where models are defined at the appropriate level
+and automatically available to descendants, eliminating prop drilling. When you need to pass a
+model explicitly (e.g., multiple GridModels), see [Common Patterns](#multiple-models-of-same-type).
 
 ### Forward Refs
 
@@ -561,6 +610,39 @@ async loadUsersAsync() {...}
 async submitFormAsync() {...}
 async initAsync() {...}
 ```
+
+### Multiple Models of Same Type
+
+When a model contains multiple instances of the same model class (e.g., two GridModels), context
+lookup cannot determine which one to use. In these cases, pass the model explicitly:
+
+```typescript
+class ComparisonPanelModel extends HoistModel {
+    @managed leftGridModel: GridModel;
+    @managed rightGridModel: GridModel;
+
+    constructor() {
+        super();
+        this.leftGridModel = new GridModel({columns: [...]});
+        this.rightGridModel = new GridModel({columns: [...]});
+    }
+}
+
+const [ComparisonPanel, comparisonPanel] = hoistCmp.withFactory({
+    model: creates(ComparisonPanelModel),
+    render({model}) {
+        return hbox(
+            grid({model: model.leftGridModel}),   // Explicit - context has two GridModels
+            grid({model: model.rightGridModel})
+        );
+    }
+});
+```
+
+Use explicit model props when:
+- Multiple models of the same type exist in context
+- You want to bypass context lookup for clarity
+- The model comes from a different part of the hierarchy
 
 ### Error Handling
 
