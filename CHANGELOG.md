@@ -8,7 +8,16 @@
 a `boolean`.  For most apps this will require a trivial change to the signature of the
 implementation of `HoistAuthModel.completeAuthAsync`.
 
+### 🐞 Bug Fixes
+
+* Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
+
+### ⚙️ Typescript API Adjustments
+
+* Updated `GridFilterModel.setFilter` signature to accept `FilterLike` rather than `Filter`.
+
 ### ⚙️ Technical
+
 * Improve the efficiency of initialization by reducing the number of server requests required
   to get user identity.
 
