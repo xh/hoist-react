@@ -10,7 +10,7 @@ import {FieldModel} from '@xh/hoist/cmp/form';
 import {type PersistOptions} from '@xh/hoist/core';
 import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
 import {makeObservable} from '@xh/hoist/mobx';
-import {uniq} from 'lodash';
+import {uniq, without} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
 export interface FormFieldSetConfig {
@@ -23,6 +23,9 @@ export interface FormFieldSetConfig {
     /** True to disable all descendant fields. */
     disabled?: boolean;
 
+    /** True to make all descendant fields readonly. */
+    readonly?: boolean;
+
     /** Options governing persistence. */
     persistWith?: PersistOptions;
 }
@@ -30,18 +33,24 @@ export interface FormFieldSetConfig {
 export class FormFieldSetModel extends CardModel {
     declare config: FormFieldSetConfig;
 
-    @observable.ref parent: FormFieldSetModel | null;
+    @observable.ref parent: FormFieldSetModel;
 
     //-----------------
     // Implementation
     //-----------------
-    @observable.ref private formFieldSetModelRegistry: FormFieldSetModel[] = [];
-    @observable.ref private fieldModelRegistry: FieldModel[] = [];
+    @observable.ref private childFormFieldSetModels: FormFieldSetModel[] = [];
+    @observable.ref private childFieldModels: FieldModel[] = [];
     @observable private isDisabled: boolean;
+    @observable private isReadonly: boolean;
 
     @computed
     get disabled(): boolean {
-        return this.isDisabled || this.ancestors.some(it => it.isDisabled);
+        return this.isDisabled || this.parent?.disabled;
+    }
+
+    @computed
+    get readonly(): boolean {
+        return this.isReadonly || this.parent?.readonly;
     }
 
     @computed
@@ -57,21 +66,21 @@ export class FormFieldSetModel extends CardModel {
     get displayedValidationMessages(): string[] {
         const ret: string[] = [],
             {displayedSeverity} = this;
-        this.fieldModels.forEach(fieldModel => {
-            if (!fieldModel.validationDisplayed) return;
-            fieldModel.validationResults.forEach(validationResult => {
-                if (validationResult.severity === displayedSeverity) {
-                    ret.push(validationResult.message);
-                }
-            });
-        });
-        return ret;
+
+        if (!displayedSeverity) return ret;
+
+        return this.fieldModels
+            .filter(it => it.validationDisplayed)
+            .flatMap(it => it.validationResults)
+            .filter(it => it.severity === displayedSeverity)
+            .map(it => it.message);
     }
 
-    constructor({disabled = false, ...rest}: FormFieldSetConfig = {}) {
+    constructor({disabled = false, readonly = false, ...rest}: FormFieldSetConfig = {}) {
         super({...rest, renderMode: 'always'});
         makeObservable(this);
         this.isDisabled = disabled;
+        this.isReadonly = readonly;
     }
 
     @action
@@ -79,48 +88,43 @@ export class FormFieldSetModel extends CardModel {
         this.isDisabled = disabled;
     }
 
+    @action
+    setReadonly(readonly: boolean) {
+        this.isReadonly = readonly;
+    }
+
     //------------------------
     // Implementation
     //------------------------
     @computed
-    private get ancestors(): FormFieldSetModel[] {
-        return this.parent ? [this.parent, ...this.parent.ancestors] : [];
-    }
-
-    @computed
     private get fieldModels(): FieldModel[] {
         return [
-            ...this.fieldModelRegistry,
-            ...this.formFieldSetModelRegistry.flatMap(it => it.fieldModels)
+            ...this.childFieldModels,
+            ...this.childFormFieldSetModels.flatMap(it => it.fieldModels)
         ];
     }
 
     /** @internal */
     @action
     registerChildFieldModel(fieldModel: FieldModel) {
-        this.fieldModelRegistry = uniq([...this.fieldModelRegistry, fieldModel]);
+        this.childFieldModels = uniq([...this.childFieldModels, fieldModel]);
     }
 
     /** @internal */
     @action
     unregisterChildFieldModel(fieldModel: FieldModel) {
-        this.fieldModelRegistry = this.fieldModelRegistry.filter(it => it !== fieldModel);
+        this.childFieldModels = without(this.childFieldModels, fieldModel);
     }
 
     /** @internal */
     @action
     registerChildFormFieldSetModel(formFieldSetModel: FormFieldSetModel) {
-        this.formFieldSetModelRegistry = uniq([
-            ...this.formFieldSetModelRegistry,
-            formFieldSetModel
-        ]);
+        this.childFormFieldSetModels = uniq([...this.childFormFieldSetModels, formFieldSetModel]);
     }
 
     /** @internal */
     @action
     unregisterChildFormFieldSetModel(formFieldSetModel: FormFieldSetModel) {
-        this.formFieldSetModelRegistry = this.formFieldSetModelRegistry.filter(
-            it => it !== formFieldSetModel
-        );
+        this.childFormFieldSetModels = without(this.childFormFieldSetModels, formFieldSetModel);
     }
 }

@@ -11,6 +11,7 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
+import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -27,7 +28,6 @@ import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/imp
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
-import {collapseToggleButton} from '@xh/hoist/desktop/cmp/button/card/CollapseToggleButton';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
@@ -47,7 +47,6 @@ import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
 installDesktopImpls({
-    collapseToggleButton,
     tabContainerImpl,
     dockContainerImpl,
     storeFilterFieldImpl,
@@ -62,7 +61,8 @@ installDesktopImpls({
     ModalSupportModel,
     errorMessageImpl,
     maskImpl,
-    DynamicTabSwitcherModel
+    DynamicTabSwitcherModel,
+    cardHeaderImpl
 });
 /**
  * Top-level wrapper for Desktop applications.

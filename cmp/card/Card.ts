@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {box, div, fieldset, legend} from '@xh/hoist/cmp/layout';
+import {box, fieldset} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     hoistCmp,
@@ -16,16 +16,13 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
-import {collapseToggleButton as desktopCollapseToggleButtonImpl} from '@xh/hoist/dynamics/desktop';
-import {collapseToggleButton as mobileCollapseToggleButtonImpl} from '@xh/hoist/dynamics/mobile';
-import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
-import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
+import {cardHeaderImpl as desktopCardHeaderImpl} from '@xh/hoist/dynamics/desktop';
+import {cardHeaderImpl as mobileCardHeaderImpl} from '@xh/hoist/dynamics/mobile';
+import {mergeDeep, TEST_ID, warnIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray} from 'lodash';
 import {type ReactElement, type ReactNode, useRef} from 'react';
 import {CardModel} from './CardModel';
-
 import './Card.scss';
 
 export interface CardProps extends HoistProps<CardModel>, TestSupportProps, LayoutProps {
@@ -37,12 +34,12 @@ export interface CardProps extends HoistProps<CardModel>, TestSupportProps, Layo
     title?: ReactNode;
     /** Tooltip to show when hovering over the inline header. */
     tooltip?: ReactElement | string;
-    /** Additional props to pass to the inner content box. */
+    /** Additional props to pass to the inner box hosting the content. */
     innerBoxProps?: BoxProps;
 }
 
 /**
- * A bounded container for grouping related content, with optional inline header and collapsibility.
+ * A bordered container for grouping related content with optional inline header and collapsibility.
  * Children are arranged vertically in a flexbox container by default. innerBoxProps can be
  * passed to control the flex direction and other layout aspects of the inner container.
  * This component leverages an HTML fieldset and legend to provide base styling.
@@ -66,15 +63,17 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
         model,
         ...rest
     }) {
+        const {isMobileApp} = XH;
+        warnIf(tooltip && isMobileApp, 'Tooltips are not supported on mobile - will be ignored.');
+
         const wasDisplayed = useRef(false),
-            {collapsible, collapsed, renderMode} = model;
+            {collapsed, renderMode} = model;
 
         let [layoutProps, {testId, ...restProps}] = splitLayoutProps(rest);
 
         restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId}, restProps);
 
-        const items = castArray(children),
-            classes = [];
+        const classes: string[] = [];
 
         if (collapsed) {
             classes.push('xh-card--collapsed');
@@ -89,41 +88,32 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
             classes.push(`xh-card--intent-none`);
         }
 
-        const collapseToggleButton = XH.isMobileApp
-            ? mobileCollapseToggleButtonImpl
-            : desktopCollapseToggleButtonImpl;
+        const cardHeader = XH.isMobileApp ? mobileCardHeaderImpl : desktopCardHeaderImpl;
 
-        let content: ReactNode[];
-        switch (renderMode) {
-            case 'always':
-                content = items;
-                break;
-
-            case 'lazy':
-                content = collapsed && !wasDisplayed.current ? [] : items;
-                break;
-
-            // unmountOnHide
-            default:
-                content = collapsed ? [] : items;
-                break;
-        }
+        const items: ReactNode = (() => {
+            switch (renderMode) {
+                case 'always':
+                    return children;
+                case 'lazy':
+                    return collapsed && !wasDisplayed.current ? [] : children;
+                case 'unmountOnHide':
+                    return collapsed ? [] : children;
+            }
+        })();
 
         return fieldset({
             className: classNames(className, classes),
             items: [
-                collapsible
-                    ? collapseToggleButton({
-                          icon,
-                          text: title,
-                          tooltip,
-                          intent,
-                          cardModel: model
-                      })
-                    : cardTitle({icon, title, tooltip, intent}),
+                cardHeader({
+                    icon,
+                    intent,
+                    model,
+                    title,
+                    tooltip
+                }),
                 box({
                     className: 'xh-card__inner',
-                    items: content,
+                    items,
                     display: collapsed ? 'none' : 'flex',
                     flexDirection: 'column',
                     flexWrap: 'wrap',
@@ -132,29 +122,5 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
             ],
             ...restProps
         });
-    }
-});
-
-interface CardTitleProps extends HoistProps {
-    icon?: ReactElement;
-    intent?: Intent;
-    title?: ReactNode;
-    tooltip?: ReactElement | string;
-}
-
-const cardTitle = hoistCmp.factory<CardTitleProps>({
-    displayName: 'CardTitle',
-    className: 'xh-card__header',
-    model: false,
-
-    render({className, icon, intent, title, tooltip}) {
-        if (!icon && !title) return null;
-
-        const header = div({
-            className: classNames(className, `xh-card__header--intent-${intent ?? 'none'}`),
-            items: [icon, title]
-        });
-
-        return legend(tooltip ? bpTooltip({item: header, content: tooltip, intent}) : header);
     }
 });

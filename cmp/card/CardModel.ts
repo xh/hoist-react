@@ -13,8 +13,10 @@ import {
     PersistOptions,
     RenderMode
 } from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {makeObservable} from '@xh/hoist/mobx';
+import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
+import {action, observable} from 'mobx';
 
 export interface CardModelConfig {
     /** Can card be collapsed? */
@@ -31,7 +33,7 @@ export interface CardModelConfig {
 }
 
 export interface CardPersistState {
-    collapsed: boolean;
+    collapsed?: boolean;
 }
 
 /**
@@ -51,7 +53,7 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     //---------------------
     // Observable State
     //---------------------
-    @bindable
+    @observable
     collapsed: boolean = false;
 
     constructor({
@@ -78,17 +80,26 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
         }
     }
 
+    //----------------------
+    // Actions + public setters
+    //----------------------
+    @action
+    setCollapsed(collapsed: boolean) {
+        throwIf(collapsed && !this.collapsible, 'Card does not support collapsing.');
+        this.collapsed = collapsed;
+    }
+
     //---------------------
     // Persistable Interface
     //---------------------
     getPersistableState(): PersistableState<CardPersistState> {
-        return new PersistableState({collapsed: this.collapsed});
+        const ret: CardPersistState = {};
+        if (this.collapsible) ret.collapsed = this.collapsed;
+        return new PersistableState(ret);
     }
 
     setPersistableState(state: PersistableState<CardPersistState>) {
         const {collapsed} = state.value;
-        if (!isNil(collapsed)) {
-            this.collapsed = collapsed;
-        }
+        if (this.collapsible && !isNil(collapsed)) this.collapsed = collapsed;
     }
 }

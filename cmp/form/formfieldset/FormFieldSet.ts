@@ -15,10 +15,11 @@ import {
     type LayoutProps,
     type TestSupportProps,
     useContextModel,
-    uses
+    uses,
+    XH
 } from '@xh/hoist/core';
 import {ValidationSeverity} from '@xh/hoist/data';
-import {FormFieldSetModel} from '@xh/hoist/desktop/cmp/form/formfieldset/FormFieldSetModel';
+import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {runInAction} from 'mobx';
 import {ReactElement, type ReactNode, useEffect} from 'react';
 import './FormFieldSet.scss';
@@ -41,7 +42,7 @@ export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetPro
         createDefault: true
     }),
     render({model, ...props}) {
-        // Handle nested FormFieldSets
+        // Handle if nested within another FormFieldSet
         const parentModel = useContextModel(FormFieldSetModel);
         useEffect(() => {
             if (parentModel) {
@@ -59,9 +60,9 @@ export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetPro
 
         const {displayedSeverity, displayedValidationMessages} = model;
 
-        // Construct tooltip if there are validation messages to show
+        // Construct tooltip if on desktop and there are validation messages to show
         let tooltip: ReactElement | string;
-        if (displayedSeverity) {
+        if (!XH.isMobileApp && displayedSeverity) {
             tooltip =
                 displayedValidationMessages.length === 1
                     ? displayedValidationMessages[0]

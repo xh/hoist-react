@@ -15,7 +15,6 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let collapseToggleButton = null;
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
@@ -31,14 +30,13 @@ export let useContextMenu = null;
 export let errorMessageImpl = null;
 export let maskImpl = null;
 export let DynamicTabSwitcherModel = null;
-
+export let cardHeaderImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    collapseToggleButton = impls.collapseToggleButton;
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;
@@ -54,4 +52,5 @@ export function installDesktopImpls(impls) {
     errorMessageImpl = impls.errorMessageImpl;
     maskImpl = impls.maskImpl;
     DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
+    cardHeaderImpl = impls.cardHeaderImpl;
 }

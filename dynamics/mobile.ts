@@ -15,7 +15,6 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let collapseToggleButton = null;
 export let ColChooserModel = null;
 export let colChooser = null;
 export let zoneMapper = null;
@@ -24,6 +23,7 @@ export let storeFilterFieldImpl = null;
 export let tabContainerImpl = null;
 export let errorMessageImpl = null;
 export let maskImpl = null;
+export let cardHeaderImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -31,7 +31,6 @@ export let maskImpl = null;
  * Not for Application use.
  */
 export function installMobileImpls(impls) {
-    collapseToggleButton = impls.collapseToggleButton;
     ColChooserModel = impls.ColChooserModel;
     colChooser = impls.colChooser;
     zoneMapper = impls.zoneMapper;
@@ -40,4 +39,5 @@ export function installMobileImpls(impls) {
     tabContainerImpl = impls.tabContainerImpl;
     errorMessageImpl = impls.errorMessageImpl;
     maskImpl = impls.maskImpl;
+    cardHeaderImpl = impls.cardHeaderImpl;
 }

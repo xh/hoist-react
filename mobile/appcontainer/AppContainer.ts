@@ -8,6 +8,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {cardHeaderImpl} from '@xh/hoist/mobile/cmp/card/impl/CardHeaderImpl';
 import {errorMessageImpl} from '@xh/hoist/mobile/cmp/error/impl/ErrorMessage';
 import {maskImpl} from '@xh/hoist/mobile/cmp/mask/impl/Mask';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
@@ -18,7 +19,6 @@ import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
-import {collapseToggleButton} from '@xh/hoist/mobile/cmp/button/card/CollapseToggleButton';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
@@ -35,7 +35,6 @@ import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
 installMobileImpls({
-    collapseToggleButton,
     tabContainerImpl,
     storeFilterFieldImpl,
     pinPadImpl,
@@ -43,7 +42,8 @@ installMobileImpls({
     ColChooserModel,
     zoneMapper,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    cardHeaderImpl
 });
 
 /**

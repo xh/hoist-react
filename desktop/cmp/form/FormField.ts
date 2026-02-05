@@ -21,7 +21,7 @@ import {
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {FormFieldSetModel} from '@xh/hoist/desktop/cmp/form/formfieldset/FormFieldSetModel';
+import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -140,7 +140,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Model related props
         const isRequired = model?.isRequired || false,
-            readonly = model?.readonly || false,
+            readonly = model?.readonly || fieldSetModel?.readonly || false,
             disabled = props.disabled || model?.disabled || fieldSetModel?.disabled,
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
