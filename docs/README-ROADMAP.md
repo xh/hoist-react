@@ -10,7 +10,7 @@ documentation for all developers.
 | Package | Status | Notes |
 |---------|--------|-------|
 | `/` (root) | Done | CLAUDE.md provides AI-focused project guidance |
-| `/cmp/grid/` | Done | Comprehensive grid documentation (322 lines) |
+| `/cmp/` | Done | Top-level overview + sub-package READMEs for grid, layout, form, input, tab, viewmanager |
 | `/core/` | Done | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH |
 | `/data/` | Done | Store, StoreRecord, Field, filters, validation, Cube |
 | `/svc/` | Done | All 18 built-in services, configuration keys, common patterns |
@@ -33,9 +33,9 @@ interacts with Hoist.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | Planned |
-| `/desktop/` | 240 | Desktop-specific components and app container | Planned |
-| `/mobile/` | 131 | Mobile-specific components and app container | Planned |
+| `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | **Done** |
+| `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
+| `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
 
 ## Priority 3 - Key Utilities
 
@@ -135,6 +135,23 @@ _Use this section to track discussions, decisions, and context between documenta
   - Element factory system (alternative to JSX)
   - XH singleton overview
   - Decorator reference and common patterns
+
+### 2026-02-04
+- Completed all `/cmp/` sub-package READMEs (interactively reviewed and refined):
+  - `/cmp/README.md` - Top-level overview cataloging all 24 sub-packages
+  - `/cmp/layout/README.md` - Box/Frame/Viewport, LayoutProps pixel conversion, BoxProps table
+  - `/cmp/form/README.md` - FormModel, FieldModel, SubformsFieldModel, validation, Form context
+  - `/cmp/input/README.md` - HoistInputModel, change/commit lifecycle, custom input guide
+  - `/cmp/tab/README.md` - TabContainerModel, routing, render/refresh modes, dynamic switcher
+  - `/cmp/viewmanager/README.md` - ViewManagerModel, sharing/visibility model, pinning, auto-save, default views
+- Updated `/core/README.md` with model context lookup and resolution order documentation
+- Added `@bindable` setter convention to `CLAUDE.md` (prefer direct assignment over generated setters)
+- Added Persistence and Lifecycles concept docs to roadmap
+- Key conventions established during review:
+  - No Default columns in config tables (fold into descriptions)
+  - Constructor-based initialization for complex models (GridModel, etc.)
+  - No `myApp.` prefix in localStorageKey examples (auto-namespaced)
+  - Direct assignment for `@bindable` props; call explicit `setFoo()` only when defined
 
 ### 2026-02-03
 - Completed `/data/README.md` covering:
