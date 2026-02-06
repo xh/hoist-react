@@ -5,16 +5,6 @@ provide AI coding assistants (Claude Code, etc.) with rich context for working w
 both for library development and application development. A secondary goal is improving human-readable
 documentation for all developers.
 
-## Completed
-
-| Package | Notes | Status |
-|---------|-------|--------|
-| `/` (root) | CLAUDE.md provides AI-focused project guidance | [Done](../CLAUDE.md) |
-| `/cmp/` | Top-level overview + sub-package READMEs for grid, layout, form, input, tab, viewmanager | [Done](../cmp/README.md) |
-| `/core/` | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH | [Done](../core/README.md) |
-| `/data/` | Store, StoreRecord, Field, filters, validation, Cube | [Done](../data/README.md) |
-| `/svc/` | All 18 built-in services, configuration keys, common patterns | [Done](../svc/README.md) |
-
 ## Priority 1 - Core Framework
 
 These packages define the fundamental patterns that everything else builds on. Understanding these
@@ -22,6 +12,7 @@ is essential for working effectively with any part of hoist-react.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
+| `/` (root) | 1 | CLAUDE.md provides AI-focused project guidance | [Done](../CLAUDE.md) |
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | [Done](../core/README.md) |
 | `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | [Done](../data/README.md) |
 | `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | [Done](../svc/README.md) |
