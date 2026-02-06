@@ -7,13 +7,13 @@ documentation for all developers.
 
 ## Completed
 
-| Package | Status | Notes |
-|---------|--------|-------|
-| `/` (root) | Done | CLAUDE.md provides AI-focused project guidance |
-| `/cmp/` | Done | Top-level overview + sub-package READMEs for grid, layout, form, input, tab, viewmanager |
-| `/core/` | Done | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH |
-| `/data/` | Done | Store, StoreRecord, Field, filters, validation, Cube |
-| `/svc/` | Done | All 18 built-in services, configuration keys, common patterns |
+| Package | Notes | Status |
+|---------|-------|--------|
+| `/` (root) | CLAUDE.md provides AI-focused project guidance | [Done](../CLAUDE.md) |
+| `/cmp/` | Top-level overview + sub-package READMEs for grid, layout, form, input, tab, viewmanager | [Done](../cmp/README.md) |
+| `/core/` | HoistBase, HoistModel, HoistService, hoistCmp, element factories, XH | [Done](../core/README.md) |
+| `/data/` | Store, StoreRecord, Field, filters, validation, Cube | [Done](../data/README.md) |
+| `/svc/` | All 18 built-in services, configuration keys, common patterns | [Done](../svc/README.md) |
 
 ## Priority 1 - Core Framework
 
@@ -22,9 +22,9 @@ is essential for working effectively with any part of hoist-react.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | **Done** |
-| `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | **Done** |
-| `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | **Done** |
+| `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | [Done](../core/README.md) |
+| `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | [Done](../data/README.md) |
+| `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | [Done](../svc/README.md) |
 
 ## Priority 2 - Component System
 
@@ -33,7 +33,7 @@ interacts with Hoist.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | **Done** |
+| `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | [Done](../cmp/README.md) |
 | `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
 | `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
 
@@ -70,6 +70,7 @@ patterns and systems that span multiple packages.
 |---------|-------------|--------|
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others. | Planned |
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking. | Planned |
+| Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
 
 ## Documentation Guidelines
 
