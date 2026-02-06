@@ -70,6 +70,7 @@ patterns and systems that span multiple packages.
 |---------|-------------|--------|
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others. | Planned |
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking. | Planned |
+| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
 ## Documentation Guidelines
 
