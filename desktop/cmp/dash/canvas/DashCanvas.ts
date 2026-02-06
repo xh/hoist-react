@@ -66,7 +66,14 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             defaultDroppedItemDims = {
                 w: Math.floor(model.columns / 3),
                 h: Math.floor(model.columns / 3)
-            };
+            },
+            // If rglOptions.compactor object is provided, set it directly before
+            // mergeDeep to avoid deep merging issues.
+            compactor = rglOptions?.compactor
+                ? rglOptions.compactor
+                : model.compact === 'wrap'
+                  ? wrapCompactor
+                  : getCompactor(model.compact, false, false);
 
         return refreshContextView({
             model: model.refreshContextModel,
@@ -112,10 +119,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                     layoutItem: LayoutItem,
                                     evt: Event
                                 ) => model.onDrop(layout, layoutItem, evt),
-                                compactor:
-                                    model.compact === 'wrap'
-                                        ? wrapCompactor
-                                        : getCompactor(model.compact, false, false),
+                                compactor,
                                 onLayoutChange: (layout: LayoutItem[]) =>
                                     model.onRglLayoutChange(layout),
                                 onResizeStart: () => (model.isResizing = true),
