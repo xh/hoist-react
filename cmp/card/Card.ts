@@ -25,7 +25,8 @@ import {type ReactElement, type ReactNode, useRef} from 'react';
 import {CardModel} from './CardModel';
 import './Card.scss';
 
-export interface CardProps extends HoistProps<CardModel>, TestSupportProps, LayoutProps {
+export interface CardProps<M extends CardModel = CardModel>
+    extends HoistProps<M>, TestSupportProps, LayoutProps {
     /** An icon placed left of the title. */
     icon?: ReactElement;
     /** Intent to apply to the inline header and border. */
@@ -35,7 +36,7 @@ export interface CardProps extends HoistProps<CardModel>, TestSupportProps, Layo
     /** Tooltip to show when hovering over the inline header. */
     tooltip?: ReactElement | string;
     /** Additional props to pass to the inner box hosting the content. */
-    innerBoxProps?: BoxProps;
+    contentBoxProps?: BoxProps;
 }
 
 /**
@@ -59,7 +60,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
         intent,
         children,
         className,
-        innerBoxProps = {},
+        contentBoxProps = {},
         model,
         ...rest
     }) {
@@ -112,12 +113,10 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     tooltip
                 }),
                 box({
-                    className: 'xh-card__inner',
+                    className: 'xh-card__content',
                     items,
                     display: collapsed ? 'none' : 'flex',
-                    flexDirection: 'column',
-                    flexWrap: 'wrap',
-                    ...innerBoxProps
+                    ...contentBoxProps
                 })
             ],
             ...restProps

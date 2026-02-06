@@ -4,15 +4,17 @@
 
 ### 🎁 New Features
 
-* Added new `Card`, a bordered container for grouping related content with an optional inline header
-  and collapsible content.
-* Added new `FormFieldSet` for grouping `FormFields` and bubbling up  their validation state.
+* Added `Card` component, a bordered container for grouping related content with an optional inline
+  header and collapsible content.
+* Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
+  state.
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
-a `boolean`.  For most apps this will require a trivial change to the signature of the
-implementation of `HoistAuthModel.completeAuthAsync`.
+  a `boolean`.  For most apps this will require a trivial change to the signature of the
+  implementation of `HoistAuthModel.completeAuthAsync`.
+* Renamed Blueprint `Card` exports to `BpCard` and `bpCard`.
 
 ### 🐞 Bug Fixes
 

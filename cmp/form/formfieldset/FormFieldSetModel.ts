@@ -69,11 +69,13 @@ export class FormFieldSetModel extends CardModel {
 
         if (!displayedSeverity) return ret;
 
-        return this.fieldModels
-            .filter(it => it.validationDisplayed)
-            .flatMap(it => it.validationResults)
-            .filter(it => it.severity === displayedSeverity)
-            .map(it => it.message);
+        return uniq(
+            this.fieldModels
+                .filter(it => it.validationDisplayed)
+                .flatMap(it => it.validationResults)
+                .filter(it => it.severity === displayedSeverity)
+                .map(it => it.message)
+        );
     }
 
     constructor({disabled = false, readonly = false, ...rest}: FormFieldSetConfig = {}) {

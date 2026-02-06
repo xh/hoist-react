@@ -57,7 +57,7 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     collapsed: boolean = false;
 
     constructor({
-        collapsible = true,
+        collapsible = false,
         defaultCollapsed = false,
         renderMode = 'unmountOnHide',
         persistWith = null

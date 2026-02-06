@@ -7,6 +7,7 @@
 
 .xh-card {
   border-color: var(--xh-border-color);
+  border-style: solid;
   border-width: var(--xh-border-width-px);
 
   &--collapsed {
@@ -29,6 +30,10 @@
 
   &--intent-danger {
     border-color: var(--xh-card-danger-color);
+  }
+
+  &__content {
+    flex-direction: column;
   }
 
   &__header {
