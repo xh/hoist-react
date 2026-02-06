@@ -1,7 +1,7 @@
 # README Documentation Roadmap
 
 This document tracks planned README.md additions for hoist-react packages. The primary goal is to
-provide AI coding assistants (Claude Code, etc.) with rich context for working with hoist-react -
+provide AI coding assistants with rich context for working with hoist-react -
 both for library development and application development. A secondary goal is improving human-readable
 documentation for all developers.
 
@@ -12,7 +12,7 @@ is essential for working effectively with any part of hoist-react.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/` (root) | 1 | CLAUDE.md provides AI-focused project guidance | [Done](../CLAUDE.md) |
+| `/` (root) | 1 | AGENTS.md provides AI-focused project guidance | [Done](../AGENTS.md) |
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | [Done](../core/README.md) |
 | `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | [Done](../data/README.md) |
 | `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | [Done](../svc/README.md) |
