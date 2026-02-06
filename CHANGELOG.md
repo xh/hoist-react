@@ -2,6 +2,12 @@
 
 ## 81.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added new `Card`, a bordered container for grouping related content with an optional inline header
+  and collapsible content.
+* Added new `FormFieldSet` for grouping `FormFields` and bubbling up  their validation state.
+
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than

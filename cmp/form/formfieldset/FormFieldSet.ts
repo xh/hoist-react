@@ -34,6 +34,10 @@ export interface FormFieldSetProps
     innerBoxProps?: BoxProps;
 }
 
+/**
+ * A container for grouping related form fields, with optional title and icon. Displays validation
+ * for all contained fields and child FormFieldSets.
+ */
 export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetProps>({
     displayName: 'FormFieldSet',
     model: uses(FormFieldSetModel, {
