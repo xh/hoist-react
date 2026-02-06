@@ -635,6 +635,23 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 }
 ```
 
+### Using Native `fetch` Instead of FetchService
+
+Hoist apps should use `FetchService` (via `XH.fetch()`, `XH.fetchJson()`, `XH.postJson()`) rather
+than the browser's native `fetch` API. FetchService provides automatic correlation IDs, configurable
+timeouts, request deduplication via `autoAbortKey`, integrated activity tracking, rich exception
+handling with server-side details, and `loadSpec` support for stale request management. Bypassing
+it means losing all of these benefits.
+
+```typescript
+// ❌ Wrong: Native fetch bypasses all FetchService enhancements
+const response = await fetch('/api/data');
+const data = await response.json();
+
+// ✅ Correct: Use FetchService via XH convenience methods
+const data = await XH.fetchJson({url: 'api/data'});
+```
+
 ### Forgetting loadSpec in Fetch Calls
 
 Without `loadSpec`, requests aren't tracked and can't be cancelled when loads become stale:
