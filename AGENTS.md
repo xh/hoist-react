@@ -42,6 +42,8 @@ The framework is built around three core artifact types:
 3. **Services** (`HoistService`) - Singleton classes for data access and app-wide business logic.
    Installed via `XH.installServicesAsync()` and accessed as `XH.myCustomService`.
 
+See [`/core/README.md`](./core/README.md) for detailed coverage of all three artifact types.
+
 ### Key Singleton: XH
 
 `XH` (in `core/XH.ts`) is the top-level API entry point. It provides:
@@ -50,23 +52,41 @@ The framework is built around three core artifact types:
 - App metadata (`XH.appCode`, `XH.appVersion`)
 - Common operations (`XH.toast()`, `XH.confirm()`, `XH.handleException()`)
 
-### Directory Structure
+See [`/core/README.md`](./core/README.md) for the full XH API and
+[`/svc/README.md`](./svc/README.md) for built-in service details.
 
-Key hoist-react packages include:
+### Package Documentation
 
-- `/admin/` - Built-in admin console
-- `/cmp/` - Cross-platform components (Grid, Chart, inputs, layout)
-- `/core/` - Base classes (HoistBase, HoistModel, HoistService), XH singleton, component factory
-- `/data/` - Store, StoreRecord, Field, filters, and validation
-- `/desktop/` - Desktop-specific components and app container
-- `/format/` - Number/date formatters
-- `/icon/` - Icon utilities
-- `/mobile/` - Mobile-specific components and app container
-- `/mobx/` - MobX re-exports and utilities
-- `/promise/` - Promise extensions (catchDefault, track, timeout, linkTo)
-- `/security/` - OAuth clients
-- `/styles/` - Global styles and CSS variables
-- `/svc/` - Built-in services (Fetch, Config, Pref, Identity, etc.)
+Detailed documentation is available in package-level README files. Consult these when working on
+or with specific packages — they cover architecture, configuration, usage patterns, and pitfalls.
+
+#### Core Framework
+
+| Package | Description | Key Topics |
+|---------|-------------|------------|
+| [`/core/`](./core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
+| [`/data/`](./data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
+| [`/svc/`](./svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, WebSocketService |
+
+#### Components
+
+| Package | Description | Key Topics |
+|---------|-------------|------------|
+| [`/cmp/`](./cmp/README.md) | Cross-platform component overview and catalog | Component categories, factory pattern, platform-specific vs shared |
+| [`/cmp/grid/`](./cmp/grid/README.md) | Primary data grid built on ag-Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
+| [`/cmp/form/`](./cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
+| [`/cmp/input/`](./cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
+| [`/cmp/layout/`](./cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
+| [`/cmp/tab/`](./cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
+| [`/cmp/viewmanager/`](./cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
+
+#### Other Packages
+
+Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)
+for planned coverage:
+
+`/admin/`, `/appcontainer/`, `/desktop/`, `/format/`, `/icon/`, `/kit/`, `/inspector/`, `/mobile/`,
+`/mobx/`, `/promise/`, `/security/`, `/styles/`, `/utils/`
 
 ### Element Factories vs JSX
 
@@ -97,6 +117,9 @@ Factories can take a config object for props, using the key `item`/`items` for c
 form also exists where factories are passed children directly as arguments, when no other props
 are required. Factories all support an `omit` prop for conditional rendering.
 
+See [`/core/README.md`](./core/README.md) for full element factory API including conditional
+rendering with `omit` and factory creation.
+
 ### `HoistBase` for MobX Integration and Lifecycle
 
 All Hoist artifacts extend `HoistBase`, which provides:
@@ -118,6 +141,9 @@ All Hoist artifacts extend `HoistBase`, which provides:
   `HoistBase` instances or arrays of such instances.
 - `destroy()` - Lifecycle cleanup method. `HoistBase` superclass implementation auto-disposes managed
   subscriptions and child objects.
+
+See [`/core/README.md`](./core/README.md) for detailed HoistBase API, persistence support, and
+common pitfalls.
 
 ### Promise Conventions
 

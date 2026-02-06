@@ -106,6 +106,12 @@ incorrectCode();
 
 1. Reserve the use of `props` for actual React Component props. Use `config` when referring to model or class constructor args.
 
+### Keeping AGENTS.md in Sync
+
+When a new package README is completed, add a corresponding entry to the "Package Documentation"
+section in `/AGENTS.md`. Each entry should include a linked package path, a one-sentence
+description, and a comma-separated list of key classes and concepts covered.
+
 ## Progress Notes
 
 _Use this section to track discussions, decisions, and context between documentation sessions._
