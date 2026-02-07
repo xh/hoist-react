@@ -8,6 +8,7 @@ import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {cardHeaderImpl} from '@xh/hoist/mobile/cmp/card/impl/CardHeaderImpl';
 import {errorMessageImpl} from '@xh/hoist/mobile/cmp/error/impl/ErrorMessage';
 import {maskImpl} from '@xh/hoist/mobile/cmp/mask/impl/Mask';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
@@ -41,7 +42,8 @@ installMobileImpls({
     ColChooserModel,
     zoneMapper,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    cardHeaderImpl
 });
 
 /**

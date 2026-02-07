@@ -1020,11 +1020,11 @@ export class Column {
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
                 'xh-cell--invalid': agParams =>
-                    maxSeverity(agParams.data.validationResults[field]) === 'error',
+                    maxSeverity(agParams.data?.validationResults[field]) === 'error',
                 'xh-cell--warning': agParams =>
-                    maxSeverity(agParams.data.validationResults[field]) === 'warning',
+                    maxSeverity(agParams.data?.validationResults[field]) === 'warning',
                 'xh-cell--info': agParams =>
-                    maxSeverity(agParams.data.validationResults[field]) === 'info',
+                    maxSeverity(agParams.data?.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },

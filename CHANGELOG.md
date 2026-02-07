@@ -2,13 +2,30 @@
 
 ## 81.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Card` component, a bordered container for grouping related content with an optional inline
+  header and collapsible content.
+* Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
+  state.
+
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
-a `boolean`.  For most apps this will require a trivial change to the signature of the
-implementation of `HoistAuthModel.completeAuthAsync`.
+  a `boolean`.  For most apps this will require a trivial change to the signature of the
+  implementation of `HoistAuthModel.completeAuthAsync`.
+* Renamed Blueprint `Card` exports to `BpCard` and `bpCard`.
+
+### 🐞 Bug Fixes
+
+* Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
+
+### ⚙️ Typescript API Adjustments
+
+* Updated `GridFilterModel.setFilter` signature to accept `FilterLike` rather than `Filter`.
 
 ### ⚙️ Technical
+
 * Improve the efficiency of initialization by reducing the number of server requests required
   to get user identity.
 
