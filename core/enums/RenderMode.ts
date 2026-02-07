@@ -7,7 +7,8 @@
 
 /**
  * Options for how contents should be rendered by their parent container.
- * Used by {@link TabContainerModel}, {@link DashContainerModel}, and {@link PanelModel}.
+ * Used by {@link TabContainerModel}, {@link DashContainerModel}, {@link PanelModel}, and
+ * {@link CardModel}.
  */
 export const RenderMode = Object.freeze({
     /** Always render contents when the parent container is rendered, even if inactive. */

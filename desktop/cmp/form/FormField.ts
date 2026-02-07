@@ -14,12 +14,14 @@ import {
     HoistProps,
     HSide,
     TestSupportProps,
+    useContextModel,
     uses,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
+import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -28,7 +30,15 @@ import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/ho
 import {getLayoutProps, getReactElementName, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
-import {Children, cloneElement, ReactElement, ReactNode, useContext, useState} from 'react';
+import {
+    Children,
+    cloneElement,
+    ReactElement,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState
+} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {
@@ -119,10 +129,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             logWarn(`Unable to bind FormField to field "${field}" on backing FormModel`, FormField);
         }
 
+        // If within a FormFieldSet, register with its model for validation grouping
+        const fieldSetModel = useContextModel(FormFieldSetModel);
+        useEffect(() => {
+            if (fieldSetModel && model) {
+                fieldSetModel.registerChildFieldModel(model);
+                return () => fieldSetModel.unregisterChildFieldModel(model);
+            }
+        }, [fieldSetModel, model]);
+
         // Model related props
         const isRequired = model?.isRequired || false,
-            readonly = model?.readonly || false,
-            disabled = props.disabled || model?.disabled,
+            readonly = model?.readonly || fieldSetModel?.readonly || false,
+            disabled = props.disabled || model?.disabled || fieldSetModel?.disabled,
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
                 : null,
