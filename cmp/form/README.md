@@ -12,6 +12,7 @@ The form system consists of:
 - **FieldModel** - Individual field state, value, and validation rules
 - **SubformsFieldModel** - Fields containing collections of nested forms
 - **Form** - non-visual React component providing context to child FormField components
+- **FormFieldSet** - Visual container for grouping FormFields with aggregate validation display
 
 Platform-specific FormField components (in `/desktop/cmp/form/` and `/mobile/cmp/form/`) connect
 FieldModels to input components with labels, validation display, and layout.
@@ -40,6 +41,13 @@ SubformsFieldModel (extends BaseFieldModel)
 ├── value: FormModel[]                     # Array of nested FormModels
 ├── subforms: FormConfig                   # Template for creating subforms
 └── Methods: add(), remove()               # Collection management
+
+FormFieldSetModel (extends CardModel)
+├── disabled / readonly                    # Cascades to descendant FormFields
+├── displayedSeverity                      # Aggregate validation severity
+├── displayedValidationMessages            # Messages at current severity
+├── parent: FormFieldSetModel              # Auto-set when nested
+└── Internal: childFieldModels, childFormFieldSetModels
 ```
 
 ## FormModel
@@ -371,6 +379,104 @@ form({
 | `fieldDefaults` | `Partial<FormFieldProps>` | Default props for child FormFields |
 | `testId` | `string` | Base testId for child fields |
 
+## FormFieldSet
+
+A visual container for grouping related `FormField` components. FormFieldSet extends
+[Card](../card/Card.ts) to display aggregate validation state for all contained fields as
+intent-colored borders and header tooltips (desktop only).
+
+FormFieldSet is backed by `FormFieldSetModel`, which extends `CardModel` with:
+- **Validation aggregation** - Collects validation results from all descendant FormFields and
+  child FormFieldSets, computing the highest severity and associated messages.
+- **`disabled` / `readonly` cascading** - Setting `disabled` or `readonly` on a FormFieldSetModel
+  cascades to all descendant FormFields within the group.
+- **Nesting** - FormFieldSets can be nested. Child sets register with their parent, and validation
+  and disabled/readonly state cascade through the hierarchy.
+
+### Basic Usage
+
+```typescript
+import {form} from '@xh/hoist/cmp/form';
+import {formFieldSet, FormFieldSetModel} from '@xh/hoist/cmp/form';
+import {formField} from '@xh/hoist/desktop/cmp/form';
+import {textInput, numberInput} from '@xh/hoist/desktop/cmp/input';
+
+form({
+    model: formModel,
+    items: [
+        formFieldSet({
+            title: 'Contact Information',
+            icon: Icon.user(),
+            items: [
+                formField({field: 'firstName', item: textInput()}),
+                formField({field: 'lastName', item: textInput()}),
+                formField({field: 'email', item: textInput()})
+            ]
+        }),
+        formFieldSet({
+            title: 'Employment',
+            icon: Icon.briefcase(),
+            items: [
+                formField({field: 'company', item: textInput()}),
+                formField({field: 'salary', item: numberInput()})
+            ]
+        })
+    ]
+})
+```
+
+When validation errors are displayed for fields within a FormFieldSet, the set's border and header
+change color to reflect the highest severity (danger for errors, warning for warnings, primary for
+info). On desktop, the header also shows a tooltip listing the validation messages.
+
+### Collapsible and Persistent
+
+FormFieldSet inherits Card's collapsibility and persistence support:
+
+```typescript
+const contactFieldSetModel = new FormFieldSetModel({
+    collapsible: true,
+    defaultCollapsed: false,
+    persistWith: {localStorageKey: 'contactFieldSet'}
+});
+
+formFieldSet({
+    model: contactFieldSetModel,
+    title: 'Contact Information',
+    items: [/* ... */]
+})
+```
+
+### Disabling / Read-only Groups
+
+```typescript
+const billingModel = new FormFieldSetModel({disabled: true});
+
+// All FormFields within this set will be disabled
+formFieldSet({
+    model: billingModel,
+    title: 'Billing (locked)',
+    items: [
+        formField({field: 'cardNumber', item: textInput()}),
+        formField({field: 'expiry', item: textInput()})
+    ]
+})
+
+// Toggle at runtime
+billingModel.setDisabled(false);
+billingModel.setReadonly(true);
+```
+
+### FormFieldSetModel Configuration
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `collapsible` | `boolean` | Can the set be collapsed? (false) |
+| `defaultCollapsed` | `boolean` | Initial collapsed state (false) |
+| `disabled` | `boolean` | Disable all descendant fields (false). Cascades through nested FormFieldSets. |
+| `readonly` | `boolean` | Make all descendant fields read-only (false). Cascades through nested FormFieldSets. |
+| `persistWith` | `PersistOptions` | Options for persisting collapsed state |
+
 ## Common Patterns
 
 ### Form in a Model
@@ -485,6 +591,7 @@ a DOM element. If you need an actual HTML `<form>` element (rare in Hoist apps),
 
 ## Related Packages
 
+- `/cmp/card/` - Card component that FormFieldSet extends
 - `/data/` - Validation constraints (`required`, `numberIs`, etc.) and Rule class
 - `/desktop/cmp/form/` - Desktop FormField component
 - `/mobile/cmp/form/` - Mobile FormField component

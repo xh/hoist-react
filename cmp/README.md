@@ -85,6 +85,8 @@ Most complex components are paired with a `HoistModel` subclass that manages sta
 | DataView | DataViewModel | Custom item rendering with Grid features |
 | TabContainer | TabContainerModel | Tab state and navigation |
 | Form | FormModel | Form fields, validation, data binding |
+| Card | CardModel | Bordered container, collapsibility, persistence |
+| FormFieldSet | FormFieldSetModel | Grouped fields with aggregate validation |
 
 Models are created in application code and passed to components via the `model` prop or
 discovered automatically via context lookup (see [Core README](../core/README.md#model-specs-creates-vs-uses)):
@@ -148,17 +150,18 @@ techniques.
 | `/treemap/` | Hierarchical treemap and split treemap visualizations |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 
-### Layout
+### Layout and Containers
 
 | Sub-package | Description |
 |-------------|-------------|
 | `/layout/` | Foundational flexbox containers (Box, VBox, HBox, Frame, Viewport). [See README](./layout/README.md) |
+| `/card/` | Bordered container for grouping content with optional header, intent styling, and collapsibility |
 
 ### Forms and Input
 
 | Sub-package | Description |
 |-------------|-------------|
-| `/form/` | Form container and field models for data entry. [See README](./form/README.md) |
+| `/form/` | Form container, field models, and FormFieldSet for grouped validation. [See README](./form/README.md) |
 | `/input/` | Base input model and props for platform inputs. [See README](./input/README.md) |
 
 ### Navigation
@@ -289,6 +292,45 @@ const tabModel = new TabContainerModel({
 ```
 
 See the [Tab README](./tab/README.md) for complete documentation.
+
+### Card (`/card/`)
+
+A bordered container for grouping related content with an optional inline header, intent-based
+border/header coloring, and collapsible content. Built on an HTML `<fieldset>` and `<legend>` for
+base styling. Children are arranged vertically in a flexbox container by default.
+
+```typescript
+import {card, CardModel} from '@xh/hoist/cmp/card';
+
+// Simple static card - no model needed (created automatically)
+card({
+    title: 'User Details',
+    icon: Icon.user(),
+    items: [nameField(), emailField()]
+})
+
+// Collapsible card with persistence
+const cardModel = new CardModel({
+    collapsible: true,
+    defaultCollapsed: false,
+    renderMode: 'unmountOnHide',
+    persistWith: {localStorageKey: 'detailsCard'}
+});
+
+card({
+    model: cardModel,
+    title: 'Details',
+    items: [/* ... */]
+})
+```
+
+CardModel supports `collapsible` state with configurable `renderMode` (`'always'`, `'lazy'`,
+`'unmountOnHide'`) and optional persistence of collapsed state. Cards can display an `intent`
+(`'primary'`, `'success'`, `'warning'`, `'danger'`) for colored borders and headers.
+
+**FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
+displaying their aggregate validation state as intent-colored borders and tooltips. See the
+[Form README](./form/README.md#formfieldset) for details.
 
 ### Layout (`/layout/`)
 
