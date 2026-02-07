@@ -1,10 +1,10 @@
 ---
-name: xhDocUpdate
+name: xh-update-docs
 description: Update hoist-react documentation after adding new components or features. Use when a developer has made changes to hoist-react and wants to update README files, AGENTS.md, and the documentation roadmap to reflect those changes. Invoke with a commit hash or PR number. Also use when you detect that recent commits or PRs have added new components, models, or services that are not yet reflected in the documentation.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
-# xhDocUpdate — Documentation Update Skill
+# xh-update-docs — Documentation Update Skill
 
 Update hoist-react documentation to reflect recent code changes. This skill analyzes
 commits or PRs, identifies documentation-worthy changes, and proposes targeted updates
