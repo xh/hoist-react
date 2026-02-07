@@ -6,7 +6,9 @@
  */
 
 .xh-card {
-  border-color: var(--xh-border-color);
+  background-color: var(--xh-card-bg);
+  border-color: var(--xh-card-border-color);
+  border-radius: var(--xh-card-border-radius-px);
   border-style: solid;
   border-width: var(--xh-border-width-px);
 
@@ -38,9 +40,11 @@
 
   &__header {
     align-items: center;
+    color: var(--xh-card-header-text-color);
     display: flex;
-    gap: 8px;
-    min-height: 30px;
+    font-size: var(--xh-card-header-font-size-px);
+    gap: var(--xh-card-header-gap-px);
+    min-height: var(--xh-card-header-min-height-px);
     padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
 
     &--intent-primary {

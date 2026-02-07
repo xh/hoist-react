@@ -356,7 +356,18 @@ body {
   //------------------------
   // Cards
   //------------------------
+  --xh-card-bg: var(--card-bg, var(--xh-bg));
+  --xh-card-border-color: var(--card-border-color, var(--xh-border-color));
+  --xh-card-border-radius: var(--card-border-radius, var(--xh-border-radius));
+  --xh-card-border-radius-px: calc(var(--xh-card-border-radius) * 1px);
   --xh-card-danger-color: var(--card-danger-color, var(--xh-intent-danger-text-color));
+  --xh-card-header-font-size: var(--card-header-font-size, var(--xh-font-size));
+  --xh-card-header-font-size-px: calc(var(--xh-card-header-font-size) * 1px);
+  --xh-card-header-gap: var(--card-header-gap, 8);
+  --xh-card-header-gap-px: calc(var(--xh-card-header-gap) * 1px);
+  --xh-card-header-min-height: var(--card-header-min-height, 30);
+  --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
+  --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
   --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
   --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
   --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
