@@ -914,8 +914,8 @@ class MyModel extends HoistModel {
 
 ## Related Packages
 
-- `/core/` - HoistModel, HoistBase - base classes Store extends
-- `/cmp/grid/` - GridModel consumes Store for data display
-- `/cmp/form/` - FormModel uses similar Field and validation patterns
+- [`/core/`](../core/README.md) - HoistModel, HoistBase - base classes Store extends
+- [`/cmp/grid/`](../cmp/grid/README.md) - GridModel consumes Store for data display
+- [`/cmp/form/`](../cmp/form/README.md) - FormModel uses similar Field and validation patterns
 - `/cmp/filter/` - UI components for filter construction
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings

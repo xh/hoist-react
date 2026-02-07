@@ -741,6 +741,6 @@ async onSubmitClick() {
 
 ## Related Packages
 
-- `/core/` - `HoistService` base class, `XH` singleton
-- `/cmp/` - Components that use services (Grid export button, etc.)
+- [`/core/`](../core/README.md) - `HoistService` base class, `XH` singleton
+- [`/cmp/`](../cmp/README.md) - Components that use services (Grid export button, etc.)
 - `/admin/` - Admin Console for managing configs, prefs, and viewing activity

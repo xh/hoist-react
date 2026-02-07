@@ -442,4 +442,4 @@ getRoutes() {
 
 - `/desktop/cmp/tab/` - Desktop TabContainer component with Blueprint tabs
 - `/mobile/cmp/tab/` - Mobile TabContainer component with Onsen tabs
-- `/core/` - RefreshContextModel, RenderMode, RefreshMode
+- [`/core/`](../../core/README.md) - RefreshContextModel, RenderMode, RefreshMode

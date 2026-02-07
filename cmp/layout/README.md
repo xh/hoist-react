@@ -303,6 +303,6 @@ and spaced above the text - creating a polished empty-state UI with minimal code
 
 ## Related Packages
 
-- `/core/` - `hoistCmp.withFactory()`, `BoxProps` interface, `HoistProps`
+- [`/core/`](../../core/README.md) - `hoistCmp.withFactory()`, `BoxProps` interface, `HoistProps`
 - `/desktop/cmp/panel/` - Desktop Panel component with title bars and toolbars
 - `/mobile/cmp/panel/` - Mobile Panel component

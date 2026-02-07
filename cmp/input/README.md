@@ -242,7 +242,7 @@ const cmp = hoistCmp.factory<MyInputModel>(({model, className, ...props}, ref) =
 
 ## Related Packages
 
-- `/cmp/form/` - Form and FieldModel that inputs bind to
+- [`/cmp/form/`](../form/README.md) - Form and FieldModel that inputs bind to
 - `/desktop/cmp/input/` - Desktop input implementations
 - `/mobile/cmp/input/` - Mobile input implementations
 - `/desktop/cmp/form/` - Desktop FormField component

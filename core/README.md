@@ -767,7 +767,7 @@ async doLoadAsync() {
 
 ## Related Packages
 
-- `/data/` - Store, StoreRecord, Field - data layer infrastructure
-- `/svc/` - Built-in services (FetchService, ConfigService, etc.)
-- `/cmp/` - Cross-platform components
+- [`/data/`](../data/README.md) - Store, StoreRecord, Field - data layer infrastructure
+- [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
+- [`/cmp/`](../cmp/README.md) - Cross-platform components
 - `/desktop/` and `/mobile/` - Platform-specific components

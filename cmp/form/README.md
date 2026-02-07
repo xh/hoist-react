@@ -592,7 +592,7 @@ a DOM element. If you need an actual HTML `<form>` element (rare in Hoist apps),
 ## Related Packages
 
 - `/cmp/card/` - Card component that FormFieldSet extends
-- `/data/` - Validation constraints (`required`, `numberIs`, etc.) and Rule class
+- [`/data/`](../../data/README.md) - Validation constraints (`required`, `numberIs`, etc.) and Rule class
 - `/desktop/cmp/form/` - Desktop FormField component
 - `/mobile/cmp/form/` - Mobile FormField component
-- `/desktop/cmp/input/`, `/mobile/cmp/input/` - Input components for use with FormField
+- [`/cmp/input/`](../input/README.md) - Base input model and props; `/desktop/cmp/input/`, `/mobile/cmp/input/` for platform implementations

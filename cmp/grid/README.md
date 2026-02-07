@@ -313,9 +313,8 @@ new GridModel({
 
 ## Related Packages
 
-- `/data/` - Store, StoreRecord, Field, Filter infrastructure
+- [`/data/`](../../data/README.md) - Store, StoreRecord, Field, Filter infrastructure
 - `/cmp/ag-grid/` - AgGridModel wrapper
 - `/desktop/cmp/grid/` - Desktop-specific components (editors, column chooser dialogs)
 - `/mobile/cmp/grid/` - Mobile-specific components
-- `/svc/GridExportService` - Server-side export functionality
-- `/svc/GridAutosizeService` - Column autosize calculations
+- [`/svc/`](../../svc/README.md) - GridExportService, GridAutosizeService

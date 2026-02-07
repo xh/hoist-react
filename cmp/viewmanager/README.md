@@ -414,6 +414,6 @@ class MyModelClass extends HoistModel {
 
 ## Related Packages
 
-- `/core/` - PersistenceProvider, ViewManagerProvider interfaces
-- `/svc/JsonBlobService` - Backend storage for views
+- [`/core/`](../../core/README.md) - PersistenceProvider, ViewManagerProvider interfaces
+- [`/svc/`](../../svc/README.md) - JsonBlobService for backend storage of views
 - `/desktop/cmp/viewmanager/` - Desktop ViewManager UI component
