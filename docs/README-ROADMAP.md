@@ -26,6 +26,7 @@ interacts with Hoist.
 |---------|-------|-------------|--------|
 | `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | [Done](../cmp/README.md) |
 | `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
+| `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../desktop/cmp/panel/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
 
 ## Priority 3 - Key Utilities
@@ -60,7 +61,7 @@ patterns and systems that span multiple packages.
 | Concept | Description                                                                                                                                                                                                                                                                                                                                                      | Status |
 |---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others.                                                                                                                   | Planned |
-| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | Planned |
+| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | [Part 1 Done](./concepts/app-lifecycle.md) |
 | Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
 
@@ -180,3 +181,17 @@ _Use this section to track discussions, decisions, and context between documenta
   - User preference keys reference table
   - Common patterns (loadSpec usage, debounced search with auto-abort, WebSocket subscriptions)
   - Common pitfalls section
+
+### 2026-02-07
+- Completed `/desktop/cmp/panel/README.md` — first desktop sub-package README:
+  - Panel layout (vframe structure, flex defaults, padding stripping)
+  - Toolbars (tbar/bbar, array auto-wrap, separator shortcut, compact, filler, overflow)
+  - Panel + Grid pattern (most common usage, drawn from Jobsite/Veracity examples)
+  - Mask (all forms: 'onLoad', TaskObserver, array, explicit, boolean)
+  - Collapsing and resizing (PanelModel config, side, defaultSize, all options table)
+  - collapsedTitle/collapsedIcon, compactHeader for visual hierarchy
+  - Persistence (persistWith, localStorageKey, path disambiguation)
+  - Modal support (ModalSupportConfig, modalToggleButton, showModalToggleButton)
+  - Configuration reference tables for Panel props and PanelModel config
+- Updated `/desktop/README.md` with link to Panel sub-package README
+- Updated `AGENTS.md` Components table with Panel entry
