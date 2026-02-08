@@ -143,10 +143,10 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
             icon: Icon.list(),
             compactHeader: true,
             contentBoxProps: {
-                flexDirection: 'row',
-                padding: 'var(--xh-pad-px)',
                 alignItems: 'center',
-                gap: 'var(--xh-pad-px)'
+                flexDirection: 'row',
+                gap: true,
+                padding: true
             },
             items: [
                 select({

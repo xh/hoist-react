@@ -94,17 +94,17 @@ export interface TestSupportProps {
 }
 
 export interface LayoutProps {
-    margin?: string | number;
-    marginTop?: string | number;
-    marginRight?: string | number;
-    marginBottom?: string | number;
-    marginLeft?: string | number;
+    margin?: string | number | true;
+    marginTop?: string | number | true;
+    marginRight?: string | number | true;
+    marginBottom?: string | number | true;
+    marginLeft?: string | number | true;
 
-    padding?: string | number;
-    paddingTop?: string | number;
-    paddingRight?: string | number;
-    paddingBottom?: string | number;
-    paddingLeft?: string | number;
+    padding?: string | number | true;
+    paddingTop?: string | number | true;
+    paddingRight?: string | number | true;
+    paddingBottom?: string | number | true;
+    paddingLeft?: string | number | true;
 
     height?: string | number;
     minHeight?: string | number;
@@ -119,7 +119,7 @@ export interface LayoutProps {
     flexGrow?: string | number;
     flexShrink?: string | number;
     flexWrap?: Property.FlexWrap;
-    gap?: string | number;
+    gap?: string | number | true;
 
     alignItems?: string;
     alignSelf?: string;
@@ -136,3 +136,8 @@ export interface LayoutProps {
     position?: Property.Position;
     display?: string;
 }
+
+/** LayoutProps after resolution by `getLayoutProps()`, with `true` values resolved to strings. */
+export type ResolvedLayoutProps = {
+    [K in keyof LayoutProps]: Exclude<LayoutProps[K], true>;
+};
