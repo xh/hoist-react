@@ -25,7 +25,7 @@ interacts with Hoist.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | [Done](../cmp/README.md) |
-| `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
+| `/desktop/` | 240 | Desktop-specific components and app container | [Done](../desktop/README.md) |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../desktop/cmp/panel/README.md) |
 | `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../desktop/cmp/dash/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
