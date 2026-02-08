@@ -81,13 +81,14 @@ or with specific packages — they cover architecture, configuration, usage patt
 | [`/cmp/viewmanager/`](./cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
 | [`/desktop/cmp/dash/`](./desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](./desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
+| [`/mobile/`](./mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
 
 #### Other Packages
 
 Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)
 for planned coverage:
 
-`/admin/`, `/appcontainer/`, `/desktop/`, `/format/`, `/icon/`, `/kit/`, `/inspector/`, `/mobile/`,
+`/admin/`, `/appcontainer/`, `/format/`, `/icon/`, `/kit/`, `/inspector/`,
 `/mobx/`, `/promise/`, `/security/`, `/styles/`, `/utils/`
 
 ### Element Factories vs JSX

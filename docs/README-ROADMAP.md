@@ -28,7 +28,7 @@ interacts with Hoist.
 | `/desktop/` | 240 | Desktop-specific components and app container | [Done](../desktop/README.md) |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../desktop/cmp/panel/README.md) |
 | `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../desktop/cmp/dash/README.md) |
-| `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
+| `/mobile/` | 131 | Mobile-specific components and app container | [Done](../mobile/README.md) |
 
 ## Priority 3 - Key Utilities
 
@@ -210,3 +210,16 @@ _Use this section to track discussions, decisions, and context between documenta
   - Common pitfalls section
 - Updated `AGENTS.md` Components table with Dash entry
 - Updated `/desktop/README.md` with link to Dash sub-package README
+- Completed `/mobile/README.md` — mobile platform overview:
+  - Overview with Onsen UI foundation, architecture tree
+  - Relationship to `/cmp/` cross-platform package
+  - AppContainer with correct `XH.renderApp()` pattern, idle/suspension support
+  - NavigatorModel (route-based page navigation, pullDownToRefresh, transitionMs)
+  - All input components with mobile-specific features (Select `enableFullscreen`, async `queryFn`)
+  - Panel, DialogPanel, AppBar, Button, Toolbar, TabContainer (swipeable), Dialog, MenuButton, Popover
+  - Complete "Other Mobile Components" table (12 sub-packages)
+  - Platform differences (selection behavior, navigation patterns, touch considerations)
+  - Common patterns (mobile page, navigator with detail pages, form with formFieldSet)
+  - Common pitfalls (desktop vs mobile import confusion)
+- Updated `AGENTS.md` Components table with Mobile entry, moved `/mobile/` out of "Other Packages"
+- Updated `/desktop/README.md` Related Packages with link to mobile README
