@@ -27,6 +27,7 @@ interacts with Hoist.
 | `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | [Done](../cmp/README.md) |
 | `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../desktop/cmp/panel/README.md) |
+| `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../desktop/cmp/dash/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
 
 ## Priority 3 - Key Utilities
@@ -136,23 +137,6 @@ _Use this section to track discussions, decisions, and context between documenta
   - XH singleton overview
   - Decorator reference and common patterns
 
-### 2026-02-04
-- Completed all `/cmp/` sub-package READMEs (interactively reviewed and refined):
-  - `/cmp/README.md` - Top-level overview cataloging all 24 sub-packages
-  - `/cmp/layout/README.md` - Box/Frame/Viewport, LayoutProps pixel conversion, BoxProps table
-  - `/cmp/form/README.md` - FormModel, FieldModel, SubformsFieldModel, validation, Form context
-  - `/cmp/input/README.md` - HoistInputModel, change/commit lifecycle, custom input guide
-  - `/cmp/tab/README.md` - TabContainerModel, routing, render/refresh modes, dynamic switcher
-  - `/cmp/viewmanager/README.md` - ViewManagerModel, sharing/visibility model, pinning, auto-save, default views
-- Updated `/core/README.md` with model context lookup and resolution order documentation
-- Added `@bindable` setter convention to `CLAUDE.md` (prefer direct assignment over generated setters)
-- Added Persistence and Lifecycles concept docs to roadmap
-- Key conventions established during review:
-  - No Default columns in config tables (fold into descriptions)
-  - Constructor-based initialization for complex models (GridModel, etc.)
-  - No `myApp.` prefix in localStorageKey examples (auto-namespaced)
-  - Direct assignment for `@bindable` props; call explicit `setFoo()` only when defined
-
 ### 2026-02-03
 - Completed `/data/README.md` covering:
   - Store, StoreRecord, Field core classes with architecture diagram
@@ -182,6 +166,23 @@ _Use this section to track discussions, decisions, and context between documenta
   - Common patterns (loadSpec usage, debounced search with auto-abort, WebSocket subscriptions)
   - Common pitfalls section
 
+### 2026-02-04
+- Completed all `/cmp/` sub-package READMEs (interactively reviewed and refined):
+  - `/cmp/README.md` - Top-level overview cataloging all 24 sub-packages
+  - `/cmp/layout/README.md` - Box/Frame/Viewport, LayoutProps pixel conversion, BoxProps table
+  - `/cmp/form/README.md` - FormModel, FieldModel, SubformsFieldModel, validation, Form context
+  - `/cmp/input/README.md` - HoistInputModel, change/commit lifecycle, custom input guide
+  - `/cmp/tab/README.md` - TabContainerModel, routing, render/refresh modes, dynamic switcher
+  - `/cmp/viewmanager/README.md` - ViewManagerModel, sharing/visibility model, pinning, auto-save, default views
+- Updated `/core/README.md` with model context lookup and resolution order documentation
+- Added `@bindable` setter convention to `CLAUDE.md` (prefer direct assignment over generated setters)
+- Added Persistence and Lifecycles concept docs to roadmap
+- Key conventions established during review:
+  - No Default columns in config tables (fold into descriptions)
+  - Constructor-based initialization for complex models (GridModel, etc.)
+  - No `myApp.` prefix in localStorageKey examples (auto-namespaced)
+  - Direct assignment for `@bindable` props; call explicit `setFoo()` only when defined
+
 ### 2026-02-07
 - Completed `/desktop/cmp/panel/README.md` — first desktop sub-package README:
   - Panel layout (vframe structure, flex defaults, padding stripping)
@@ -195,3 +196,17 @@ _Use this section to track discussions, decisions, and context between documenta
   - Configuration reference tables for Panel props and PanelModel config
 - Updated `/desktop/README.md` with link to Panel sub-package README
 - Updated `AGENTS.md` Components table with Panel entry
+
+### 2026-02-08
+- Completed `/desktop/cmp/dash/README.md` — second desktop sub-package README:
+  - Overview with "Choosing Between DashContainer and DashCanvas" comparison guide
+  - Architecture diagrams for DashModel, DashViewSpec, DashViewModel hierarchies
+  - Full DashContainerModel and DashCanvasModel config tables
+  - DashViewSpec and DashCanvasViewSpec config tables
+  - Two-level persistence architecture (layout + widget state via DashViewProvider)
+  - Widget content patterns (accessing DashViewModel, dynamic titles, header items)
+  - Common patterns (basic model, ViewManager integration, collapsible panel, dynamic locking, multiple instances with viewState)
+  - Links to underlying libraries (GoldenLayout 1.x, react-grid-layout)
+  - Common pitfalls section
+- Updated `AGENTS.md` Components table with Dash entry
+- Updated `/desktop/README.md` with link to Dash sub-package README

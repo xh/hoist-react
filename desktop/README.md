@@ -243,7 +243,7 @@ const dashModel = new DashContainerModel({
 dashContainer({model: dashModel})
 ```
 
-See `/desktop/cmp/dash/README.md` for complete dashboard documentation.
+See [`/desktop/cmp/dash/README.md`](./cmp/dash/README.md) for complete dashboard documentation.
 
 ### Tab Container (`/cmp/tab/`)
 
