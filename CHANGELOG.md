@@ -8,9 +8,16 @@
   header and collapsible content.
 * Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
   state.
+* Added `contentBoxProps` to `Panel`, providing direct control over the inner frame wrapping content
+  items. Use to apply padding, change flex direction, enable scrolling, or add custom classes without
+  extra wrapper elements. Matches the existing `contentBoxProps` API on `Card`.
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
+* The CSS class on Panel's outer structural wrapper has been renamed from `xh-panel__content` to
+  `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
+  content items (the target of `contentBoxProps`). Update any app CSS selectors targeting the old
+  `xh-panel__content` class accordingly.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
   a `boolean`.  For most apps this will require a trivial change to the signature of the
   implementation of `HoistAuthModel.completeAuthAsync`.

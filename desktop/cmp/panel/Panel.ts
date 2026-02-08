@@ -95,6 +95,9 @@ export interface PanelProps<M extends PanelModel = PanelModel>
 
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
+
+    /** Additional props to pass to the inner frame hosting the content items. */
+    contentBoxProps?: BoxProps;
 }
 
 /**
@@ -135,6 +138,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             loadingIndicator: loadingIndicatorProp,
             contextMenu,
             hotkeys,
+            contentBoxProps,
             children,
             ...rest
         } = nonLayoutProps;
@@ -185,7 +189,12 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
-                    ...castArray(children),
+                    frame({
+                        className: 'xh-panel__content',
+                        flexDirection: 'column',
+                        ...contentBoxProps,
+                        items: castArray(children)
+                    }),
                     parseToolbar(bbar)
                 ])
             });
@@ -203,7 +212,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
-            className: 'xh-panel__content',
+            className: 'xh-panel__inner',
             items: [
                 panelHeader({
                     title,
