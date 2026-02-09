@@ -36,7 +36,7 @@ Frequently used utilities that benefit from dedicated documentation.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | Planned |
+| `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
 | `/admin/` | 112 | Built-in admin console - configuration, monitoring, and management UI | Planned |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | Planned |
 
@@ -223,3 +223,18 @@ _Use this section to track discussions, decisions, and context between documenta
   - Common pitfalls (desktop vs mobile import confusion)
 - Updated `AGENTS.md` Components table with Mobile entry, moved `/mobile/` out of "Other Packages"
 - Updated `/desktop/README.md` Related Packages with link to mobile README
+- Completed `/format/README.md` — formatting package overview:
+  - Formatter functions vs renderer factories distinction (key concept)
+  - Full `NumberFormatOptions` reference table
+  - Auto-precision rules
+  - Ledger format with `forceLedgerAlign` explanation
+  - `ColorSpec` (default classes, custom classes, inline styles)
+  - `zeroPad` behavior (boolean and numeric)
+  - All convenience number formatters (fmtThousands/Millions/Billions, fmtQuantity, fmtPrice, fmtPercent)
+  - `fmtNumberTooltip` and `parseNumber`
+  - Date formatting with ISO 8601 recommendation, format constants, all core formatters
+  - `fmtCompactDate` with examples at multiple time scales
+  - Timestamp replacement utilities
+  - Miscellaneous formatting (fmtSpan, fmtJson, capitalizeWords)
+  - Common patterns (reusable column specs, app-specific formatters, currency labels, custom date formats)
+- Updated `AGENTS.md` with Format entry, moved `/format/` out of "Other Packages"

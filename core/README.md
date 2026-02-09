@@ -770,4 +770,4 @@ async doLoadAsync() {
 - [`/data/`](../data/README.md) - Store, StoreRecord, Field - data layer infrastructure
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
-- `/desktop/` and `/mobile/` - Platform-specific components
+- [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components

@@ -83,12 +83,18 @@ or with specific packages — they cover architecture, configuration, usage patt
 | [`/desktop/cmp/panel/`](./desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
 | [`/mobile/`](./mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
 
+#### Utilities
+
+| Package | Description | Key Topics |
+|---------|-------------|------------|
+| [`/format/`](./format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision |
+
 #### Other Packages
 
 Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)
 for planned coverage:
 
-`/admin/`, `/appcontainer/`, `/format/`, `/icon/`, `/kit/`, `/inspector/`,
+`/admin/`, `/appcontainer/`, `/icon/`, `/kit/`, `/inspector/`,
 `/mobx/`, `/promise/`, `/security/`, `/styles/`, `/utils/`
 
 ### Element Factories vs JSX
