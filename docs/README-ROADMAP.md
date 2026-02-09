@@ -25,9 +25,10 @@ interacts with Hoist.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/cmp/` | 132 | Cross-platform components overview, factory pattern, component categories | [Done](../cmp/README.md) |
-| `/desktop/` | 240 | Desktop-specific components and app container | Drafted |
+| `/desktop/` | 240 | Desktop-specific components and app container | [Done](../desktop/README.md) |
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../desktop/cmp/panel/README.md) |
-| `/mobile/` | 131 | Mobile-specific components and app container | Drafted |
+| `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../desktop/cmp/dash/README.md) |
+| `/mobile/` | 131 | Mobile-specific components and app container | [Done](../mobile/README.md) |
 
 ## Priority 3 - Key Utilities
 
@@ -35,9 +36,11 @@ Frequently used utilities that benefit from dedicated documentation.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | Planned |
-| `/admin/` | 112 | Built-in admin console - configuration, monitoring, and management UI | Planned |
-| `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | Planned |
+| `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
+| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
+| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
+| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
+| `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
 
 ## Priority 4 - Supporting Packages
 
@@ -45,9 +48,6 @@ Smaller packages that provide important but more specialized functionality.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
-| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
-| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
 | `/icon/` | 5 | Icon system and FontAwesome integration | Planned |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | Planned |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | Planned |
@@ -63,7 +63,10 @@ patterns and systems that span multiple packages.
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others.                                                                                                                   | Planned |
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | [Part 1 Done](./concepts/app-lifecycle.md) |
 | Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
+| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them.                                                                                                    | Planned |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`.                                                                                                                                                  | Planned |
+| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows.                                                                                                 | Planned |
 
 ## Documentation Guidelines
 
@@ -136,23 +139,6 @@ _Use this section to track discussions, decisions, and context between documenta
   - XH singleton overview
   - Decorator reference and common patterns
 
-### 2026-02-04
-- Completed all `/cmp/` sub-package READMEs (interactively reviewed and refined):
-  - `/cmp/README.md` - Top-level overview cataloging all 24 sub-packages
-  - `/cmp/layout/README.md` - Box/Frame/Viewport, LayoutProps pixel conversion, BoxProps table
-  - `/cmp/form/README.md` - FormModel, FieldModel, SubformsFieldModel, validation, Form context
-  - `/cmp/input/README.md` - HoistInputModel, change/commit lifecycle, custom input guide
-  - `/cmp/tab/README.md` - TabContainerModel, routing, render/refresh modes, dynamic switcher
-  - `/cmp/viewmanager/README.md` - ViewManagerModel, sharing/visibility model, pinning, auto-save, default views
-- Updated `/core/README.md` with model context lookup and resolution order documentation
-- Added `@bindable` setter convention to `CLAUDE.md` (prefer direct assignment over generated setters)
-- Added Persistence and Lifecycles concept docs to roadmap
-- Key conventions established during review:
-  - No Default columns in config tables (fold into descriptions)
-  - Constructor-based initialization for complex models (GridModel, etc.)
-  - No `myApp.` prefix in localStorageKey examples (auto-namespaced)
-  - Direct assignment for `@bindable` props; call explicit `setFoo()` only when defined
-
 ### 2026-02-03
 - Completed `/data/README.md` covering:
   - Store, StoreRecord, Field core classes with architecture diagram
@@ -182,6 +168,23 @@ _Use this section to track discussions, decisions, and context between documenta
   - Common patterns (loadSpec usage, debounced search with auto-abort, WebSocket subscriptions)
   - Common pitfalls section
 
+### 2026-02-04
+- Completed all `/cmp/` sub-package READMEs (interactively reviewed and refined):
+  - `/cmp/README.md` - Top-level overview cataloging all 24 sub-packages
+  - `/cmp/layout/README.md` - Box/Frame/Viewport, LayoutProps pixel conversion, BoxProps table
+  - `/cmp/form/README.md` - FormModel, FieldModel, SubformsFieldModel, validation, Form context
+  - `/cmp/input/README.md` - HoistInputModel, change/commit lifecycle, custom input guide
+  - `/cmp/tab/README.md` - TabContainerModel, routing, render/refresh modes, dynamic switcher
+  - `/cmp/viewmanager/README.md` - ViewManagerModel, sharing/visibility model, pinning, auto-save, default views
+- Updated `/core/README.md` with model context lookup and resolution order documentation
+- Added `@bindable` setter convention to `CLAUDE.md` (prefer direct assignment over generated setters)
+- Added Persistence and Lifecycles concept docs to roadmap
+- Key conventions established during review:
+  - No Default columns in config tables (fold into descriptions)
+  - Constructor-based initialization for complex models (GridModel, etc.)
+  - No `myApp.` prefix in localStorageKey examples (auto-namespaced)
+  - Direct assignment for `@bindable` props; call explicit `setFoo()` only when defined
+
 ### 2026-02-07
 - Completed `/desktop/cmp/panel/README.md` — first desktop sub-package README:
   - Panel layout (vframe structure, flex defaults, padding stripping)
@@ -195,3 +198,63 @@ _Use this section to track discussions, decisions, and context between documenta
   - Configuration reference tables for Panel props and PanelModel config
 - Updated `/desktop/README.md` with link to Panel sub-package README
 - Updated `AGENTS.md` Components table with Panel entry
+
+### 2026-02-08
+- Completed `/desktop/cmp/dash/README.md` — second desktop sub-package README:
+  - Overview with "Choosing Between DashContainer and DashCanvas" comparison guide
+  - Architecture diagrams for DashModel, DashViewSpec, DashViewModel hierarchies
+  - Full DashContainerModel and DashCanvasModel config tables
+  - DashViewSpec and DashCanvasViewSpec config tables
+  - Two-level persistence architecture (layout + widget state via DashViewProvider)
+  - Widget content patterns (accessing DashViewModel, dynamic titles, header items)
+  - Common patterns (basic model, ViewManager integration, collapsible panel, dynamic locking, multiple instances with viewState)
+  - Links to underlying libraries (GoldenLayout 1.x, react-grid-layout)
+  - Common pitfalls section
+- Updated `AGENTS.md` Components table with Dash entry
+- Updated `/desktop/README.md` with link to Dash sub-package README
+- Completed `/mobile/README.md` — mobile platform overview:
+  - Overview with Onsen UI foundation, architecture tree
+  - Relationship to `/cmp/` cross-platform package
+  - AppContainer with correct `XH.renderApp()` pattern, idle/suspension support
+  - NavigatorModel (route-based page navigation, pullDownToRefresh, transitionMs)
+  - All input components with mobile-specific features (Select `enableFullscreen`, async `queryFn`)
+  - Panel, DialogPanel, AppBar, Button, Toolbar, TabContainer (swipeable), Dialog, MenuButton, Popover
+  - Complete "Other Mobile Components" table (12 sub-packages)
+  - Platform differences (selection behavior, navigation patterns, touch considerations)
+  - Common patterns (mobile page, navigator with detail pages, form with formFieldSet)
+  - Common pitfalls (desktop vs mobile import confusion)
+- Updated `AGENTS.md` Components table with Mobile entry, moved `/mobile/` out of "Other Packages"
+- Updated `/desktop/README.md` Related Packages with link to mobile README
+- Completed `/format/README.md` — formatting package overview:
+  - Formatter functions vs renderer factories distinction (key concept)
+  - Full `NumberFormatOptions` reference table
+  - Auto-precision rules
+  - Ledger format with `forceLedgerAlign` explanation
+  - `ColorSpec` (default classes, custom classes, inline styles)
+  - `zeroPad` behavior (boolean and numeric)
+  - All convenience number formatters (fmtThousands/Millions/Billions, fmtQuantity, fmtPrice, fmtPercent)
+  - `fmtNumberTooltip` and `parseNumber`
+  - Date formatting with ISO 8601 recommendation, format constants, all core formatters
+  - `fmtCompactDate` with examples at multiple time scales
+  - Timestamp replacement utilities
+  - Miscellaneous formatting (fmtSpan, fmtJson, capitalizeWords)
+  - Common patterns (reusable column specs, app-specific formatters, currency labels, custom date formats)
+- Updated `AGENTS.md` with Format entry, moved `/format/` out of "Other Packages"
+
+### 2026-02-08 (cont.)
+- Completed `/appcontainer/README.md` — application shell package overview:
+  - Overview of AppContainerModel as root coordinator with 17 sub-models
+  - Architecture tree grouping all 22 models by category
+  - Messages (richest section): XH.message, alert, confirm, prompt with full MessageSpec table
+  - Extra confirmation (extraConfirmText), messageKey deduplication, custom inputs for prompts
+  - Toasts: XH.toast and convenience variants (success/warning/danger), programmatic dismissal, action buttons
+  - Banners: XH.showBanner/hideBanner, category-based uniqueness, BannerSpec table
+  - Exception handling: XH.handleException options (alertType, showAlert, requireReload, logOnServer)
+  - App Options dialog: getAppOptions(), built-in convenience options (theme/sizing/autoRefresh)
+  - Theme, Sizing Mode, Viewport/Device detection
+  - About Dialog, Changelog, Feedback, Impersonation (minimal)
+  - Routing (minimal, cross-ref to planned concept doc)
+  - Login Panel, Version Bar
+- Updated `AGENTS.md` with AppContainer entry, moved `/appcontainer/` out of "Other Packages"
+- Added cross-links from `/desktop/README.md` and `/mobile/README.md` to new appcontainer README
+- Added "Routing" and "Error Handling" concept docs to roadmap (Planned)

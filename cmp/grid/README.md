@@ -213,7 +213,8 @@ gridModel.localExport('my-data', 'csv');
 Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when passing a statically configured
 renderer directly to the `renderer` config - the factory returns a reusable function. When rendering
 dynamically based on record data or otherwise customizing per-cell, call the underlying formatter
-directly (e.g., `fmtNumber`) to avoid creating a new function on each render.
+directly (e.g., `fmtNumber`) to avoid creating a new function on each render. See
+[`/format/README.md`](../../format/README.md) for the full formatter and renderer API.
 
 ```typescript
 import {numberRenderer, fmtNumber} from '@xh/hoist/format';

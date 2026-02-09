@@ -359,6 +359,5 @@ See the [Layout README](./layout/README.md) for complete documentation.
 
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp factory, component infrastructure
 - [`/data/`](../data/README.md) - Store, StoreRecord, Field - data layer used by Grid, DataView
-- `/desktop/` - Desktop platform components extending /cmp/
-- `/mobile/` - Mobile platform components extending /cmp/
-- `/format/` - Number and date formatters used by Grid renderers
+- [`/desktop/`](../desktop/README.md) - Desktop platform components extending /cmp/
+- [`/mobile/`](../mobile/README.md) - Mobile platform components extending /cmp/
