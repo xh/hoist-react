@@ -40,7 +40,7 @@ Frequently used utilities that benefit from dedicated documentation.
 | `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
 | `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
 | `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
-| `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | Planned |
+| `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
 
 ## Priority 4 - Supporting Packages
 
@@ -65,6 +65,8 @@ patterns and systems that span multiple packages.
 | Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
 | Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them.                                                                                                    | Planned |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`.                                                                                                                                                  | Planned |
+| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows.                                                                                                 | Planned |
 
 ## Documentation Guidelines
 
@@ -238,3 +240,21 @@ _Use this section to track discussions, decisions, and context between documenta
   - Miscellaneous formatting (fmtSpan, fmtJson, capitalizeWords)
   - Common patterns (reusable column specs, app-specific formatters, currency labels, custom date formats)
 - Updated `AGENTS.md` with Format entry, moved `/format/` out of "Other Packages"
+
+### 2026-02-08 (cont.)
+- Completed `/appcontainer/README.md` — application shell package overview:
+  - Overview of AppContainerModel as root coordinator with 17 sub-models
+  - Architecture tree grouping all 22 models by category
+  - Messages (richest section): XH.message, alert, confirm, prompt with full MessageSpec table
+  - Extra confirmation (extraConfirmText), messageKey deduplication, custom inputs for prompts
+  - Toasts: XH.toast and convenience variants (success/warning/danger), programmatic dismissal, action buttons
+  - Banners: XH.showBanner/hideBanner, category-based uniqueness, BannerSpec table
+  - Exception handling: XH.handleException options (alertType, showAlert, requireReload, logOnServer)
+  - App Options dialog: getAppOptions(), built-in convenience options (theme/sizing/autoRefresh)
+  - Theme, Sizing Mode, Viewport/Device detection
+  - About Dialog, Changelog, Feedback, Impersonation (minimal)
+  - Routing (minimal, cross-ref to planned concept doc)
+  - Login Panel, Version Bar
+- Updated `AGENTS.md` with AppContainer entry, moved `/appcontainer/` out of "Other Packages"
+- Added cross-links from `/desktop/README.md` and `/mobile/README.md` to new appcontainer README
+- Added "Routing" and "Error Handling" concept docs to roadmap (Planned)

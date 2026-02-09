@@ -412,6 +412,7 @@ form({
 
 ## Related Packages
 
+- [`/appcontainer/`](../appcontainer/README.md) - Shared AppContainer models (messages, toasts, banners, theming, routing)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/mobile/`](../mobile/README.md) - Mobile platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton

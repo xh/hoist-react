@@ -88,13 +88,14 @@ or with specific packages — they cover architecture, configuration, usage patt
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/format/`](./format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision |
+| [`/appcontainer/`](./appcontainer/README.md) | Application shell — lifecycle, dialogs, toasts, banners, theming, and environment | AppContainerModel, MessageSpec, ToastSpec, BannerSpec, ExceptionDialogModel, ThemeModel, RouterModel, AppOption |
 
 #### Other Packages
 
 Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)
 for planned coverage:
 
-`/admin/`, `/appcontainer/`, `/icon/`, `/kit/`, `/inspector/`,
+`/admin/`, `/icon/`, `/kit/`, `/inspector/`,
 `/mobx/`, `/promise/`, `/security/`, `/styles/`, `/utils/`
 
 ### Element Factories vs JSX

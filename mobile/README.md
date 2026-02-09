@@ -474,6 +474,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 
 ## Related Packages
 
+- [`/appcontainer/`](../appcontainer/README.md) - Shared AppContainer models (messages, toasts, banners, theming, routing)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/desktop/`](../desktop/README.md) - Desktop platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton
