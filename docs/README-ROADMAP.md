@@ -37,7 +37,9 @@ Frequently used utilities that benefit from dedicated documentation.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
-| `/admin/` | 112 | Built-in admin console - configuration, monitoring, and management UI | Planned |
+| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
+| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
+| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | Planned |
 
 ## Priority 4 - Supporting Packages
@@ -46,9 +48,6 @@ Smaller packages that provide important but more specialized functionality.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
-| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
-| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
 | `/icon/` | 5 | Icon system and FontAwesome integration | Planned |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | Planned |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | Planned |
@@ -64,6 +63,7 @@ patterns and systems that span multiple packages.
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others.                                                                                                                   | Planned |
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | [Part 1 Done](./concepts/app-lifecycle.md) |
 | Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
+| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them.                                                                                                    | Planned |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
 
 ## Documentation Guidelines
