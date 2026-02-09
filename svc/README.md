@@ -233,6 +233,49 @@ XH.track({
 | `elapsed` | number | Operation duration in ms |
 | `oncePerSession` | boolean | Only send first occurrence per session |
 
+##### Server-Side Filtering: `xhActivityTrackingConfig`
+
+The client always sends all tracked entries to the server. The server then decides what to persist
+based on the `xhActivityTrackingConfig` soft config (editable in the Admin Console). Key properties:
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `levels` | `[{username: '*', category: '*', severity: 'INFO'}]` | Rules controlling which entries are persisted |
+| `maxDataLength` | `2000` | Max chars of JSON data per entry; oversized data is dropped with a warning |
+| `logData` | `false` | Whether to log primitive data values server-side |
+| `clientHealthReport` | `{intervalMins: -1}` | Config for periodic health report submissions; `-1` disables |
+| `maxRows` | `{default: 10000, options: [...]}` | Row limits for the Admin Console activity viewer |
+
+The `levels` array is the most important setting. Each rule specifies a `username`, `category`, and
+`severity` — entries matching a rule at or above its severity are persisted. The default config drops
+all `DEBUG` entries. To enable them:
+
+```json
+{
+    "levels": [
+        {"username": "*", "category": "*", "severity": "DEBUG"}
+    ],
+    "maxDataLength": 2000,
+    "logData": false,
+    "clientHealthReport": {"intervalMins": -1}
+}
+```
+
+Rules can also target specific users or categories:
+
+```json
+{
+    "levels": [
+        {"username": "jsmith", "category": "*", "severity": "DEBUG"},
+        {"username": "*", "category": "Data", "severity": "DEBUG"}
+    ]
+}
+```
+
+Rules are evaluated in order — the first match wins. Entries that don't match any rule default to an
+INFO threshold, so the example above enables DEBUG+ persistence for user `jsmith` and the `Data`
+category while all other entries continue to require INFO or above.
+
 #### ClientHealthService
 **File**: `ClientHealthService.ts` | **Access**: `XH.clientHealthService`
 
@@ -425,7 +468,7 @@ Services are configured via soft configs (managed in Admin Console):
 | `xhIdleConfig` | IdleService | Idle timeout configuration |
 | `xhInspectorConfig` | InspectorService | Inspector visibility/role restrictions |
 | `xhExportConfig` | GridExportService | Export thresholds for UI feedback |
-| `xhActivityTrackingConfig` | TrackService | Tracking levels and limits |
+| `xhActivityTrackingConfig` | TrackService | Severity-level filtering, data limits, health report interval |
 | `xhEnableImpersonation` | IdentityService | Enable/disable impersonation |
 | `xhEnvPollConfig` | EnvironmentService | Poll interval and version change behavior |
 
