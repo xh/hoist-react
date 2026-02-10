@@ -5,9 +5,23 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {
+    FieldModel,
+    FormContext,
+    FormContextType,
+    BaseFormFieldProps,
+    FormFieldSetModel
+} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    hoistCmp,
+    HoistProps,
+    TestSupportProps,
+    useContextModel,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
@@ -17,7 +31,7 @@ import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
-import {Children, cloneElement, ReactNode, useContext} from 'react';
+import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {}
@@ -62,10 +76,19 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
+        // If within a FormFieldSet, register with its model for validation grouping
+        const fieldSetModel = useContextModel(FormFieldSetModel);
+        useEffect(() => {
+            if (fieldSetModel && model) {
+                fieldSetModel.registerChildFieldModel(model);
+                return () => fieldSetModel.unregisterChildFieldModel(model);
+            }
+        }, [fieldSetModel, model]);
+
         // Model related props
         const isRequired = model?.isRequired || false,
-            readonly = model?.readonly || false,
-            disabled = props.disabled || model?.disabled,
+            readonly = model?.readonly || fieldSetModel?.readonly || false,
+            disabled = props.disabled || model?.disabled || fieldSetModel?.disabled,
             severityToDisplay = model?.validationDisplayed
                 ? maxSeverity(model.validationResults)
                 : null,

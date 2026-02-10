@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Field,
@@ -191,7 +192,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistBase implements FilterBindTarget, FilterValueSource {
+export class Store
+    extends HoistBase
+    implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
+{
     static isStore(obj: unknown): obj is Store {
         return obj instanceof Store;
     }
@@ -1217,12 +1221,14 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
+            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
+            const data = {...recToRevert.committedData};
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
                 raw: recToRevert.raw,
-                data: recToRevert.committedData,
-                committedData: recToRevert.committedData,
+                data,
+                committedData: data,
                 parent: null,
                 isSummary: true
             });

@@ -5,7 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterFieldSpec, GridFilterModelConfig} from '@xh/hoist/cmp/grid';
+import {
+    GridFilterBindTarget,
+    GridFilterFieldSpec,
+    GridFilterFieldSpecConfig,
+    GridFilterModelConfig
+} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {
     CompoundFilter,
@@ -13,8 +18,6 @@ import {
     Filter,
     FilterLike,
     flattenFilter,
-    Store,
-    View,
     withFilterByField,
     withFilterByTypes
 } from '@xh/hoist/data';
@@ -31,7 +34,7 @@ export class GridFilterModel extends HoistModel {
     override xhImpl = true;
 
     gridModel: GridModel;
-    bind: Store | View;
+    bind: GridFilterBindTarget;
     @bindable commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
 
@@ -66,7 +69,7 @@ export class GridFilterModel extends HoistModel {
     setColumnFilters(field: string, filter: FilterLike) {
         // If current bound filter is a CompoundFilter for a single column, wrap it
         // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
-        let currFilter = this.filter as any;
+        let currFilter: FilterLike = this.filter;
         if (currFilter instanceof CompoundFilter && currFilter.field) {
             currFilter = {filters: [currFilter], op: 'AND'};
         }
@@ -135,7 +138,7 @@ export class GridFilterModel extends HoistModel {
         this.dialogOpen = false;
     }
 
-    setFilter(filter: Filter) {
+    setFilter(filter: FilterLike) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
@@ -144,7 +147,10 @@ export class GridFilterModel extends HoistModel {
     //--------------------------------
     // Implementation
     //--------------------------------
-    private parseFieldSpecs(specs, fieldSpecDefaults) {
+    private parseFieldSpecs(
+        specs: Array<string | GridFilterFieldSpecConfig>,
+        fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>
+    ) {
         const {bind} = this;
 
         // If no specs provided, include all source fields.

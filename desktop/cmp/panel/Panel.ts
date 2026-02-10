@@ -34,7 +34,8 @@ import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 
-export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
+export interface PanelProps<M extends PanelModel = PanelModel>
+    extends HoistProps<M>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 

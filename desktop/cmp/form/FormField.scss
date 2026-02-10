@@ -12,22 +12,31 @@
   margin: var(--xh-form-field-margin);
 
   &__label {
+    // Common label attrs
     color: var(--xh-form-field-label-color);
     font-size: var(--xh-form-field-label-font-size);
     font-style: var(--xh-form-field-label-font-style);
     font-weight: var(--xh-form-field-label-font-weight);
     text-transform: var(--xh-form-field-label-text-transform);
 
-    // Borders + padding (not inline)
+    // Borders + padding - editable, not inline - the default case.
     border-bottom: var(--xh-form-field-label-border-bottom);
     margin: var(--xh-form-field-label-margin);
     padding: var(--xh-form-field-label-padding);
 
-    // Borders + padding (inline)
+    // Borders + padding - readonly, not inline - commonly used to add bottom border when using
+    // forms as a kind of detail view, as readonly fields often lack other visual boundaries.
+    .xh-form-field--readonly:not(.xh-form-field--inline) & {
+      border-bottom: var(--xh-form-field-readonly-label-border-bottom);
+      margin: var(--xh-form-field-readonly-label-margin);
+      padding: var(--xh-form-field-readonly-label-padding);
+    }
+
+    // Borders + padding - inline, both editable and readonly.
     .xh-form-field--inline & {
-      border-bottom: var(--xh-form-field-label-inline-border-bottom);
-      margin: var(--xh-form-field-label-inline-margin);
-      padding: var(--xh-form-field-label-inline-padding);
+      border-bottom: var(--xh-form-field-inline-label-border-bottom);
+      margin: var(--xh-form-field-inline-label-margin);
+      padding: var(--xh-form-field-inline-label-padding);
     }
   }
 

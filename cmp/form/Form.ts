@@ -39,7 +39,8 @@ export interface FormContextType {
 export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elementFactory(FormContext.Provider);
 
-export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
+export interface FormProps<M extends FormModel = FormModel>
+    extends HoistProps<M>, TestSupportProps {
     /**
      * Defaults for certain props on child/nested FormFields.
      * @see FormField (note there are both desktop and mobile implementations).

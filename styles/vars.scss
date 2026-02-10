@@ -354,6 +354,26 @@ body {
   }
 
   //------------------------
+  // Cards
+  //------------------------
+  --xh-card-bg: var(--card-bg, var(--xh-bg));
+  --xh-card-border-color: var(--card-border-color, var(--xh-border-color));
+  --xh-card-border-radius: var(--card-border-radius, var(--xh-border-radius));
+  --xh-card-border-radius-px: calc(var(--xh-card-border-radius) * 1px);
+  --xh-card-danger-color: var(--card-danger-color, var(--xh-intent-danger-text-color));
+  --xh-card-header-font-size: var(--card-header-font-size, var(--xh-font-size));
+  --xh-card-header-font-size-px: calc(var(--xh-card-header-font-size) * 1px);
+  --xh-card-header-gap: var(--card-header-gap, 8);
+  --xh-card-header-gap-px: calc(var(--xh-card-header-gap) * 1px);
+  --xh-card-header-min-height: var(--card-header-min-height, 30);
+  --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
+  --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
+  --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
+  --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
+  --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+
+
+  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--menu-bg, var(--xh-bg));
@@ -432,20 +452,27 @@ body {
   --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
   --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
 
-  // Label styling (shared)
+  // Label styling - common to all variants
   --xh-form-field-label-color: var(--form-field-label-color, var(--xh-text-color));
   --xh-form-field-label-font-size: var(--form-field-label-font-size, var(--xh-font-size-px));
   --xh-form-field-label-font-style: var(--form-field-label-font-style, normal);
   --xh-form-field-label-font-weight: var(--form-field-label-font-weight, normal);
   --xh-form-field-label-text-transform: var(--form-field-label-text-transform, none);
 
-  // Label borders+padding (with inline variants)
+  // Label borders + padding - editable, not inline - the default case.
   --xh-form-field-label-border-bottom: var(--form-field-label-border-bottom, none);
   --xh-form-field-label-margin: var(--form-field-label-margin, 0 0 3px 0);
   --xh-form-field-label-padding: var(--form-field-label-padding, 0);
-  --xh-form-field-label-inline-border-bottom: var(--form-field-label-inline-border-bottom, none);
-  --xh-form-field-label-inline-margin: var(--form-field-label-inline-margin, 0);
-  --xh-form-field-label-inline-padding: var(--form-field-label-inline-padding, 0);
+
+  // Label borders + padding - readonly, not inline
+  --xh-form-field-readonly-label-border-bottom: var(--form-field-readonly-label-border-bottom, var(--xh-form-field-label-border-bottom));
+  --xh-form-field-readonly-label-margin: var(--form-field-readonly-label-margin, var(--xh-form-field-label-margin));
+  --xh-form-field-readonly-label-padding: var(--form-field-readonly-label-padding, var(--xh-form-field-label-padding));
+
+  // Label borders + padding - inline, both editable and readonly
+  --xh-form-field-inline-label-border-bottom: var(--form-field-inline-label-border-bottom, var(--xh-form-field-label-border-bottom));
+  --xh-form-field-inline-label-margin: var(--form-field-inline-label-margin, 0); // Defaulted to zero for inline
+  --xh-form-field-inline-label-padding: var(--form-field-inline-label-padding, var(--xh-form-field-label-padding));
 
   // Messages (general info text + validation results)
   --xh-form-field-msg-font-size: var(--form-field-msg-font-size, var(--xh-font-size-small-px));

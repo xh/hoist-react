@@ -138,7 +138,7 @@ export class TabContainerModel extends HoistModel {
             xhImpl = false,
             switcher = {mode: 'static'}
         }: TabContainerConfig,
-        depth = 0
+        depth: number = 0
     ) {
         super();
         makeObservable(this);
