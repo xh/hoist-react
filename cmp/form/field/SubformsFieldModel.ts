@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {managed, PlainObject, XH} from '@xh/hoist/core';
+import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
 import {ValidationResult, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -17,7 +17,7 @@ import {FormConfig} from '../FormModel';
 export interface SubformsFieldConfig extends BaseFieldConfig {
     /**
      * Config for a {@link FormModel} to be auto-created to manage and validate the data for each
-     *
+     * entry in the collection.
      */
     subforms: FormConfig;
 
@@ -25,7 +25,7 @@ export interface SubformsFieldConfig extends BaseFieldConfig {
      * Initial value of this field. If a function, will be executed dynamically when form is
      * initialized to provide value.
      */
-    initialValue?: any[];
+    initialValue?: Thunkable<PlainObject[]>;
 }
 
 export interface SubformAddOptions {
@@ -51,13 +51,14 @@ export interface SubformAddOptions {
  * the subforms will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
+    declare value: FormModel[];
+    declare initialValue: FormModel[];
+
     /** (Sub)FormModels created by this model, tracked to support cleanup. */
     @managed private createdModels: FormModel[] = [];
 
-    declare value: FormModel[];
-
     private formConfig: FormConfig = null;
-    private readonly origInitialValues: any[];
+    private readonly origInitialValues: Thunkable<PlainObject[]>;
 
     constructor({subforms, initialValue = [], ...rest}: SubformsFieldConfig) {
         super(rest);
@@ -117,9 +118,9 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     override get allValidationResults(): ValidationResult[] {
-        const subVals = flatMap(this.value, v =>
-            v.fieldList.flatMap(field => field.validationResults)
-        );
+        const subVals = flatMap(this.value, v => {
+            return v.fieldList.flatMap(field => field.validationResults);
+        });
         return [...this.validationResults, ...subVals];
     }
 
