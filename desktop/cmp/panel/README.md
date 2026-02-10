@@ -433,11 +433,12 @@ See [Collapsing and Resizing](#collapsing-and-resizing) for the full `PanelConfi
 
 ## Common Pitfalls
 
-**`mask: 'onLoad'` requires LoadSupport on the context model.** Panel resolves `'onLoad'` by
-looking up the `loadObserver` on the nearest context model. If that model does not implement
-`doLoadAsync` (and therefore has no `loadObserver`), the mask will silently fail — no mask will
-appear, and a warning will be logged to the console. Ensure the model linked to the panel has
-LoadSupport enabled, or bind to a specific `TaskObserver` instead.
+### `mask: 'onLoad'` requires LoadSupport on the context model
+
+Panel resolves `'onLoad'` by looking up the `loadObserver` on the nearest context model. If that
+model does not implement `doLoadAsync` (and therefore has no `loadObserver`), the mask will
+silently fail — no mask will appear, and a warning will be logged to the console. Ensure the model
+linked to the panel has LoadSupport enabled, or bind to a specific `TaskObserver` instead.
 
 ```typescript
 // ❌ Don't: model has no doLoadAsync — mask: 'onLoad' will not work
@@ -453,11 +454,13 @@ panel({
 })
 ```
 
-**Collapsible panel without `collapsedTitle`.** A collapsible panel that has no `title`,
-`collapsedTitle`, or `icon` will not render a header when collapsed — it collapses down to just
-the splitter bar. This is supported and valid, but can make it difficult for users to locate the
-collapsed panel and find the small control on the splitter to re-expand it. Setting `collapsedTitle`
-and/or `collapsedIcon` ensures a visible, identifiable header is always shown when collapsed.
+### Collapsible panel without `collapsedTitle`
+
+A collapsible panel that has no `title`, `collapsedTitle`, or `icon` will not render a header
+when collapsed — it collapses down to just the splitter bar. This is supported and valid, but can
+make it difficult for users to locate the collapsed panel and find the small control on the
+splitter to re-expand it. Setting `collapsedTitle` and/or `collapsedIcon` ensures a visible,
+identifiable header is always shown when collapsed.
 
 ```typescript
 // ❌ Avoid: no title or collapsedTitle — collapses to splitter only

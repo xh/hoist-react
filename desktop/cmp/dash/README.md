@@ -796,18 +796,23 @@ const dashModel = new DashContainerModel({
 
 ## Common Pitfalls
 
-**Loading DashContainer state is destructive.** Calling `loadStateAsync` destroys and recreates
-the entire GoldenLayout instance, including all view components. Avoid calling it frequently — use
-persistence and `restoreDefaultsAsync` instead of programmatically swapping layouts. If you need
-dynamic content within a view, use `viewState` rather than changing the layout structure.
+### Loading DashContainer state is destructive
 
-**Persisted state references obsolete viewSpecs.** When removing a viewSpec from your code, any
-persisted state referencing it will log a warning and skip that view gracefully. However, users may
-see unexpected empty spaces in their layout. Consider providing a "Restore Default Layout" menu
-item via `extraMenuItems` so users can reset when their layout becomes stale.
+Calling `loadStateAsync` destroys and recreates the entire GoldenLayout instance, including all
+view components. Avoid calling it frequently — use persistence and `restoreDefaultsAsync` instead
+of programmatically swapping layouts. If you need dynamic content within a view, use `viewState`
+rather than changing the layout structure.
 
-**`restoreDefaults` is sync for DashCanvas, async for DashContainer.** DashCanvasModel's
-`restoreDefaults()` runs synchronously and returns void. DashContainerModel's
+### Persisted state references obsolete viewSpecs
+
+When removing a viewSpec from your code, any persisted state referencing it will log a warning
+and skip that view gracefully. However, users may see unexpected empty spaces in their layout.
+Consider providing a "Restore Default Layout" menu item via `extraMenuItems` so users can reset
+when their layout becomes stale.
+
+### `restoreDefaults` is sync for DashCanvas, async for DashContainer
+
+DashCanvasModel's `restoreDefaults()` runs synchronously and returns void. DashContainerModel's
 `restoreDefaultsAsync()` is async and returns a Promise — it must destroy and recreate
 GoldenLayout. Await it if you need to take action after the layout is rebuilt.
 

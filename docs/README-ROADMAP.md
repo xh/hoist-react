@@ -37,9 +37,9 @@ Frequently used utilities that benefit from dedicated documentation.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
-| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
-| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
-| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
+| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | [Draft](../utils/README.md) |
+| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | [Draft](../promise/README.md) |
+| `/mobx/` | 3 | MobX re-exports, @bindable decorator, enhanced makeObservable | [Done](../mobx/README.md) |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
 
 ## Priority 4 - Supporting Packages
@@ -94,8 +94,9 @@ Each README should follow the pattern established in `/cmp/grid/README.md`:
 Use a two-part approach for documenting things to avoid:
 
 1. **Inline warnings** - Use `**Avoid:**` prefix for brief notes near relevant content
-2. **Common Pitfalls section** - Add a dedicated section at the end of each README for significant
-   anti-patterns that warrant fuller explanation
+2. **Common Pitfalls section** - Add a dedicated `## Common Pitfalls` section at the end of each
+   README for significant anti-patterns that warrant fuller explanation. Use `###` third-level
+   headers for each individual pitfall
 
 For code examples showing correct vs incorrect approaches, use ✅/❌ markers:
 
@@ -258,3 +259,24 @@ _Use this section to track discussions, decisions, and context between documenta
 - Updated `AGENTS.md` with AppContainer entry, moved `/appcontainer/` out of "Other Packages"
 - Added cross-links from `/desktop/README.md` and `/mobile/README.md` to new appcontainer README
 - Added "Routing" and "Error Handling" concept docs to roadmap (Planned)
+
+### 2026-02-09
+- Completed `/utils/README.md` — utility package overview:
+  - Async utilities: Timer (polling, dynamic config-based intervals, timeout), forEachAsync/whileAsync
+  - DateTime utilities: time constants (SECONDS, MINUTES, etc.), olderThan, LocalDate (immutable memoized date class, factory methods, manipulation, business-day logic)
+  - JS utilities: decorators (@debounced, @computeOnce, @sharePendingPromise, @logWithInfo/Debug, @abstract, @enumerable), logging (logInfo/Warn/Error/Debug, withInfo/withDebug, log levels), language utils (getOrCreate, withDefault, throwIf, deepFreeze, pluralize, mergeDeep), DOM utils, version utils, test utils
+  - React utilities: hooks (useOnMount, useOnUnmount, useOnResize, useOnVisibleChange, useOnScroll, useCached), layout prop utils, createObservableRef, getClassName
+- Completed `/promise/README.md` — Promise extensions:
+  - Standalone functions: wait, waitFor, resolve, never
+  - Prototype extensions: catchDefault, catchWhen, catchDefaultWhen (selective error handling), track (activity tracking with timing), linkTo (TaskObserver masking), timeout, wait (instance), thenAction (MobX-safe then), tap (pass-through side effects)
+  - Standard load pattern: fetchJson → thenAction → linkTo → track → catchDefault
+- Completed `/mobx/README.md` — MobX integration layer:
+  - Re-exported APIs table (observable, computed, action, autorun, reaction, when, observer, etc.)
+  - enforceActions: 'observed' configuration
+  - @bindable decorator: auto-generated action setters, @bindable.ref for reference-only tracking
+  - @bindable vs @observable guidance, setter convention (prefer direct assignment)
+  - Enhanced makeObservable (processes @bindable metadata into observable.box instances)
+  - isObservableProp and checkMakeObservable diagnostic utilities
+- Updated `AGENTS.md` Utilities table with entries for utils, promise, and mobx
+- Removed `/mobx/`, `/promise/`, `/utils/` from "Other Packages" list
+- Priority 3 now fully complete — all Key Utilities documented

@@ -786,4 +786,5 @@ async onSubmitClick() {
 
 - [`/core/`](../core/README.md) - `HoistService` base class, `XH` singleton
 - [`/cmp/`](../cmp/README.md) - Components that use services (Grid export button, etc.)
+- [`/promise/`](../promise/README.md) - Promise extensions used in service patterns (`catchDefault`, `track`, `linkTo`)
 - `/admin/` - Admin Console for managing configs, prefs, and viewing activity

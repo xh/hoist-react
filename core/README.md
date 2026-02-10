@@ -771,3 +771,6 @@ async doLoadAsync() {
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
 - [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components
+- [`/mobx/`](../mobx/README.md) - `@bindable`, `makeObservable`, MobX re-exports and configuration
+- [`/promise/`](../promise/README.md) - Promise extensions (`catchDefault`, `track`, `linkTo`, `timeout`)
+- [`/utils/`](../utils/README.md) - Decorators (`@debounced`, `@computeOnce`), Timer, LocalDate, logging
