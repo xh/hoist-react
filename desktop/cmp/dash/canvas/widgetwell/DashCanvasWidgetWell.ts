@@ -8,19 +8,17 @@
 import {uniqBy} from 'lodash';
 import classNames from 'classnames';
 import type {ReactElement} from 'react';
-import {div, frame} from '@xh/hoist/cmp/layout';
+import {card} from '@xh/hoist/cmp/card';
+import {div, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetWellModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetwell/DashCanvasWidgetWellModel';
-import {collapsibleSet} from '@xh/hoist/cmp/layout/CollapsibleSet';
 
 import './DashCanvasWidgetWell.scss';
 
 export interface DashCanvasWidgetWellProps extends HoistProps, TestSupportProps {
     /** DashCanvasModel for which this widget well should allow the user to add views from. */
     dashCanvasModel?: DashCanvasModel;
-    /** Defaults to `column` */
-    flexDirection?: 'row' | 'column';
 }
 
 /**
@@ -37,18 +35,16 @@ export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
         displayName: 'DashCanvasWidgetWell',
         model: creates(DashCanvasWidgetWellModel),
         className: 'xh-dash-canvas-widget-well',
-        render({dashCanvasModel, flexDirection, className, testId}) {
+        render({dashCanvasModel, className, testId}) {
             if (!dashCanvasModel) return;
 
             const classes = [];
-            if (flexDirection === 'row') classes.push('xh-dash-canvas-widget-well--row');
 
-            return frame({
+            return vframe({
                 className: classNames(className, classes),
                 overflowY: 'auto',
-                flexDirection: flexDirection || 'column',
-                flexWrap: flexDirection === 'row' ? 'wrap' : 'nowrap',
-                items: createDraggableItems(dashCanvasModel, flexDirection),
+                flexWrap: 'nowrap',
+                items: createDraggableItems(dashCanvasModel),
                 testId
             });
         }
@@ -78,7 +74,7 @@ const draggableWidget = hoistCmp.factory<DashCanvasWidgetWellModel>({
  * Used to create draggable items (for adding views)
  * @internal
  */
-function createDraggableItems(dashCanvasModel: DashCanvasModel, flexDirection): any[] {
+function createDraggableItems(dashCanvasModel: DashCanvasModel): any[] {
     if (!dashCanvasModel.ref.current) return [];
 
     const groupedItems = {},
@@ -113,7 +109,7 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel, flexDirection): 
 
     return [
         ...Object.keys(groupedItems).map(group => {
-            const label = group,
+            const title = group,
                 items = groupedItems[group],
                 sameIcons =
                     uniqBy<{item: ReactElement; icon: ReactElement}>(
@@ -122,12 +118,11 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel, flexDirection): 
                     ).length === 1,
                 icon = sameIcons ? items[0].icon : null;
 
-            return collapsibleSet({
+            return card({
                 icon,
-                collapsed: false,
-                label,
-                flexDirection,
-                items: items.map(it => it.item)
+                title,
+                items: items.map(it => it.item),
+                modelConfig: {collapsible: true}
             });
         }),
         ...ungroupedItems

@@ -8,6 +8,14 @@
   header and collapsible content.
 * Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
   state.
+* DashCanvas:
+    * supports dragging and dropping widgets in from an external container.
+    * supports new compacting strategy: 'wrap'
+* new elementFactory tags: `fieldset`, `legend`
+
+### 📚 Libraries
+
+* react-grid-layout `2.1 → 2.2.2`
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
@@ -107,17 +115,6 @@
   dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
   causing a break if upgraded to jQuery's new 4.x release.
   * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
-
-### 🎁 New Features
-
-* DashCanvas:
-    * supports dragging and dropping widgets in from an external container.
-    * supports new compacting strategy: 'wrap'
-* new elementFactory tags: `fieldset`, `legend`
-
-### 📚 Libraries
-
-* react-grid-layout `2.1 → 2.2.2`
 
 ## 79.0.0 - 2026-01-05
 
