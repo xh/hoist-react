@@ -115,8 +115,10 @@ export class SubformsFieldModel extends BaseFieldModel {
 
     @computed
     override get allValidationResults(): ValidationResult[] {
-        const subVals = flatMap(this.value, formModel => {
-            return formModel.fieldList.flatMap(field => field.validationResults);
+        const subVals = flatMap(this.value, v => {
+            return v instanceof FormModel
+                ? v.fieldList.flatMap(field => field.validationResults)
+                : [];
         });
         return [...this.validationResults, ...subVals];
     }
