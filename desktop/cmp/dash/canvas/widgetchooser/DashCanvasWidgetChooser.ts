@@ -60,7 +60,7 @@ const draggableWidget = hoistCmp.factory<DashCanvasWidgetChooserModel>({
         const {id, icon, title} = viewSpec as DashCanvasViewSpec;
         return div({
             id: `draggableFor-${id}`,
-            className: 'xh-dash-canvas-draggable-widget',
+            className: 'xh-dash-canvas-widget-chooser__draggable-widget',
             draggable: true,
             unselectable: 'on',
             onDragStart: e => model.onDragStart(e),

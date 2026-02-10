@@ -1,12 +1,7 @@
 .xh-dash-canvas-widget-chooser {
   padding: 0 var(--xh-pad-half-px);
 
-  .xh-collapsible-set {
-    padding: 0 var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
-    margin: var(--xh-pad-half-px);
-  }
-
-  .xh-dash-canvas-draggable-widget {
+  &__draggable-widget {
     border: var(--xh-border-dotted);
     background-color: var(--xh-bg-alt);
     padding: var(--xh-pad-half-px);
@@ -23,12 +18,6 @@
 
     &:active {
       cursor: grabbing;
-    }
-  }
-
-  &--row {
-    .xh-dash-canvas-draggable-widget {
-      align-self: flex-start;
     }
   }
 }
