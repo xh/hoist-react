@@ -1,4 +1,4 @@
-.xh-dash-canvas-widget-well {
+.xh-dash-canvas-widget-chooser {
   padding: 0 var(--xh-pad-half-px);
 
   .xh-collapsible-set {
@@ -11,7 +11,7 @@
     background-color: var(--xh-bg-alt);
     padding: var(--xh-pad-half-px);
     margin: var(--xh-pad-half-px);
-    text-wrap-mode: nowrap;
+    text-wrap: nowrap;
     cursor: grab;
 
     &.is-dragging {

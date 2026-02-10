@@ -12,11 +12,11 @@ import {card} from '@xh/hoist/cmp/card';
 import {div, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
-import {DashCanvasWidgetWellModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetwell/DashCanvasWidgetWellModel';
+import {DashCanvasWidgetChooserModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel';
 
-import './DashCanvasWidgetWell.scss';
+import './DashCanvasWidgetChooser.scss';
 
-export interface DashCanvasWidgetWellProps extends HoistProps, TestSupportProps {
+export interface DashCanvasWidgetChooserProps extends HoistProps, TestSupportProps {
     /** DashCanvasModel for which this widget well should allow the user to add views from. */
     dashCanvasModel?: DashCanvasModel;
 }
@@ -30,11 +30,11 @@ export interface DashCanvasWidgetWellProps extends HoistProps, TestSupportProps 
  * Typically, an app developer would place this inside a collapsible panel to the side of
  * a DashCanvas.
  */
-export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
-    hoistCmp.withFactory<DashCanvasWidgetWellProps>({
-        displayName: 'DashCanvasWidgetWell',
-        model: creates(DashCanvasWidgetWellModel),
-        className: 'xh-dash-canvas-widget-well',
+export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
+    hoistCmp.withFactory<DashCanvasWidgetChooserProps>({
+        displayName: 'DashCanvasWidgetChooser',
+        model: creates(DashCanvasWidgetChooserModel),
+        className: 'xh-dash-canvas-widget-chooser',
         render({dashCanvasModel, className, testId}) {
             if (!dashCanvasModel) return;
 
@@ -53,9 +53,9 @@ export const [DashCanvasWidgetWell, dashCanvasWidgetWell] =
 //---------------------------
 // Implementation
 //---------------------------
-const draggableWidget = hoistCmp.factory<DashCanvasWidgetWellModel>({
+const draggableWidget = hoistCmp.factory<DashCanvasWidgetChooserModel>({
     displayName: 'DraggableWidget',
-    model: uses(DashCanvasWidgetWellModel),
+    model: uses(DashCanvasWidgetChooserModel),
     render({model, viewSpec}) {
         const {id, icon, title} = viewSpec as DashCanvasViewSpec;
         return div({

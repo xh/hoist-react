@@ -11,7 +11,7 @@ import '@xh/hoist/desktop/register';
 import {makeObservable, observable} from '@xh/hoist/mobx';
 import {runInAction} from 'mobx';
 
-export class DashCanvasWidgetWellModel extends HoistModel {
+export class DashCanvasWidgetChooserModel extends HoistModel {
     @managed
     @observable.ref
     dashCanvasModel: DashCanvasModel;
