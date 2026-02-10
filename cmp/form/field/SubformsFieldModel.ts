@@ -54,6 +54,8 @@ export class SubformsFieldModel extends BaseFieldModel {
     /** (Sub)FormModels created by this model, tracked to support cleanup. */
     @managed private createdModels: FormModel[] = [];
 
+    declare value: FormModel[];
+
     private formConfig: FormConfig = null;
     private readonly origInitialValues: any[];
 
@@ -107,19 +109,17 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.addAutorun(() => {
             const {disabled, readonly, value} = this;
             value.forEach(sub => {
-                sub.setDisabled(disabled);
-                sub.setReadonly(readonly);
+                sub.disabled = disabled;
+                sub.readonly = readonly;
             });
         });
     }
 
     @computed
     override get allValidationResults(): ValidationResult[] {
-        const subVals = flatMap(this.value, v => {
-            return v instanceof FormModel
-                ? v.fieldList.flatMap(field => field.validationResults)
-                : [];
-        });
+        const subVals = flatMap(this.value, v =>
+            v.fieldList.flatMap(field => field.validationResults)
+        );
         return [...this.validationResults, ...subVals];
     }
 
