@@ -4,8 +4,9 @@ Every Hoist React application starts from an entry point file that calls `XH.ren
 document explains how an app goes from a file in the `apps/` folder to a fully running application,
 covering the entry point system, `AppSpec` configuration, and the initialization sequence.
 
-> This is Part 1 of the Lifecycle documentation, covering **application initialization**. Future
-> sections will cover service and model lifecycles (`initAsync`, `doLoadAsync`, `onLinked`, etc.).
+> This is Part 1 of the Lifecycle documentation, covering **application initialization**.
+> Part 2 — [Models, Services, and Load/Refresh](./lifecycle-models-and-services.md) — covers
+> the runtime lifecycles of models and services (`onLinked`, `doLoadAsync`, `initAsync`, etc.).
 
 ## The `apps/` Folder — Entry Points and Bundles
 

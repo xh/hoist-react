@@ -93,6 +93,17 @@ or with specific packages — they cover architecture, configuration, usage patt
 | [`/promise/`](./promise/README.md) | Promise prototype extensions for error handling, tracking, masking, and timeouts | catchDefault, catchWhen, track, linkTo, timeout, thenAction, wait, waitFor, tap |
 | [`/mobx/`](./mobx/README.md) | MobX integration layer — re-exports, action enforcement, and @bindable decorator | @bindable, @bindable.ref, makeObservable, observer, action, observable, computed, enforceActions |
 
+#### Concepts
+
+Cross-cutting documentation that spans multiple packages:
+
+| Concept | Description | Key Topics |
+|---------|-------------|------------|
+| [Lifecycle: App](./docs/concepts/lifecycle-app.md) | How a Hoist app initializes — from entry point to RUNNING state | XH.renderApp, AppSpec, AppContainerModel, initialization sequence, AppState |
+| [Lifecycle: Models & Services](./docs/concepts/lifecycle-models-and-services.md) | Model, service, and load/refresh lifecycles after app startup | HoistModel (onLinked, afterLinked, doLoadAsync, destroy), HoistService (initAsync), LoadSupport, LoadSpec, RefreshContextModel |
+| [Authentication](./docs/concepts/authentication.md) | How Hoist apps authenticate users via OAuth or form-based login | HoistAuthModel, MsalClient, AuthZeroClient, Token, IdentityService, checkAccess, impersonation |
+| [Persistence](./docs/concepts/persistence.md) | Persisting user UI state to various backing stores | @persist, markPersist, PersistenceProvider, localStorage, Preference, ViewManager, GridModel/FormModel/PanelModel persistence |
+
 #### Other Packages
 
 Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)

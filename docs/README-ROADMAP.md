@@ -58,16 +58,17 @@ Smaller packages that provide important but more specialized functionality.
 Cross-cutting concepts that don't map directly to a single sub-package. These documents explain
 patterns and systems that span multiple packages.
 
-| Concept | Description                                                                                                                                                                                                                                                                                                                                                      | Status |
-|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others.                                                                                                                   | Planned |
-| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | [Part 1 Done](./concepts/app-lifecycle.md) |
-| Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
-| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them.                                                                                                    | Planned |
-| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
-| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`.                                                                                                                                                  | Planned |
-| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows.                                                                                                 | Planned |
-| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names.                                                                                                                                          | Planned |
+| Concept | Description | Status |
+|---------|-------------|--------|
+| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](./concepts/lifecycle-app.md), [Part 2 Done](./concepts/lifecycle-models-and-services.md) |
+| Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](./concepts/authentication.md) |
+| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](./concepts/persistence.md) |
+| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | Planned |
+| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | Planned |
+| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | Planned |
+| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | Planned |
+| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
 ## Documentation Guidelines
 
@@ -89,6 +90,10 @@ Each README should follow the pattern established in `/cmp/grid/README.md`:
 - Explain "why" not just "what"
 - Reference specific files where helpful
 - Keep examples practical and representative of real usage
+
+Meta-tone note: writing and reviewing documentation takes time and is hard, and it is very tempting
+for any developer not to do it. While working on documentation reviews and edits, lend a subtly
+encouraging and upbeat tone to your responses and queries directly back to developers.
 
 ### Communicating Anti-patterns
 
@@ -302,3 +307,75 @@ _Use this section to track discussions, decisions, and context between documenta
     (compact mode switching, subscription suspend/resume), composeRefs composition
   - Layout props: added cross-reference link to layout README
 - Added Testing concept doc to roadmap (testId, TestProps, form/input integration)
+
+### 2026-02-10 (cont.)
+- Created three cross-cutting concept docs (Lifecycles Part 2, Authentication, Persistence):
+  - `docs/concepts/lifecycle-models-and-services.md` — Model/service lifecycles after app startup:
+    - HoistModel lifecycle phases: construction → linking (onLinked) → post-link (afterLinked,
+      initial load, RefreshContext registration) → refresh → destruction
+    - `@lookup` decorator and `lookupModel()` availability during linking
+    - HoistService differences (initAsync, singleton, no component linking)
+    - LoadSupport deep dive: LoadSpec properties (isStale, isObsolete, isAutoRefresh),
+      loadObserver (TaskObserver for masking), auto-refresh skip logic
+    - Refresh system: RefreshContextModel, RootRefreshContextModel (AppModel-first ordering),
+      XH.refreshAppAsync() flow, TabContainer refresh contexts
+    - Destruction cascade: disposers → managedInstances → @managed properties
+    - Common patterns and pitfalls (lookupModel before linking, direct doLoadAsync calls,
+      reaction closures, @managed on owned models, isStale checking)
+  - `docs/concepts/authentication.md` — Authentication and identity:
+    - Authentication flow state diagram (PRE_AUTH → AUTHENTICATING → ...)
+    - HoistAuthModel: completeAuthAsync(), loadConfigAsync(), getAuthStatusFromServerAsync()
+    - OAuth clients: MSAL (Entra ID) and Auth0, with init flow diagrams
+    - BaseOAuthClient shared features (token refresh, re-login, redirect state)
+    - Step-by-step AuthModel implementation guide with Auth0 and MSAL examples
+    - Token management: ID vs access tokens, auto-refresh timer, re-login on expiration
+    - Identity and access control: IdentityService, checkAccess, impersonation
+    - Form-based login: LoginPanel, conditional enableLoginForm
+  - `docs/concepts/persistence.md` — State persistence system:
+    - Core flow: read → apply → watch → write (no thrashing)
+    - Six backing stores: localStorage, sessionStorage, Preference, ViewManager, DashView, Custom
+    - PersistOptions configuration table
+    - Three approaches: @persist decorators, markPersist(), model constructor config
+    - Built-in model support: GridModel (4 aspects), FormModel (field values, Date/LocalDate),
+      TabContainerModel (activeTabId, favoriteTabIds), PanelModel (collapsed, size)
+    - Configuration inheritance via mergePersistOptions
+    - Timing and construction order (decorator timing, constructor sequence)
+- Reordered Concepts table: Lifecycles → Authentication → Persistence first (now with drafts),
+  then remaining planned docs; moved Version Compatibility to end
+- Updated AGENTS.md with Concepts documentation section
+
+### 2026-02-11
+- Reviewed and refined all three concept docs (Draft → Done):
+  - `lifecycle-models-and-services.md`:
+    - Expanded HoistService LoadSupport section: services must be explicitly wired into
+      AppModel.doLoadAsync() with loadSpec passthrough; tiered loading pattern
+    - Added AutoRefreshService coverage (xhAutoRefreshIntervals config, xhAutoRefreshEnabled pref,
+      per-clientAppCode intervals, AppBar refresh button connection)
+    - Enhanced "Standard Model" example with try/catch error handling, isStale checks,
+      and ExceptionHandler auto-refresh suppression via loadSpec
+    - Added selective masking example (panel mask: 'onLoad' vs sibling mask() component)
+    - Added pitfall: "Not Wiring Service Loads into AppModel.doLoadAsync()"
+  - `authentication.md`:
+    - Rewrote MSAL variant: standard Bearer auth header for Hoist server requests, separate
+      ApiService example for external API calls with named access tokens
+    - Added MsalClientConfig.accessTokens spec example (scopes, fetchMode eager/lazy)
+    - Expanded impersonation section: Shift+I hotkey, user vs authUser table, code example
+      restricting features during impersonation, "use responsibly" warnings summary
+    - Added cross-links from appcontainer/README.md and svc/README.md
+  - `persistence.md`:
+    - Added intro paragraph on uniform API across backing stores (upgrade store without
+      changing consuming models)
+    - Clarified settleTime (component re-interpretation at render, e.g. relative→pixel sizes)
+    - DashView: best practice for looking up DashViewModel in multi-instance widgets
+    - markPersist: featured dashboard widget pattern (lookupModel in onLinked, set persistWith,
+      then markPersist)
+    - GridModel: mixed-mode persistence example (ViewManager + localStorage override)
+    - PanelModel: noted as natural localStorage candidate (screen/device-driven sizing)
+    - GroupingChooserModel/FilterChooserModel: split-store pattern (value per-view,
+      favorites shared via pref), auto-enabled favorites UI
+    - Configuration inheritance: added detailFilterModel with custom path to avoid collisions
+    - ViewManager initialization: deep link to ViewManager README
+  - Added Authorization concept doc to roadmap (Planned)
+  - Updated cross-links: appcontainer/README.md → authentication.md#impersonation,
+    svc/README.md IdentityService → authentication.md
+- All inter-doc links validated (89 links across 9 files, all valid)

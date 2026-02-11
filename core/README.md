@@ -86,7 +86,7 @@ export class MyModel extends HoistModel {
 **Avoid:** Applying `@managed` to objects that don't implement `destroy()`. Objects that should
 typically be managed include HoistModels, Stores, Cubes, and CubeViews.
 
-**State Persistence**
+**State Persistence** (see [Persistence concept doc](../docs/concepts/persistence.md) for full details)
 ```typescript
 class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
@@ -194,6 +194,10 @@ class ChildModel extends HoistModel {
 ```
 
 ### Load Support
+
+> See [Lifecycles: Models, Services, and Load/Refresh](../docs/concepts/lifecycle-models-and-services.md) for a
+> comprehensive guide to model and service lifecycles, LoadSupport, the refresh system, and
+> common patterns.
 
 When `doLoadAsync()` is implemented, the model gains managed loading:
 
