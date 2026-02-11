@@ -37,7 +37,7 @@ Frequently used utilities that benefit from dedicated documentation.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
-| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | [Draft](../utils/README.md) |
+| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | [Done](../utils/README.md) |
 | `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | [Done](../promise/README.md) |
 | `/mobx/` | 3 | MobX re-exports, @bindable decorator, enhanced makeObservable | [Done](../mobx/README.md) |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
@@ -67,6 +67,7 @@ patterns and systems that span multiple packages.
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
 | Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`.                                                                                                                                                  | Planned |
 | Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows.                                                                                                 | Planned |
+| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names.                                                                                                                                          | Planned |
 
 ## Documentation Guidelines
 
@@ -280,3 +281,24 @@ _Use this section to track discussions, decisions, and context between documenta
 - Updated `AGENTS.md` Utilities table with entries for utils, promise, and mobx
 - Removed `/mobx/`, `/promise/`, `/utils/` from "Other Packages" list
 - Priority 3 now fully complete — all Key Utilities documented
+
+### 2026-02-10
+- Reviewed and refined `/promise/README.md` (Draft → Done):
+  - Removed `@managed` advice on TaskObserver (unnecessary, added pitfall note)
+  - Replaced standard load pattern with try/catch style over catchDefault
+  - Removed "forgetting catchDefault" pitfall (not always recommended)
+  - Clarified `never()` description
+- Reviewed and refined `/utils/README.md` (Draft → Done):
+  - Timer: added `@managed` guidance (implements destroy, should be cleaned up)
+  - forEachAsync: clarified use case as yielding during tight synchronous loops
+  - Time constants: fixed examples to use `5 * MINUTES` style, added `ONE_MINUTE` readability note
+  - LocalDate: expanded with business-context examples (maturity dates, Map keys), emphasized
+    memoization/equality, distinguished `get()` vs `from()`, added chaining and toJSON examples
+  - Decorators: added note about legacy (Stage 2) decorator support via Babel
+  - Logging: major expansion — instance method examples with auto class name prepending,
+    withInfo/withDebug timed execution, log level system with zero-overhead debug calls,
+    XH.setLogLevel/enableDebugLogging APIs, standalone usage
+  - React hooks: added useOnResize and useOnVisibleChange examples with realistic patterns
+    (compact mode switching, subscription suspend/resume), composeRefs composition
+  - Layout props: added cross-reference link to layout README
+- Added Testing concept doc to roadmap (testId, TestProps, form/input integration)

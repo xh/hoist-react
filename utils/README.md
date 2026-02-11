@@ -26,11 +26,14 @@ Import from `@xh/hoist/utils/async`.
 `Timer` is a promise-aware recurring task runner designed for polling, auto-refresh, and
 scheduled operations. It prevents overlapping executions and handles failures gracefully.
 
+Timer implements `destroy()` and should typically be installed on a `@managed` model property
+so it is automatically cancelled when the owning model is destroyed.
+
 ```typescript
 import {Timer, SECONDS} from '@xh/hoist/utils/support';
 
-// Poll for updates every 30 seconds
-const timer = Timer.create({
+// Poll for updates every 30 seconds — @managed ensures cleanup
+@managed timer = Timer.create({
     runFn: () => this.refreshDataAsync(),
     interval: 30,
     intervalUnits: SECONDS,
@@ -64,16 +67,17 @@ timer.cancel();
 
 ### forEachAsync / whileAsync
 
-Non-blocking loop utilities that yield to the browser between iterations, preventing UI freezes
-during long-running client-side processing:
+Non-blocking loop utilities that periodically yield to the browser, preventing UI freezes
+during tight synchronous loops that would otherwise hold the thread until completion:
 
 ```typescript
 import {forEachAsync} from '@xh/hoist/utils/async';
 
-// Process large array without blocking the UI
-await forEachAsync(records, async (record) => {
-    await processRecord(record);
-}, {waitAfter: 50});  // yield every 50ms (default)
+// Process large array without blocking the UI — the loop body is synchronous,
+// but forEachAsync yields to the browser every 50ms (default) between iterations
+await forEachAsync(records, (record) => {
+    processRecord(record);
+}, {waitAfter: 50});
 ```
 
 ## DateTime Utilities
@@ -90,7 +94,7 @@ import {SECONDS, MINUTES, HOURS, ONE_MINUTE, ONE_HOUR} from '@xh/hoist/utils/dat
 
 Timer.create({runFn: myFn, interval: 30, intervalUnits: SECONDS});
 
-if (olderThan(lastFetch, 5 * ONE_MINUTE)) { /* ... */ }
+if (olderThan(lastFetch, 5 * MINUTES)) { /* ... */ }
 ```
 
 | Constant | Value | Use |
@@ -100,7 +104,7 @@ if (olderThan(lastFetch, 5 * ONE_MINUTE)) { /* ... */ }
 | `MINUTES` | `60000` | Multiplier for minute-based intervals |
 | `HOURS` | `3600000` | Multiplier for hour-based intervals |
 | `DAYS` | `86400000` | Multiplier for day-based intervals |
-| `ONE_SECOND` ... `ONE_DAY` | (as above) | Aliases for the base multipliers |
+| `ONE_SECOND` ... `ONE_DAY` | (as above) | Aliases for readability when used directly (e.g. `wait(ONE_MINUTE)`) |
 
 ### olderThan
 
@@ -110,7 +114,7 @@ Check if a timestamp has aged past a threshold:
 import {olderThan, ONE_MINUTE} from '@xh/hoist/utils/datetime';
 
 // Returns true if lastRefresh is more than 5 minutes ago (or null)
-if (olderThan(lastRefresh, 5 * ONE_MINUTE)) {
+if (olderThan(lastRefresh, 5 * MINUTES)) {
     await this.refreshAsync();
 }
 ```
@@ -119,43 +123,87 @@ if (olderThan(lastRefresh, 5 * ONE_MINUTE)) {
 
 An immutable date class that explicitly excludes time and timezone information — the
 client-side equivalent of Java's `LocalDate`. Useful for business-day and calendar-day data
-where time zone should be ignored.
+where time zone should be explicitly ignored (e.g. trade dates, birthdays, holidays).
 
-Instances are memoized: `LocalDate.get('2025-01-15') === LocalDate.get('2025-01-15')` is `true`,
-enabling strict equality checks.
+#### Memoization and Equality
+
+Instances are memoized: only one object is ever created for a given calendar day. This enables
+strict equality checks with `===`, making LocalDate safe to use as a Map key or in identity
+comparisons:
+
+```typescript
+const a = LocalDate.get('2025-12-25');
+const b = LocalDate.get('2025-12-25');
+a === b;  // true — same instance
+
+// Use as a Map key with confidence
+const tradesByDate = new Map<LocalDate, Trade[]>();
+tradesByDate.set(tradeDate, trades);
+tradesByDate.get(LocalDate.get('2025-09-15'));  // works — same reference
+```
+
+#### Factory Methods
+
+Always use factory methods — never `new`. The primary factory is `get()`, which accepts
+`YYYY-MM-DD` or `YYYYMMDD` format strings. This is the standard way to create a LocalDate
+from serialized server-side data:
 
 ```typescript
 import {LocalDate} from '@xh/hoist/utils/datetime';
 
-// Factory methods — always use these, never `new`
-const date = LocalDate.get('2025-01-15');       // from ISO string (YYYY-MM-DD or YYYYMMDD)
-const date2 = LocalDate.from(someMoment);       // from any moment-parseable input
-const today = LocalDate.today();                // current local day
+// get() — preferred. Accepts explicit date-only string formats
+const maturity = LocalDate.get('2025-09-15');
+const sameDay = LocalDate.get('20250915');       // YYYYMMDD also supported
+
+// from() — accepts any moment-parseable input, including ISO timestamps.
+// Use when parsing dates from external sources where the format may vary
+const fromTimestamp = LocalDate.from('2025-09-15T14:30:00Z');  // time/zone discarded
+
+// Convenience factories
+const today = LocalDate.today();
 const appDay = LocalDate.currentAppDay();       // current day in app timezone
 const serverDay = LocalDate.currentServerDay(); // current day in server timezone
-
-// Properties
-date.isoString;    // '2025-01-15'
-date.timestamp;    // ms since epoch (midnight local)
-date.isWeekday;    // true
-date.isToday;      // false
-
-// Manipulation — all methods return new LocalDate instances
-date.add(5, 'days');         // 2025-01-20
-date.subtract(1, 'months');  // 2024-12-15
-date.nextWeekday();          // skip weekends
-date.startOfMonth();         // 2025-01-01
-date.diff(other, 'days');    // number of days between
 ```
 
-**Avoid:** constructing LocalDate with `new` — always use the static factory methods
-(`get()`, `from()`, `today()`) to benefit from memoization and equality guarantees.
+#### Properties and Manipulation
+
+All manipulation methods return new (memoized) LocalDate instances. Methods can be chained:
+
+```typescript
+const maturity = LocalDate.get('2025-09-15');
+maturity.isoString;       // '2025-09-15'
+maturity.dayOfWeek();     // 'Monday'
+maturity.isWeekday;       // true
+
+// Chain manipulation methods
+maturity
+    .subtract(5, 'days')   // 2025-09-10
+    .nextWeekday()         // 2025-09-11
+    .startOfMonth();       // 2025-09-01
+
+// Business day navigation
+maturity.nextWeekday();          // skip weekends
+maturity.addWeekdays(5);         // advance 5 business days
+maturity.currentOrNextWeekday(); // same day if weekday, else next Monday
+
+// Comparison
+maturity.diff(LocalDate.today(), 'days');
+
+// Serializes as 'YYYY-MM-DD' via toJSON() — pass directly in fetch params
+const startDate = LocalDate.today().startOfMonth();
+XH.fetchJson({url: 'api/trades', params: {startDate}});
+```
 
 ## JavaScript Utilities
 
 Import from `@xh/hoist/utils/js`.
 
 ### Decorators
+
+Hoist uses **legacy (Stage 2) decorators** via Babel (configured in `hoist-dev-utils`), with
+TypeScript's `experimentalDecorators` flag enabled. This is the `(target, key, descriptor)`
+API, not the newer TC39 Stage 3 standard. Most application code simply uses the decorators
+below, but anyone writing a custom decorator must use the legacy signature.
 
 Class method decorators for common patterns:
 
@@ -188,28 +236,77 @@ class MyModel extends HoistModel {
 ### Logging
 
 Managed, structured logging utilities providing level-aware, formatted console output.
-`HoistBase` subclasses get these as instance methods (e.g. `this.logInfo()`), but they
-can also be imported directly:
+All `HoistBase` subclasses (models, services) get these as instance methods, automatically
+prepending the class name as a source label:
 
 ```typescript
-import {logInfo, logWarn, logError, logDebug, withInfo} from '@xh/hoist/utils/js';
+// In a HoistModel or HoistService — class name prepended automatically
+this.logInfo('Loaded', positions.length, 'positions');
+// → [PortfolioModel] | Loaded | 2847 | positions
 
-// Simple message with source label
-logInfo('Data loaded successfully', this);
-// → [MyModel] | Data loaded successfully
+this.logWarn('Stale data — last refresh was', minutesAgo, 'minutes ago');
+// → [PortfolioModel] | Stale data — last refresh was | 12 | minutes ago
 
-// Time an async operation
-const result = await withInfo('Loading portfolio', async () => {
-    return this.fetchDataAsync();
-}, this);
-// → [MyModel] | Loading portfolio | 342ms
-
-// Conditional logging
-warnIf(!config.apiKey, 'No API key configured — requests will fail');
+this.logDebug('Filter applied:', filter);
+// → (no output at default log level — zero overhead)
 ```
 
-Log levels: `error` > `warn` > `info` (default minimum) > `debug`. Adjust at runtime via
-`XH.setLogLevel('debug')` — optionally persisted to localStorage for a configurable duration.
+#### Timed Execution
+
+`withInfo()` and `withDebug()` wrap a function call with automatic timing. They work with
+both sync and async functions, logging elapsed time on completion:
+
+```typescript
+// Time an async load — returns the result of the function
+const data = await this.withInfo('Loading positions', () => {
+    return XH.fetchService.fetchJson({url: 'api/positions'});
+});
+// → [PortfolioModel] | Loading positions | 342ms
+
+// withDebug for lower-priority timing — no logging overhead at default level
+this.withDebug('Filtering records', () => {
+    this.applyFilters();
+});
+```
+
+#### Log Levels
+
+Levels ranked by severity: `error` > `warn` > `info` (default minimum) > `debug`.
+
+Messages below the current minimum level are completely skipped — `logDebug()` and
+`withDebug()` calls incur no formatting or output overhead at the default `info` level.
+Use them freely to instrument code without worrying about production performance.
+
+Adjust the level at runtime via the `XH` singleton:
+
+```typescript
+// Lower level to see debug output (resets on page refresh)
+XH.setLogLevel('debug');
+
+// Persist to localStorage for 30 minutes (survives refresh, max 1440 mins)
+XH.setLogLevel('debug', 30);
+
+// Convenience shortcut
+XH.enableDebugLogging();        // equivalent to XH.setLogLevel('debug')
+XH.enableDebugLogging(60);      // with persistence
+
+// Check current level
+XH.logLevel;                    // 'info' | 'debug' | 'warn' | 'error'
+```
+
+#### Standalone Usage
+
+The logging functions can also be imported directly for use outside of `HoistBase` classes.
+Pass a source label as the last argument:
+
+```typescript
+import {logInfo, logWarn, withInfo} from '@xh/hoist/utils/js';
+
+logInfo('Cache cleared', 'MyCacheHelper');
+// → [MyCacheHelper] | Cache cleared
+
+warnIf(!config.apiKey, 'No API key configured — requests will fail');
+```
 
 ### Language Utilities
 
@@ -279,23 +376,6 @@ Import from `@xh/hoist/utils/react`.
 
 Custom React hooks for DOM observation and lifecycle:
 
-```typescript
-import {useOnMount, useOnUnmount, useOnResize} from '@xh/hoist/utils/react';
-
-const myCmp = hoistCmp.factory(() => {
-    useOnMount(() => console.log('Mounted'));
-    useOnUnmount(() => console.log('Cleaning up'));
-
-    // Returns a callback ref — place on the element to observe
-    const resizeRef = useOnResize(
-        (rect) => model.setDimensions(rect.width, rect.height),
-        {debounce: 100}
-    );
-
-    return box({ref: resizeRef, item: /* ... */});
-});
-```
-
 | Hook | Description |
 |------|-------------|
 | `useOnMount(fn)` | Run once after component mounts |
@@ -304,6 +384,72 @@ const myCmp = hoistCmp.factory(() => {
 | `useOnVisibleChange(fn)` | Run when element visibility changes (0-size detection). Returns a callback ref |
 | `useOnScroll(fn)` | Run on element scroll events. Returns a callback ref |
 | `useCached(value, equalsFn)` | Return cached value if equality function returns true — provides stable references across renders |
+
+#### useOnResize
+
+Returns a callback ref — place it on the element to observe. The callback receives
+a `DOMRectReadOnly` with the element's dimensions. A common pattern is tracking width to
+switch between compact and full layouts:
+
+```typescript
+const myWidget = hoistCmp.factory<MyWidgetModel>({
+    render({model}) {
+        return panel({
+            item: model.compactMode ? compactView() : fullView(),
+            ref: useOnResize(({width}) => model.onResize(width))
+        });
+    }
+});
+```
+
+#### useOnVisibleChange
+
+Returns a callback ref that fires when an element's visibility changes (based on 0-size
+detection). Useful for pausing expensive work (e.g. polling, rendering) when a component
+is hidden in an inactive tab or collapsed panel:
+
+```typescript
+// Component — wire visibility into the model
+const priceFeed = hoistCmp.factory<PriceFeedModel>({
+    render({model}) {
+        return panel({
+            ref: useOnVisibleChange(visible => model.visible = visible),
+            item: grid()
+        });
+    }
+});
+
+// Model — react to visibility changes
+class PriceFeedModel extends HoistModel {
+    @bindable visible = false;
+
+    override onLinked() {
+        this.addReaction({
+            track: () => this.visible,
+            run: visible => {
+                if (visible) {
+                    this.subscribeToPrices();
+                } else {
+                    this.unsubscribeFromPrices();
+                }
+            }
+        });
+    }
+}
+```
+
+Both hooks can be composed together via `composeRefs` when a component needs to track
+both resize and visibility:
+
+```typescript
+import composeRefs from '@seznam/compose-react-refs';
+
+const ref = composeRefs(
+    useOnVisibleChange(v => model.visible = v),
+    useOnResize(({width}) => model.width = width)
+);
+return panel({ref, item: body()});
+```
 
 ### Layout Prop Utilities
 
@@ -318,6 +464,9 @@ const restProps = getNonLayoutProps(props);   // everything else
 ```
 
 Numeric layout prop values are automatically converted to pixel strings (e.g. `10` → `'10px'`).
+
+See [`/cmp/layout/` — Layout Props (BoxProps)](../cmp/layout/README.md#layout-props-boxprops)
+for the full list of supported props and conversion details.
 
 ### Other React Utilities
 
@@ -354,7 +503,8 @@ Hoist config-merging scenarios.
 ### Logging level default
 
 The default minimum log level is `info`, meaning `logDebug()` calls are no-ops until the level
-is lowered via `XH.setLogLevel('debug')`. This is a performance feature, not a bug.
+is lowered via `XH.setLogLevel('debug')` or `XH.enableDebugLogging()`. This is a performance
+feature, not a bug.
 
 ## Related Packages
 
