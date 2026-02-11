@@ -89,18 +89,22 @@ incorrectCode();
 - Show constructor-based initialization for complex models
 - Keep examples practical — show real patterns from Toolbox when possible
 
-## AGENTS.md Entry Format
+## Documentation Index Entry Format
 
 When a new package README is completed, add an entry to the relevant section in
-`/AGENTS.md` under "Package Documentation". Format:
+`/docs/README.md` under "Package Documentation". Format:
 
 ```markdown
-| [`/package/`](./package/README.md) | One-sentence description | Key, Topics, Listed, Here |
+| [`/package/`](../package/README.md) | One-sentence description | Key, Topics, Listed, Here |
 ```
+
+(Note: paths are relative from `docs/`, so package READMEs use `../` prefix.)
 
 Place entries in the appropriate category section:
 - **Core Framework** — `/core/`, `/data/`, `/svc/`
 - **Components** — `/cmp/` and sub-packages, `/desktop/`, `/mobile/`
+- **Utilities** — `/format/`, `/appcontainer/`, `/utils/`, `/promise/`, `/mobx/`
+- **Concepts** — Cross-cutting docs in `/docs/`
 - **Other Packages** — Everything else
 
 ## Documentation Roadmap
@@ -109,3 +113,6 @@ Track progress in `docs/README-ROADMAP.md`:
 - Update status from `Planned` → `Done` with a link when a README is completed
 - Add new entries for newly created sub-packages
 - Add progress notes with date stamps for documentation sessions
+
+When updating the roadmap, also ensure the corresponding entry in `docs/README.md` is added
+or updated to keep the documentation index in sync.

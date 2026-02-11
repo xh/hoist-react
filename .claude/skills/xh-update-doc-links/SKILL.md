@@ -1,6 +1,6 @@
 ---
 name: xh-update-doc-links
-description: Pre-commit documentation consistency check. Ensures AGENTS.md index and docs/README-ROADMAP.md stay in sync with documentation files on disk, validates inter-doc links, and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
+description: Pre-commit documentation consistency check. Ensures docs/README.md index and docs/README-ROADMAP.md stay in sync with documentation files on disk, validates inter-doc links, and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -24,8 +24,8 @@ Build a complete inventory of documentation files on disk.
 
 Read the two index files and parse their current entries.
 
-1. Read `AGENTS.md` — focus on the **Package Documentation** section (the tables under
-   "Core Framework", "Components", and "Other Packages").
+1. Read `docs/README.md` — focus on the **Package Documentation** section (the tables under
+   "Core Framework", "Components", "Utilities", "Concepts", and "Other Packages").
    - Parse each table row to extract the package path and linked README path.
    - Parse the "Other Packages" paragraph to extract unlisted package names.
 
@@ -37,18 +37,22 @@ Read the two index files and parse their current entries.
 
 Compare documentation on disk against both index files.
 
-### AGENTS.md Reconciliation
+### docs/README.md Reconciliation
 
 For each README on disk:
-- Check if it has an entry in the appropriate AGENTS.md table (Core Framework, Components,
-  or Other Packages).
+- Check if it has an entry in the appropriate `docs/README.md` table (Core Framework, Components,
+  Utilities, Concepts, or Other Packages).
 - **Missing entries:** Add a new table row in the correct section using this format:
   ```markdown
-  | [`/package/`](./package/README.md) | One-sentence description | Key, Topics, Here |
+  | [`/package/`](../package/README.md) | One-sentence description | Key, Topics, Here |
   ```
+  (Note: paths are relative from `docs/`, so package READMEs use `../` prefix.)
 - **Stale entries:** If an entry links to a README that no longer exists, remove it.
 - **Promotion:** If a package is listed in the "Other Packages" paragraph and now has a
   README, move it to the appropriate table and remove it from the paragraph.
+- **AGENTS.md directive:** Verify that `AGENTS.md` still contains the directive pointing
+  to `docs/README.md` (the "Hoist Documentation" section). Do not re-add package tables
+  to AGENTS.md.
 
 ### README-ROADMAP.md Reconciliation
 
@@ -95,7 +99,7 @@ When new or recently changed docs are detected, look for cross-linking opportuni
 
 Output a summary organized into these sections:
 
-1. **Index Updates** — AGENTS.md entries added, updated, or removed.
+1. **Index Updates** — `docs/README.md` entries added, updated, or removed.
 2. **Roadmap Updates** — Status changes, new entries, progress notes added.
 3. **Broken Links Fixed** — Source file, broken target, and fix applied.
 4. **New Cross-Links Added** — Source file, target doc, and surrounding context.

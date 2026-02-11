@@ -486,7 +486,7 @@ XH.showFeedbackDialog({message: 'Pre-filled text'});  // With preset message
 The impersonation bar allows authorized admins (`HOIST_IMPERSONATOR` role) to act as another
 user for debugging and support. `XH.showImpersonationBar()` opens the bar.
 
-See the [Authentication concept doc](../docs/concepts/authentication.md#impersonation) for details
+See the [Authentication concept doc](../docs/authentication.md#impersonation) for details
 on identity handling during impersonation, and `IdentityService` in
 [`/svc/README.md`](../svc/README.md) for the underlying API.
 
@@ -520,7 +520,7 @@ automatically when configured with `route: true` — see
 `LoginPanelModel` supports username/password authentication for apps that don't use SSO. Most
 Hoist applications use OAuth (Auth0, MSAL) where authentication is handled externally before the
 app loads, and no Hoist-provided login UI is needed. See the
-[Authentication concept doc](../docs/concepts/authentication.md) for full coverage of OAuth flows,
+[Authentication concept doc](../docs/authentication.md) for full coverage of OAuth flows,
 `HoistAuthModel`, and identity management.
 
 Enable via `AppSpec.enableLoginForm`. The login panel is shown when `XH.authModel` cannot
@@ -543,4 +543,4 @@ Apps can disable it entirely by overriding `HoistAppModel.supportsVersionBar`.
 - [`/desktop/`](../desktop/README.md) - Desktop platform views for AppContainer sub-models
 - [`/mobile/`](../mobile/README.md) - Mobile platform views for AppContainer sub-models
 - [`/cmp/tab/`](../cmp/tab/README.md) - TabContainerModel routing integration
-- [App Lifecycle](../docs/concepts/lifecycle-app.md) - App startup sequence and state machine
+- [App Lifecycle](../docs/lifecycle-app.md) - App startup sequence and state machine

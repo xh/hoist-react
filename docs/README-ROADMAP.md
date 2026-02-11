@@ -60,9 +60,9 @@ patterns and systems that span multiple packages.
 
 | Concept | Description | Status |
 |---------|-------------|--------|
-| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](./concepts/lifecycle-app.md), [Part 2 Done](./concepts/lifecycle-models-and-services.md) |
-| Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](./concepts/authentication.md) |
-| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](./concepts/persistence.md) |
+| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](./lifecycle-app.md), [Part 2 Done](./lifecycle-models-and-services.md) |
+| Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](./authentication.md) |
+| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](./persistence.md) |
 | Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | Planned |
 | Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
 | Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | Planned |
@@ -118,11 +118,11 @@ incorrectCode();
 
 1. Reserve the use of `props` for actual React Component props. Use `config` when referring to model or class constructor args.
 
-### Keeping AGENTS.md in Sync
+### Keeping the Documentation Index in Sync
 
-When a new package README is completed, add a corresponding entry to the "Package Documentation"
-section in `/AGENTS.md`. Each entry should include a linked package path, a one-sentence
-description, and a comma-separated list of key classes and concepts covered.
+When a new package README is completed, add a corresponding entry to the appropriate section
+in [`/docs/README.md`](./README.md). Each entry should include a linked package path, a
+one-sentence description, and a comma-separated list of key classes and concepts covered.
 
 ## Progress Notes
 
@@ -379,3 +379,16 @@ _Use this section to track discussions, decisions, and context between documenta
   - Updated cross-links: appcontainer/README.md → authentication.md#impersonation,
     svc/README.md IdentityService → authentication.md
 - All inter-doc links validated (89 links across 9 files, all valid)
+
+### 2026-02-11 (cont.)
+- Reorganized `/docs/` folder: moved concept docs out of `docs/concepts/` to `docs/` (flat structure)
+- Created `docs/README.md` — new primary documentation index for hoist-react:
+  - "Quick Reference by Task" table mapping natural-language goals to the right doc
+  - Package Documentation tables (migrated from AGENTS.md) with descriptions and key topics
+  - DevOps and Environment section indexing build-and-deploy, development-environment, compilation-notes
+  - Additional Resources section with cross-links to AGENTS.md, roadmap, changelog, and Toolbox
+- Replaced AGENTS.md Package Documentation section (~56 lines of tables) with compact directive
+  pointing to `docs/README.md` — keeps AGENTS.md focused on architecture patterns and coding conventions
+- Updated skill files (xh-update-doc-links, xh-update-docs, doc-conventions) to reference
+  `docs/README.md` as primary index instead of AGENTS.md
+- Fixed all inter-doc links affected by the concept doc move

@@ -399,7 +399,7 @@ data before individual models refresh.
 
 `TabContainerModel` creates a separate `RefreshContextModel` for each tab. This enables efficient
 refresh handling — inactive tabs can defer or skip refreshes based on their `refreshMode`
-configuration. See the [Tab documentation](../../cmp/tab/README.md) for details.
+configuration. See the [Tab documentation](../cmp/tab/README.md) for details.
 
 ### AutoRefreshService
 

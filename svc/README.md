@@ -167,7 +167,7 @@ Preferences are type-validated against server-defined types: `string`, `int`, `l
 **File**: `IdentityService.ts` | **Access**: `XH.identityService` or `XH.getUser()`
 
 Provides authenticated user information and impersonation support. See the
-[Authentication concept doc](../docs/concepts/authentication.md) for full coverage of OAuth flows,
+[Authentication concept doc](../docs/authentication.md) for full coverage of OAuth flows,
 identity handling, and impersonation.
 
 ```typescript

@@ -89,7 +89,7 @@ register with the same `ViewManagerModel`, and their combined state is saved as 
 view that users can create, switch between, share, and pin.
 
 Best for: complex multi-component configurations (grid + filters + grouping) that users want to
-save and switch between. See the [ViewManager README](../../cmp/viewmanager/README.md) for full
+save and switch between. See the [ViewManager README](../cmp/viewmanager/README.md) for full
 details.
 
 ### DashView
@@ -409,7 +409,7 @@ For models using `persistWith` in their constructor config (like `GridModel`):
 `ViewManagerModel` requires async initialization before it can be used as a persistence provider.
 Models that use ViewManager persistence should create the `ViewManagerModel` in `AppModel.initAsync()`
 and pass it to child models after it's ready. See
-[Initialize in AppModel](../../cmp/viewmanager/README.md#initialize-in-appmodel) in the
+[Initialize in AppModel](../cmp/viewmanager/README.md#initialize-in-appmodel) in the
 ViewManager README for the standard setup pattern.
 
 ## Common Patterns

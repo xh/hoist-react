@@ -7,8 +7,6 @@ Additional docs of interest:
   \- notes on CI configuration and build/deploy considerations.
 * [docs/development-environment.md](https://github.com/xh/hoist-react/blob/develop/docs/development-environment.md)
   \- notes on local development environment configuration for Hoist and app developers.
-* [docs/upgrade-to-typescript.md](https://github.com/xh/hoist-react/blob/develop/docs/upgrade-to-typescript.md)
-  \- guide on upgrading hoist applications to typescript.
 
 Hoist is a web application development toolkit developed by [Extremely Heavy](https://xh.io/).
 
