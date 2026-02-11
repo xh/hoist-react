@@ -571,6 +571,35 @@ formField({
 // Validation with `when` clause handles conditional requirements
 ```
 
+### Scrollable Form Content
+
+Forms with many fields may overflow their containing Panel. Use Panel's `contentBoxProps`
+to enable scrolling — this keeps toolbars and headers fixed while the form content scrolls:
+
+```typescript
+panel({
+    title: 'User Profile',
+    tbar: [saveButton(), resetButton()],
+    contentBoxProps: {overflow: 'auto', padding: true},
+    item: form({
+        fieldDefaults: {inline: true},
+        items: [
+            formField({field: 'firstName', item: textInput()}),
+            formField({field: 'lastName', item: textInput()}),
+            formField({field: 'email', item: textInput()}),
+            // ... many more fields
+        ]
+    })
+})
+```
+
+The `overflow: 'auto'` targets the inner content frame — toolbars remain fixed at the panel
+edges while form content scrolls independently. `padding: true` provides standard app spacing
+around the form without affecting toolbar alignment.
+
+See the [Panel README](../../desktop/cmp/panel/README.md#contentboxprops) for full
+`contentBoxProps` documentation.
+
 ## Common Pitfalls
 
 ### Confusing `form` Imports

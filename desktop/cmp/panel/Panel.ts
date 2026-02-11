@@ -26,6 +26,7 @@ import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import {castArray, omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
@@ -190,9 +191,9 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 items: Children.toArray([
                     parseToolbar(tbar),
                     frame({
-                        className: 'xh-panel__content',
-                        flexDirection: 'column',
                         ...contentBoxProps,
+                        className: classNames('xh-panel__content', contentBoxProps?.className),
+                        flexDirection: contentBoxProps?.flexDirection ?? 'column',
                         items: castArray(children)
                     }),
                     parseToolbar(bbar)

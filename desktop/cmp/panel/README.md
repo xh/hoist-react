@@ -61,10 +61,13 @@ the content area instead.
 The `contentBoxProps` prop provides direct control over the inner frame that wraps Panel's children.
 This frame sits between the top and bottom toolbars and receives the CSS class
 `xh-panel__content`. It defaults to `flexDirection: 'column'` with `flex: 'auto'` and
-`overflow: 'hidden'`, matching Panel's standard vertical layout.
+`overflow: 'hidden'` (the latter two inherited from the `frame()` layout primitive), matching
+Panel's standard vertical layout.
 
 Use `contentBoxProps` to apply padding, change flex direction, enable scrolling, or add custom
-classes — without introducing extra wrapper elements or CSS overrides.
+classes — without introducing extra wrapper elements or CSS overrides. Pass `className` within
+`contentBoxProps` to add custom CSS classes to the content frame — these are merged with the base
+`xh-panel__content` class.
 
 ```typescript
 // Padded content — toolbars remain flush with panel edges
