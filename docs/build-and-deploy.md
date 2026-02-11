@@ -1,4 +1,4 @@
-# 🛠️ Hoist Build and Deployment (CI) Configuration
+# Build and Deployment
 
 This section details the general steps we use to build a typical full-stack Hoist React application.
 We consider the Grails-based back-end and React-based front-end to be two sides of the same
@@ -7,7 +7,7 @@ Grails / Gradle based server. That is technically the domain of
 [Hoist Core](https://github.com/xh/hoist-core) but is detailed here to provide a consolidated look
 at the build process.
 
-**_At a high level, the build process:_**
+At a high level, the build process:
 
 - Builds the Grails back-end via Gradle, producing a WAR file.
 - Builds the JS front-end via Webpack, producing a set of production ready client assets.
@@ -26,7 +26,7 @@ any particular container orchestration technology (e.g. Kubernetes). That said, 
 Docker-based deployments is clearly a popular one, and we have found containers to be a useful way
 to bundle up and somewhat abstract away the two-part nature of full-stack Hoist UI applications.
 
-💡 Note that the use of `appCode` throughout this section is a placeholder for the actual shortname
+**Note:** the use of `appCode` throughout this section is a placeholder for the actual shortname
 assigned to your application. This is a short, camelCased variant of the longer `appName` and is set
 within the application source code via both the Gradle and Webpack configs.
 
@@ -126,7 +126,7 @@ a fully-based Webpack configuration object. See that project for additional deta
 
 The appVersion and appBuild params, detailed above, are the most common options set at build-time.
 
-An example Teamcity command line runner. ⚠️ Note this must run with `client-app` as its working
+An example Teamcity command line runner. **Note:** this must run with `client-app` as its working
 directory:
 
 ```bash
@@ -136,7 +136,7 @@ gitCommit=%build.vcs.number%
 # Grab a shorter version of the full hash
 appBuild=${gitCommit:0:10}
 echo "Building $appVersion $appBuild"
-yarn build --env.appVersion=$appVersion --env.appBuild=$appBuild
+yarn build --env appVersion=$appVersion --env appBuild=$appBuild
 ```
 
 The output is a set of files within `/client-app/build/` .
@@ -183,7 +183,7 @@ That leaves the build with the job of generating a suitable tag for the containe
 Docker build, and then pushing to an appropriate (likely internal) Docker registry. The container
 tag should include the appCode + `-tomcat` to indicate that this is the Grails-side container.
 
-An example Teamcity command line runner. ⚠️ Note this must run with `docker/tomcat` as its working
+An example Teamcity command line runner. **Note:** this must run with `docker/tomcat` as its working
 directory:
 
 ```bash
@@ -289,7 +289,7 @@ server {
 }
 ```
 
-**_Note that this example configuration:_**
+Note that this example configuration:
 
 - Uses nginx config includes sourced from the base `xh-nginx` image. The base image also copies
   in [an overall config](https://github.com/xh/xh-nginx/blob/master/xh.conf) that enables gzip
@@ -307,7 +307,7 @@ server {
   expected to be reachable from nginx via `localhost`.
     - The `/api/ `path is expected by the JS client, which will automatically prepend it to the path
       of any local/relative fetch requests. This can be customized if needed on the client by
-      adjusting the `baserUrl` param passed to `configureWebpack()`.
+      adjusting the `baseUrl` param passed to `configureWebpack()`.
     - The use of `localhost` is enabled via a deployment configuration that runs the two containers
       on the same pod / task / workload. This will vary based on the deployment environment.
 
@@ -317,7 +317,7 @@ The build system now simply needs to copy the built client-side resources into t
 and build the image. The sample below is simplified, but could also include the return code checks
 in the Tomcat example above. Note the `-nginx` suffix on the container tag.
 
-⚠️ This example must run with `docker/nginx` as its working directory:
+**Note:** this example must run with `docker/nginx` as its working directory:
 
 ```bash
 cp -R ../../client-app/build/ .
@@ -329,7 +329,7 @@ sudo docker push "$containerTag"
 
 ### Docker cleanup
 
-✨ At this point the build is complete and new versioned or snapshot images containing all the
+At this point the build is complete and new versioned or snapshot images containing all the
 runtime code have been pushed to a Docker registry and are ready for deployment.
 
 It might be beneficial to add one more step to clean up local Docker images on the build agent, to
@@ -343,7 +343,7 @@ sudo docker system prune -af
 
 ## Docker deployment
 
-🚢 XH typically creates distinct targets for build vs. deploy, and configure deployment targets to
+XH typically creates distinct targets for build vs. deploy, and configure deployment targets to
 prompt for the version number and/or Docker hostname. This process will differ significantly
 depending on the use (or not) of orchestration technology such as Kubernetes or AWS Elastic
 Container Service (ECS).
@@ -399,8 +399,3 @@ echo "Deploying $nginxImage complete"
 # Prune Docker, cleaning up dangling images and avoiding disk space bloat
 sudo docker system prune -af
 ```
-
-------------------------------------------
-
-☎️ info@xh.io | <https://xh.io>
-Copyright © 2026 Extremely Heavy Industries Inc.
