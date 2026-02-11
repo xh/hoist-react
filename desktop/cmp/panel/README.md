@@ -70,14 +70,14 @@ classes — without introducing extra wrapper elements or CSS overrides.
 // Padded content — toolbars remain flush with panel edges
 panel({
     title: 'Details',
-    contentBoxProps: {padding: 10},
+    contentBoxProps: {padding: true},
     item: detailForm()
 })
 
 // Horizontal content layout
 panel({
     title: 'Comparison',
-    contentBoxProps: {flexDirection: 'row', gap: 10},
+    contentBoxProps: {flexDirection: 'row', gap: 5},
     items: [leftPane(), rightPane()]
 })
 
