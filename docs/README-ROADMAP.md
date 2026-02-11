@@ -38,7 +38,7 @@ Frequently used utilities that benefit from dedicated documentation.
 |---------|-------|-------------|--------|
 | `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
 | `/utils/` | 26 | Async, datetime, JS utilities, React helpers | [Draft](../utils/README.md) |
-| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | [Draft](../promise/README.md) |
+| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | [Done](../promise/README.md) |
 | `/mobx/` | 3 | MobX re-exports, @bindable decorator, enhanced makeObservable | [Done](../mobx/README.md) |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
 

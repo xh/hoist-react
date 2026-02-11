@@ -56,7 +56,7 @@ await waitFor(() => document.querySelector('.my-element'));
 import {resolve, never} from '@xh/hoist/promise';
 
 resolve('value');   // Promise that resolves immediately with the given value
-never();            // Promise that never resolves — useful as a placeholder
+never();            // Promise that never resolves — e.g. to halt an async operation pending app reload
 ```
 
 ## Promise Prototype Extensions
@@ -141,8 +141,8 @@ Link a promise to a `TaskObserver` to coordinate loading masks and progress mess
 ```typescript
 import {TaskObserver} from '@xh/hoist/core';
 
-// In a model — TaskObserver typically defined as a @managed property
-@managed loadTask = TaskObserver.trackLast();
+// In a model
+loadTask = TaskObserver.trackLast();
 
 async loadDataAsync() {
     return XH.fetchService
@@ -231,17 +231,21 @@ fetchAsync()
 
 ### Standard Load Pattern
 
-The most common promise chain in Hoist applications — load data, link to a mask, track for
-monitoring, and handle errors:
+The most common promise chain in Hoist applications — load data, link to a mask, and track for
+monitoring:
 
 ```typescript
 async doLoadAsync() {
-    return XH.fetchService
-        .fetchJson({url: 'api/positions'})
-        .thenAction(data => this.updatePositions(data))
-        .linkTo(this.loadTask)
-        .track('Loaded positions')
-        .catchDefault();
+    try {
+        const data = await XH.fetchService
+            .fetchJson({url: 'api/positions'})
+            .linkTo(this.loadTask)
+            .track({category: 'Portfolio', message: 'Loaded positions'});
+
+        runInAction(() => this.updatePositions(data));
+    } catch (e) {
+        XH.handleException(e);
+    }
 }
 ```
 
@@ -259,11 +263,6 @@ this.submitOrderAsync()
 
 ## Common Pitfalls
 
-### Forgetting `catchDefault()`
-
-Unhandled promise rejections produce browser warnings and bypass Hoist's exception logging.
-Always end promise chains with `.catchDefault()` unless the caller explicitly handles errors.
-
 ### `catchDefault` order matters
 
 `catchDefault()` should be the *last* handler in the chain. Placing it before `.track()` means
@@ -274,6 +273,11 @@ tracking won't capture failures. The standard order is:
 
 Inside an `@action`-decorated `async` method, all synchronous code between `await` calls runs
 within an action context automatically. `thenAction` is only needed in raw `.then()` chains.
+
+### `@managed` on TaskObserver
+
+`TaskObserver` does not implement `destroy` and requires no cleanup, so marking it `@managed` is
+unnecessary. It's not harmful, but there's no benefit — a plain property declaration is sufficient.
 
 ## Related Packages
 
