@@ -37,9 +37,9 @@ Frequently used utilities that benefit from dedicated documentation.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/format/` | 6 | Number/date/misc formatters - heavily used in grids and display | [Done](../format/README.md) |
-| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | Planned |
-| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | Planned |
-| `/mobx/` | 3 | MobX re-exports, custom decorators (@bindable, @managed) | Planned |
+| `/utils/` | 26 | Async, datetime, JS utilities, React helpers | [Done](../utils/README.md) |
+| `/promise/` | 2 | Promise extensions (catchDefault, track, timeout, linkTo) | [Done](../promise/README.md) |
+| `/mobx/` | 3 | MobX re-exports, @bindable decorator, enhanced makeObservable | [Done](../mobx/README.md) |
 | `/appcontainer/` | 22 | App lifecycle, routing, messaging, banners, exception handling | [Done](../appcontainer/README.md) |
 
 ## Priority 4 - Supporting Packages
@@ -58,15 +58,17 @@ Smaller packages that provide important but more specialized functionality.
 Cross-cutting concepts that don't map directly to a single sub-package. These documents explain
 patterns and systems that span multiple packages.
 
-| Concept | Description                                                                                                                                                                                                                                                                                                                                                      | Status |
-|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, JsonBlob). Used by GridModel, FormModel, TabContainerModel, ViewManagerModel, and others.                                                                                                                   | Planned |
-| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Covers template methods (`initAsync`, `doLoadAsync`, `onLinked`, `afterLinked`, `destroy`) and the standardized sequence for app startup, service installation, and model linking.                                                                                             | [Part 1 Done](./concepts/app-lifecycle.md) |
-| Authentication | How Hoist apps authenticate users. Most apps use OAuth (Auth0, MSAL) with no Hoist-provided UI - the flow is handled externally before the app loads. Username/password auth via LoginPanel is an edge case. Covers SSO integration, identity resolution, role-based access, and the relationship between `/security/`, `IdentityService`, and `HoistAuthModel`. | Planned |
-| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them.                                                                                                    | Planned |
-| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements.                                                                                     | Planned |
-| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`.                                                                                                                                                  | Planned |
-| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows.                                                                                                 | Planned |
+| Concept | Description | Status |
+|---------|-------------|--------|
+| Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](./lifecycle-app.md), [Part 2 Done](./lifecycle-models-and-services.md) |
+| Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](./authentication.md) |
+| Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](./persistence.md) |
+| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | Planned |
+| Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | Planned |
+| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | Planned |
+| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | Planned |
+| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
 ## Documentation Guidelines
 
@@ -89,13 +91,18 @@ Each README should follow the pattern established in `/cmp/grid/README.md`:
 - Reference specific files where helpful
 - Keep examples practical and representative of real usage
 
+Meta-tone note: writing and reviewing documentation takes time and is hard, and it is very tempting
+for any developer not to do it. While working on documentation reviews and edits, lend a subtly
+encouraging and upbeat tone to your responses and queries directly back to developers.
+
 ### Communicating Anti-patterns
 
 Use a two-part approach for documenting things to avoid:
 
 1. **Inline warnings** - Use `**Avoid:**` prefix for brief notes near relevant content
-2. **Common Pitfalls section** - Add a dedicated section at the end of each README for significant
-   anti-patterns that warrant fuller explanation
+2. **Common Pitfalls section** - Add a dedicated `## Common Pitfalls` section at the end of each
+   README for significant anti-patterns that warrant fuller explanation. Use `###` third-level
+   headers for each individual pitfall
 
 For code examples showing correct vs incorrect approaches, use ✅/❌ markers:
 
@@ -111,11 +118,11 @@ incorrectCode();
 
 1. Reserve the use of `props` for actual React Component props. Use `config` when referring to model or class constructor args.
 
-### Keeping AGENTS.md in Sync
+### Keeping the Documentation Index in Sync
 
-When a new package README is completed, add a corresponding entry to the "Package Documentation"
-section in `/AGENTS.md`. Each entry should include a linked package path, a one-sentence
-description, and a comma-separated list of key classes and concepts covered.
+When a new package README is completed, add a corresponding entry to the appropriate section
+in [`/docs/README.md`](./README.md). Each entry should include a linked package path, a
+one-sentence description, and a comma-separated list of key classes and concepts covered.
 
 ## Progress Notes
 
@@ -258,3 +265,130 @@ _Use this section to track discussions, decisions, and context between documenta
 - Updated `AGENTS.md` with AppContainer entry, moved `/appcontainer/` out of "Other Packages"
 - Added cross-links from `/desktop/README.md` and `/mobile/README.md` to new appcontainer README
 - Added "Routing" and "Error Handling" concept docs to roadmap (Planned)
+
+### 2026-02-09
+- Completed `/utils/README.md` — utility package overview:
+  - Async utilities: Timer (polling, dynamic config-based intervals, timeout), forEachAsync/whileAsync
+  - DateTime utilities: time constants (SECONDS, MINUTES, etc.), olderThan, LocalDate (immutable memoized date class, factory methods, manipulation, business-day logic)
+  - JS utilities: decorators (@debounced, @computeOnce, @sharePendingPromise, @logWithInfo/Debug, @abstract, @enumerable), logging (logInfo/Warn/Error/Debug, withInfo/withDebug, log levels), language utils (getOrCreate, withDefault, throwIf, deepFreeze, pluralize, mergeDeep), DOM utils, version utils, test utils
+  - React utilities: hooks (useOnMount, useOnUnmount, useOnResize, useOnVisibleChange, useOnScroll, useCached), layout prop utils, createObservableRef, getClassName
+- Completed `/promise/README.md` — Promise extensions:
+  - Standalone functions: wait, waitFor, resolve, never
+  - Prototype extensions: catchDefault, catchWhen, catchDefaultWhen (selective error handling), track (activity tracking with timing), linkTo (TaskObserver masking), timeout, wait (instance), thenAction (MobX-safe then), tap (pass-through side effects)
+  - Standard load pattern: fetchJson → thenAction → linkTo → track → catchDefault
+- Completed `/mobx/README.md` — MobX integration layer:
+  - Re-exported APIs table (observable, computed, action, autorun, reaction, when, observer, etc.)
+  - enforceActions: 'observed' configuration
+  - @bindable decorator: auto-generated action setters, @bindable.ref for reference-only tracking
+  - @bindable vs @observable guidance, setter convention (prefer direct assignment)
+  - Enhanced makeObservable (processes @bindable metadata into observable.box instances)
+  - isObservableProp and checkMakeObservable diagnostic utilities
+- Updated `AGENTS.md` Utilities table with entries for utils, promise, and mobx
+- Removed `/mobx/`, `/promise/`, `/utils/` from "Other Packages" list
+- Priority 3 now fully complete — all Key Utilities documented
+
+### 2026-02-10
+- Reviewed and refined `/promise/README.md` (Draft → Done):
+  - Removed `@managed` advice on TaskObserver (unnecessary, added pitfall note)
+  - Replaced standard load pattern with try/catch style over catchDefault
+  - Removed "forgetting catchDefault" pitfall (not always recommended)
+  - Clarified `never()` description
+- Reviewed and refined `/utils/README.md` (Draft → Done):
+  - Timer: added `@managed` guidance (implements destroy, should be cleaned up)
+  - forEachAsync: clarified use case as yielding during tight synchronous loops
+  - Time constants: fixed examples to use `5 * MINUTES` style, added `ONE_MINUTE` readability note
+  - LocalDate: expanded with business-context examples (maturity dates, Map keys), emphasized
+    memoization/equality, distinguished `get()` vs `from()`, added chaining and toJSON examples
+  - Decorators: added note about legacy (Stage 2) decorator support via Babel
+  - Logging: major expansion — instance method examples with auto class name prepending,
+    withInfo/withDebug timed execution, log level system with zero-overhead debug calls,
+    XH.setLogLevel/enableDebugLogging APIs, standalone usage
+  - React hooks: added useOnResize and useOnVisibleChange examples with realistic patterns
+    (compact mode switching, subscription suspend/resume), composeRefs composition
+  - Layout props: added cross-reference link to layout README
+- Added Testing concept doc to roadmap (testId, TestProps, form/input integration)
+
+### 2026-02-10 (cont.)
+- Created three cross-cutting concept docs (Lifecycles Part 2, Authentication, Persistence):
+  - `docs/concepts/lifecycle-models-and-services.md` — Model/service lifecycles after app startup:
+    - HoistModel lifecycle phases: construction → linking (onLinked) → post-link (afterLinked,
+      initial load, RefreshContext registration) → refresh → destruction
+    - `@lookup` decorator and `lookupModel()` availability during linking
+    - HoistService differences (initAsync, singleton, no component linking)
+    - LoadSupport deep dive: LoadSpec properties (isStale, isObsolete, isAutoRefresh),
+      loadObserver (TaskObserver for masking), auto-refresh skip logic
+    - Refresh system: RefreshContextModel, RootRefreshContextModel (AppModel-first ordering),
+      XH.refreshAppAsync() flow, TabContainer refresh contexts
+    - Destruction cascade: disposers → managedInstances → @managed properties
+    - Common patterns and pitfalls (lookupModel before linking, direct doLoadAsync calls,
+      reaction closures, @managed on owned models, isStale checking)
+  - `docs/concepts/authentication.md` — Authentication and identity:
+    - Authentication flow state diagram (PRE_AUTH → AUTHENTICATING → ...)
+    - HoistAuthModel: completeAuthAsync(), loadConfigAsync(), getAuthStatusFromServerAsync()
+    - OAuth clients: MSAL (Entra ID) and Auth0, with init flow diagrams
+    - BaseOAuthClient shared features (token refresh, re-login, redirect state)
+    - Step-by-step AuthModel implementation guide with Auth0 and MSAL examples
+    - Token management: ID vs access tokens, auto-refresh timer, re-login on expiration
+    - Identity and access control: IdentityService, checkAccess, impersonation
+    - Form-based login: LoginPanel, conditional enableLoginForm
+  - `docs/concepts/persistence.md` — State persistence system:
+    - Core flow: read → apply → watch → write (no thrashing)
+    - Six backing stores: localStorage, sessionStorage, Preference, ViewManager, DashView, Custom
+    - PersistOptions configuration table
+    - Three approaches: @persist decorators, markPersist(), model constructor config
+    - Built-in model support: GridModel (4 aspects), FormModel (field values, Date/LocalDate),
+      TabContainerModel (activeTabId, favoriteTabIds), PanelModel (collapsed, size)
+    - Configuration inheritance via mergePersistOptions
+    - Timing and construction order (decorator timing, constructor sequence)
+- Reordered Concepts table: Lifecycles → Authentication → Persistence first (now with drafts),
+  then remaining planned docs; moved Version Compatibility to end
+- Updated AGENTS.md with Concepts documentation section
+
+### 2026-02-11
+- Reviewed and refined all three concept docs (Draft → Done):
+  - `lifecycle-models-and-services.md`:
+    - Expanded HoistService LoadSupport section: services must be explicitly wired into
+      AppModel.doLoadAsync() with loadSpec passthrough; tiered loading pattern
+    - Added AutoRefreshService coverage (xhAutoRefreshIntervals config, xhAutoRefreshEnabled pref,
+      per-clientAppCode intervals, AppBar refresh button connection)
+    - Enhanced "Standard Model" example with try/catch error handling, isStale checks,
+      and ExceptionHandler auto-refresh suppression via loadSpec
+    - Added selective masking example (panel mask: 'onLoad' vs sibling mask() component)
+    - Added pitfall: "Not Wiring Service Loads into AppModel.doLoadAsync()"
+  - `authentication.md`:
+    - Rewrote MSAL variant: standard Bearer auth header for Hoist server requests, separate
+      ApiService example for external API calls with named access tokens
+    - Added MsalClientConfig.accessTokens spec example (scopes, fetchMode eager/lazy)
+    - Expanded impersonation section: Shift+I hotkey, user vs authUser table, code example
+      restricting features during impersonation, "use responsibly" warnings summary
+    - Added cross-links from appcontainer/README.md and svc/README.md
+  - `persistence.md`:
+    - Added intro paragraph on uniform API across backing stores (upgrade store without
+      changing consuming models)
+    - Clarified settleTime (component re-interpretation at render, e.g. relative→pixel sizes)
+    - DashView: best practice for looking up DashViewModel in multi-instance widgets
+    - markPersist: featured dashboard widget pattern (lookupModel in onLinked, set persistWith,
+      then markPersist)
+    - GridModel: mixed-mode persistence example (ViewManager + localStorage override)
+    - PanelModel: noted as natural localStorage candidate (screen/device-driven sizing)
+    - GroupingChooserModel/FilterChooserModel: split-store pattern (value per-view,
+      favorites shared via pref), auto-enabled favorites UI
+    - Configuration inheritance: added detailFilterModel with custom path to avoid collisions
+    - ViewManager initialization: deep link to ViewManager README
+  - Added Authorization concept doc to roadmap (Planned)
+  - Updated cross-links: appcontainer/README.md → authentication.md#impersonation,
+    svc/README.md IdentityService → authentication.md
+- All inter-doc links validated (89 links across 9 files, all valid)
+
+### 2026-02-11 (cont.)
+- Reorganized `/docs/` folder: moved concept docs out of `docs/concepts/` to `docs/` (flat structure)
+- Created `docs/README.md` — new primary documentation index for hoist-react:
+  - "Quick Reference by Task" table mapping natural-language goals to the right doc
+  - Package Documentation tables (migrated from AGENTS.md) with descriptions and key topics
+  - DevOps and Environment section indexing build-and-deploy, development-environment, compilation-notes
+  - Additional Resources section with cross-links to AGENTS.md, roadmap, changelog, and Toolbox
+- Replaced AGENTS.md Package Documentation section (~56 lines of tables) with compact directive
+  pointing to `docs/README.md` — keeps AGENTS.md focused on architecture patterns and coding conventions
+- Updated skill files (xh-update-doc-links, xh-update-docs, doc-conventions) to reference
+  `docs/README.md` as primary index instead of AGENTS.md
+- Fixed all inter-doc links affected by the concept doc move

@@ -55,8 +55,8 @@ Check current documentation state for each affected package:
 1. **Package READMEs** — Read the relevant README(s) to see what's already documented.
    Use `Glob` to check for `<package>/README.md` files.
 
-2. **AGENTS.md** — Check for existing entries in the Package Documentation tables.
-   Read `/AGENTS.md` and look for the affected package paths.
+2. **Documentation Index** — Check for existing entries in the `docs/README.md` Package
+   Documentation tables. Read `docs/README.md` and look for the affected package paths.
 
 3. **Documentation Roadmap** — Check `docs/README-ROADMAP.md` for status of affected packages.
 
@@ -79,9 +79,9 @@ Edits to existing package READMEs. Examples:
 If a new sub-package was added that lacks a README, propose creating one following the
 7-section structure defined in `references/doc-conventions.md`.
 
-### AGENTS.md Updates
-New or updated entries in the Package Documentation table. Each entry needs:
-- Linked package path
+### Documentation Index Updates
+New or updated entries in the `docs/README.md` Package Documentation tables. Each entry needs:
+- Linked package path (relative from `docs/`, e.g., `../package/README.md`)
 - One-sentence description
 - Comma-separated list of key topics
 

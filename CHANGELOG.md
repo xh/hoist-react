@@ -26,6 +26,7 @@
 ### 🐞 Bug Fixes
 
 * Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
+* Fixed bug where attempting to access validation errors on subforms would throw.
 
 ### ⚙️ Typescript API Adjustments
 

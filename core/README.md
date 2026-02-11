@@ -86,7 +86,7 @@ export class MyModel extends HoistModel {
 **Avoid:** Applying `@managed` to objects that don't implement `destroy()`. Objects that should
 typically be managed include HoistModels, Stores, Cubes, and CubeViews.
 
-**State Persistence**
+**State Persistence** (see [Persistence concept doc](../docs/persistence.md) for full details)
 ```typescript
 class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
@@ -194,6 +194,10 @@ class ChildModel extends HoistModel {
 ```
 
 ### Load Support
+
+> See [Lifecycles: Models, Services, and Load/Refresh](../docs/lifecycle-models-and-services.md) for a
+> comprehensive guide to model and service lifecycles, LoadSupport, the refresh system, and
+> common patterns.
 
 When `doLoadAsync()` is implemented, the model gains managed loading:
 
@@ -771,3 +775,6 @@ async doLoadAsync() {
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
 - [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components
+- [`/mobx/`](../mobx/README.md) - `@bindable`, `makeObservable`, MobX re-exports and configuration
+- [`/promise/`](../promise/README.md) - Promise extensions (`catchDefault`, `track`, `linkTo`, `timeout`)
+- [`/utils/`](../utils/README.md) - Decorators (`@debounced`, `@computeOnce`), Timer, LocalDate, logging

@@ -55,48 +55,15 @@ See [`/core/README.md`](./core/README.md) for detailed coverage of all three art
 See [`/core/README.md`](./core/README.md) for the full XH API and
 [`/svc/README.md`](./svc/README.md) for built-in service details.
 
-### Package Documentation
+### Hoist Documentation
 
-Detailed documentation is available in package-level README files. Consult these when working on
-or with specific packages — they cover architecture, configuration, usage patterns, and pitfalls.
-
-#### Core Framework
-
-| Package | Description | Key Topics |
-|---------|-------------|------------|
-| [`/core/`](./core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](./data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
-| [`/svc/`](./svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, WebSocketService |
-
-#### Components
-
-| Package | Description | Key Topics |
-|---------|-------------|------------|
-| [`/cmp/`](./cmp/README.md) | Cross-platform component overview and catalog | Component categories, factory pattern, platform-specific vs shared |
-| [`/cmp/grid/`](./cmp/grid/README.md) | Primary data grid built on ag-Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
-| [`/cmp/form/`](./cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
-| [`/cmp/input/`](./cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
-| [`/cmp/layout/`](./cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
-| [`/cmp/tab/`](./cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
-| [`/cmp/viewmanager/`](./cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
-| [`/desktop/cmp/dash/`](./desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
-| [`/desktop/cmp/panel/`](./desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
-| [`/mobile/`](./mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
-
-#### Utilities
-
-| Package | Description | Key Topics |
-|---------|-------------|------------|
-| [`/format/`](./format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision |
-| [`/appcontainer/`](./appcontainer/README.md) | Application shell — lifecycle, dialogs, toasts, banners, theming, and environment | AppContainerModel, MessageSpec, ToastSpec, BannerSpec, ExceptionDialogModel, ThemeModel, RouterModel, AppOption |
-
-#### Other Packages
-
-Additional packages without dedicated READMEs — see [documentation roadmap](./docs/README-ROADMAP.md)
-for planned coverage:
-
-`/admin/`, `/icon/`, `/kit/`, `/inspector/`,
-`/mobx/`, `/promise/`, `/security/`, `/styles/`, `/utils/`
+**Before modifying or extending hoist-react code, consult the documentation index at
+[`/docs/README.md`](./docs/README.md).** It catalogs all package READMEs and cross-cutting concept
+docs with descriptions and key topic keywords. Use the "Quick Reference by Task" table to find the
+right doc for your goal, then read the relevant README(s) to understand existing architecture,
+configuration patterns, and common pitfalls. These docs are the authoritative reference for how
+Hoist packages work and how they are intended to be used — skipping them risks producing code
+that conflicts with established patterns or misses built-in functionality.
 
 ### Element Factories vs JSX
 
