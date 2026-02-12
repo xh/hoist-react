@@ -40,8 +40,8 @@ const XH_PAD_VAR = 'var(--xh-pad-px)';
  *
  * This method implements some minor translations, to allow a more user friendly specification than
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
- * as raw numbers rather than strings. Margin, padding, and gap can be specified as `true` to use
- * the `--xh-pad-px` CSS var (default 10px).
+ * as raw numbers rather than strings. Margin, padding, and gap accept a boolean shorthand:
+ * `true` resolves to the `--xh-pad-px` CSS var (default 10px), `false` is treated as unset.
  */
 export function getLayoutProps(props: PlainObject): ResolvedLayoutProps {
     // Harvest all keys of interest
@@ -53,10 +53,11 @@ export function getLayoutProps(props: PlainObject): ResolvedLayoutProps {
         if (isNumber(v)) ret[k] = v.toString();
     });
 
-    // margin/padding: convert `true` to standard app padding CSS var.
+    // margin/padding/gap: convert `true` to standard app padding CSS var, remove `false`.
     const pmConfig = pick(ret, pmKeys);
     forOwn(pmConfig, (v, k) => {
         if (v === true) ret[k] = XH_PAD_VAR;
+        if (v === false) delete ret[k];
     });
 
     // Dimensions: translate numbers / bare strings into pixels.

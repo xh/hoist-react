@@ -11,8 +11,9 @@
 * Added `contentBoxProps` to `Panel`, providing direct control over the inner frame wrapping content
   items. Use to apply padding, change flex direction, enable scrolling, or add custom classes without
   extra wrapper elements. Matches the existing `contentBoxProps` API on `Card`.
-* Layout props `padding`, `margin` (and their directional variants), and `gap` now accept `true`
-  as a shorthand for the standard app padding CSS variable (`--xh-pad-px`, default 10px).
+* Layout props `padding`, `margin` (and their directional variants), and `gap` now accept a boolean
+  shorthand: `true` resolves to the standard app padding CSS variable (`--xh-pad-px`, default 10px),
+  `false` is treated as unset.
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
@@ -34,7 +35,7 @@
 
 * Updated `GridFilterModel.setFilter` signature to accept `FilterLike` rather than `Filter`.
 * Added `ResolvedLayoutProps` type alias. `getLayoutProps()` and `splitLayoutProps()` now return
-  `ResolvedLayoutProps` (with `true` values resolved to strings) instead of `LayoutProps`.
+  `ResolvedLayoutProps` (with boolean values resolved) instead of `LayoutProps`.
 
 ### ⚙️ Technical
 
