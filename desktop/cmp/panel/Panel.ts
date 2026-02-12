@@ -99,6 +99,9 @@ export interface PanelProps<M extends PanelModel = PanelModel>
 
     /** Additional props to pass to the inner frame hosting child `items`. */
     contentBoxProps?: BoxProps;
+
+    /** Allow the panel content area to scroll vertically. */
+    scrollable?: boolean;
 }
 
 /**
@@ -140,6 +143,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             contextMenu,
             hotkeys,
             contentBoxProps,
+            scrollable,
             children,
             ...rest
         } = nonLayoutProps;
@@ -194,6 +198,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                         ...contentBoxProps,
                         className: classNames('xh-panel__content', contentBoxProps?.className),
                         flexDirection: contentBoxProps?.flexDirection ?? 'column',
+                        overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
                         items: castArray(children)
                     }),
                     parseToolbar(bbar)

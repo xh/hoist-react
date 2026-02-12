@@ -573,14 +573,15 @@ formField({
 
 ### Scrollable Form Content
 
-Forms with many fields may overflow their containing Panel. Use Panel's `contentBoxProps`
-to enable scrolling — this keeps toolbars and headers fixed while the form content scrolls:
+Forms with many fields may overflow their containing Panel. Use Panel's `scrollable` prop
+to enable vertical scrolling — this keeps toolbars and headers fixed while the form content scrolls:
 
 ```typescript
 panel({
     title: 'User Profile',
     tbar: [saveButton(), resetButton()],
-    contentBoxProps: {overflow: 'auto', padding: true},
+    scrollable: true,
+    contentBoxProps: {padding: true},
     item: form({
         fieldDefaults: {inline: true},
         items: [
@@ -593,12 +594,11 @@ panel({
 })
 ```
 
-The `overflow: 'auto'` targets the inner content frame — toolbars remain fixed at the panel
-edges while form content scrolls independently. `padding: true` provides standard app spacing
-around the form without affecting toolbar alignment.
+The `scrollable` prop sets `overflowY: 'auto'` on the inner content frame — toolbars remain fixed
+at the panel edges while form content scrolls independently. `padding: true` via `contentBoxProps`
+provides standard app spacing around the form without affecting toolbar alignment.
 
-See the [Panel README](../../desktop/cmp/panel/README.md#contentboxprops) for full
-`contentBoxProps` documentation.
+See the [Panel README](../../desktop/cmp/panel/README.md#scrollable) for full documentation.
 
 ## Common Pitfalls
 

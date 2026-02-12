@@ -8,9 +8,12 @@
   header and collapsible content.
 * Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
   state.
-* Added `contentBoxProps` to `Panel`, providing direct control over the inner frame wrapping content
-  items. Use to apply padding, change flex direction, enable scrolling, or add custom classes without
-  extra wrapper elements. Matches the existing `contentBoxProps` API on `Card`.
+* Added `contentBoxProps` to desktop and mobile `Panel`, providing direct control over the inner
+  frame wrapping content items. Use to apply padding, change flex direction, enable scrolling, or
+  add custom classes without extra wrapper elements. Matches the existing `contentBoxProps` API on
+  `Card`.
+* Added `scrollable` prop to desktop `Panel`, matching the existing mobile `Panel` API. Sets
+  `overflowY: 'auto'` on the content area.
 * Layout props `padding`, `margin` (and their directional variants), and `gap` now accept a boolean
   shorthand: `true` resolves to the standard app padding CSS variable (`--xh-pad-px`, default 10px),
   `false` is treated as unset.
