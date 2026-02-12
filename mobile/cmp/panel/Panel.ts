@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, vbox} from '@xh/hoist/cmp/layout';
+import {frame, vbox} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     TaskObserver,
@@ -21,7 +21,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {omitBy} from 'lodash';
+import {castArray, omitBy} from 'lodash';
 import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
@@ -58,7 +58,10 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
      */
     loadingIndicator?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
-    /** Allow the panel to scroll vertically */
+    /** Additional props to pass to the inner frame hosting child `items`. */
+    contentBoxProps?: BoxProps;
+
+    /** Allow the panel content area to scroll vertically. */
     scrollable?: boolean;
 
     /** A toolbar to be docked at the top of the panel. */
@@ -92,6 +95,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
+            contentBoxProps,
             scrollable,
             children,
             ...rest
@@ -107,17 +111,19 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             layoutProps.flex = 'auto';
         }
 
-        // 2) Set coreContents element based on scrollable.
-        const coreContentProps = {className: 'xh-panel__content', items: children},
-            coreContents = scrollable ? div(coreContentProps) : vbox(coreContentProps);
-
-        // 3) Prepare combined layout.
+        // 2) Prepare combined layout.
         return vbox({
-            className: classNames(className, scrollable ? 'xh-panel--scrollable' : null),
+            className,
             items: [
                 panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
-                coreContents,
+                frame({
+                    ...contentBoxProps,
+                    className: classNames('xh-panel__content', contentBoxProps?.className),
+                    flexDirection: contentBoxProps?.flexDirection ?? 'column',
+                    overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
+                    items: castArray(children)
+                }),
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
                 parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)

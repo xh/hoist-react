@@ -84,7 +84,7 @@ panel({
     items: [leftPane(), rightPane()]
 })
 
-// Scrollable content
+// Scrollable content (via contentBoxProps)
 panel({
     title: 'Log',
     contentBoxProps: {overflow: 'auto'},
@@ -93,6 +93,21 @@ panel({
 ```
 
 This mirrors the `contentBoxProps` API available on `Card`.
+
+## scrollable
+
+The `scrollable` prop is a convenience shorthand that sets `overflowY: 'auto'` on the content
+area, keeping the header and toolbars fixed while content scrolls vertically. This is equivalent
+to `contentBoxProps: {overflowY: 'auto'}` but reads more naturally for the common case:
+
+```typescript
+// These are equivalent:
+panel({scrollable: true, item: longForm()})
+panel({contentBoxProps: {overflowY: 'auto'}, item: longForm()})
+```
+
+When both `scrollable` and `contentBoxProps.overflowY` are specified, `scrollable` takes
+precedence.
 
 ## Toolbars
 
@@ -459,6 +474,7 @@ layouts like dashboards.
 | `tbar` | `ReactNode` | Top toolbar. Array auto-wrapped in `toolbar()`. |
 | `bbar` | `ReactNode` | Bottom toolbar. Array auto-wrapped in `toolbar()`. |
 | `contentBoxProps` | `BoxProps` | Props for the inner frame wrapping content items. |
+| `scrollable` | `boolean` | Allow the panel content area to scroll vertically. |
 | `mask` | `Some<TaskObserver> \| ReactElement \| boolean \| 'onLoad'` | Mask overlay specification. |
 | `loadingIndicator` | `Some<TaskObserver> \| ReactElement \| boolean \| 'onLoad'` | Loading indicator (same forms as `mask`). |
 | `model` | `PanelModel` | Explicit PanelModel for collapse/resize. |
