@@ -186,8 +186,8 @@ export class LocalDate {
         return this._isoString;
     }
 
-    valueOf(): string {
-        return this._isoString;
+    valueOf(): number {
+        return this.timestamp;
     }
 
     get isLocalDate(): boolean {
