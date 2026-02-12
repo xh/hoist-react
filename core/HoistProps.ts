@@ -116,6 +116,7 @@ export interface LayoutProps {
     flex?: string | number;
     flexBasis?: string | number;
     flexDirection?: Property.FlexDirection;
+    flexFlow?: Property.FlexFlow;
     flexGrow?: string | number;
     flexShrink?: string | number;
     flexWrap?: Property.FlexWrap;

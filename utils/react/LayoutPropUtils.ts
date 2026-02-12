@@ -23,7 +23,7 @@ const XH_PAD_VAR = 'var(--xh-pad-px)';
  *     margin, marginTop, marginRight, marginBottom, marginLeft,
  *     padding, paddingTop, paddingRight, paddingBottom, paddingLeft,
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
- *     flex, flexBasis, flexDirection, flexGrow, flexShrink, flexWrap,
+ *     flex, flexBasis, flexDirection, flexFlow, flexGrow, flexShrink, flexWrap,
  *     alignItems, alignSelf, alignContent, justifyContent,
  *     overflow, overflowX, overflowY, textOverflow,
  *     top, left, position, display
@@ -105,7 +105,15 @@ const pmKeys = [
     'gap'
 ];
 const dimKeys = [...pmKeys, 'height', 'minHeight', 'maxHeight', 'width', 'minWidth', 'maxWidth'];
-const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
+const flexKeys = [
+    'flex',
+    'flexBasis',
+    'flexDirection',
+    'flexFlow',
+    'flexGrow',
+    'flexShrink',
+    'flexWrap'
+];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
 const overflowKeys = ['overflow', 'overflowX', 'overflowY', 'textOverflow'];
 const otherKeys = ['top', 'left', 'position', 'display'];

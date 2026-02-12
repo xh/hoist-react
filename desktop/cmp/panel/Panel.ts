@@ -197,7 +197,9 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     frame({
                         ...contentBoxProps,
                         className: classNames('xh-panel__content', contentBoxProps?.className),
-                        flexDirection: contentBoxProps?.flexDirection ?? 'column',
+                        flexDirection: contentBoxProps?.flexFlow
+                            ? undefined
+                            : (contentBoxProps?.flexDirection ?? 'column'),
                         overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
                         items: children
                     }),
