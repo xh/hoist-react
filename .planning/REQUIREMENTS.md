@@ -49,7 +49,7 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ### Extended Type Features
 
-- **TSEX-05**: LLM can navigate type hierarchy and inheritance chains (e.g. HoistModel → HoistBase)
+- **TSEX-05**: LLM can navigate type hierarchy and inheritance chains (e.g. HoistModel -> HoistBase)
 - **TSEX-06**: Custom `@bindable` decorator documentation showing generated setter methods
 
 ### Documentation Outputs
@@ -82,28 +82,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MCPF-01 | — | Pending |
-| MCPF-02 | — | Pending |
-| MCPF-03 | — | Pending |
-| MCPF-04 | — | Pending |
-| MCPF-05 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
-| DOCS-03 | — | Pending |
-| DOCS-04 | — | Pending |
-| DOCS-05 | — | Pending |
-| TSEX-01 | — | Pending |
-| TSEX-02 | — | Pending |
-| TSEX-03 | — | Pending |
-| TSEX-04 | — | Pending |
-| HDOC-01 | — | Pending |
-| DEVX-01 | — | Pending |
+| MCPF-01 | Phase 1 | Pending |
+| MCPF-02 | Phase 1 | Pending |
+| MCPF-03 | Phase 1 | Pending |
+| MCPF-04 | Phase 1 | Pending |
+| MCPF-05 | Phase 1 | Pending |
+| DOCS-01 | Phase 2 | Pending |
+| DOCS-02 | Phase 2 | Pending |
+| DOCS-03 | Phase 2 | Pending |
+| DOCS-04 | Phase 2 | Pending |
+| DOCS-05 | Phase 2 | Pending |
+| TSEX-01 | Phase 3 | Pending |
+| TSEX-02 | Phase 3 | Pending |
+| TSEX-03 | Phase 3 | Pending |
+| TSEX-04 | Phase 3 | Pending |
+| HDOC-01 | Phase 3 | Pending |
+| DEVX-01 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16
+- Mapped to phases: 16
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after initial definition*
+*Last updated: 2026-02-12 after roadmap creation*
