@@ -8,6 +8,14 @@
   header and collapsible content.
 * Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
   state.
+* DashCanvas:
+    * supports dragging and dropping widgets in from an external container.
+    * supports new compacting strategy: 'wrap'
+* new elementFactory tags: `fieldset`, `legend`
+
+### 📚 Libraries
+
+* react-grid-layout `2.1 → 2.2.2`
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
