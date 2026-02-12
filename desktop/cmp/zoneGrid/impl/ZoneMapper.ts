@@ -6,7 +6,7 @@
  */
 import '@xh/hoist/desktop/register';
 import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses} from '@xh/hoist/core';
-import {div, filler, hbox, hframe, p, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, p, span, vbox} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {grid, GridModel} from '@xh/hoist/cmp/grid';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
@@ -142,7 +142,13 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
             title: 'Sorting',
             icon: Icon.list(),
             compactHeader: true,
-            items: hframe(
+            contentBoxProps: {
+                alignItems: 'center',
+                flexDirection: 'row',
+                gap: true,
+                padding: true
+            },
+            items: [
                 select({
                     bind: 'sortByColId',
                     enableFilter: true,
@@ -156,7 +162,7 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
                     minimal: false,
                     onClick: () => model.setNextSortBy()
                 })
-            )
+            ]
         });
     }
 });

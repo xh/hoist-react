@@ -8,9 +8,22 @@
   header and collapsible content.
 * Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
   state.
+* Added `contentBoxProps` to desktop and mobile `Panel`, providing direct control over the inner
+  frame wrapping content items. Use to apply padding, change flex direction, enable scrolling, or
+  add custom classes without extra wrapper elements. Matches the existing `contentBoxProps` API on
+  `Card`.
+* Added `scrollable` prop to desktop `Panel`, matching the existing mobile `Panel` API. Sets
+  `overflowY: 'auto'` on the content area.
+* Layout props `padding`, `margin` (and their directional variants), and `gap` now accept a boolean
+  shorthand: `true` resolves to the standard app padding CSS variable (`--xh-pad-px`, default 10px),
+  `false` is treated as unset.
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
+* The CSS class on Panel's outer structural wrapper has been renamed from `xh-panel__content` to
+  `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
+  content items (the target of `contentBoxProps`). Update any app CSS selectors targeting the old
+  `xh-panel__content` class accordingly.
 * Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
   a `boolean`.  For most apps this will require a trivial change to the signature of the
   implementation of `HoistAuthModel.completeAuthAsync`.
@@ -24,6 +37,8 @@
 ### ⚙️ Typescript API Adjustments
 
 * Updated `GridFilterModel.setFilter` signature to accept `FilterLike` rather than `Filter`.
+* Added `ResolvedLayoutProps` type alias. `getLayoutProps()` and `splitLayoutProps()` now return
+  `ResolvedLayoutProps` (with boolean values resolved) instead of `LayoutProps`.
 
 ### ⚙️ Technical
 

@@ -94,17 +94,17 @@ export interface TestSupportProps {
 }
 
 export interface LayoutProps {
-    margin?: string | number;
-    marginTop?: string | number;
-    marginRight?: string | number;
-    marginBottom?: string | number;
-    marginLeft?: string | number;
+    margin?: string | number | boolean;
+    marginTop?: string | number | boolean;
+    marginRight?: string | number | boolean;
+    marginBottom?: string | number | boolean;
+    marginLeft?: string | number | boolean;
 
-    padding?: string | number;
-    paddingTop?: string | number;
-    paddingRight?: string | number;
-    paddingBottom?: string | number;
-    paddingLeft?: string | number;
+    padding?: string | number | boolean;
+    paddingTop?: string | number | boolean;
+    paddingRight?: string | number | boolean;
+    paddingBottom?: string | number | boolean;
+    paddingLeft?: string | number | boolean;
 
     height?: string | number;
     minHeight?: string | number;
@@ -116,10 +116,11 @@ export interface LayoutProps {
     flex?: string | number;
     flexBasis?: string | number;
     flexDirection?: Property.FlexDirection;
+    flexFlow?: Property.FlexFlow;
     flexGrow?: string | number;
     flexShrink?: string | number;
     flexWrap?: Property.FlexWrap;
-    gap?: string | number;
+    gap?: string | number | boolean;
 
     alignItems?: string;
     alignSelf?: string;
@@ -136,3 +137,8 @@ export interface LayoutProps {
     position?: Property.Position;
     display?: string;
 }
+
+/** LayoutProps after resolution by `getLayoutProps()`, with boolean values resolved. */
+export type ResolvedLayoutProps = {
+    [K in keyof LayoutProps]: Exclude<LayoutProps[K], boolean>;
+};

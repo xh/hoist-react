@@ -91,7 +91,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                                 },
                                 dragConfig: {
                                     enabled: isDraggable,
-                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__content > .xh-panel-header',
+                                    handle: '.xh-dash-tab.xh-panel > .xh-panel__inner > .xh-panel-header',
                                     cancel: '.xh-button',
                                     bounded: true
                                 },

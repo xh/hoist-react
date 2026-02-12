@@ -102,7 +102,7 @@
     }
 
     > .xh-panel {
-      > .xh-panel__content {
+      > .xh-panel__inner {
         > .xh-panel-header {
           background-color: var(--xh-intent-neutral-trans1);
           height: 24px;
@@ -127,7 +127,7 @@
   &--draggable {
     .react-grid-item {
       > .xh-panel {
-        > .xh-panel__content {
+        > .xh-panel__inner {
           > .xh-panel-header {
             > .xh-panel-header__title,
             > svg {
