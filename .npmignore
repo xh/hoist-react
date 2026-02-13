@@ -5,6 +5,7 @@
 .idea
 .yarn
 node_modules
+scripts
 
 # Development configuration
 *.log
