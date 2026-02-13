@@ -1,5 +1,14 @@
 # Changelog
 
+## 82.0.0-SNAPSHOT - unreleased
+
+### 🎁 New Features
+
+* Added `description` property to `Field` and `Column`. `Column.description` defaults from
+  `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
+  when those are not explicitly set, providing a single point of configuration for supplementary
+  descriptive text that flows from the data layer through to the grid UI.
+
 ## 81.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
@@ -17,10 +26,6 @@
 * Layout props `padding`, `margin` (and their directional variants), and `gap` now accept a boolean
   shorthand: `true` resolves to the standard app padding CSS variable (`--xh-pad-px`, default 10px),
   `false` is treated as unset.
-* Added `description` property to `Field` and `Column`. `Column.description` defaults from
-  `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
-  when those are not explicitly set, providing a single point of configuration for supplementary
-  descriptive text that flows from the data layer through to the grid UI.
 
 ### 💥 Breaking Changes
 * Requires hoist-core `v36.1` or greater.
