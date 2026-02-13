@@ -39,11 +39,11 @@ Plans:
   3. LLM can search across all documentation by keyword and receive relevant results with context
   4. LLM can query coding conventions (AGENTS.md) and architectural patterns (lifecycle, persistence, authentication docs) as first-class resources
   5. LLM can filter documentation queries to a specific package or concern area, reducing noise in results
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Document registry data layer: path utilities, document inventory with metadata, file loading, keyword search
+- [ ] 02-02-PLAN.md -- MCP resources and tools: static resources (doc index, conventions), resource template (all docs by ID), search/list tools, replace Phase 1 placeholders
 
 ### Phase 3: TypeScript Extraction
 **Goal**: LLMs can look up TypeScript symbols, inspect class/interface members, and get type signatures from across the hoist-react framework
@@ -82,7 +82,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
-| 2. Documentation Serving | 0/TBD | Not started | - |
+| 2. Documentation Serving | 0/2 | In progress | - |
 | 3. TypeScript Extraction | 0/TBD | Not started | - |
 | 4. Developer Prompts | 0/TBD | Not started | - |
 
