@@ -7,7 +7,7 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
 ## Phases
 
 - [x] **Phase 1: MCP Server Foundation** - Working MCP server with stdio transport, proper isolation, and logging discipline
-- [ ] **Phase 2: Documentation Serving** - Package docs, concept docs, and conventions queryable by LLMs via MCP
+- [x] **Phase 2: Documentation Serving** - Package docs, concept docs, and conventions queryable by LLMs via MCP
 - [ ] **Phase 3: TypeScript Extraction** - Type lookups, symbol search, and class member inspection via ts-morph
 - [ ] **Phase 4: Developer Prompts** - Templated MCP Prompts for common Hoist development workflows
 
@@ -42,8 +42,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Document registry data layer: path utilities, document inventory with metadata, file loading, keyword search
-- [ ] 02-02-PLAN.md -- MCP resources and tools: static resources (doc index, conventions), resource template (all docs by ID), search/list tools, replace Phase 1 placeholders
+- [x] 02-01-PLAN.md -- Document registry data layer: path utilities, document inventory with metadata, file loading, keyword search
+- [x] 02-02-PLAN.md -- MCP resources and tools: static resources (doc index, conventions), resource template (all docs by ID), search/list tools, replace Phase 1 placeholders
 
 ### Phase 3: TypeScript Extraction
 **Goal**: LLMs can look up TypeScript symbols, inspect class/interface members, and get type signatures from across the hoist-react framework
@@ -82,7 +82,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
-| 2. Documentation Serving | 0/2 | In progress | - |
+| 2. Documentation Serving | 2/2 | ✓ Complete | 2026-02-13 |
 | 3. TypeScript Extraction | 0/TBD | Not started | - |
 | 4. Developer Prompts | 0/TBD | Not started | - |
 
