@@ -1,16 +1,16 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {log} from './util/logger.js';
-import {registerTools} from './tools/placeholder.js';
-import {registerResources} from './resources/placeholder.js';
+import {registerDocResources} from './resources/docs.js';
+import {registerDocTools} from './tools/docs.js';
 
 const server = new McpServer({
     name: 'hoist-react',
     version: '1.0.0'
 });
 
-registerTools(server);
-registerResources(server);
+registerDocResources(server);
+registerDocTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
