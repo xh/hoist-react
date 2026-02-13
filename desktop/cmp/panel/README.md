@@ -42,7 +42,7 @@ Panel's internal layout is a `vframe` (vertical flexbox). Content flows top-to-b
 │  tbar                    │
 ├──────────────────────────┤
 │                          │
-│  children (items/item)   │
+│  children (items/item)   │  ← contentBoxProps targets this area
 │                          │
 ├──────────────────────────┤
 │  bbar                    │
@@ -53,8 +53,61 @@ When no `width`, `height`, or `flex` is specified, Panel defaults to `flex: 'aut
 fill available space within its parent container.
 
 **Note:** Padding props (`padding`, `paddingTop`, etc.) are stripped from Panel. The header and
-toolbars are designed to be flush with the panel edges — use padding within your content components
-instead.
+toolbars are designed to be flush with the panel edges — use `contentBoxProps` to apply padding to
+the content area instead.
+
+## contentBoxProps
+
+The `contentBoxProps` prop provides direct control over the inner frame that wraps Panel's children.
+This frame sits between the top and bottom toolbars and receives the CSS class
+`xh-panel__content`. It defaults to `flexDirection: 'column'` with `flex: 'auto'` and
+`overflow: 'hidden'` (the latter two inherited from the `frame()` layout primitive), matching
+Panel's standard vertical layout.
+
+Use `contentBoxProps` to apply padding, change flex direction, enable scrolling, or add custom
+classes — without introducing extra wrapper elements or CSS overrides. Pass `className` within
+`contentBoxProps` to add custom CSS classes to the content frame — these are merged with the base
+`xh-panel__content` class.
+
+```typescript
+// Padded content — toolbars remain flush with panel edges
+panel({
+    title: 'Details',
+    contentBoxProps: {padding: true},
+    item: detailForm()
+})
+
+// Horizontal content layout
+panel({
+    title: 'Comparison',
+    contentBoxProps: {flexDirection: 'row', gap: 5},
+    items: [leftPane(), rightPane()]
+})
+
+// Scrollable content (via contentBoxProps)
+panel({
+    title: 'Log',
+    contentBoxProps: {overflow: 'auto'},
+    item: logOutput()
+})
+```
+
+This mirrors the `contentBoxProps` API available on `Card`.
+
+## scrollable
+
+The `scrollable` prop is a convenience shorthand that sets `overflowY: 'auto'` on the content
+area, keeping the header and toolbars fixed while content scrolls vertically. This is equivalent
+to `contentBoxProps: {overflowY: 'auto'}` but reads more naturally for the common case:
+
+```typescript
+// These are equivalent:
+panel({scrollable: true, item: longForm()})
+panel({contentBoxProps: {overflowY: 'auto'}, item: longForm()})
+```
+
+When both `scrollable` and `contentBoxProps.overflowY` are specified, `scrollable` takes
+precedence.
 
 ## Toolbars
 
@@ -420,6 +473,8 @@ layouts like dashboards.
 | `headerClassName` | `string` | CSS class for the header element. |
 | `tbar` | `ReactNode` | Top toolbar. Array auto-wrapped in `toolbar()`. |
 | `bbar` | `ReactNode` | Bottom toolbar. Array auto-wrapped in `toolbar()`. |
+| `contentBoxProps` | `BoxProps` | Props for the inner frame wrapping content items. |
+| `scrollable` | `boolean` | Allow the panel content area to scroll vertically. |
 | `mask` | `Some<TaskObserver> \| ReactElement \| boolean \| 'onLoad'` | Mask overlay specification. |
 | `loadingIndicator` | `Some<TaskObserver> \| ReactElement \| boolean \| 'onLoad'` | Loading indicator (same forms as `mask`). |
 | `model` | `PanelModel` | Explicit PanelModel for collapse/resize. |
