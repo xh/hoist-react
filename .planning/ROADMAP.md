@@ -55,12 +55,12 @@ Plans:
   3. LLM can list all properties and methods of a class or interface (e.g. GridModel members) with their types and descriptions
   4. MCP server cold start completes in under 5 seconds, with the ts-morph extraction pipeline using lazy initialization and eager indexing
   5. TypeDoc validation spike is completed with documented findings on whether TypeDoc can handle hoist-react's decorator patterns, barrel exports, and experimentalDecorators configuration
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- TypeScript extraction data layer: ts-morph Project wrapper, lazy init, eager symbol index, search, detail extraction, member listing
+- [ ] 03-02-PLAN.md -- MCP TypeScript tools: hoist-search-symbols, hoist-get-symbol, hoist-get-members tools, server wiring
+- [ ] 03-03-PLAN.md -- TypeDoc validation spike (HDOC-01): install TypeDoc temporarily, test against hoist-react patterns, document findings, remove
 
 ### Phase 4: Developer Prompts
 **Goal**: LLMs have access to templated prompts for common Hoist development tasks that combine documentation and type knowledge into actionable starting points
@@ -83,9 +83,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
 | 2. Documentation Serving | 2/2 | ✓ Complete | 2026-02-13 |
-| 3. TypeScript Extraction | 0/TBD | Not started | - |
+| 3. TypeScript Extraction | 0/3 | Planned | - |
 | 4. Developer Prompts | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-13*
+*Last updated: 2026-02-13 (Phase 3 planned)*
