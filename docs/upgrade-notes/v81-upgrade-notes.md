@@ -23,9 +23,35 @@ Before starting, ensure:
 
 ## Upgrade Steps
 
-### 1. Update `package.json`
+### 1. Update `hoistCoreVersion` in `gradle.properties`
 
-Bump hoist-react. Ensure hoist-core is also upgraded to >= v36.1.
+Hoist React v81 **requires** hoist-core >= v36.1. This version is set in your project's
+`gradle.properties` file and referenced by `build.gradle` as
+`implementation "io.xh:hoist-core:$hoistCoreVersion"`.
+
+**Find your current version:**
+```bash
+grep "hoistCoreVersion" gradle.properties
+```
+
+**File:** `gradle.properties`
+
+Before:
+```properties
+hoistCoreVersion=36.0.0
+```
+
+After:
+```properties
+hoistCoreVersion=36.1.0
+```
+
+Ensure you are using v36.1.0 or later. Hoist React v81 will not function correctly with older
+versions of hoist-core.
+
+### 2. Update `package.json`
+
+Bump hoist-react to v81.
 
 **File:** `package.json`
 
@@ -39,7 +65,7 @@ After:
 "@xh/hoist": "~81.0.2"
 ```
 
-### 2. Update Panel CSS Class References
+### 3. Update Panel CSS Class References
 
 The CSS class on Panel's outer structural wrapper has been renamed from `xh-panel__content` to
 `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
@@ -68,7 +94,7 @@ Review each usage carefully — if you were targeting the wrapper around a Panel
 the new `xh-panel__content` class (or `Panel.contentBoxProps`) may be more appropriate than
 `xh-panel__inner`.
 
-### 3. Update `HoistAuthModel.completeAuthAsync` Return Type
+### 4. Update `HoistAuthModel.completeAuthAsync` Return Type
 
 `HoistAuthModel.completeAuthAsync` now returns `Promise<IdentityInfo>` instead of
 `Promise<boolean>`. Similarly, `getAuthStatusFromServerAsync` and `loginWithCredentialsAsync`
@@ -105,7 +131,7 @@ For apps using OAuth clients (`MsalClient`, `AuthZeroClient`), those classes hav
 internally to return `IdentityInfo`. Check your `AuthModel` for any intermediate handling of
 the boolean return value.
 
-### 4. Rename Blueprint `Card` to `BpCard`
+### 5. Rename Blueprint `Card` to `BpCard`
 
 The Blueprint `Card` component export has been renamed to `BpCard` (and `card` factory to
 `bpCard`) to avoid collision with the new Hoist `Card` component.
@@ -137,6 +163,7 @@ Note: If your app does not directly use Blueprint's `Card` component, no change 
 
 After completing all steps:
 
+- [ ] `hoistCoreVersion` in `gradle.properties` is >= 36.1.0
 - [ ] `yarn install` completes without errors
 - [ ] `yarn lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
