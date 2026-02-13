@@ -11,7 +11,8 @@
  * index is eagerly built using AST-level methods for fast search without
  * per-query AST traversal. Detailed symbol info is extracted on-demand.
  */
-import {Project} from 'ts-morph';
+import {Project, Node, SyntaxKind} from 'ts-morph';
+import type {ClassDeclaration, SourceFile} from 'ts-morph';
 import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
@@ -353,19 +354,461 @@ export function searchSymbols(
 
 /**
  * Get detailed information about a specific symbol.
- * Stub -- implemented in Task 2.
+ *
+ * Finds the symbol in the index by exact name match (case-sensitive).
+ * If filePath is provided, filters to that specific file. If multiple matches
+ * and no filePath, returns the first exported match.
  */
 export function getSymbolDetail(name: string, filePath?: string): SymbolDetail | null {
-    return null;
+    ensureInitialized();
+
+    const entry = findIndexEntry(name, filePath);
+    if (!entry) return null;
+
+    try {
+        return extractSymbolDetail(entry);
+    } catch (e) {
+        log.warn(`Failed to extract detail for symbol "${name}": ${e}`);
+        return null;
+    }
 }
 
 /**
  * Get members (properties, methods, accessors) of a class or interface.
- * Stub -- implemented in Task 2.
+ *
+ * Returns null for symbol kinds other than class or interface.
  */
 export function getMembers(
     name: string,
     filePath?: string
 ): {symbol: SymbolDetail; members: MemberInfo[]} | null {
-    return null;
+    ensureInitialized();
+
+    const entry = findIndexEntry(name, filePath);
+    if (!entry) return null;
+    if (entry.kind !== 'class' && entry.kind !== 'interface') return null;
+
+    try {
+        const detail = extractSymbolDetail(entry);
+        if (!detail) return null;
+
+        const sourceFile = project!.getSourceFile(entry.filePath);
+        if (!sourceFile) return null;
+
+        let members: MemberInfo[];
+        if (entry.kind === 'class') {
+            members = extractClassMembers(sourceFile, name);
+        } else {
+            members = extractInterfaceMembers(sourceFile, name);
+        }
+
+        return {symbol: detail, members};
+    } catch (e) {
+        log.warn(`Failed to extract members for symbol "${name}": ${e}`);
+        return null;
+    }
+}
+
+//------------------------------------------------------------------
+// Internal helpers for detail extraction
+//------------------------------------------------------------------
+
+/**
+ * Find a symbol in the index by exact name.
+ * Prefers exported symbols when multiple matches exist and no filePath filter.
+ */
+function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
+    const key = name.toLowerCase();
+    const entries = symbolIndex!.get(key);
+    if (!entries) return null;
+
+    // Exact name match (case-sensitive)
+    const exact = entries.filter(e => e.name === name);
+    if (exact.length === 0) return null;
+
+    if (filePath) {
+        return exact.find(e => e.filePath === filePath) ?? null;
+    }
+
+    // Prefer exported symbols
+    return exact.find(e => e.isExported) ?? exact[0];
+}
+
+/**
+ * Extract detailed information from a symbol's AST node.
+ */
+function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
+    const sourceFile = project!.getSourceFile(entry.filePath);
+    if (!sourceFile) return null;
+
+    const base: Omit<SymbolDetail, 'signature' | 'jsDoc'> = {
+        name: entry.name,
+        kind: entry.kind,
+        filePath: entry.filePath,
+        sourcePackage: entry.sourcePackage,
+        isExported: entry.isExported
+    };
+
+    switch (entry.kind) {
+        case 'class':
+            return extractClassDetail(sourceFile, entry.name, base);
+        case 'interface':
+            return extractInterfaceDetail(sourceFile, entry.name, base);
+        case 'type':
+            return extractTypeAliasDetail(sourceFile, entry.name, base);
+        case 'function':
+            return extractFunctionDetail(sourceFile, entry.name, base);
+        case 'enum':
+            return extractEnumDetail(sourceFile, entry.name, base);
+        case 'const':
+            return extractConstDetail(sourceFile, entry.name, base);
+        default:
+            return null;
+    }
+}
+
+/** Extract JSDoc description from a node that supports getJsDocs(). */
+function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => string}>}): string {
+    try {
+        const docs = node.getJsDocs?.() ?? [];
+        return docs
+            .map(d => d.getDescription())
+            .join('\n')
+            .trim();
+    } catch {
+        return '';
+    }
+}
+
+/** Safely extract a type's text representation. */
+function safeGetTypeText(node: Node, enclosing?: Node): string {
+    try {
+        const type = node.getType();
+        return type.getText(enclosing ?? node);
+    } catch {
+        return 'unknown';
+    }
+}
+
+/**
+ * Extract the class declaration header (everything up to the opening brace).
+ */
+function extractClassSignature(cls: ClassDeclaration): string {
+    const text = cls.getText();
+    const braceIdx = text.indexOf('{');
+    if (braceIdx === -1) return text.trim();
+    return text.slice(0, braceIdx).trim();
+}
+
+function extractClassDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const cls = sourceFile.getClass(name);
+    if (!cls) return null;
+
+    const extendsClause = cls.getExtends()?.getText();
+    const implementsClauses = cls.getImplements().map(i => i.getText());
+    const decorators = cls.getDecorators().map(d => d.getName());
+
+    return {
+        ...base,
+        signature: extractClassSignature(cls),
+        jsDoc: extractJsDoc(cls),
+        ...(extendsClause ? {extends: extendsClause} : {}),
+        ...(implementsClauses.length > 0 ? {implements: implementsClauses} : {}),
+        ...(decorators.length > 0 ? {decorators} : {})
+    };
+}
+
+function extractInterfaceDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const iface = sourceFile.getInterface(name);
+    if (!iface) return null;
+
+    const extendsClauses = iface.getExtends().map(e => e.getText());
+    const text = iface.getText();
+    const braceIdx = text.indexOf('{');
+    const signature = braceIdx === -1 ? text.trim() : text.slice(0, braceIdx).trim();
+
+    return {
+        ...base,
+        signature,
+        jsDoc: extractJsDoc(iface),
+        ...(extendsClauses.length > 0 ? {extends: extendsClauses.join(', ')} : {})
+    };
+}
+
+function extractTypeAliasDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const typeAlias = sourceFile.getTypeAlias(name);
+    if (!typeAlias) return null;
+
+    return {
+        ...base,
+        signature: typeAlias.getText().trim(),
+        jsDoc: extractJsDoc(typeAlias)
+    };
+}
+
+function extractFunctionDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const func = sourceFile.getFunction(name);
+    if (!func) return null;
+
+    // Build signature from parameters and return type (without the body)
+    const params = func
+        .getParameters()
+        .map(p => {
+            const pName = p.getName();
+            const pType = safeGetTypeText(p);
+            const optional = p.hasQuestionToken() ? '?' : '';
+            return `${pName}${optional}: ${pType}`;
+        })
+        .join(', ');
+
+    let returnType: string;
+    try {
+        returnType = func.getReturnType().getText(func);
+    } catch {
+        returnType = 'unknown';
+    }
+
+    const exportPrefix = func.isExported() ? 'export ' : '';
+    const asyncPrefix = func.isAsync() ? 'async ' : '';
+    const typeParams = func.getTypeParameters();
+    const typeParamStr =
+        typeParams.length > 0 ? `<${typeParams.map(tp => tp.getText()).join(', ')}>` : '';
+
+    const signature = `${exportPrefix}${asyncPrefix}function ${name}${typeParamStr}(${params}): ${returnType}`;
+
+    return {
+        ...base,
+        signature,
+        jsDoc: extractJsDoc(func)
+    };
+}
+
+function extractEnumDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const enumDecl = sourceFile.getEnum(name);
+    if (!enumDecl) return null;
+
+    return {
+        ...base,
+        signature: enumDecl.getText().trim(),
+        jsDoc: extractJsDoc(enumDecl)
+    };
+}
+
+function extractConstDetail(
+    sourceFile: SourceFile,
+    name: string,
+    base: Omit<SymbolDetail, 'signature' | 'jsDoc'>
+): SymbolDetail | null {
+    const varDecl = sourceFile.getVariableDeclaration(name);
+    if (!varDecl) return null;
+
+    // Get the variable statement for JSDoc (JSDoc is on the statement, not the declaration)
+    const varStmt = varDecl.getFirstAncestorByKind(SyntaxKind.VariableStatement);
+
+    const declText = varDecl.getText().trim();
+    const exportPrefix = varStmt?.isExported() ? 'export const ' : 'const ';
+    const signature = `${exportPrefix}${declText}`;
+
+    return {
+        ...base,
+        signature: signature.length > 500 ? signature.slice(0, 500) + '...' : signature,
+        jsDoc: varStmt ? extractJsDoc(varStmt) : ''
+    };
+}
+
+//------------------------------------------------------------------
+// Member extraction
+//------------------------------------------------------------------
+
+/**
+ * Extract all members from a class declaration.
+ */
+function extractClassMembers(sourceFile: SourceFile, name: string): MemberInfo[] {
+    const cls = sourceFile.getClass(name);
+    if (!cls) return [];
+
+    const members: MemberInfo[] = [];
+
+    // Instance properties
+    for (const prop of cls.getInstanceProperties()) {
+        try {
+            const propName = prop.getName();
+            if (!propName) continue;
+
+            const isAccessor = Node.isGetAccessorDeclaration(prop);
+            const decorators = getNodeDecorators(prop);
+
+            members.push({
+                name: propName,
+                kind: isAccessor ? 'accessor' : 'property',
+                type: safeGetTypeText(prop, prop),
+                isStatic: false,
+                isOptional: Node.isPropertyDeclaration(prop) ? prop.hasQuestionToken() : undefined,
+                decorators,
+                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0])
+            });
+        } catch (e) {
+            log.warn(`Failed to extract instance property from ${name}: ${e}`);
+        }
+    }
+
+    // Static properties
+    for (const prop of cls.getStaticProperties()) {
+        try {
+            const propName = prop.getName();
+            if (!propName) continue;
+
+            const isAccessor = Node.isGetAccessorDeclaration(prop);
+            const decorators = getNodeDecorators(prop);
+
+            members.push({
+                name: propName,
+                kind: isAccessor ? 'accessor' : 'property',
+                type: safeGetTypeText(prop, prop),
+                isStatic: true,
+                decorators,
+                jsDoc: extractJsDoc(prop as Parameters<typeof extractJsDoc>[0])
+            });
+        } catch (e) {
+            log.warn(`Failed to extract static property from ${name}: ${e}`);
+        }
+    }
+
+    // Instance methods
+    for (const method of cls.getInstanceMethods()) {
+        try {
+            members.push(extractMethodInfo(method, false));
+        } catch (e) {
+            log.warn(`Failed to extract instance method from ${name}: ${e}`);
+        }
+    }
+
+    // Static methods
+    for (const method of cls.getStaticMethods()) {
+        try {
+            members.push(extractMethodInfo(method, true));
+        } catch (e) {
+            log.warn(`Failed to extract static method from ${name}: ${e}`);
+        }
+    }
+
+    return members;
+}
+
+/**
+ * Extract all members from an interface declaration.
+ */
+function extractInterfaceMembers(sourceFile: SourceFile, name: string): MemberInfo[] {
+    const iface = sourceFile.getInterface(name);
+    if (!iface) return [];
+
+    const members: MemberInfo[] = [];
+
+    // Properties
+    for (const prop of iface.getProperties()) {
+        try {
+            members.push({
+                name: prop.getName(),
+                kind: 'property',
+                type: safeGetTypeText(prop, prop),
+                isStatic: false,
+                isOptional: prop.hasQuestionToken(),
+                decorators: [],
+                jsDoc: extractJsDoc(prop)
+            });
+        } catch (e) {
+            log.warn(`Failed to extract interface property from ${name}: ${e}`);
+        }
+    }
+
+    // Methods
+    for (const method of iface.getMethods()) {
+        try {
+            const params = method.getParameters().map(p => ({
+                name: p.getName(),
+                type: safeGetTypeText(p, p)
+            }));
+
+            let returnType: string;
+            try {
+                returnType = method.getReturnType().getText(method);
+            } catch {
+                returnType = 'unknown';
+            }
+
+            members.push({
+                name: method.getName(),
+                kind: 'method',
+                type: returnType,
+                isStatic: false,
+                decorators: [],
+                jsDoc: extractJsDoc(method),
+                parameters: params,
+                returnType
+            });
+        } catch (e) {
+            log.warn(`Failed to extract interface method from ${name}: ${e}`);
+        }
+    }
+
+    return members;
+}
+
+/** Extract method info from a class method declaration. */
+function extractMethodInfo(
+    method: ReturnType<ClassDeclaration['getInstanceMethods']>[number],
+    isStatic: boolean
+): MemberInfo {
+    const params = method.getParameters().map(p => ({
+        name: p.getName(),
+        type: safeGetTypeText(p, p)
+    }));
+
+    let returnType: string;
+    try {
+        returnType = method.getReturnType().getText(method);
+    } catch {
+        returnType = 'unknown';
+    }
+
+    return {
+        name: method.getName(),
+        kind: 'method',
+        type: returnType,
+        isStatic,
+        decorators: getNodeDecorators(method),
+        jsDoc: extractJsDoc(method),
+        parameters: params,
+        returnType
+    };
+}
+
+/** Safely get decorator names from a node (not all node types support getDecorators). */
+function getNodeDecorators(node: unknown): string[] {
+    try {
+        const decorated = node as {getDecorators?: () => Array<{getName: () => string}>};
+        return decorated.getDecorators?.()?.map(d => d.getName()) ?? [];
+    } catch {
+        return [];
+    }
 }
