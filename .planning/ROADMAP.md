@@ -23,11 +23,11 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
   3. All server logging appears on stderr only -- no stdout contamination that would corrupt the JSON-RPC stream
   4. MCP server code and its Node-only dependencies are fully isolated from browser bundle entry points (importing from any hoist-react package does not pull in MCP dependencies)
   5. Server registers at least one placeholder tool/resource using `@modelcontextprotocol/sdk` with Zod schema validation
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md -- Infrastructure setup: install MCP dependencies, configure bundle isolation, create MCP tsconfig and stderr logger
+- [ ] 01-02-PLAN.md -- Server implementation: MCP server with placeholder tool/resource, CLI launcher, Claude Code connectivity verification
 
 ### Phase 2: Documentation Serving
 **Goal**: LLMs can discover, read, search, and filter all Hoist framework documentation through the MCP server
@@ -81,7 +81,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. MCP Server Foundation | 0/TBD | Not started | - |
+| 1. MCP Server Foundation | 0/2 | Planned | - |
 | 2. Documentation Serving | 0/TBD | Not started | - |
 | 3. TypeScript Extraction | 0/TBD | Not started | - |
 | 4. Developer Prompts | 0/TBD | Not started | - |
