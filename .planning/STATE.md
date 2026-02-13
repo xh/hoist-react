@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** LLMs assisting with Hoist development can access accurate, current framework knowledge so they produce correct Hoist-idiomatic code.
-**Current focus:** Phase 2 - Documentation Serving (COMPLETE)
+**Current focus:** Phase 3 - TypeScript Extraction (IN PROGRESS)
 
 ## Current Position
 
-Phase: 2 of 4 (Documentation Serving) -- COMPLETE
-Plan: 2 of 2 in current phase (all done)
-Status: Phase 2 complete, ready for Phase 3
-Last activity: 2026-02-13 -- Completed 02-02 (MCP Documentation Resources and Tools)
+Phase: 3 of 4 (TypeScript Extraction)
+Plan: 1 of 3 in current phase (03-01 complete)
+Status: Executing Phase 3
+Last activity: 2026-02-13 -- Completed 03-01 (TypeScript Extraction Data Layer)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 58%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 5min
-- Total execution time: 0.35 hours
+- Total plans completed: 5
+- Average duration: 5.6min
+- Total execution time: 0.47 hours
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [█████░░░░░] 50%
 |-------|-------|-------|----------|
 | 01-mcp-server-foundation | 2 | 12min | 6min |
 | 02-documentation-serving | 2 | 9min | 4.5min |
+| 03-typescript-extraction | 1 | 7min | 7min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (4min), 01-02 (8min), 02-01 (3min), 02-02 (6min)
+- Last 5 plans: 01-02 (8min), 02-01 (3min), 02-02 (6min), 03-01 (7min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -51,6 +52,9 @@ Recent decisions affecting current work:
 - 02-02: Used {+docId} RFC 6570 reserved expansion for slash-containing doc IDs in URI template
 - 02-02: Relocated hoist-ping into mcp/tools/docs.ts to allow clean placeholder deletion
 - 02-02: Category-grouped output format for list-docs tool for LLM scanability
+- 03-01: AST-level methods for index building -- avoids getExportedDeclarations() ~1000x performance trap
+- 03-01: Lazy Project initialization -- first TS tool call pays init cost, server starts instantly
+- 03-01: Index keyed by lowercase symbol name for case-insensitive search
 
 ### Pending Todos
 
@@ -63,5 +67,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 02-02-PLAN.md (Phase 2 complete)
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None
