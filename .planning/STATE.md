@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** LLMs assisting with Hoist development can access accurate, current framework knowledge so they produce correct Hoist-idiomatic code.
-**Current focus:** Phase 3 - TypeScript Extraction (IN PROGRESS)
+**Current focus:** Phase 3 - TypeScript Extraction (COMPLETE)
 
 ## Current Position
 
 Phase: 3 of 4 (TypeScript Extraction)
-Plan: 2 of 3 in current phase (03-01, 03-03 complete; 03-02 pending)
-Status: Executing Phase 3
-Last activity: 2026-02-13 -- Completed 03-03 (TypeDoc Validation Spike)
+Plan: 3 of 3 in current phase (03-01, 03-02, 03-03 all complete)
+Status: Phase 3 Complete
+Last activity: 2026-02-13 -- Completed 03-02 (TypeScript MCP Tools)
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 5.7min
-- Total execution time: 0.57 hours
+- Total plans completed: 7
+- Average duration: 5.1min
+- Total execution time: 0.60 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [███████░░░] 67%
 |-------|-------|-------|----------|
 | 01-mcp-server-foundation | 2 | 12min | 6min |
 | 02-documentation-serving | 2 | 9min | 4.5min |
-| 03-typescript-extraction | 2 | 14min | 7min |
+| 03-typescript-extraction | 3 | 16min | 5.3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (3min), 02-02 (6min), 03-01 (7min), 03-03 (7min)
-- Trend: stable
+- Last 5 plans: 02-02 (6min), 03-01 (7min), 03-03 (7min), 03-02 (2min)
+- Trend: stable (03-02 fast -- thin tool wiring layer)
 
 *Updated after each plan completion*
 
@@ -58,6 +58,9 @@ Recent decisions affecting current work:
 - 03-03: TypeDoc PARTIALLY VIABLE -- barrel exports/enums/paths pass but decorator annotations absent from output
 - 03-03: ts-morph confirmed as sole extraction source for MCP tools (TypeDoc lacks decorator metadata)
 - 03-03: TypeDoc removed as dependency -- not needed for current MCP server functionality
+- 03-02: Markdown-header text formatting for LLM-optimized tool output (not raw JSON)
+- 03-02: Type strings truncated at 200 chars for readability; file paths repo-relative
+- 03-02: Members grouped by category (Properties/Methods/Static) with empty sections skipped
 
 ### Pending Todos
 
@@ -70,5 +73,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 03-03-PLAN.md (TypeDoc spike)
+Stopped at: Completed 03-02-PLAN.md (TypeScript MCP Tools)
 Resume file: None
