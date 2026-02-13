@@ -1,5 +1,12 @@
 # Changelog
 
+## 82.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
+  `.date` rather than passing through `new Date()`.
+
 ## 81.0.2 - 2026-02-12
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
@@ -35,8 +42,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
-  `.date` rather than passing through `new Date()`.
 * Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
 * Fixed bug where attempting to access validation errors on subforms would throw.
 
