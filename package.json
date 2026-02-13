@@ -116,8 +116,10 @@
     "react-dom": "~18.2.0",
     "stylelint": "16.x",
     "stylelint-config-standard-scss": "16.x",
+    "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
     "type-fest": "4.x",
+    "typedoc": "^0.28.16",
     "typescript": "~5.9.2",
     "zod": "^4.3.6"
   },
