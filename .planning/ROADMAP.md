@@ -69,10 +69,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. LLM can invoke at least 3 MCP Prompts for common Hoist development tasks (e.g. "Create a grid panel", "Add a form with validation", "Build a tab container")
   2. Prompts produce structured output that references relevant package documentation and type signatures, giving the LLM actionable context for code generation
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md -- Prompt utilities and registration scaffold: shared helpers for doc loading, section extraction, type formatting; registerPrompts(server) wiring
+- [ ] 04-02-PLAN.md -- Prompt implementations: create-grid, create-form, create-tab-container builders with full content composition
 
 ## Progress
 
@@ -84,8 +85,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
 | 2. Documentation Serving | 2/2 | ✓ Complete | 2026-02-13 |
 | 3. TypeScript Extraction | 3/3 | ✓ Complete | 2026-02-13 |
-| 4. Developer Prompts | 0/TBD | Not started | - |
+| 4. Developer Prompts | 0/2 | In Progress | - |
 
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-13 (Phase 3 complete)*
+*Last updated: 2026-02-13 (Phase 4 planned)*
