@@ -31,9 +31,6 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed `LocalDate.valueOf()` to return a numeric timestamp instead of an ISO string. This prevents
-  subtle gotchas where `new Date(localDate)` produced a UTC-midnight Date and mixed comparisons with
-  JS Dates returned unexpected results.
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
 * Fixed bug where inline editable `Grid` with `groupDisplayType` other than `groupRows` would throw.
