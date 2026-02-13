@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** LLMs assisting with Hoist development can access accurate, current framework knowledge so they produce correct Hoist-idiomatic code.
-**Current focus:** Phase 1 - MCP Server Foundation
+**Current focus:** Phase 2 - Documentation Serving
 
 ## Current Position
 

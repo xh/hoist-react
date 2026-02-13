@@ -6,7 +6,7 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
 
 ## Phases
 
-- [ ] **Phase 1: MCP Server Foundation** - Working MCP server with stdio transport, proper isolation, and logging discipline
+- [x] **Phase 1: MCP Server Foundation** - Working MCP server with stdio transport, proper isolation, and logging discipline
 - [ ] **Phase 2: Documentation Serving** - Package docs, concept docs, and conventions queryable by LLMs via MCP
 - [ ] **Phase 3: TypeScript Extraction** - Type lookups, symbol search, and class member inspection via ts-morph
 - [ ] **Phase 4: Developer Prompts** - Templated MCP Prompts for common Hoist development workflows
@@ -26,8 +26,8 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Infrastructure setup: install MCP dependencies, configure bundle isolation, create MCP tsconfig and stderr logger
-- [ ] 01-02-PLAN.md -- Server implementation: MCP server with placeholder tool/resource, CLI launcher, Claude Code connectivity verification
+- [x] 01-01-PLAN.md -- Infrastructure setup: install MCP dependencies, configure bundle isolation, create MCP tsconfig and stderr logger
+- [x] 01-02-PLAN.md -- Server implementation: MCP server with placeholder tool/resource, CLI launcher, Claude Code connectivity verification
 
 ### Phase 2: Documentation Serving
 **Goal**: LLMs can discover, read, search, and filter all Hoist framework documentation through the MCP server
@@ -81,11 +81,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. MCP Server Foundation | 0/2 | Planned | - |
+| 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
 | 2. Documentation Serving | 0/TBD | Not started | - |
 | 3. TypeScript Extraction | 0/TBD | Not started | - |
 | 4. Developer Prompts | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-12*
+*Last updated: 2026-02-13*
