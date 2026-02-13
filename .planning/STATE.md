@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 ## Current Position
 
 Phase: 3 of 4 (TypeScript Extraction)
-Plan: 1 of 3 in current phase (03-01 complete)
+Plan: 2 of 3 in current phase (03-01, 03-03 complete; 03-02 pending)
 Status: Executing Phase 3
-Last activity: 2026-02-13 -- Completed 03-01 (TypeScript Extraction Data Layer)
+Last activity: 2026-02-13 -- Completed 03-03 (TypeDoc Validation Spike)
 
-Progress: [██████░░░░] 58%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 5.6min
-- Total execution time: 0.47 hours
+- Total plans completed: 6
+- Average duration: 5.7min
+- Total execution time: 0.57 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [██████░░░░] 58%
 |-------|-------|-------|----------|
 | 01-mcp-server-foundation | 2 | 12min | 6min |
 | 02-documentation-serving | 2 | 9min | 4.5min |
-| 03-typescript-extraction | 1 | 7min | 7min |
+| 03-typescript-extraction | 2 | 14min | 7min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (8min), 02-01 (3min), 02-02 (6min), 03-01 (7min)
+- Last 5 plans: 02-01 (3min), 02-02 (6min), 03-01 (7min), 03-03 (7min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -55,6 +55,9 @@ Recent decisions affecting current work:
 - 03-01: AST-level methods for index building -- avoids getExportedDeclarations() ~1000x performance trap
 - 03-01: Lazy Project initialization -- first TS tool call pays init cost, server starts instantly
 - 03-01: Index keyed by lowercase symbol name for case-insensitive search
+- 03-03: TypeDoc PARTIALLY VIABLE -- barrel exports/enums/paths pass but decorator annotations absent from output
+- 03-03: ts-morph confirmed as sole extraction source for MCP tools (TypeDoc lacks decorator metadata)
+- 03-03: TypeDoc removed as dependency -- not needed for current MCP server functionality
 
 ### Pending Todos
 
@@ -62,10 +65,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 3: TypeDoc validation spike (HDOC-01) may fail -- if TypeDoc cannot handle hoist-react's decorator patterns, ts-morph becomes the single extraction source for both MCP and any future human docs. Not blocking until Phase 3.
+- (RESOLVED) TypeDoc validation spike (HDOC-01): TypeDoc partially works but cannot provide decorator annotations. ts-morph is the sole extraction source. Not a blocker.
 
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 03-01-PLAN.md
+Stopped at: Completed 03-03-PLAN.md (TypeDoc spike)
 Resume file: None
