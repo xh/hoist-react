@@ -154,7 +154,7 @@ export function parseFieldValue(
             val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
             return val.toString();
         case 'date':
-            return isDate(val) ? val : new Date(val);
+            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
         case 'localDate':
             return isLocalDate(val) ? val : LocalDate.get(val);
     }

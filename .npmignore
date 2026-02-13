@@ -1,10 +1,32 @@
-node_modules
-.editorconfig
-eslint.config.js
+# Development tooling directories
+.claude
 .github
-.stylelintrc
+.husky
+.idea
 .yarn
-.yarnrc
-webpack.config.intellij.js
+node_modules
+scripts
+
+# Development configuration
 *.log
 *.tgz
+.DS_Store
+.editorconfig
+.gitignore
+.npmrc
+.nvmrc
+.prettierignore
+.prettierrc.json
+.stylelintrc
+.yarnrc
+context7.json
+eslint.config.js
+tsconfig.tsbuildinfo
+webpack.config.intellij.js
+yarn.lock
+
+# Development documentation
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+SECURITY.md

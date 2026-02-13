@@ -46,6 +46,7 @@ See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracki
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md) |
 | Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
 | Configure local development environment | [Development Environment](./development-environment.md) |
+| Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
 
 ## Package Documentation
 
@@ -109,6 +110,24 @@ for planned coverage:
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
 
+## Upgrade Notes
+
+Step-by-step guides for upgrading applications across major hoist-react versions, with
+breaking changes, before/after code examples, and verification checklists.
+
+> **Always check the latest version of these notes on the
+> [`develop` branch on GitHub](https://github.com/xh/hoist-react/tree/develop/docs/upgrade-notes).**
+> Upgrade notes are refined after release as developers report issues and new patterns emerge. The
+> copy bundled in your installed hoist-react package may be outdated — the GitHub version is the
+> most authoritative source.
+
+| Version | Released | Difficulty | Key Changes |
+|---------|----------|------------|-------------|
+| [v81](./upgrade-notes/v81-upgrade-notes.md) | _unreleased_ | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
+| [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
+| [v79](./upgrade-notes/v79-upgrade-notes.md) | 2026-01-05 | 🟠 MEDIUM | Blueprint 5→6, `moduleResolution: "bundler"`, `loadModel` → `loadObserver` |
+| [v78](./upgrade-notes/v78-upgrade-notes.md) | 2025-11-21 | 🎉 TRIVIAL | `GridModel.setColumnState` behavior change |
+
 ## Additional Resources
 
 - [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns, coding
@@ -116,5 +135,7 @@ for planned coverage:
 - [`README-ROADMAP.md`](./README-ROADMAP.md) — Documentation coverage tracking, conventions,
   and progress notes
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes
+- [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
+  section headers
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
   patterns and components
