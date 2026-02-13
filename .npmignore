@@ -4,6 +4,8 @@
 .husky
 .idea
 .yarn
+bin
+mcp
 node_modules
 scripts
 
