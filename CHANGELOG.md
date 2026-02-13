@@ -1,6 +1,21 @@
 # Changelog
 
-## 81.0.0-SNAPSHOT - unreleased
+## 81.0.2 - 2026-02-12
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v81-upgrade-notes.md`](docs/upgrade-notes/v81-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Requires hoist-core `v36.1` or greater.
+* Renamed the CSS class on Panel's outer structural wrapper from `xh-panel__content` to
+  `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
+  content items (the target of `contentBoxProps`). Update any app CSS selectors targeting the old
+  `xh-panel__content` class accordingly.
+* Changed the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
+  a `boolean`. For most apps this will require a trivial change to the signature of the
+  implementation of `HoistAuthModel.completeAuthAsync`.
+* Renamed Blueprint `Card` exports to `BpCard` and `bpCard`.
 
 ### 🎁 New Features
 
@@ -14,20 +29,9 @@
   `Card`.
 * Added `scrollable` prop to desktop `Panel`, matching the existing mobile `Panel` API. Sets
   `overflowY: 'auto'` on the content area.
-* Layout props `padding`, `margin` (and their directional variants), and `gap` now accept a boolean
-  shorthand: `true` resolves to the standard app padding CSS variable (`--xh-pad-px`, default 10px),
-  `false` is treated as unset.
-
-### 💥 Breaking Changes
-* Requires hoist-core `v36.1` or greater.
-* The CSS class on Panel's outer structural wrapper has been renamed from `xh-panel__content` to
-  `xh-panel__inner`. The `xh-panel__content` class is now used on the new inner frame wrapping
-  content items (the target of `contentBoxProps`). Update any app CSS selectors targeting the old
-  `xh-panel__content` class accordingly.
-* Change to the signatures of some `HoistAuthModel` methods to return `IdentityInfo` rather than
-  a `boolean`.  For most apps this will require a trivial change to the signature of the
-  implementation of `HoistAuthModel.completeAuthAsync`.
-* Renamed Blueprint `Card` exports to `BpCard` and `bpCard`.
+* Enhanced layout props `padding`, `margin` (and their directional variants), and `gap` to accept a
+  boolean shorthand: `true` - resolves to the standard app padding CSS variable (`--xh-pad-px`,
+  default 10px), with `false` treated as unset.
 
 ### 🐞 Bug Fixes
 
@@ -44,19 +48,22 @@
 
 ### ⚙️ Technical
 
-* Improve the efficiency of initialization by reducing the number of server requests required
-  to get user identity.
+* Improved the efficiency of initialization by reducing the number of fetch requests required to
+  load user identity.
 
 ## 80.0.1 - 2026-01-28
 
 ### ⚙️ Technical
 
-* New properties `Cube.lastUpdated` and `View.cubeUpdated` support more efficient updating of
+* Added `Cube.lastUpdated` and `View.cubeUpdated` properties to support more efficient updating of
   connected cube views.
 
 ## 80.0.0 - 2026-01-27
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v80-upgrade-notes.md`](docs/upgrade-notes/v80-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Modified several CSS classes related to `FormField` to better follow BEM conventions.
     * ⚠️The commonly targeted `xh-form-field-label` class is now `xh-form-field__label`, although
@@ -90,7 +97,7 @@
 * Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
 * Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
   `startWord`, or `any`.
-* Added support for reconnecting a `View` to its associated `Cube`
+* Added support for reconnecting a `View` to its associated `Cube`.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -124,11 +131,14 @@
 * Added a direct dependency and forced resolution to pin to `jquery@3.x`. This is a transitive
   dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
   causing a break if upgraded to jQuery's new 4.x release.
-  * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
+    * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
 
 ## 79.0.0 - 2026-01-05
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM)
+
+See [`docs/upgrade-notes/v79-upgrade-notes.md`](docs/upgrade-notes/v79-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 Note that a server-side upgrade to `hoist-core >= 35` is recommended to support several changes in
 this release, but is not strictly required.
@@ -208,7 +218,7 @@ this release, but is not strictly required.
 ### 🐞 Bug Fixes
 
 * Fixed Highcharts timezone handling regression from version 77.
-    * Note that Highcharts has deprecated the `time.useUTC` option and its functioning seem
+    * Note that Highcharts has deprecated the `time.useUTC` option and its functioning seems
       suspect - set `time.timezone` instead. See https://api.highcharts.com/highcharts/time.useUTC.
 
 ### ⚙️ Technical
@@ -233,7 +243,10 @@ this release, but is not strictly required.
 
 ## 78.0.0 - 2025-11-21
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL)
+
+See [`docs/upgrade-notes/v78-upgrade-notes.md`](docs/upgrade-notes/v78-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `GridModel.setColumnState` no longer patches existing column state, but instead replaces it
   wholesale. Applications that were relying on the prior patching behavior will need to
@@ -250,7 +263,7 @@ this release, but is not strictly required.
 ### 🐞 Bug Fixes
 
 * Fixed `GridModel` not appending children to the parents correctly when recs have numeric IDs.
-* Fixed issue where newly added columns appearing in the Displayed Columns section of the column
+* Fixed issue where newly added columns would appear in the Displayed Columns section of the column
   chooser after loading grid state that was persisted before the columns were added to the grid.
 * Removed a minor Cube `Query` annoyance - `dimensions` are now automatically added to the `fields`
   list and do not need to be manually repeated there.
@@ -275,10 +288,10 @@ this release, but is not strictly required.
 
 ### 🐞 Bug Fixes
 
-* Improved `StoreRecord.isModified` to no return `true` after a field has been edited but then
+* Improved `StoreRecord.isModified` to not return `true` after a field has been edited but then
   returned to its original value in a subsequent edit.
 * Restored support for `TabModel.content` set to `null`, to support dynamic tab content.
-* Fixed and issue where stray context menus could appear when clicking on column group headers and
+* Fixed an issue where stray context menus could appear when clicking on column group headers and
   other grid empty space.
 
 ## 77.0.1 - 2025-10-29
@@ -307,7 +320,7 @@ this release, but is not strictly required.
 
 ### ⚙️ Technical
 
-* Support Grails 7 service name conventions in admin client (backward compatible)
+* Added support for Grails 7 service name conventions in admin client (backward compatible).
 
 ## 76.2.0 - 2025-10-22
 
