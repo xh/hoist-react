@@ -1,6 +1,6 @@
 # Changelog
 
-## 81.0.1 - 2026-02-12
+## 81.0.2 - 2026-02-12
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 

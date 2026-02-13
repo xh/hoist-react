@@ -1,6 +1,6 @@
 # Hoist React v81 Upgrade Notes
 
-> **From:** v80.x → v81.0.1 | **Released:** 2026-02-12 | **Difficulty:** 🟢 LOW
+> **From:** v80.x → v81.0.2 | **Released:** 2026-02-12 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
@@ -36,7 +36,7 @@ Before:
 
 After:
 ```json
-"@xh/hoist": "~81.0.1"
+"@xh/hoist": "~81.0.2"
 ```
 
 ### 2. Update Panel CSS Class References
