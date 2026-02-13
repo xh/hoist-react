@@ -3,6 +3,7 @@ import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {log} from './util/logger.js';
 import {registerDocResources} from './resources/docs.js';
 import {registerDocTools} from './tools/docs.js';
+import {registerTsTools} from './tools/typescript.js';
 
 const server = new McpServer({
     name: 'hoist-react',
@@ -11,6 +12,7 @@ const server = new McpServer({
 
 registerDocResources(server);
 registerDocTools(server);
+registerTsTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
