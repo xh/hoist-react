@@ -10,9 +10,11 @@ apply.
 ```markdown
 ## {VERSION} - {YYYY-MM-DD}
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: {RATING})
 
-* {Introductory bullet with overview and link to upgrade notes}
+See [`docs/upgrade-notes/v{NN}-upgrade-notes.md`](docs/upgrade-notes/v{NN}-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 * {Required change 1}
 * {Required change 2}
     * {Sub-detail if needed}
@@ -87,12 +89,20 @@ Bad:
 
 ## Breaking Changes Section
 
-For major versions, this section should:
+**Every major version with breaking changes MUST include all of the following.** Do not skip or
+reorder these requirements:
 
-1. **List** every required app-level change as a separate bullet
-2. **Be specific** — name exact classes, methods, and config keys
-3. **Include** difficulty-rated sub-headers when useful (see Difficulty Ratings below)
-4. **Link** to upgrade notes when available: `docs/upgrade-notes/v{NN}-upgrade-notes.md`
+1. **Difficulty rating in the header** — append `(upgrade difficulty: {RATING})` to the section
+   header. See Difficulty Ratings below for the rating scale.
+2. **Upgrade notes link as a standalone sentence** — immediately after the header (before any
+   bullets), include a sentence linking to the upgrade notes file. This is **not** a bullet point —
+   it is a standalone paragraph. Use this exact format:
+   ```markdown
+   See [`docs/upgrade-notes/v{NN}-upgrade-notes.md`](docs/upgrade-notes/v{NN}-upgrade-notes.md) for
+   detailed, step-by-step upgrade instructions with before/after code examples.
+   ```
+3. **List** every required app-level change as a separate bullet
+4. **Be specific** — name exact classes, methods, and config keys
 5. **Link** to relevant framework upgrade guides (e.g. Blueprint, AG Grid) when applicable
 
 Each bullet should be concise (1-2 lines). The upgrade notes file handles expanded detail with
