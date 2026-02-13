@@ -2,6 +2,13 @@
 
 ## 82.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `description` property to `Field` and `Column`. `Column.description` defaults from
+  `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
+  when those are not explicitly set, providing a single point of configuration for supplementary
+  descriptive text that flows from the data layer through to the grid UI.
+
 ### 🐞 Bug Fixes
 
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
