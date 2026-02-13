@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "hoist-react": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "tsx",
+        "mcp/server.ts"
+      ],
+      "env": {}
+    }
+  }
+}

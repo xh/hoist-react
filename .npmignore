@@ -3,6 +3,7 @@
 .github
 .husky
 .idea
+.planning
 .yarn
 bin
 mcp
@@ -15,6 +16,7 @@ scripts
 .DS_Store
 .editorconfig
 .gitignore
+.mcp.json
 .npmrc
 .nvmrc
 .prettierignore
