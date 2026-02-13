@@ -115,6 +115,12 @@ for planned coverage:
 Step-by-step guides for upgrading applications across major hoist-react versions, with
 breaking changes, before/after code examples, and verification checklists.
 
+> **Always check the latest version of these notes on the
+> [`develop` branch on GitHub](https://github.com/xh/hoist-react/tree/develop/docs/upgrade-notes).**
+> Upgrade notes are refined after release as developers report issues and new patterns emerge. The
+> copy bundled in your installed hoist-react package may be outdated — the GitHub version is the
+> most authoritative source.
+
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
 | [v81](./upgrade-notes/v81-upgrade-notes.md) | _unreleased_ | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
