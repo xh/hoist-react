@@ -8,7 +8,7 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
 
 - [x] **Phase 1: MCP Server Foundation** - Working MCP server with stdio transport, proper isolation, and logging discipline
 - [x] **Phase 2: Documentation Serving** - Package docs, concept docs, and conventions queryable by LLMs via MCP
-- [ ] **Phase 3: TypeScript Extraction** - Type lookups, symbol search, and class member inspection via ts-morph
+- [x] **Phase 3: TypeScript Extraction** - Type lookups, symbol search, and class member inspection via ts-morph
 - [ ] **Phase 4: Developer Prompts** - Templated MCP Prompts for common Hoist development workflows
 
 ## Phase Details
@@ -58,9 +58,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- TypeScript extraction data layer: ts-morph Project wrapper, lazy init, eager symbol index, search, detail extraction, member listing
-- [ ] 03-02-PLAN.md -- MCP TypeScript tools: hoist-search-symbols, hoist-get-symbol, hoist-get-members tools, server wiring
-- [ ] 03-03-PLAN.md -- TypeDoc validation spike (HDOC-01): install TypeDoc temporarily, test against hoist-react patterns, document findings, remove
+- [x] 03-01-PLAN.md -- TypeScript extraction data layer: ts-morph Project wrapper, lazy init, eager symbol index, search, detail extraction, member listing
+- [x] 03-02-PLAN.md -- MCP TypeScript tools: hoist-search-symbols, hoist-get-symbol, hoist-get-members tools, server wiring
+- [x] 03-03-PLAN.md -- TypeDoc validation spike (HDOC-01): install TypeDoc temporarily, test against hoist-react patterns, document findings, remove
 
 ### Phase 4: Developer Prompts
 **Goal**: LLMs have access to templated prompts for common Hoist development tasks that combine documentation and type knowledge into actionable starting points
@@ -83,9 +83,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
 | 2. Documentation Serving | 2/2 | ✓ Complete | 2026-02-13 |
-| 3. TypeScript Extraction | 0/3 | Planned | - |
+| 3. TypeScript Extraction | 3/3 | ✓ Complete | 2026-02-13 |
 | 4. Developer Prompts | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-13 (Phase 3 planned)*
+*Last updated: 2026-02-13 (Phase 3 complete)*
