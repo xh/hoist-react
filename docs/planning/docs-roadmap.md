@@ -49,7 +49,7 @@ Smaller packages that provide important but more specialized functionality.
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
 | `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../../icon/README.md) |
-| `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Draft](../../security/README.md) |
+| `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | [Draft](../../kit/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | [Draft](../../inspector/README.md) |
 
@@ -160,7 +160,7 @@ _For detailed session-by-session notes, see [docs-roadmap-log.md](./docs-roadmap
 
 ### Status Overview
 - **Priority 1–3 (Core, Components, Utilities):** All complete (Done)
-- **Priority 4 (Supporting Packages):** icon Done, security/kit/inspector in Draft
+- **Priority 4 (Supporting Packages):** icon/security Done, kit/inspector in Draft
 - **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence complete;
   Authorization, Admin Console, Routing, Error Handling, Testing, Version Compatibility planned
 - **Documentation index** (`docs/README.md`) created and maintained alongside package READMEs

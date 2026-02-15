@@ -306,3 +306,14 @@
   - Added pitfall: using non-FontAwesome icon libraries (stick with FA for cohesive look and feel)
   - Added pitfall: referencing icons from wrong FA version (use version picker on FA site)
   - Added FA icon search links (latest and v6)
+- Reviewed and refined `/security/README.md` (Draft → Done):
+  - Added "Selected Username" section documenting `getSelectedUsername()`/`setSelectedUsername()`
+    public API on BaseOAuthClient
+  - Added intro note about the `loadConfigAsync()` / `xh/authConfig` pattern for loading OAuth
+    client config from the server rather than hardcoding
+  - Added pitfall: MSAL requires `blank.html` for silent iframe requests — provided by
+    `hoist-react/public/` and copied automatically by Hoist Dev Utils
+  - Enhanced popup blockers pitfall with Chrome `PopupsAllowedForUrls` enterprise policy
+  - Enhanced third-party cookie pitfall with Chrome 142+ Local Network Access restrictions
+    and `LocalNetworkAccessAllowedForUrls` enterprise policy (affects MSAL `ssoSilent()`)
+  - Linked upstream MSAL issue #8100 for LNA details

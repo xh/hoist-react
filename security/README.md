@@ -1,6 +1,3 @@
-> **Status: DRAFT** — This document is awaiting review by an XH developer. Content may be
-> incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
 # Security
 
 This package provides OAuth 2.0 client abstractions for authenticating Hoist applications with
@@ -11,6 +8,12 @@ For the full authentication flow — including `HoistAuthModel`, server-side tok
 `IdentityService`, and role-based access — see the [Authentication](../docs/authentication.md)
 concept doc. This package README focuses on the OAuth client classes themselves and their
 configuration.
+
+In practice, most OAuth client config (client IDs, domains, authorities, audiences) is not
+hard-coded. The app's `HoistAuthModel` calls `loadConfigAsync()` to fetch settings from the
+server's `xh/authConfig` endpoint — a whitelisted endpoint available before authentication — and
+spreads those values into the client constructor. This keeps sensitive and environment-specific
+settings server-managed. See the Authentication concept doc for the full pattern.
 
 ## Architecture
 
@@ -158,6 +161,13 @@ const oAuthClient = new MsalClient({
 });
 ```
 
+## Selected Username
+
+`BaseOAuthClient` exposes `getSelectedUsername()` and `setSelectedUsername()` to persist the last
+authenticated OAuth username in localStorage. This facilitates more efficient re-login via SSO or
+account selection. The value is set automatically on successful authentication and cleared on
+logout. Note this is the OAuth-level username and is not necessarily the Hoist application username.
+
 ## Access Tokens
 
 Both clients support loading multiple named access tokens via the `accessTokens` config. Each entry
@@ -206,11 +216,33 @@ block popup windows by default. If using `loginMethod: 'POPUP'`, users may need 
 allow popups for the application's domain. The clients provide user-facing error messages when
 popup blocking is detected.
 
-### Third-Party Cookie Requirements for MSAL
+Enterprise deployments can use Chrome's
+[`PopupsAllowedForUrls`](https://chromeenterprise.google/policies/popups-allowed-for-urls/)
+managed policy to allowlist the OAuth provider's login domain (e.g.
+`https://login.microsoftonline.com` or `https://[*.]auth0.com`), ensuring popup-based flows work
+without user intervention.
+
+### Third-Party Cookie and Local Network Access Requirements for MSAL
 
 MSAL's `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` features rely on hidden iframes that
 require third-party cookies. If your users have third-party cookies blocked, these features will
 fail silently and fall back to interactive login.
+
+Starting with Chrome 142 (October 2025), Chrome's Local Network Access restrictions can also block
+MSAL's hidden iframe flows, causing `ssoSilent()` to fail with a timeout error. Enterprise
+deployments should configure the
+[`LocalNetworkAccessAllowedForUrls`](https://chromeenterprise.google/policies/local-network-access-allowed-for-urls/)
+managed policy to allowlist the application's origin. See
+[MSAL issue #8100](https://github.com/azuread/microsoft-authentication-library-for-js/issues/8100)
+for details.
+
+### MSAL Requires `blank.html` for Silent Requests
+
+MSAL's silent token acquisition uses a hidden iframe that needs a valid redirect URI. Hoist provides
+a minimal `public/blank.html` for this purpose — it is copied into your app's build output
+automatically by Hoist Dev Utils. The `BaseOAuthClient.blankUrl` getter resolves this as
+`${origin}/public/blank.html`. No app-level setup is required, but be aware this file must be
+reachable at runtime for silent token refresh to work.
 
 ### Redirect State Loss
 
