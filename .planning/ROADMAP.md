@@ -9,7 +9,7 @@ This roadmap delivers an embedded MCP server in hoist-react that gives LLMs accu
 - [x] **Phase 1: MCP Server Foundation** - Working MCP server with stdio transport, proper isolation, and logging discipline
 - [x] **Phase 2: Documentation Serving** - Package docs, concept docs, and conventions queryable by LLMs via MCP
 - [x] **Phase 3: TypeScript Extraction** - Type lookups, symbol search, and class member inspection via ts-morph
-- [ ] **Phase 4: Developer Prompts** - Templated MCP Prompts for common Hoist development workflows
+- [x] **Phase 4: Developer Prompts** - Templated MCP Prompts for common Hoist development workflows
 
 ## Phase Details
 
@@ -72,8 +72,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Prompt utilities and registration scaffold: shared helpers for doc loading, section extraction, type formatting; registerPrompts(server) wiring
-- [ ] 04-02-PLAN.md -- Prompt implementations: create-grid, create-form, create-tab-container builders with full content composition
+- [x] 04-01-PLAN.md -- Prompt utilities and registration scaffold: shared helpers for doc loading, section extraction, type formatting; registerPrompts(server) wiring
+- [x] 04-02-PLAN.md -- Prompt implementations: create-grid, create-form, create-tab-container builders with full content composition
 
 ## Progress
 
@@ -85,8 +85,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. MCP Server Foundation | 2/2 | ✓ Complete | 2026-02-13 |
 | 2. Documentation Serving | 2/2 | ✓ Complete | 2026-02-13 |
 | 3. TypeScript Extraction | 3/3 | ✓ Complete | 2026-02-13 |
-| 4. Developer Prompts | 0/2 | In Progress | - |
+| 4. Developer Prompts | 2/2 | ✓ Complete | 2026-02-15 |
 
 ---
 *Roadmap created: 2026-02-12*
-*Last updated: 2026-02-13 (Phase 4 planned)*
+*Last updated: 2026-02-15 (Phase 4 complete)*
