@@ -258,16 +258,19 @@ Key categories of `ColumnSpec` properties:
 
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
-| Identity | `field`, `colId`, `displayName`                                                                              |
-| Display | `headerName`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                                     |
+| Identity | `field`, `colId`, `displayName`, `description`                                                               |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |
 | Export | `exportName`, `exportValue`, `excludeFromExport`, `excelFormat`, `excelWidth`                                |
-| Chooser | `chooserName`, `chooserGroup`, `chooserDescription`, `excludeFromChooser`, `hideable`                        |
+| Chooser | `chooserName`, `chooserGroup`, `chooserDescription`\*, `excludeFromChooser`, `hideable`                      |
 | Rendering | `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`                                    |
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
+
+\* `description` defaults from `Field.description` and serves as the default for both
+`headerTooltip` and `chooserDescription` when those are not explicitly set.
 
 ## Extension Points
 

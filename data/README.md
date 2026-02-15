@@ -261,7 +261,9 @@ record.isValidationPending; // Async validation in progress?
 
 **File**: `Field.ts`
 
-Metadata descriptor defining type parsing, defaults, display names, and validation rules.
+Metadata descriptor defining type parsing, defaults, display names, descriptions, and validation
+rules. The `displayName` and `description` properties flow from `Field` to `Column` automatically,
+providing defaults for grid headers, tooltips, and chooser descriptions.
 
 ### Field Configuration
 
@@ -276,6 +278,7 @@ const store = new Store({
             name: 'salary',
             type: 'number',
             displayName: 'Annual Salary',
+            description: 'Total annual compensation before taxes',
             defaultValue: 0,
             rules: [required, numberIs({min: 0})]
         },

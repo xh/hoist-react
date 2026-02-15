@@ -30,6 +30,9 @@ export interface FieldSpec {
      */
     displayName?: string;
 
+    /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
+    description?: string;
+
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
 
@@ -66,6 +69,7 @@ export class Field {
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
+    readonly description: string;
     readonly defaultValue: any;
     readonly rules: Rule[];
     readonly enableXssProtection: boolean;
@@ -74,6 +78,7 @@ export class Field {
         name,
         type = 'auto',
         displayName,
+        description,
         defaultValue = null,
         rules = [],
         enableXssProtection = XH.appSpec.enableXssProtection
@@ -81,6 +86,7 @@ export class Field {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
+        this.description = description;
         this.defaultValue = defaultValue;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
@@ -148,7 +154,7 @@ export function parseFieldValue(
             val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
             return val.toString();
         case 'date':
-            return isDate(val) ? val : new Date(val);
+            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
         case 'localDate':
             return isLocalDate(val) ? val : LocalDate.get(val);
     }
