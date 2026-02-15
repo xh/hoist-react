@@ -10,11 +10,15 @@
   "bugs": "https://github.com/xh/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "Apache-2.0",
+  "bin": {
+    "hoist-mcp": "./bin/hoist-mcp.mjs"
+  },
   "scripts": {
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:code && yarn lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "hoist-mcp": "tsx mcp/server.ts",
     "prepare": "husky"
   },
   "sideEffects": [
@@ -94,6 +98,7 @@
     "react-dom": "~18.2.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
     "@xh/hoist-dev-utils": "11.x",
@@ -111,8 +116,11 @@
     "react-dom": "~18.2.0",
     "stylelint": "16.x",
     "stylelint-config-standard-scss": "16.x",
+    "ts-morph": "^27.0.2",
+    "tsx": "^4.21.0",
     "type-fest": "4.x",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "zod": "^4.3.6"
   },
   "resolutions": {
     "@types/react": "18.x",

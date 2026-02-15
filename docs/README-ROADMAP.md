@@ -70,6 +70,14 @@ patterns and systems that span multiple packages.
 | Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | Planned |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
+## Developer Tools
+
+Documentation for developer tooling that supports hoist-react development workflows.
+
+| Tool | Description | Status |
+|------|-------------|--------|
+| `/mcp/` | MCP server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts | [Done](../mcp/README.md) |
+
 ## Documentation Guidelines
 
 Each README should follow the pattern established in `/cmp/grid/README.md`:
@@ -392,3 +400,15 @@ _Use this section to track discussions, decisions, and context between documenta
 - Updated skill files (xh-update-doc-links, xh-update-docs, doc-conventions) to reference
   `docs/README.md` as primary index instead of AGENTS.md
 - Fixed all inter-doc links affected by the concept doc move
+
+### 2026-02-14
+- Created `/mcp/README.md` — MCP server documentation:
+  - Overview, architecture, setup (3 startup methods), debug logging
+  - Complete tools reference (6 tools with parameters, types, examples)
+  - Resources (3 URIs) and prompts (3 builders with arguments)
+  - Maintaining the MCP Server section cataloging all hardcoded maintenance points
+  - Extending the MCP Server section with code examples for adding tools, resources, prompts
+  - Common Pitfalls (stdout, path safety, registry sync, naming conventions)
+- Added "Developer Tools" section to `docs/README.md` and `docs/README-ROADMAP.md`
+- Added MCP entry to Quick Reference by Task table in `docs/README.md`
+- Added self-referencing MCP doc entry to `mcp/data/doc-registry.ts`

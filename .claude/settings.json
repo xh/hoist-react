@@ -2,5 +2,11 @@
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "mcp__hoist-react__*",
+      "mcp__ide__getDiagnostics"
+    ]
   }
 }
