@@ -142,6 +142,13 @@ export interface GridConfig {
     /** Specification of selection behavior. Defaults to 'single' (desktop) and 'disabled' (mobile) */
     selModel?: StoreSelectionModel | StoreSelectionConfig | 'single' | 'multiple' | 'disabled';
 
+    /**
+     * True to allow users to select multiple rows by clicking and dragging.
+     * Requires `selModel` mode 'multiple' and the ag-Grid Enterprise `CellSelectionModule`
+     * to be registered by the application. Default false.
+     */
+    enableClickDragSelection?: boolean;
+
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
 
@@ -427,6 +434,7 @@ export class GridModel extends HoistModel {
     showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
     enableExport: boolean;
+    enableClickDragSelection: boolean;
     enableFullWidthScroll: boolean;
     externalSort: boolean;
     exportOptions: ExportOptions;
@@ -588,6 +596,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
+            enableClickDragSelection = false,
             enableFullWidthScroll = false,
             experimental,
             appData,
@@ -672,6 +681,11 @@ export class GridModel extends HoistModel {
 
         this.colChooserModel = this.parseChooserModel(colChooserModel);
         this.selModel = this.parseSelModel(selModel);
+        this.enableClickDragSelection = enableClickDragSelection;
+        warnIf(
+            this.enableClickDragSelection && this.selModel.mode !== 'multiple',
+            'GridModel.enableClickDragSelection requires selModel mode "multiple". It will be ignored.'
+        );
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
         if (persistWith) initPersist(this, persistWith);
@@ -1230,6 +1244,43 @@ export class GridModel extends HoistModel {
         if (isReady) {
             selModel.select(agGridModel.agApi.getSelectedRows().map(r => r.id));
         }
+    }
+
+    /** @internal - called by GridLocalModel when a click-drag cell selection completes. */
+    noteCellSelectionChanged() {
+        const {selModel, agGridModel, isReady} = this;
+        if (!isReady || !this.enableClickDragSelection || selModel.mode !== 'multiple') return;
+
+        const agApi = agGridModel.agApi,
+            ranges = agApi.getCellRanges?.();
+
+        if (!ranges?.length) {
+            selModel.clear();
+            return;
+        }
+
+        const ids = new Set<StoreRecordId>();
+        for (const range of ranges) {
+            const {startRow, endRow} = range;
+            if (!startRow || !endRow) continue;
+
+            const minIndex = Math.min(startRow.rowIndex, endRow.rowIndex),
+                maxIndex = Math.max(startRow.rowIndex, endRow.rowIndex);
+
+            for (let i = minIndex; i <= maxIndex; i++) {
+                const rowNode = agApi.getDisplayedRowAtIndex(i);
+                if (rowNode?.data?.id != null) {
+                    ids.add(rowNode.data.id);
+                }
+            }
+        }
+
+        agApi.clearCellSelection?.();
+        // Give the cell clear call time to complete before applying the new selection,
+        // to avoid ag-Grid ignoring the new selection as a no-op.
+        setTimeout(() => {
+            selModel.select([...ids]);
+        }, 0);
     }
 
     noteColumnManuallySized(colId, width) {

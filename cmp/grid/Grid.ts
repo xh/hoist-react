@@ -35,6 +35,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
+    CellSelectionChangedEvent,
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
@@ -271,14 +272,20 @@ export class GridLocalModel extends HoistModel {
         };
 
         if (selModel.mode != 'disabled') {
+            const {enableClickDragSelection} = model;
             ret.rowSelection = {
                 mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
-                enableClickSelection: selModel.isEnabled,
+                enableClickSelection: enableClickDragSelection ? false : selModel.isEnabled,
                 isRowSelectable: () => selModel.isEnabled,
                 copySelectedRows: selModel.isEnabled,
                 checkboxes: false,
                 headerCheckbox: false
             };
+
+            if (enableClickDragSelection && selModel.mode === 'multiple') {
+                ret.cellSelection = {suppressMultiRanges: true};
+                ret.onCellSelectionChanged = this.onCellSelectionChanged;
+            }
         }
 
         // Platform specific defaults
@@ -745,6 +752,11 @@ export class GridLocalModel extends HoistModel {
         this.model.noteAgSelectionStateChanged();
         this.syncSelection();
     }, 0);
+
+    onCellSelectionChanged = (event: CellSelectionChangedEvent) => {
+        if (!event.finished) return;
+        this.model.noteCellSelectionChanged();
+    };
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = ev => {
