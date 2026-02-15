@@ -48,10 +48,10 @@ Smaller packages that provide important but more specialized functionality.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/icon/` | 5 | Icon system and FontAwesome integration | Planned |
-| `/security/` | 7 | OAuth clients (Auth0, MSAL) | Planned |
-| `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | Planned |
-| `/inspector/` | 6 | Development tools for debugging Hoist instances | Planned |
+| `/icon/` | 5 | Icon system and FontAwesome integration | [Draft](../icon/README.md) |
+| `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Draft](../security/README.md) |
+| `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | [Draft](../kit/README.md) |
+| `/inspector/` | 6 | Development tools for debugging Hoist instances | [Draft](../inspector/README.md) |
 
 ## Concepts
 
@@ -117,6 +117,22 @@ incorrectCode();
 ### Terminology Conventions
 
 1. Reserve the use of `props` for actual React Component props. Use `config` when referring to model or class constructor args.
+
+### Review Workflow
+
+Each document progresses through three statuses tracked in the tables above:
+
+1. **Planned** — Document is scoped but not yet written
+2. **Draft** — Initial draft is written and committed. The doc file itself includes a
+   `> **Status: DRAFT** — This document is awaiting review...` banner at the top
+3. **Done** — Draft has been interactively reviewed, revisions applied, and the draft banner
+   removed. The doc is considered complete and authoritative
+
+The draft → done transition requires an interactive review session. During review, expect
+discussion of accuracy, completeness, tone, code examples, and coverage of edge cases.
+**Only a human XH developer can mark a document as done.** Do not remove the draft banner or
+update the roadmap status until the human reviewer explicitly requests it — AI-driven review
+and corrections alone are not sufficient to promote a doc out of draft.
 
 ### Keeping the Documentation Index in Sync
 
@@ -392,3 +408,25 @@ _Use this section to track discussions, decisions, and context between documenta
 - Updated skill files (xh-update-doc-links, xh-update-docs, doc-conventions) to reference
   `docs/README.md` as primary index instead of AGENTS.md
 - Fixed all inter-doc links affected by the concept doc move
+
+### 2026-02-15
+- Added Review Workflow subsection to Documentation Guidelines, ported from hoist-core's ROADMAP:
+  - Three-status lifecycle: Planned → Draft → Done
+  - Draft banner convention for in-progress docs
+  - Human review requirement for draft → done promotion
+- Drafted all four Priority 4 package READMEs:
+  - `/icon/README.md` — Icon singleton, factory methods, IconProps, weight variants, intent
+    coloring, file-type icons, serialization/deserialization, HTML mode, placeholder
+  - `/security/README.md` — BaseOAuthClient lifecycle, Auth0 and MSAL client configs, access
+    token specs (eager/lazy), Token class, auto-refresh, re-login, redirect state handling
+  - `/kit/README.md` — All 11 sub-packages: ag-Grid/Highcharts install functions with version
+    constraints, Blueprint wrappers (disabled transitions, element factories), Onsen HoistModel
+    prop stripping, GoldenLayout React 18 patches, react-select variants, and remaining libraries
+  - `/inspector/README.md` — InspectorPanel architecture, Stats view (model count, heap memory,
+    sync runs), Instances view (property inspection, watchlist, getter evaluation, observable
+    tracking), xhInspectorConfig, activation methods, model leak detection patterns
+- Updated Priority 4 roadmap table: all four entries moved from Planned to Draft with links
+- Updated `docs/README.md` index:
+  - Added new "Supporting Packages" section with entries for all four packages
+  - Added Quick Reference entries for icons, OAuth, Inspector debugging, and Kit integration
+  - Trimmed "Other Packages" list to only `/admin/` and `/styles/`

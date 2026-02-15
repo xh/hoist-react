@@ -44,6 +44,10 @@ See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracki
 | Work with MobX, `@bindable`, or `@observable` | [`/mobx/`](../mobx/README.md) |
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md) |
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md) |
+| Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md) |
+| Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md) |
+| Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md) |
+| Understand third-party library integration | [`/kit/`](../kit/README.md) |
 | Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
 | Configure local development environment | [Development Environment](./development-environment.md) |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
@@ -94,13 +98,21 @@ Cross-cutting documentation that spans multiple packages:
 | [Authentication](./authentication.md) | How Hoist apps authenticate users via OAuth or form-based login | HoistAuthModel, MsalClient, AuthZeroClient, Token, IdentityService, checkAccess, impersonation |
 | [Persistence](./persistence.md) | Persisting user UI state to various backing stores | @persist, markPersist, PersistenceProvider, localStorage, Preference, ViewManager, GridModel/FormModel/PanelModel persistence |
 
+### Supporting Packages
+
+| Package | Description | Key Topics |
+|---------|-------------|------------|
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon |
+| [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
+| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
+| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
+
 ### Other Packages
 
 Additional packages without dedicated READMEs — see [README-ROADMAP.md](./README-ROADMAP.md)
 for planned coverage:
 
-`/admin/`, `/icon/`, `/kit/`, `/inspector/`,
-`/security/`, `/styles/`
+`/admin/`, `/styles/`
 
 ## DevOps and Environment
 
