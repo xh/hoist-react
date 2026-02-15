@@ -1,6 +1,6 @@
 ---
 name: xh-update-doc-links
-description: Pre-commit documentation consistency check. Ensures docs/README.md index and docs/README-ROADMAP.md stay in sync with documentation files on disk, validates inter-doc links, and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
+description: Pre-commit documentation consistency check. Ensures docs/README.md index and docs/planning/docs-roadmap.md stay in sync with documentation files on disk, validates inter-doc links, and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -29,7 +29,7 @@ Read the two index files and parse their current entries.
    - Parse each table row to extract the package path and linked README path.
    - Parse the "Other Packages" paragraph to extract unlisted package names.
 
-2. Read `docs/README-ROADMAP.md` — parse all priority tables and the Concepts table.
+2. Read `docs/planning/docs-roadmap.md` — parse all priority tables and the Concepts table.
    - Extract each package path, description, and status value.
    - Note which entries are `Planned`, `Drafted`, or `[Done](link)`.
 
@@ -54,15 +54,15 @@ For each README on disk:
   to `docs/README.md` (the "Hoist Documentation" section). Do not re-add package tables
   to AGENTS.md.
 
-### README-ROADMAP.md Reconciliation
+### docs-roadmap.md Reconciliation
 
 For each README on disk:
-- Check if it has an entry in the roadmap with the correct status.
-- **Status updates:** Change `Planned` → `[Done](../path/README.md)` for newly completed docs.
-  Change `Drafted` → `[Done](../path/README.md)` if appropriate.
+- Check if it has an entry in `docs/planning/docs-roadmap.md` with the correct status.
+- **Status updates:** Change `Planned` → `[Done](../../path/README.md)` for newly completed docs.
+  Change `Drafted` → `[Done](../../path/README.md)` if appropriate.
 - **Missing entries:** Add entries for docs not yet on the roadmap.
-- **Progress notes:** Add a progress note entry for the current date if doc changes are
-  detected. Follow the existing format in the "Progress Notes" section.
+- **Progress notes:** Append a progress note entry for the current date to
+  `docs/planning/docs-roadmap-log.md`. Follow the existing chronological format.
 
 ## Step 4: Validate Inter-Doc Links
 
@@ -100,7 +100,7 @@ When new or recently changed docs are detected, look for cross-linking opportuni
 Output a summary organized into these sections:
 
 1. **Index Updates** — `docs/README.md` entries added, updated, or removed.
-2. **Roadmap Updates** — Status changes, new entries, progress notes added.
+2. **Roadmap Updates** — Status changes and new entries in `docs-roadmap.md`, progress notes appended to `docs-roadmap-log.md`.
 3. **Broken Links Fixed** — Source file, broken target, and fix applied.
 4. **New Cross-Links Added** — Source file, target doc, and surrounding context.
 5. **Items Needing Review** — Ambiguities or items requiring human judgment.

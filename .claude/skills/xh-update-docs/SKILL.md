@@ -1,6 +1,6 @@
 ---
 name: xh-update-docs
-description: Update hoist-react documentation after adding new components or features. Use when a developer has made changes to hoist-react and wants to update README files, AGENTS.md, and the documentation roadmap to reflect those changes. Invoke with a commit hash or PR number. Also use when you detect that recent commits or PRs have added new components, models, or services that are not yet reflected in the documentation.
+description: Update hoist-react documentation after adding new components or features. Use when a developer has made changes to hoist-react and wants to update README files, AGENTS.md, and the documentation roadmap (docs/planning/docs-roadmap.md) to reflect those changes. Invoke with a commit hash or PR number. Also use when you detect that recent commits or PRs have added new components, models, or services that are not yet reflected in the documentation.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -58,7 +58,7 @@ Check current documentation state for each affected package:
 2. **Documentation Index** — Check for existing entries in the `docs/README.md` Package
    Documentation tables. Read `docs/README.md` and look for the affected package paths.
 
-3. **Documentation Roadmap** — Check `docs/README-ROADMAP.md` for status of affected packages.
+3. **Documentation Roadmap** — Check `docs/planning/docs-roadmap.md` for status of affected packages.
 
 ## Step 4: Propose Updates
 
@@ -86,10 +86,12 @@ New or updated entries in the `docs/README.md` Package Documentation tables. Eac
 - Comma-separated list of key topics
 
 ### Roadmap Updates
-Status changes in `docs/README-ROADMAP.md`:
+Status changes in `docs/planning/docs-roadmap.md`:
 - New package entries added to the appropriate priority tier
 - Status changes (e.g., `Planned` → `Done` with link)
-- New progress notes with date
+
+Progress notes in `docs/planning/docs-roadmap-log.md`:
+- Append a new dated entry following the existing chronological format
 
 ## Step 5: Confirm with User
 

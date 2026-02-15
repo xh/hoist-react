@@ -16,7 +16,7 @@ for foundational concepts, then drill into [Components](#components) or [Utiliti
 
 **Library developers:** In addition to the docs below, see
 [`/AGENTS.md`](../AGENTS.md) for coding conventions, architecture patterns, and code style guidance.
-See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracking and conventions.
+See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage tracking and conventions.
 
 ## Quick Reference by Task
 
@@ -109,7 +109,7 @@ Cross-cutting documentation that spans multiple packages:
 
 ### Other Packages
 
-Additional packages without dedicated READMEs — see [README-ROADMAP.md](./README-ROADMAP.md)
+Additional packages without dedicated READMEs — see [docs-roadmap.md](./planning/docs-roadmap.md)
 for planned coverage:
 
 `/admin/`, `/styles/`
@@ -144,8 +144,9 @@ breaking changes, before/after code examples, and verification checklists.
 
 - [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns, coding
   conventions, code style, and key dependencies
-- [`README-ROADMAP.md`](./README-ROADMAP.md) — Documentation coverage tracking, conventions,
-  and progress notes
+- [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
+  (documentation, testing). Not indexed here — these are project management artifacts, not
+  hoist-react reference material.
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes
 - [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
   section headers
