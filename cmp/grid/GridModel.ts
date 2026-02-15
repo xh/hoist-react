@@ -1247,14 +1247,14 @@ export class GridModel extends HoistModel {
     }
 
     /** @internal - called by GridLocalModel when a click-drag cell selection completes. */
-    noteCellSelectionChanged() {
+    async noteCellSelectionChanged(lastClickHasModifier: boolean = false) {
         const {selModel, agGridModel, isReady} = this;
         if (!isReady || !this.enableClickDragSelection || selModel.mode !== 'multiple') return;
 
         const agApi = agGridModel.agApi,
             ranges = agApi.getCellRanges?.();
 
-        if (!ranges?.length) {
+        if (!ranges?.length && !lastClickHasModifier) {
             selModel.clear();
             return;
         }
@@ -1278,9 +1278,8 @@ export class GridModel extends HoistModel {
         agApi.clearCellSelection?.();
         // Give the cell clear call time to complete before applying the new selection,
         // to avoid ag-Grid ignoring the new selection as a no-op.
-        setTimeout(() => {
-            selModel.select([...ids]);
-        }, 0);
+        await wait(0);
+        selModel.select([...ids], !lastClickHasModifier);
     }
 
     noteColumnManuallySized(colId, width) {
