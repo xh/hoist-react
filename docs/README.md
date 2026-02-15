@@ -46,6 +46,7 @@ See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracki
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md) |
 | Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
 | Configure local development environment | [Development Environment](./development-environment.md) |
+| Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md) |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
 
 ## Package Documentation
@@ -69,6 +70,7 @@ See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracki
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
+| [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
 | [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
@@ -109,6 +111,12 @@ for planned coverage:
 | [Build & Deploy](./build-and-deploy.md) | CI configuration, build pipelines, and deployment considerations |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
+
+## Developer Tools
+
+| Tool | Description |
+|------|-------------|
+| [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
 
 ## Upgrade Notes
 

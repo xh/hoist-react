@@ -339,6 +339,22 @@ function getRawEntries(): RawEntry[] {
         },
 
         //--------------------------------------------------------------
+        // Developer Tools
+        //--------------------------------------------------------------
+        {
+            id: 'mcp',
+            title: 'MCP Server',
+            file: 'mcp/README.md',
+            category: 'package',
+            packageName: 'mcp',
+            description:
+                'Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.',
+            keywords: splitKeywords(
+                'MCP, Model Context Protocol, AI assistant, Claude Code, tools, resources, prompts, search, symbols, documentation'
+            )
+        },
+
+        //--------------------------------------------------------------
         // Concept docs
         //--------------------------------------------------------------
         {
