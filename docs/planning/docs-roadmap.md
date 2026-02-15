@@ -63,11 +63,11 @@ patterns and systems that span multiple packages.
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](../lifecycle-app.md), [Part 2 Done](../lifecycle-models-and-services.md) |
 | Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](../authentication.md) |
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](../persistence.md) |
-| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | Planned |
+| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | [Draft](../authorization.md) |
 | Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
-| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | Planned |
-| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | Planned |
-| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | Planned |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | [Draft](../routing.md) |
+| Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | [Draft](../error-handling.md) |
+| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Draft](../testing.md) |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
 ## Documentation Guidelines
@@ -162,7 +162,8 @@ _For detailed session-by-session notes, see [docs-roadmap-log.md](./docs-roadmap
 - **Priority 1–3 (Core, Components, Utilities):** All complete (Done)
 - **Priority 4 (Supporting Packages):** icon/security Done, kit/inspector in Draft
 - **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence complete;
-  Authorization, Admin Console, Routing, Error Handling, Testing, Version Compatibility planned
+  Authorization, Routing, Error Handling, Testing in Draft;
+  Admin Console, Version Compatibility planned
 - **Documentation index** (`docs/README.md`) created and maintained alongside package READMEs
 
 ### Key Decisions
@@ -176,5 +177,5 @@ Documentation Guidelines or `doc-conventions.md` reference above:
   review alone is not sufficient
 
 ### Current Focus
-- Reviewing Priority 4 Draft READMEs (security, kit, inspector)
-- Planning concept docs for Authorization, Routing, Error Handling, and Testing
+- Reviewing Priority 4 Draft READMEs (kit, inspector)
+- Reviewing concept doc drafts: Authorization, Routing, Error Handling, Testing

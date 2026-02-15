@@ -40,6 +40,10 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md) |
 | Add authentication (OAuth, login) | [Authentication](./authentication.md) |
 | Persist UI state (columns, filters, panel sizes) | [Persistence](./persistence.md) |
+| Check roles, gates, or app access | [Authorization](./authorization.md) |
+| Configure client-side routing or URL-driven tabs | [Routing](./routing.md) |
+| Handle exceptions and display error dialogs | [Error Handling](./error-handling.md) |
+| Add testId selectors for test automation | [Testing](./testing.md) |
 | Use Promises with error handling and tracking | [`/promise/`](../promise/README.md) |
 | Work with MobX, `@bindable`, or `@observable` | [`/mobx/`](../mobx/README.md) |
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md) |
@@ -97,6 +101,10 @@ Cross-cutting documentation that spans multiple packages:
 | [Lifecycle: Models & Services](./lifecycle-models-and-services.md) | Model, service, and load/refresh lifecycles after app startup | HoistModel (onLinked, afterLinked, doLoadAsync, destroy), HoistService (initAsync), LoadSupport, LoadSpec, RefreshContextModel |
 | [Authentication](./authentication.md) | How Hoist apps authenticate users via OAuth or form-based login | HoistAuthModel, MsalClient, AuthZeroClient, Token, IdentityService, checkAccess, impersonation |
 | [Persistence](./persistence.md) | Persisting user UI state to various backing stores | @persist, markPersist, PersistenceProvider, localStorage, Preference, ViewManager, GridModel/FormModel/PanelModel persistence |
+| [Authorization](./authorization.md) | Role-based authorization and config-driven feature gates | HoistUser, hasRole, hasGate, checkAccess, HOIST_ADMIN, roles, gates, Admin Console role management |
+| [Routing](./routing.md) | Client-side routing via RouterModel (Router5 wrapper) | RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel route integration, NavigatorModel |
+| [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
+| [Testing](./testing.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 
 ### Supporting Packages
 

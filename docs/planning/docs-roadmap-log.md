@@ -317,3 +317,33 @@
   - Enhanced third-party cookie pitfall with Chrome 142+ Local Network Access restrictions
     and `LocalNetworkAccessAllowedForUrls` enterprise policy (affects MSAL `ssoSilent()`)
   - Linked upstream MSAL issue #8100 for LNA details
+
+### 2026-02-15 (cont. 2)
+- Drafted four concept docs: Authorization, Routing, Error Handling, Testing
+  - Used parallel subAgents for research and writing (one per doc, ~40-70 tool calls each)
+  - Each agent read relevant source code, sample apps, and existing concept docs for style reference
+  - `docs/authorization.md` — Roles, HoistUser, built-in Hoist roles (HOIST_ADMIN, etc.),
+    checkAccess on AppSpec, Admin Console role management (inheritance, member types, role graph),
+    config-driven gates (hasGate), role naming best practices, common pitfalls
+  - `docs/routing.md` — RouterModel (Router5 wrapper), getRoutes() config, XH routing API
+    (navigate, appendRoute, popRoute, routerState), TabContainerModel route integration (nested
+    tabs, route-persistence conflict), mobile NavigatorModel, direct Router5 access
+  - `docs/error-handling.md` — XH.handleException() 3-stage pipeline (parse → alert → log),
+    options with smart defaults table, catchDefault/catchDefaultWhen, doLoadAsync error patterns
+    (isStale, isAutoRefresh), routine exceptions, ErrorBoundary (auto-wrap locations), server-side
+    logging, FetchService exception integration
+  - `docs/testing.md` — testId prop and TestSupportProps, data-testid propagation, getTestId(),
+    composite component sub-testIds (TabContainer, FormField, TextInput, DateInput, Select,
+    RadioInput, GroupingChooser, RestGrid), XH.getModelByTestId(), mobile platform limitations,
+    Playwright/Cypress selector examples
+- Ran one automated review-and-fix cycle using independent review agents:
+  - Each review agent verified claims against actual source code; all docs scored 4/5
+  - HIGH fixes applied: Admin menu visibility uses HOIST_ADMIN_READER (not HOIST_ADMIN),
+    XH.navigate() code examples corrected (options as 3rd arg), ErrorBoundary `model:` →
+    `modelConfig:`, mobile platform testId limitations section added, RadioInput testId
+    clarified to use label not value
+  - MEDIUM fixes applied: checkAccess timing, gate char limits, Select clear-btn sub-testId,
+    RestGrid grid/form sub-testIds, code imports corrected, key source files expanded
+- Updated `docs/README.md` index: added Quick Reference entries (authorization, error handling,
+  testing) and Concepts table entries for all four new docs
+- Updated `docs/planning/docs-roadmap.md`: all four concept entries moved from Planned to Draft
