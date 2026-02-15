@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** LLMs assisting with Hoist development can access accurate, current framework knowledge so they produce correct Hoist-idiomatic code.
-**Current focus:** Phase 4 - Developer Prompts (IN PROGRESS)
+**Current focus:** Phase 4 - Developer Prompts (COMPLETE)
 
 ## Current Position
 
 Phase: 4 of 4 (Developer Prompts)
-Plan: 1 of 2 in current phase (04-01 complete)
-Status: Executing Phase 4
-Last activity: 2026-02-15 -- Completed 04-01 (Prompt Foundation)
+Plan: 2 of 2 in current phase (04-02 complete)
+Status: All phases complete
+Last activity: 2026-02-15 -- Completed 04-02 (Prompt Implementations)
 
-Progress: [████████░░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 4.9min
-- Total execution time: 0.65 hours
+- Total plans completed: 9
+- Average duration: 4.8min
+- Total execution time: 0.72 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████████░░] 89%
 | 01-mcp-server-foundation | 2 | 12min | 6min |
 | 02-documentation-serving | 2 | 9min | 4.5min |
 | 03-typescript-extraction | 3 | 16min | 5.3min |
-| 04-developer-prompts | 1 | 3min | 3min |
+| 04-developer-prompts | 2 | 7min | 3.5min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (7min), 03-03 (7min), 03-02 (2min), 04-01 (3min)
-- Trend: stable (04-01 fast -- utility module + stub registration)
+- Last 5 plans: 03-03 (7min), 03-02 (2min), 04-01 (3min), 04-02 (4min)
+- Trend: stable (all Phase 4 plans fast -- focused prompt composition)
 
 *Updated after each plan completion*
 
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - 04-01: Lazy doc registry caching with fresh content loading per invocation (avoids stale docs)
 - 04-01: No hoist- prefix on prompt names (server name provides context)
 - 04-01: Stub prompts with placeholder messages for Plan 02 to replace
+- 04-02: Doc section extraction targets verified against actual README headers for runtime reliability
+- 04-02: Field name heuristics for adaptive code templates (email->validEmail, age->numberInput, etc.)
+- 04-02: Tab prompt defaults routing to false (most tabs don't need URL integration)
 
 ### Pending Todos
 
@@ -77,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 04-01-PLAN.md (Prompt Foundation)
+Stopped at: Completed 04-02-PLAN.md (Prompt Implementations) -- All phases complete
 Resume file: None
