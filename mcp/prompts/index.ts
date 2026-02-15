@@ -13,15 +13,19 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {log} from '../util/logger.js';
+import {buildGridPrompt} from './grid.js';
+import {buildFormPrompt} from './form.js';
+import {buildTabsPrompt} from './tabs.js';
 
 /**
  * Register all developer prompts on the given MCP server.
  *
- * Currently registers 3 stub prompts that will be replaced with full
- * implementations in Plan 02:
- * - `create-grid`: Generate a grid panel
- * - `create-form`: Generate a form with validation
- * - `create-tab-container`: Generate a tabbed interface
+ * Each prompt composes relevant documentation, type signatures, conventions,
+ * and code templates into structured output that gives an LLM everything it
+ * needs to generate correct Hoist-idiomatic code:
+ * - `create-grid`: Generate a grid panel with model, columns, and data loading
+ * - `create-form`: Generate a form with validation and input binding
+ * - `create-tab-container`: Generate a tabbed interface with routing support
  */
 export function registerPrompts(server: McpServer): void {
     //------------------------------------------------------------------
@@ -48,17 +52,7 @@ export function registerPrompts(server: McpServer): void {
                     )
             }
         },
-        async () => ({
-            messages: [
-                {
-                    role: 'user' as const,
-                    content: {
-                        type: 'text' as const,
-                        text: 'Placeholder: create-grid prompt will be implemented in Plan 02.'
-                    }
-                }
-            ]
-        })
+        async ({dataFields, features}) => buildGridPrompt({dataFields, features})
     );
 
     //------------------------------------------------------------------
@@ -83,17 +77,7 @@ export function registerPrompts(server: McpServer): void {
                     .describe('Whether to include validation examples (e.g. "true" or "false")')
             }
         },
-        async () => ({
-            messages: [
-                {
-                    role: 'user' as const,
-                    content: {
-                        type: 'text' as const,
-                        text: 'Placeholder: create-form prompt will be implemented in Plan 02.'
-                    }
-                }
-            ]
-        })
+        async ({fields, validation}) => buildFormPrompt({fields, validation})
     );
 
     //------------------------------------------------------------------
@@ -118,17 +102,7 @@ export function registerPrompts(server: McpServer): void {
                     .describe('Whether to include route integration (e.g. "true" or "false")')
             }
         },
-        async () => ({
-            messages: [
-                {
-                    role: 'user' as const,
-                    content: {
-                        type: 'text' as const,
-                        text: 'Placeholder: create-tab-container prompt will be implemented in Plan 02.'
-                    }
-                }
-            ]
-        })
+        async ({tabs, routing}) => buildTabsPrompt({tabs, routing})
     );
 
     log.info('Registered 3 developer prompts');
