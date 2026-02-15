@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** LLMs assisting with Hoist development can access accurate, current framework knowledge so they produce correct Hoist-idiomatic code.
-**Current focus:** Phase 3 - TypeScript Extraction (COMPLETE)
+**Current focus:** Phase 4 - Developer Prompts (IN PROGRESS)
 
 ## Current Position
 
-Phase: 3 of 4 (TypeScript Extraction)
-Plan: 3 of 3 in current phase (03-01, 03-02, 03-03 all complete)
-Status: Phase 3 Complete
-Last activity: 2026-02-13 -- Completed 03-02 (TypeScript MCP Tools)
+Phase: 4 of 4 (Developer Prompts)
+Plan: 1 of 2 in current phase (04-01 complete)
+Status: Executing Phase 4
+Last activity: 2026-02-15 -- Completed 04-01 (Prompt Foundation)
 
-Progress: [████████░░] 78%
+Progress: [████████░░] 89%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 5.1min
-- Total execution time: 0.60 hours
+- Total plans completed: 8
+- Average duration: 4.9min
+- Total execution time: 0.65 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [████████░░] 78%
 | 01-mcp-server-foundation | 2 | 12min | 6min |
 | 02-documentation-serving | 2 | 9min | 4.5min |
 | 03-typescript-extraction | 3 | 16min | 5.3min |
+| 04-developer-prompts | 1 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6min), 03-01 (7min), 03-03 (7min), 03-02 (2min)
-- Trend: stable (03-02 fast -- thin tool wiring layer)
+- Last 5 plans: 03-01 (7min), 03-03 (7min), 03-02 (2min), 04-01 (3min)
+- Trend: stable (04-01 fast -- utility module + stub registration)
 
 *Updated after each plan completion*
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - 03-02: Markdown-header text formatting for LLM-optimized tool output (not raw JSON)
 - 03-02: Type strings truncated at 200 chars for readability; file paths repo-relative
 - 03-02: Members grouped by category (Properties/Methods/Static) with empty sections skipped
+- 04-01: Lazy doc registry caching with fresh content loading per invocation (avoids stale docs)
+- 04-01: No hoist- prefix on prompt names (server name provides context)
+- 04-01: Stub prompts with placeholder messages for Plan 02 to replace
 
 ### Pending Todos
 
@@ -72,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-13
-Stopped at: Completed 03-02-PLAN.md (TypeScript MCP Tools)
+Last session: 2026-02-15
+Stopped at: Completed 04-01-PLAN.md (Prompt Foundation)
 Resume file: None
