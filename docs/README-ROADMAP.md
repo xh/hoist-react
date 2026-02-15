@@ -48,7 +48,7 @@ Smaller packages that provide important but more specialized functionality.
 
 | Package | Files | Description | Status |
 |---------|-------|-------------|--------|
-| `/icon/` | 5 | Icon system and FontAwesome integration | [Draft](../icon/README.md) |
+| `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../icon/README.md) |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Draft](../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | [Draft](../kit/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | [Draft](../inspector/README.md) |
@@ -430,3 +430,17 @@ _Use this section to track discussions, decisions, and context between documenta
   - Added new "Supporting Packages" section with entries for all four packages
   - Added Quick Reference entries for icons, OAuth, Inspector debugging, and Kit integration
   - Trimmed "Other Packages" list to only `/admin/` and `/styles/`
+
+### 2026-02-15 (cont.)
+- Reviewed and refined `/icon/README.md` (Draft → Done):
+  - Updated icon count from "100+" to "150+ direct factories and ~40 semantic aliases"
+  - Added FA animation/transform props (spin, pulse, beat, bounce, rotation, flip) with examples
+  - Added fixed-width default note (fa-fw and xh-icon classes applied automatically)
+  - Corrected HTML mode description: Highcharts tooltips, not ag-Grid cell renderers
+  - Corrected serialization usage: DashContainer widget icons, not GridModel column state
+  - Added App-Level Icon Catalogs section: pattern for app `Icons.ts` file centralizing
+    custom FA registration and app-specific semantic factories (based on real-world app patterns)
+  - Folded "Custom FontAwesome Icons" subsection into App-Level Icon Catalogs
+  - Added pitfall: using non-FontAwesome icon libraries (stick with FA for cohesive look and feel)
+  - Added pitfall: referencing icons from wrong FA version (use version picker on FA site)
+  - Added FA icon search links (latest and v6)

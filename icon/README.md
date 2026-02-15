@@ -1,13 +1,10 @@
-> **Status: DRAFT** — This document is awaiting review by an XH developer. Content may be
-> incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
 # Icon
 
 Hoist's icon system provides a factory-based API for rendering [FontAwesome](https://fontawesome.com/)
 Pro icons throughout an application. Rather than importing individual FA icon definitions in each
-file that uses them, applications use the `Icon` singleton — a centralized catalog of 100+
-pre-configured icon factory methods, all pre-registered with the FA library in four weight variants
-(regular, solid, light, thin).
+file that uses them, applications use the `Icon` singleton — a centralized catalog of 150+ direct
+icon factories and ~40 semantic aliases, all pre-registered with the FA library in four weight
+variants (regular, solid, light, thin).
 
 ## Overview
 
@@ -15,7 +12,8 @@ Icons are a core visual element across Hoist UIs — they appear in buttons, too
 menus, tabs, tree nodes, toast messages, and more. The `Icon` singleton standardizes access to a
 curated set of FA Pro icons and provides:
 
-- **Named factory methods** — `Icon.check()`, `Icon.gear()`, `Icon.user()`, etc.
+- **Named factory methods** — 150+ direct factories (`Icon.check()`, `Icon.gear()`,
+  `Icon.user()`, etc.) plus ~40 semantic aliases
 - **Semantic aliases** — `Icon.add()`, `Icon.edit()`, `Icon.delete()`, `Icon.search()`,
   `Icon.save()`, `Icon.refresh()` that delegate to specific visual icons, providing a consistent
   vocabulary across apps
@@ -24,17 +22,21 @@ curated set of FA Pro icons and provides:
 - **Intent coloring** — Apply `primary`, `success`, `warning`, or `danger` intent for consistent
   semantic styling
 - **Size control** — FA size values from `2xs` through `10x`
-- **HTML mode** — Render as raw SVG strings for non-React contexts (e.g. ag-Grid cell renderers)
+- **FA animation props** — `spin`, `pulse`, `beat`, `bounce`, `rotation`, `flip`, and other
+  FontAwesome props are passed through to the underlying `FontAwesomeIcon` component
+- **Fixed-width default** — All icons receive the `fa-fw` (fixed-width) and `xh-icon` CSS classes
+  automatically, ensuring consistent spacing in menus, buttons, and toolbars
+- **HTML mode** — Render as raw SVG strings for non-React contexts (e.g. Highcharts tooltips)
 - **File-type icons** — `Icon.fileIcon({filename})` maps extensions to appropriate icons
 - **Serialization** — `serializeIcon()`/`deserializeIcon()` for persisting icon config (used by
-  GridModel column state)
+  DashContainer to save/restore widget icons in layout state)
 
 ## Architecture
 
 ```
 icon/
 ├── Icon.ts              # Icon singleton with all factory methods + IconProps type
-├── XHLogo.tsx           # XH corporate logo SVG component
+├── XHLogo.tsx           # XH corporate logo SVG component (theme-aware)
 ├── index.ts             # Barrel exports + FA library registration (all icon imports)
 └── impl/
     ├── IconCmp.ts       # React component wrapping FontAwesomeIcon
@@ -89,6 +91,18 @@ Icon.spinner({size: 'lg'})
 Icon.gear({size: '2x'})
 ```
 
+### FA Animation and Transform Props
+
+Since `IconProps` extends FontAwesome's `FontAwesomeIconProps`, you can pass through FA animation
+and transform props directly:
+
+```typescript
+Icon.spinner({spin: true})       // spinning loading indicator
+Icon.bullhorn({shake: true})     // attention-grabbing announcement
+Icon.star({rotation: 90})        // rotated 90 degrees
+Icon.warning({bounce: true})     // bouncing warning
+```
+
 ### Weight Variants
 
 ```typescript
@@ -97,21 +111,6 @@ Icon.star()                      // regular outline
 Icon.star({prefix: 'fas'})      // solid fill
 Icon.star({prefix: 'fal'})      // light stroke
 Icon.star({prefix: 'fat'})      // thin stroke
-```
-
-### Custom FontAwesome Icons
-
-If the icon you need is not among Hoist's pre-registered set, register it in your app's bootstrap:
-
-```typescript
-// In your app's Bootstrap.ts
-import {library} from '@fortawesome/fontawesome-svg-core';
-import {faRocketLaunch} from '@fortawesome/pro-regular-svg-icons';
-library.add(faRocketLaunch);
-
-// Then use via the generic Icon.icon() factory
-Icon.icon({iconName: 'rocket-launch'})
-Icon.icon({iconName: 'rocket-launch', prefix: 'fas'})
 ```
 
 ### File-Type Icons
@@ -127,8 +126,8 @@ Icon.fileIcon({filename: 'unknown.xyz'})   // → file (generic fallback)
 
 ### HTML Mode
 
-Use `asHtml: true` to get a raw SVG string instead of a React element. This is useful in contexts
-where React elements are not supported, such as ag-Grid column header templates:
+Use `asHtml: true` to get a raw SVG string instead of a React element. This is needed in contexts
+that build HTML strings directly, such as Highcharts tooltip formatters.
 
 ```typescript
 Icon.check({asHtml: true})  // returns '<svg class="..."...'
@@ -143,6 +142,52 @@ for aligning items in menus or lists where some items have icons and others don'
 menuItem({icon: Icon.check(), text: 'Option A'}),
 menuItem({icon: Icon.placeholder(), text: 'Option B'})  // aligned with A
 ```
+
+## App-Level Icon Catalogs
+
+Applications are strongly encouraged to create their own `Icons.ts` file (typically in a `core/` or
+`common/` directory) to centralize icon usage across the app. This file serves two purposes:
+
+1. **Register custom FA icons** not included in Hoist's built-in set — import from the
+   `@fortawesome/pro-*-svg-icons` packages and call `library.add()` to make them available at
+   runtime. (This can also be done in `Bootstrap.ts`, but co-locating registration with the
+   factories that use them keeps things organized.)
+2. **Define app-specific semantic factories** that map domain concepts to consistent icons
+
+This pattern ensures that domain-specific icons are used consistently throughout the app. When a
+concept like "loan" or "invoice" always maps to the same icon, the app's visual language becomes
+more coherent — and changing an icon later requires only a single edit.
+
+```typescript
+// src/core/Icons.ts
+import {library} from '@fortawesome/fontawesome-svg-core';
+import {faFileInvoiceDollar} from '@fortawesome/pro-regular-svg-icons';
+import {Icon, IconProps} from '@xh/hoist/icon';
+
+// 1. Register custom FA icons not in Hoist's built-in set
+library.add(faFileInvoiceDollar);
+
+// 2. Define app-specific semantic factories
+//    Use Icon.icon() with iconName for custom-registered icons
+export const invoiceIcon = (opts: IconProps = {}) =>
+    Icon.icon({iconName: 'file-invoice-dollar', ...opts});
+
+//    Delegate to existing Hoist factories to give them app-specific names
+export const dealIcon = (opts: IconProps = {}) =>
+    Icon.handshake(opts);
+export const dashboardIcon = (opts: IconProps = {}) =>
+    Icon.layout(opts);
+
+// Factories can embed defaults for intent, size, or weight
+export const approvedIcon = (opts: IconProps = {}) =>
+    Icon.checkCircle({intent: 'success', ...opts});
+export const rejectedIcon = (opts: IconProps = {}) =>
+    Icon.xCircle({intent: 'danger', ...opts});
+```
+
+App-level factories follow the same `(opts?) => Icon.xxx(opts)` signature as Hoist's own
+factories, so they can be used interchangeably — in buttons, grid columns, menus, and anywhere
+else that accepts an icon element.
 
 ## IconProps Reference
 
@@ -160,7 +205,7 @@ menuItem({icon: Icon.placeholder(), text: 'Option B'})  // aligned with A
 ## Serialization
 
 `serializeIcon()` and `deserializeIcon()` support persisting icon configuration as JSON. This is
-used internally by GridModel to save/restore column icons as part of column state:
+used by DashContainerModel to save/restore widget icons as part of persisted layout state:
 
 ```typescript
 import {serializeIcon, deserializeIcon} from '@xh/hoist/icon';
@@ -202,6 +247,27 @@ Icon.icon({iconName: 'custom-icon', prefix: 'fas'})
 Icon.icon({iconName: 'custom-icon'})
 ```
 
+### Using Non-FontAwesome Icon Libraries
+
+Always use FontAwesome icons via Hoist's `Icon` singleton or the app-level `Icons.ts` pattern.
+Do not pull icons from other libraries (e.g. Blueprint icons, Material icons) unless the app has
+an explicit directive to do so. Mixing icon libraries breaks the cohesive visual language that FA
+provides, and FontAwesome Pro's catalog is extensive enough to cover virtually any use case. If
+you can't find the right icon in Hoist's pre-registered set, register a custom one from the FA Pro
+packages — don't reach for a different library.
+
+### Referencing Icons From the Wrong FontAwesome Version
+
+FontAwesome updates frequently and adds new icons with each release. When browsing the
+FA site to find an icon for your app, use
+the version picker to filter results to the version Hoist currently depends on (check
+`@fortawesome/pro-regular-svg-icons` in `package.json`). Attempting to import an icon that only
+exists in a newer FA version will fail at build time. Hoist endeavors to keep its FA dependency up
+to date, but always verify the version before spending time wiring up a new icon.
+
+* [FA icon search (latest version)](https://fontawesome.com/search?ip=classic&s=regular)
+* [FA icon search (v6)](https://fontawesome.com/v6/search?ip=classic&s=regular)
+
 ### Using Brand Icons Without Registration
 
 The `'fab'` (brands) prefix is supported but requires a separate import of
@@ -212,5 +278,5 @@ with Hoist by default.
 
 - [`/desktop/`](../desktop/README.md) — Desktop components use icons extensively in buttons,
   toolbars, menus, and grid columns
-- [`/cmp/grid/`](../cmp/grid/README.md) — GridModel column config supports `headerIcon` for
-  column header icons, and icon serialization is used for persisting column state
+- [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — DashContainer uses icon serialization
+  to persist widget icons in saved layout state
