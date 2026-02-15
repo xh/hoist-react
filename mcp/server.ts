@@ -4,6 +4,7 @@ import {log} from './util/logger.js';
 import {registerDocResources} from './resources/docs.js';
 import {registerDocTools} from './tools/docs.js';
 import {registerTsTools} from './tools/typescript.js';
+import {registerPrompts} from './prompts/index.js';
 
 const server = new McpServer({
     name: 'hoist-react',
@@ -13,6 +14,7 @@ const server = new McpServer({
 registerDocResources(server);
 registerDocTools(server);
 registerTsTools(server);
+registerPrompts(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
