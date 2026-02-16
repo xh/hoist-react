@@ -8,15 +8,16 @@
   `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
   when those are not explicitly set, providing a single point of configuration for supplementary
   descriptive text that flows from the data layer through to the grid UI.
+* Added `testId` support to mobile `Button`, `FormField`, `TabContainer`, and all mobile input
+  components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
+  `TextArea`, `TextInput`).
 
 ### 🐞 Bug Fixes
 
-* Fixed `RadioInput` to generate testIds using option `value` instead of `label`, avoiding spaces
-  and special characters in test identifiers.
+* Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
+  action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
-* Fixed `RestGrid` action button `testId` values to be scoped by parent `testId`, preventing
-  collisions when multiple grids are rendered on the same page.
 
 ## 81.0.2 - 2026-02-12
 

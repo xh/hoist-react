@@ -10,7 +10,7 @@ import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format'
 import {input} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
@@ -256,6 +256,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
                 textAlign: withDefault(props.textAlign, 'right')
             },
             spellCheck: false,
+            [TEST_ID]: props.testId,
 
             onInput: model.onValueChange,
             onKeyDown: model.onKeyDown,
