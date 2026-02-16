@@ -67,7 +67,7 @@ patterns and systems that span multiple packages.
 | Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
 | Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | [Draft](../routing.md) |
 | Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | [Done](../error-handling.md) |
-| Testing | How Hoist supports test automation via `testId` and `TestProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Draft](../testing.md) |
+| Test Automation | How Hoist supports test automation via `testId` and `TestSupportProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Done](../test-automation.md) |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
 
 ## Documentation Guidelines
@@ -161,8 +161,8 @@ _For detailed session-by-session notes, see [docs-roadmap-log.md](./docs-roadmap
 ### Status Overview
 - **Priority 1–3 (Core, Components, Utilities):** All complete (Done)
 - **Priority 4 (Supporting Packages):** icon/security Done, kit/inspector in Draft
-- **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence, Error Handling complete;
-  Authorization, Routing, Testing in Draft;
+- **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence, Error Handling, Test Automation complete;
+  Authorization, Routing in Draft;
   Admin Console, Version Compatibility planned
 - **Documentation index** (`docs/README.md`) created and maintained alongside package READMEs
 
@@ -178,4 +178,4 @@ Documentation Guidelines or `doc-conventions.md` reference above:
 
 ### Current Focus
 - Reviewing Priority 4 Draft READMEs (kit, inspector)
-- Reviewing concept doc drafts: Authorization, Routing, Testing
+- Reviewing concept doc drafts: Authorization, Routing

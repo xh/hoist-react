@@ -10,7 +10,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {RecordAction, RecordActionSpec, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
-import {throwIf} from '@xh/hoist/utils/js';
+import {getTestId, throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionButton';
 
@@ -73,16 +73,23 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
 
         return buttonGroup({
             vertical,
-            items: actions.filter(Boolean).map(action =>
-                recordActionButton({
-                    action: action instanceof RecordAction ? action : new RecordAction(action),
+            items: actions.filter(Boolean).map(action => {
+                const recordAction =
+                    action instanceof RecordAction ? action : new RecordAction(action);
+                const scopedTestId =
+                    testId && recordAction.testId
+                        ? getTestId(testId, recordAction.testId)
+                        : recordAction.testId;
+                return recordActionButton({
+                    action: recordAction,
                     record,
                     selModel,
                     gridModel,
                     column,
-                    ...buttonProps
-                })
-            ),
+                    ...buttonProps,
+                    testId: scopedTestId
+                });
+            }),
             ...rest
         });
     }

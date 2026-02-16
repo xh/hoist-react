@@ -1,7 +1,5 @@
 # Test Automation Support
 
-> **Status: DRAFT** — This document is awaiting review by the XH team. Content may be incomplete or inaccurate.
-
 Hoist provides built-in support for automated end-to-end testing via the `testId` prop and
 `TestSupportProps` interface. These features allow test automation tools (Playwright, Cypress,
 Selenium, etc.) to reliably locate and interact with components using stable `data-testid` HTML
@@ -255,9 +253,19 @@ of supported model types when their component receives a `testId`:
 | `FormModel` |
 | `TabModel` |
 
-Registration happens when the component mounts and is cleaned up on unmount. This allows test
-scripts to access model APIs directly -- for example, reading a grid's selected records or
-programmatically setting a form's values.
+Registration happens when the component mounts and is cleaned up on unmount.
+
+This is a powerful tool for test automation. Rather than simulating dozens of individual UI
+interactions to get a view into a particular state, test code can use `getModelByTestId()` to
+access model APIs directly and set up preconditions programmatically. For example, a test that
+needs to verify behavior after a complex form is filled out can call `FormModel.init()` to
+bulk-load field values in a single step, then use interactive selectors only for the specific
+action it actually wants to test. Similarly, test code can call `GridModel.selectAsync()` to
+select a record, read `GridModel.selectedRecord` to assert on selection state, or use
+`TabContainerModel.activateTab()` to navigate — all without clicking through the UI.
+
+This "model as test API" pattern lets tests skip expensive setup interactions and focus on the
+behavior under test, making test suites both faster to execute and easier to maintain.
 
 ## Applying testId in Application Code
 
@@ -333,13 +341,66 @@ textInput({
 // Clear button (if enabled) gets data-testid="search-input-clear-btn"
 ```
 
-## Mobile Platform Limitations
+## Best Practices
 
-The `testId` infrastructure described in this document applies to the **desktop toolkit only**.
-The mobile toolkit does not currently support `testId` propagation — mobile `FormField`,
-`TabContainer`, and input components do not propagate `testId` or generate sub-testIds. If your
-application targets mobile, be aware that automated test selectors based on `data-testid`
-attributes will not be available for mobile-rendered components.
+### Tag Major Landmarks, Not Every Component
+
+Focus `testId` on the components that test automation actually needs to find and interact with:
+
+- **Grids, forms, and data views** — primary data containers that tests will query and assert against
+- **Buttons and actions** — interactive elements that tests need to click
+- **Tab containers** — navigation targets for switching views
+- **Panels and key layout sections** — top-level landmarks that define the page structure
+- **Standalone inputs** — search fields, filters, and other inputs outside of forms
+
+There is no need to add `testId` to every `Box`, `HBox`, or layout wrapper — these are structural
+and rarely targeted by tests. Similarly, inputs inside a `Form` with a `testId` get their own
+selectors automatically via `FormField`, so there is no need to tag them individually.
+
+### Use Descriptive, Stable Identifiers
+
+Choose `testId` values that describe the component's role in the application, not its type or
+position. Good testIds remain meaningful even if the UI is rearranged:
+
+```typescript
+// ✅ Do: Describe the component's purpose
+grid({testId: 'open-orders-grid', model: gridModel})
+button({testId: 'submit-trade-btn', text: 'Submit'})
+form({testId: 'trade-entry-form', model: formModel})
+
+// ❌ Don't: Use generic or positional names
+grid({testId: 'grid1', model: gridModel})
+button({testId: 'top-right-button', text: 'Submit'})
+form({testId: 'form', model: formModel})
+```
+
+### Let Composite Components Do the Work
+
+Take advantage of Hoist's automatic sub-testId generation. A single `testId` on a `Form` or
+`TabContainer` makes its entire subtree addressable — there is no need to manually tag each
+child. See [Composite Components and Sub-TestIds](#composite-components-and-sub-testids) for the
+full list of components that support this.
+
+## Mobile Platform Support
+
+The core `testId` infrastructure — `TestSupportProps`, `BoxProps`, the `TEST_ID` constant, and
+the `getTestId()` utility — is fully cross-platform. Any component that renders through `Box`
+(including cross-platform components like `Grid`, `DataView`, and `Chart`) will apply its
+`testId` as a `data-testid` attribute on both desktop and mobile.
+
+However, the **advanced propagation features** described in
+[Composite Components and Sub-TestIds](#composite-components-and-sub-testids) are currently
+**desktop-only**. Specifically, the mobile implementations of the following components do not
+yet propagate `testId` or generate sub-testIds:
+
+- **Mobile `FormField`** — does not read `testId` from `FormContext` or generate `-input` /
+  `-readonly-display` sub-testIds
+- **Mobile `TabContainer`** — does not apply `testId` to the Onsen tabbar or generate per-tab
+  sub-testIds
+- **Mobile input components** (`TextInput`, `Select`, `NumberInput`, `DateInput`, `Checkbox`,
+  `SwitchInput`, `TextArea`, `ButtonGroupInput`) — do not apply `testId` to their rendered elements
+
+Closing these gaps is tracked in [#4239](https://github.com/xh/hoist-react/issues/4239).
 
 ## Writing Test Selectors
 
