@@ -34,8 +34,8 @@ access to the GitHub API — reading PRs, diffs, issues, and more — without re
 to be installed. This is especially useful in cloud environments where `gh` may not be available.
 
 The server uses the official `github/github-mcp-server` via Docker and requires a
-`GITHUB_PERSONAL_ACCESS_TOKEN` environment variable. When both `gh` CLI and the MCP server are
-available, either can be used; prefer `gh` for simple commands and MCP tools for structured data.
+`GITHUB_TOKEN` environment variable. When both `gh` CLI and the MCP server are available,
+either can be used; prefer `gh` for simple commands and MCP tools for structured data.
 
 ## Architecture
 
