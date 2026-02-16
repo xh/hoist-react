@@ -16,7 +16,6 @@
     * Added `showGridBackground` and `showAddViewButtonWhenEmpty` config options to
       `DashCanvasModel`.
     * Added support for `'wrap'` compaction strategy.
-* Added new elementFactory tags: `fieldset`, `legend`.
 
 ### 🐞 Bug Fixes
 
