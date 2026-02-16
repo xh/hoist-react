@@ -347,3 +347,35 @@
 - Updated `docs/README.md` index: added Quick Reference entries (authorization, error handling,
   testing) and Concepts table entries for all four new docs
 - Updated `docs/planning/docs-roadmap.md`: all four concept entries moved from Planned to Draft
+
+### 2026-02-16
+- Reviewed and refined `docs/error-handling.md` (Draft → Done):
+  - Reframed `catchDefault()` as a fire-and-forget convenience for one-shot contexts (button click
+    handlers, standalone save calls), not a general-purpose error handling approach
+  - Added pitfall: "Using catchDefault When Code Continues After the Promise" — explains how
+    `catchDefault()` returns `undefined` on rejection, allowing subsequent code to run with an
+    unexpected value (unlike try/catch which jumps to the error path)
+  - Clarified ErrorBoundary scope: catches React rendering lifecycle errors (render, mount) only,
+    not errors from `doLoadAsync()`, event handlers, or MobX reactions
+  - Removed incorrect rethrow-to-ErrorBoundary pattern from doLoadAsync section
+  - Added "Displaying Errors Inline with ErrorMessage and lastLoadException" section: check
+    `model.lastLoadException` in render and swap in `errorMessage` for just the content area,
+    keeping toolbars/chrome visible. Emphasized as the best UX for data-display panels. Contrasted
+    with modal alerts for form submissions/workflow actions where interruption is appropriate.
+  - Added `actionFn` retry button example with guidance on when to include it (transient failures)
+    vs. when not to (permissions, invalid queries)
+  - Added "Let Exceptions Propagate from Services" section: service data-fetching methods should
+    not catch exceptions — let them propagate to the model/component layer where UI-context
+    decisions belong. Re-throw if catching for internal purposes.
+  - Expanded Routine Exceptions intro: explained business-case signaling (system working as
+    designed, no follow-up needed) and the operational benefit of keeping server error logs clean
+    so non-routine exceptions remain actionable
+  - Fixed `catchDefaultWhen` example: changed fake `'AbortException'` name to
+    `e => e.isFetchAborted` function selector
+  - Standardized all pitfall code examples to ✅/❌ markers per doc guidelines
+  - Removed dangling `loadObserver` mention from Key Source Files table
+  - Added `FetchException` to Types.ts entry in Key Source Files
+- Updated `promise/README.md` to align with error-handling review:
+  - Reframed `catchDefault` description for fire-and-forget usage with Avoid warning
+  - Fixed `catchWhen`/`catchDefaultWhen` examples: replaced `'AbortException'` with
+    `e => e.isFetchAborted` predicate, added `'ValidationException'` string-based example

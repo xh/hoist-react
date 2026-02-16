@@ -1,7 +1,5 @@
 # Error Handling
 
-> **Status: DRAFT** -- This document is awaiting review by the XH team. Content may be incomplete or inaccurate.
-
 ## Overview
 
 Hoist provides a centralized error handling system that logs, reports, and displays exceptions in a
@@ -167,22 +165,20 @@ the display.
 
 ## Promise.catchDefault()
 
-The most concise way to handle errors in promise chains. It delegates directly to
-`XH.handleException()` and accepts the same options:
+A concise way to add centralized error handling to a one-shot promise chain. It delegates directly
+to `XH.handleException()` and accepts the same options.
+
+`catchDefault()` is best suited for fire-and-forget contexts where there is no subsequent code
+that depends on the promise's resolved value -- e.g. button click handlers or standalone
+save/submit calls. For `async` methods with multiple steps, prefer a `try/catch` block instead
+(see the pitfall below).
 
 ```typescript
-// Basic usage -- equivalent to .catch(e => XH.handleException(e))
-this.fetchDataAsync()
-    .then(data => this.processData(data))
-    .catchDefault();
-
-// With options
-this.saveRecordAsync()
-    .catchDefault({alertType: 'toast'});
-
-// Silent logging only -- no user alert
-this.refreshCacheAsync()
-    .catchDefault({showAlert: false});
+// Button click handler -- no code follows, so catchDefault is ideal
+onSubmitClick() {
+    this.submitOrderAsync()
+        .catchDefault({alertType: 'toast'});
+}
 ```
 
 ### catchDefault in Promise Chains
@@ -200,11 +196,11 @@ Placing `catchDefault()` before `.track()` would prevent tracking from capturing
 
 ### catchDefaultWhen
 
-Selectively apply default handling only for specific exception types:
+Selectively apply default handling only for exceptions matching a predicate:
 
 ```typescript
 this.submitOrderAsync()
-    .catchDefaultWhen('AbortException', {showAlert: false});
+    .catchDefaultWhen(e => e.isFetchAborted, {showAlert: false});
 ```
 
 ### catchWhen + catchDefault
@@ -277,15 +273,67 @@ catch (e) {
 }
 ```
 
-For child detail panels (charts, secondary grids), consider `showAlert: false` with a re-thrown
-exception, allowing the parent's `ErrorBoundary` to display an inline error message instead:
+### Displaying Errors Inline with ErrorMessage and lastLoadException
+
+For child components like charts, secondary grids, or dashboard widgets, you often want to show
+a load failure inline rather than popping up a modal or toast. The component should still render
+its surrounding chrome (title, toolbar) so the user can adjust their query or take other actions
+-- only the _content area_ should be replaced with an error message.
+
+`LoadSupport` tracks the most recent load failure on `model.lastLoadException`. The component's
+render function can check this property and swap in an `errorMessage` component:
+
+```typescript
+import {errorMessage} from '@xh/hoist/cmp/error';
+
+export const myWidget = hoistCmp.factory({
+    render({model}) {
+        return panel({
+            item: model.lastLoadException
+                ? errorMessage({error: model.lastLoadException})
+                : grid(),
+            bbar: toolbar(/* toolbar still renders, user can adjust filters */)
+        });
+    }
+});
+```
+
+The `errorMessage` component also accepts an `actionFn` prop to render a retry button. This is
+useful when the failure is likely transient (e.g. a network timeout) and retrying has a reasonable
+chance of success:
+
+```typescript
+errorMessage({
+    error: model.lastLoadException,
+    actionFn: () => model.refreshAsync()
+})
+```
+
+Don't include a retry button when there is no reason to believe a retry will help -- for example,
+when the error clearly indicates a permissions issue or an invalid query. Offering a retry in
+those cases just encourages the user to repeat an action that will fail again.
+
+For panels that display data, this is the best user experience. It avoids modal interruptions,
+seamlessly prevents the user from seeing stale data that no longer matches their query, and still
+provides a clear area to communicate the full error message. The developer chooses exactly which
+part of the UI to replace -- consider what the user still needs to see and interact with (a
+toolbar for adjusting filters, a title bar, sibling components) and scope the `errorMessage` to
+replace only the content that actually failed to load.
+
+The exception to this pattern is actions like form submissions or workflow steps, where there is
+no part of the UI that should be taken down. In those cases, a modal dialog (or toast) is more
+appropriate -- the deliberate interruption ensures the user notices that their action did not
+succeed, which is a feature rather than a gap.
+
+When using the inline pattern, handle the error in the model's `doLoadAsync` with
+`showAlert: false` to
+suppress the modal/toast (the inline `errorMessage` provides the user-facing feedback), but still
+log to the server for admin visibility:
 
 ```typescript
 catch (e) {
     if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-    chartModel.clear();
     XH.handleException(e, {showAlert: false});
-    throw e;  // Let ErrorBoundary catch and display inline
 }
 ```
 
@@ -298,12 +346,68 @@ display, the exception will propagate up through `LoadSupport`, which tracks it 
 user or logged to the server -- it will only appear in the browser console. For this reason,
 most non-trivial implementations should include explicit error handling.
 
+## Let Exceptions Propagate from Services
+
+Service methods that fetch data from the server should typically **not** catch their own exceptions.
+Instead, they should let exceptions propagate to the calling model, where the developer has the
+context to decide how to handle them -- whether to show a modal dialog, a toast, an inline
+`errorMessage`, or to suppress the alert entirely.
+
+The decisions around exception handling are inherently tied to the UI: what is the user doing,
+what should they see, and what controls do they need to recover? These decisions belong in the
+model and component layer, not in a shared service. If a service catches and handles an exception
+internally, its callers lose the ability to make those choices.
+
+```typescript
+// ✅ Do: let the exception propagate to the caller
+class PortfolioService extends HoistService {
+    async loadPositionsAsync(portfolioId: string) {
+        return XH.fetchJson({url: 'api/positions', params: {portfolioId}});
+    }
+}
+
+// ❌ Don't: catch and handle in the service -- callers can't customize the UX
+class PortfolioService extends HoistService {
+    async loadPositionsAsync(portfolioId: string) {
+        try {
+            return XH.fetchJson({url: 'api/positions', params: {portfolioId}});
+        } catch (e) {
+            XH.handleException(e);  // caller never knows the load failed
+        }
+    }
+}
+```
+
+If a service needs to catch an exception for its own purposes (e.g. to log additional context or
+clean up internal state), it should re-throw after doing so:
+
+```typescript
+async loadPositionsAsync(portfolioId: string) {
+    try {
+        return await XH.fetchJson({url: 'api/positions', params: {portfolioId}});
+    } catch (e) {
+        console.debug('Position load failed for portfolio:', portfolioId);
+        throw e;  // re-throw so the caller can handle
+    }
+}
+```
+
 ## Routine Exceptions
 
 Exceptions marked with `isRoutine: true` represent expected application conditions -- not
-unexpected technical failures. The framework creates routine exceptions automatically in certain
-cases (e.g. aborted fetches), and server-side Hoist can return routine exceptions for validation
-or business-rule failures.
+unexpected technical failures. They allow the exception handling system to be used for
+business-case signaling: the system is working as designed, nothing has gone wrong, and no
+follow-up investigation is needed. An exception is simply the mechanism used to communicate a
+condition that the UI needs to handle -- a validation failure, a permission denial, or a
+business rule that prevents an action.
+
+The distinction matters for operational health. Non-routine exceptions logged to the server
+should represent genuine signs of unexpected trouble -- things a developer should investigate
+and eventually resolve. Marking expected conditions as `isRoutine` keeps the server-side error
+log clean and actionable, so that real problems stand out rather than being buried in noise.
+
+The framework creates routine exceptions automatically in certain cases (e.g. aborted fetches),
+and server-side Hoist can return routine exceptions for validation or business-rule failures.
 
 ```typescript
 // Server-side (Hoist Core / Grails) can return routine exceptions:
@@ -328,15 +432,18 @@ These defaults can still be overridden in the options passed to `handleException
 
 ## ErrorBoundary
 
-`ErrorBoundary` is a React component that catches unhandled rendering errors from its children,
-preventing them from bringing down the entire application. When an error is caught, the boundary
-replaces its children with an `ErrorMessage` component showing the error and an optional retry
-button.
+`ErrorBoundary` is a React component that catches unhandled errors during the React rendering
+lifecycle -- specifically errors thrown during `render()`, component mounting, or other React
+lifecycle methods. It does **not** catch errors from imperative callbacks like `doLoadAsync()`,
+event handlers, or MobX reactions -- those must be handled with `try/catch` or `catchDefault()`.
+
+When a rendering error is caught, the boundary replaces its children with an `ErrorMessage`
+component showing the error and an optional retry button.
 
 ```typescript
 import {errorBoundary} from '@xh/hoist/cmp/error';
 
-// Wraps children -- catches React lifecycle errors
+// Wraps children -- catches React rendering lifecycle errors
 errorBoundary({
     items: [myComponent()]
 });
@@ -422,15 +529,15 @@ fetch errors specially -- `XH.handleException(e)` or `.catchDefault()` will do t
 ### Swallowing Exceptions Silently
 
 Catching errors without calling `handleException()` or logging means failures go unnoticed.
-Even if you don't want to show an alert, log to the server for visibility:
+Even if you don't want to show an alert, consider logging to the server for visibility:
 
 ```typescript
-// Avoid -- error disappears silently
+// ❌ Don't: error disappears silently
 catch (e) {
     // nothing
 }
 
-// Better -- log for admin visibility, but don't bother the user
+// ✅ Do: log for admin visibility, but don't bother the user
 catch (e) {
     XH.handleException(e, {showAlert: false});
 }
@@ -442,34 +549,16 @@ Without these checks, a stale load failure will show an error dialog for data th
 cares about, or an auto-refresh failure will interrupt the user's current work:
 
 ```typescript
-// Avoid -- auto-refresh failure pops up an error dialog
+// ❌ Don't: auto-refresh failure pops up an error dialog
 catch (e) {
     XH.handleException(e);
 }
 
-// Better -- skip alerts for background and stale operations
+// ✅ Do: skip alerts for background and stale operations
 catch (e) {
     if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
     XH.handleException(e);
 }
-```
-
-### Using catchDefault Before Other Promise Extensions
-
-`catchDefault()` should be the _last_ handler in a promise chain. Placing it before `.track()`
-means the tracking extension never sees the failure:
-
-```typescript
-// Avoid -- track() won't capture failures
-fetchAsync()
-    .catchDefault()
-    .track('Loaded data');
-
-// Correct -- catchDefault last
-fetchAsync()
-    .linkTo(this.loadTask)
-    .track('Loaded data')
-    .catchDefault();
 ```
 
 ### Not Clearing Stale Data on Error
@@ -478,17 +567,65 @@ When a load fails, the UI may still be displaying data from a previous successfu
 user's query has changed, this stale data is misleading:
 
 ```typescript
-// Avoid -- grid shows old data after a failed reload with new filters
+// ❌ Don't: grid shows old data after a failed reload with new filters
 catch (e) {
     XH.handleException(e);
 }
 
-// Better -- clear the grid so the UI reflects the actual state
+// ✅ Do: clear the grid so the UI reflects the actual state
 catch (e) {
     if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
     gridModel.clear();
     XH.handleException(e);
 }
+```
+
+### Using catchDefault When Code Continues After the Promise
+
+`catchDefault()` is a `.catch()` handler -- on rejection, it calls `XH.handleException()` and
+returns `undefined`. Unlike a `try/catch` block, execution does _not_ jump to a separate error
+path. Any code that follows will continue to run with `undefined` in place of the expected value:
+
+```typescript
+// ❌ Don't: data will be undefined after a failed fetch, causing a confusing follow-on error
+async doLoadAsync(loadSpec) {
+    const data = await XH.fetchJson({url: 'api/trades', loadSpec}).catchDefault();
+    runInAction(() => this.trades = data.trades);  // TypeError: Cannot read property of undefined
+}
+
+// ✅ Do: use try/catch when subsequent code depends on the result
+async doLoadAsync(loadSpec) {
+    try {
+        const data = await XH.fetchJson({url: 'api/trades', loadSpec});
+        if (loadSpec.isStale) return;
+        runInAction(() => this.trades = data.trades);
+    } catch (e) {
+        if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+        XH.handleException(e);
+    }
+}
+```
+
+Reserve `catchDefault()` for fire-and-forget contexts where no subsequent code depends on the
+resolved value -- button click handlers or standalone save calls.
+
+
+### Using catchDefault Before Other Promise Extensions
+
+`catchDefault()` should be the _last_ handler in a promise chain. Placing it before `.track()`
+means the tracking extension never sees the failure:
+
+```typescript
+// ❌ Don't: track() won't capture failures
+fetchAsync()
+    .catchDefault()
+    .track('Loaded data');
+
+// ✅ Do: catchDefault last
+fetchAsync()
+    .linkTo(this.loadTask)
+    .track('Loaded data')
+    .catchDefault();
 ```
 
 ### Using requireReload Unnecessarily
@@ -498,10 +635,10 @@ entire application. Reserve this for truly unrecoverable situations like initial
 or session mismatches:
 
 ```typescript
-// Avoid -- forces a full reload for a recoverable error
+// ❌ Don't: force a full reload for a recoverable error
 XH.handleException(e, {requireReload: true});
 
-// Appropriate uses of requireReload
+// ✅ Do: reserve requireReload for truly unrecoverable situations
 XH.handleException(e, {
     message: 'Failed to restore app defaults',
     requireReload: true  // App state is now inconsistent
@@ -515,13 +652,13 @@ XH.handleException(e, {
 | [`core/ExceptionHandler.ts`](../core/ExceptionHandler.ts) | Central handler -- `handleException()`, `logOnServerAsync()`, option defaults, sanitization |
 | [`core/XH.ts`](../core/XH.ts) | `XH.handleException()` and `XH.exception()` convenience aliases |
 | [`exception/Exception.ts`](../exception/Exception.ts) | `Exception.create()` factory -- normalizes thrown values into `HoistException` |
-| [`exception/Types.ts`](../exception/Types.ts) | `HoistException` and `TimeoutException` interfaces |
+| [`exception/Types.ts`](../exception/Types.ts) | `HoistException`, `FetchException`, and `TimeoutException` interfaces |
 | [`promise/Promise.ts`](../promise/Promise.ts) | `catchDefault()`, `catchWhen()`, `catchDefaultWhen()` prototype extensions |
 | [`appcontainer/ExceptionDialogModel.ts`](../appcontainer/ExceptionDialogModel.ts) | Model for the exception display dialog |
 | [`desktop/appcontainer/ExceptionDialog.ts`](../desktop/appcontainer/ExceptionDialog.ts) | Desktop exception dialog view |
 | [`cmp/error/ErrorBoundary.ts`](../cmp/error/ErrorBoundary.ts) | React error boundary wrapper |
 | [`cmp/error/ErrorMessage.ts`](../cmp/error/ErrorMessage.ts) | Inline error display component |
-| [`core/load/LoadSupport.ts`](../core/load/LoadSupport.ts) | Managed loading -- tracks `lastLoadException`, links to `loadObserver` |
+| [`core/load/LoadSupport.ts`](../core/load/LoadSupport.ts) | Managed loading -- tracks `lastLoadException` |
 | [`svc/FetchService.ts`](../svc/FetchService.ts) | HTTP request service -- creates structured fetch exceptions |
 
 ## Related Documentation
