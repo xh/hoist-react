@@ -1446,12 +1446,9 @@ export class GridModel extends HoistModel {
 
     /**
      * Begin an inline editing session.
-     * @param opts.record - StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
-     *      will be used, if any, or the first overall StoreRecord in the grid.
-     * @param opts.colId - ID of column on which to start editing. If unspecified, the first
-     *      editable column will be used.
+     * @param opts - options controlling which record/column to edit.
      */
-    async beginEditAsync(opts: {record?: StoreRecordOrId; colId?: string} = {}) {
+    async beginEditAsync(opts: BeginEditAsyncOptions = {}) {
         const {record, colId} = opts;
         await this.whenReadyAsync();
         if (!this.isReady) return;
@@ -2014,4 +2011,14 @@ export class GridModel extends HoistModel {
             manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
     }
+}
+
+/** Options for {@link GridModel.beginEditAsync}. */
+export interface BeginEditAsyncOptions {
+    /** StoreRecord/ID to edit. If unspecified, the first selected StoreRecord
+     *  will be used, if any, or the first overall StoreRecord in the grid. */
+    record?: StoreRecordOrId;
+    /** ID of column on which to start editing. If unspecified, the first
+     *  editable column will be used. */
+    colId?: string;
 }

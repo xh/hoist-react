@@ -40,8 +40,8 @@ function parseBoolish(value?: string, defaultValue = false): boolean {
  * and an adaptive code template into a single markdown guide. Output adapts
  * based on provided `tabs` and `routing` arguments.
  *
- * @param args.tabs - Comma-separated tab names (e.g. "overview,details,history")
- * @param args.routing - Whether to include route integration ("true" or "false")
+ * @param args - prompt arguments: `tabs` (comma-separated tab names, e.g.
+ *   "overview,details,history") and `routing` ("true" or "false" for route integration).
  */
 export async function buildTabsPrompt(args: {
     tabs?: string;

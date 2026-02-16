@@ -39,8 +39,8 @@ function parseBoolish(value?: string, defaultValue = true): boolean {
  * conventions, and an adaptive code template into a single markdown guide.
  * Output adapts based on provided `fields` and `validation` arguments.
  *
- * @param args.fields - Comma-separated field names (e.g. "firstName,lastName,email,age")
- * @param args.validation - Whether to include validation examples ("true" or "false")
+ * @param args - prompt arguments: `fields` (comma-separated field names, e.g.
+ *   "firstName,lastName,email,age") and `validation` ("true" or "false").
  */
 export async function buildFormPrompt(args: {
     fields?: string;

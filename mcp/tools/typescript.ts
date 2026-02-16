@@ -33,8 +33,8 @@ function toRelativePath(filePath: string): string {
 
 /**
  * Format a member as a readable line with optional decorator prefix and JSDoc description.
- * e.g. "@observable columns: ColumnOrGroup[]"
- *      "    Columns displayed in the grid."
+ * e.g. `\@observable columns: ColumnOrGroup[]`
+ *      `    Columns displayed in the grid.`
  */
 function formatMember(member: MemberInfo): string {
     const lines: string[] = [];

@@ -32,8 +32,9 @@ function parseCSV(value?: string): string[] {
  * and an adaptive code template into a single markdown guide. Output adapts
  * based on provided `dataFields` and `features` arguments.
  *
- * @param args.dataFields - Comma-separated data field names (e.g. "name,value,date")
- * @param args.features - Comma-separated features: sorting, grouping, selection, export, filtering, treeMode
+ * @param args - prompt arguments: `dataFields` (comma-separated field names, e.g.
+ *   "name,value,date") and `features` (comma-separated feature flags: sorting, grouping,
+ *   selection, export, filtering, treeMode).
  */
 export async function buildGridPrompt(args: {
     dataFields?: string;
