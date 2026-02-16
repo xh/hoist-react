@@ -11,8 +11,12 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `RadioInput` to generate testIds using option `value` instead of `label`, avoiding spaces
+  and special characters in test identifiers.
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
+* Fixed `RestGrid` action button `testId` values to be scoped by parent `testId`, preventing
+  collisions when multiple grids are rendered on the same page.
 
 ## 81.0.2 - 2026-02-12
 

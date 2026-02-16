@@ -69,18 +69,25 @@ at import time and declared globally via TypeScript's module augmentation.
 #### catchDefault
 
 Delegates to Hoist's centralized exception handler (`XH.handleException()`) for convention-driven
-logging and alerting. Typically called last in a promise chain:
+logging and alerting. Best suited for fire-and-forget contexts where no subsequent code depends on
+the resolved value -- e.g. button click handlers or standalone save calls.
+
+**Avoid** using `catchDefault()` with `await` when code continues after the call. On rejection,
+`catchDefault()` handles the error and returns `undefined`, allowing subsequent code to run with
+an unexpected `undefined` value. Use a `try/catch` block instead when further code depends on the
+result. See [Error Handling: Common Pitfalls](../docs/error-handling.md#common-pitfalls) for
+details.
 
 ```typescript
-this.fetchDataAsync()
-    .then(data => this.processData(data))
-    .catchDefault();
+// Button click handler -- fire-and-forget, ideal for catchDefault
+onSubmitClick() {
+    this.submitOrderAsync()
+        .catchDefault({alertType: 'toast'});
+}
 
 // With options — same as XH.handleException options
-this.fetchDataAsync()
+this.refreshCacheAsync()
     .catchDefault({showAlert: false});              // log only, no dialog
-this.fetchDataAsync()
-    .catchDefault({alertType: 'toast'});            // show toast instead of dialog
 ```
 
 #### catchWhen / catchDefaultWhen
@@ -88,20 +95,24 @@ this.fetchDataAsync()
 Selectively catch exceptions by name or predicate, re-throwing anything that doesn't match:
 
 ```typescript
-// Catch by exception name — handler is optional, omit to silently swallow
+// Catch by predicate — handler is optional, omit to silently swallow
 fetchAsync()
-    .catchWhen('AbortException');              // swallow aborts, return undefined
+    .catchWhen(e => e.isFetchAborted);        // swallow aborts, return undefined
 
-// Catch by predicate
+// Catch by predicate with handler
 fetchAsync()
     .catchWhen(
         e => e.httpStatus === 404,
         () => this.showNotFound()
     );
 
-// Catch with default handler, only for specific exceptions
+// Catch by exception name
 fetchAsync()
-    .catchDefaultWhen('AbortException', {showAlert: false});
+    .catchWhen('ValidationException', e => this.showValidationErrors(e));
+
+// Catch with default handler, only for matching exceptions
+fetchAsync()
+    .catchDefaultWhen(e => e.isFetchAborted, {showAlert: false});
 ```
 
 The `selector` parameter accepts:
