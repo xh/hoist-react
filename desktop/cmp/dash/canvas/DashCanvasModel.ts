@@ -403,7 +403,7 @@ export class DashCanvasModel
             !this.draggedInView,
             `No draggedInView set on DashCanvasModel prior to onDrop operation.
             Typically a developer would set this in response to dragstart events from
-             a DashViewTray or similar component.`
+             a DashCanvasWidgetChooser or similar component.`
         );
 
         const droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
@@ -447,7 +447,7 @@ export class DashCanvasModel
         };
     }
 
-    getViewsBySpecId(id) {
+    getViewsBySpecId(id: string): DashCanvasViewModel[] {
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
