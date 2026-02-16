@@ -113,10 +113,10 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     tooltip
                 }),
                 box({
-                    className: 'xh-card__content',
+                    ...contentBoxProps,
+                    className: classNames('xh-card__content', contentBoxProps?.className),
                     items,
-                    display: collapsed ? 'none' : 'flex',
-                    ...contentBoxProps
+                    display: collapsed ? 'none' : 'flex'
                 })
             ],
             ...restProps

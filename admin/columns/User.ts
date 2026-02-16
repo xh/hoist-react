@@ -54,10 +54,13 @@ export const impersonating: ColumnSpec = {
 };
 
 export const impersonatingFlag: ColumnSpec = {
-    field: {name: 'impersonatingFlag', type: 'bool'},
+    field: {
+        name: 'impersonatingFlag',
+        type: 'bool',
+        description: 'Indicates if the user was impersonating another user during tracked activity.'
+    },
     chooserGroup: 'User',
     headerName: Icon.impersonate(),
-    headerTooltip: 'Indicates if the user was impersonating another user during tracked activity.',
     excludeFromExport: true,
     resizable: false,
     align: 'center',

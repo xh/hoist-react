@@ -65,15 +65,6 @@
   &__sort-picker {
     flex: none !important;
     border-top: var(--xh-border-solid);
-
-    .xh-panel__content .xh-hframe {
-      padding: var(--xh-pad-px);
-      align-items: center;
-
-      & > *:not(:last-child) {
-        margin-right: var(--xh-pad-px);
-      }
-    }
   }
 
   &__intro-text {

@@ -242,10 +242,10 @@ export const instance: ColumnSpec = {
         displayName: 'Server',
         type: 'string',
         isDimension: true,
-        aggregator: 'UNIQUE'
+        aggregator: 'UNIQUE',
+        description:
+            'Unique ID of the back-end Hoist cluster member instance to which the client app is connected.'
     },
-    chooserDescription:
-        'The unique ID of the back-end Hoist cluster member instance to which the client app is connected.',
     chooserGroup: 'Session IDs',
     renderer: badgeRenderer,
     width: 100
@@ -256,10 +256,10 @@ export const loadId: ColumnSpec = {
         name: 'loadId',
         type: 'string',
         isDimension: true,
-        aggregator: 'UNIQUE'
+        aggregator: 'UNIQUE',
+        description:
+            'Unique ID assigned to each load/init of the application. Refreshing the tab within your browser will result in a new Load ID.'
     },
-    chooserDescription:
-        'A unique ID assigned to each load/init of the application. Refreshing the tab within your browser will result in a new Load ID.',
     chooserGroup: 'Session IDs',
     ...badgeCol
 };
@@ -333,10 +333,10 @@ export const tabId: ColumnSpec = {
         name: 'tabId',
         type: 'string',
         isDimension: true,
-        aggregator: 'UNIQUE'
+        aggregator: 'UNIQUE',
+        description:
+            'Tab ID is established within browser session storage and maintained for the lifetime of the tab.'
     },
-    chooserDescription:
-        'A new Tab ID is established within browser session storage and maintained for the lifetime of the tab. Refreshing the app within your browser will maintain the existing Tab ID',
     chooserGroup: 'Session IDs',
     ...badgeCol
 };
@@ -382,10 +382,13 @@ export const userAgent: ColumnSpec = {
 };
 
 export const userAlertedFlag: ColumnSpec = {
-    field: {name: 'userAlerted', type: 'bool'},
+    field: {
+        name: 'userAlerted',
+        type: 'bool',
+        description:
+            'Indicates if the user was shown an interactive alert when this error was triggered.'
+    },
     headerName: Icon.window(),
-    headerTooltip:
-        'Indicates if the user was shown an interactive alert when this error was triggered.',
     chooserGroup: 'Errors',
     resizable: false,
     align: 'center',

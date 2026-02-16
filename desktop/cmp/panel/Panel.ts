@@ -26,7 +26,8 @@ import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, omitBy} from 'lodash';
+import classNames from 'classnames';
+import {omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
@@ -95,6 +96,12 @@ export interface PanelProps<M extends PanelModel = PanelModel>
 
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
+
+    /** Additional props to pass to the inner frame hosting child `items`. */
+    contentBoxProps?: BoxProps;
+
+    /** Allow the panel content area to scroll vertically. */
+    scrollable?: boolean;
 }
 
 /**
@@ -135,6 +142,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             loadingIndicator: loadingIndicatorProp,
             contextMenu,
             hotkeys,
+            contentBoxProps,
+            scrollable,
             children,
             ...rest
         } = nonLayoutProps;
@@ -185,7 +194,15 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
-                    ...castArray(children),
+                    frame({
+                        ...contentBoxProps,
+                        className: classNames('xh-panel__content', contentBoxProps?.className),
+                        flexDirection: contentBoxProps?.flexFlow
+                            ? undefined
+                            : (contentBoxProps?.flexDirection ?? 'column'),
+                        overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
+                        items: children
+                    }),
                     parseToolbar(bbar)
                 ])
             });
@@ -203,7 +220,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
-            className: 'xh-panel__content',
+            className: 'xh-panel__inner',
             items: [
                 panelHeader({
                     title,

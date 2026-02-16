@@ -4,8 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {LayoutProps, PlainObject} from '@xh/hoist/core';
+import {LayoutProps, ResolvedLayoutProps, PlainObject} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
+
+const XH_PAD_VAR = 'var(--xh-pad-px)';
 
 /**
  * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
@@ -21,7 +23,7 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  *     margin, marginTop, marginRight, marginBottom, marginLeft,
  *     padding, paddingTop, paddingRight, paddingBottom, paddingLeft,
  *     height, minHeight, maxHeight, width, minWidth, maxWidth,
- *     flex, flexBasis, flexDirection, flexGrow, flexShrink, flexWrap,
+ *     flex, flexBasis, flexDirection, flexFlow, flexGrow, flexShrink, flexWrap,
  *     alignItems, alignSelf, alignContent, justifyContent,
  *     overflow, overflowX, overflowY, textOverflow,
  *     top, left, position, display
@@ -38,9 +40,10 @@ import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
  *
  * This method implements some minor translations, to allow a more user friendly specification than
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
- * as raw numbers rather than strings.
+ * as raw numbers rather than strings. Margin, padding, and gap accept a boolean shorthand:
+ * `true` resolves to the `--xh-pad-px` CSS var (default 10px), `false` is treated as unset.
  */
-export function getLayoutProps(props: PlainObject): LayoutProps {
+export function getLayoutProps(props: PlainObject): ResolvedLayoutProps {
     // Harvest all keys of interest
     const ret: LayoutProps = pick(props, allKeys) as LayoutProps;
 
@@ -48,6 +51,13 @@ export function getLayoutProps(props: PlainObject): LayoutProps {
     const flexConfig = pick(ret, flexKeys);
     forOwn(flexConfig, (v, k) => {
         if (isNumber(v)) ret[k] = v.toString();
+    });
+
+    // margin/padding/gap: convert `true` to standard app padding CSS var, remove `false`.
+    const pmConfig = pick(ret, pmKeys);
+    forOwn(pmConfig, (v, k) => {
+        if (v === true) ret[k] = XH_PAD_VAR;
+        if (v === false) delete ret[k];
     });
 
     // Dimensions: translate numbers / bare strings into pixels.
@@ -60,7 +70,7 @@ export function getLayoutProps(props: PlainObject): LayoutProps {
     if (ret.margin) ret.margin = toTlbrPx(ret.margin);
     if (ret.padding) ret.padding = toTlbrPx(ret.padding);
 
-    return ret;
+    return ret as ResolvedLayoutProps;
 }
 
 /**
@@ -73,7 +83,7 @@ export function getNonLayoutProps<T extends PlainObject>(props: T): T {
 /**
  * Split a set of props into layout and non-layout props.
  */
-export function splitLayoutProps<T extends PlainObject>(props: T): [LayoutProps, T] {
+export function splitLayoutProps<T extends PlainObject>(props: T): [ResolvedLayoutProps, T] {
     const layoutProps = getLayoutProps(props);
     return [layoutProps, isEmpty(layoutProps) ? props : getNonLayoutProps(props)];
 }
@@ -81,7 +91,7 @@ export function splitLayoutProps<T extends PlainObject>(props: T): [LayoutProps,
 //-------------------------
 // Keys to be processed
 //-------------------------
-const dimKeys = [
+const pmKeys = [
     'margin',
     'marginTop',
     'marginRight',
@@ -92,15 +102,18 @@ const dimKeys = [
     'paddingRight',
     'paddingBottom',
     'paddingLeft',
-    'height',
-    'minHeight',
-    'maxHeight',
-    'width',
-    'minWidth',
-    'maxWidth',
     'gap'
 ];
-const flexKeys = ['flex', 'flexBasis', 'flexDirection', 'flexGrow', 'flexShrink', 'flexWrap'];
+const dimKeys = [...pmKeys, 'height', 'minHeight', 'maxHeight', 'width', 'minWidth', 'maxWidth'];
+const flexKeys = [
+    'flex',
+    'flexBasis',
+    'flexDirection',
+    'flexFlow',
+    'flexGrow',
+    'flexShrink',
+    'flexWrap'
+];
 const alignKeys = ['alignItems', 'alignSelf', 'alignContent', 'justifyContent'];
 const overflowKeys = ['overflow', 'overflowX', 'overflowY', 'textOverflow'];
 const otherKeys = ['top', 'left', 'position', 'display'];

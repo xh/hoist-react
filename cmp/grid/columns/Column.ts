@@ -108,12 +108,19 @@ export interface ColumnSpec {
     displayName?: string;
 
     /**
+     * Supplementary descriptive text for this Column. Sourced from the corresponding data
+     * `Field.description` if available. Used as the default value for `headerTooltip` and
+     * `chooserDescription` when those are not explicitly set.
+     */
+    description?: string;
+
+    /**
      * User-facing text/element displayed in the Column header, or a function to produce the same.
      * Defaulted from `displayName`.
      */
     headerName?: ColumnHeaderNameFn | ReactNode;
 
-    /** Tooltip text for grid header.*/
+    /** Tooltip text for grid header. Defaults from `description` when not explicitly set. */
     headerTooltip?: string;
 
     /**
@@ -268,7 +275,7 @@ export interface ColumnSpec {
 
     /**
      * Additional descriptive text to display within the column chooser. Appears when the column
-     * is selected within the chooser UI.
+     * is selected within the chooser UI. Defaults from `description` when not explicitly set.
      */
     chooserDescription?: string;
 
@@ -436,6 +443,7 @@ export class Column {
     colId: string;
     isTreeColumn: boolean;
     displayName: string;
+    description: string;
     headerName: ColumnHeaderNameFn | ReactNode;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
@@ -509,6 +517,7 @@ export class Column {
             colId,
             isTreeColumn,
             displayName,
+            description,
             headerName,
             headerTooltip,
             headerHasExpandCollapse,
@@ -585,11 +594,12 @@ export class Column {
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
         // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
         this.displayName = displayName ?? this.fieldSpec?.displayName ?? genDisplayName(this.colId);
+        this.description = description ?? this.fieldSpec?.description;
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
         this.headerName = withDefault(headerName, this.displayName);
 
-        this.headerTooltip = headerTooltip;
+        this.headerTooltip = withDefault(headerTooltip, this.description);
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerAlign = headerAlign || align;
         this.headerClass = headerClass;
@@ -640,7 +650,7 @@ export class Column {
 
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
-        this.chooserDescription = chooserDescription;
+        this.chooserDescription = withDefault(chooserDescription, this.description);
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
 
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports

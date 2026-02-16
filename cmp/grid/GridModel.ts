@@ -1817,7 +1817,7 @@ export class GridModel extends HoistModel {
 
             if (!field) return col;
 
-            const {displayName, type} = field,
+            const {displayName, description, type} = field,
                 isNum = numTypes.includes(type),
                 isDate = dateTypes.includes(type),
                 align = isNum ? 'right' : undefined,
@@ -1830,6 +1830,7 @@ export class GridModel extends HoistModel {
             // TODO: Set the editor based on field type
             return {
                 displayName,
+                description,
                 sortingOrder,
                 align,
                 ...col

@@ -1,7 +1,7 @@
-# 💻 Hoist Development Environment Setup
+# Development Environment Setup
 
 The information below applies to Hoist development generally and covers the setup of a local
-development environment for both a [Hoist Core](https://github.com/xh/toolbox) server and a Hoist
+development environment for both a [Hoist Core](https://github.com/xh/hoist-core) server and a Hoist
 React client application.
 
 [Toolbox](https://github.com/xh/toolbox) is our reference app for Hoist development and can be a
@@ -9,7 +9,7 @@ useful project to check out and run locally to explore Hoist development. Please
 to [that project's README](https://github.com/xh/toolbox/blob/develop/README.md) for additional,
 Toolbox-specific setup info.
 
-## tldr;
+## Prerequisites
 
 Development of Hoist applications requires:
 
@@ -47,7 +47,7 @@ If using IntelliJ (see below), consider having the IDE download and update a JDK
 ### Server-side instance configuration
 
 Before starting the server-side of a project for the first time, ensure you have copied the
-project's `template.env` to `.env` and filled in any missing instance configuration values required
+project's `.env.template` to `.env` and filled in any missing instance configuration values required
 to provide environment-specific database connection and service account details.
 
 Note that some older projects might use a YAML config file in place of `.env` - if you don't see a
@@ -76,7 +76,7 @@ thing is to decide on one or the other for your project and ensure all developer
 When using `yarn`, we typically include an updated, portable version of yarn bundled within each
 project, but a local yarn install is still required to detect and run the portable copy:
 
-- The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
+- The easiest way to install yarn is with npm: `npm i -g yarn`
 - Once installed, verify it can be run globally with `yarn --version`
 - Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
   and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
@@ -100,7 +100,7 @@ IDE at the `build.gradle` file within your project's root directory. This should
 detect the Gradle project as a Grails web application, download and index the server-side
 dependencies, and setup a ready-to-go "run configuration" to start the project.
 
-👉 For Toolbox / Hoist development, XH uses a "wrapper" project setup to allow for development of
+For Toolbox / Hoist development, XH uses a "wrapper" project setup to allow for development of
 both the Hoist libraries and the Toolbox app from a single IntelliJ project. For client projects
 where we are _not_ doing Hoist development, the configuration can be simpler and this wrapper
 structure is _not_ required. See the Toolbox README for more information.
@@ -133,8 +133,3 @@ From within the IDE's general preferences / settings dialog:
   "Update method: Rebase" to avoid unnecessary merge commits when updating your local repo.
     - The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
       version control support.
-
-------------------------------------------
-
-☎️ info@xh.io | <https://xh.io>
-Copyright © 2026 Extremely Heavy Industries Inc.
