@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {DragEvent} from 'react';
 import {DashCanvasModel} from '@xh/hoist/desktop/cmp/dash';
@@ -31,16 +31,17 @@ export class DashCanvasWidgetChooserModel extends HoistModel {
     }
 
     onDragStart(evt: DragEvent<HTMLDivElement>) {
-        const target = evt.target as HTMLElement;
-        if (!target) return;
+        const target = evt.target as HTMLElement,
+            viewSpecId: string = target.getAttribute('id').split('draggableFor-')[1],
+            viewSpec = this.dashCanvasModel.viewSpecs.find(it => it.id === viewSpecId);
+
+        if (!viewSpec) return;
 
         this.dashCanvasModel.showAddViewButtonWhenEmpty = false;
         evt.dataTransfer.effectAllowed = 'move';
         target.classList.add('is-dragging');
 
-        const viewSpecId: string = target.getAttribute('id').split('draggableFor-')[1],
-            viewSpec = this.dashCanvasModel.viewSpecs.find(it => it.id === viewSpecId),
-            {width, height} = viewSpec,
+        const {width, height} = viewSpec,
             widget = {
                 viewSpecId,
                 layout: {
