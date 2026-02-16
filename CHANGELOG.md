@@ -9,9 +9,14 @@
   when those are not explicitly set, providing a single point of configuration for supplementary
   descriptive text that flows from the data layer through to the grid UI.
 * DashCanvas:
-    * supports dragging and dropping widgets in from an external container.
-    * supports new compacting strategy: 'wrap'
-* new elementFactory tags: `fieldset`, `legend`
+    * Added `DashCanvasWidgetChooser` component — a draggable widget well for adding views to a
+      `DashCanvas` via drag-and-drop from an external container.
+    * Added `allowsDrop`, `onDropDone`, and `onDropDragOver` config options to `DashCanvasModel`
+      to support external drag-and-drop.
+    * Added `showGridBackground` and `showAddViewButtonWhenEmpty` config options to
+      `DashCanvasModel`.
+    * Added support for `'wrap'` compaction strategy.
+* Added new elementFactory tags: `fieldset`, `legend`.
 
 ### 🐞 Bug Fixes
 
@@ -21,6 +26,7 @@
 ### 📚 Libraries
 
 * react-grid-layout `2.1 → 2.2.2`
+* qs `6.14.0 → 6.14.1`
 
 ## 81.0.2 - 2026-02-12
 
