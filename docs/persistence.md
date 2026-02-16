@@ -104,6 +104,9 @@ important for widgets that allow multiple copies (the default — `DashViewSpec.
 Multiple copies of a widget are only useful if each instance can be configured differently, and
 persisting each instance's settings to its own `DashViewModel` is what makes that possible.
 
+See [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) for the full dashboard architecture,
+including the widget state persistence pattern with `onLinked()` and `markPersist()`.
+
 ### Custom
 
 Provides app-defined `getData` / `setData` functions for full control over storage. The functions
