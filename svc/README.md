@@ -298,7 +298,8 @@ XH.clientHealthService.addSource('myFeature', () => ({
 #### InspectorService
 **File**: `InspectorService.ts` | **Access**: `XH.inspectorService`
 
-Developer tool for monitoring HoistModel, HoistService, and Store instances at runtime.
+Developer tool for monitoring HoistModel, HoistService, and Store instances at runtime. See
+[`/inspector/`](../inspector/README.md) for full documentation on the Inspector UI.
 
 ```typescript
 // Toggle Inspector UI

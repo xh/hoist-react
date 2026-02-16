@@ -416,4 +416,4 @@ form({
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/mobile/`](../mobile/README.md) - Mobile platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton
-- `/kit/blueprint/` - Blueprint UI library wrappers
+- [`/kit/`](../kit/README.md) - Third-party library wrappers (Blueprint, ag-Grid, Highcharts, etc.)
