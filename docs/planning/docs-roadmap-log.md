@@ -379,3 +379,23 @@
   - Reframed `catchDefault` description for fire-and-forget usage with Avoid warning
   - Fixed `catchWhen`/`catchDefaultWhen` examples: replaced `'AbortException'` with
     `e => e.isFetchAborted` predicate, added `'ValidationException'` string-based example
+
+### 2026-02-16 (cont.)
+- Reviewed and finalized `docs/test-automation.md` (Draft → Done):
+  - Renamed `testing.md` → `test-automation.md` to avoid future clash with actual test coverage
+    docs; updated all references in `docs/README.md` and `docs-roadmap.md`
+  - All factual claims verified against source code (two parallel verification agents checked
+    core infrastructure and component-level testId behavior) — no inaccuracies found
+  - Added "Best Practices" section: guidance on what to tag (major landmarks, not every Box),
+    naming conventions (descriptive/stable identifiers), and leveraging composite auto-generation
+  - Rewrote "Mobile Platform Limitations" → "Mobile Platform Support": clarified that core testId
+    works cross-platform via Box, but advanced propagation (FormField auto-testIds, TabContainer
+    sub-testIds, mobile input testId application) is currently desktop-only. References #4239
+  - Expanded `XH.getModelByTestId()` section: emphasized the "model as test API" pattern — tests
+    can use model APIs to programmatically set up preconditions (bulk form values, grid selection,
+    tab navigation) then focus interactive simulation on the behavior under test
+  - Filed three issues discovered during review:
+    - #4235: RestGrid action button testIds are hardcoded, not scoped by parent testId
+    - #4237: RadioInput testId should use option value, not label
+    - #4239: Mobile components should support testId at parity with desktop (assigned to Copilot)
+    - #4241: DynamicTabSwitcher does not propagate testId
