@@ -8,7 +8,7 @@ import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import {debounced, throwIf} from '@xh/hoist/utils/js';
+import {debounced, getTestId, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isNull, isObject} from 'lodash';
 import {tab} from './Tab';
@@ -20,7 +20,7 @@ import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
  *
  * @internal
  */
-export function tabContainerImpl({model, className, ...props}: TabContainerProps) {
+export function tabContainerImpl({model, className, testId, ...props}: TabContainerProps) {
     const switcherProps = getSwitcherProps(props),
         {activeTab} = model,
         tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
@@ -33,18 +33,20 @@ export function tabContainerImpl({model, className, ...props}: TabContainerProps
 
     if (isEmpty(tabs)) {
         return page({
+            testId,
             className: 'xh-tab-page',
             item: placeholder(model.emptyText)
         });
     }
 
     return onsenTabbar({
+        testId,
         className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
         position: switcherProps?.orientation,
         activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
         renderTabs: (idx, ref) => {
             impl.setSwiper(ref);
-            return tabs.map(renderTabModel);
+            return tabs.map(tabModel => renderTabModel(tabModel, testId));
         },
         onPreChange: e => model.activateTab(tabs[e.index].id),
         hideTabs: !switcherProps,
@@ -58,11 +60,12 @@ function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProp
     return switcher === false || isNull(switcher) ? null : {orientation: 'bottom'};
 }
 
-function renderTabModel(tabModel: TabModel) {
-    const {id, title, icon} = tabModel;
+function renderTabModel(tabModel: TabModel, containerTestId?: string) {
+    const {id, title, icon} = tabModel,
+        tabTestId = getTestId(containerTestId, id);
 
     return {
-        content: tab({key: id, model: tabModel}),
+        content: tab({key: id, model: tabModel, testId: tabTestId}),
         tab: onsenTab({
             key: id,
             className: 'xh-tab',

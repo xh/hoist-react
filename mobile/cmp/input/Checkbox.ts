@@ -8,6 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import './Checkbox.scss';
 
 export interface CheckboxProps extends HoistProps, HoistInputProps {
@@ -44,6 +45,7 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         tabIndex: props.tabIndex,
 
         style: props.style,
+        [TEST_ID]: props.testId,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,

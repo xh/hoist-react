@@ -22,13 +22,14 @@ import {
     uses,
     XH
 } from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
@@ -133,9 +134,18 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             if (displayInvalid) classes.push('xh-form-field--invalid');
         }
 
+        // Test ID handling
+        const testId = getFormFieldTestId(props, formContext, model?.name);
+        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
+        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+
         let childEl =
             readonly || !child
-                ? readonlyChild({model, readonlyRenderer})
+                ? readonlyChild({
+                      model,
+                      readonlyRenderer,
+                      testId: getTestId(testId, 'readonly-display')
+                  })
                 : editableChild({
                       model,
                       child,
@@ -144,11 +154,13 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       commitOnChange,
                       width: layoutProps.width,
                       height: layoutProps.height,
-                      flex: layoutProps.flex
+                      flex: layoutProps.flex,
+                      testId: getTestId(testId, 'input')
                   });
 
         return box({
             ref,
+            testId,
             className: classNames(className, classes),
             ...layoutProps,
             items: [
@@ -195,9 +207,10 @@ interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
 const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
-    render({model, readonlyRenderer}) {
+    render({model, readonlyRenderer, testId}) {
         const value = model ? model['value'] : null;
         return div({
+            [TEST_ID]: testId,
             className: 'xh-form-field__readonly-display',
             item: readonlyRenderer(value, model)
         });
@@ -207,7 +220,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
 const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
-    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
+    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex, testId}) {
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
@@ -215,7 +228,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref),
+            testId
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
@@ -279,4 +293,15 @@ function defaultProp<N extends keyof Partial<FormFieldProps>>(
 ): Partial<FormFieldProps>[N] {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
+}
+
+function getFormFieldTestId(
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    fieldName: string
+): string {
+    return (
+        props.testId ??
+        (formContext.testId && fieldName ? `${formContext.testId}-${fieldName}` : undefined)
+    );
 }

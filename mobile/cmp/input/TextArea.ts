@@ -8,7 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 
@@ -84,6 +84,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
+            [TEST_ID]: props.testId,
 
             onChange: model.onChange,
             onKeyDown: model.onKeyDown,

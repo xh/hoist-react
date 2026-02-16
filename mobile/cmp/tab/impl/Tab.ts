@@ -26,7 +26,7 @@ export const tab = hoistCmp.factory({
     displayName: 'Tab',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model}) {
+    render({model, testId}) {
         let {content, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
@@ -37,12 +37,13 @@ export const tab = hoistCmp.factory({
             (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
             // Note: We must render an empty placeholder page to work with Onsen's tabbar.
-            return page({className: 'xh-tab-page'});
+            return page({testId, className: 'xh-tab-page'});
         }
 
         return refreshContextView({
             model: refreshContextModel,
             item: page({
+                testId,
                 className: 'xh-tab-page',
                 item: errorBoundary(elementFromContent(content))
             })
