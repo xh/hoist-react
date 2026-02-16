@@ -333,13 +333,30 @@ textInput({
 // Clear button (if enabled) gets data-testid="search-input-clear-btn"
 ```
 
-## Mobile Platform Limitations
+## Cross-Platform Support
 
-The `testId` infrastructure described in this document applies to the **desktop toolkit only**.
-The mobile toolkit does not currently support `testId` propagation — mobile `FormField`,
-`TabContainer`, and input components do not propagate `testId` or generate sub-testIds. If your
-application targets mobile, be aware that automated test selectors based on `data-testid`
-attributes will not be available for mobile-rendered components.
+The `testId` infrastructure described in this document applies to **both desktop and mobile
+toolkits**. Mobile `FormField`, `TabContainer`, and input components now support `testId`
+propagation and sub-testId generation at parity with their desktop counterparts.
+
+**What's supported:**
+
+-   **Mobile FormField** — Auto-generates testIds from form context and field names, passes
+    sub-testIds to input/readonly children, and registers models with `InstanceManager` for
+    `XH.getModelByTestId()`.
+-   **Mobile TabContainer** — Applies testIds to container and generates sub-testIds for each tab
+    (`${testId}-${tabId}`).
+-   **Mobile Inputs** — All mobile input components (`TextInput`, `TextArea`, `NumberInput`,
+    `Select`, `Checkbox`, `SwitchInput`, `DateInput`, `SearchInput`, `ButtonGroupInput`) propagate
+    `testId` to their primary rendered element. Components with sub-elements (e.g., `TextInput`
+    clear button) generate appropriate sub-testIds.
+
+**Platform-specific notes:**
+
+-   Third-party components (react-dates, react-select) may handle sub-testIds differently across
+    platforms based on their library implementations.
+-   Mobile tabs do not have remove buttons, so `${testId}-switcher-${tabId}-remove-btn` (supported
+    on desktop) is not applicable.
 
 ## Writing Test Selectors
 
