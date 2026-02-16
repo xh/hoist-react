@@ -27,6 +27,16 @@ npx tsc --noEmit
 This is a library package - it has no test suite or dev server. It's meant to be used as a
 dependency in Hoist applications (e.g., Toolbox).
 
+## GitHub MCP Server
+
+This repository includes a GitHub MCP server configuration (`.mcp.json`) that provides structured
+access to the GitHub API — reading PRs, diffs, issues, and more — without requiring the `gh` CLI
+to be installed. This is especially useful in cloud environments where `gh` may not be available.
+
+The server uses the official `github/github-mcp-server` via Docker and requires a
+`GITHUB_TOKEN` environment variable. When both `gh` CLI and the MCP server are available,
+either can be used; prefer `gh` for simple commands and MCP tools for structured data.
+
 ## Architecture
 
 ### Core Artifacts
