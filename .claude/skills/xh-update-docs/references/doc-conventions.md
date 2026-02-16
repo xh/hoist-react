@@ -109,10 +109,13 @@ Place entries in the appropriate category section:
 
 ## Documentation Roadmap
 
-Track progress in `docs/README-ROADMAP.md`:
+Track progress in `docs/planning/docs-roadmap.md`:
 - Update status from `Planned` → `Done` with a link when a README is completed
 - Add new entries for newly created sub-packages
+
+Append detailed session notes to `docs/planning/docs-roadmap-log.md`:
 - Add progress notes with date stamps for documentation sessions
+- Follow the existing chronological format
 
 When updating the roadmap, also ensure the corresponding entry in `docs/README.md` is added
 or updated to keep the documentation index in sync.

@@ -72,8 +72,9 @@ the external OAuth provider and Hoist's own user/role system.
 
 ## OAuth Clients
 
-Hoist provides two OAuth client implementations. Both extend `BaseOAuthClient`, which handles
-token lifecycle, automatic refresh, and re-login support.
+Hoist provides two OAuth client implementations in the [`/security/`](../security/README.md)
+package. Both extend `BaseOAuthClient`, which handles token lifecycle, automatic refresh, and
+re-login support.
 
 ### MSAL (Entra ID / Azure AD)
 

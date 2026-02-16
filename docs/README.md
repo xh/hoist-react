@@ -16,7 +16,7 @@ for foundational concepts, then drill into [Components](#components) or [Utiliti
 
 **Library developers:** In addition to the docs below, see
 [`/AGENTS.md`](../AGENTS.md) for coding conventions, architecture patterns, and code style guidance.
-See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracking and conventions.
+See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage tracking and conventions.
 
 ## Quick Reference by Task
 
@@ -40,10 +40,18 @@ See [`README-ROADMAP.md`](./README-ROADMAP.md) for documentation coverage tracki
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md) |
 | Add authentication (OAuth, login) | [Authentication](./authentication.md) |
 | Persist UI state (columns, filters, panel sizes) | [Persistence](./persistence.md) |
+| Check roles, gates, or app access | [Authorization](./authorization.md) |
+| Configure client-side routing or URL-driven tabs | [Routing](./routing.md) |
+| Handle exceptions and display error dialogs | [Error Handling](./error-handling.md) |
+| Add testId selectors for test automation | [Testing](./testing.md) |
 | Use Promises with error handling and tracking | [`/promise/`](../promise/README.md) |
 | Work with MobX, `@bindable`, or `@observable` | [`/mobx/`](../mobx/README.md) |
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md) |
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md) |
+| Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md) |
+| Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md) |
+| Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md) |
+| Understand third-party library integration | [`/kit/`](../kit/README.md) |
 | Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
 | Configure local development environment | [Development Environment](./development-environment.md) |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
@@ -93,14 +101,26 @@ Cross-cutting documentation that spans multiple packages:
 | [Lifecycle: Models & Services](./lifecycle-models-and-services.md) | Model, service, and load/refresh lifecycles after app startup | HoistModel (onLinked, afterLinked, doLoadAsync, destroy), HoistService (initAsync), LoadSupport, LoadSpec, RefreshContextModel |
 | [Authentication](./authentication.md) | How Hoist apps authenticate users via OAuth or form-based login | HoistAuthModel, MsalClient, AuthZeroClient, Token, IdentityService, checkAccess, impersonation |
 | [Persistence](./persistence.md) | Persisting user UI state to various backing stores | @persist, markPersist, PersistenceProvider, localStorage, Preference, ViewManager, GridModel/FormModel/PanelModel persistence |
+| [Authorization](./authorization.md) | Role-based authorization and config-driven feature gates | HoistUser, hasRole, hasGate, checkAccess, HOIST_ADMIN, roles, gates, Admin Console role management |
+| [Routing](./routing.md) | Client-side routing via RouterModel (Router5 wrapper) | RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel route integration, NavigatorModel |
+| [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
+| [Testing](./testing.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
+
+### Supporting Packages
+
+| Package | Description | Key Topics |
+|---------|-------------|------------|
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon |
+| [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
+| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
+| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
 
 ### Other Packages
 
-Additional packages without dedicated READMEs — see [README-ROADMAP.md](./README-ROADMAP.md)
+Additional packages without dedicated READMEs — see [docs-roadmap.md](./planning/docs-roadmap.md)
 for planned coverage:
 
-`/admin/`, `/icon/`, `/kit/`, `/inspector/`,
-`/security/`, `/styles/`
+`/admin/`, `/styles/`
 
 ## DevOps and Environment
 
@@ -132,8 +152,9 @@ breaking changes, before/after code examples, and verification checklists.
 
 - [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns, coding
   conventions, code style, and key dependencies
-- [`README-ROADMAP.md`](./README-ROADMAP.md) — Documentation coverage tracking, conventions,
-  and progress notes
+- [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
+  (documentation, testing). Not indexed here — these are project management artifacts, not
+  hoist-react reference material.
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes
 - [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
   section headers
