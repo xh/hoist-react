@@ -337,26 +337,33 @@ textInput({
 
 The `testId` infrastructure described in this document applies to **both desktop and mobile
 toolkits**. Mobile `FormField`, `TabContainer`, and input components now support `testId`
-propagation and sub-testId generation at parity with their desktop counterparts.
+propagation at the primary element level.
 
 **What's supported:**
 
 -   **Mobile FormField** — Auto-generates testIds from form context and field names, passes
-    sub-testIds to input/readonly children, and registers models with `InstanceManager` for
-    `XH.getModelByTestId()`.
+    sub-testIds to input/readonly children, and registers models with `InstanceManager`.
 -   **Mobile TabContainer** — Applies testIds to container and generates sub-testIds for each tab
     (`${testId}-${tabId}`).
 -   **Mobile Inputs** — All mobile input components (`TextInput`, `TextArea`, `NumberInput`,
     `Select`, `Checkbox`, `SwitchInput`, `DateInput`, `SearchInput`, `ButtonGroupInput`) propagate
     `testId` to their primary rendered element. Components with sub-elements (e.g., `TextInput`
-    clear button) generate appropriate sub-testIds.
+    clear button) generate appropriate sub-testIds where the internal elements are directly
+    controlled by Hoist.
 
-**Platform-specific notes:**
+**Platform-specific differences:**
 
--   Third-party components (react-dates, react-select) may handle sub-testIds differently across
-    platforms based on their library implementations.
--   Mobile tabs do not have remove buttons, so `${testId}-switcher-${tabId}-remove-btn` (supported
-    on desktop) is not applicable.
+-   **DateInput sub-testIds** — Desktop generates `${testId}-clear` and `${testId}-picker` for
+    clear/picker buttons. Mobile DateInput uses the react-dates library which handles these
+    controls internally, so these sub-testIds are not available on mobile.
+-   **Select sub-testIds** — Desktop generates `${testId}-menu` and `${testId}-clear-btn` for the
+    dropdown menu and clear indicator. Mobile Select uses the react-select library which manages
+    these elements, so these sub-testIds are not available on mobile.
+-   **TabContainer switcher** — Desktop generates `${testId}-switcher` for the tab switcher
+    component. Mobile uses Onsen's built-in tabbar which does not expose a way to apply this
+    sub-testId, so it is not available on mobile.
+-   **Tab remove buttons** — Desktop tabs can have remove buttons (`${testId}-switcher-${tabId}-remove-btn`).
+    Mobile tabs do not have this feature.
 
 ## Writing Test Selectors
 

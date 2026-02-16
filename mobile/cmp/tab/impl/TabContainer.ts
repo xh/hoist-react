@@ -8,7 +8,7 @@ import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import {debounced, getTestId, throwIf} from '@xh/hoist/utils/js';
+import {debounced, getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isNull, isObject} from 'lodash';
 import {tab} from './Tab';
@@ -33,14 +33,14 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
 
     if (isEmpty(tabs)) {
         return page({
-            testId,
+            [TEST_ID]: testId,
             className: 'xh-tab-page',
             item: placeholder(model.emptyText)
         });
     }
 
     return onsenTabbar({
-        testId,
+        [TEST_ID]: testId,
         className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
         position: switcherProps?.orientation,
         activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
