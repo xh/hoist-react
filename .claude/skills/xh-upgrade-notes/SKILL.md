@@ -20,7 +20,7 @@ skill produces two artifacts and validates them via dry-run simulation.
 3. Determine the **git tag range** for diffing: `v{prior}..v{target}` (e.g. `v78.1.4..v79.0.0`).
    List available tags with `git tag -l 'v*'` to find exact tag names.
 4. Read [template.md](template.md) for the upgrade notes document template.
-5. Read [`docs/changelog-format.md`](../../docs/changelog-format.md) for CHANGELOG entry conventions.
+5. Read [`docs/changelog-format.md`](../../../docs/changelog-format.md) for CHANGELOG entry conventions.
 
 ## Phase 1: Research
 
@@ -88,7 +88,7 @@ Read the current CHANGELOG entry for the target version. Evaluate against these 
 
 - [ ] **Structure**: Uses standard emoji-prefixed section headers (💥 Breaking Changes,
   🎁 New Features, 🐞 Bug Fixes, ⚙️ Technical, ✨ Styles, 📚 Libraries) — see
-  [`docs/changelog-format.md`](../../docs/changelog-format.md)
+  [`docs/changelog-format.md`](../../../docs/changelog-format.md)
 - [ ] **Breaking Changes**: All required app changes are listed as individual bullets (not buried
   in prose under Technical or other sections)
 - [ ] **Completeness**: Changes that affect behavior, APIs, or configuration are accounted for
@@ -102,7 +102,7 @@ Read the current CHANGELOG entry for the target version. Evaluate against these 
 ### Write or Rewrite the Entry
 
 If the entry needs significant changes, rewrite it following the format in
-[`docs/changelog-format.md`](../../docs/changelog-format.md). Key principles:
+[`docs/changelog-format.md`](../../../docs/changelog-format.md). Key principles:
 
 - Breaking Changes section should have a difficulty rating and list every required app change
 - Each bullet names the specific action concisely — the upgrade notes handle the detail
