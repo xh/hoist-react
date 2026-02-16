@@ -28,6 +28,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Build a form with validation | [`/cmp/form/`](../cmp/form/README.md) |
 | Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md) |
 | Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md) |
+| Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md) |
 | Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) |
 | Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) |
 | Build a mobile app | [`/mobile/`](../mobile/README.md) |
@@ -77,6 +78,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
+| [`/desktop/`](../desktop/README.md) | Desktop-specific components built on Blueprint | Desktop AppContainer, Blueprint wrappers, desktop inputs, platform-specific chrome |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
 | [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
