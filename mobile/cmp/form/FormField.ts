@@ -299,7 +299,7 @@ function getFormFieldTestId(
     props: Partial<FormFieldProps>,
     formContext: FormContextType,
     fieldName: string
-): string {
+): string | undefined {
     return (
         props.testId ??
         (formContext.testId && fieldName ? `${formContext.testId}-${fieldName}` : undefined)
