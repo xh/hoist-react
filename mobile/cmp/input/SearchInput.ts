@@ -8,7 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 import type {Property} from 'csstype';
@@ -93,6 +93,7 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             width: withDefault(width, null),
             textAlign: withDefault(props.textAlign, 'left')
         },
+        [TEST_ID]: props.testId,
 
         onInput: model.onChange,
         onKeyDown: model.onKeyDown,
