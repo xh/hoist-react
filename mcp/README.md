@@ -80,7 +80,7 @@ type-checking level, and all MCP dependencies are `devDependencies` in the root 
 
 **Hardcoded doc registry over filesystem scanning.** The doc registry (`data/doc-registry.ts`)
 defines each documentation entry in code rather than discovering files on disk. This was chosen
-because the documentation corpus is bounded and well-known (~30 files), and each entry needs
+because the documentation corpus is bounded and well-known (~40 files), and each entry needs
 curated metadata (title, description, category, search keywords) that cannot be reliably derived
 from filenames alone. The metadata is aligned with the `docs/README.md` index tables. The
 tradeoff is manual maintenance -- see [Maintaining the MCP Server](#maintaining-the-mcp-server).

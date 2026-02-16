@@ -337,6 +337,50 @@ function getRawEntries(): RawEntry[] {
             description: 'Static assets.',
             keywords: splitKeywords('static, assets, icons')
         },
+        {
+            id: 'icon',
+            title: 'Icon System',
+            file: 'icon/README.md',
+            category: 'package',
+            packageName: 'icon',
+            description: 'Factory-based icon system wrapping FontAwesome Pro.',
+            keywords: splitKeywords(
+                'Icon, IconProps, intent coloring, size variants, asHtml, fileIcon'
+            )
+        },
+        {
+            id: 'security',
+            title: 'Security & OAuth',
+            file: 'security/README.md',
+            category: 'package',
+            packageName: 'security',
+            description: 'OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL).',
+            keywords: splitKeywords(
+                'BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec'
+            )
+        },
+        {
+            id: 'kit',
+            title: 'Kit (Third-Party Wrappers)',
+            file: 'kit/README.md',
+            category: 'package',
+            packageName: 'kit',
+            description: 'Centralized wrappers for third-party libraries used by Hoist.',
+            keywords: splitKeywords(
+                'installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select'
+            )
+        },
+        {
+            id: 'inspector',
+            title: 'Inspector',
+            file: 'inspector/README.md',
+            category: 'package',
+            packageName: 'inspector',
+            description: 'Built-in developer tool for real-time inspection of Hoist instances.',
+            keywords: splitKeywords(
+                'InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection'
+            )
+        },
 
         //--------------------------------------------------------------
         // Developer Tools
@@ -395,6 +439,46 @@ function getRawEntries(): RawEntry[] {
             description: 'Persisting user UI state to various backing stores.',
             keywords: splitKeywords(
                 '@persist, markPersist, PersistenceProvider, localStorage, Preference, ViewManager, GridModel/FormModel/PanelModel persistence'
+            )
+        },
+        {
+            id: 'authorization',
+            title: 'Authorization',
+            file: 'docs/authorization.md',
+            category: 'concept',
+            description: 'Role-based authorization and config-driven feature gates.',
+            keywords: splitKeywords(
+                'HoistUser, hasRole, hasGate, checkAccess, HOIST_ADMIN, roles, gates'
+            )
+        },
+        {
+            id: 'routing',
+            title: 'Routing',
+            file: 'docs/routing.md',
+            category: 'concept',
+            description: 'Client-side routing via RouterModel (Router5 wrapper).',
+            keywords: splitKeywords(
+                'RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel'
+            )
+        },
+        {
+            id: 'error-handling',
+            title: 'Error Handling',
+            file: 'docs/error-handling.md',
+            category: 'concept',
+            description: 'Centralized exception handling, display, and logging.',
+            keywords: splitKeywords(
+                'XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary'
+            )
+        },
+        {
+            id: 'test-automation',
+            title: 'Test Automation',
+            file: 'docs/test-automation.md',
+            category: 'concept',
+            description: 'Test automation support via testId selectors.',
+            keywords: splitKeywords(
+                'testId, TestSupportProps, data-testid, getTestId, FormField auto-testId'
             )
         },
 
@@ -499,7 +583,7 @@ export function loadDocContent(entry: DocEntry): string {
  * context snippets.
  *
  * Uses simple case-insensitive string matching -- appropriate for the small,
- * bounded documentation corpus (~30 files, ~482KB total).
+ * bounded documentation corpus (~40 files).
  */
 export function searchDocs(
     registry: DocEntry[],
