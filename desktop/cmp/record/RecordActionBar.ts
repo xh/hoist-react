@@ -76,6 +76,10 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
             items: actions.filter(Boolean).map(action => {
                 const recordAction =
                     action instanceof RecordAction ? action : new RecordAction(action);
+                const scopedTestId =
+                    testId && recordAction.testId
+                        ? getTestId(testId, recordAction.testId)
+                        : recordAction.testId;
                 return recordActionButton({
                     action: recordAction,
                     record,
@@ -83,7 +87,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
                     gridModel,
                     column,
                     ...buttonProps,
-                    testId: getTestId(testId, recordAction.testId)
+                    testId: scopedTestId
                 });
             }),
             ...rest
