@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {uniqBy} from 'lodash';
-import classNames from 'classnames';
 import type {ReactElement} from 'react';
 import {card} from '@xh/hoist/cmp/card';
 import {div, vframe} from '@xh/hoist/cmp/layout';
@@ -38,10 +37,8 @@ export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
         render({dashCanvasModel, className, testId}) {
             if (!dashCanvasModel) return;
 
-            const classes = [];
-
             return vframe({
-                className: classNames(className, classes),
+                className,
                 overflowY: 'auto',
                 flexWrap: 'nowrap',
                 items: createDraggableItems(dashCanvasModel),
