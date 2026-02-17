@@ -55,6 +55,7 @@ export class DashCanvasWidgetChooserModel extends HoistModel {
     onDragEnd(evt: DragEvent<HTMLDivElement>) {
         this.dashCanvasModel.showAddViewButtonWhenEmpty =
             this._savedShowAddViewButtonWhenEmpty ?? true;
+        this.dashCanvasModel.setDraggedInView(null);
 
         const target = evt.target as HTMLElement;
         if (!target) return;

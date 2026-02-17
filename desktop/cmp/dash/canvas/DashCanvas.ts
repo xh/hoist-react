@@ -87,7 +87,10 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 onContextMenu: e => onContextMenu(e, model),
                 items: [
                     gridBackgroundCells({
-                        omit: !model.showGridBackground || !mounted,
+                        omit:
+                            !model.showGridBackground ||
+                            !mounted ||
+                            (model.isEmpty && !model.draggedInView),
                         width
                     }),
                     reactGridLayout({
