@@ -381,26 +381,37 @@ Take advantage of Hoist's automatic sub-testId generation. A single `testId` on 
 child. See [Composite Components and Sub-TestIds](#composite-components-and-sub-testids) for the
 full list of components that support this.
 
-## Mobile Platform Support
+## Cross-Platform Support
 
-The core `testId` infrastructure — `TestSupportProps`, `BoxProps`, the `TEST_ID` constant, and
-the `getTestId()` utility — is fully cross-platform. Any component that renders through `Box`
-(including cross-platform components like `Grid`, `DataView`, and `Chart`) will apply its
-`testId` as a `data-testid` attribute on both desktop and mobile.
+The `testId` infrastructure described in this document applies to **both desktop and mobile
+toolkits**. Mobile `FormField`, `TabContainer`, and input components now support `testId`
+propagation at the primary element level.
 
-However, the **advanced propagation features** described in
-[Composite Components and Sub-TestIds](#composite-components-and-sub-testids) are currently
-**desktop-only**. Specifically, the mobile implementations of the following components do not
-yet propagate `testId` or generate sub-testIds:
+**What's supported:**
 
-- **Mobile `FormField`** — does not read `testId` from `FormContext` or generate `-input` /
-  `-readonly-display` sub-testIds
-- **Mobile `TabContainer`** — does not apply `testId` to the Onsen tabbar or generate per-tab
-  sub-testIds
-- **Mobile input components** (`TextInput`, `Select`, `NumberInput`, `DateInput`, `Checkbox`,
-  `SwitchInput`, `TextArea`, `ButtonGroupInput`) — do not apply `testId` to their rendered elements
+-   **Mobile FormField** — Auto-generates testIds from form context and field names, passes
+    sub-testIds to input/readonly children, and registers models with `InstanceManager`.
+-   **Mobile TabContainer** — Applies testIds to container and generates sub-testIds for each tab
+    (`${testId}-${tabId}`).
+-   **Mobile Inputs** — All mobile input components (`TextInput`, `TextArea`, `NumberInput`,
+    `Select`, `Checkbox`, `SwitchInput`, `DateInput`, `SearchInput`, `ButtonGroupInput`) propagate
+    `testId` to their primary rendered element. Components with sub-elements (e.g., `TextInput`
+    clear button) generate appropriate sub-testIds where the internal elements are directly
+    controlled by Hoist.
 
-Closing these gaps is tracked in [#4239](https://github.com/xh/hoist-react/issues/4239).
+**Platform-specific differences:**
+
+-   **DateInput sub-testIds** — Desktop generates `${testId}-clear` and `${testId}-picker` for
+    clear/picker buttons. Mobile DateInput uses the react-dates library which handles these
+    controls internally, so these sub-testIds are not available on mobile.
+-   **Select sub-testIds** — Desktop generates `${testId}-menu` and `${testId}-clear-btn` for the
+    dropdown menu and clear indicator. Mobile Select uses the react-select library which manages
+    these elements, so these sub-testIds are not available on mobile.
+-   **TabContainer switcher** — Desktop generates `${testId}-switcher` for the tab switcher
+    component. Mobile uses Onsen's built-in tabbar which does not expose a way to apply this
+    sub-testId, so it is not available on mobile.
+-   **Tab remove buttons** — Desktop tabs can have remove buttons (`${testId}-switcher-${tabId}-remove-btn`).
+    Mobile tabs do not have this feature.
 
 ## Writing Test Selectors
 

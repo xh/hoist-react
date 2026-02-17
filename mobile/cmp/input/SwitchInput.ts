@@ -8,6 +8,7 @@ import {HoistInputProps, HoistInputModel, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import './SwitchInput.scss';
 
 export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
@@ -45,6 +46,7 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
 
         className,
         style: props.style,
+        [TEST_ID]: props.testId,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,
