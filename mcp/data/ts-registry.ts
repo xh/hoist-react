@@ -150,11 +150,17 @@ function buildSymbolIndex(proj: Project): Map<string, SymbolEntry[]> {
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
 
-        // Skip non-source files
+        // Skip non-source files — use path relative to repoRoot so that
+        // hoist-react's own sources are included even when the package is
+        // installed under an app's node_modules directory.
+        const relPath = filePath.startsWith(repoRoot + '/')
+            ? filePath.slice(repoRoot.length)
+            : null;
         if (
-            filePath.includes('node_modules') ||
-            filePath.includes('/build/') ||
-            filePath.includes('/mcp/')
+            !relPath ||
+            relPath.startsWith('/node_modules/') ||
+            relPath.includes('/build/') ||
+            relPath.includes('/mcp/')
         ) {
             continue;
         }
