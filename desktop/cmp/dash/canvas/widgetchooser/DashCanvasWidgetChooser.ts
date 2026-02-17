@@ -5,38 +5,32 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {uniqBy} from 'lodash';
-import type {ReactElement} from 'react';
 import {card} from '@xh/hoist/cmp/card';
 import {div, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
 import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetChooserModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel';
-
+import {every} from 'lodash';
+import type {ReactElement, ReactNode} from 'react';
 import './DashCanvasWidgetChooser.scss';
 
 export interface DashCanvasWidgetChooserProps extends HoistProps, TestSupportProps {
-    /** DashCanvasModel for which this widget well should allow the user to add views from. */
-    dashCanvasModel?: DashCanvasModel;
+    /** DashCanvasModel to which dragged view specs will be added. */
+    dashCanvasModel: DashCanvasModel;
 }
 
 /**
- * Widget Well from which to add items to a DashCanvas by drag-and-drop.
- *
- * Available view specs are listed in their defined order,
- * grouped by their 'groupName' property if present.
- *
- * Typically, an app developer would place this inside a collapsible panel to the side of
- * a DashCanvas.
+ * Displays available {@link DashCanvasViewSpec}s as draggable items that can be dropped onto a
+ * {@link DashCanvas} to add new views. View specs are listed in their defined order, grouped by
+ * their `groupName` property if present. Place inside a collapsible panel alongside a DashCanvas.
  */
 export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
     hoistCmp.withFactory<DashCanvasWidgetChooserProps>({
         displayName: 'DashCanvasWidgetChooser',
         model: creates(DashCanvasWidgetChooserModel),
         className: 'xh-dash-canvas-widget-chooser',
-        render({dashCanvasModel, className, testId}) {
-            if (!dashCanvasModel) return;
 
+        render({dashCanvasModel, className, testId}) {
             return vframe({
                 className,
                 overflowY: 'auto',
@@ -50,41 +44,30 @@ export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
 //---------------------------
 // Implementation
 //---------------------------
-const draggableWidget = hoistCmp.factory<DashCanvasWidgetChooserModel>({
+const draggableWidget = hoistCmp.factory<
+    HoistProps<DashCanvasWidgetChooserModel> & {viewSpec: DashCanvasViewSpec}
+>({
     displayName: 'DraggableWidget',
     model: uses(DashCanvasWidgetChooserModel),
     render({model, viewSpec}) {
-        const {id, icon, title} = viewSpec as DashCanvasViewSpec;
+        const {icon, title} = viewSpec;
         return div({
-            id: `draggableFor-${id}`,
             className: 'xh-dash-canvas-widget-chooser__draggable-widget',
             draggable: true,
             unselectable: 'on',
-            onDragStart: e => model.onDragStart(e),
+            onDragStart: e => model.onDragStart(e, viewSpec),
             onDragEnd: e => model.onDragEnd(e),
             items: [icon, ' ', title]
         });
     }
 });
 
-/**
- * Used to create draggable items (for adding views)
- * @internal
- */
-function createDraggableItems(dashCanvasModel: DashCanvasModel): any[] {
-    if (!dashCanvasModel.ref.current) return [];
+/** Create draggable widget elements for each addable view spec, grouped by `groupName`. */
+function createDraggableItems(dashCanvasModel: DashCanvasModel): ReactNode[] {
+    if (!dashCanvasModel?.ref.current) return [];
 
-    const groupedItems = {},
-        ungroupedItems = [];
-
-    const addToGroup = (item, icon, groupName) => {
-        const group = groupedItems[groupName];
-        if (group) {
-            group.push({item, icon});
-        } else {
-            groupedItems[groupName] = [{item, icon}];
-        }
-    };
+    const groupedItems: Record<string, GroupEntry[]> = {},
+        ungroupedItems: ReactElement[] = [];
 
     dashCanvasModel.viewSpecs
         .filter(viewSpec => {
@@ -98,30 +81,40 @@ function createDraggableItems(dashCanvasModel: DashCanvasModel): any[] {
                 item = draggableWidget({viewSpec});
 
             if (groupName) {
-                addToGroup(item, viewSpec.icon, groupName);
+                const group = groupedItems[groupName],
+                    entry: GroupEntry = {item, icon: viewSpec.icon};
+                if (group) {
+                    group.push(entry);
+                } else {
+                    groupedItems[groupName] = [entry];
+                }
             } else {
                 ungroupedItems.push(item);
             }
         });
 
     return [
-        ...Object.keys(groupedItems).map(group => {
-            const title = group,
-                items = groupedItems[group],
-                sameIcons =
-                    uniqBy<{item: ReactElement; icon: ReactElement}>(
-                        items,
-                        it => it.icon.props.iconName
-                    ).length === 1,
-                icon = sameIcons ? items[0].icon : null;
+        ...Object.keys(groupedItems).map(groupName => {
+            const entries = groupedItems[groupName],
+                firstIcon = entries[0]?.icon,
+                icon =
+                    firstIcon &&
+                    every(entries, it => it.icon?.props.iconName === firstIcon.props.iconName)
+                        ? firstIcon
+                        : null;
 
             return card({
                 icon,
-                title,
-                items: items.map(it => it.item),
+                title: groupName,
+                items: entries.map(it => it.item),
                 modelConfig: {collapsible: true}
             });
         }),
         ...ungroupedItems
     ];
+}
+
+interface GroupEntry {
+    item: ReactElement;
+    icon?: ReactElement;
 }

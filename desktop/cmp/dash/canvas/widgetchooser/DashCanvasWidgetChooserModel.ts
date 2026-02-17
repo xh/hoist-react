@@ -4,17 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DragEvent} from 'react';
-import {DashCanvasModel} from '@xh/hoist/desktop/cmp/dash';
-import {HoistModel, managed} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {makeObservable, observable} from '@xh/hoist/mobx';
-import {runInAction} from 'mobx';
+import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {DragEvent} from 'react';
 
 export class DashCanvasWidgetChooserModel extends HoistModel {
-    @managed
     @observable.ref
     dashCanvasModel: DashCanvasModel;
+
+    private _savedShowAddViewButtonWhenEmpty: boolean;
 
     constructor() {
         super();
@@ -30,20 +30,17 @@ export class DashCanvasWidgetChooserModel extends HoistModel {
         });
     }
 
-    onDragStart(evt: DragEvent<HTMLDivElement>) {
-        const target = evt.target as HTMLElement,
-            viewSpecId: string = target.getAttribute('id').split('draggableFor-')[1],
-            viewSpec = this.dashCanvasModel.viewSpecs.find(it => it.id === viewSpecId);
-
+    onDragStart(evt: DragEvent<HTMLDivElement>, viewSpec: DashCanvasViewSpec) {
         if (!viewSpec) return;
 
+        this._savedShowAddViewButtonWhenEmpty = this.dashCanvasModel.showAddViewButtonWhenEmpty;
         this.dashCanvasModel.showAddViewButtonWhenEmpty = false;
         evt.dataTransfer.effectAllowed = 'move';
-        target.classList.add('is-dragging');
+        (evt.target as HTMLElement).classList.add('is-dragging');
 
         const {width, height} = viewSpec,
             widget = {
-                viewSpecId,
+                viewSpecId: viewSpec.id,
                 layout: {
                     x: 0,
                     y: 0,
@@ -56,7 +53,8 @@ export class DashCanvasWidgetChooserModel extends HoistModel {
     }
 
     onDragEnd(evt: DragEvent<HTMLDivElement>) {
-        this.dashCanvasModel.showAddViewButtonWhenEmpty = true;
+        this.dashCanvasModel.showAddViewButtonWhenEmpty =
+            this._savedShowAddViewButtonWhenEmpty ?? true;
 
         const target = evt.target as HTMLElement;
         if (!target) return;

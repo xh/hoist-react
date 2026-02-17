@@ -43,14 +43,12 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     rowHeight?: number;
 
     /**
-     * Whether views should "compact" vertically, horizontally or wrap
-     * to condense space. Default `true` defaults to vertical compaction.
-     * Use `wrap` with caution.  It only works well if all items are 1 row high.
-     * See react-grid-layout docs for more information.
+     * Compaction strategy for condensing empty space. Use `'wrap'` with caution — it only
+     * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
 
-    /** Between items [x,y] in pixels. Default `[10, 10]`. */
+    /** Gap between items [x, y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
 
     /** Padding inside the container [x, y] in pixels. Defaults to same as `margin`. */
@@ -59,41 +57,27 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     /** Maximum number of rows permitted for this container. Default `Infinity`. */
     maxRows?: number;
 
-    /**
-     * Whether a grid background should be shown. Default false.
-     */
+    /** Show grid lines behind widgets. Default `false`. */
     showGridBackground?: boolean;
 
-    /**
-     * Whether the canvas should accept drag-and-drop of views from outside
-     * the canvas. Default false.
-     */
+    /** Accept external drag-and-drop from a {@link DashCanvasWidgetChooser} or similar. Default `false`. */
     allowsDrop?: boolean;
 
-    /**
-     * Optional callback to invoke after a view is successfully dropped onto the canvas.
-     */
+    /** Callback fired after a view is successfully dropped onto the canvas. */
     onDropDone?: (viewModel: DashCanvasViewModel) => void;
 
     /**
-     * Optional callback to invoke when an item is dragged over the canvas. This may be used to
-     * customize how the size of the dropping placeholder is calculated. The callback should
-     * return an object with optional properties indicating the desired width, height (in grid units),
-     * and offset (in pixels) of the dropping placeholder.  The method's signature is the same as
-     * the `onDropDragOver` prop of ReactGridLayout.
-     * Returning `false` will prevent the dropping placeholder from being shown, and prevents a drop.
-     * Returning `void` will use the default behavior, which is to size the placeholder as per the
-     * `dropConfig.defaultItem` specification.
+     * Optional callback to customize the drop placeholder shown when an item is dragged over
+     * the canvas. Return `{w, h}` (in grid units) to size the placeholder, or `false` to
+     * prevent the drop. Return `void` to use the default placeholder size.
      */
     onDropDragOver?: (e: DragEvent) => OnDropDragOverResult;
 
-    /**
-     * Whether an overlay with an Add View button should be rendered
-     * when the canvas is empty. Default true.
-     */
+    /** Show an Add View button overlay when the canvas is empty. Default `true`. */
     showAddViewButtonWhenEmpty?: boolean;
 }
 
+/** Serializable state for a single widget on a DashCanvas, including its layout and view config. */
 export interface DashCanvasItemState {
     layout: DashCanvasItemLayout;
     title?: string;
@@ -101,6 +85,7 @@ export interface DashCanvasItemState {
     state?: DashViewState;
 }
 
+/** Grid position and size of a single widget on a DashCanvas, in column/row units. */
 export interface DashCanvasItemLayout {
     x: number;
     y: number;
@@ -108,6 +93,7 @@ export interface DashCanvasItemLayout {
     h: number;
 }
 
+/** Return type for {@link DashCanvasConfig.onDropDragOver}. */
 export type OnDropDragOverResult =
     | {
           w?: number;
@@ -141,17 +127,19 @@ export class DashCanvasModel
     //-----------------------------
     // Public properties
     //-----------------------------
-    DROPPING_ELEM_ID = '__dropping-elem__';
     maxRows: number;
     allowsDrop: boolean;
     onDropDone: (viewModel: DashCanvasViewModel) => void;
-    draggedInView: DashCanvasItemState;
 
-    /** Current number of rows in canvas */
+    /** The view currently being dragged in from an external source (e.g. a DashCanvasWidgetChooser). */
+    @observable.ref draggedInView: DashCanvasItemState;
+
+    /** Current number of rows in the canvas. */
     get rows(): number {
         return this.layout.reduce((prev, cur) => Math.max(prev, cur.y + cur.h), 0);
     }
 
+    /** True if the canvas has no widgets. */
     get isEmpty(): boolean {
         return this.layout.length === 0;
     }
@@ -163,6 +151,7 @@ export class DashCanvasModel
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
     private isLoadingState: boolean;
+    private _onDropDragOverFn: DashCanvasConfig['onDropDragOver'];
 
     get rglLayout() {
         return this.layout
@@ -260,7 +249,7 @@ export class DashCanvasModel
         this.showAddViewButtonWhenEmpty = showAddViewButtonWhenEmpty;
         this.allowsDrop = allowsDrop;
         this.onDropDone = onDropDone;
-        if (onDropDragOver) this.onDropDragOver = onDropDragOver;
+        this._onDropDragOverFn = onDropDragOver;
 
         this.loadState(initialState);
         this.state = this.buildState();
@@ -294,7 +283,7 @@ export class DashCanvasModel
         });
     }
 
-    /** Removes all views from the canvas */
+    /** Remove all views from the canvas. */
     @action
     clear() {
         const {viewModels} = this;
@@ -322,10 +311,10 @@ export class DashCanvasModel
     }
 
     /**
-     * Adds a view to the DashCanvas
-     * @param specId - DashCanvasViewSpec id to add to the container
-     * @param opts - additional options. Note `position` will accept another view's ID in addition
-     *      to the enumerated values: the new view will be added in that view's current position.
+     * Add a view to the canvas.
+     * @param specId - ID of the DashCanvasViewSpec to add.
+     * @param opts - optional title, state, dimensions, and position. `position` accepts a view
+     *      ID in addition to the enumerated values — the new view will take that view's position.
      */
     @action
     addView(
@@ -348,8 +337,8 @@ export class DashCanvasModel
     }
 
     /**
-     * Remove a view from the DashCanvas
-     * @param id - DashCanvasViewModel id to remove from the container
+     * Remove a view from the canvas.
+     * @param id - DashCanvasViewModel ID to remove.
      */
     @action
     removeView(id: string) {
@@ -362,9 +351,9 @@ export class DashCanvasModel
     }
 
     /**
-     * Replace a view in the DashCanvas with a different view, keeping the existing layout
-     * @param id - id of view model to be replaced
-     * @param newSpecId - id of view spec to insert
+     * Replace a view with a different view spec, keeping the existing layout position and size.
+     * @param id - ID of the view model to replace.
+     * @param newSpecId - ID of the view spec to insert.
      */
     @action
     replaceView(id: string, newSpecId: string) {
@@ -373,7 +362,7 @@ export class DashCanvasModel
         this.addViewInternal(newSpecId, {layout});
     }
 
-    /** Rename a view in the DashCanvas. */
+    /** Prompt the user to rename a view. No-op if renaming is locked or disallowed by the spec. */
     renameView(id: string) {
         const view = this.getView(id),
             allowRename = view?.viewSpec?.allowRename && !this.renameLocked;
@@ -393,11 +382,16 @@ export class DashCanvasModel
         });
     }
 
-    /** Scrolls a DashCanvasView into view. */
+    /** Scroll a view into the visible area of the canvas. */
     ensureViewVisible(id: string) {
         this.getView(id)?.ensureVisible();
     }
 
+    /**
+     * Handle a completed drop from react-grid-layout. Creates the new view from `draggedInView`
+     * and places it at the drop location. Called by the DashCanvas component — not typically
+     * called directly by application code.
+     */
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
         throwIf(
             !this.draggedInView,
@@ -406,11 +400,11 @@ export class DashCanvasModel
              a DashCanvasWidgetChooser or similar component.`
         );
 
-        const droppingItem: any = rglLayout.find(it => it.i === this.DROPPING_ELEM_ID);
+        const droppingItem: any = rglLayout.find(it => it.i === RGL_DROPPING_ITEM_ID);
         if (!droppingItem) {
             // if `onDropDragOver` returned false, we won't have a dropping item
             // and we cancel the drop
-            this.draggedInView = null;
+            this.setDraggedInView(null);
             return;
         }
 
@@ -428,25 +422,33 @@ export class DashCanvasModel
 
         // must wait a tick for RGL to settle
         wait().then(() => {
-            this.draggedInView = null;
+            this.setDraggedInView(null);
             this.onRglLayoutChange(rglLayout);
             this.onDropDone?.(newViewModel);
         });
     }
 
+    /** Set the view to be created on the next drop. Called by DashCanvasWidgetChooser on drag start. */
+    @action
     setDraggedInView(view?: DashCanvasItemState) {
         this.draggedInView = view;
     }
 
+    /**
+     * Handler for drag-over during an external drop. If a custom `onDropDragOver` was provided via
+     * config, it is called. Otherwise returns the placeholder size from `draggedInView`, or `false`
+     * if no view is being dragged.
+     */
     onDropDragOver(evt: DragEvent): OnDropDragOverResult {
+        if (this._onDropDragOverFn) return this._onDropDragOverFn(evt);
         if (!this.draggedInView) return false;
-
         return {
             w: this.draggedInView.layout.w,
             h: this.draggedInView.layout.h
         };
     }
 
+    /** Return all current view models matching the given view spec ID. */
     getViewsBySpecId(id: string): DashCanvasViewModel[] {
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
@@ -531,7 +533,7 @@ export class DashCanvasModel
         // Early out if RGL is changing layout as user is dragging droppable
         // item around the canvas.  This will be called again once dragging
         // has stopped and user has dropped the item onto the canvas.
-        if (rglLayout.some(it => it.i === this.DROPPING_ELEM_ID)) return;
+        if (rglLayout.some(it => it.i === RGL_DROPPING_ITEM_ID)) return;
 
         this.setLayout(rglLayout);
     }
@@ -659,3 +661,10 @@ export class DashCanvasModel
         return {x: defaultX, y: endY ?? rows};
     }
 }
+
+/**
+ * Sentinel layout item ID hardcoded by react-grid-layout for the temporary placeholder element
+ * shown while an external item is being dragged over the canvas. Used internally to detect
+ * and filter RGL's in-flight drop placeholder from layout change events.
+ */
+const RGL_DROPPING_ITEM_ID = '__dropping-elem__';
