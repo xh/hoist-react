@@ -271,6 +271,18 @@
   `docs/README.md` as primary index instead of AGENTS.md
 - Fixed all inter-doc links affected by the concept doc move
 
+### 2026-02-14
+- Created `/mcp/README.md` — MCP server documentation:
+  - Overview, architecture, setup (3 startup methods), debug logging
+  - Complete tools reference (6 tools with parameters, types, examples)
+  - Resources (3 URIs) and prompts (3 builders with arguments)
+  - Maintaining the MCP Server section cataloging all hardcoded maintenance points
+  - Extending the MCP Server section with code examples for adding tools, resources, prompts
+  - Common Pitfalls (stdout, path safety, registry sync, naming conventions)
+- Added "Developer Tools" section to `docs/README.md` and `docs/README-ROADMAP.md`
+- Added MCP entry to Quick Reference by Task table in `docs/README.md`
+- Added self-referencing MCP doc entry to `mcp/data/doc-registry.ts`
+
 ### 2026-02-15
 - Added Review Workflow subsection to Documentation Guidelines, ported from hoist-core's ROADMAP:
   - Three-status lifecycle: Planned → Draft → Done

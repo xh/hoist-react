@@ -4,6 +4,9 @@
 
 ### 🎁 New Features
 
+* Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
+  to hoist-react documentation and TypeScript type information. Includes tools for keyword search
+  across docs, symbol lookup, and class/interface member inspection. Launched via `yarn hoist-mcp`.
 * Added `description` property to `Field` and `Column`. `Column.description` defaults from
   `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
   when those are not explicitly set, providing a single point of configuration for supplementary
