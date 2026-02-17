@@ -15,7 +15,7 @@ let cachedRepoRoot: string | undefined;
  * Resolve the hoist-react repo root by walking up from this file's location.
  *
  * The file lives at `mcp/util/paths.ts`, so the repo root is two directories
- * up. A sanity check verifies that `AGENTS.md` exists at the resolved root.
+ * up. A sanity check verifies that `package.json` exists at the resolved root.
  * The result is cached after the first call.
  */
 export function resolveRepoRoot(): string {
@@ -25,10 +25,10 @@ export function resolveRepoRoot(): string {
     // mcp/util/paths.ts -> mcp/util/ -> mcp/ -> repo root
     const repoRoot = resolve(dirname(thisFile), '..', '..');
 
-    if (!existsSync(resolve(repoRoot, 'AGENTS.md'))) {
+    if (!existsSync(resolve(repoRoot, 'package.json'))) {
         throw new Error(
-            `Cannot resolve repo root: expected AGENTS.md at ${repoRoot}. ` +
-                'Ensure the MCP server is running from within the hoist-react repository.'
+            `Cannot resolve package root: expected package.json at ${repoRoot}. ` +
+                'Ensure the MCP server is running from within hoist-react (repo checkout or node_modules).'
         );
     }
 
