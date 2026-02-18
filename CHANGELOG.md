@@ -11,6 +11,14 @@
   `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
   when those are not explicitly set, providing a single point of configuration for supplementary
   descriptive text that flows from the data layer through to the grid UI.
+* DashCanvas:
+    * Added `DashCanvasWidgetChooser` component — a draggable widget well for adding views to a
+      `DashCanvas` via drag-and-drop from an external container.
+    * Added `allowsDrop`, `onDropDone`, and `onDropDragOver` config options to `DashCanvasModel`
+      to support external drag-and-drop.
+    * Added `showGridBackground` and `showAddViewButtonWhenEmpty` config options to
+      `DashCanvasModel`.
+    * Added support for `'wrap'` compaction strategy.
 * Added `testId` support to mobile `Button`, `FormField`, `TabContainer`, and all mobile input
   components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
   `TextArea`, `TextInput`).
@@ -22,6 +30,11 @@
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
 * Fixed `Panel` content styling to `display: block` when `scrollable` is `true`.
+
+### 📚 Libraries
+
+* react-grid-layout `2.1 → 2.2.2`
+* qs `6.14.0 → 6.15.0`
 
 ## 81.0.2 - 2026-02-12
 

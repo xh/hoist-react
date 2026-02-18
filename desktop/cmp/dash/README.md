@@ -252,11 +252,15 @@ dashCanvas({model: canvasModel})
 | `initialState` | `DashCanvasItemState[]` | Initial layout. Default `[]`. |
 | `columns` | `number` | Grid columns. Default `12`. |
 | `rowHeight` | `number` | Row height in pixels. Default `50`. |
-| `compact` | `boolean \| 'vertical' \| 'horizontal'` | Compaction mode. `true` defaults to `'vertical'`. Default `'vertical'`. |
+| `compact` | `boolean \| 'vertical' \| 'horizontal' \| 'wrap'` | Compaction mode. `true` defaults to `'vertical'`. Use `'wrap'` with caution — it only works well if all items are 1 row high. Default `'vertical'`. |
 | `margin` | `[x, y]` | Gap between items in pixels. Default `[10, 10]`. |
 | `containerPadding` | `[x, y]` | Outer padding in pixels. Defaults to same as `margin`. |
 | `maxRows` | `number` | Maximum row count. Default `Infinity`. |
 | `showGridBackground` | `boolean` | Show grid lines behind widgets. Default `false`. |
+| `allowsDrop` | `boolean` | Accept external drag-and-drop from a `DashCanvasWidgetChooser` or similar component. Default `false`. |
+| `onDropDone` | `(vm: DashCanvasViewModel) => void` | Callback after a view is successfully dropped onto the canvas. |
+| `onDropDragOver` | `(e: DragEvent) => OnDropDragOverResult` | Customize the dropping placeholder size. Return `false` to prevent drop. |
+| `showAddViewButtonWhenEmpty` | `boolean` | Show an overlay with an Add View button when the canvas is empty. Default `true`. |
 | `layoutLocked` | `boolean` | Prevent drag/resize. Default `false`. |
 | `contentLocked` | `boolean` | Prevent adding/removing views. Default `false`. |
 | `renameLocked` | `boolean` | Prevent renaming views. Default `false`. |
@@ -331,6 +335,46 @@ canvasModel.restoreDefaults();
 canvasModel.columns;  // Number of columns
 canvasModel.rows;     // Current row count
 canvasModel.isEmpty;  // No widgets?
+```
+
+## DashCanvasWidgetChooser
+
+`DashCanvasWidgetChooser` is a companion component that renders a draggable list of available
+view specs for a `DashCanvas`. Users can drag widgets from the chooser and drop them onto the
+canvas. It is typically placed inside a collapsible panel alongside the canvas.
+
+Available view specs are listed in their defined order, grouped by their `groupName` property
+if present. Specs with `unique: true` that already have an instance on the canvas are
+automatically hidden from the chooser.
+
+### Requirements
+
+The target `DashCanvasModel` must be configured with `allowsDrop: true` to accept drops.
+
+### Usage
+
+```typescript
+import {
+    dashCanvas, DashCanvasModel,
+    dashCanvasWidgetChooser
+} from '@xh/hoist/desktop/cmp/dash';
+
+const canvasModel = new DashCanvasModel({
+    allowsDrop: true,
+    onDropDone: vm => console.log('Dropped:', vm.viewSpec.id),
+    viewSpecs: [...],
+    ...
+});
+
+// Render the chooser alongside the canvas, passing the model as a prop
+hbox(
+    panel({
+        title: 'Widgets',
+        modelConfig: {side: 'left', defaultSize: 200, collapsible: true},
+        item: dashCanvasWidgetChooser({dashCanvasModel: canvasModel})
+    }),
+    dashCanvas({model: canvasModel})
+);
 ```
 
 ## Common Features
@@ -433,6 +477,9 @@ Both levels work together: when a user adds two instances of the same widget sid
 configures them differently (e.g. one showing Revenue, the other showing Orders), both the
 layout *and* each widget's settings are persisted. This is a core reason dashboards are useful —
 they give users a customizable workspace with persistent, per-widget configuration.
+
+See [Persistence](../../../docs/persistence.md) for full details on Hoist's persistence system,
+including the `DashViewProvider` and how it fits alongside other persistence providers.
 
 #### Layout Persistence
 
@@ -829,6 +876,8 @@ GoldenLayout. Await it if you need to take action after the layout is rebuilt.
 | `desktop/cmp/dash/canvas/DashCanvasModel.ts` | react-grid-layout integration, grid positioning, addView/replaceView. |
 | `desktop/cmp/dash/canvas/DashCanvasViewModel.ts` | Canvas-specific view model — headerItems, autoHeight, ensureVisible. |
 | `desktop/cmp/dash/canvas/DashCanvas.ts` | Component factory for rendering a DashCanvas. |
+| `desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooser.ts` | Draggable widget chooser for adding views to a DashCanvas via drag-and-drop. |
+| `desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel.ts` | Model for DashCanvasWidgetChooser — manages drag events and DashCanvasModel integration. |
 | `core/persist/provider/DashViewProvider.ts` | PersistenceProvider that reads/writes to DashViewModel.viewState. |
 
 ## Related Packages

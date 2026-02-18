@@ -28,6 +28,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Build a form with validation | [`/cmp/form/`](../cmp/form/README.md) |
 | Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md) |
 | Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md) |
+| Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md) |
 | Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) |
 | Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) |
 | Build a mobile app | [`/mobile/`](../mobile/README.md) |

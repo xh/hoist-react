@@ -114,6 +114,7 @@ combined, and integrated by XH.
 | ag-Grid      | High performance, feature-rich data grid                                        | [ag-grid.com](https://www.ag-grid.com/)             |
 | Blueprint    | General purpose UI toolkit for data-dense desktop webapps                       | [blueprintjs.com](https://blueprintjs.com/)         |
 | Highcharts   | Proven, robust, well-rounded charting and visualization library                 | [highcharts.com](https://www.highcharts.com/)       |
+| RGL          | Drag-and-drop grid layout for DashCanvas dashboards                             | [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) |
 | Router5      | Flexible and powerful routing solution                                          | [router5.js.org](https://router5.js.org/)           |
 | Font Awesome | Icons, icons, icons                                                             | [fontawesome.com](https://fontawesome.com/)         |
 
