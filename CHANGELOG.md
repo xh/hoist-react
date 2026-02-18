@@ -21,6 +21,7 @@
   action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
+* Fixed `Panel` content styling to `display: block` when `scrollable` is `true`.
 
 ## 81.0.2 - 2026-02-12
 

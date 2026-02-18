@@ -21,7 +21,7 @@ import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, omitBy} from 'lodash';
+import {omitBy} from 'lodash';
 import {isValidElement, ReactNode, ReactElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
@@ -118,11 +118,12 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
                 frame({
+                    display: scrollable ? 'block' : 'flex',
                     ...contentBoxProps,
                     className: classNames('xh-panel__content', contentBoxProps?.className),
                     flexDirection: contentBoxProps?.flexDirection ?? 'column',
                     overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
-                    items: castArray(children)
+                    items: children
                 }),
                 parseToolbar(bbar),
                 parseLoadDecorator(maskProp, 'mask', contextModel),
