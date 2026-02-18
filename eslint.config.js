@@ -11,5 +11,5 @@ module.exports = defineConfig([
             'tsdoc/syntax': 'warn'
         }
     },
-    globalIgnores(['build/**/*', '.yarn/**/*', 'node_modules/**/*'])
+    globalIgnores(['build/**/*', '.yarn/**/*', 'node_modules/**/*', 'mcp/**/*', 'bin/**/*'])
 ]);

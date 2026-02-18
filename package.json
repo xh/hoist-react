@@ -10,11 +10,15 @@
   "bugs": "https://github.com/xh/hoist-react/issues",
   "author": "Extremely Heavy Industries, Inc.",
   "license": "Apache-2.0",
+  "bin": {
+    "hoist-mcp": "./bin/hoist-mcp.mjs"
+  },
   "scripts": {
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:code && yarn lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs",
     "prepare": "husky"
   },
   "sideEffects": [
@@ -42,6 +46,7 @@
     "@fortawesome/pro-solid-svg-icons": "^6.6.0",
     "@fortawesome/pro-thin-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.3",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@onsenui/fastclick": "~1.1.1",
     "@popperjs/core": "~2.11.0",
     "@seznam/compose-react-refs": "~1.0.5",
@@ -87,7 +92,10 @@
     "short-unique-id": "~5.3.2",
     "store2": "~2.14.3",
     "swiper": "^11.2.0",
-    "ua-parser-js": "~2.0.4"
+    "ts-morph": "^27.0.2",
+    "tsx": "^4.21.0",
+    "ua-parser-js": "~2.0.4",
+    "zod": "^4.3.6"
   },
   "peerDependencies": {
     "react": "~18.2.0",

@@ -195,6 +195,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 items: Children.toArray([
                     parseToolbar(tbar),
                     frame({
+                        display: scrollable ? 'block' : 'flex',
                         ...contentBoxProps,
                         className: classNames('xh-panel__content', contentBoxProps?.className),
                         flexDirection: contentBoxProps?.flexFlow
