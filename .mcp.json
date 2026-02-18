@@ -3,7 +3,10 @@
     "hoist-react": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tsx", "mcp/server.ts"],
+      "args": [
+        "tsx",
+        "mcp/server.ts"
+      ],
       "env": {}
     },
     "github": {
@@ -19,6 +22,10 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
+    },
+    "jetbrains": {
+      "url": "http://localhost:64342/sse",
+      "type": "sse"
     }
   }
 }
