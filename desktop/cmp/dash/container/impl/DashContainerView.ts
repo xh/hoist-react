@@ -7,7 +7,7 @@
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-import {DashViewModel} from '../../DashViewModel';
+import {DashContainerViewModel} from '../DashContainerViewModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
@@ -22,7 +22,7 @@ import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
  */
 export const dashContainerView = hoistCmp.factory({
     displayName: 'DashContainerView',
-    model: uses(DashViewModel, {publishMode: 'limited'}),
+    model: uses(DashContainerViewModel, {publishMode: 'limited'}),
 
     render({model}) {
         const {isActive, renderMode, refreshContextModel, viewSpec} = model,

@@ -24,7 +24,7 @@
   `TextArea`, `TextInput`).
 
 ### 💥 Breaking Changes
-*
+
 * Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
   Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
