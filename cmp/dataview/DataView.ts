@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
@@ -24,7 +24,8 @@ import './DataView.scss';
 import {DataViewModel} from './DataViewModel';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
-export interface DataViewProps extends HoistProps<DataViewModel>, LayoutProps, TestSupportProps {
+export interface DataViewProps<M extends DataViewModel = DataViewModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

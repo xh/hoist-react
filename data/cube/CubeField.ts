@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
 import {
+    AggregationContext,
     Aggregator,
     AverageAggregator,
     AverageStrictAggregator,
@@ -63,8 +64,14 @@ export type AggregatorToken =
  * @param dimension - dimension of aggregation
  * @param value - value of record on dimension
  * @param appliedDims - *all* applied dimension values for this record
+ * @param context - current aggregation context
  */
-export type CanAggregateFn = (dimension: string, value: any, appliedDims: PlainObject) => boolean;
+export type CanAggregateFn = (
+    dimension: string,
+    value: any,
+    appliedDims: PlainObject,
+    context: AggregationContext
+) => boolean;
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source

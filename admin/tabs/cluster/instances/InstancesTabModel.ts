@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
@@ -155,9 +155,12 @@ export class InstancesTabModel extends HoistModel {
                     headerName: 'Heap (% Max)'
                 },
                 {
-                    field: 'wsConnections',
+                    field: {
+                        name: 'wsConnections',
+                        type: 'int',
+                        description: 'Active Websocket Connections'
+                    },
                     headerName: Icon.bolt(),
-                    headerTooltip: 'Active Websocket Connections',
                     ...numberCol
                 },
                 {

@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {FieldFilterSpec} from '@xh/hoist/data';
+import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -73,12 +73,12 @@ export class ValuesTabModel extends HoistModel {
         return this.fieldSpec.values;
     }
 
-    get valueCount() {
-        return this.fieldSpec.valueCount;
+    get allValuesCount() {
+        return this.fieldSpec.allValuesCount;
     }
 
     get hasHiddenValues() {
-        return this.values.length < this.valueCount;
+        return this.values.length < this.allValuesCount;
     }
 
     get sortIcon() {
@@ -193,24 +193,24 @@ export class ValuesTabModel extends HoistModel {
         );
     }
 
-    private getFilter() {
-        const {gridFilterModel, pendingValues, values, valueCount, field} = this,
+    private getFilter(): FieldFilterSpec {
+        const {gridFilterModel, pendingValues, values, allValuesCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
             excluded = difference(values, pendingValues).map(it =>
                 gridFilterModel.fromDisplayValue(it)
             );
 
-        if (included.length === valueCount || excluded.length === valueCount) {
+        if (included.length === allValuesCount || excluded.length === allValuesCount) {
             return null;
         }
 
         const {fieldType} = this.headerFilterModel;
-        let arr, op;
+        let arr: any[], op: FieldFilterOperator;
         if (fieldType === 'tags') {
             arr = included;
             op = 'includes';
         } else {
-            const weight = valueCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
+            const weight = allValuesCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
             op = included.length > excluded.length * weight ? '!=' : '=';
             arr = op === '=' ? included : excluded;
         }

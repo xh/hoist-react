@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -16,8 +17,8 @@ export interface LeftRightChooserFilterProps extends HoistProps<LeftRightChooser
     /** Names of fields in chooser on which to filter. Defaults to ['text', 'group'] */
     fields?: string[];
 
-    /** True to prevent regex start line anchor from being added. */
-    anyMatch?: boolean;
+    /** Mode to use when filtering (default 'startWord'). */
+    matchMode?: FilterMatchMode;
 }
 
 /**
@@ -51,32 +52,46 @@ class LeftRightChooserFilterLocalModel extends HoistModel {
     @bindable
     value = null;
 
+    get matchMode(): FilterMatchMode {
+        return this.componentProps.matchMode ?? 'startWord';
+    }
+
     constructor() {
         super();
         makeObservable(this);
         this.addReaction({
-            track: () => this.value,
+            track: () => [this.value, this.matchMode],
             run: () => this.runFilter()
         });
     }
 
     private runFilter() {
-        const {fields = ['text', 'group'], anyMatch = false} = this.componentProps;
-        let searchTerm = escapeRegExp(this.value);
-
-        if (!anyMatch) {
-            searchTerm = `(^|\\W)${searchTerm}`;
-        }
+        const {fields = ['text', 'group']} = this.componentProps,
+            searchTerm = this.value,
+            regex = this.getRegex(searchTerm);
 
         const filter = raw => {
             return fields.some(f => {
                 if (!searchTerm) return true;
                 const fieldVal = raw.data[f];
-                return fieldVal && new RegExp(searchTerm, 'ig').test(fieldVal);
+                return fieldVal && regex.test(fieldVal);
             });
         };
 
         this.model.setDisplayFilter(filter);
+    }
+
+    private getRegex(searchTerm: string): RegExp {
+        searchTerm = escapeRegExp(searchTerm);
+        switch (this.matchMode) {
+            case 'any':
+                return new RegExp(searchTerm, 'i');
+            case 'start':
+                return new RegExp(`^${searchTerm}`, 'i');
+            case 'startWord':
+                return new RegExp(`(^|\\W)${searchTerm}`, 'i');
+        }
+        throw XH.exception('Unknown matchMode in StoreFilterField');
     }
 
     override destroy() {

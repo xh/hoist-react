@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -119,6 +119,7 @@ export class TrackService extends HoistService {
             msg: stripTags(options.message),
             clientUsername: XH.getUsername(),
             appVersion: XH.getEnv('clientVersion'),
+            clientAppCode: XH.clientAppCode,
             loadId: XH.loadId,
             tabId: XH.tabId,
             url: window.location.href,

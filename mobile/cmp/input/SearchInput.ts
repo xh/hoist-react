@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './SearchInput.scss';
 import type {Property} from 'csstype';
@@ -93,6 +93,7 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             width: withDefault(width, null),
             textAlign: withDefault(props.textAlign, 'left')
         },
+        [TEST_ID]: props.testId,
 
         onInput: model.onChange,
         onKeyDown: model.onKeyDown,

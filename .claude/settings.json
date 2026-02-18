@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "enabledMcpjsonServers": ["hoist-react"],
+  "permissions": {
+    "allow": [
+      "Edit",
+      "MultiEdit",
+      "Read",
+      "WebFetch",
+      "WebSearch",
+      "Write",
+      "mcp__github__pull_request_read",
+      "mcp__github__list_commits",
+      "mcp__github__search_pull_requests",
+      "mcp__hoist-react__*",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}

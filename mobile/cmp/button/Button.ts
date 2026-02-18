@@ -2,19 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hspacer} from '@xh/hoist/cmp/layout';
-import {LayoutProps, StyleProps, hoistCmp, HoistModel, HoistProps, Intent} from '@xh/hoist/core';
+import {
+    LayoutProps,
+    StyleProps,
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    TestSupportProps,
+    Intent
+} from '@xh/hoist/core';
 import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>
-    extends HoistProps<M>, LayoutProps, StyleProps {
+    extends HoistProps<M>, TestSupportProps, LayoutProps, StyleProps {
     active?: boolean;
     disabled?: boolean;
     icon?: ReactElement;
@@ -42,7 +51,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             classes = [],
             items = [];
 
-        const {active, className, disabled, icon, intent, onClick, style, text, ...rest} =
+        const {active, className, disabled, icon, intent, onClick, style, testId, text, ...rest} =
             nonLayoutProps;
 
         let {outlined, minimal} = nonLayoutProps;
@@ -81,6 +90,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
                 ...style,
                 ...layoutProps
             },
+            [TEST_ID]: testId,
             ...rest
         });
     }

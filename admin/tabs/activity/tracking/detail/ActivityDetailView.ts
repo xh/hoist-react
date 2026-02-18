@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {badgeRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
@@ -94,6 +94,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                   return span(username, impSpan);
                               }
                           }),
+                          formField({field: 'clientAppCode'}),
                           formField({field: 'category'}),
                           formField({field: 'msg'}),
                           formField({

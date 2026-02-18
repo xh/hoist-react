@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -91,7 +91,7 @@ export class ServiceModel extends BaseInstanceModel {
     }
 
     async clearCachesAsync(entireCluster: boolean) {
-        const {gridModel, instanceName, loadModel} = this,
+        const {gridModel, instanceName, loadObserver} = this,
             {selectedRecords} = gridModel;
 
         if (isEmpty(selectedRecords)) return;
@@ -125,7 +125,7 @@ export class ServiceModel extends BaseInstanceModel {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            }).linkTo(loadModel);
+            }).linkTo(loadObserver);
             await this.refreshAsync();
             XH.successToast('Service caches cleared.');
         } catch (e) {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -31,7 +31,7 @@ export let useContextMenu = null;
 export let errorMessageImpl = null;
 export let maskImpl = null;
 export let DynamicTabSwitcherModel = null;
-
+export let cardHeaderImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -54,4 +54,5 @@ export function installDesktopImpls(impls) {
     errorMessageImpl = impls.errorMessageImpl;
     maskImpl = impls.maskImpl;
     DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
+    cardHeaderImpl = impls.cardHeaderImpl;
 }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
@@ -36,7 +36,8 @@ import {mergeDeep} from '@xh/hoist/utils/js';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps, TestSupportProps {}
+export interface TreeMapProps<M extends TreeMapModel = TreeMapModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.

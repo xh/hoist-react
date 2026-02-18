@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import './Checkbox.scss';
 
 export interface CheckboxProps extends HoistProps, HoistInputProps {
@@ -44,6 +45,7 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         tabIndex: props.tabIndex,
 
         style: props.style,
+        [TEST_ID]: props.testId,
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,

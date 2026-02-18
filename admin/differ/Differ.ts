@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, frame, span} from '@xh/hoist/cmp/layout';
@@ -49,7 +49,7 @@ const contents = hoistCmp.factory<DifferModel>(({model}) => {
               })
             : frame({
                   item: `No ${model.displayName}s loaded for comparison.`,
-                  padding: 10
+                  padding: true
               }),
         bbar: bbar(),
         mask: 'onLoad'

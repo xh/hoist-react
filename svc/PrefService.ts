@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {cloneDeep, forEach, isEmpty, isEqual, size} from 'lodash';
+import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
 
 /**
  * Service to read and set user-specific preference values.
@@ -33,7 +33,6 @@ export class PrefService extends HoistService {
 
     override async initAsync() {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        await this.migrateLocalPrefsAsync();
         return this.loadPrefsAsync();
     }
 
@@ -149,31 +148,6 @@ export class PrefService extends HoistService {
             deepFreeze(v.defaultValue);
         });
         this._data = data;
-    }
-
-    private async migrateLocalPrefsAsync() {
-        try {
-            const key = 'localPrefs',
-                updates = XH.localStorageService.get(key, {}),
-                updateCount = size(updates);
-            if (updateCount) {
-                await XH.fetchJson({
-                    url: 'xh/migrateLocalPrefs',
-                    timeout: 5 * SECONDS,
-                    params: {
-                        clientUsername: XH.getUsername(),
-                        updates: JSON.stringify(updates)
-                    },
-                    track: {
-                        message: `Migrated ${updateCount} preferences`,
-                        data: updates
-                    }
-                });
-                XH.localStorageService.remove(key);
-            }
-        } catch (e) {
-            XH.handleException(e, {showAlert: false});
-        }
     }
 
     private validateBeforeSet(key, value) {

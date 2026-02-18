@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 /**
  * Options for how contents should be rendered by their parent container.
- * Used by {@link TabContainerModel}, {@link DashContainerModel}, and {@link PanelModel}.
+ * Used by {@link TabContainerModel}, {@link DashContainerModel}, {@link PanelModel}, and
+ * {@link CardModel}.
  */
 export const RenderMode = Object.freeze({
     /** Always render contents when the parent container is rendered, even if inactive. */

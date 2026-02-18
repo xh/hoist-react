@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
@@ -45,7 +45,13 @@ export class WebSocketService extends HoistService {
     readonly REG_SUCCESS_TOPIC = 'xhRegistrationSuccess';
     readonly FORCE_APP_SUSPEND_TOPIC = 'xhForceAppSuspend';
     readonly REQ_CLIENT_HEALTH_RPT_TOPIC = 'xhRequestClientHealthReport';
-    readonly METADATA_FOR_HANDSHAKE = ['appVersion', 'appBuild', 'loadId', 'tabId'];
+    readonly METADATA_FOR_HANDSHAKE = [
+        'appVersion',
+        'appBuild',
+        'loadId',
+        'tabId',
+        'clientAppCode'
+    ];
 
     /** True if WebSockets not explicitly disabled via {@link AppSpec.disableWebSockets}. */
     enabled: boolean = !XH.appSpec.disableWebSockets;

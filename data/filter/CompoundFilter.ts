@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
@@ -17,8 +17,8 @@ import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types'
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-    get isCompoundFilter() {
-        return true;
+    static isCompoundFilter(obj: unknown): obj is CompoundFilter {
+        return obj instanceof CompoundFilter;
     }
 
     readonly filters: Filter[];
@@ -63,7 +63,7 @@ export class CompoundFilter extends Filter {
             other instanceof CompoundFilter &&
             other.op === this.op &&
             isEqualWith(other.filters, this.filters, (a, b) =>
-                a.isFilter && b.isFilter ? a.equals(b) : undefined
+                Filter.isFilter(a) && Filter.isFilter(b) ? a.equals(b) : undefined
             )
         );
     }

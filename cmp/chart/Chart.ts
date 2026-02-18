@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
@@ -40,7 +40,8 @@ import {LightTheme} from './theme/Light';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
-export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSupportProps {
+export interface ChartProps<M extends ChartModel = ChartModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both

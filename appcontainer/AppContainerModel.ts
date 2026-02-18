@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     AppSpec,
@@ -10,6 +10,7 @@ import {
     createElement,
     HoistAppModel,
     HoistModel,
+    IdentityInfo,
     managed,
     RootRefreshContextModel,
     TaskObserver,
@@ -76,7 +77,7 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
-    @managed appLoadModel = TaskObserver.trackAll();
+    @managed appLoadObserver = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -197,23 +198,21 @@ export class AppContainerModel extends HoistModel {
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
             XH.authModel = createSingleton(appSpec.authModelClass);
-            const isAuthenticated = await XH.authModel.completeAuthAsync();
-            if (!isAuthenticated) {
+            const identity = await XH.authModel.completeAuthAsync();
+            if (identity) {
+                await this.completeInitAsync(identity);
+            } else {
                 throwIf(
                     !appSpec.enableLoginForm,
                     'Unable to complete required authentication (SSO/Auth failure).'
                 );
                 this.setAppState('LOGIN_REQUIRED');
-                return;
             }
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
             return;
         }
-
-        // ...if made it to here, continue with initialization.
-        await this.completeInitAsync();
     }
 
     /**
@@ -221,20 +220,26 @@ export class AppContainerModel extends HoistModel {
      * authenticated and known to the server (regardless of application roles at this point).
      */
     @action
-    async completeInitAsync() {
-        this.setAppState('INITIALIZING_HOIST');
+    async completeInitAsync(identity: IdentityInfo) {
         try {
-            // Install identity service and confirm access
+            // Install identity and check roles
             await installServicesAsync(IdentityService);
+            XH.identityService.initIdentity(identity);
             if (!this.appStateModel.checkAccess()) {
                 this.setAppState('ACCESS_DENIED');
                 return;
             }
 
             // Complete initialization process
-            await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
+            this.setAppState('INITIALIZING_HOIST');
+            await installServicesAsync([LocalStorageService, SessionStorageService]);
+            await installServicesAsync([
+                EnvironmentService,
+                ConfigService,
+                PrefService,
+                JsonBlobService
+            ]);
             await installServicesAsync(TrackService);
-            await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
             await installServicesAsync([
                 AlertBannerService,
@@ -250,7 +255,7 @@ export class AppContainerModel extends HoistModel {
 
             // init all models other than Router
             const models = [
-                this.appLoadModel,
+                this.appLoadObserver,
                 this.appStateModel,
                 this.pageStateModel,
                 this.routerModel,
@@ -271,7 +276,7 @@ export class AppContainerModel extends HoistModel {
             ];
             models.forEach((m: any) => m.init?.());
 
-            this.bindInitSequenceToAppLoadModel();
+            this.bindInitSequenceToAppLoadObserver();
 
             this.setDocTitle();
 
@@ -359,10 +364,10 @@ export class AppContainerModel extends HoistModel {
         this.appStateModel.setAppState(nextState);
     }
 
-    private bindInitSequenceToAppLoadModel() {
+    private bindInitSequenceToAppLoadObserver() {
         const terminalStates: AppState[] = ['RUNNING', 'SUSPENDED', 'LOAD_FAILED', 'ACCESS_DENIED'],
             loadingPromise = mobxWhen(() => terminalStates.includes(this.appStateModel.state));
-        loadingPromise.linkTo(this.appLoadModel);
+        loadingPromise.linkTo(this.appLoadObserver);
     }
 
     private setViewportContent(content: string) {

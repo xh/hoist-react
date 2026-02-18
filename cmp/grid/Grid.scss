@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @use 'sass:math';
@@ -104,16 +104,16 @@
     padding-right: 0;
   }
 
-  // Render badge on invalid cells
-  .ag-cell.xh-cell--invalid {
+  // Render badge on cells with validation issues
+  .ag-cell.xh-cell--invalid,
+  .ag-cell.xh-cell--warning,
+  .ag-cell.xh-cell--info {
     &::before {
       content: '';
       position: absolute;
       top: 0;
       right: 0;
       border-color: transparent;
-      border-right-color: var(--xh-intent-danger);
-      border-top-color: var(--xh-intent-danger);
       border-style: solid;
     }
 
@@ -123,6 +123,21 @@
       margin-top: 1px;
       margin-right: 3px;
     }
+  }
+
+  .ag-cell.xh-cell--invalid::before {
+    border-right-color: var(--xh-intent-danger);
+    border-top-color: var(--xh-intent-danger);
+  }
+
+  .ag-cell.xh-cell--warning::before {
+    border-right-color: var(--xh-intent-warning);
+    border-top-color: var(--xh-intent-warning);
+  }
+
+  .ag-cell.xh-cell--info::before {
+    border-right-color: var(--xh-intent-primary);
+    border-top-color: var(--xh-intent-primary);
   }
 
   // Render left / right group borders
@@ -136,25 +151,33 @@
 
   .xh-ag-grid {
     &--tiny {
-      .ag-cell.xh-cell--invalid::before {
+      .ag-cell.xh-cell--invalid::before,
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 3px;
       }
     }
 
     &--compact {
-      .ag-cell.xh-cell--invalid::before {
+      .ag-cell.xh-cell--invalid::before,
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 4px;
       }
     }
 
     &--standard {
-      .ag-cell.xh-cell--invalid::before {
+      .ag-cell.xh-cell--invalid::before,
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 5px;
       }
     }
 
     &--large {
-      .ag-cell.xh-cell--invalid::before {
+      .ag-cell.xh-cell--invalid::before,
+      .ag-cell.xh-cell--warning::before,
+      .ag-cell.xh-cell--info::before {
         border-width: 6px;
       }
     }

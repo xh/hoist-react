@@ -2,21 +2,37 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {FieldModel, FormContext, FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {
+    FieldModel,
+    FormContext,
+    FormContextType,
+    BaseFormFieldProps,
+    FormFieldSetModel
+} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import {
+    DefaultHoistProps,
+    hoistCmp,
+    HoistProps,
+    TestSupportProps,
+    useContextModel,
+    uses,
+    XH
+} from '@xh/hoist/core';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
-import {Children, cloneElement, ReactNode, useContext} from 'react';
+import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
+import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {}
@@ -61,20 +77,32 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const formModel = formContext.model;
         model = model || (formModel && field ? formModel.fields[field] : null);
 
+        // If within a FormFieldSet, register with its model for validation grouping
+        const fieldSetModel = useContextModel(FormFieldSetModel);
+        useEffect(() => {
+            if (fieldSetModel && model) {
+                fieldSetModel.registerChildFieldModel(model);
+                return () => fieldSetModel.unregisterChildFieldModel(model);
+            }
+        }, [fieldSetModel, model]);
+
         // Model related props
         const isRequired = model?.isRequired || false,
-            readonly = model?.readonly || false,
-            disabled = props.disabled || model?.disabled,
-            validationDisplayed = model?.validationDisplayed || false,
-            notValid = model?.isNotValid || false,
-            displayNotValid = validationDisplayed && notValid,
-            errors = model?.errors || [],
+            readonly = model?.readonly || fieldSetModel?.readonly || false,
+            disabled = props.disabled || model?.disabled || fieldSetModel?.disabled,
+            severityToDisplay = model?.validationDisplayed
+                ? maxSeverity(model.validationResults)
+                : null,
+            displayInvalid = severityToDisplay === 'error',
+            validationResultsToDisplay = severityToDisplay
+                ? model.validationResults.filter(v => v.severity === severityToDisplay)
+                : [],
             requiredStr = defaultProp('requiredIndicator', props, formContext, '*'),
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
                           item: ' ' + requiredStr,
-                          className: 'xh-form-field-required-indicator'
+                          className: 'xh-form-field__required-indicator'
                       })
                     : null,
             isPending = model && model.isValidationPending;
@@ -97,15 +125,27 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Styles
         const classes = [];
-        if (isRequired) classes.push('xh-form-field-required');
-        if (minimal) classes.push('xh-form-field-minimal');
-        if (readonly) classes.push('xh-form-field-readonly');
-        if (disabled) classes.push('xh-form-field-disabled');
-        if (displayNotValid) classes.push('xh-form-field-invalid');
+        if (isRequired) classes.push('xh-form-field--required');
+        if (minimal) classes.push('xh-form-field--minimal');
+        if (readonly) classes.push('xh-form-field--readonly');
+        if (disabled) classes.push('xh-form-field--disabled');
+        if (severityToDisplay) {
+            classes.push(`xh-form-field--${severityToDisplay}`);
+            if (displayInvalid) classes.push('xh-form-field--invalid');
+        }
+
+        // Test ID handling
+        const testId = getFormFieldTestId(props, formContext, model?.name);
+        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
+        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
         let childEl =
             readonly || !child
-                ? readonlyChild({model, readonlyRenderer})
+                ? readonlyChild({
+                      model,
+                      readonlyRenderer,
+                      testId: getTestId(testId, 'readonly-display')
+                  })
                 : editableChild({
                       model,
                       child,
@@ -114,40 +154,44 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       commitOnChange,
                       width: layoutProps.width,
                       height: layoutProps.height,
-                      flex: layoutProps.flex
+                      flex: layoutProps.flex,
+                      testId: getTestId(testId, 'input')
                   });
 
         return box({
             ref,
+            testId,
             className: classNames(className, classes),
             ...layoutProps,
             items: [
                 labelCmp({
                     omit: !label,
-                    className: 'xh-form-field-label',
+                    className: 'xh-form-field__label',
                     items: [label, requiredIndicator]
                 }),
                 div({
                     className: classNames(
-                        'xh-form-field-inner',
-                        childIsSizeable ? 'xh-form-field-inner--flex' : 'xh-form-field-inner--block'
+                        'xh-form-field__inner',
+                        childIsSizeable
+                            ? 'xh-form-field__inner--flex'
+                            : 'xh-form-field__inner--block'
                     ),
                     items: [
                         childEl,
                         div({
                             omit: !info,
-                            className: 'xh-form-field-info',
+                            className: 'xh-form-field__info-msg',
                             item: info
                         }),
                         div({
-                            omit: minimal || !isPending || !validationDisplayed,
-                            className: 'xh-form-field-pending-msg',
+                            omit: minimal || !isPending || !severityToDisplay,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--pending`,
                             item: 'Validating...'
                         }),
                         div({
-                            omit: minimal || !displayNotValid,
-                            className: 'xh-form-field-error-msg',
-                            items: notValid ? errors[0] : null
+                            omit: minimal || !severityToDisplay,
+                            className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
+                            item: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })
@@ -163,10 +207,11 @@ interface ReadonlyChildProps extends HoistProps<FieldModel>, TestSupportProps {
 const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
     model: false,
 
-    render({model, readonlyRenderer}) {
+    render({model, readonlyRenderer, testId}) {
         const value = model ? model['value'] : null;
         return div({
-            className: 'xh-form-field-readonly-display',
+            [TEST_ID]: testId,
+            className: 'xh-form-field__readonly-display',
             item: readonlyRenderer(value, model)
         });
     }
@@ -175,7 +220,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
 const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
-    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex}) {
+    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex, testId}) {
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
@@ -183,7 +228,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
             model,
             bind: 'value',
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref)
+            ref: composeRefs(model?.boundInputRef, child.ref),
+            testId
         };
 
         // If FormField is sized and item doesn't specify its own dimensions,
@@ -247,4 +293,15 @@ function defaultProp<N extends keyof Partial<FormFieldProps>>(
 ): Partial<FormFieldProps>[N] {
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
+}
+
+function getFormFieldTestId(
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType,
+    fieldName: string
+): string | undefined {
+    return (
+        props.testId ??
+        (formContext.testId && fieldName ? `${formContext.testId}-${fieldName}` : undefined)
+    );
 }

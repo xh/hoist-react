@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
@@ -39,16 +39,16 @@ export class LoginPanelModel extends HoistModel {
 
         try {
             this.loginInProgress = true;
-            const success = await XH.authModel
+            const identity = await XH.authModel
                 .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
                     hideParams: ['password']
                 });
 
-            if (success) {
+            if (identity) {
                 this.warning = '';
-                await XH.appContainerModel.completeInitAsync();
+                await XH.appContainerModel.completeInitAsync(identity);
             } else {
                 this.warning = 'Login incorrect.';
             }

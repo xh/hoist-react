@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -197,7 +197,7 @@ export class ClientsModel extends BaseAdminTabModel {
                 {
                     headerName: 'Client App',
                     headerAlign: 'center',
-                    children: [Col.appVersion, Col.appBuild]
+                    children: [Col.clientAppCode, Col.appVersion, {...Col.appBuild, hidden}]
                 },
                 {
                     headerName: 'Send/Receive',

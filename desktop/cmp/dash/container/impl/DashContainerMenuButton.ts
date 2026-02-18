@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -17,15 +17,17 @@ import {dashContainerContextMenu} from './DashContainerContextMenu';
  * @internal
  */
 export const dashContainerMenuButton = hoistCmp.factory({
+    className: 'xh-dash-container-menu-btn',
     model: null,
-    render({stack, dashContainerModel}) {
+
+    render({stack, dashContainerModel, className}) {
         if (dashContainerModel.contentLocked || !dashContainerModel.showMenuButton) return null;
 
         return popover({
             position: Position.BOTTOM,
             item: button({
                 icon: Icon.ellipsisVertical(),
-                className: 'xh-dash-container-menu-btn'
+                className
             }),
             content: dashContainerContextMenu({stack, dashContainerModel})
         });

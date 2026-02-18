@@ -2,10 +2,27 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    Field,
+    FieldSpec,
+    Filter,
+    FilterBindTarget,
+    FilterLike,
+    FilterValueSource,
+    parseFilter,
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreValidationMessagesMap,
+    StoreValidationResultsMap,
+    ValidationResult
+} from '@xh/hoist/data';
+import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -13,6 +30,7 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    first,
     flatMapDeep,
     isArray,
     isEmpty,
@@ -20,21 +38,14 @@ import {
     isNil,
     isNull,
     isString,
-    values,
+    partition,
     remove as lodashRemove,
-    uniq,
-    first,
     some,
-    partition
+    uniq,
+    values
 } from 'lodash';
-import {Field, FieldSpec} from './Field';
-import {parseFilter} from './filter/Utils';
-import {RecordSet} from './impl/RecordSet';
-import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {Filter} from './filter/Filter';
-import {FilterLike} from './filter/Types';
+import {RecordSet} from './impl/RecordSet';
 
 export interface StoreConfig {
     /** Field names, configs, or instances. */
@@ -103,12 +114,21 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Set to true to indicate that records can be cached and reused based on id and the
-     * raw data object they refer to.  This is a useful optimization for large datasets with
-     * immutable raw data, allowing them to avoid equality checks, object creation, and raw
-     * data processing when reloading reference-identical data. Should not be used if a
-     * processRawData function that depends on external state is provided, as this function
-     * will be circumvented on subsequent reloads.  Default false.
+     * Performance optimization for large datasets with immutable raw data objects.
+     *
+     * By default, Store reuses existing StoreRecord instances when new data is loaded with
+     * matching IDs and identical field values (determined via deep equality comparison). This
+     * preserves row state in grids for unchanged records.
+     *
+     * When `reuseRecords` is true, the Store skips the fieldwise comparison and instead reuses
+     * records when the raw data object itself is **reference-identical** to the previously loaded
+     * object. This avoids equality checks, record creation, and raw data processing overhead.
+     *
+     * Only use this when your data source provides stable object references for unchanged records.
+     * Should not be used with a `processRawData` function that depends on external state, as that
+     * function will be bypassed on subsequent reloads of reference-identical data.
+     *
+     * Default false.
      */
     reuseRecords?: boolean;
 
@@ -181,10 +201,15 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistBase {
-    get isStore() {
-        return true;
+export class Store
+    extends HoistBase
+    implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
+{
+    static isStore(obj: unknown): obj is Store {
+        return obj instanceof Store;
     }
+
+    readonly isFilterValueSource = true;
 
     fields: Field[] = null;
     idSpec: (data: PlainObject) => StoreRecordId;
@@ -811,6 +836,31 @@ export class Store extends HoistBase {
         return !this.getById(id, true) && !!this.getById(id, false);
     }
 
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[] {
+        const field = this.getField(fieldName);
+        if (!field) return [];
+
+        let recs = this.allRecords;
+        if (filter) {
+            const testFn = filter.getTestFn(this);
+            recs = recs.filter(testFn);
+        }
+
+        const ret = new Set();
+        recs.forEach(rec => {
+            const val = rec.get(fieldName);
+            if (!isNil(val)) {
+                if (field.type === 'tags') {
+                    val.forEach(it => ret.add(it));
+                } else {
+                    ret.add(val);
+                }
+            }
+        });
+
+        return Array.from(ret);
+    }
+
     /**
      * Set whether the root should be loaded as summary data in loadData().
      */
@@ -859,8 +909,12 @@ export class Store extends HoistBase {
         return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.validator.errors;
+    }
+
+    get validationResults(): StoreValidationResultsMap {
+        return this.validator.validationResults;
     }
 
     /** Count of all validation errors for the store. */
@@ -871,6 +925,11 @@ export class Store extends HoistBase {
     /** Array of all errors for this store. */
     get allErrors(): string[] {
         return uniq(flatMapDeep(this.errors, values));
+    }
+
+    /** Array of all ValidationResults for this store. */
+    get allValidationResults(): ValidationResult[] {
+        return uniq(flatMapDeep(this.validationResults, values));
     }
 
     /**
@@ -945,7 +1004,7 @@ export class Store extends HoistBase {
         return this.validator.isNotValid;
     }
 
-    /** Recompute validations for all records and return true if the store is valid. */
+    /** Recompute ValidationResults for all records and return true if the store is valid. */
     async validateAsync(): Promise<boolean> {
         return this.validator.validateAsync();
     }
@@ -1171,12 +1230,14 @@ export class Store extends HoistBase {
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
+            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
+            const data = {...recToRevert.committedData};
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
                 raw: recToRevert.raw,
-                data: recToRevert.committedData,
-                committedData: recToRevert.committedData,
+                data,
+                committedData: data,
                 parent: null,
                 isSummary: true
             });

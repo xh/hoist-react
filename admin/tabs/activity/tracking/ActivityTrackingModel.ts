@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
@@ -293,6 +293,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.appVersion.field,
             Col.browser.field,
             Col.category.field,
+            Col.clientAppCode.field,
             Col.correlationId.field,
             {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
             Col.data.field,
@@ -344,6 +345,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'msg', displayName: 'Message'},
                 {field: 'severity', values: ['DEBUG', 'INFO', 'WARN', 'ERROR']},
                 {field: 'tabId'},
+                {field: 'clientAppCode'},
                 {field: 'userAgent'},
                 {field: 'username', displayName: 'User'},
                 {field: 'url', displayName: 'URL'}
@@ -424,6 +426,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'count', chooserGroup: 'Core Data', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.clientAppCode, hidden},
                 {...Col.loadId, hidden},
                 {...Col.tabId, hidden},
                 {...Col.url, hidden},

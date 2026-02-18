@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {managed, PlainObject, XH} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
+import {ValidationResult, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
@@ -17,7 +17,7 @@ import {FormConfig} from '../FormModel';
 export interface SubformsFieldConfig extends BaseFieldConfig {
     /**
      * Config for a {@link FormModel} to be auto-created to manage and validate the data for each
-     *
+     * object in this field's collection.
      */
     subforms: FormConfig;
 
@@ -25,7 +25,7 @@ export interface SubformsFieldConfig extends BaseFieldConfig {
      * Initial value of this field. If a function, will be executed dynamically when form is
      * initialized to provide value.
      */
-    initialValue?: any[];
+    initialValue?: Thunkable<PlainObject[]>;
 }
 
 export interface SubformAddOptions {
@@ -47,15 +47,18 @@ export interface SubformAddOptions {
  * all existing form contents to new values. Call {@link add} or {@link remove} on one of these
  * fields to adjust the contents of its collection while preserving existing state.
  *
- * Validation rules for the entire collection may be specified as for any field, but validations on
+ * Validation rules for the entire collection may be specified as for any field, but ValidationResults on
  * the subforms will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
+    declare value: FormModel[];
+    declare initialValue: FormModel[];
+
     /** (Sub)FormModels created by this model, tracked to support cleanup. */
     @managed private createdModels: FormModel[] = [];
 
     private formConfig: FormConfig = null;
-    private readonly origInitialValues: any[];
+    private readonly origInitialValues: Thunkable<PlainObject[]>;
 
     constructor({subforms, initialValue = [], ...rest}: SubformsFieldConfig) {
         super(rest);
@@ -107,16 +110,18 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.addAutorun(() => {
             const {disabled, readonly, value} = this;
             value.forEach(sub => {
-                sub.setDisabled(disabled);
-                sub.setReadonly(readonly);
+                sub.disabled = disabled;
+                sub.readonly = readonly;
             });
         });
     }
 
     @computed
-    override get allErrors(): string[] {
-        const subErrs = flatMap(this.value, s => s.allErrors);
-        return [...this.errors, ...subErrs];
+    override get allValidationResults(): ValidationResult[] {
+        const subVals = flatMap(this.value, v => {
+            return v.fieldList.flatMap(field => field.validationResults);
+        });
+        return [...this.validationResults, ...subVals];
     }
 
     @override

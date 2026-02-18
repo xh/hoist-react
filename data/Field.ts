@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
+import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Rule, RuleLike} from './validation/Rule';
+import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
@@ -28,6 +29,9 @@ export interface FieldSpec {
      *  transformed via `genDisplayName()` (e.g. 'myField' translates to 'My Field').
      */
     displayName?: string;
+
+    /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
+    description?: string;
 
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
@@ -65,6 +69,7 @@ export class Field {
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
+    readonly description: string;
     readonly defaultValue: any;
     readonly rules: Rule[];
     readonly enableXssProtection: boolean;
@@ -73,6 +78,7 @@ export class Field {
         name,
         type = 'auto',
         displayName,
+        description,
         defaultValue = null,
         rules = [],
         enableXssProtection = XH.appSpec.enableXssProtection
@@ -80,6 +86,7 @@ export class Field {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
+        this.description = description;
         this.defaultValue = defaultValue;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
@@ -147,7 +154,7 @@ export function parseFieldValue(
             val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
             return val.toString();
         case 'date':
-            return isDate(val) ? val : new Date(val);
+            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
         case 'localDate':
             return isLocalDate(val) ? val : LocalDate.get(val);
     }
@@ -179,4 +186,9 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
 export function genDisplayName(fieldName: string): string {
     // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
     return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
+}
+
+/** Convenience function to return the name of a field from one of several common inputs. */
+export function getFieldName(field: string | Field | FieldSpec): string {
+    return field ? (isString(field) ? field : field.name) : null;
 }

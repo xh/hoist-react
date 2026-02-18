@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
@@ -36,7 +36,8 @@ export const [RecordActionButton, recordActionButton] =
         className: 'xh-record-action-button',
 
         render(props) {
-            let {action, minimal, gridModel, selModel, column, record, className, ...rest} = props;
+            let {action, minimal, gridModel, selModel, column, record, className, testId, ...rest} =
+                props;
 
             let selectedRecords = record ? [record] : null;
             if (selModel) {
@@ -74,7 +75,7 @@ export const [RecordActionButton, recordActionButton] =
                 intent,
                 title,
                 disabled,
-                testId: action.testId,
+                testId: testId ?? action.testId,
                 onClick: () => action.call({record, selectedRecords, gridModel, column}),
                 ...rest
             });
