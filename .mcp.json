@@ -1,5 +1,5 @@
 {
-    "mcpServers": {
+  "mcpServers": {
     "hoist-react": {
       "type": "stdio",
       "command": "npx",
