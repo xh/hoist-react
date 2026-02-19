@@ -12,7 +12,8 @@ import {
     PersistOptions,
     SelectOption
 } from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import {genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -31,6 +32,15 @@ import {
 export interface GroupingChooserConfig {
     /** True to accept an empty list as a valid value. */
     allowEmpty?: boolean;
+
+    /**
+     * Target ({@link GridModel} or Cube {@link View}) to which this model's grouping value
+     * should be automatically applied as it changes. When bound to a GridModel, calls
+     * `setGroupBy()`; when bound to a View, calls `updateQuery({dimensions: ...})`.
+     *
+     * This is a one-way binding — the GroupingChooser is the source of truth.
+     */
+    bind?: GroupingBindTarget;
 
     /**
      * False (default) waits for the user to dismiss the popover before updating the
@@ -87,11 +97,15 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
     persistFavorites?: boolean | PersistOptions;
 }
 
+/** Target to which GroupingChooser value changes should be automatically synced. */
+export type GroupingBindTarget = GridModel | View;
+
 export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
     allowEmpty: boolean;
+    bind: GroupingBindTarget;
     commitOnChange: boolean;
     maxDepth: number;
     persistFavorites: boolean = false;
@@ -146,6 +160,7 @@ export class GroupingChooserModel extends HoistModel {
 
     constructor({
         allowEmpty = false,
+        bind = null,
         commitOnChange = false,
         dimensions,
         initialFavorites = [],
@@ -158,6 +173,7 @@ export class GroupingChooserModel extends HoistModel {
         makeObservable(this);
 
         this.allowEmpty = allowEmpty;
+        this.bind = bind;
         this.commitOnChange = commitOnChange;
         this.maxDepth = maxDepth;
         this.sortDimensions = sortDimensions;
@@ -182,6 +198,14 @@ export class GroupingChooserModel extends HoistModel {
                 if (this.commitOnChange) this.setValue(this.pendingValue);
             }
         });
+
+        if (bind) {
+            this.addReaction({
+                track: () => this.value,
+                run: value => this.updateTargetValue(value),
+                fireImmediately: true
+            });
+        }
     }
 
     @action
@@ -338,6 +362,15 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    private updateTargetValue(value: string[]) {
+        const {bind} = this;
+        if (bind instanceof View) {
+            bind.updateQuery({dimensions: value});
+        } else {
+            bind.setGroupBy(value);
+        }
+    }
+
     private initPersist({
         persistValue = true,
         persistFavorites = true,
