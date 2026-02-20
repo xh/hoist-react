@@ -23,6 +23,15 @@
   components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
   `TextArea`, `TextInput`).
 
+### 💥 Breaking Changes
+
+* Converted `FetchService` correlation ID properties (`autoGenCorrelationIds`,
+  `genCorrelationId`, `correlationIdHeaderKey`) from instance to static. These can now be
+  configured in the app's `Bootstrap` module to ensure correlation IDs are active from the
+  very first request, including early hoist core init calls. Apps that configure these
+  properties should update references from `XH.fetchService.<prop>` to
+  `FetchService.<prop>`.
+
 ### 🐞 Bug Fixes
 
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`

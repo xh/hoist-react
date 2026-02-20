@@ -148,6 +148,7 @@ Components in `/desktop/` and `/mobile/` are platform-specific. Shared code live
 - ESLint with `@xh/eslint-config` and TSDoc syntax checking
 - Prettier for formatting
 - Stylelint for SCSS
+- **Commit messages**: Do not hard-wrap lines in commit message bodies. Write each sentence or thought as a single unwrapped line and let the viewing tool handle display wrapping.
 
 ## Key Dependencies
 
