@@ -8,7 +8,7 @@
 import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
 import {logError} from '@xh/hoist/utils/js';
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {castArray, compact, flatMap, groupBy, isArray, isEmpty, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
 import {FieldFilterSpec, FilterLike} from './Types';
@@ -71,12 +71,7 @@ export function withFilterByField(
     newFilter: FilterLike,
     field: string
 ): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    return withFilter(filter, newFilter, it => 'field' in it && it.field === field);
 }
 
 /**
@@ -86,12 +81,7 @@ export function withFilterByField(
  * @param key - FunctionFilter key used to identify filters for replacement
  */
 export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    return withFilter(filter, newFilter, it => 'key' in it && it.key === key);
 }
 
 /**
@@ -105,20 +95,15 @@ export function withFilterByTypes(
     newFilter: FilterLike,
     types: Some<string>
 ): Filter {
-    const isCompound = filter instanceof CompoundFilter,
-        currFilters = isCompound ? filter.filters : ([filter] as FilterLike[]);
-
-    const ret = currFilters.filter(it => {
-        for (const type of castArray(types)) {
-            if (type === 'CompoundFilter' && it instanceof CompoundFilter) return false;
-            if (type === 'FieldFilter' && it instanceof FieldFilter) return false;
-            if (type === 'FunctionFilter' && it instanceof FunctionFilter) return false;
+    const typeArr = castArray(types);
+    return withFilter(filter, newFilter, it => {
+        for (const type of typeArr) {
+            if (type === 'CompoundFilter' && it instanceof CompoundFilter) return true;
+            if (type === 'FieldFilter' && it instanceof FieldFilter) return true;
+            if (type === 'FunctionFilter' && it instanceof FunctionFilter) return true;
         }
-        return true;
+        return false;
     });
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
 }
 
 /**
@@ -144,4 +129,57 @@ export function combineValueFilters<T extends FilterLike>(filters: T[] = []): T[
             ? {...filters[0], value: flatMap(filters, it => it.value)}
             : filters;
     }) as T[];
+}
+
+//------------------
+// Implementation
+//------------------
+/**
+ * Replace filters in `filter` with `newFilter` by predicate.
+ * @param filter - Existing Filter to modify.
+ * @param newFilter - New filter(s) to add.
+ * @param predicate - Function to identify filters for removal.
+ */
+function withFilter(
+    filter: FilterLike,
+    newFilter: FilterLike,
+    predicate: (it: FilterLike) => boolean
+): Filter {
+    const remaining = removeNestedFilters(filter, predicate),
+        isCompound = remaining && 'filters' in remaining,
+        currFilters = isCompound ? remaining.filters : compact([remaining]),
+        ret = [...currFilters, ...castArray(newFilter)] as FilterLike[];
+
+    return isCompound ? parseFilter({filters: ret, op: remaining.op}) : parseFilter(ret);
+}
+
+/**
+ * Recursively remove all filters matching a predicate.
+ * @param filter - Filter to process.
+ * @param predicate - Function to identify filters for removal.
+ * @param isTopLevel - true (default) if this is the top-level filter. Used to preserve compound
+ *      structure at the top level so the original `op` is available for use in `withFilter`.
+ */
+function removeNestedFilters(
+    filter: FilterLike,
+    predicate: (it: FilterLike) => boolean,
+    isTopLevel: boolean = true
+): FilterLike {
+    if (!filter) return null;
+
+    // Remove if predicate matches
+    if (predicate(filter)) return null;
+
+    // Handle CompoundFilter: recursively remove from nested filters
+    if ('filters' in filter) {
+        const filters = compact(
+            filter.filters.map(it => removeNestedFilters(it, predicate, false))
+        );
+        if (isEmpty(filters)) return null;
+        // Preserve top-level compound structure to maintain original `op`
+        if (filters.length === 1 && !isTopLevel) return filters[0];
+        return {filters, op: filter.op};
+    }
+
+    return filter;
 }
