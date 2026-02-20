@@ -20,11 +20,6 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
         viewManagerModel.registerProvider(this);
     }
 
-    pushStateToTarget() {
-        const state = this.read();
-        this.target.setPersistableState(state ? state : this.defaultState);
-    }
-
     //----------------
     // Implementation
     //----------------

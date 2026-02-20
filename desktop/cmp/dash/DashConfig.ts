@@ -8,6 +8,7 @@
 import {MenuItemLike, PersistOptions} from '@xh/hoist/core';
 import {DashViewState} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
 import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
+import {SetOptional} from 'type-fest';
 
 /**
  * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.
@@ -23,7 +24,7 @@ export interface DashConfig<VSPEC extends DashViewSpec, VSTATE extends DashViewS
     viewSpecDefaults?: Partial<VSPEC>;
 
     /** Default layout state for this container.*/
-    initialState?: VSTATE[];
+    initialState?: SetOptional<VSTATE, 'id'>[];
 
     /** Prevent re-arranging views by dragging and dropping.*/
     layoutLocked?: boolean;
