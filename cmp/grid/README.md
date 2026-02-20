@@ -254,11 +254,17 @@ columns: [
 
 ## Column Properties Reference
 
+Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`
+when not explicitly set — so if two columns share the same `field` name (even across column groups),
+they must specify distinct `colId` values. Similarly, `ColumnGroup.groupId` defaults to `headerName`
+and must also be unique across the grid. GridModel validates this at construction time and will throw
+if duplicates are detected.
+
 Key categories of `ColumnSpec` properties:
 
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
-| Identity | `field`, `colId`, `displayName`, `description`                                                               |
+| Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
 | Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
@@ -313,6 +319,29 @@ new GridModel({
     appData: {source: 'user-list'},
     columns: [{field: 'name', appData: {searchable: true}}]
 });
+```
+
+## Pitfalls
+
+### Duplicate Column IDs
+
+GridModel requires that every column and column group resolves to a unique ID. Column IDs default to
+`field` names, so assembling columns from multiple sources (e.g. concatenating arrays of field names
+or spreading shared column sets) can easily produce duplicates. GridModel will throw at construction
+time with a `Non-unique ids` error if this happens.
+
+To fix, either remove the duplicate column or provide an explicit `colId` on one of the conflicting
+columns:
+
+```typescript
+const detailColumns = [{field: 'name'}, {field: 'status'}];
+const metricColumns = [{field: 'name'}, {field: 'value'}];
+
+// BAD - 'name' appears in both arrays, producing duplicate colIds
+columns: [...detailColumns, ...metricColumns]
+
+// GOOD - deduplicate by field before passing to GridModel
+columns: uniqBy([...detailColumns, ...metricColumns], 'field')
 ```
 
 ## Related Packages
