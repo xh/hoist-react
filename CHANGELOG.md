@@ -31,6 +31,8 @@
   very first request, including early hoist core init calls. Apps that configure these
   properties should update references from `XH.fetchService.<prop>` to
   `FetchService.<prop>`.
+* Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
+  Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
 ### 🐞 Bug Fixes
 
@@ -39,6 +41,8 @@
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
 * Fixed `Panel` content styling to `display: block` when `scrollable` is `true`.
+* Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
+  be updated without reloading the entire dashboard and owned views.
 
 ### 📚 Libraries
 
