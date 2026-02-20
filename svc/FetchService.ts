@@ -14,6 +14,8 @@ import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} f
 import {IStringifyOptions, stringify} from 'qs';
 import ShortUniqueId from 'short-unique-id';
 
+const defaultIdGenerator = new ShortUniqueId({length: 16});
+
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
@@ -21,9 +23,10 @@ import ShortUniqueId from 'short-unique-id';
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Set {@link autoGenCorrelationIds} on this service to enable auto-generation of UUID
- * Correlation IDs for requests issued by this service. Can also be set on a per-request basis
- * via {@link FetchOptions.correlationId}.
+ * Set {@link FetchService.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
+ * for requests issued by this service. Best configured in the app's `Bootstrap` module to ensure
+ * coverage of early hoist core init requests. Can also be set on a per-request basis via
+ * {@link FetchOptions.correlationId}.
  *
  * Custom headers can be set on a request via {@link FetchOptions.headers}. Default headers for all
  * requests can be set / customized using {@link addDefaultHeaders}.
@@ -44,7 +47,6 @@ export class FetchService extends HoistService {
      */
     JSON_CONTENT_TYPE_RE = /application\/[^+]*[+]?(json);?.*/i;
 
-    private idGenerator = new ShortUniqueId({length: 16});
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
@@ -53,19 +55,28 @@ export class FetchService extends HoistService {
     //------------------------------------
     /**
      * Should hoist auto-generate a Correlation ID for a request when not otherwise specified?
-     * Set to `true` or a dynamic per-request function to enable.  Default false.
+     * Set to `true` or a dynamic per-request function to enable. Default false.
+     *
+     * Static property — best configured in the app's `Bootstrap` module to ensure correlation
+     * IDs are active from the very first request.
      */
-    autoGenCorrelationIds: boolean | ((opts: FetchOptions) => boolean) = false;
+    static autoGenCorrelationIds: boolean | ((opts: FetchOptions) => boolean) = false;
 
     /**
-     * Method for generating Correlation ID's. Defaults to a 16 character random string with
-     * an extremely low probability of collisions.  Applications may customize
-     * to improve readability or provide a stronger uniqueness guarantee.
+     * Method for generating Correlation IDs. Defaults to a 16 character random string with
+     * an extremely low probability of collisions. Applications may customize to improve
+     * readability or provide a stronger uniqueness guarantee.
+     *
+     * Static property — best configured in the app's `Bootstrap` module.
      */
-    genCorrelationId: () => string = () => this.idGenerator.rnd();
+    static genCorrelationId: () => string = () => defaultIdGenerator.rnd();
 
-    /** Request header name to be used for Correlation ID tracking. */
-    correlationIdHeaderKey: string = 'X-Correlation-ID';
+    /**
+     * Request header name to be used for Correlation ID tracking.
+     *
+     * Static property — best configured in the app's `Bootstrap` module.
+     */
+    static correlationIdHeaderKey: string = 'X-Correlation-ID';
 
     /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
@@ -231,12 +242,12 @@ export class FetchService extends HoistService {
     // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const cid = opts.correlationId,
-            autoCid = this.autoGenCorrelationIds;
+            autoCid = FetchService.autoGenCorrelationIds;
 
         if (isString(cid)) return opts;
         if (cid === false || cid === null) return omit(opts, 'correlationId');
         if (cid === true || autoCid === true || (isFunction(autoCid) && autoCid(opts))) {
-            return {...opts, correlationId: this.genCorrelationId()};
+            return {...opts, correlationId: FetchService.genCorrelationId()};
         }
         return opts;
     }
@@ -257,7 +268,7 @@ export class FetchService extends HoistService {
             ...opts.headers
         };
 
-        const {correlationIdHeaderKey} = this;
+        const {correlationIdHeaderKey} = FetchService;
         if (opts.correlationId) {
             if (headers[correlationIdHeaderKey]) {
                 this.logWarn(
@@ -516,11 +527,8 @@ export class FetchService extends HoistService {
     }
 
     private createException(attributes: PlainObject) {
-        let correlationId: string = null;
-        const correlationIdHeaderKey = XH?.fetchService?.correlationIdHeaderKey;
-        if (correlationIdHeaderKey) {
-            correlationId = attributes.fetchOptions?.headers?.[correlationIdHeaderKey];
-        }
+        const correlationId: string =
+            attributes.fetchOptions?.headers?.[FetchService.correlationIdHeaderKey] ?? null;
 
         return Exception.create({
             isFetchAborted: false,

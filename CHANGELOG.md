@@ -25,6 +25,12 @@
 
 ### 💥 Breaking Changes
 
+* Converted `FetchService` correlation ID properties (`autoGenCorrelationIds`,
+  `genCorrelationId`, `correlationIdHeaderKey`) from instance to static. These can now be
+  configured in the app's `Bootstrap` module to ensure correlation IDs are active from the
+  very first request, including early hoist core init calls. Apps that configure these
+  properties should update references from `XH.fetchService.<prop>` to
+  `FetchService.<prop>`.
 * Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
   Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
