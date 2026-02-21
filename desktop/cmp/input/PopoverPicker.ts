@@ -87,6 +87,9 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
     /** Text shown on the trigger button when no value is selected. Defaults to 'Select...'. */
     placeholder?: string;
 
+    /** True (default) to style trigger button background and borders to match inputs. */
+    styleButtonAsInput?: boolean;
+
     /**
      * Props forwarded to the trigger button. Use this to customize the button's appearance,
      * including `icon`, `rightIcon`, `intent`, `minimal`, `outlined`, `tooltip`, and any other
@@ -379,16 +382,18 @@ const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, 
 const triggerButton = hoistCmp.factory<PopoverPickerModel>(
     ({model, props, nothingSelected}, ref) => {
         const {width, ...restLayout} = getLayoutProps(props),
-            btnProps = props.buttonProps ?? {};
+            btnProps = props.buttonProps ?? {},
+            styleAsInput = withDefault(props.styleButtonAsInput, true);
 
         return button({
             minimal: true,
-            outlined: true,
+            outlined: !styleAsInput,
             rightIcon: Icon.chevronDown(),
             ...btnProps,
             ref,
             className: classNames(
                 'xh-popover-picker__trigger',
+                styleAsInput && 'xh-popover-picker__trigger--as-input',
                 nothingSelected && 'xh-popover-picker__trigger--empty',
                 btnProps.className
             ),

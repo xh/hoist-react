@@ -48,6 +48,14 @@
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
 
+### 🎨 Styles
+
+* Overrode Blueprint's hardcoded popover border and arrow colors to use Hoist's themed
+  `--xh-popup-border-color` CSS variable. Popover borders and arrows now match the rest of
+  the Hoist theme in both light and dark modes.
+* Removed the `xh-popup--framed` CSS class. Its border styling is now handled globally by the
+  popover border override above.
+
 ### 📚 Libraries
 
 * react-grid-layout `2.1 → 2.2.2`

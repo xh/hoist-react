@@ -733,7 +733,7 @@ body {
   // Popups / dialogs
   //------------------------
   --xh-popup-bg: var(--popup-bg, var(--xh-bg));
-  --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
+  --xh-popup-border-color: var(--popup-border-color, var(--xh-border-color));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
   --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
