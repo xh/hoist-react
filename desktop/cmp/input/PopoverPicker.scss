@@ -39,10 +39,6 @@
     }
   }
 
-  &__menu {
-    min-width: 150px;
-  }
-
   &__filter {
     padding: var(--xh-pad-half-px);
     border-bottom: 1px solid var(--xh-border-color);
@@ -84,19 +80,6 @@
   &__options {
     overflow-y: auto;
     overflow-x: hidden;
-
-    &--row-borders .xh-popover-picker__option + .xh-popover-picker__option {
-      border-top: 1px solid var(--xh-border-color);
-    }
-
-    &--stripe-rows .xh-popover-picker__option:nth-child(even) {
-      background-color: var(--xh-grid-bg-odd);
-    }
-
-    // Hover must match stripe specificity to override striped row backgrounds.
-    &--stripe-rows .xh-popover-picker__option:hover {
-      background-color: var(--xh-bg-alt);
-    }
   }
 
   &__no-results {
@@ -120,6 +103,15 @@
 
     &--selected {
       font-weight: 500;
+    }
+
+    // Applied per-row via index to support both standard and virtual rendering modes.
+    &--striped {
+      background-color: var(--xh-grid-bg-odd);
+    }
+
+    &--border-top {
+      border-top: 1px solid var(--xh-border-color);
     }
   }
 
