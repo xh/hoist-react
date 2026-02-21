@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, hbox, input as inputEl, span, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {textInput} from './TextInput';
 import {hoistCmp, HoistProps, LayoutProps, SelectOption, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -422,20 +423,15 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
 const filterInput = hoistCmp.factory<PopoverPickerModel>(({model}) => {
     return div({
         className: 'xh-popover-picker__filter',
-        item: div({
-            className: 'xh-popover-picker__filter-input-wrapper',
-            items: [
-                Icon.filter({className: 'xh-popover-picker__filter-icon'}),
-                inputEl({
-                    type: 'text',
-                    className: 'xh-popover-picker__filter-input',
-                    placeholder: 'Filter...',
-                    value: model.filterValue,
-                    autoFocus: true,
-                    onChange: e => model.setFilterValue(e.target.value),
-                    onClick: e => e.stopPropagation()
-                })
-            ]
+        item: textInput({
+            model,
+            bind: 'filterValue',
+            commitOnChange: true,
+            leftIcon: Icon.filter(),
+            enableClear: true,
+            placeholder: 'Filter...',
+            autoFocus: true,
+            width: '100%'
         })
     });
 });

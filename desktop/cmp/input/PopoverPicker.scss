@@ -48,37 +48,6 @@
     border-bottom: 1px solid var(--xh-border-color);
   }
 
-  &__filter-input-wrapper {
-    display: flex;
-    align-items: center;
-    background: var(--xh-input-bg);
-    border-radius: var(--xh-border-radius-px);
-    box-shadow: var(--xh-form-field-box-shadow);
-    padding: 2px var(--xh-pad-half-px);
-  }
-
-  &__filter-icon {
-    color: var(--xh-text-color-muted);
-    margin-right: var(--xh-pad-half-px);
-    font-size: var(--xh-font-size-small-px);
-  }
-
-  &__filter-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--xh-input-text-color);
-    font-size: var(--xh-font-size-px);
-    font-family: inherit;
-    padding: 2px 0;
-    min-width: 0;
-
-    &::placeholder {
-      color: var(--xh-input-placeholder-text-color);
-    }
-  }
-
   &__footer {
     display: flex;
     align-items: center;
