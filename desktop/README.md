@@ -127,14 +127,13 @@ opens a popover checklist, with built-in multi-select summarization:
 ```typescript
 import {popoverPicker} from '@xh/hoist/desktop/cmp/input';
 
-// Multi-select in a toolbar — button shows "3 of 10 selected"
+// Multi-select in a toolbar — button shows "3 selected"
 popoverPicker({
     model: myModel,
     bind: 'selectedRegions',
     options: regions,
     enableMulti: true,
     enableClear: true,
-    emptyValue: [],
     placeholder: 'Regions...'
 })
 ```

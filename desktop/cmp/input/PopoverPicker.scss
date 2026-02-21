@@ -79,18 +79,18 @@
     }
   }
 
-  &__header {
+  &__footer {
     display: flex;
     align-items: center;
     padding: var(--xh-pad-half-px) var(--xh-pad-px);
-    border-bottom: 1px solid var(--xh-border-color);
+    border-top: 1px solid var(--xh-border-color);
     font-size: var(--xh-font-size-small-px);
     color: var(--xh-text-color-muted);
   }
 
-  &__header-clear {
+  &__footer-clear {
     cursor: pointer;
-    color: var(--xh-blue);
+    color: var(--xh-intent-primary);
 
     &:hover {
       text-decoration: underline;
@@ -100,6 +100,19 @@
   &__options {
     overflow-y: auto;
     overflow-x: hidden;
+
+    &--row-borders .xh-popover-picker__option + .xh-popover-picker__option {
+      border-top: 1px solid var(--xh-border-color);
+    }
+
+    &--stripe-rows .xh-popover-picker__option:nth-child(even) {
+      background-color: var(--xh-grid-bg-odd);
+    }
+
+    // Hover must match stripe specificity to override striped row backgrounds.
+    &--stripe-rows .xh-popover-picker__option:hover {
+      background-color: var(--xh-bg-alt);
+    }
   }
 
   &__no-results {
@@ -117,7 +130,7 @@
     user-select: none;
 
     &:hover {
-      background: var(--xh-bg-alt);
+      background-color: var(--xh-bg-alt);
       color: var(--xh-text-color-highlight);
     }
 
@@ -127,10 +140,11 @@
   }
 
   &__option-check {
-    width: 20px;
-    min-width: 20px;
+    width: 24px;
+    min-width: 24px;
     text-align: center;
-    color: var(--xh-blue);
+    margin-right: 2px;
+    color: var(--xh-intent-primary);
   }
 
   &__option-label {

@@ -6,16 +6,9 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, filler, hbox, input as inputEl, vbox} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistProps,
-    Intent,
-    LayoutProps,
-    SelectOption,
-    StyleProps
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, SelectOption, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
@@ -23,7 +16,7 @@ import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import {ReactNode} from 'react';
 import './PopoverPicker.scss';
 
 export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
@@ -45,12 +38,12 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
     enableMulti?: boolean;
 
     /**
-     * Value to use when the input is empty (default `null`).
-     * Recommended usage is `[]` when `enableMulti` is true to ensure value is always an array.
+     * Value to use when the input is empty. Defaults to `[]` when `enableMulti` is true,
+     * and `null` otherwise.
      */
     emptyValue?: any;
 
-    /** True to show a "clear" button in the popover header to deselect all options. */
+    /** True to show a "clear" action in the popover footer to deselect all options. */
     enableClear?: boolean;
 
     /**
@@ -62,26 +55,17 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
     /** Number of options above which the filter input is shown by default. Defaults to 8. */
     filterThreshold?: number;
 
-    /** Text to display when control is empty. */
+    /** Text shown on the trigger button when no value is selected. Defaults to 'Select...'. */
     placeholder?: string;
 
-    /** Icon to display on the trigger button. */
-    icon?: ReactElement;
-
-    /** Icon to display on the right side of the trigger button. Defaults to a dropdown chevron. */
-    rightIcon?: ReactElement;
-
-    /** Intent applied to the trigger button. */
-    intent?: Intent;
-
-    /** True (default) to render trigger button in minimal style. */
-    minimal?: boolean;
-
-    /** True to render trigger button in outlined style. */
-    outlined?: boolean;
-
-    /** Tooltip text for the trigger button. */
-    title?: string;
+    /**
+     * Props forwarded to the trigger button. Use this to customize the button's appearance,
+     * including `icon`, `rightIcon`, `intent`, `minimal`, `outlined`, `tooltip`, and any other
+     * {@link ButtonProps}.
+     *
+     * Defaults to `{minimal: true, outlined: true, rightIcon: Icon.chevronDown()}`.
+     */
+    buttonProps?: Partial<ButtonProps>;
 
     /**
      * True (default for single mode) to close the popover after a selection.
@@ -89,21 +73,34 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
      */
     closeOnSelect?: boolean;
 
-    /** Placement of the popover relative to the trigger. Defaults to 'bottom-start'. */
+    /** Placement of the popover relative to the trigger. Defaults to 'bottom-left'. */
     popoverPosition?: string;
+
+    /**
+     * True to render a minimal popover without an arrow or visual separation from the trigger.
+     * Defaults to false, displaying the popover with an arrow and slight offset.
+     */
+    popoverMinimal?: boolean;
 
     /** Width of the popover content in pixels. */
     popoverWidth?: number;
+
+    /** True to render borders between option rows. Defaults to false. */
+    rowBorders?: boolean;
+
+    /** True to use alternating backgrounds for option rows. Defaults to false. */
+    stripeRows?: boolean;
 
     /** Maximum height of the options list before scrolling. Defaults to 300. */
     maxMenuHeight?: number;
 
     /**
-     * Function to render the trigger button text based on the current selection.
+     * Function to render the text displayed on the trigger button for the current selection.
      * Receives an array of selected option objects and the full list of option objects.
-     * Return a ReactNode for display on the trigger button.
+     * Return a ReactNode for display. Does not replace the button itself — use `buttonProps`
+     * to customize the button's icon, intent, or other properties.
      */
-    buttonRenderer?: (selectedOpts: SelectOption[], allOpts: SelectOption[]) => ReactNode;
+    textRenderer?: (selectedOpts: SelectOption[], allOpts: SelectOption[]) => ReactNode;
 
     /**
      * Function to render each option row in the popover list.
@@ -119,8 +116,7 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
  *
  * Designed for space-constrained areas such as toolbars, where a traditional Select component
  * (especially in multi-select "tag picker" mode) is too large. In multi mode, this component
- * displays a compact summary (e.g. "3 of 10 selected") rather than concatenating all selected
- * labels together.
+ * displays a compact summary (e.g. "3 selected") rather than concatenating all selected labels.
  *
  * This component does not use react-select. It renders a simple, scrollable list of options
  * with check indicators, making it lightweight and easy to style.
@@ -149,7 +145,9 @@ class PopoverPickerModel extends HoistInputModel {
     }
 
     get emptyValue(): any {
-        return this.componentProps.emptyValue ?? null;
+        const {emptyValue, enableMulti} = this.componentProps;
+        if (emptyValue !== undefined) return emptyValue;
+        return enableMulti ? [] : null;
     }
 
     get closeOnSelect(): boolean {
@@ -246,18 +244,16 @@ class PopoverPickerModel extends HoistInputModel {
 
     getSelectedOptions(): SelectOption[] {
         const selected = this.getSelectedValues();
-        return this.internalOptions.filter(opt =>
-            selected.some(v => isEqual(v, opt.value))
-        );
+        return this.internalOptions.filter(opt => selected.some(v => isEqual(v, opt.value)));
     }
 
     getButtonText(): ReactNode {
         const {componentProps, internalOptions} = this,
-            {buttonRenderer, placeholder} = componentProps,
+            {textRenderer, placeholder} = componentProps,
             selectedOpts = this.getSelectedOptions();
 
-        if (buttonRenderer) {
-            return buttonRenderer(selectedOpts, internalOptions);
+        if (textRenderer) {
+            return textRenderer(selectedOpts, internalOptions);
         }
 
         if (isEmpty(selectedOpts)) {
@@ -274,7 +270,7 @@ class PopoverPickerModel extends HoistInputModel {
 
         if (selCount === totalCount) return 'All selected';
         if (selCount === 1) return selectedOpts[0].label;
-        return `${selCount} of ${totalCount} selected`;
+        return `${selCount} selected`;
     }
 
     //-------------------------------
@@ -307,16 +303,15 @@ class PopoverPickerModel extends HoistInputModel {
 // Inner render component
 //---------------------------------------------
 const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, ref) => {
-    const layoutProps = getLayoutProps(props),
-        hasSelection = !isEmpty(model.getSelectedValues()),
+    const hasSelection = !isEmpty(model.getSelectedValues()),
         nothingSelected = !hasSelection;
 
     return popover({
         className,
         isOpen: model.popoverIsOpen,
         onInteraction: nextOpen => model.onPopoverInteraction(nextOpen),
-        minimal: true,
-        position: withDefault(props.popoverPosition, 'bottom-start'),
+        minimal: withDefault(props.popoverMinimal, false),
+        position: withDefault(props.popoverPosition, 'bottom-left'),
         popoverClassName: 'xh-popover-picker__popover',
         matchTargetWidth: !props.popoverWidth,
         item: triggerButton({model, props, nothingSelected, ref}),
@@ -330,22 +325,22 @@ const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, 
 //---------------------------------------------
 const triggerButton = hoistCmp.factory<PopoverPickerModel>(
     ({model, props, nothingSelected, ref}) => {
-        const {width, ...restLayout} = getLayoutProps(props);
+        const {width, ...restLayout} = getLayoutProps(props),
+            btnProps = props.buttonProps ?? {};
 
         return button({
+            minimal: true,
+            outlined: true,
+            rightIcon: Icon.chevronDown(),
+            ...btnProps,
             ref,
             className: classNames(
                 'xh-popover-picker__trigger',
-                nothingSelected && 'xh-popover-picker__trigger--empty'
+                nothingSelected && 'xh-popover-picker__trigger--empty',
+                btnProps.className
             ),
             text: model.getButtonText(),
-            icon: props.icon,
-            rightIcon: withDefault(props.rightIcon, Icon.chevronDown()),
             disabled: props.disabled,
-            intent: props.intent,
-            minimal: withDefault(props.minimal, true),
-            outlined: props.outlined,
-            title: props.title,
             active: model.popoverIsOpen,
             ...restLayout,
             width: withDefault(width, 160),
@@ -371,25 +366,25 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
         popoverWidth = props.popoverWidth,
         widthStyle = popoverWidth ? {width: popoverWidth} : undefined,
         {enableClear, enableMulti} = props,
-        hasHeader = enableClear || (enableMulti && model.getSelectedValues().length > 0);
+        hasFooter = enableClear || (enableMulti && model.getSelectedValues().length > 0);
 
     return vbox({
         className: 'xh-popover-picker__menu',
         style: widthStyle,
         items: [
-            enableFilter
-                ? filterInput({model})
-                : null,
-            hasHeader
-                ? menuHeader({model})
-                : null,
+            enableFilter ? filterInput({model}) : null,
             div({
-                className: 'xh-popover-picker__options',
+                className: classNames(
+                    'xh-popover-picker__options',
+                    props.rowBorders && 'xh-popover-picker__options--row-borders',
+                    props.stripeRows && 'xh-popover-picker__options--stripe-rows'
+                ),
                 style: {maxHeight: maxMenuHeight, overflowY: 'auto'},
                 items: isEmpty(filteredOptions)
                     ? div({className: 'xh-popover-picker__no-results', item: 'No matches found.'})
                     : filteredOptions.map(opt => optionItem({model, opt, props}))
-            })
+            }),
+            hasFooter ? menuFooter({model}) : null
         ]
     });
 });
@@ -419,22 +414,22 @@ const filterInput = hoistCmp.factory<PopoverPickerModel>(({model}) => {
 });
 
 //---------------------------------------------
-// Menu header with clear action
+// Menu footer with clear action
 //---------------------------------------------
-const menuHeader = hoistCmp.factory<PopoverPickerModel>(({model}) => {
+const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model}) => {
     const selCount = model.getSelectedValues().length;
     if (selCount === 0) return null;
 
     return hbox({
-        className: 'xh-popover-picker__header',
+        className: 'xh-popover-picker__footer',
         items: [
             div({
-                className: 'xh-popover-picker__header-count',
+                className: 'xh-popover-picker__footer-count',
                 item: `${selCount} selected`
             }),
             filler(),
             div({
-                className: 'xh-popover-picker__header-clear',
+                className: 'xh-popover-picker__footer-clear',
                 item: 'Clear',
                 onClick: e => {
                     e.stopPropagation();
