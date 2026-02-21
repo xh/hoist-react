@@ -1,0 +1,142 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-popover-select {
+  display: inline-flex;
+
+  // Ensure popover target stretches to fill layout width.
+  > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+  }
+
+  &__trigger {
+    justify-content: flex-start;
+
+    .bp6-button-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
+    }
+
+    &--empty .bp6-button-text {
+      color: var(--xh-input-placeholder-text-color);
+    }
+  }
+
+  &__popover.bp6-popover {
+    .bp6-popover-content {
+      padding: 0;
+      border-radius: var(--xh-border-radius-px);
+      box-shadow: var(--xh-popup-shadow);
+      background: var(--xh-bg);
+    }
+  }
+
+  &__menu {
+    min-width: 150px;
+  }
+
+  &__filter {
+    padding: var(--xh-pad-half-px);
+    border-bottom: 1px solid var(--xh-border-color);
+  }
+
+  &__filter-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--xh-input-bg);
+    border-radius: var(--xh-border-radius-px);
+    box-shadow: var(--xh-form-field-box-shadow);
+    padding: 2px var(--xh-pad-half-px);
+  }
+
+  &__filter-icon {
+    color: var(--xh-text-color-muted);
+    margin-right: var(--xh-pad-half-px);
+    font-size: var(--xh-font-size-small-px);
+  }
+
+  &__filter-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--xh-input-text-color);
+    font-size: var(--xh-font-size-px);
+    font-family: inherit;
+    padding: 2px 0;
+    min-width: 0;
+
+    &::placeholder {
+      color: var(--xh-input-placeholder-text-color);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    border-bottom: 1px solid var(--xh-border-color);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  &__header-clear {
+    cursor: pointer;
+    color: var(--xh-blue);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__options {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  &__no-results {
+    padding: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: var(--xh-bg-alt);
+      color: var(--xh-text-color-highlight);
+    }
+
+    &--selected {
+      font-weight: 500;
+    }
+  }
+
+  &__option-check {
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+    color: var(--xh-blue);
+  }
+
+  &__option-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
