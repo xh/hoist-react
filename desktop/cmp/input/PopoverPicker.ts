@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, hbox, input as inputEl, vbox} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, input as inputEl, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, SelectOption, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault, pluralize} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
@@ -43,8 +43,18 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
      */
     emptyValue?: any;
 
-    /** True to show a "clear" action in the popover footer to deselect all options. */
+    /**
+     * True to allow clearing the current selection. In multi-select mode, shows a "Clear"
+     * action in the popover footer. In single-select mode, clicking the already-selected
+     * option deselects it.
+     */
     enableClear?: boolean;
+
+    /**
+     * True to show a "Select All" action in the multi-select popover footer.
+     * Only effective when `enableMulti` is true. Defaults to false.
+     */
+    enableSelectAll?: boolean;
 
     /**
      * True to include a text filter input at the top of the popover to narrow the options list.
@@ -54,6 +64,13 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
 
     /** Number of options above which the filter input is shown by default. Defaults to 8. */
     filterThreshold?: number;
+
+    /**
+     * Singular noun describing each option (e.g. "state", "region"). When set, used in the
+     * default multi-select button text (e.g. "3 states", "All regions") and the popover
+     * footer count. Automatically pluralized as needed via {@link pluralize}.
+     */
+    displayNoun?: string;
 
     /** Text shown on the trigger button when no value is selected. Defaults to 'Select...'. */
     placeholder?: string;
@@ -96,11 +113,16 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
 
     /**
      * Function to render the text displayed on the trigger button for the current selection.
-     * Receives an array of selected option objects and the full list of option objects.
-     * Return a ReactNode for display. Does not replace the button itself — use `buttonProps`
-     * to customize the button's icon, intent, or other properties.
+     * Receives an array of selected option objects, the full list of option objects, and the
+     * configured `displayNoun` (if any). Return a ReactNode for display. Overrides the default
+     * button text, including any `displayNoun`-based summary. Does not replace the button
+     * itself — use `buttonProps` to customize the button's icon, intent, or other properties.
      */
-    textRenderer?: (selectedOpts: SelectOption[], allOpts: SelectOption[]) => ReactNode;
+    buttonTextRenderer?: (
+        selectedOpts: SelectOption[],
+        allOpts: SelectOption[],
+        displayNoun: string
+    ) => ReactNode;
 
     /**
      * Function to render each option row in the popover list.
@@ -220,12 +242,17 @@ class PopoverPickerModel extends HoistInputModel {
                 : [...current, optValue];
             this.noteValueChange(isEmpty(next) ? this.emptyValue : next);
         } else {
-            this.noteValueChange(optValue);
+            const shouldClear = this.componentProps.enableClear && this.isSelected(optValue);
+            this.noteValueChange(shouldClear ? this.emptyValue : optValue);
         }
 
         if (this.closeOnSelect) {
             this.closePopover();
         }
+    }
+
+    selectAll() {
+        this.noteValueChange(this.internalOptions.map(o => o.value));
     }
 
     clearAll() {
@@ -249,11 +276,11 @@ class PopoverPickerModel extends HoistInputModel {
 
     getButtonText(): ReactNode {
         const {componentProps, internalOptions} = this,
-            {textRenderer, placeholder} = componentProps,
+            {buttonTextRenderer, placeholder, displayNoun} = componentProps,
             selectedOpts = this.getSelectedOptions();
 
-        if (textRenderer) {
-            return textRenderer(selectedOpts, internalOptions);
+        if (buttonTextRenderer) {
+            return buttonTextRenderer(selectedOpts, internalOptions, displayNoun);
         }
 
         if (isEmpty(selectedOpts)) {
@@ -268,9 +295,10 @@ class PopoverPickerModel extends HoistInputModel {
         const selCount = selectedOpts.length,
             totalCount = internalOptions.length;
 
-        if (selCount === totalCount) return 'All selected';
+        if (selCount === totalCount)
+            return displayNoun ? `All ${pluralize(displayNoun)}` : 'All selected';
         if (selCount === 1) return selectedOpts[0].label;
-        return `${selCount} selected`;
+        return displayNoun ? `${selCount} ${pluralize(displayNoun)}` : `${selCount} selected`;
     }
 
     //-------------------------------
@@ -365,8 +393,7 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
         maxMenuHeight = withDefault(props.maxMenuHeight, 300),
         popoverWidth = props.popoverWidth,
         widthStyle = popoverWidth ? {width: popoverWidth} : undefined,
-        {enableClear, enableMulti} = props,
-        hasFooter = enableClear || (enableMulti && model.getSelectedValues().length > 0);
+        {enableMulti} = props;
 
     return vbox({
         className: 'xh-popover-picker__menu',
@@ -384,7 +411,7 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
                     ? div({className: 'xh-popover-picker__no-results', item: 'No matches found.'})
                     : filteredOptions.map(opt => optionItem({model, opt, props}))
             }),
-            hasFooter ? menuFooter({model}) : null
+            enableMulti ? menuFooter({model, props}) : null
         ]
     });
 });
@@ -414,28 +441,63 @@ const filterInput = hoistCmp.factory<PopoverPickerModel>(({model}) => {
 });
 
 //---------------------------------------------
-// Menu footer with clear action
+// Menu footer with count, select all, and clear
 //---------------------------------------------
-const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model}) => {
-    const selCount = model.getSelectedValues().length;
-    if (selCount === 0) return null;
+const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
+    const selCount = model.getSelectedValues().length,
+        totalCount = model.internalOptions.length,
+        {displayNoun, enableClear, enableSelectAll} = props,
+        noneSelected = selCount === 0,
+        allSelected = selCount === totalCount;
+
+    let countText: string;
+    if (noneSelected) {
+        countText = displayNoun ? `No ${pluralize(displayNoun)} selected` : 'None selected';
+    } else {
+        countText = displayNoun ? pluralize(displayNoun, selCount, true) : `${selCount} selected`;
+    }
+
+    const actions = [];
+    if (enableSelectAll) {
+        actions.push(
+            div({
+                className: classNames(
+                    'xh-popover-picker__footer-action',
+                    allSelected && 'xh-popover-picker__footer-action--disabled'
+                ),
+                item: 'All',
+                onClick: e => {
+                    e.stopPropagation();
+                    if (!allSelected) model.selectAll();
+                }
+            })
+        );
+    }
+    if (enableClear) {
+        if (actions.length > 0) {
+            actions.push(span({className: 'xh-popover-picker__footer-separator', item: '\u00b7'}));
+        }
+        actions.push(
+            div({
+                className: classNames(
+                    'xh-popover-picker__footer-action',
+                    noneSelected && 'xh-popover-picker__footer-action--disabled'
+                ),
+                item: 'Clear',
+                onClick: e => {
+                    e.stopPropagation();
+                    if (!noneSelected) model.clearAll();
+                }
+            })
+        );
+    }
 
     return hbox({
         className: 'xh-popover-picker__footer',
         items: [
-            div({
-                className: 'xh-popover-picker__footer-count',
-                item: `${selCount} selected`
-            }),
+            div({className: 'xh-popover-picker__footer-count', item: countText}),
             filler(),
-            div({
-                className: 'xh-popover-picker__footer-clear',
-                item: 'Clear',
-                onClick: e => {
-                    e.stopPropagation();
-                    model.clearAll();
-                }
-            })
+            ...actions
         ]
     });
 });

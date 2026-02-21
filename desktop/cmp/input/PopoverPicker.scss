@@ -88,13 +88,28 @@
     color: var(--xh-text-color-muted);
   }
 
-  &__footer-clear {
+  &__footer-action {
     cursor: pointer;
     color: var(--xh-intent-primary);
 
     &:hover {
       text-decoration: underline;
     }
+
+    &--disabled {
+      cursor: default;
+      color: var(--xh-text-color-muted);
+      opacity: 0.5;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+
+  &__footer-separator {
+    margin: 0 var(--xh-pad-half-px);
+    color: var(--xh-text-color-muted);
   }
 
   &__options {
