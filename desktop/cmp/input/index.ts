@@ -4,7 +4,7 @@ export * from './CodeInput';
 export * from './DateInput';
 export * from './JsonInput';
 export * from './NumberInput';
-export * from './PopoverSelect';
+export * from './PopoverPicker';
 export * from './RadioInput';
 export * from './Select';
 export * from './Slider';
