@@ -21,7 +21,7 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {TEST_ID, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
+import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
@@ -403,7 +403,7 @@ const triggerButton = hoistCmp.factory<PopoverPickerModel>(
             ...restLayout,
             width: withDefault(width, 160),
             style: props.style,
-            [TEST_ID]: props.testId ? `${props.testId}-trigger` : undefined,
+            [TEST_ID]: getTestId(props, 'trigger'),
             onClick: () => {
                 if (model.popoverIsOpen) {
                     model.closePopover();
@@ -436,7 +436,7 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
         className: 'xh-popover-picker__menu',
         style: widthStyle,
         items: [
-            enableFilter ? filterInput({model}) : null,
+            enableFilter ? filterInput({model, props}) : null,
             useVirtual
                 ? virtualOptionsList({model, props, filteredOptions, maxMenuHeight, optionHeight})
                 : div({
@@ -459,7 +459,7 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
 //---------------------------------------------
 // Filter text input inside popover
 //---------------------------------------------
-const filterInput = hoistCmp.factory<PopoverPickerModel>(({model}) => {
+const filterInput = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
     return div({
         className: 'xh-popover-picker__filter',
         item: textInput({
@@ -470,7 +470,8 @@ const filterInput = hoistCmp.factory<PopoverPickerModel>(({model}) => {
             enableClear: true,
             placeholder: 'Filter...',
             autoFocus: true,
-            width: '100%'
+            width: '100%',
+            testId: getTestId(props, 'filter')
         })
     });
 });
@@ -523,6 +524,7 @@ const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
                     allSelected && 'xh-popover-picker__footer-action--disabled'
                 ),
                 item: 'All',
+                [TEST_ID]: getTestId(props, 'select-all-btn'),
                 onClick: e => {
                     e.stopPropagation();
                     if (!allSelected) model.selectAll();
@@ -541,6 +543,7 @@ const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
                     noneSelected && 'xh-popover-picker__footer-action--disabled'
                 ),
                 item: 'Clear',
+                [TEST_ID]: getTestId(props, 'clear-btn'),
                 onClick: e => {
                     e.stopPropagation();
                     if (!noneSelected) model.clearAll();
