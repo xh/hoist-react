@@ -433,7 +433,10 @@ function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
     if (exact.length === 0) return null;
 
     if (filePath) {
-        return exact.find(e => e.filePath === filePath) ?? null;
+        // Resolve relative paths against repo root -- search results display repo-relative
+        // paths, so callers will typically pass those rather than absolute paths.
+        const resolved = filePath.startsWith('/') ? filePath : resolve(resolveRepoRoot(), filePath);
+        return exact.find(e => e.filePath === resolved) ?? null;
     }
 
     // Prefer exported symbols
