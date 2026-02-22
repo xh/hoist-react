@@ -42,6 +42,26 @@
     & > .xh-icon {
       color: var(--xh-text-color-muted);
     }
+
+    // Intent overrides — restore intent visuals that the --as-input rules above suppress.
+    @each $intent in primary, success, warning, danger {
+      &.xh-button--intent-#{$intent} {
+        box-shadow: var(--xh-input-intent-#{$intent}-box-shadow);
+
+        & > .xh-icon {
+          color: var(--xh-intent-#{$intent}-text-color);
+        }
+
+        &:hover {
+          background-color: var(--xh-intent-#{$intent}-lightest) !important;
+        }
+
+        &:active,
+        &.bp6-active {
+          background-color: var(--xh-intent-#{$intent}-trans1) !important;
+        }
+      }
+    }
   }
 
   // Compact mode - trigger button matches compact toolbar button sizing.
