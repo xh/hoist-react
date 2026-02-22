@@ -122,7 +122,8 @@ formField({
 
 `PopoverPicker` is designed for space-constrained areas like toolbars, especially for multi-select
 scenarios where `Select` with its tag-picker style is too wide. It renders a compact button that
-opens a popover checklist, with built-in multi-select summarization:
+opens a popover checklist, with built-in multi-select summarization. Set `compact: true` to scale
+both the trigger button and popover list for use in compact toolbars or other tight layouts:
 
 ```typescript
 import {popoverPicker} from '@xh/hoist/desktop/cmp/input';
