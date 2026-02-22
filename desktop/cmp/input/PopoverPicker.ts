@@ -90,6 +90,9 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
     /** True (default) to style trigger button background and borders to match inputs. */
     styleButtonAsInput?: boolean;
 
+    /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
+    compact?: boolean;
+
     /**
      * Props forwarded to the trigger button. Use this to customize the button's appearance,
      * including `icon`, `rightIcon`, `intent`, `minimal`, `outlined`, `tooltip`, and any other
@@ -128,7 +131,8 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
 
     /**
      * Height of each option row in pixels. Used for virtual scrolling when rendering large
-     * option lists. Must match the rendered height of each option row. Defaults to 30.
+     * option lists. Must match the rendered height of each option row.
+     * Defaults to 18 in compact mode, 30 otherwise.
      */
     optionHeight?: number;
 
@@ -360,15 +364,19 @@ class PopoverPickerModel extends HoistInputModel {
 //---------------------------------------------
 const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, ref) => {
     const hasSelection = !isEmpty(model.getSelectedValues()),
-        nothingSelected = !hasSelection;
+        nothingSelected = !hasSelection,
+        compact = !!props.compact;
 
     return popover({
-        className,
+        className: classNames(className, compact && 'xh-popover-picker--compact'),
         isOpen: model.popoverIsOpen,
         onInteraction: nextOpen => model.onPopoverInteraction(nextOpen),
         minimal: withDefault(props.popoverMinimal, false),
         position: withDefault(props.popoverPosition, 'bottom-left'),
-        popoverClassName: 'xh-popover-picker__popover',
+        popoverClassName: classNames(
+            'xh-popover-picker__popover',
+            compact && 'xh-popover-picker__popover--compact'
+        ),
         matchTargetWidth: !props.popoverWidth,
         item: triggerButton({model, props, nothingSelected, ref}),
         content: optionsList({model, props}),
@@ -420,8 +428,9 @@ const triggerButton = hoistCmp.factory<PopoverPickerModel>(
 //---------------------------------------------
 const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
     const {filteredOptions, enableFilter} = model,
+        compact = !!props.compact,
         maxMenuHeight = withDefault(props.maxMenuHeight, 300),
-        optionHeight = withDefault(props.optionHeight, 30),
+        optionHeight = withDefault(props.optionHeight, compact ? 18 : 30),
         popoverWidth = props.popoverWidth,
         widthStyle = popoverWidth ? {width: popoverWidth} : undefined,
         {enableMulti, enableVirtual} = props,
