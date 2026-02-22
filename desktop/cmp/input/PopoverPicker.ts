@@ -24,7 +24,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
+import {capitalize, castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
 import {ReactNode} from 'react';
 import {List} from 'react-window';
 import './PopoverPicker.scss';
@@ -84,7 +84,10 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
      */
     displayNoun?: string;
 
-    /** Text shown on the trigger button when no value is selected. Defaults to 'Select...'. */
+    /**
+     * Text shown on the trigger button when no value is selected. Defaults to a
+     * pluralized form of `displayNoun` if provided (e.g. "States..."), or 'Select...'
+     */
     placeholder?: string;
 
     /** True (default) to style trigger button background and borders to match inputs. */
@@ -316,7 +319,9 @@ class PopoverPickerModel extends HoistInputModel {
         }
 
         if (isEmpty(selectedOpts)) {
-            return placeholder ?? 'Select...';
+            if (placeholder) return placeholder;
+            if (displayNoun) return `${capitalize(pluralize(displayNoun))}...`;
+            return 'Select...';
         }
 
         if (!this.multiMode) {
