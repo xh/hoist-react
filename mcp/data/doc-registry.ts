@@ -518,6 +518,42 @@ function getRawEntries(): RawEntry[] {
             category: 'devops',
             description: 'CHANGELOG entry format conventions and section headers.',
             keywords: splitKeywords('changelog, format, conventions, release notes, versioning')
+        },
+
+        //--------------------------------------------------------------
+        // Upgrade Notes
+        //--------------------------------------------------------------
+        {
+            id: 'upgrade-v78',
+            title: 'v78 Upgrade Notes',
+            file: 'docs/upgrade-notes/v78-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v77.x to v78.0.0. Trivial difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v78, v77')
+        },
+        {
+            id: 'upgrade-v79',
+            title: 'v79 Upgrade Notes',
+            file: 'docs/upgrade-notes/v79-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v78.x to v79.0.0. Medium difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v79, v78')
+        },
+        {
+            id: 'upgrade-v80',
+            title: 'v80 Upgrade Notes',
+            file: 'docs/upgrade-notes/v80-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v79.x to v80.0.0. Low difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v80, v79')
+        },
+        {
+            id: 'upgrade-v81',
+            title: 'v81 Upgrade Notes',
+            file: 'docs/upgrade-notes/v81-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v80.x to v81.0.2. Low difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v81, v80')
         }
     ];
 }

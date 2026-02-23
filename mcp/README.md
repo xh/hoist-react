@@ -8,7 +8,7 @@ local stdio-based server that any MCP-compatible client (e.g. Claude Code) can c
 
 **What it provides:**
 
-- **Documentation tools** -- search and browse all hoist-react READMEs and concept docs
+- **Documentation tools** -- search and browse all hoist-react READMEs, concept docs, and upgrade notes
 - **TypeScript tools** -- search symbols, inspect types, and list class/interface members
 - **Developer prompts** -- structured starting points for creating grids, forms, and tab containers
 - **Documentation resources** -- direct access to any doc by URI
@@ -338,6 +338,7 @@ and serve. Each entry specifies an `id`, `title`, `file` path, `category`, `desc
 
 **When to update:**
 - A new README or concept doc is added to hoist-react
+- A new major version's upgrade notes are created in `docs/upgrade-notes/`
 - A documentation file is renamed or moved
 - A documentation file is removed
 - The description or key topics for a doc change significantly
@@ -421,6 +422,7 @@ were replaced, or if `makeObservable` were no longer required.
 | Change | Files to Update |
 |--------|----------------|
 | Add/rename/remove a documentation file | `mcp/data/doc-registry.ts`, `docs/README.md` |
+| Add upgrade notes for a new major version | `mcp/data/doc-registry.ts`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
 | Rename a section header in a component README | Check `mcp/prompts/grid.ts`, `form.ts`, `tabs.ts` |
 | Rename a key class or remove a key member | Check `mcp/prompts/grid.ts`, `form.ts`, `tabs.ts` |
