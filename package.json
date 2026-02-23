@@ -14,6 +14,7 @@
     "hoist-mcp": "./bin/hoist-mcp.mjs"
   },
   "scripts": {
+    "test": "jest",
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:code && yarn lint:styles",
     "lint:code": "eslint .",
@@ -102,16 +103,19 @@
     "react-dom": "~18.2.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
     "@xh/hoist-dev-utils": "11.x",
     "ag-grid-community": "34.x",
     "ag-grid-react": "34.x",
+    "babel-jest": "^30.2.0",
     "csstype": "3.x",
     "eslint": "9.x",
     "eslint-config-prettier": "10.x",
     "eslint-plugin-tsdoc": "0.x",
     "husky": "9.x",
+    "jest": "^30.2.0",
     "lint-staged": "16.x",
     "postcss": "8.x",
     "prettier": "3.x",
