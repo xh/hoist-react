@@ -5,6 +5,7 @@ import {
     ensureUniqueBy,
     executeIfFunction,
     filterConsecutive,
+    findIn,
     getOrCreate,
     intersperse,
     isJSON,
@@ -317,6 +318,26 @@ describe('executeIfFunction', () => {
     it('executes a function and returns its result', () => {
         expect(executeIfFunction(() => 42)).toBe(42);
         expect(executeIfFunction(() => 'hello')).toBe('hello');
+    });
+});
+
+describe('findIn', () => {
+    it('finds the first matching value in a Set', () => {
+        const set = new Set([1, 2, 3, 4]);
+        expect(findIn(set, v => v > 2)).toBe(3);
+    });
+
+    it('finds the first matching value in a Map', () => {
+        const map = new Map([
+            ['a', 1],
+            ['b', 2],
+            ['c', 3]
+        ]);
+        expect(findIn(map, v => v === 2)).toBe(2);
+    });
+
+    it('returns null when no match is found', () => {
+        expect(findIn(new Set([1, 2, 3]), v => v > 10)).toBeNull();
     });
 });
 
