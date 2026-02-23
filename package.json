@@ -15,6 +15,7 @@
   },
   "scripts": {
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "lint": "yarn lint:all",
     "lint:all": "yarn lint:code && yarn lint:styles",
     "lint:code": "eslint .",

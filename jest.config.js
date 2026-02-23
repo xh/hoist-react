@@ -21,5 +21,23 @@ module.exports = {
     testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
 
     // Don't transform node_modules (all hoist deps ship CJS-compatible builds)
-    transformIgnorePatterns: ['/node_modules/']
+    transformIgnorePatterns: ['/node_modules/'],
+
+    // Coverage configuration
+    coverageDirectory: 'coverage',
+    coverageReporters: ['text', 'lcov', 'html'],
+    collectCoverageFrom: [
+        '**/*.{ts,tsx}',
+        '!**/__tests__/**',
+        '!**/__mocks__/**',
+        '!**/node_modules/**',
+        '!bin/**',
+        '!mcp/**',
+        '!build/**',
+        '!static/**',
+        '!scripts/**',
+        '!docs/**',
+        '!public/**',
+        '!**/*.d.ts'
+    ]
 };
