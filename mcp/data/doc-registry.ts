@@ -96,13 +96,13 @@ function getRawEntries(): RawEntry[] {
         },
         {
             id: 'conventions',
-            title: 'Hoist Coding Conventions',
-            file: 'AGENTS.md',
+            title: 'Coding Conventions',
+            file: 'docs/coding-conventions.md',
             category: 'conventions',
             description:
-                'Architecture patterns, code style, key dependencies, and AI assistant guidance for hoist-react development.',
+                'Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming.',
             keywords: splitKeywords(
-                'conventions, code style, architecture, patterns, decorators, MobX, hoistCmp, element factories'
+                'conventions, code style, imports, naming, TypeScript, class structure, component patterns, hoistCmp, exports, null, undefined, async, await, error handling, logging, equality, CSS, BEM, section dividers, declare config'
             )
         },
 
