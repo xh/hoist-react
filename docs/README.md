@@ -15,7 +15,8 @@ patterns for specific hoist-react features. Start with the [Core Framework](#cor
 for foundational concepts, then drill into [Components](#components) or [Utilities](#utilities).
 
 **Library developers:** In addition to the docs below, see
-[`/AGENTS.md`](../AGENTS.md) for coding conventions, architecture patterns, and code style guidance.
+[`/AGENTS.md`](../AGENTS.md) for architecture patterns and AI assistant guidance, and
+[Coding Conventions](./coding-conventions.md) for detailed code style and naming conventions.
 See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage tracking and conventions.
 
 ## Quick Reference by Task
@@ -56,6 +57,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
 | Configure local development environment | [Development Environment](./development-environment.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md) |
+| Follow XH coding conventions | [Coding Conventions](./coding-conventions.md) |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
 
 ## Package Documentation
@@ -108,6 +110,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Routing](./routing.md) | Client-side routing via RouterModel (Router5 wrapper) | RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel route integration, NavigatorModel |
 | [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
+| [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
 
 ### Supporting Packages
 
@@ -159,8 +162,10 @@ breaking changes, before/after code examples, and verification checklists.
 
 ## Additional Resources
 
-- [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns, coding
-  conventions, code style, and key dependencies
+- [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns and key
+  dependencies
+- [`docs/coding-conventions.md`](./coding-conventions.md) — Detailed coding conventions: imports,
+  naming, class structure, component patterns, null handling, async, error handling, logging, CSS
 - [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
   (documentation, testing). Not indexed here — these are project management artifacts, not
   hoist-react reference material.

@@ -411,3 +411,23 @@
     - #4237: RadioInput testId should use option value, not label
     - #4239: Mobile components should support testId at parity with desktop (assigned to Copilot)
     - #4241: DynamicTabSwitcher does not propagate testId
+
+### 2026-02-22
+- Created `docs/coding-conventions.md` — comprehensive coding conventions doc covering ~16 areas
+- **Sections:** Principles (DRY, naming, lodash, conciseness), Tooling-Enforced Style, Imports, TypeScript Usage, Naming, Class Structure, Component Patterns (`withFactory` vs `factory`), Export Patterns, Variable Declarations, Null/Undefined, Comments/Documentation, Async Patterns, Error Handling, Logging, Equality, CSS Class Naming, Key Source Files
+- **Interactive review with Anselm** — multiple revisions during session:
+  - Clarified `hoistCmp.withFactory` (library, exports Component for JSX) vs `hoistCmp.factory` (app/impl, factory only)
+  - Updated private members: use `private` keyword, removed `_` prefix advice
+  - Moved `throwIf` out of Null/Undefined section into Error Handling where it belongs
+  - Clarified `withDefault()` respects `null` as an intentional value (only skips `undefined`)
+  - Scoped `catchDefault()` to fire-and-forget cases only; warned against use in model business logic
+  - Added nuance to `XH.handleException()` — wrapping layers for API-specific exception parsing are appropriate
+  - Rewrote "return without await" section — `await` without `return` for side-effect methods, `return` only when resolved value is the method's API contract
+  - Added async example to timed wrappers (`withInfo`/`withDebug`)
+  - Clarified CSS variables as library theme; `--xh-` namespace reserved for hoist-react
+  - Import ordering kept as soft recommendation for new code, not a strict rule
+  - Added Principles section: DRY, clear naming, lodash preference, conciseness
+- Updated AGENTS.md Code Style section: inline principles + cross-ref to full doc, extended no-hard-wrap guidance to PRs and comments
+- Updated MCP doc-registry.ts: conventions entry points to new file with expanded keywords
+- Updated docs/README.md: preamble, Quick Reference, Concepts table, Additional Resources
+- **Status: Done** — reviewed and approved by Anselm
