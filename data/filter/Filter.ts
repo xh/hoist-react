@@ -36,4 +36,16 @@ export abstract class Filter {
 
     /** @returns a JSON serializable spec that can be used to persist and recreate this filter.*/
     abstract toJSON(): FilterSpec;
+
+    /** Remove all FieldFilters targeting a specific field. */
+    abstract removeFieldFilter(field: string): Filter | null;
+
+    /** Remove ALL FieldFilters. */
+    abstract removeFieldFilters(): Filter | null;
+
+    /** Remove FunctionFilter with a specific key. */
+    abstract removeFunctionFilter(key: string): Filter | null;
+
+    /** Remove ALL FunctionFilters. */
+    abstract removeFunctionFilters(): Filter | null;
 }

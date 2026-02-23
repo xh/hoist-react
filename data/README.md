@@ -410,14 +410,51 @@ store.setFilter(new FunctionFilter({
 ### Filter Utilities
 
 ```typescript
-import {parseFilter, withFilterByField} from '@xh/hoist/data';
+import {parseFilter, appendFilter} from '@xh/hoist/data';
 
 // Parse various input formats into Filter instances
 const filter = parseFilter({field: 'name', op: 'like', value: 'smith'});
 const filter = parseFilter([filter1, filter2]);  // Wraps in AND
+```
 
-// Update filter while preserving other clauses
-const newFilter = withFilterByField(existingFilter, newFieldFilter, 'fieldName');
+#### Instance Methods for Filter Transformation
+
+All `Filter` subclasses provide instance methods that return a new `Filter | null` with matching
+filters removed. CompoundFilters are recursively traversed.
+
+```typescript
+// Remove all FieldFilters targeting a specific field
+const remaining = filter.removeFieldFilter('status');
+
+// Remove ALL FieldFilters (e.g. keep only FunctionFilters)
+const remaining = filter.removeFieldFilters();
+
+// Remove a FunctionFilter by key
+const remaining = filter.removeFunctionFilter('default');
+
+// Remove ALL FunctionFilters
+const remaining = filter.removeFunctionFilters();
+```
+
+#### Combining Filters with `appendFilter()`
+
+`appendFilter()` combines a source filter with one or more additions via AND. If the source is
+already an AND CompoundFilter, additions are flattened into its children rather than nesting.
+
+```typescript
+// Replace FieldFilters on one field, keep everything else
+const updated = appendFilter(filter?.removeFieldFilter('status'), newStatusFilter);
+
+// Replace all FieldFilters, preserving FunctionFilters
+const updated = appendFilter(filter?.removeFieldFilters(), newFieldFilters);
+
+// Append multiple additions at once
+const updated = appendFilter(filter, addition1, addition2);
+
+// Handles null gracefully
+appendFilter(null, newFilter)          // → newFilter
+appendFilter(existingFilter, null)     // → existingFilter
+appendFilter(null, null)               // → null
 ```
 
 ## Validation System

@@ -74,4 +74,39 @@ export class CompoundFilter extends Filter {
             op: this.op
         };
     }
+
+    override removeFieldFilter(field: string): Filter | null {
+        return this.applyRemove(f => f.removeFieldFilter(field));
+    }
+
+    override removeFieldFilters(): Filter | null {
+        return this.applyRemove(f => f.removeFieldFilters());
+    }
+
+    override removeFunctionFilter(key: string): Filter | null {
+        return this.applyRemove(f => f.removeFunctionFilter(key));
+    }
+
+    override removeFunctionFilters(): Filter | null {
+        return this.applyRemove(f => f.removeFunctionFilters());
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    /**
+     * Apply a remove function to each child, compacting out nulls.
+     * Returns same instance if nothing changed, single child if one remains, or null if empty.
+     */
+    private applyRemove(removeFn: (f: Filter) => Filter | null): Filter | null {
+        const {filters, op} = this,
+            result = compact(filters.map(removeFn));
+
+        if (result.length === filters.length && result.every((f, i) => f === filters[i])) {
+            return this;
+        }
+        if (result.length === 0) return null;
+        if (result.length === 1) return result[0];
+        return new CompoundFilter({filters: result, op});
+    }
 }

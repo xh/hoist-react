@@ -34,11 +34,22 @@
 * Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
   Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
+### ⚙️ Technical
+
+* Added instance methods to the `Filter` class hierarchy for clear, composable filter
+  transformations: `removeFieldFilter(field)`, `removeFieldFilters()`,
+  `removeFunctionFilter(key)`, and `removeFunctionFilters()`. These return `Filter | null` and
+  recursively handle CompoundFilters. A new `appendFilter(source, ...additions)` utility
+  combines filters via AND with automatic flattening. The standalone utility functions
+  `replaceFilterByField`, `replaceFunctionFilter`, and `replaceFilterByTypes` (introduced earlier
+  in this release cycle) have been removed in favor of the new API.
+
 ### 🐞 Bug Fixes
 
-* Fixed `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utility functions to
-  correctly handle nested compound filters. Previously, these functions only operated on top-level
-  filters; they now recursively search and remove matching filters at any level of nesting.
+* Fixed filter transformation logic to correctly handle nested compound filters. The new
+  `Filter` instance methods (`removeFieldFilter`, `removeFieldFilters`, etc.) recursively
+  traverse CompoundFilters at any depth, replacing the previous utility functions which could
+  fail with deeply nested structures.
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
   action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
