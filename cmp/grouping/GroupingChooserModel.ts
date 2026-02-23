@@ -38,7 +38,8 @@ export interface GroupingChooserConfig {
      * should be automatically applied as it changes. When bound to a GridModel, calls
      * `setGroupBy()`; when bound to a View, calls `updateQuery({dimensions: ...})`.
      *
-     * This is a one-way binding — the GroupingChooser is the source of truth.
+     * This is a two-way binding — changes to the target's value are reflected back into
+     * the GroupingChooserModel automatically.
      */
     bind?: GroupingBindTarget;
 
@@ -205,6 +206,14 @@ export class GroupingChooserModel extends HoistModel {
                 run: value => this.updateTargetValue(value),
                 fireImmediately: true
             });
+
+            this.addReaction({
+                track: () => this.targetValue,
+                run: targetValue => {
+                    if (isEqual(this.value, targetValue)) return;
+                    this.setValue(targetValue);
+                }
+            });
         }
     }
 
@@ -362,6 +371,17 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    @computed
+    private get targetValue(): string[] {
+        const {bind} = this;
+        if (!bind) return null;
+        if (bind instanceof View) {
+            return bind.query?.dimensions?.map(d => d.name) ?? [];
+        } else {
+            return bind.groupBy ?? [];
+        }
+    }
+
     private updateTargetValue(value: string[]) {
         const {bind} = this;
         if (bind instanceof View) {
