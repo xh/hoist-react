@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {frame} from '@xh/hoist/cmp/layout';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
-import {DashViewModel} from '../../DashViewModel';
+import {DashContainerViewModel} from '../DashContainerViewModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
@@ -23,10 +22,9 @@ import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
  */
 export const dashContainerView = hoistCmp.factory({
     displayName: 'DashContainerView',
-    className: 'xh-dash-tab',
-    model: uses(DashViewModel, {publishMode: 'limited'}),
+    model: uses(DashContainerViewModel, {publishMode: 'limited'}),
 
-    render({model, className}) {
+    render({model}) {
         const {isActive, renderMode, refreshContextModel, viewSpec} = model,
             wasActivated = useRef(false);
 
@@ -41,12 +39,9 @@ export const dashContainerView = hoistCmp.factory({
         ) {
             return null;
         }
-        return frame({
-            className,
-            item: refreshContextView({
-                model: refreshContextModel,
-                item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
-            })
+        return refreshContextView({
+            model: refreshContextModel,
+            item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
         });
     }
 });

@@ -21,7 +21,17 @@ import {fmtDateTime} from '@xh/hoist/format';
 import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
 import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual, isNil, isNull, isObject, isUndefined, lowerCase, uniqBy} from 'lodash';
+import {
+    find,
+    isEqual,
+    isNil,
+    isNull,
+    isObject,
+    isUndefined,
+    lowerCase,
+    remove,
+    uniqBy
+} from 'lodash';
 import {ReactNode} from 'react';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
@@ -524,7 +534,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * @internal
      */
     unregisterProvider(provider: ViewManagerProvider<any>) {
-        this.providers = this.providers.filter(it => it !== provider);
+        remove(this.providers, provider);
     }
 
     //------------------
