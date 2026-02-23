@@ -6,40 +6,71 @@
  */
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import {div, hbox} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
-import {makeObservable} from '@xh/hoist/mobx';
+import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {isEmpty, uniq} from 'lodash';
 
 export class MetricsModel extends BaseAdminTabModel {
+    @bindable instance: string = null;
+    @bindable source: string = null;
+
+    @observable.ref instances: string[] = [];
+    @observable.ref sources: string[] = [];
+
+    @managed
+    groupingChooserModel: GroupingChooserModel = new GroupingChooserModel({
+        dimensions: ['name', 'instance', 'type', 'source'],
+        initialValue: ['name']
+    });
+
     @managed
     gridModel: GridModel = new GridModel({
         store: {
-            //idSpec: ({name, tags}) => `${name}__${tags}`,
             fields: [
                 {name: 'name', type: 'string'},
+                {name: 'instance', type: 'string'},
+                {name: 'source', type: 'string'},
                 {name: 'type', type: 'string'},
                 {name: 'value', type: 'number'},
                 {name: 'count', type: 'number'},
                 {name: 'max', type: 'number'},
                 {name: 'description', type: 'string'},
                 {name: 'baseUnit', type: 'string'},
-                {name: 'tags', type: 'string'}
+                {name: 'tags', type: 'json'}
             ]
         },
-        groupBy: 'name',
         sortBy: 'name',
         enableExport: true,
         colChooserModel: true,
         columns: [
-            {field: 'name', flex: 2},
+            {field: 'name', minWidth: 200, flex: true},
+            {field: 'instance', width: 160},
+            {field: 'source', width: 100},
             {field: 'type', width: 140},
             {field: 'value', width: 140, align: 'right', renderer: numberRenderer({})},
-            {field: 'count', width: 100, align: 'right', renderer: numberRenderer({precision: 0})},
-            {field: 'max', width: 140, align: 'right', renderer: numberRenderer({})},
-            {field: 'baseUnit', width: 100},
-            {field: 'tags'},
+            {
+                field: 'count',
+                width: 100,
+                align: 'right',
+                hidden: true,
+                renderer: numberRenderer({precision: 0})
+            },
+            {field: 'max', width: 140, align: 'right', hidden: true, renderer: numberRenderer({})},
+            {field: 'baseUnit', width: 100, maxWidth: 100},
+            {
+                field: 'tags',
+                headerName: 'Tags',
+                headerTooltip:
+                    'Additional metric tags (excludes application, instance, and source)',
+                minWidth: 150,
+                flex: true,
+                renderer: tagsRenderer
+            },
             {field: 'description', hidden: true}
         ]
     });
@@ -60,6 +91,23 @@ export class MetricsModel extends BaseAdminTabModel {
             interval: 15 * SECONDS,
             delay: true
         });
+
+        this.addReaction({
+            track: () => this.groupingChooserModel.value,
+            run: groupBy => this.gridModel.setGroupBy(groupBy),
+            fireImmediately: true
+        });
+
+        this.addReaction({
+            track: () => [this.instance, this.source],
+            run: ([instance, source]) => {
+                const filters = [
+                    instance ? {field: 'instance', op: '=' as const, value: instance} : null,
+                    source ? {field: 'source', op: '=' as const, value: source} : null
+                ].filter(Boolean);
+                this.gridModel.store.setFilter(filters.length ? filters : null);
+            }
+        });
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -72,10 +120,32 @@ export class MetricsModel extends BaseAdminTabModel {
             });
 
             if (!loadSpec.isStale) {
-                gridModel.loadData(data);
+                const enriched = data.map(it => {
+                    const instance = it.tags.find(t => t.key === 'instance')?.value;
+                    const source = it.tags.find(t => t.key === 'source')?.value;
+                    const tags = it.tags.filter(
+                        t => !['instance', 'application', 'source'].includes(t.key)
+                    );
+                    return {...it, instance, source, tags};
+                });
+                gridModel.loadData(enriched);
+                this.instances = uniq<string>(enriched.map(it => it.instance)).sort();
+                this.sources = uniq<string>(enriched.map(it => it.source))
+                    .filter(Boolean)
+                    .sort();
             }
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
         }
     }
+}
+
+function tagsRenderer(v) {
+    if (isEmpty(v)) return null;
+    return hbox({
+        className: 'xh-tags-renderer',
+        items: v.map(({key, value}) =>
+            div({className: 'xh-tags-renderer__tag', item: value, title: key})
+        )
+    });
 }
