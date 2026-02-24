@@ -26,7 +26,7 @@ export class MetricsModel extends BaseAdminTabModel {
             fields: [
                 {name: 'name', type: 'string'},
                 {name: 'description', type: 'string'},
-                {name: 'baseUnit', type: 'string'},
+                {name: 'baseUnit', type: 'string', displayName: 'Unit'},
                 {name: 'type', type: 'string'},
                 {name: 'source', type: 'string'},
                 {name: 'count', type: 'number'}
@@ -34,11 +34,12 @@ export class MetricsModel extends BaseAdminTabModel {
         },
         sortBy: 'name',
         selModel: 'single',
+        colChooserModel: true,
         columns: [
             {field: 'name', flex: true, minWidth: 200, maxWidth: 300},
             {field: 'source', width: 100},
             {field: 'type', width: 120},
-            {field: 'baseUnit', width: 80},
+            {field: 'baseUnit', width: 80, hidden: true},
             {field: 'count', width: 50},
             {field: 'description', flex: true}
         ]
@@ -51,13 +52,16 @@ export class MetricsModel extends BaseAdminTabModel {
                 {name: 'tags', type: 'json'},
                 {name: 'instance', type: 'string'},
                 {name: 'value', type: 'number'},
+                {name: 'baseUnit', type: 'string', displayName: 'Unit'},
                 {name: 'count', type: 'number'},
                 {name: 'max', type: 'number'}
             ]
         },
+        colChooserModel: true,
         columns: [
             {field: 'instance', width: 140},
             {field: 'value', width: 120, align: 'right', renderer: numberRenderer({})},
+            {field: 'baseUnit', width: 100},
             {field: 'count', hidden: true, renderer: numberRenderer({precision: 0})},
             {field: 'max', width: 120, align: 'right', hidden: true, renderer: numberRenderer({})},
             {field: 'tags', flex: true, renderer: tagsRenderer}
@@ -109,15 +113,7 @@ export class MetricsModel extends BaseAdminTabModel {
             const enriched = data.map(it => {
                 const instance = it.tags.find(t => t.key === 'instance')?.value;
                 const source = it.tags.find(t => t.key === 'source')?.value;
-                const priorityKeys = ['application', 'source', 'instance'];
-                const tags = it.tags
-                    .sort((a, b) => {
-                        const ai = priorityKeys.indexOf(a.key),
-                            bi = priorityKeys.indexOf(b.key);
-                        if (ai !== bi) return bi === -1 ? -1 : ai === -1 ? 1 : ai - bi;
-                        return 0;
-                    })
-                    .map(t => `${t.key}: ${t.value}`);
+                const tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
                 return {...it, instance, source, tags};
             });
 
@@ -164,4 +160,15 @@ export class MetricsModel extends BaseAdminTabModel {
         const details = this.allMetrics.filter(it => it.name === selName);
         this.detailGridModel.loadData(details);
     }
+}
+
+const PRIORITY_KEYS = ['application', 'source', 'instance'];
+
+function sortTags(tags: {key: string; value: string}[]) {
+    return [...tags].sort((a, b) => {
+        const ai = PRIORITY_KEYS.indexOf(a.key),
+            bi = PRIORITY_KEYS.indexOf(b.key);
+        if (ai !== bi) return bi === -1 ? -1 : ai === -1 ? 1 : ai - bi;
+        return 0;
+    });
 }
