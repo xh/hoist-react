@@ -5,15 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {div, hbox} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {isEmpty, uniq} from 'lodash';
+import {uniq} from 'lodash';
 
 export class MetricsModel extends BaseAdminTabModel {
     @bindable instance: string = null;
@@ -48,9 +47,9 @@ export class MetricsModel extends BaseAdminTabModel {
         enableExport: true,
         colChooserModel: true,
         columns: [
-            {field: 'name', minWidth: 200, flex: true},
-            {field: 'instance', width: 160},
-            {field: 'source', width: 100},
+            {field: 'name', minWidth: 200, maxWidth: 200},
+            {field: 'instance', width: 160, hidden: true},
+            {field: 'source', width: 100, hidden: true},
             {field: 'type', width: 140},
             {field: 'value', width: 140, align: 'right', renderer: numberRenderer({})},
             {
@@ -62,15 +61,7 @@ export class MetricsModel extends BaseAdminTabModel {
             },
             {field: 'max', width: 140, align: 'right', hidden: true, renderer: numberRenderer({})},
             {field: 'baseUnit', width: 100, maxWidth: 100},
-            {
-                field: 'tags',
-                headerName: 'Tags',
-                headerTooltip:
-                    'Additional metric tags (excludes application, instance, and source)',
-                minWidth: 150,
-                flex: true,
-                renderer: tagsRenderer
-            },
+            {field: 'tags', minWidth: 150, flex: true, renderer: tagsRenderer},
             {field: 'description', hidden: true}
         ]
     });
@@ -123,9 +114,16 @@ export class MetricsModel extends BaseAdminTabModel {
                 const enriched = data.map(it => {
                     const instance = it.tags.find(t => t.key === 'instance')?.value;
                     const source = it.tags.find(t => t.key === 'source')?.value;
-                    const tags = it.tags.filter(
-                        t => !['instance', 'application', 'source'].includes(t.key)
-                    );
+                    const priorityKeys = ['source', 'instance'];
+                    const tags = it.tags
+                        .filter(t => t.key !== 'application')
+                        .sort((a, b) => {
+                            const ai = priorityKeys.indexOf(a.key),
+                                bi = priorityKeys.indexOf(b.key);
+                            if (ai !== bi) return bi === -1 ? -1 : ai === -1 ? 1 : ai - bi;
+                            return 0;
+                        })
+                        .map(t => `${t.key}: ${t.value}`);
                     return {...it, instance, source, tags};
                 });
                 gridModel.loadData(enriched);
@@ -138,14 +136,4 @@ export class MetricsModel extends BaseAdminTabModel {
             XH.handleException(e, {alertType: 'toast'});
         }
     }
-}
-
-function tagsRenderer(v) {
-    if (isEmpty(v)) return null;
-    return hbox({
-        className: 'xh-tags-renderer',
-        items: v.map(({key, value}) =>
-            div({className: 'xh-tags-renderer__tag', item: value, title: key})
-        )
-    });
 }
