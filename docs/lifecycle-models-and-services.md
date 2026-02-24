@@ -118,6 +118,11 @@ override afterLinked() {
 }
 ```
 
+Note the use of `fireImmediately: true` above — this causes the reaction's `run` function to
+execute once immediately with the current value of the tracked expression, rather than waiting for
+it to change. This is useful for syncing initial state (e.g. setting a badge count from an
+already-populated observable) without duplicating initialization logic outside the reaction.
+
 In practice, `onLinked()` is used more frequently than `afterLinked()`. Most reactions and child
 model creation can happen in `onLinked()`. Use `afterLinked()` when you specifically need
 post-render timing.

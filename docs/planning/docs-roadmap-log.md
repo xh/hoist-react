@@ -431,3 +431,19 @@
 - Updated MCP doc-registry.ts: conventions entry points to new file with expanded keywords
 - Updated docs/README.md: preamble, Quick Reference, Concepts table, Additional Resources
 - **Status: Done** — reviewed and approved by Anselm
+
+### 2026-02-23
+- Created `docs/version-compatibility.md` — reference mapping hoist-react releases to required/recommended hoist-core versions
+  - Compatibility matrix covering v56+ (active support) and pre-v56 (historical/best effort)
+  - Reverse lookup table: hoist-core → minimum hoist-react version
+  - Maintenance checklist and template row for future updates
+  - Version eras summary (Modern v64+, Middle v44-v63, Early v5-v43)
+  - Common pitfalls section (version mismatch symptoms, required vs recommended, hoist-dev-utils)
+  - All version entries cross-checked against CHANGELOG
+- Added entry to MCP doc registry (`mcp/data/doc-registry.ts`) with version/compatibility keywords
+- CHANGELOG maintenance:
+  - Normalized all version headers to omit `v` prefix (previously mixed: v75+ omitted, v74 and below included)
+  - Archived pre-v56 entries (~5,000 lines) to `docs/archive/CHANGELOG-pre-v56.md`, reducing main CHANGELOG from ~7,200 to ~2,100 lines
+  - Added release dates to all early entries (v1–v16) sourced from git tags
+- Updated `docs/README.md`: added Version Compatibility to Quick Reference and Concepts tables, added archive changelog to Additional Resources
+- **Status: Done** — reviewed and approved by Anselm

@@ -50,8 +50,8 @@ Smaller packages that provide important but more specialized functionality.
 |---------|-------|-------------|--------|
 | `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../../icon/README.md) |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
-| `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | [Draft](../../kit/README.md) |
-| `/inspector/` | 6 | Development tools for debugging Hoist instances | [Draft](../../inspector/README.md) |
+| `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
+| `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
 
 ## Concepts
 
@@ -63,13 +63,13 @@ patterns and systems that span multiple packages.
 | Lifecycles | How HoistAppModel, HoistService, and HoistModel are instantiated and initialized. Part 1 covers app startup. Part 2 covers model/service lifecycles (`onLinked`, `afterLinked`, `doLoadAsync`, `destroy`), LoadSupport, and refresh. | [Part 1 Done](../lifecycle-app.md), [Part 2 Done](../lifecycle-models-and-services.md) |
 | Authentication | How Hoist apps authenticate users. Covers OAuth (MSAL/Auth0) and form-based login, HoistAuthModel, token management, IdentityService, and role-based access. | [Done](../authentication.md) |
 | Persistence | Hoist's built-in system for persisting user state (grid columns, form values, view selections) to various backing stores (localStorage, preferences, ViewManager). Covers `@persist` decorators, `markPersist()`, and built-in model support (GridModel, FormModel, TabContainerModel, PanelModel). | [Done](../persistence.md) |
-| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | [Draft](../authorization.md) |
+| Authorization | Hoist's role-based access model. Covers the opt-in role management system (database-backed with admin console editor), role inheritance, best practices for role naming, and the supplemental config-driven "gates" feature for lightweight feature gating. | 📝 [Draft](../authorization.md) |
 | Admin Console | Hoist's built-in system for application administration. Covers the `/admin/` package's configuration management, user/role management, client monitoring, log viewing, and other management UIs — and the hoist-core server-side endpoints that support them. | Planned |
-| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | [Draft](../routing.md) |
+| Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | 📝 [Draft](../routing.md) |
 | Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | [Done](../error-handling.md) |
 | Test Automation | How Hoist supports test automation via `testId` and `TestSupportProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Done](../test-automation.md) |
 | Coding Conventions | Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming. | [Done](../coding-conventions.md) |
-| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | Planned |
+| Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | [Done](../version-compatibility.md) |
 
 ## Documentation Guidelines
 
@@ -164,7 +164,7 @@ _For detailed session-by-session notes, see [docs-roadmap-log.md](./docs-roadmap
 - **Priority 4 (Supporting Packages):** icon/security Done, kit/inspector in Draft
 - **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence, Error Handling, Test Automation complete;
   Coding Conventions complete; Authorization, Routing in Draft;
-  Admin Console, Version Compatibility planned
+  Admin Console planned; Version Compatibility complete
 - **Documentation index** (`docs/README.md`) created and maintained alongside package READMEs
 
 ### Key Decisions

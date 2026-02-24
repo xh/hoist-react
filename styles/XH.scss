@@ -202,16 +202,6 @@ body.xh-app {
 }
 
 .xh-popup {
-  // Support "framed" popovers with border and border-colored arrow
-  &--framed {
-    border: 1px solid var(--xh-popup-border-color);
-
-    .bp6-popover-arrow-border,
-    .bp6-popover-arrow-fill {
-      fill: var(--xh-popup-border-color) !important;
-    }
-  }
-
   // Minimal title style for a header div within a popover - used for e.g column and dimension choosers.
   &__title {
     background-color: var(--xh-popup-title-bg);

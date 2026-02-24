@@ -138,6 +138,10 @@ export abstract class HoistBase {
      * (commonly) ignore. This helps to clarify that the track function is only enumerating
      * the observables to be watched, and not necessarily generating or transforming values.
      *
+     * Set `fireImmediately: true` to execute the `run` function once immediately with the
+     * current value of the tracked expression, rather than waiting for it to change. This is
+     * useful for syncing initial state without duplicating logic outside the reaction.
+     *
      *  Reactions created in this method will be disposed of automatically when this object is
      *  destroyed. They can also be ended/disposed of manually using the native MobX disposer
      *  functions returned by this method.
@@ -305,6 +309,8 @@ export abstract class HoistBase {
 
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
+ * Also supports MobX options inherited from IReactionOptions, including `fireImmediately`
+ * (run the reaction once immediately with the current tracked value).
  */
 export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'equals'> {
     /**

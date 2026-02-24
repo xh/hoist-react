@@ -502,6 +502,13 @@ body {
   --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
   --xh-form-field-warning-color: var(--form-field-warning-color, var(--xh-intent-warning-text-color));
 
+  // Input intent indicators — reusable box-shadows for input-styled components with intent.
+  // Follows the same inset box-shadow pattern as form field validation states.
+  --xh-input-intent-primary-box-shadow: #{inset 0 0 0 1px var(--xh-intent-primary-text-color), inset 0 1px 1px var(--xh-intent-primary-text-color)};
+  --xh-input-intent-success-box-shadow: #{inset 0 0 0 1px var(--xh-intent-success-text-color), inset 0 1px 1px var(--xh-intent-success-text-color)};
+  --xh-input-intent-warning-box-shadow: #{inset 0 0 0 1px var(--xh-intent-warning-text-color), inset 0 1px 1px var(--xh-intent-warning-text-color)};
+  --xh-input-intent-danger-box-shadow: #{inset 0 0 0 1px var(--xh-intent-danger-text-color), inset 0 1px 1px var(--xh-intent-danger-text-color)};
+
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
     --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
@@ -733,7 +740,7 @@ body {
   // Popups / dialogs
   //------------------------
   --xh-popup-bg: var(--popup-bg, var(--xh-bg));
-  --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
+  --xh-popup-border-color: var(--popup-border-color, var(--xh-border-color));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
   --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
