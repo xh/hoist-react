@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler} from '@xh/hoist/cmp/layout';
+import {filler, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {colChooserButton, exportButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
-import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
+import {refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -21,31 +21,35 @@ export const metricsPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             ref: model.viewRef,
-            item: grid(),
             mask: 'onLoad',
             tbar: toolbar(
                 'Group by:',
-                groupingChooser({maxWidth: 300}),
                 select({
-                    bind: 'instance',
-                    options: model.instances,
+                    bind: 'groupBy',
+                    options: ['source', 'type'],
                     enableClear: true,
-                    placeholder: 'All instances...',
-                    width: 200
-                }),
-                select({
-                    bind: 'source',
-                    options: model.sources,
-                    enableClear: true,
-                    placeholder: 'All sources...',
-                    width: 160
+                    placeholder: 'None',
+                    width: 140
                 }),
                 filler(),
+                relativeTimestamp({bind: 'lastLoadDate'}),
+                '-',
                 gridCountLabel({unit: 'metric'}),
                 storeFilterField(),
-                colChooserButton(),
-                exportButton(),
                 refreshButton()
+            ),
+            item: vframe(
+                grid(),
+                panel({
+                    compactHeader: true,
+                    title: model.selectedMetricName
+                        ? `Variants - ${model.selectedMetricName}`
+                        : 'Variants',
+                    modelConfig: {side: 'bottom', defaultSize: 300},
+                    item: model.selectedMetricName
+                        ? grid({model: model.detailGridModel})
+                        : placeholder('Choose a Metric')
+                })
             )
         });
     }
