@@ -1,13 +1,13 @@
 ---
 name: xh-update-doc-links
-description: Pre-commit documentation consistency check. Ensures docs/README.md index and docs/planning/docs-roadmap.md stay in sync with documentation files on disk, validates inter-doc links, and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
+description: Pre-commit documentation consistency check. Ensures docs/README.md index, docs/planning/docs-roadmap.md, and the MCP server's hardcoded document registry stay in sync with documentation files on disk. Validates inter-doc links and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
 # xh-update-doc-links — Documentation Consistency Check
 
-Pre-commit skill to ensure documentation index files, inter-doc links, and cross-references
-stay consistent after editing READMEs or concept docs.
+Pre-commit skill to ensure documentation index files, the MCP document registry, inter-doc links,
+and cross-references stay consistent after editing READMEs or concept docs.
 
 ## Step 1: Discover Documentation Files
 
@@ -95,7 +95,44 @@ When new or recently changed docs are detected, look for cross-linking opportuni
 3. **Be conservative:** Only add links where the existing text already discusses the topic.
    Do not restructure existing content or add new sections just to create links.
 
-## Step 6: Report
+## Step 6: Reconcile MCP Document Registry
+
+Ensure the MCP server's hardcoded document registry reflects the current documentation on disk.
+
+For background on the registry format, entry structure, and maintenance expectations, see the
+[Maintaining the MCP Server](../../mcp/README.md#maintaining-the-mcp-server) section of the MCP
+README — specifically the **Doc Registry Entries** subsection.
+
+1. **Read and parse** `mcp/data/doc-registry.ts`, extracting all `RawEntry` objects from the
+   `getRawEntries()` function. Note the file path in each entry's `file` field.
+
+2. **Detect missing entries** — compare the Step 1 documentation inventory against registry file
+   paths. For each unregistered doc, add a new `RawEntry` with these fields:
+   - `id`: package path for READMEs (e.g. `cmp/grid`), filename stem for concept docs
+     (e.g. `element-factories`), `upgrade-vNN` for upgrade notes.
+   - `title`: derived from the doc's top-level `# heading`.
+   - `file`: path relative to repo root (e.g. `cmp/grid/README.md`).
+   - `category`: `package` for package READMEs, `concept` for docs under `docs/`, `devops` for
+     build/deploy docs, `conventions` for AGENTS.md, `index` for docs/README.md.
+   - `packageName`: set for `package` category entries only (e.g. `@xh/hoist/cmp/grid`).
+   - `description`: concise one-sentence summary matching existing entry style.
+   - `keywords`: 5–12 key terms via `splitKeywords()` — include API names, class names, and
+     topic terms.
+
+3. **Place entries correctly** in the right section of `getRawEntries()`, which is organized by
+   comment dividers: Index & Conventions, Package READMEs, Developer Tools, Concept docs, DevOps
+   docs, Upgrade Notes.
+
+4. **Remove stale entries** whose `file` paths no longer exist on disk.
+
+5. **Update moved/renamed docs** — fix `file` paths (and `id`/`title` if the change is
+   structural, not just a path correction).
+
+6. **Verify existing entries** — spot-check that metadata (title, description, keywords) is still
+   accurate for recently changed docs. Only fix entries that are clearly stale or incorrect; do not
+   rewrite working entries for style.
+
+## Step 7: Report
 
 Output a summary organized into these sections:
 
@@ -103,6 +140,7 @@ Output a summary organized into these sections:
 2. **Roadmap Updates** — Status changes and new entries in `docs-roadmap.md`, progress notes appended to `docs-roadmap-log.md`.
 3. **Broken Links Fixed** — Source file, broken target, and fix applied.
 4. **New Cross-Links Added** — Source file, target doc, and surrounding context.
-5. **Items Needing Review** — Ambiguities or items requiring human judgment.
+5. **MCP Registry Updates** — Entries added, removed, or updated in `mcp/data/doc-registry.ts`, with `id` and `file` for each change.
+6. **Items Needing Review** — Ambiguities or items requiring human judgment.
 
 If no changes were needed in a category, note "None" for that section.

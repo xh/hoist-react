@@ -347,6 +347,11 @@ and serve. Each entry specifies an `id`, `title`, `file` path, `category`, `desc
 `getRawEntries()` function. The `file` path is relative to the repo root. The `keywords` string
 is comma-separated and split automatically.
 
+**Automated support:** The `xh-update-doc-links` Claude Code skill
+(`.claude/skills/xh-update-doc-links/`) includes a dedicated step that reconciles the doc registry
+against documentation files on disk. Running this skill after editing or adding docs will detect
+missing, stale, or moved entries and update the registry accordingly.
+
 ### Top-Level Packages Array
 
 **File:** `mcp/data/ts-registry.ts` (constant `TOP_LEVEL_PACKAGES`)
