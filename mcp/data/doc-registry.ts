@@ -481,6 +481,17 @@ function getRawEntries(): RawEntry[] {
                 'testId, TestSupportProps, data-testid, getTestId, FormField auto-testId'
             )
         },
+        {
+            id: 'version-compatibility',
+            title: 'Version Compatibility',
+            file: 'docs/version-compatibility.md',
+            category: 'concept',
+            description:
+                'Reference mapping hoist-react releases to required/recommended hoist-core versions.',
+            keywords: splitKeywords(
+                'version, compatibility, hoist-core, upgrade, minimum, required, recommended, matrix, pairing'
+            )
+        },
 
         //--------------------------------------------------------------
         // DevOps docs

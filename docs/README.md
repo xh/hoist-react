@@ -58,6 +58,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Configure local development environment | [Development Environment](./development-environment.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md) |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md) |
+| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md) |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
 
 ## Package Documentation
@@ -111,6 +112,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
+| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |
 
 ### Supporting Packages
 
@@ -169,7 +171,9 @@ breaking changes, before/after code examples, and verification checklists.
 - [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
   (documentation, testing). Not indexed here — these are project management artifacts, not
   hoist-react reference material.
-- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes
+- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
+- [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
+  versions prior to v56
 - [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
   section headers
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react

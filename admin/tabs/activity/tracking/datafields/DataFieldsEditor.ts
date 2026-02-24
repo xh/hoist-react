@@ -34,7 +34,7 @@ export const dataFieldsEditor = hoistCmp.factory({
                 onClick: () => model.show()
             }),
             content: formPanel(),
-            popoverClassName: 'xh-popup xh-popup--framed',
+            popoverClassName: 'xh-popup',
             onClose: () => model.close()
         });
     }
