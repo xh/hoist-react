@@ -69,7 +69,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
             });
 
             return popover({
-                popoverClassName: 'xh-expand-to-level-button__popover xh-popup--framed',
+                popoverClassName: 'xh-expand-to-level-button__popover',
                 position: withDefault(popoverPosition, 'auto'),
                 item: button({
                     icon,

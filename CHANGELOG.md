@@ -7,6 +7,10 @@
 * Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
   to hoist-react documentation and TypeScript type information. Includes tools for keyword search
   across docs, symbol lookup, and class/interface member inspection. Launched via `yarn hoist-mcp`.
+* Added `Picker` desktop input component — a popover-based option picker for
+  space-constrained areas like toolbars. Renders a trigger button that opens a dropdown checklist,
+  with support for single and multi-select modes, built-in filtering, custom option and button
+  renderers, and virtualized scrolling for large option lists.
 * Added `description` property to `Field` and `Column`. `Column.description` defaults from
   `Field.description` and serves as the default for both `headerTooltip` and `chooserDescription`
   when those are not explicitly set, providing a single point of configuration for supplementary
@@ -44,9 +48,18 @@
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
 
+### 🎨 Styles
+
+* Overrode Blueprint's hardcoded popover border and arrow colors to use Hoist's themed
+  `--xh-popup-border-color` CSS variable. Popover borders and arrows now match the rest of
+  the Hoist theme in both light and dark modes.
+* Removed the `xh-popup--framed` CSS class. Its border styling is now handled globally by the
+  popover border override above.
+
 ### 📚 Libraries
 
 * react-grid-layout `2.1 → 2.2.2`
+* react-window `2.2` (new — windowed rendering for `Picker` virtual option lists)
 * qs `6.14.0 → 6.15.0`
 
 ## 81.0.2 - 2026-02-12

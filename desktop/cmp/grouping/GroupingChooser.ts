@@ -61,7 +61,7 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
      */
     popoverWidth?: number;
 
-    /** True (default) to style target button as an input field - blends better in toolbars. */
+    /** True (default) to style trigger button background and borders to match inputs. */
     styleButtonAsInput?: boolean;
 }
 
@@ -109,7 +109,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             item: popover({
                 isOpen,
                 popoverRef: model.popoverRef,
-                popoverClassName: `xh-grouping-chooser-popover xh-grouping-chooser-popover--${favesClassNameMod} xh-popup--framed`,
+                popoverClassName: `xh-grouping-chooser-popover xh-grouping-chooser-popover--${favesClassNameMod}`,
                 // Left align editor to keep in place when button changing size when commitOnChange: true
                 position: `${popoverPosition}-left`,
                 minimal: false,
