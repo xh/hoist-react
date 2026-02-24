@@ -139,7 +139,7 @@ common pitfalls.
 
 ### Prefer Hoist Input Components Over Raw HTML
 
-Always use Hoist's built-in input components (`textInput`, `numberInput`, `select`, `popoverPicker`,
+Always use Hoist's built-in input components (`textInput`, `numberInput`, `select`, `picker`,
 `checkbox`, `switchInput`, `dateInput`, `textArea`, etc.) rather than raw HTML `<input>`, `<select>`,
 or `<textarea>` elements. Hoist inputs provide consistent styling, model binding, and proper
 integration with the framework's theming and layout system. Raw HTML elements require manual

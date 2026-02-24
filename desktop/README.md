@@ -94,7 +94,7 @@ Desktop form inputs with Blueprint styling:
 | `NumberInput` | Numeric input with increment/decrement |
 | `DateInput` | Date picker with calendar popup |
 | `Select` | Dropdown/autocomplete selection |
-| `PopoverPicker` | Popover-based option picker for space-constrained areas |
+| `Picker` | Popover-based option picker for space-constrained areas |
 | `Checkbox` | Boolean checkbox |
 | `SwitchInput` | Toggle switch |
 | `RadioInput` | Radio button group |
@@ -120,7 +120,7 @@ formField({
 })
 ```
 
-`PopoverPicker` is designed for space-constrained areas like toolbars, especially for multi-select
+`Picker` is designed for space-constrained areas like toolbars, especially for multi-select
 scenarios where `Select` with its tag-picker style is too wide. It renders as a button that opens
 a popover checklist, with built-in multi-select summarization.
 
@@ -128,10 +128,10 @@ Set `compact: true` to scale both the trigger button and popover list for use in
 or other even tighter layouts.
 
 ```typescript
-import {popoverPicker} from '@xh/hoist/desktop/cmp/input';
+import {picker} from '@xh/hoist/desktop/cmp/input';
 
 // Multi-select in a toolbar — button shows "3 selected"
-popoverPicker({
+picker({
     model: myModel,
     bind: 'selectedRegions',
     options: regions,

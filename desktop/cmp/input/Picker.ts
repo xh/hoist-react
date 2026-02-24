@@ -27,11 +27,11 @@ import classNames from 'classnames';
 import {capitalize, castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
 import {ReactNode} from 'react';
 import {List} from 'react-window';
-import './PopoverPicker.scss';
+import './Picker.scss';
 
 const reactWindowList = elementFactory(List);
 
-export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
      * Primitives will be displayed via toString().
@@ -178,19 +178,19 @@ export interface PopoverPickerProps extends HoistProps, HoistInputProps, LayoutP
  * This component does not use react-select. It renders a simple, scrollable list of options
  * with check indicators, making it lightweight and easy to style.
  */
-export const [PopoverPicker, popoverPicker] = hoistCmp.withFactory<PopoverPickerProps>({
-    displayName: 'PopoverPicker',
-    className: 'xh-popover-picker',
+export const [Picker, picker] = hoistCmp.withFactory<PickerProps>({
+    displayName: 'Picker',
+    className: 'xh-picker',
     render(props, ref) {
-        return useHoistInputModel(cmp, props, ref, PopoverPickerModel);
+        return useHoistInputModel(cmp, props, ref, PickerModel);
     }
 });
-(PopoverPicker as any).hasLayoutSupport = true;
+(Picker as any).hasLayoutSupport = true;
 
 //-----------------------
 // Implementation
 //-----------------------
-class PopoverPickerModel extends HoistInputModel {
+class PickerModel extends HoistInputModel {
     override xhImpl = true;
 
     @bindable.ref internalOptions: SelectOption[] = [];
@@ -367,20 +367,20 @@ class PopoverPickerModel extends HoistInputModel {
 //---------------------------------------------
 // Inner render component
 //---------------------------------------------
-const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, ref) => {
+const cmp = hoistCmp.factory<PickerModel>(({model, className, ...props}, ref) => {
     const hasSelection = !isEmpty(model.getSelectedValues()),
         nothingSelected = !hasSelection,
         compact = !!props.compact;
 
     return popover({
-        className: classNames(className, compact && 'xh-popover-picker--compact'),
+        className: classNames(className, compact && 'xh-picker--compact'),
         isOpen: model.popoverIsOpen,
         onInteraction: nextOpen => model.onPopoverInteraction(nextOpen),
         minimal: withDefault(props.popoverMinimal, false),
         position: withDefault(props.popoverPosition, 'bottom-left'),
         popoverClassName: classNames(
-            'xh-popover-picker__popover',
-            compact && 'xh-popover-picker__popover--compact'
+            'xh-picker__popover',
+            compact && 'xh-picker__popover--compact'
         ),
         matchTargetWidth: !props.popoverWidth,
         item: triggerButton({model, props, nothingSelected, ref}),
@@ -392,46 +392,44 @@ const cmp = hoistCmp.factory<PopoverPickerModel>(({model, className, ...props}, 
 //---------------------------------------------
 // Trigger button
 //---------------------------------------------
-const triggerButton = hoistCmp.factory<PopoverPickerModel>(
-    ({model, props, nothingSelected}, ref) => {
-        const {width, ...restLayout} = getLayoutProps(props),
-            btnProps = props.buttonProps ?? {},
-            styleAsInput = withDefault(props.styleButtonAsInput, true);
+const triggerButton = hoistCmp.factory<PickerModel>(({model, props, nothingSelected}, ref) => {
+    const {width, ...restLayout} = getLayoutProps(props),
+        btnProps = props.buttonProps ?? {},
+        styleAsInput = withDefault(props.styleButtonAsInput, true);
 
-        return button({
-            minimal: true,
-            outlined: !styleAsInput,
-            rightIcon: Icon.chevronDown(),
-            ...btnProps,
-            ref,
-            className: classNames(
-                'xh-popover-picker__trigger',
-                styleAsInput && 'xh-popover-picker__trigger--as-input',
-                nothingSelected && 'xh-popover-picker__trigger--empty',
-                btnProps.className
-            ),
-            text: model.getButtonText(),
-            disabled: props.disabled,
-            active: model.popoverIsOpen,
-            ...restLayout,
-            width: withDefault(width, 160),
-            style: props.style,
-            [TEST_ID]: getTestId(props, 'trigger'),
-            onClick: () => {
-                if (model.popoverIsOpen) {
-                    model.closePopover();
-                } else {
-                    model.openPopover();
-                }
+    return button({
+        minimal: true,
+        outlined: !styleAsInput,
+        rightIcon: Icon.chevronDown(),
+        ...btnProps,
+        ref,
+        className: classNames(
+            'xh-picker__trigger',
+            styleAsInput && 'xh-picker__trigger--as-input',
+            nothingSelected && 'xh-picker__trigger--empty',
+            btnProps.className
+        ),
+        text: model.getButtonText(),
+        disabled: props.disabled,
+        active: model.popoverIsOpen,
+        ...restLayout,
+        width: withDefault(width, 160),
+        style: props.style,
+        [TEST_ID]: getTestId(props, 'trigger'),
+        onClick: () => {
+            if (model.popoverIsOpen) {
+                model.closePopover();
+            } else {
+                model.openPopover();
             }
-        });
-    }
-);
+        }
+    });
+});
 
 //---------------------------------------------
 // Options list (popover content)
 //---------------------------------------------
-const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
+const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
     const {filteredOptions, enableFilter} = model,
         compact = !!props.compact,
         maxMenuHeight = withDefault(props.maxMenuHeight, 300),
@@ -447,18 +445,18 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
     if (useVirtual) model.getSelectedValues();
 
     return vbox({
-        className: 'xh-popover-picker__menu',
+        className: 'xh-picker__menu',
         style: widthStyle,
         items: [
             enableFilter ? filterInput({model, props}) : null,
             useVirtual
                 ? virtualOptionsList({model, props, filteredOptions, maxMenuHeight, optionHeight})
                 : div({
-                      className: 'xh-popover-picker__options',
+                      className: 'xh-picker__options',
                       style: {maxHeight: maxMenuHeight, overflowY: 'auto'},
                       items: isEmpty(filteredOptions)
                           ? div({
-                                className: 'xh-popover-picker__no-results',
+                                className: 'xh-picker__no-results',
                                 item: 'No matches found.'
                             })
                           : filteredOptions.map((opt, index) =>
@@ -473,9 +471,9 @@ const optionsList = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
 //---------------------------------------------
 // Filter text input inside popover
 //---------------------------------------------
-const filterInput = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
+const filterInput = hoistCmp.factory<PickerModel>(({model, props}) => {
     return div({
-        className: 'xh-popover-picker__filter',
+        className: 'xh-picker__filter',
         item: textInput({
             model,
             bind: 'filterValue',
@@ -493,7 +491,7 @@ const filterInput = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
 //---------------------------------------------
 // Virtualized options list (for large option sets)
 //---------------------------------------------
-const virtualOptionsList = hoistCmp.factory<PopoverPickerModel>(
+const virtualOptionsList = hoistCmp.factory<PickerModel>(
     ({model, props, filteredOptions, maxMenuHeight, optionHeight}) => {
         const listHeight = Math.min(filteredOptions.length * optionHeight, maxMenuHeight);
 
@@ -502,7 +500,7 @@ const virtualOptionsList = hoistCmp.factory<PopoverPickerModel>(
             rowHeight: optionHeight,
             rowComponent: virtualRow,
             rowProps: {model, filteredOptions, props},
-            className: 'xh-popover-picker__options',
+            className: 'xh-picker__options',
             style: {height: listHeight}
         });
     }
@@ -515,7 +513,7 @@ function virtualRow({index, style, model, filteredOptions, props}: any) {
 //---------------------------------------------
 // Menu footer with count, select all, and clear
 //---------------------------------------------
-const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
+const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
     const selCount = model.getSelectedValues().length,
         totalCount = model.internalOptions.length,
         {displayNoun, enableClear, enableSelectAll} = props,
@@ -534,8 +532,8 @@ const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
         actions.push(
             div({
                 className: classNames(
-                    'xh-popover-picker__footer-action',
-                    allSelected && 'xh-popover-picker__footer-action--disabled'
+                    'xh-picker__footer-action',
+                    allSelected && 'xh-picker__footer-action--disabled'
                 ),
                 item: 'All',
                 [TEST_ID]: getTestId(props, 'select-all-btn'),
@@ -548,13 +546,13 @@ const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
     }
     if (enableClear) {
         if (actions.length > 0) {
-            actions.push(span({className: 'xh-popover-picker__footer-separator', item: '\u00b7'}));
+            actions.push(span({className: 'xh-picker__footer-separator', item: '\u00b7'}));
         }
         actions.push(
             div({
                 className: classNames(
-                    'xh-popover-picker__footer-action',
-                    noneSelected && 'xh-popover-picker__footer-action--disabled'
+                    'xh-picker__footer-action',
+                    noneSelected && 'xh-picker__footer-action--disabled'
                 ),
                 item: 'Clear',
                 [TEST_ID]: getTestId(props, 'clear-btn'),
@@ -567,19 +565,15 @@ const menuFooter = hoistCmp.factory<PopoverPickerModel>(({model, props}) => {
     }
 
     return hbox({
-        className: 'xh-popover-picker__footer',
-        items: [
-            div({className: 'xh-popover-picker__footer-count', item: countText}),
-            filler(),
-            ...actions
-        ]
+        className: 'xh-picker__footer',
+        items: [div({className: 'xh-picker__footer-count', item: countText}), filler(), ...actions]
     });
 });
 
 //---------------------------------------------
 // Single option item
 //---------------------------------------------
-const optionItem = hoistCmp.factory<PopoverPickerModel>(({model, opt, props, index}) => {
+const optionItem = hoistCmp.factory<PickerModel>(({model, opt, props, index}) => {
     return renderOption(model, opt, props, index);
 });
 
@@ -587,7 +581,7 @@ const optionItem = hoistCmp.factory<PopoverPickerModel>(({model, opt, props, ind
 // Shared option rendering
 //---------------------------------------------
 function renderOption(
-    model: PopoverPickerModel,
+    model: PickerModel,
     opt: SelectOption,
     props: Record<string, any>,
     index: number,
@@ -598,10 +592,10 @@ function renderOption(
 
     return div({
         className: classNames(
-            'xh-popover-picker__option',
-            isSelected && 'xh-popover-picker__option--selected',
-            stripeRows && index % 2 === 1 && 'xh-popover-picker__option--striped',
-            rowBorders && index > 0 && 'xh-popover-picker__option--border-top'
+            'xh-picker__option',
+            isSelected && 'xh-picker__option--selected',
+            stripeRows && index % 2 === 1 && 'xh-picker__option--striped',
+            rowBorders && index > 0 && 'xh-picker__option--border-top'
         ),
         style,
         onClick: (e: any) => {
@@ -612,11 +606,11 @@ function renderOption(
             ? optionRenderer(opt, isSelected)
             : [
                   div({
-                      className: 'xh-popover-picker__option-check',
+                      className: 'xh-picker__option-check',
                       item: isSelected ? Icon.check({size: 'sm'}) : null
                   }),
                   div({
-                      className: 'xh-popover-picker__option-label',
+                      className: 'xh-picker__option-label',
                       item: opt.label
                   })
               ]
