@@ -112,7 +112,10 @@ rendering with `omit` and factory creation.
 All Hoist artifacts extend `HoistBase`, which provides:
 
 #### MobX Integration Conventions
-- `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy)
+- `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy).
+  `addReaction()` supports a `fireImmediately` option (from MobX) to run the reaction once on
+  creation with the current tracked value. Note: the option is `fireImmediately`, not
+  `runImmediately` — Hoist throws if the wrong name is used.
 - `makeObservable()` - Called in constructors to set up MobX observables/actions/computeds
 - `@observable` MobX decorator - Marks properties as observable state
 - `@action` MobX decorator - Marks methods that modify observable state

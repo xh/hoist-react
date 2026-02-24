@@ -364,7 +364,8 @@ Always import from `@xh/hoist/mobx`. Importing directly from `mobx` bypasses Hoi
 
 - [`/core/`](../core/README.md) — HoistModel (where `@computed` getters and observable state are
   defined), HoistBase (calls `checkMakeObservable`), `@managed` decorator,
-  `addAutorun()`/`addReaction()` managed reactive subscriptions
+  `addAutorun()`/`addReaction()` managed reactive subscriptions. `addReaction()` accepts MobX
+  reaction options including `fireImmediately` to run the reaction once on creation
 - [`/promise/`](../promise/README.md) — `thenAction()` for modifying observables in promise chains
 - [`/utils/js/`](../utils/README.md#decorators) — Additional decorators (`@debounced`,
   `@computeOnce`, `@logWithInfo`)

@@ -44,6 +44,13 @@ this.addReaction({
     debounce: 300  // optional debouncing
 });
 
+// Use fireImmediately to also run the reaction once on creation with the current value
+this.addReaction({
+    track: () => this.commentModel.unreadCount,
+    run: count => this.updateBadge(count),
+    fireImmediately: true
+});
+
 // Preferred: pass multiple specs to a single addReaction call
 this.addReaction(
     {track: () => this.selectedId, run: () => this.loadDetailsAsync()},
@@ -58,6 +65,13 @@ this.addAutorun(() => {
 
 // Both are automatically disposed when the object is destroyed
 ```
+
+**`fireImmediately` option**: By default, a reaction's `run` function only executes when the
+tracked value *changes* after the reaction is created. Set `fireImmediately: true` to also execute
+`run` once immediately on creation with the current tracked value. This is useful when you need to
+synchronize state right away — e.g., updating a badge count or applying a filter that already has a
+value. Note: the option is called **`fireImmediately`** (from MobX), not `runImmediately` — Hoist
+will throw an error if you use the wrong name.
 
 **Resource Cleanup**
 ```typescript
@@ -107,7 +121,7 @@ class MyModel extends HoistModel {
 
 | Method | Purpose |
 |--------|---------|
-| `addReaction(spec)` | Managed MobX reaction with explicit tracking |
+| `addReaction(spec)` | Managed MobX reaction with explicit tracking. Supports `fireImmediately` option |
 | `addAutorun(fn)` | Managed MobX autorun with dynamic tracking |
 | `markManaged(obj)` | Register object for cleanup on destroy |
 | `markPersist(prop)` | Sync observable property with storage |

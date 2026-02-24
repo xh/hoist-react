@@ -118,6 +118,13 @@ override afterLinked() {
 }
 ```
 
+The `fireImmediately: true` option above causes the `run` function to execute once immediately when
+the reaction is created, using the current tracked value. Without it, `run` only fires when the
+tracked value *changes* — so the badge wouldn't update until the count actually changed. This is a
+common pattern when a reaction needs to establish initial state, not just respond to future changes.
+Note: the option is called **`fireImmediately`** (from MobX), not `runImmediately` — Hoist will
+throw an error if you use the wrong name.
+
 In practice, `onLinked()` is used more frequently than `afterLinked()`. Most reactions and child
 model creation can happen in `onLinked()`. Use `afterLinked()` when you specifically need
 post-render timing.
