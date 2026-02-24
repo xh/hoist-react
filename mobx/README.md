@@ -259,6 +259,41 @@ Two diagnostic utilities:
 - `checkMakeObservable(target)` — logs errors for any `@bindable` or `@observable` properties
   that weren't properly initialized via `makeObservable()`. Called automatically by HoistBase
 
+## Managed Reactions
+
+`HoistBase` (and therefore `HoistModel` and `HoistService`) provides `addReaction()` and
+`addAutorun()` as managed wrappers around MobX's `reaction()` and `autorun()`. Reactions
+registered this way are automatically disposed when the model is destroyed — no manual cleanup
+required.
+
+Use `addReaction` (explicit tracking via a `track` function) when you want the reaction to fire
+only when a specific value changes. Use `addAutorun` (implicit tracking) when the effect should
+re-run whenever any observable it reads changes.
+
+### fireImmediately
+
+Pass `fireImmediately: true` to run the reaction body once immediately on creation, before any
+observable change occurs. This is the standard pattern for initial state synchronization — it
+avoids duplicating the setup logic that would otherwise be needed in the constructor:
+
+```typescript
+constructor() {
+    super();
+    makeObservable(this);
+    this.addReaction({
+        track: () => this.selectedId,
+        run: id => this.loadRecord(id),
+        fireImmediately: true  // Runs once now for initial sync, then on each change
+    });
+}
+```
+
+Without `fireImmediately: true`, the reaction fires only on subsequent changes, so the initial
+state (whatever `selectedId` is at construction time) would never be synchronized.
+
+Other useful `addReaction` options include `debounce` (milliseconds) to rate-limit the `run`
+function, and `equals` to control what counts as a change for the `track` return value.
+
 ## Common Pitfalls
 
 ### Using `@observable` (deep) for non-primitives
