@@ -19,6 +19,8 @@
     * Added `showGridBackground` and `showAddViewButtonWhenEmpty` config options to
       `DashCanvasModel`.
     * Added support for `'wrap'` compaction strategy.
+* Added a Metrics tab to the Admin Console under Cluster, providing a cluster-wide view of all
+  registered Micrometer meters. Requires hoist-core >= 36.3 or above.
 * Added `testId` support to mobile `Button`, `FormField`, `TabContainer`, and all mobile input
   components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
   `TextArea`, `TextInput`).
