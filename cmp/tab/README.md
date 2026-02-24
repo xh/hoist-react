@@ -385,7 +385,7 @@ this.addReaction({
             ? hbox('Alerts ', badge({item: count, intent: 'danger'}))
             : 'Alerts';
     },
-    fireImmediately: true
+    fireImmediately: true  // Set initial title from current count
 });
 ```
 
