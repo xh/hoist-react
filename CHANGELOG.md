@@ -40,20 +40,12 @@
 
 ### ⚙️ Technical
 
-* Added instance methods to the `Filter` class hierarchy for clear, composable filter
-  transformations: `removeFieldFilter(field)`, `removeFieldFilters()`,
-  `removeFunctionFilter(key)`, and `removeFunctionFilters()`. These return `Filter | null` and
-  recursively handle CompoundFilters. A new `appendFilter(source, ...additions)` utility
-  combines filters via AND with automatic flattening. The standalone utility functions
-  `replaceFilterByField`, `replaceFunctionFilter`, and `replaceFilterByTypes` (introduced earlier
-  in this release cycle) have been removed in favor of the new API.
+* Added instance methods to the `Filter` class hierarchy for removing child filters by type or
+  field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
+  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
+  have been deprecated. Internal callers have been migrated to the new API.
 
 ### 🐞 Bug Fixes
-
-* Fixed filter transformation logic to correctly handle nested compound filters. The new
-  `Filter` instance methods (`removeFieldFilter`, `removeFieldFilters`, etc.) recursively
-  traverse CompoundFilters at any depth, replacing the previous utility functions which could
-  fail with deeply nested structures.
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
   action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
