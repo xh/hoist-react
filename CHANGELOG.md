@@ -44,8 +44,14 @@
 * Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
   Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
 
-### 🐞 Bug Fixes
+### ⚙️ Technical
 
+* Added instance methods to the `Filter` class hierarchy for removing child filters by type or
+  field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
+  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
+  have been deprecated. Internal callers have been migrated to the new API.
+
+### 🐞 Bug Fixes
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
   action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
