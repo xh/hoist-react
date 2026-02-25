@@ -8,16 +8,22 @@ import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
-import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {groupBy as lodashGroupBy} from 'lodash';
+import {runInAction} from 'mobx';
 
 export class MetricsModel extends BaseAdminTabModel {
-    @bindable groupBy: string = null;
+    @bindable sourceFilter: string[] = [];
 
     @observable.ref allMetrics: any[] = [];
     @observable.ref lastLoadDate: Date = null;
+
+    @computed
+    get sourceOptions(): string[] {
+        return [...new Set(this.allMetrics.map(it => it.source))].filter(Boolean).sort();
+    }
 
     @managed
     gridModel: GridModel = new GridModel({
@@ -57,12 +63,11 @@ export class MetricsModel extends BaseAdminTabModel {
                 {name: 'max', type: 'number'}
             ]
         },
-        colChooserModel: true,
         columns: [
             {field: 'instance', width: 140},
             {field: 'value', width: 120, align: 'right', renderer: numberRenderer({})},
             {field: 'baseUnit', width: 100},
-            {field: 'count', hidden: true, renderer: numberRenderer({precision: 0})},
+            {field: 'count', width: 100, hidden: true, renderer: numberRenderer({precision: 0})},
             {field: 'max', width: 120, align: 'right', hidden: true, renderer: numberRenderer({})},
             {field: 'tags', flex: true, renderer: tagsRenderer}
         ]
@@ -90,9 +95,11 @@ export class MetricsModel extends BaseAdminTabModel {
         });
 
         this.addReaction({
-            track: () => this.groupBy,
-            run: groupBy => this.gridModel.setGroupBy(groupBy ? [groupBy] : []),
-            fireImmediately: true
+            track: () => this.sourceFilter,
+            run: () => {
+                this.loadMasterGrid(this.allMetrics);
+                this.gridModel.ensureSelectionVisibleAsync();
+            }
         });
 
         this.addReaction({
@@ -117,9 +124,12 @@ export class MetricsModel extends BaseAdminTabModel {
                 return {...it, instance, source, tags};
             });
 
-            this.allMetrics = enriched;
-            this.lastLoadDate = new Date();
+            runInAction(() => {
+                this.allMetrics = enriched;
+                this.lastLoadDate = new Date();
+            });
             this.loadMasterGrid(enriched);
+            this.loadDetailGrid();
         } catch (e) {
             XH.handleException(e, {alertType: 'toast'});
         }
@@ -129,8 +139,11 @@ export class MetricsModel extends BaseAdminTabModel {
     // Implementation
     //------------------
     private loadMasterGrid(enriched: any[]) {
-        const prevSelected = this.gridModel.selectedRecord?.data?.name;
-        const grouped = lodashGroupBy(enriched, 'name');
+        const {sourceFilter} = this,
+            filtered = sourceFilter?.length
+                ? enriched.filter(it => sourceFilter.includes(it.source))
+                : enriched;
+        const grouped = lodashGroupBy(filtered, 'name');
         const masterData = Object.entries(grouped).map(([name, items]) => {
             const rep = items[0];
             return {
@@ -143,12 +156,6 @@ export class MetricsModel extends BaseAdminTabModel {
             };
         });
         this.gridModel.loadData(masterData);
-
-        // Restore selection after refresh
-        if (prevSelected) {
-            const rec = this.gridModel.store.getById(prevSelected, true);
-            if (rec) this.gridModel.selectAsync(rec);
-        }
     }
 
     private loadDetailGrid() {
@@ -157,7 +164,11 @@ export class MetricsModel extends BaseAdminTabModel {
             this.detailGridModel.clear();
             return;
         }
-        const details = this.allMetrics.filter(it => it.name === selName);
+        const details = this.allMetrics.filter(it => it.name === selName),
+            isTimer = details[0]?.type === 'TIMER';
+
+        this.detailGridModel.setColumnVisible('count', isTimer);
+        this.detailGridModel.setColumnVisible('max', isTimer);
         this.detailGridModel.loadData(details);
     }
 }

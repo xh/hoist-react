@@ -23,13 +23,13 @@ export const metricsPanel = hoistCmp.factory({
             ref: model.viewRef,
             mask: 'onLoad',
             tbar: toolbar(
-                'Group by:',
+                'Source:',
                 select({
-                    bind: 'groupBy',
-                    options: ['source', 'type'],
-                    enableClear: true,
-                    placeholder: 'None',
-                    width: 140
+                    bind: 'sourceFilter',
+                    options: model.sourceOptions,
+                    enableMulti: true,
+                    placeholder: 'All',
+                    width: 200
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastLoadDate'}),
