@@ -42,8 +42,9 @@ StoreRecord
 └── validationState              // Per-record validation
 
 Field                                    CubeField extends Field
-├── name: string                         ├── isDimension: boolean
-├── type: FieldType                      └── aggregator: Aggregator
+├── name: string                         ├── aggregator: Aggregator
+├── type: FieldType                      ├── isLeafDimension: boolean
+├── isDimension: boolean                 └── parentDimension: string
 ├── defaultValue: any
 └── rules: Rule[]
 ```
@@ -263,7 +264,9 @@ record.isValidationPending; // Async validation in progress?
 
 Metadata descriptor defining type parsing, defaults, display names, descriptions, and validation
 rules. The `displayName` and `description` properties flow from `Field` to `Column` automatically,
-providing defaults for grid headers, tooltips, and chooser descriptions.
+providing defaults for grid headers, tooltips, and chooser descriptions. Fields with
+`isDimension: true` are automatically available for selection in a `GroupingChooserModel` bound to
+the associated GridModel or View.
 
 ### Field Configuration
 
@@ -283,7 +286,7 @@ const store = new Store({
             rules: [required, numberIs({min: 0})]
         },
 
-        {name: 'department', type: 'string'},
+        {name: 'department', type: 'string', isDimension: true},
         {name: 'hireDate', type: 'localDate'}
     ]
 });

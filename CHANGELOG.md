@@ -26,6 +26,12 @@
 * Added `testId` support to mobile `Button`, `FormField`, `TabContainer`, and all mobile input
   components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
   `TextArea`, `TextInput`).
+* Added `bind` config to `GroupingChooserModel` for two-way syncing of the selected grouping to a
+  `GridModel` (via `setGroupBy()`) or Cube `View` (via `updateQuery({dimensions})`). When `bind` is
+  provided, dimensions can be omitted and will be auto-populated from the target's fields where
+  `isDimension: true`. Explicitly provided dimensions are validated against the target's fields.
+    * Promoted `isDimension` from `CubeField` to the base `Field` class (defaults to `false`),
+      allowing Store fields to be marked as groupable dimensions.
 
 ### 💥 Breaking Changes
 

@@ -26,9 +26,6 @@ import {
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
-    /** True to allow this field to be used for grouping.*/
-    isDimension?: boolean;
-
     /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
     aggregator?: Aggregator | AggregatorToken;
 
@@ -81,7 +78,6 @@ export type CanAggregateFn = (
 export class CubeField extends Field {
     aggregator: Aggregator;
     canAggregateFn: CanAggregateFn;
-    isDimension: boolean;
     isLeafDimension: boolean;
     parentDimension: string;
 
@@ -98,7 +94,6 @@ export class CubeField extends Field {
     static uniqueAggregator = new UniqueAggregator();
 
     constructor({
-        isDimension = false,
         aggregator = null,
         canAggregateFn = null,
         isLeafDimension = false,
@@ -106,7 +101,6 @@ export class CubeField extends Field {
         ...fieldArgs
     }: CubeFieldSpec) {
         super(fieldArgs);
-        this.isDimension = isDimension;
 
         // Metrics
         this.aggregator = this.parseAggregator(aggregator);

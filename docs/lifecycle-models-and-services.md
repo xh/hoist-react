@@ -349,6 +349,10 @@ The `mask: 'onLoad'` prop on `panel` covers the entire panel including its toolb
 component rendered as a sibling of the grid covers only the panel's content area, allowing the
 toolbar to remain interactive during a long-running calculation.
 
+> **Note:** `mask: 'onLoad'` requires the panel's context model to have `LoadSupport` — i.e. it
+> must implement `doLoadAsync()`. See the [pitfall below](#using-mask-onload-without-loadsupport)
+> for details.
+
 ### Load Metadata
 
 `LoadSupport` tracks observable timestamps and the last exception:
@@ -661,6 +665,27 @@ override async doLoadAsync(loadSpec: LoadSpec) {
     if (loadSpec.isStale) return;
     this.gridModel.loadData(data);
 }
+```
+
+### Using `mask: 'onLoad'` Without LoadSupport
+
+`mask: 'onLoad'` on a `panel` resolves by looking up the `loadObserver` on the nearest context
+model. If that model does not override `doLoadAsync()` — and therefore has no `LoadSupport` or
+`loadObserver` — the mask silently fails: no mask appears, and a warning is logged to the console.
+Either implement `doLoadAsync()` on the model, or bind the mask to a specific `TaskObserver`:
+
+```typescript
+// ❌ Don't: model has no doLoadAsync — mask: 'onLoad' will silently do nothing
+panel({
+    mask: 'onLoad',
+    item: grid()
+})
+
+// ✅ Do: bind to a specific TaskObserver when the model lacks LoadSupport
+panel({
+    mask: model.saveTask,
+    item: grid()
+})
 ```
 
 ## Key Source Files
