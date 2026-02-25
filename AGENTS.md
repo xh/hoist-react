@@ -137,6 +137,14 @@ common pitfalls.
 - Methods returning Promises are suffixed with `Async` (e.g., `loadUsersAsync`)
 - Promise extensions: `catchDefault()`, `track()`, `timeout()`, `linkTo()`
 
+### Prefer Hoist Input Components Over Raw HTML
+
+Always use Hoist's built-in input components (`textInput`, `numberInput`, `select`, `picker`,
+`checkbox`, `switchInput`, `dateInput`, `textArea`, etc.) rather than raw HTML `<input>`, `<select>`,
+or `<textarea>` elements. Hoist inputs provide consistent styling, model binding, and proper
+integration with the framework's theming and layout system. Raw HTML elements require manual
+wrappers and custom SCSS that duplicate what Hoist already provides.
+
 ### Platform Support
 
 Components in `/desktop/` and `/mobile/` are platform-specific. Shared code lives in `/cmp/`,
@@ -144,11 +152,25 @@ Components in `/desktop/` and `/mobile/` are platform-specific. Shared code live
 
 ## Code Style
 
-- TypeScript with experimental decorators enabled
-- ESLint with `@xh/eslint-config` and TSDoc syntax checking
-- Prettier for formatting
-- Stylelint for SCSS
-- **Commit messages**: Do not hard-wrap lines in commit message bodies. Write each sentence or thought as a single unwrapped line and let the viewing tool handle display wrapping.
+For the full conventions reference — import organization, class structure, component patterns,
+null handling, async patterns, error handling, logging, and CSS naming — see
+[`docs/coding-conventions.md`](docs/coding-conventions.md). The principles below are the most
+important guidelines to internalize:
+
+- **Don't Repeat Yourself** — Extract shared logic into utilities, base class methods, or helpers.
+  Balance DRY against readability — extract when a genuine, stable pattern exists, not prematurely.
+- **Clear, descriptive naming** — Names should convey intent and read naturally. Be descriptive but
+  not verbose (`selectedRecord`, not `r` or `theCurrentlySelectedRecordFromTheStore`).
+- **Prefer lodash** for collection/object utilities — it's null-safe, battle-tested, and aids
+  readability. Use native JS only when equally expressive (e.g., `array.map()`, `array.filter()`).
+- **Keep code concise** — Favor direct, compact expression over verbose or ceremonial patterns.
+  Use Hoist's own utilities (`withDefault`, `throwIf`, element factories) to reduce boilerplate.
+- **Named exports only** — No default exports. Components export `[Component, factory]` pairs
+  from library code, factory only from application/impl code.
+- **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
+  (loose equality) for concise null-or-undefined testing.
+
+**Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped line and let the viewing tool handle display wrapping.
 
 ## Key Dependencies
 

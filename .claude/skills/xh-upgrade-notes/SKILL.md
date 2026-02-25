@@ -142,6 +142,25 @@ Each upgrade step must include:
 
 Add a row to the table in `docs/README.md` for the new version.
 
+### Update the MCP Doc Registry
+
+Add a `RawEntry` to the `getRawEntries()` function in `mcp/data/doc-registry.ts` so the new
+upgrade notes are discoverable via `hoist-search-docs`. Place the entry after the existing upgrade
+note entries in the "Upgrade Notes" section, following this pattern:
+
+```typescript
+{
+    id: 'upgrade-v{NN}',
+    title: 'v{NN} Upgrade Notes',
+    file: 'docs/upgrade-notes/v{NN}-upgrade-notes.md',
+    category: 'devops',
+    description:
+        'Upgrade guide from v{PRIOR}.x to v{VERSION}. {Difficulty} difficulty.',
+    keywords: splitKeywords(
+        'upgrade, migration, breaking changes, v{NN}, v{PRIOR}'
+    )
+}
+
 ## Phase 4: Dry-Run Validation
 
 After writing both artifacts, launch an independent validation agent. This agent stress-tests

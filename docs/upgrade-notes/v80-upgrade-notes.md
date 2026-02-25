@@ -63,6 +63,39 @@ FormField CSS classes have been refactored to follow BEM conventions. Element su
 grep -r "xh-form-field-" client-app/src/
 ```
 
+> **Watch for SCSS nesting patterns.** The grep above will catch direct references like
+> `.xh-form-field-disabled`, but it will **not** catch SCSS `&` nesting that compiles to the same
+> old-style selector. For example:
+>
+> ```scss
+> .xh-form-field {
+>   &-disabled { opacity: 0.6; }
+> }
+> ```
+>
+> compiles to `.xh-form-field-disabled` — the old class name — without ever containing the literal
+> string `xh-form-field-disabled` in source. Run this additional search to find these cases:
+>
+> ```bash
+> grep -rn "&-disabled\|&-readonly\|&-required\|&-invalid\|&-inline\|&-minimal\|&-label\|&-inner\|&-error\|&-info" \
+>   client-app/src/ --include="*.scss"
+> ```
+>
+> Then check each match to see if it appears inside a `.xh-form-field` rule. If so, update the
+> nesting to use the new BEM separators:
+>
+> ```scss
+> // Before — compiles to .xh-form-field-disabled (broken)
+> .xh-form-field {
+>   &-disabled { opacity: 0.6; }
+> }
+>
+> // After — compiles to .xh-form-field--disabled (correct)
+> .xh-form-field {
+>   &--disabled { opacity: 0.6; }
+> }
+> ```
+
 #### Element Classes (child components)
 
 | Before | After |
@@ -193,6 +226,7 @@ After completing all steps:
 - [ ] Application loads without console errors
 - [ ] Form fields render correctly — labels, validation messages, and readonly displays
 - [ ] No old FormField CSS classes remain: `grep -r "xh-form-field-[a-z]" client-app/src/ | grep -v "xh-form-field--\|xh-form-field__"`
+- [ ] No SCSS nesting producing old classes — check `&-disabled`, `&-readonly`, etc. inside `.xh-form-field` rules
 - [ ] Date inputs and other tightly-sized inputs are not clipping
 - [ ] No deprecated patterns remain: `grep -r "appLoadModel\|\.isStore\b\|\.isView\b\|\.isFilter\b" client-app/src/`
 

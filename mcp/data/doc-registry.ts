@@ -96,13 +96,13 @@ function getRawEntries(): RawEntry[] {
         },
         {
             id: 'conventions',
-            title: 'Hoist Coding Conventions',
-            file: 'AGENTS.md',
+            title: 'Coding Conventions',
+            file: 'docs/coding-conventions.md',
             category: 'conventions',
             description:
-                'Architecture patterns, code style, key dependencies, and AI assistant guidance for hoist-react development.',
+                'Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming.',
             keywords: splitKeywords(
-                'conventions, code style, architecture, patterns, decorators, MobX, hoistCmp, element factories'
+                'conventions, code style, imports, naming, TypeScript, class structure, component patterns, hoistCmp, exports, null, undefined, async, await, error handling, logging, equality, CSS, BEM, section dividers, declare config'
             )
         },
 
@@ -481,6 +481,17 @@ function getRawEntries(): RawEntry[] {
                 'testId, TestSupportProps, data-testid, getTestId, FormField auto-testId'
             )
         },
+        {
+            id: 'version-compatibility',
+            title: 'Version Compatibility',
+            file: 'docs/version-compatibility.md',
+            category: 'concept',
+            description:
+                'Reference mapping hoist-react releases to required/recommended hoist-core versions.',
+            keywords: splitKeywords(
+                'version, compatibility, hoist-core, upgrade, minimum, required, recommended, matrix, pairing'
+            )
+        },
 
         //--------------------------------------------------------------
         // DevOps docs
@@ -518,6 +529,42 @@ function getRawEntries(): RawEntry[] {
             category: 'devops',
             description: 'CHANGELOG entry format conventions and section headers.',
             keywords: splitKeywords('changelog, format, conventions, release notes, versioning')
+        },
+
+        //--------------------------------------------------------------
+        // Upgrade Notes
+        //--------------------------------------------------------------
+        {
+            id: 'upgrade-v78',
+            title: 'v78 Upgrade Notes',
+            file: 'docs/upgrade-notes/v78-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v77.x to v78.0.0. Trivial difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v78, v77')
+        },
+        {
+            id: 'upgrade-v79',
+            title: 'v79 Upgrade Notes',
+            file: 'docs/upgrade-notes/v79-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v78.x to v79.0.0. Medium difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v79, v78')
+        },
+        {
+            id: 'upgrade-v80',
+            title: 'v80 Upgrade Notes',
+            file: 'docs/upgrade-notes/v80-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v79.x to v80.0.0. Low difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v80, v79')
+        },
+        {
+            id: 'upgrade-v81',
+            title: 'v81 Upgrade Notes',
+            file: 'docs/upgrade-notes/v81-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v80.x to v81.0.2. Low difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v81, v80')
         }
     ];
 }

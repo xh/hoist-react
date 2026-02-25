@@ -55,7 +55,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         }
 
         return popover({
-            popoverClassName: 'xh-col-chooser-popover xh-popup--framed',
+            popoverClassName: 'xh-col-chooser-popover',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: colChooserModel.isPopoverOpen,
             item: button({
