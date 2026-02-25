@@ -71,7 +71,7 @@ export function parseFilter(spec: FilterLike): Filter {
  * @param additions - one or more filters to append.
  * @returns the combined filter, or null if all inputs are null/empty.
  */
-export function appendFilter(source: Filter | null, ...additions: FilterLike[]): Filter | null {
+export function appendFilter(source: Filter, ...additions: FilterLike[]): Filter {
     const parsed = compact(additions.map(parseFilter));
     if (!source && parsed.length === 0) return null;
     if (!source && parsed.length === 1) return parsed[0];

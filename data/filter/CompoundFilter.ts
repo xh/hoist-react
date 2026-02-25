@@ -75,19 +75,19 @@ export class CompoundFilter extends Filter {
         };
     }
 
-    override removeFieldFilter(field: string): Filter | null {
+    override removeFieldFilter(field: string): Filter {
         return this.applyRemove(f => f.removeFieldFilter(field));
     }
 
-    override removeFieldFilters(): Filter | null {
+    override removeFieldFilters(): Filter {
         return this.applyRemove(f => f.removeFieldFilters());
     }
 
-    override removeFunctionFilter(key: string): Filter | null {
+    override removeFunctionFilter(key: string): Filter {
         return this.applyRemove(f => f.removeFunctionFilter(key));
     }
 
-    override removeFunctionFilters(): Filter | null {
+    override removeFunctionFilters(): Filter {
         return this.applyRemove(f => f.removeFunctionFilters());
     }
 
@@ -98,7 +98,7 @@ export class CompoundFilter extends Filter {
      * Apply a remove function to each child, compacting out nulls.
      * Returns same instance if nothing changed, single child if one remains, or null if empty.
      */
-    private applyRemove(removeFn: (f: Filter) => Filter | null): Filter | null {
+    private applyRemove(removeFn: (f: Filter) => Filter | null): Filter {
         const {filters, op} = this,
             result = compact(filters.map(removeFn));
 
