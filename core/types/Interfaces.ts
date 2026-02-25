@@ -8,7 +8,7 @@
 import {RuleLike} from '@xh/hoist/data';
 import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
-import {LoadSpec} from '../load';
+import {LoadSpec, LoadSpecConfig} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
 /**
@@ -283,7 +283,7 @@ export interface TrackOptions {
     oncePerSession?: boolean;
 
     /** Optional LoadSpec associated with this track.*/
-    loadSpec?: LoadSpec;
+    loadSpec?: LoadSpec | LoadSpecConfig;
 
     /** Timestamp for action. */
     timestamp?: number;
