@@ -98,7 +98,7 @@ export function withFilterByField(
         v: '85.0'
     });
     const source = parseFilter(filter);
-    return appendFilter(source?.removeFieldFilter(field), newFilter);
+    return appendFilter(source?.removeFieldFilters(field), newFilter);
 }
 
 /** @deprecated Use `filter.removeFunctionFilter(key)` and `appendFilter()` instead. */
@@ -108,7 +108,7 @@ export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: 
         v: '85.0'
     });
     const source = parseFilter(filter);
-    return appendFilter(source?.removeFunctionFilter(key), newFilter);
+    return appendFilter(source?.removeFunctionFilters(key), newFilter);
 }
 
 /** @deprecated Use `filter.removeFunctionFilter(key)` and `appendFilter()` instead. */
@@ -122,7 +122,7 @@ export function replaceFilterByKey(
         v: '85.0'
     });
     const source = parseFilter(filter);
-    return appendFilter(source?.removeFunctionFilter(key), replacement);
+    return appendFilter(source?.removeFunctionFilters(key), replacement);
 }
 
 /** @deprecated Use `filter.removeFieldFilters()` / `filter.removeFunctionFilters()` and
@@ -140,8 +140,8 @@ export function withFilterByTypes(
     let source: Filter = filter;
     for (const type of typeArr) {
         if (!source) break;
-        if (type === 'FieldFilter') source = source.removeFieldFilters();
-        if (type === 'FunctionFilter') source = source.removeFunctionFilters();
+        if (type === 'FieldFilter') source = source.removeAllFieldFilters();
+        if (type === 'FunctionFilter') source = source.removeAllFunctionFilters();
     }
     return appendFilter(source, newFilter);
 }

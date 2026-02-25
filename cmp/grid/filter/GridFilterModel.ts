@@ -66,7 +66,7 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field: string, filter: FilterLike) {
-        const ret = appendFilter(this.filter?.removeFieldFilter(field), filter);
+        const ret = appendFilter(this.filter?.removeFieldFilters(field), filter);
         this.setFilter(ret);
     }
 
@@ -93,7 +93,7 @@ export class GridFilterModel extends HoistModel {
 
     @action
     clear() {
-        this.setFilter(this.filter?.removeFieldFilters());
+        this.setFilter(this.filter?.removeAllFieldFilters());
     }
 
     getColumnFilters(field: string): FieldFilter[] {

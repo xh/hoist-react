@@ -107,7 +107,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             testFn = this.filter,
             filter = testFn ? {key, testFn} : null;
 
-        const ret = appendFilter(store.filter?.removeFunctionFilter(key), filter);
+        const ret = appendFilter(store.filter?.removeFunctionFilters(key), filter);
         store.setFilter(ret);
     }
 

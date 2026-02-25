@@ -75,20 +75,20 @@ export class CompoundFilter extends Filter {
         };
     }
 
-    override removeFieldFilter(field: string): Filter {
-        return this.applyRemove(f => f.removeFieldFilter(field));
+    override removeFieldFilters(field: string): Filter {
+        return this.applyRemove(f => f.removeFieldFilters(field));
     }
 
-    override removeFieldFilters(): Filter {
-        return this.applyRemove(f => f.removeFieldFilters());
+    override removeAllFieldFilters(): Filter {
+        return this.applyRemove(f => f.removeAllFieldFilters());
     }
 
-    override removeFunctionFilter(key: string): Filter {
-        return this.applyRemove(f => f.removeFunctionFilter(key));
+    override removeFunctionFilters(key: string): Filter {
+        return this.applyRemove(f => f.removeFunctionFilters(key));
     }
 
-    override removeFunctionFilters(): Filter {
-        return this.applyRemove(f => f.removeFunctionFilters());
+    override removeAllFunctionFilters(): Filter {
+        return this.applyRemove(f => f.removeAllFunctionFilters());
     }
 
     //-----------------

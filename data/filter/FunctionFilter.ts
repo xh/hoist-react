@@ -57,19 +57,19 @@ export class FunctionFilter extends Filter {
         throw XH.exception('FunctionFilter.toJSON() not supported.');
     }
 
-    override removeFieldFilter(field: string): Filter {
+    override removeFieldFilters(field: string): Filter {
         return this;
     }
 
-    override removeFieldFilters(): Filter {
+    override removeAllFieldFilters(): Filter {
         return this;
     }
 
-    override removeFunctionFilter(key: string): Filter {
+    override removeFunctionFilters(key: string): Filter {
         return this.key === key ? null : this;
     }
 
-    override removeFunctionFilters(): Filter {
+    override removeAllFunctionFilters(): Filter {
         return null;
     }
 }

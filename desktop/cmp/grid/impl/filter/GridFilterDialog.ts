@@ -129,7 +129,7 @@ class GridFilterDialogLocalModel extends HoistModel {
         if (!valid) return;
 
         const newFilter = JSON.parse(formModel.values.filter),
-            filter = appendFilter(model.filter?.removeFieldFilters(), newFilter);
+            filter = appendFilter(model.filter?.removeAllFieldFilters(), newFilter);
 
         model.setFilter(filter);
         this.close();
@@ -145,7 +145,7 @@ class GridFilterDialogLocalModel extends HoistModel {
     }
 
     loadForm() {
-        const filter = this.model.filter?.removeFunctionFilters();
+        const filter = this.model.filter?.removeAllFunctionFilters();
         this.formModel.init({
             filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
         });

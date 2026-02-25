@@ -220,19 +220,19 @@ export class FieldFilter extends Filter {
         return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
     }
 
-    override removeFieldFilter(field: string): Filter {
+    override removeFieldFilters(field: string): Filter {
         return this.field === field ? null : this;
     }
 
-    override removeFieldFilters(): Filter {
+    override removeAllFieldFilters(): Filter {
         return null;
     }
 
-    override removeFunctionFilter(key: string): Filter {
+    override removeFunctionFilters(key: string): Filter {
         return this;
     }
 
-    override removeFunctionFilters(): Filter {
+    override removeAllFunctionFilters(): Filter {
         return this;
     }
 

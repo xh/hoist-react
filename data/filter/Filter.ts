@@ -38,14 +38,14 @@ export abstract class Filter {
     abstract toJSON(): FilterSpec;
 
     /** Remove all FieldFilters targeting a specific field. */
-    abstract removeFieldFilter(field: string): Filter;
+    abstract removeFieldFilters(field: string): Filter;
 
-    /** Remove ALL FieldFilters. */
-    abstract removeFieldFilters(): Filter;
+    /** Remove all FieldFilters. */
+    abstract removeAllFieldFilters(): Filter;
 
     /** Remove FunctionFilter with a specific key. */
-    abstract removeFunctionFilter(key: string): Filter;
+    abstract removeFunctionFilters(key: string): Filter;
 
-    /** Remove ALL FunctionFilters. */
-    abstract removeFunctionFilters(): Filter;
+    /** Remove all FunctionFilters. */
+    abstract removeAllFunctionFilters(): Filter;
 }
