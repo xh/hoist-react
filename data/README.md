@@ -423,17 +423,18 @@ const filter = parseFilter([filter1, filter2]);  // Wraps in AND
 #### Instance Methods for Filter Transformation
 
 All `Filter` subclasses provide instance methods that return a new `Filter | null` with matching
-filters removed. CompoundFilters are recursively traversed.
+filters removed. CompoundFilters are recursively traversed. Each method accepts an optional
+argument to target a specific field/key, or removes all matching filters when called without one.
 
 ```typescript
-// Remove all FieldFilters targeting a specific field
-const remaining = filter.removeFieldFilter('status');
+// Remove FieldFilters targeting a specific field
+const remaining = filter.removeFieldFilters('status');
 
 // Remove ALL FieldFilters (e.g. keep only FunctionFilters)
 const remaining = filter.removeFieldFilters();
 
 // Remove a FunctionFilter by key
-const remaining = filter.removeFunctionFilter('default');
+const remaining = filter.removeFunctionFilters('default');
 
 // Remove ALL FunctionFilters
 const remaining = filter.removeFunctionFilters();
@@ -446,7 +447,7 @@ already an AND CompoundFilter, additions are flattened into its children rather 
 
 ```typescript
 // Replace FieldFilters on one field, keep everything else
-const updated = appendFilter(filter?.removeFieldFilter('status'), newStatusFilter);
+const updated = appendFilter(filter?.removeFieldFilters('status'), newStatusFilter);
 
 // Replace all FieldFilters, preserving FunctionFilters
 const updated = appendFilter(filter?.removeFieldFilters(), newFieldFilters);
