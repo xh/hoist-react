@@ -36,7 +36,7 @@ export interface FieldSpec {
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
 
-    /** True to allow this field to be used for grouping. Defaults to false. */
+    /** True if this field is intended to be used for grouping.  Defaults to false. */
     isDimension?: boolean;
 
     /** Rules to apply to this field. */
