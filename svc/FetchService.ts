@@ -4,7 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Awaitable, HoistService, LoadSpec, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {
+    Awaitable,
+    HoistService,
+    LoadSpec,
+    LoadSpecConfig,
+    PlainObject,
+    TrackOptions,
+    XH
+} from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -628,7 +636,7 @@ export interface FetchOptions {
      * Optional metadata about the underlying request. Passed through for downstream processing by
      * utils such as {@link ExceptionHandler}.
      */
-    loadSpec?: LoadSpec;
+    loadSpec?: LoadSpec | LoadSpecConfig;
 
     /**
      * Options to pass to the underlying fetch request.
