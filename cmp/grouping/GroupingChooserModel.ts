@@ -13,7 +13,7 @@ import {
     SelectOption
 } from '@xh/hoist/core';
 import type {GridModel} from '@xh/hoist/cmp/grid';
-import {genDisplayName, View} from '@xh/hoist/data';
+import {Field, genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -53,6 +53,10 @@ export interface GroupingChooserConfig {
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
      * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
      * Note that {@link CubeField} meets the `DimensionSpec` interface.
+     *
+     * If omitted and `bind` is provided, dimensions will be auto-populated from the target:
+     * fields with `isDimension: true` from a GridModel's store, or from a View's associated Cube.
+     * If provided alongside `bind`, dimensions will be validated against the target's fields.
      */
     dimensions?: (DimensionSpec | string)[];
 
@@ -179,6 +183,11 @@ export class GroupingChooserModel extends HoistModel {
         this.maxDepth = maxDepth;
         this.sortDimensions = sortDimensions;
 
+        // Auto-populate dimensions from bind target if not explicitly provided.
+        if (!dimensions && bind) {
+            dimensions = this.getDimensionsFromTarget();
+        }
+
         this.setDimensions(dimensions);
 
         // Read and validate value and favorites
@@ -211,6 +220,10 @@ export class GroupingChooserModel extends HoistModel {
                 track: () => this.targetValue,
                 run: targetValue => {
                     if (isEqual(this.value, targetValue)) return;
+                    throwIf(
+                        !this.validateValue(targetValue),
+                        `Bound target has grouping dimensions not present in GroupingChooserModel: [${targetValue}].`
+                    );
                     this.setValue(targetValue);
                 }
             });
@@ -226,6 +239,7 @@ export class GroupingChooserModel extends HoistModel {
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
+        if (this.bind) this.ensureDimensionsValid();
         this.removeUnknownDimsFromValue();
     }
 
@@ -371,7 +385,7 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
-    @computed
+    @computed.struct
     private get targetValue(): string[] {
         const {bind} = this;
         if (!bind) return null;
@@ -389,6 +403,23 @@ export class GroupingChooserModel extends HoistModel {
         } else {
             bind.setGroupBy(value);
         }
+    }
+
+    private get targetFields(): Field[] {
+        const {bind} = this;
+        return bind instanceof View ? bind.cube.fields : bind.store.fields;
+    }
+
+    private getDimensionsFromTarget(): DimensionSpec[] {
+        return this.targetFields.filter(f => f.isDimension);
+    }
+
+    private ensureDimensionsValid() {
+        const targetFieldNames = this.targetFields.map(f => f.name);
+        throwIf(
+            this.dimensionNames.some(d => !targetFieldNames.includes(d)),
+            "GroupingChooserModel has dimensions not found in bound target's fields."
+        );
     }
 
     private initPersist({
