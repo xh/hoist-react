@@ -93,7 +93,7 @@ export class GridFilterModel extends HoistModel {
 
     @action
     clear() {
-        this.setFilter(this.filter?.removeAllFieldFilters());
+        this.setFilter(this.filter?.removeFieldFilters());
     }
 
     getColumnFilters(field: string): FieldFilter[] {

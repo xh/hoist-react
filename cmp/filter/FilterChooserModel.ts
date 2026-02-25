@@ -207,7 +207,7 @@ export class FilterChooserModel extends HoistModel {
             this.addReaction({
                 track: () => bind.filter,
                 run: filter => {
-                    this.setValue(filter?.removeAllFunctionFilters());
+                    this.setValue(filter?.removeFunctionFilters());
                 }
             });
         }
@@ -610,7 +610,7 @@ export class FilterChooserModel extends HoistModel {
                 // filter with this model's value, preserving any FunctionFilters
                 // installed by other components (e.g. StoreFilterField).
                 if (bind) {
-                    const filter = appendFilter(bind.filter?.removeAllFieldFilters(), value);
+                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
                     bind.setFilter(filter);
                 }
             })

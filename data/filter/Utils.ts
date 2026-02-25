@@ -87,45 +87,45 @@ export function appendFilter(source: Filter, ...additions: FilterLike[]): Filter
 //----------------------------------------------------------------------
 // Deprecated aliases - use Filter instance methods instead
 //----------------------------------------------------------------------
-/** @deprecated Use `filter.removeFieldFilter(field)` and `appendFilter()` instead. */
+/** @deprecated Use `filter.removeFieldFilters(field)` and `appendFilter()` instead. */
 export function withFilterByField(
     filter: FilterLike,
     newFilter: FilterLike,
     field: string
 ): Filter {
     apiDeprecated('withFilterByField', {
-        msg: 'Use filter.removeFieldFilter(field) and appendFilter() instead.',
+        msg: 'Use filter.removeFieldFilters(field) and appendFilter() instead.',
         v: '85.0'
     });
     const source = parseFilter(filter);
     return appendFilter(source?.removeFieldFilters(field), newFilter);
 }
 
-/** @deprecated Use `filter.removeFunctionFilter(key)` and `appendFilter()` instead. */
+/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
 export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
     apiDeprecated('withFilterByKey', {
-        msg: 'Use filter.removeFunctionFilter(key) and appendFilter() instead.',
+        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
         v: '85.0'
     });
     const source = parseFilter(filter);
     return appendFilter(source?.removeFunctionFilters(key), newFilter);
 }
 
-/** @deprecated Use `filter.removeFunctionFilter(key)` and `appendFilter()` instead. */
+/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
 export function replaceFilterByKey(
     filter: FilterLike,
     replacement: FilterLike,
     key: string
 ): Filter {
     apiDeprecated('replaceFilterByKey', {
-        msg: 'Use filter.removeFunctionFilter(key) and appendFilter() instead.',
+        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
         v: '85.0'
     });
     const source = parseFilter(filter);
     return appendFilter(source?.removeFunctionFilters(key), replacement);
 }
 
-/** @deprecated Use `filter.removeFieldFilters()` / `filter.removeFunctionFilters()` and
+/** @deprecated Use `filter.removeFieldFilters()` and/or `filter.removeFunctionFilters()` with
  * `appendFilter()` instead. */
 export function withFilterByTypes(
     filter: Filter,
@@ -140,8 +140,8 @@ export function withFilterByTypes(
     let source: Filter = filter;
     for (const type of typeArr) {
         if (!source) break;
-        if (type === 'FieldFilter') source = source.removeAllFieldFilters();
-        if (type === 'FunctionFilter') source = source.removeAllFunctionFilters();
+        if (type === 'FieldFilter') source = source.removeFieldFilters();
+        if (type === 'FunctionFilter') source = source.removeFunctionFilters();
     }
     return appendFilter(source, newFilter);
 }
