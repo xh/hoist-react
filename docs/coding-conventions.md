@@ -439,6 +439,23 @@ The `model` option in `hoistCmp.withFactory` declares how a component finds its 
 - **`uses(ModelClass, {fromContext: false})`** — always creates a new model (no context lookup)
 - **`false`** — component has no model association
 
+### Local Models
+
+The `useLocalModel` hook creates a model tied to the lifecycle of a component that will not be
+discoverable to child components. This is useful when a component needs internal state specific to
+a single instance or otherwise irrelevant to the primary model.
+
+Prefer the name **`impl`** for local models.
+
+```typescript
+render({model, className, ...rest}, ref) {
+    const impl = useLocalModel(GroupingChooserLocalModel),
+        {value, allowEmpty} = model,
+        {editorIsOpen} = impl;
+    // ...
+}
+```
+
 ### `displayName`
 
 Always set `displayName` on components. It appears in React DevTools and error messages. It should
