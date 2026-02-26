@@ -157,7 +157,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v81](./upgrade-notes/v81-upgrade-notes.md) | _unreleased_ | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
+| [v82](./upgrade-notes/v82-upgrade-notes.md) | 2026-02-25 | 🟢 LOW | `FetchService` static correlation IDs, `xh-popup--framed` removal, DashContainer CSS wrapper |
+| [v81](./upgrade-notes/v81-upgrade-notes.md) | 2026-02-12 | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
 | [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
 | [v79](./upgrade-notes/v79-upgrade-notes.md) | 2026-01-05 | 🟠 MEDIUM | Blueprint 5→6, `moduleResolution: "bundler"`, `loadModel` → `loadObserver` |
 | [v78](./upgrade-notes/v78-upgrade-notes.md) | 2025-11-21 | 🎉 TRIVIAL | `GridModel.setColumnState` behavior change |

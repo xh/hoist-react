@@ -6,7 +6,8 @@
  */
 
 import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import {Field, genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
@@ -14,6 +15,16 @@ import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodas
 export interface GroupingChooserConfig {
     /** True to accept an empty list as a valid value. */
     allowEmpty?: boolean;
+
+    /**
+     * Target ({@link GridModel} or Cube {@link View}) to which this model's grouping value
+     * should be automatically applied as it changes. When bound to a GridModel, calls
+     * `setGroupBy()`; when bound to a View, calls `updateQuery({dimensions: ...})`.
+     *
+     * This is a two-way binding — changes to the target's value are reflected back into
+     * the GroupingChooserModel automatically.
+     */
+    bind?: GroupingBindTarget;
 
     /**
      * False (default) waits for the user to dismiss the popover before updating the
@@ -25,6 +36,10 @@ export interface GroupingChooserConfig {
      * Dimensions available for selection. When using GroupingChooser to create Cube queries,
      * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
      * Note that {@link CubeField} meets the `DimensionSpec` interface.
+     *
+     * If omitted and `bind` is provided, dimensions will be auto-populated from the target:
+     * fields with `isDimension: true` from a GridModel's store, or from a View's associated Cube.
+     * If provided alongside `bind`, dimensions will be validated against the target's fields.
      */
     dimensions?: (DimensionSpec | string)[];
 
@@ -70,11 +85,15 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
     persistFavorites?: boolean | PersistOptions;
 }
 
+/** Target to which GroupingChooser value changes should be automatically synced. */
+export type GroupingBindTarget = GridModel | View;
+
 export class GroupingChooserModel extends HoistModel {
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
     allowEmpty: boolean;
+    bind: GroupingBindTarget;
     commitOnChange: boolean;
     maxDepth: number;
     persistFavorites: boolean = false;
@@ -95,6 +114,7 @@ export class GroupingChooserModel extends HoistModel {
 
     constructor({
         allowEmpty = false,
+        bind = null,
         commitOnChange = false,
         dimensions,
         initialFavorites = [],
@@ -107,9 +127,15 @@ export class GroupingChooserModel extends HoistModel {
         makeObservable(this);
 
         this.allowEmpty = allowEmpty;
+        this.bind = bind;
         this.commitOnChange = commitOnChange;
         this.maxDepth = maxDepth;
         this.sortDimensions = sortDimensions;
+
+        // Auto-populate dimensions from bind target if not explicitly provided.
+        if (!dimensions && bind) {
+            dimensions = this.getDimensionsFromTarget();
+        }
 
         this.setDimensions(dimensions);
 
@@ -124,6 +150,26 @@ export class GroupingChooserModel extends HoistModel {
         this.setFavorites(favorites);
 
         if (persistWith) this.initPersist(persistWith);
+
+        if (bind) {
+            this.addReaction({
+                track: () => this.value,
+                run: value => this.updateTargetValue(value),
+                fireImmediately: true
+            });
+
+            this.addReaction({
+                track: () => this.targetValue,
+                run: targetValue => {
+                    if (isEqual(this.value, targetValue)) return;
+                    throwIf(
+                        !this.validateValue(targetValue),
+                        `Bound target has grouping dimensions not present in GroupingChooserModel: [${targetValue}].`
+                    );
+                    this.setValue(targetValue);
+                }
+            });
+        }
     }
 
     @action
@@ -135,6 +181,7 @@ export class GroupingChooserModel extends HoistModel {
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
+        if (this.bind) this.ensureDimensionsValid();
         this.removeUnknownDimsFromValue();
     }
 
@@ -202,6 +249,43 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    @computed.struct
+    private get targetValue(): string[] {
+        const {bind} = this;
+        if (!bind) return null;
+        if (bind instanceof View) {
+            return bind.query?.dimensions?.map(d => d.name) ?? [];
+        } else {
+            return bind.groupBy ?? [];
+        }
+    }
+
+    private updateTargetValue(value: string[]) {
+        const {bind} = this;
+        if (bind instanceof View) {
+            bind.updateQuery({dimensions: value});
+        } else {
+            bind.setGroupBy(value);
+        }
+    }
+
+    private get targetFields(): Field[] {
+        const {bind} = this;
+        return bind instanceof View ? bind.cube.fields : bind.store.fields;
+    }
+
+    private getDimensionsFromTarget(): DimensionSpec[] {
+        return this.targetFields.filter(f => f.isDimension);
+    }
+
+    private ensureDimensionsValid() {
+        const targetFieldNames = this.targetFields.map(f => f.name);
+        throwIf(
+            this.dimensionNames.some(d => !targetFieldNames.includes(d)),
+            "GroupingChooserModel has dimensions not found in bound target's fields."
+        );
+    }
+
     private initPersist({
         persistValue = true,
         persistFavorites = true,

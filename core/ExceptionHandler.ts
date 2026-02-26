@@ -9,7 +9,7 @@ import {fragment, span} from '@xh/hoist/cmp/layout';
 import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
-import {PlainObject, XH} from './';
+import {LoadSpec, PlainObject, XH} from './';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
@@ -261,11 +261,15 @@ export class ExceptionHandler {
                 delete serverDetails.lineNumber;
             }
 
-            // Remove verbose loadSpec from fetchOptions
+            // Remove verbose loadSpec from fetchOptions, extracting summary fields
+            // if a full LoadSpec instance (vs. a plain LoadSpecConfig) was provided.
             const {fetchOptions} = ret;
             if (fetchOptions?.loadSpec) {
-                fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
-                fetchOptions.loadNumber = fetchOptions.loadSpec.loadNumber;
+                const {loadSpec} = fetchOptions;
+                if (loadSpec instanceof LoadSpec) {
+                    fetchOptions.loadType = loadSpec.typeDisplay;
+                    fetchOptions.loadNumber = loadSpec.loadNumber;
+                }
                 delete fetchOptions.loadSpec;
             }
 
