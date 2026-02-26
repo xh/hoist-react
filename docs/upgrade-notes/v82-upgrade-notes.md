@@ -22,7 +22,8 @@ The most significant app-level impacts are:
 Before starting, ensure:
 
 - [ ] Running hoist-react v81.x
-- [ ] **hoist-core** upgraded to >= v36.3 (required for the new Metrics admin tab)
+- [ ] **hoist-core** upgraded to >= v36.3 (**recommended** — required only for the new Admin Metrics
+  tab, not for the hoist-react upgrade itself)
 
 ## Upgrade Steps
 
@@ -42,8 +43,8 @@ After:
 "@xh/hoist": "~82.0.0"
 ```
 
-Then run `yarn install` to update dependencies. v82 adds `react-window` as a new transitive
-dependency (used by the `Picker` component).
+Then run `yarn install` to update dependencies. v82 adds `react-window` as a new dependency
+(used by the `Picker` component for virtualized option lists).
 
 ### 2. Update `FetchService` Correlation ID Configuration
 

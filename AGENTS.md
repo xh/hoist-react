@@ -93,10 +93,10 @@ panel({
 ```jsx
 // JSX also fully supported - but rarely used by XH
 < Panel
-title = "Users"
-bbar = {<Toolbar><Button text={'Save'}/></Toolbar>}
+    title="Users"
+    bbar={<Toolbar><Button text={'Save'}/></Toolbar>}
 >
-    <Grid model = {gridModel} />
+    <Grid model={gridModel}/>
 </Panel>
 ```
 
@@ -112,11 +112,13 @@ rendering with `omit` and factory creation.
 All Hoist artifacts extend `HoistBase`, which provides:
 
 #### MobX Integration Conventions
+
 - `addAutorun()` / `addReaction()` - Managed MobX subscriptions (auto-disposed on destroy)
 - `makeObservable()` - Called in constructors to set up MobX observables/actions/computeds
 - `@observable` MobX decorator - Marks properties as observable state
 - `@action` MobX decorator - Marks methods that modify observable state
-- `@bindable` Hoist decorator - Marks properties as observable and generates setter methods automatically
+- `@bindable` Hoist decorator - Marks properties as observable and generates setter methods
+  automatically
   marked as `@action` - e.g., `setMyProp(value)` for property `myProp` (Hoist custom decorator).
   **Setter convention:** If a class defines an explicit public `setFoo()` method, call it (it likely
   has additional logic). Otherwise for auto-generated `@bindable` setters, prefer direct assignment
@@ -124,9 +126,11 @@ All Hoist artifacts extend `HoistBase`, which provides:
 - `@computed` MobX decorator - Marks getter properties as derived/computed state
 
 #### Memory/lifecycle Management Conventions
+
 - `@managed` decorator - marks child objects for automatic cleanup - apply to properties holding
   `HoistBase` instances or arrays of such instances.
-- `destroy()` - Lifecycle cleanup method. `HoistBase` superclass implementation auto-disposes managed
+- `destroy()` - Lifecycle cleanup method. `HoistBase` superclass implementation auto-disposes
+  managed
   subscriptions and child objects.
 
 See [`/core/README.md`](./core/README.md) for detailed HoistBase API, persistence support, and
@@ -140,7 +144,8 @@ common pitfalls.
 ### Prefer Hoist Input Components Over Raw HTML
 
 Always use Hoist's built-in input components (`textInput`, `numberInput`, `select`, `picker`,
-`checkbox`, `switchInput`, `dateInput`, `textArea`, etc.) rather than raw HTML `<input>`, `<select>`,
+`checkbox`, `switchInput`, `dateInput`, `textArea`, etc.) rather than raw HTML `<input>`,
+`<select>`,
 or `<textarea>` elements. Hoist inputs provide consistent styling, model binding, and proper
 integration with the framework's theming and layout system. Raw HTML elements require manual
 wrappers and custom SCSS that duplicate what Hoist already provides.
@@ -170,7 +175,9 @@ important guidelines to internalize:
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
 
-**Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped line and let the viewing tool handle display wrapping.
+**Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull
+request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped
+line and let the viewing tool handle display wrapping.
 
 ## Key Dependencies
 
@@ -187,7 +194,8 @@ real-world usage examples of models, components, services, and other framework f
 
 - **GitHub**: https://github.com/xh/toolbox
 - **Local checkout**: `../toolbox` (relative to hoist-react root) - likely exists for Hoist library
-  developers only. Note that the client-side code that uses hoist-react is in the `../toolbox/client-app/src`
+  developers only. Note that the client-side code that uses hoist-react is in the
+  `../toolbox/client-app/src`
   directory - focus your attention there.
 
 When working on hoist-react library code or documentation, reference Toolbox for practical examples
