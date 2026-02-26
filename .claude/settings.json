@@ -18,5 +18,8 @@
       "mcp__hoist-react__*",
       "mcp__ide__getDiagnostics"
     ]
+  },
+  "env": {
+    "ENABLE_LSP_TOOL": "1"
   }
 }
