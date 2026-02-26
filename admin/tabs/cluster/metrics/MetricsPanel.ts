@@ -59,11 +59,9 @@ export const metricsPanel = hoistCmp.factory({
                 grid(),
                 panel({
                     compactHeader: true,
-                    title: model.selectedMetricName
-                        ? `Variants - ${model.selectedMetricName}`
-                        : 'Variants',
+                    title: model.detailPanelTitle,
                     modelConfig: {side: 'bottom', defaultSize: 300},
-                    item: model.selectedMetricName
+                    item: model.selectedMetricNames.length
                         ? grid({model: model.detailGridModel})
                         : placeholder(Icon.gauge(), 'Select a metric...')
                 })

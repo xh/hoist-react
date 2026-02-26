@@ -32,8 +32,16 @@ export class MetricsModel extends BaseAdminTabModel {
         return [...new Set(this.allMetrics.map(it => it.source))].filter(Boolean).sort();
     }
 
-    get selectedMetricName(): string {
-        return this.gridModel.selectedRecord?.data?.name ?? null;
+    get selectedMetricNames(): string[] {
+        return this.gridModel.selectedRecords.map(r => r.data.name);
+    }
+
+    @computed
+    get detailPanelTitle(): string {
+        const count = this.selectedMetricNames.length;
+        if (!count) return 'Variants';
+        if (count === 1) return `Variants - ${this.selectedMetricNames[0]}`;
+        return `Variants - ${count} metrics selected`;
     }
 
     constructor() {
@@ -56,7 +64,7 @@ export class MetricsModel extends BaseAdminTabModel {
                 ]
             },
             sortBy: 'name',
-            selModel: 'single',
+            selModel: 'multiple',
             colChooserModel: true,
             columns: [
                 {field: 'name'},
@@ -83,6 +91,7 @@ export class MetricsModel extends BaseAdminTabModel {
             enableExport: true,
             store: {
                 fields: [
+                    {name: 'name', type: 'string', displayName: 'Metric'},
                     {name: 'tags', type: 'json'},
                     {name: 'instance', type: 'string'},
                     {name: 'value', type: 'number'},
@@ -92,6 +101,7 @@ export class MetricsModel extends BaseAdminTabModel {
                 ]
             },
             columns: [
+                {field: 'name', hidden: true, width: 200},
                 {field: 'instance', width: 140},
                 {field: 'value', width: 120, align: 'right', renderer: numberRenderer({})},
                 {field: 'baseUnit', width: 100},
@@ -131,7 +141,7 @@ export class MetricsModel extends BaseAdminTabModel {
                 }
             },
             {
-                track: () => this.gridModel.selectedRecord,
+                track: () => this.gridModel.selectedRecords,
                 run: () => this.loadDetailGrid()
             }
         );
@@ -179,14 +189,16 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 
     private loadDetailGrid() {
-        const {detailGridModel, allMetrics, selectedMetricName} = this;
-        if (!selectedMetricName) {
+        const {detailGridModel, allMetrics, selectedMetricNames} = this;
+        if (!selectedMetricNames.length) {
             detailGridModel.clear();
             return;
         }
-        const details = allMetrics.filter(it => it.name === selectedMetricName),
-            isTimer = details[0]?.type === 'TIMER';
+        const nameSet = new Set(selectedMetricNames),
+            details = allMetrics.filter(it => nameSet.has(it.name)),
+            isTimer = details.some(it => it.type === 'TIMER');
 
+        detailGridModel.setColumnVisible('name', selectedMetricNames.length > 1);
         detailGridModel.setColumnVisible('count', isTimer);
         detailGridModel.setColumnVisible('max', isTimer);
         detailGridModel.loadData(details);
