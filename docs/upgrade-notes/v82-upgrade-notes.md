@@ -109,16 +109,23 @@ to adjust their selectors to account for this new wrapper.
 grep -r "xh-dash-tab" client-app/src/
 ```
 
-### 5. Migrate Deprecated Filter Utilities (optional)
+### 5. Migrate Deprecated Filter Utilities
 
-The standalone filter composition utilities `withFilterByField`, `withFilterByKey`, and
-`withFilterByTypes` have been deprecated in favor of new instance methods on the `Filter` class
-hierarchy. Internal callers have been migrated. These utilities will be removed in a future version.
+The standalone filter composition utilities `withFilterByField`, `withFilterByKey`,
+`replaceFilterByKey`, and `withFilterByTypes` have been deprecated in favor of new instance methods
+on the `Filter` class hierarchy. Internal callers have been migrated. These utilities will be
+removed in v85, so we recommend migrating now as part of this upgrade.
+
+The new approach uses two instance methods available on all `Filter` subclasses —
+`removeFieldFilters(field?)` and `removeFunctionFilters(key?)` — paired with the `appendFilter()`
+utility to compose the result.
 
 **Find affected files:**
 ```bash
-grep -r "withFilterByField\|withFilterByKey\|withFilterByTypes" client-app/src/
+grep -r "withFilterByField\|withFilterByKey\|replaceFilterByKey\|withFilterByTypes" client-app/src/
 ```
+
+#### `withFilterByField` — removes `FieldFilter`s matching a field, then appends a new filter
 
 Before:
 ```typescript
@@ -137,7 +144,10 @@ const filter = appendFilter(
 );
 ```
 
-For `withFilterByKey` (used with `FunctionFilter`s):
+#### `withFilterByKey` / `replaceFilterByKey` — removes `FunctionFilter`s matching a key, then appends
+
+These two utilities are functionally identical. Both remove function filters with a matching key and
+append a replacement.
 
 Before:
 ```typescript
@@ -156,8 +166,41 @@ const filter = appendFilter(
 );
 ```
 
-This step is optional for v82 — the deprecated utilities still work — but migrating now avoids a
-future breaking change.
+#### `withFilterByTypes` — removes all filters of given type(s), then appends
+
+This utility strips filters by class type (`'FieldFilter'` and/or `'FunctionFilter'`). Replace by
+calling the corresponding `remove*` method(s) for each type.
+
+Before:
+```typescript
+import {withFilterByTypes} from '@xh/hoist/data';
+
+// Remove all FieldFilters, then append
+const filter = withFilterByTypes(store.filter, newFilter, 'FieldFilter');
+
+// Remove both types, then append
+const filter = withFilterByTypes(store.filter, newFilter, ['FieldFilter', 'FunctionFilter']);
+```
+
+After:
+```typescript
+import {appendFilter} from '@xh/hoist/data';
+
+// Remove all FieldFilters, then append
+const filter = appendFilter(
+    store.filter?.removeFieldFilters(),
+    newFilter
+);
+
+// Remove both types, then append
+const filter = appendFilter(
+    store.filter?.removeFieldFilters()?.removeFunctionFilters(),
+    newFilter
+);
+```
+
+Note that calling `removeFieldFilters()` or `removeFunctionFilters()` with no argument removes *all*
+filters of that type. Passing a specific field name or key removes only matching filters.
 
 ### 6. Review `Field.description` Impact on Column Tooltips (optional)
 
@@ -184,6 +227,8 @@ After completing all steps:
 - [ ] Popovers render with correct themed borders in light and dark mode
 - [ ] Dashboard views render correctly (DashContainer and DashCanvas)
 - [ ] No deprecated patterns remain: `grep -r "xh-popup--framed" client-app/src/`
+- [ ] No deprecated filter utilities remain:
+  `grep -r "withFilterByField\|withFilterByKey\|replaceFilterByKey\|withFilterByTypes" client-app/src/`
 
 ## Reference
 
