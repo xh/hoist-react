@@ -61,6 +61,9 @@ export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> 
      */
     popoverWidth?: number;
 
+    /** Width in pixels for the select dropdown menus. If unspecified, defaults to the select control width. */
+    selectMenuWidth?: number;
+
     /** True (default) to style trigger button background and borders to match inputs. */
     styleButtonAsInput?: boolean;
 }
@@ -87,6 +90,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             popoverWidth,
             popoverMinHeight,
             popoverPosition = 'bottom',
+            selectMenuWidth,
             styleButtonAsInput = true,
             testId,
             ...rest
@@ -135,6 +139,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     favoritesTitle,
                     popoverWidth,
                     popoverMinHeight,
+                    selectMenuWidth,
                     testId
                 }),
                 onInteraction: (nextOpenState, e) => {
@@ -164,6 +169,7 @@ const popoverCmp = hoistCmp.factory<Partial<GroupingChooserProps>>({
         favoritesTitle,
         popoverWidth,
         popoverMinHeight,
+        selectMenuWidth,
         testId
     }) {
         const {persistFavorites} = model,
@@ -173,6 +179,7 @@ const popoverCmp = hoistCmp.factory<Partial<GroupingChooserProps>>({
                 editor({
                     editorTitle,
                     emptyText,
+                    selectMenuWidth,
                     testId: getTestId(testId, 'editor')
                 }),
                 favoritesChooser({
@@ -206,21 +213,21 @@ const popoverCmp = hoistCmp.factory<Partial<GroupingChooserProps>>({
 });
 
 const editor = hoistCmp.factory<GroupingChooserModel>({
-    render({editorTitle, emptyText, testId}) {
+    render({editorTitle, emptyText, selectMenuWidth, testId}) {
         return vbox({
             className: 'xh-grouping-chooser__editor',
             testId,
             items: [
                 div({className: 'xh-popup__title', item: editorTitle, omit: isNil(editorTitle)}),
-                dimensionList({emptyText}),
-                addDimensionControl()
+                dimensionList({emptyText, selectMenuWidth}),
+                addDimensionControl({selectMenuWidth})
             ]
         });
     }
 });
 
 const dimensionList = hoistCmp.factory<GroupingChooserModel>({
-    render({model, emptyText}) {
+    render({model, emptyText, selectMenuWidth}) {
         if (isEmpty(model.pendingValue)) {
             return model.allowEmpty
                 ? hbox({
@@ -240,7 +247,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
                         className: 'xh-grouping-chooser__list',
                         items: [
                             ...model.pendingValue.map((dimension, idx) =>
-                                dimensionRow({dimension, idx})
+                                dimensionRow({dimension, idx, selectMenuWidth})
                             ),
                             dndProps.placeholder
                         ]
@@ -251,7 +258,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
 });
 
 const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
-    render({model, dimension, idx}) {
+    render({model, dimension, idx, selectMenuWidth}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
@@ -309,6 +316,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
                                 flex: 1,
                                 width: null,
                                 hideDropdownIndicator: true,
+                                menuWidth: selectMenuWidth,
                                 onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
                             })
                         }),
@@ -333,7 +341,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
 });
 
 const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
-    render({model}) {
+    render({model, selectMenuWidth}) {
         if (!model.isAddEnabled) return null;
 
         const options = model.getDimSelectOpts();
@@ -354,6 +362,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
                     width: null,
                     hideDropdownIndicator: true,
                     hideSelectedOptionCheck: true,
+                    menuWidth: selectMenuWidth,
                     onChange: newDim => model.addPendingDim(newDim)
                 })
             ]
