@@ -1,6 +1,6 @@
 # Changelog
 
-## 82.0.0-SNAPSHOT - unreleased
+## 82.0.0 - 2026-01-25
 
 ### 🎁 New Features
 
@@ -35,7 +35,10 @@
     * Promoted `isDimension` from `CubeField` to the base `Field` class (defaults to `false`),
       allowing Store fields to be marked as groupable dimensions.
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v82-upgrade-notes.md`](docs/upgrade-notes/v82-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Converted `FetchService` correlation ID properties (`autoGenCorrelationIds`,
   `genCorrelationId`, `correlationIdHeaderKey`) from instance to static. These can now be
@@ -45,6 +48,8 @@
   `FetchService.<prop>`.
 * Added additional `div` with `xh-dash-tab__content` class around `DashContainerView` content.
   Apps with custom CSS targeting `xh-dash-tab` may need to adjust their selectors.
+* Removed the `xh-popup--framed` CSS class. Apps applying this class to popovers should remove it —
+  popover borders are now themed globally via the `--xh-popup-border-color` CSS variable.
 
 ### ⚙️ Technical
 
@@ -54,6 +59,7 @@
   have been deprecated. Internal callers have been migrated to the new API.
 
 ### 🐞 Bug Fixes
+
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
   action buttons (scope by parent `testId` to prevent collisions across multiple grids).
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
@@ -62,13 +68,11 @@
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
 
-### 🎨 Styles
+### ✨ Styles
 
 * Overrode Blueprint's hardcoded popover border and arrow colors to use Hoist's themed
   `--xh-popup-border-color` CSS variable. Popover borders and arrows now match the rest of
   the Hoist theme in both light and dark modes.
-* Removed the `xh-popup--framed` CSS class. Its border styling is now handled globally by the
-  popover border override above.
 
 ### 📚 Libraries
 

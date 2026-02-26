@@ -565,6 +565,14 @@ function getRawEntries(): RawEntry[] {
             category: 'devops',
             description: 'Upgrade guide from v80.x to v81.0.2. Low difficulty.',
             keywords: splitKeywords('upgrade, migration, breaking changes, v81, v80')
+        },
+        {
+            id: 'upgrade-v82',
+            title: 'v82 Upgrade Notes',
+            file: 'docs/upgrade-notes/v82-upgrade-notes.md',
+            category: 'devops',
+            description: 'Upgrade guide from v81.x to v82.0.0. Low difficulty.',
+            keywords: splitKeywords('upgrade, migration, breaking changes, v82, v81')
         }
     ];
 }
