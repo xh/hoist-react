@@ -43,7 +43,7 @@ After:
 "@xh/hoist": "~82.0.0"
 ```
 
-Then run `yarn install` to update dependencies. v82 adds `react-window` as a new dependency
+Then run `yarn install` or `npm install` to update dependencies. v82 adds `react-window` as a new dependency
 (used by the `Picker` component for virtualized option lists).
 
 ### 2. Update `FetchService` Correlation ID Configuration
@@ -218,8 +218,8 @@ fields, centralizing descriptive text at the data layer.
 
 After completing all steps:
 
-- [ ] `yarn install` completes without errors
-- [ ] `yarn lint` passes (or only pre-existing warnings remain)
+- [ ] `yarn install` / `npm install` completes without errors
+- [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] Correlation IDs appear on network requests (check `X-Correlation-ID` header in browser

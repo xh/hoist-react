@@ -43,7 +43,7 @@ After:
 "@xh/hoist": "~79.0.0"
 ```
 
-Run `yarn install` to pull updated transitive dependencies including Blueprint 6.
+Run `yarn install` or `npm install` to pull updated transitive dependencies including Blueprint 6.
 
 ### 2. Update `tsconfig.json`
 
@@ -210,8 +210,8 @@ grep -r "websocketsEnabled\|popoverTitle\|\.options" client-app/src/ | grep -i "
 
 After completing all steps:
 
-- [ ] `yarn install` completes without errors
-- [ ] `yarn lint` passes (or only pre-existing warnings remain)
+- [ ] `yarn install` / `npm install` completes without errors
+- [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] No `bp5-` CSS classes remain: `grep -r "bp5-" client-app/src/`

@@ -135,6 +135,9 @@ Each upgrade step must include:
 - Reference Toolbox as the canonical example where helpful (it's the public demo app).
 - Do not mention sample or customer applications by name, with the exception of Toolbox.
 - Keep prose minimal between code blocks — this is a recipe, not an essay.
+- Use package-manager-neutral language. Write `yarn install` / `npm install` (not just one).
+  The target application may use either yarn or npm — check for `yarn.lock` vs
+  `package-lock.json` to determine which, but write docs that work for both.
 - Steps should be ordered logically (build system first, then source code, then cleanup).
 - The verification checklist at the end should cover all critical functionality.
 
