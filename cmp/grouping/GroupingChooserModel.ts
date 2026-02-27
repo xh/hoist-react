@@ -5,29 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
-    HoistModel,
-    PersistableState,
-    PersistenceProvider,
-    PersistOptions,
-    SelectOption
-} from '@xh/hoist/core';
+import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {Field, genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    compact,
-    difference,
-    isArray,
-    isEmpty,
-    isEqual,
-    isObject,
-    isString,
-    keys,
-    sortBy
-} from 'lodash';
+import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
 export interface GroupingChooserConfig {
     /** True to accept an empty list as a valid value. */
@@ -116,19 +99,8 @@ export class GroupingChooserModel extends HoistModel {
     persistFavorites: boolean = false;
     sortDimensions: boolean;
 
-    // Implementation fields for Control
-    @observable.ref pendingValue: string[] = [];
-    @observable editorIsOpen: boolean = false;
-    popoverRef = createObservableRef<HTMLElement>();
-
-    // Internal state
-    @observable.ref private dimensions: Record<string, DimensionSpec>;
-    @observable.ref private dimensionNames: string[];
-
-    @computed
-    get availableDims(): string[] {
-        return difference(this.dimensionNames, this.pendingValue);
-    }
+    @observable.ref dimensions: Record<string, DimensionSpec>;
+    @observable.ref dimensionNames: string[];
 
     @computed
     get dimensionSpecs(): DimensionSpec[] {
@@ -136,31 +108,8 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
-    get isValid(): boolean {
-        return this.validateValue(this.pendingValue);
-    }
-
-    @computed
     get valueDisplayNames(): string[] {
         return this.value.map(dimName => this.getDimDisplayName(dimName));
-    }
-
-    @computed
-    get isAddEnabled(): boolean {
-        const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
-            limit =
-                maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
-            atMaxDepth = pendingValue.length === limit;
-        return !atMaxDepth && !isEmpty(availableDims);
-    }
-
-    @computed
-    get isAddFavoriteEnabled(): boolean {
-        return (
-            this.persistFavorites &&
-            !isEmpty(this.pendingValue) &&
-            !this.isFavorite(this.pendingValue)
-        );
     }
 
     constructor({
@@ -201,13 +150,6 @@ export class GroupingChooserModel extends HoistModel {
         this.setFavorites(favorites);
 
         if (persistWith) this.initPersist(persistWith);
-
-        this.addReaction({
-            track: () => this.pendingValue,
-            run: () => {
-                if (this.commitOnChange) this.setValue(this.pendingValue);
-            }
-        });
 
         if (bind) {
             this.addReaction({
@@ -250,70 +192,6 @@ export class GroupingChooserModel extends HoistModel {
             return;
         }
         this.value = value;
-        this.pendingValue = value;
-    }
-
-    @action
-    toggleEditor() {
-        this.pendingValue = this.value;
-        this.editorIsOpen = !this.editorIsOpen;
-    }
-
-    @action
-    closeEditor() {
-        this.editorIsOpen = false;
-    }
-
-    /** Transform dimension names into SelectOptions, with displayName and optional sort. */
-    getDimSelectOpts(dims: string[] = this.availableDims): SelectOption[] {
-        const ret = compact(dims).map(dimName => ({
-            value: dimName,
-            label: this.getDimDisplayName(dimName)
-        }));
-        return this.sortDimensions ? sortBy(ret, 'label') : ret;
-    }
-
-    //-------------------------
-    // Value handling
-    //-------------------------
-    @action
-    addPendingDim(dimName: string) {
-        if (!dimName) return;
-        this.pendingValue = [...this.pendingValue, dimName];
-    }
-
-    @action
-    replacePendingDimAtIdx(dimName: string, idx: number) {
-        if (!dimName) return this.removePendingDimAtIdx(idx);
-        const pendingValue = [...this.pendingValue];
-        pendingValue[idx] = dimName;
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    removePendingDimAtIdx(idx: number) {
-        const pendingValue = [...this.pendingValue];
-        pendingValue.splice(idx, 1);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    movePendingDimToIndex(dimName: string, toIdx: number) {
-        const pendingValue = [...this.pendingValue],
-            dim = pendingValue.find(it => it === dimName),
-            fromIdx = pendingValue.indexOf(dim);
-
-        pendingValue.splice(toIdx, 0, pendingValue.splice(fromIdx, 1)[0]);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    commitPendingValueAndClose() {
-        const {pendingValue, value} = this;
-        if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
-            this.setValue(pendingValue);
-        }
-        this.closeEditor();
     }
 
     validateValue(value: string[]) {
@@ -328,15 +206,6 @@ export class GroupingChooserModel extends HoistModel {
 
     getDimDisplayName(dimName: string) {
         return this.dimensions[dimName]?.displayName ?? dimName;
-    }
-
-    //--------------------
-    // Drag Drop
-    //--------------------
-    onDragEnd(result) {
-        const {draggableId, destination} = result;
-        if (!destination) return;
-        this.movePendingDimToIndex(draggableId, destination.index);
     }
 
     //--------------------
@@ -366,11 +235,6 @@ export class GroupingChooserModel extends HoistModel {
     addFavorite(value: string[]) {
         if (isEmpty(value) || this.isFavorite(value)) return;
         this.favorites = [...this.favorites, value];
-    }
-
-    @action
-    addPendingAsFavorite() {
-        this.addFavorite(this.pendingValue);
     }
 
     @action

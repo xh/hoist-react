@@ -67,6 +67,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `DynamicTabSwitcher` to consume the `onContextMenu` event on its tabs.
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
+* Fixed `GroupingChooser` to support multiple instances sharing the same `GroupingChooserModel`.
+  Transient UI state (e.g. editor open/closed, pending value) is now held per-component, so
+  opening one chooser no longer opens all others bound to the same model.
 
 ### ✨ Styles
 
