@@ -9,7 +9,7 @@ import {HoistModel, lookup, SelectOption} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';
-import {GroupingChooserModel} from './GroupingChooserModel';
+import {GroupingChooserModel} from '../GroupingChooserModel';
 
 /**
  * Local model for GroupingChooser components. Holds transient UI state that must be

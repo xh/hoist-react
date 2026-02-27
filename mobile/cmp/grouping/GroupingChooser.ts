@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {GroupingChooserLocalModel} from '@xh/hoist/cmp/grouping/GroupingChooserLocalModel';
+import {GroupingChooserLocalModel} from '@xh/hoist/cmp/grouping/impl/GroupingChooserLocalModel';
 import {box, div, filler, hbox, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
