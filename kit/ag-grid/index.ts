@@ -57,7 +57,8 @@ export type {
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
-    CellEditingStoppedEvent
+    CellEditingStoppedEvent,
+    CellSelectionChangedEvent
 } from 'ag-grid-community';
 
 export type {
