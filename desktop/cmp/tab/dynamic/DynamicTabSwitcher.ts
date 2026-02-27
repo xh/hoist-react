@@ -161,6 +161,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 },
                 onContextMenu: e => {
                     const domRect = e.currentTarget.getBoundingClientRect();
+                    consumeEvent(e);
                     showContextMenu(
                         contextMenu({
                             menuItems: model.getContextMenuItems(e, tab)
