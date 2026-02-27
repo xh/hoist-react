@@ -4,85 +4,123 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
+import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {numberRenderer} from '@xh/hoist/format';
-import {bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {groupBy as lodashGroupBy} from 'lodash';
-import {runInAction} from 'mobx';
+import {groupBy} from 'lodash';
 
 export class MetricsModel extends BaseAdminTabModel {
+    override persistWith = {localStorageKey: 'xhAdminMetricsState'};
+
+    @managed gridModel: GridModel;
+    @managed groupingChooserModel: GroupingChooserModel;
+    @managed detailGridModel: GridModel;
+    @managed private timer: Timer;
+
     @bindable sourceFilter: string[] = [];
 
     @observable.ref allMetrics: any[] = [];
-    @observable.ref lastLoadDate: Date = null;
 
     @computed
     get sourceOptions(): string[] {
         return [...new Set(this.allMetrics.map(it => it.source))].filter(Boolean).sort();
     }
 
-    @managed
-    gridModel: GridModel = new GridModel({
-        store: {
-            idSpec: 'name',
-            fields: [
-                {name: 'name', type: 'string'},
-                {name: 'description', type: 'string'},
-                {name: 'baseUnit', type: 'string', displayName: 'Unit'},
-                {name: 'type', type: 'string'},
-                {name: 'source', type: 'string'},
-                {name: 'count', type: 'number'}
-            ]
-        },
-        sortBy: 'name',
-        selModel: 'single',
-        colChooserModel: true,
-        columns: [
-            {field: 'name', flex: true, minWidth: 200, maxWidth: 300},
-            {field: 'source', width: 100},
-            {field: 'type', width: 120},
-            {field: 'baseUnit', width: 80, hidden: true},
-            {field: 'count', width: 50},
-            {field: 'description', flex: true}
-        ]
-    });
+    get selectedMetricNames(): string[] {
+        return this.gridModel.selectedRecords.map(r => r.data.name);
+    }
 
-    @managed
-    detailGridModel: GridModel = new GridModel({
-        store: {
-            fields: [
-                {name: 'tags', type: 'json'},
-                {name: 'instance', type: 'string'},
-                {name: 'value', type: 'number'},
-                {name: 'baseUnit', type: 'string', displayName: 'Unit'},
-                {name: 'count', type: 'number'},
-                {name: 'max', type: 'number'}
-            ]
-        },
-        columns: [
-            {field: 'instance', width: 140},
-            {field: 'value', width: 120, align: 'right', renderer: numberRenderer({})},
-            {field: 'baseUnit', width: 100},
-            {field: 'count', width: 100, hidden: true, renderer: numberRenderer({precision: 0})},
-            {field: 'max', width: 120, align: 'right', hidden: true, renderer: numberRenderer({})},
-            {field: 'tags', flex: true, renderer: tagsRenderer}
-        ]
-    });
-
-    @managed
-    private timer: Timer;
-
-    get selectedMetricName(): string {
-        return this.gridModel.selectedRecord?.data?.name ?? null;
+    @computed
+    get detailPanelTitle(): string {
+        const count = this.selectedMetricNames.length;
+        if (!count) return 'Variants';
+        if (count === 1) return `Variants - ${this.selectedMetricNames[0]}`;
+        return `Variants - ${count} metrics selected`;
     }
 
     constructor() {
         super();
         makeObservable(this);
+
+        this.gridModel = new GridModel({
+            persistWith: {...this.persistWith, path: 'mainGrid'},
+            enableExport: true,
+            exportOptions: {filename: exportFilenameWithDate('metrics'), columns: 'ALL'},
+            store: {
+                idSpec: 'name',
+                fields: [
+                    {name: 'name', type: 'string'},
+                    {name: 'description', type: 'string'},
+                    {name: 'baseUnit', type: 'string', displayName: 'Unit'},
+                    {name: 'type', type: 'string', isDimension: true},
+                    {name: 'source', type: 'string', isDimension: true},
+                    {name: 'count', type: 'number'}
+                ]
+            },
+            sortBy: 'name',
+            selModel: 'multiple',
+            colChooserModel: true,
+            columns: [
+                {field: 'name'},
+                {field: 'source', width: 100},
+                {field: 'type', width: 120},
+                {field: 'baseUnit', width: 80, hidden: true},
+                {field: 'count', width: 50},
+                {field: 'description', flex: true, minWidth: 200}
+            ]
+        });
+
+        this.groupingChooserModel = new GroupingChooserModel({
+            bind: this.gridModel,
+            allowEmpty: true,
+            persistWith: {
+                ...this.persistWith,
+                path: 'groupingChooser',
+                persistFavorites: false
+            }
+        });
+
+        this.detailGridModel = new GridModel({
+            persistWith: {...this.persistWith, path: 'detailGrid'},
+            enableExport: true,
+            store: {
+                fields: [
+                    {name: 'name', type: 'string', displayName: 'Metric'},
+                    {name: 'tags', type: 'json'},
+                    {name: 'instance', type: 'string'},
+                    {name: 'value', type: 'number'},
+                    {name: 'baseUnit', type: 'string', displayName: 'Unit'},
+                    {name: 'count', type: 'number'},
+                    {name: 'max', type: 'number'}
+                ]
+            },
+            columns: [
+                {field: 'name', hidden: true, width: 200},
+                {field: 'instance', width: 140},
+                {field: 'value', width: 120, align: 'right', renderer: numberRenderer({})},
+                {field: 'baseUnit', width: 100},
+                {
+                    field: 'count',
+                    width: 100,
+                    hidden: true,
+                    renderer: numberRenderer({precision: 0})
+                },
+                {
+                    field: 'max',
+                    width: 120,
+                    align: 'right',
+                    hidden: true,
+                    renderer: numberRenderer({})
+                },
+                {field: 'tags', flex: true, renderer: tagsRenderer}
+            ]
+        });
 
         this.timer = Timer.create({
             runFn: async () => {
@@ -94,18 +132,19 @@ export class MetricsModel extends BaseAdminTabModel {
             delay: true
         });
 
-        this.addReaction({
-            track: () => this.sourceFilter,
-            run: () => {
-                this.loadMasterGrid(this.allMetrics);
-                this.gridModel.ensureSelectionVisibleAsync();
+        this.addReaction(
+            {
+                track: () => this.sourceFilter,
+                run: () => {
+                    this.loadMasterGrid(this.allMetrics);
+                    this.gridModel.ensureSelectionVisibleAsync();
+                }
+            },
+            {
+                track: () => this.gridModel.selectedRecords,
+                run: () => this.loadDetailGrid()
             }
-        });
-
-        this.addReaction({
-            track: () => this.gridModel.selectedRecord,
-            run: () => this.loadDetailGrid()
-        });
+        );
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -118,20 +157,19 @@ export class MetricsModel extends BaseAdminTabModel {
             if (loadSpec.isStale) return;
 
             const enriched = data.map(it => {
-                const instance = it.tags.find(t => t.key === 'instance')?.value;
-                const source = it.tags.find(t => t.key === 'source')?.value;
-                const tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
+                const instance = it.tags.find(t => t.key === 'instance')?.value,
+                    source = it.tags.find(t => t.key === 'source')?.value,
+                    tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
                 return {...it, instance, source, tags};
             });
 
-            runInAction(() => {
-                this.allMetrics = enriched;
-                this.lastLoadDate = new Date();
-            });
+            runInAction(() => (this.allMetrics = enriched));
             this.loadMasterGrid(enriched);
             this.loadDetailGrid();
         } catch (e) {
-            XH.handleException(e, {alertType: 'toast'});
+            if (!loadSpec.isAutoRefresh && !loadSpec.isStale) {
+                XH.handleException(e, {alertType: 'toast'});
+            }
         }
     }
 
@@ -139,37 +177,31 @@ export class MetricsModel extends BaseAdminTabModel {
     // Implementation
     //------------------
     private loadMasterGrid(enriched: any[]) {
-        const {sourceFilter} = this,
+        const {sourceFilter, gridModel} = this,
             filtered = sourceFilter?.length
                 ? enriched.filter(it => sourceFilter.includes(it.source))
                 : enriched;
-        const grouped = lodashGroupBy(filtered, 'name');
-        const masterData = Object.entries(grouped).map(([name, items]) => {
-            const rep = items[0];
-            return {
-                name,
-                description: rep.description,
-                baseUnit: rep.baseUnit,
-                type: rep.type,
-                source: rep.source,
-                count: items.length
-            };
+        const masterData = Object.entries(groupBy(filtered, 'name')).map(([name, items]) => {
+            const {description, baseUnit, type, source} = items[0];
+            return {name, description, baseUnit, type, source, count: items.length};
         });
-        this.gridModel.loadData(masterData);
+        gridModel.loadData(masterData);
     }
 
     private loadDetailGrid() {
-        const selName = this.selectedMetricName;
-        if (!selName) {
-            this.detailGridModel.clear();
+        const {detailGridModel, allMetrics, selectedMetricNames} = this;
+        if (!selectedMetricNames.length) {
+            detailGridModel.clear();
             return;
         }
-        const details = this.allMetrics.filter(it => it.name === selName),
-            isTimer = details[0]?.type === 'TIMER';
+        const nameSet = new Set(selectedMetricNames),
+            details = allMetrics.filter(it => nameSet.has(it.name)),
+            isTimer = details.some(it => it.type === 'TIMER');
 
-        this.detailGridModel.setColumnVisible('count', isTimer);
-        this.detailGridModel.setColumnVisible('max', isTimer);
-        this.detailGridModel.loadData(details);
+        detailGridModel.setColumnVisible('name', selectedMetricNames.length > 1);
+        detailGridModel.setColumnVisible('count', isTimer);
+        detailGridModel.setColumnVisible('max', isTimer);
+        detailGridModel.loadData(details);
     }
 }
 

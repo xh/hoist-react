@@ -5,14 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {filler, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {filler, placeholder} from '@xh/hoist/cmp/layout';
 import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {refreshButton} from '@xh/hoist/desktop/cmp/button';
-import {select} from '@xh/hoist/desktop/cmp/input';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
+import {picker} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
 import {MetricsModel} from './MetricsModel';
 
 export const metricsPanel = hoistCmp.factory({
@@ -23,34 +25,47 @@ export const metricsPanel = hoistCmp.factory({
             ref: model.viewRef,
             mask: 'onLoad',
             tbar: toolbar(
-                'Source:',
-                select({
+                groupingChooser({
+                    model: model.groupingChooserModel,
+                    icon: Icon.treeList(),
+                    emptyText: 'Ungrouped',
+                    minWidth: 200
+                }),
+                '-',
+                picker({
                     bind: 'sourceFilter',
                     options: model.sourceOptions,
                     enableMulti: true,
-                    placeholder: 'All',
-                    width: 200
+                    enableClear: true,
+                    width: 200,
+                    buttonProps: {icon: Icon.tag()},
+                    displayNoun: 'source',
+                    buttonTextRenderer: (selOpts, allOpts) => {
+                        const count = selOpts.length;
+                        if (!count || count === allOpts.length) return 'All sources';
+                        if (count === 1) return `Source: ${selOpts[0].label}`;
+                        return `${count} sources`;
+                    }
                 }),
                 filler(),
-                relativeTimestamp({bind: 'lastLoadDate'}),
+                relativeTimestamp({bind: 'lastLoadCompleted'}),
                 '-',
                 gridCountLabel({unit: 'metric'}),
-                storeFilterField(),
-                refreshButton()
+                '-',
+                storeFilterField({matchMode: 'any'}),
+                exportButton({gridModel: model.gridModel})
             ),
-            item: vframe(
+            items: [
                 grid(),
                 panel({
                     compactHeader: true,
-                    title: model.selectedMetricName
-                        ? `Variants - ${model.selectedMetricName}`
-                        : 'Variants',
+                    title: model.detailPanelTitle,
                     modelConfig: {side: 'bottom', defaultSize: 300},
-                    item: model.selectedMetricName
+                    item: model.selectedMetricNames.length
                         ? grid({model: model.detailGridModel})
-                        : placeholder('Choose a Metric')
+                        : placeholder(Icon.gauge(), 'Select a metric...')
                 })
-            )
+            ]
         });
     }
 });

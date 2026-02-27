@@ -67,7 +67,7 @@ Note: `GridModel.cleanColumnState` is now private. This is not expected to impac
 
 After completing all steps:
 
-- [ ] `yarn install` completes without errors
+- [ ] `yarn install` / `npm install` completes without errors
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] Grids with persisted or programmatically managed column state function correctly

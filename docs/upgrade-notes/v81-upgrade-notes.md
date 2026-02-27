@@ -164,8 +164,8 @@ Note: If your app does not directly use Blueprint's `Card` component, no change 
 After completing all steps:
 
 - [ ] `hoistCoreVersion` in `gradle.properties` is >= 36.1.0
-- [ ] `yarn install` completes without errors
-- [ ] `yarn lint` passes (or only pre-existing warnings remain)
+- [ ] `yarn install` / `npm install` completes without errors
+- [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] Authentication works (login/logout) — verify the auth model changes

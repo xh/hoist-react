@@ -64,6 +64,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `parseFieldValue` for `'date'`-typed fields to detect `LocalDate` inputs and convert via
   `.date` rather than passing through `new Date()`.
 * Fixed `Panel` content styling to `display: block` when `scrollable` is `true`.
+* Fixed `DynamicTabSwitcher` to consume the `onContextMenu` event on its tabs.
 * Improved `DashCanvas` and `DashContainer` persistence such that individual `ViewModel` state can
   be updated without reloading the entire dashboard and owned views.
 * Fixed `GroupingChooser` to support multiple instances sharing the same `GroupingChooserModel`.

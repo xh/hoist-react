@@ -51,7 +51,7 @@ Add to `resolutions` (create the section if it doesn't exist):
 }
 ```
 
-Run `yarn install` after making these changes.
+Run `yarn install` or `npm install` after making these changes.
 
 ### 2. Update FormField CSS Classes
 
@@ -220,8 +220,8 @@ Or widen affected inputs to accommodate the (slightly wider) Inter font with tab
 
 After completing all steps:
 
-- [ ] `yarn install` completes without errors
-- [ ] `yarn lint` passes (or only pre-existing warnings remain)
+- [ ] `yarn install` / `npm install` completes without errors
+- [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] Form fields render correctly — labels, validation messages, and readonly displays
