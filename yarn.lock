@@ -20,17 +20,17 @@
     dpop "^2.1.1"
     es-cookie "~1.3.2"
 
-"@azure/msal-browser@~4.26.2":
-  version "4.26.2"
-  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-4.26.2.tgz#1d416b7ab6a4094fa098e4da5058dd3d21231783"
-  integrity sha512-F2U1mEAFsYGC5xzo1KuWc/Sy3CRglU9Ql46cDUx8x/Y3KnAIr1QAq96cIKCk/ZfnVxlvprXWRjNKoEpgLJXLhg==
+"@azure/msal-browser@~5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.3.0.tgz#f154abf5e02714c4ed233f427abc1651714891c2"
+  integrity sha512-WqIN2GJe6H8OfmEiXjf8y+N0LedO6lkE3JeLZqEVurvoHoHltpl3gMyfKPycAfOgNMMmlukB6XUhbXDRRSdhEQ==
   dependencies:
-    "@azure/msal-common" "15.13.2"
+    "@azure/msal-common" "16.1.0"
 
-"@azure/msal-common@15.13.2":
-  version "15.13.2"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-15.13.2.tgz#7986df122bb6cf96ae160bba70758fd5cb666695"
-  integrity sha512-cNwUoCk3FF8VQ7Ln/MdcJVIv3sF73/OT86cRH81ECsydh7F4CNfIo2OAx6Cegtg8Yv75x4506wN4q+Emo6erOA==
+"@azure/msal-common@16.1.0":
+  version "16.1.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.1.0.tgz#271e56d450de5f0973d303e09ed4de0427255152"
+  integrity sha512-uiX0ChrRFbreXlPlDR8LwHKmZpJudDAr124iNWJKJ+b7MJUWXmvVU3idSi/c5lk1FwLVZeMxhQir3BGdV09I+g==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.28.6", "@babel/code-frame@^7.29.0":
   version "7.29.0"
