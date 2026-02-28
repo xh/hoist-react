@@ -119,7 +119,7 @@
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
     "stylelint": "16.x",
-    "stylelint-config-standard-scss": "16.x",
+    "stylelint-config-standard-scss": "17.x",
     "type-fest": "4.x",
     "typescript": "~5.9.2"
   },
