@@ -1,11 +1,6 @@
 # Changelog
 
-## 83.0.0-SNAPSHOT - unreleased
-
-### ⚙️ Technical
-* Catches and more gracefully logs an occasional race condition error when dashboard views are being town down but still receiving update requests.
-
-## 82.0.0 - 2026-02-25
+## 82.0.0 - 2026-02-27
 
 Note that a server-side upgrade to `hoist-core >= 36.3` is recommended to support new Admin Metrics
 tab, but is not strictly required.
@@ -64,6 +59,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   have been deprecated. Internal callers have been migrated to the new API.
 * Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build).
   No change to library consumers - Hoist continues to be published to npm.
+* Catches and logs an occasional, non-fatal race condition error on `DashContainer` state changes.
 
 ### 🐞 Bug Fixes
 
