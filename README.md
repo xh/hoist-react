@@ -61,7 +61,8 @@ docs. The primary entry points are:
 - [docs/README.md](docs/README.md) — documentation index with a task-oriented quick reference
 - [AGENTS.md](AGENTS.md) — AI coding assistant guidance and coding conventions
 - [CHANGELOG.md](CHANGELOG.md) — version history and release notes
-- [docs/build-and-deploy.md](docs/build-and-deploy.md) — CI/CD configuration and deployment
+- [docs/build-and-publish.md](docs/build-and-publish.md) — GitHub Actions CI/CD for hoist-react
+- [docs/build-app-deployment.md](docs/build-app-deployment.md) — building and deploying Hoist applications
 - [docs/development-environment.md](docs/development-environment.md) — local development setup
 
 ## Architecture at a Glance

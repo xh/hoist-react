@@ -1,0 +1,64 @@
+# CI — Validates linting and runs CodeQL analysis on PRs and pushes to develop.
+#
+# This workflow does not publish artifacts. For snapshot and release publishing,
+# see Deploy Snapshot and Deploy Release.
+
+name: CI
+
+on:
+    push:
+        branches: [ "develop" ]
+    pull_request:
+        branches: [ "develop" ]
+    schedule:
+        - cron: '23 10 * * 4'
+
+jobs:
+    lint:
+        # No need / benefit to run lint on a schedule.
+        if: github.event_name != 'schedule'
+
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+        - uses: actions/checkout@v6
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v6
+          with:
+              node-version-file: '.nvmrc'
+
+        - name: Configure Font Awesome registry auth
+          env:
+              FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+          run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
+
+        - name: Install dependencies
+          run: yarn install --frozen-lockfile
+
+        - name: Lint
+          run: yarn lint
+
+    codeql:
+
+        runs-on: ubuntu-latest
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+
+        steps:
+        - uses: actions/checkout@v6
+
+        - name: Initialize CodeQL
+          uses: github/codeql-action/init@v3
+          with:
+              languages: javascript
+
+        - name: Autobuild
+          uses: github/codeql-action/autobuild@v3
+
+        - name: Perform CodeQL Analysis
+          uses: github/codeql-action/analyze@v3

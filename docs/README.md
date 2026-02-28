@@ -21,45 +21,45 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 
 ## Quick Reference by Task
 
-| If you need to... | Start here |
-|---|---|
-| Understand the component/model/service pattern | [`/core/`](../core/README.md) |
-| Work with `XH` singleton API | [`/core/`](../core/README.md) |
-| Build or configure a data grid | [`/cmp/grid/`](../cmp/grid/README.md) |
-| Build a form with validation | [`/cmp/form/`](../cmp/form/README.md) |
-| Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md) |
-| Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md) |
-| Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md) |
-| Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) |
-| Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) |
-| Build a mobile app | [`/mobile/`](../mobile/README.md) |
-| Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) |
-| Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md) |
-| Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md) |
-| Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md) |
-| Format numbers, dates, or currencies | [`/format/`](../format/README.md) |
-| Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md) |
-| Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md) |
-| Add authentication (OAuth, login) | [Authentication](./authentication.md) |
-| Persist UI state (columns, filters, panel sizes) | [Persistence](./persistence.md) |
-| Check roles, gates, or app access | [Authorization](./authorization.md) |
-| Configure client-side routing or URL-driven tabs | [Routing](./routing.md) |
-| Handle exceptions and display error dialogs | [Error Handling](./error-handling.md) |
-| Add testId selectors for test automation | [Test Automation](./test-automation.md) |
-| Use Promises with error handling and tracking | [`/promise/`](../promise/README.md) |
-| Work with MobX, `@bindable`, or `@observable` | [`/mobx/`](../mobx/README.md) |
-| Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md) |
-| Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md) |
-| Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md) |
-| Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md) |
-| Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md) |
-| Understand third-party library integration | [`/kit/`](../kit/README.md) |
-| Set up builds, CI/CD, or deployment | [Build & Deploy](./build-and-deploy.md) |
-| Configure local development environment | [Development Environment](./development-environment.md) |
-| Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md) |
-| Follow XH coding conventions | [Coding Conventions](./coding-conventions.md) |
-| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md) |
-| Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes) |
+| If you need to... | Start here                                                                                                          |
+|---|---------------------------------------------------------------------------------------------------------------------|
+| Understand the component/model/service pattern | [`/core/`](../core/README.md)                                                                                       |
+| Work with `XH` singleton API | [`/core/`](../core/README.md)                                                                                       |
+| Build or configure a data grid | [`/cmp/grid/`](../cmp/grid/README.md)                                                                               |
+| Build a form with validation | [`/cmp/form/`](../cmp/form/README.md)                                                                               |
+| Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md)                                                                             |
+| Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md)                                                                                 |
+| Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md)                                                                                 |
+| Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md)                                                               |
+| Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md)                                                             |
+| Build a mobile app | [`/mobile/`](../mobile/README.md)                                                                                   |
+| Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
+| Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
+| Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
+| Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
+| Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
+| Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
+| Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
+| Add authentication (OAuth, login) | [Authentication](./authentication.md)                                                                               |
+| Persist UI state (columns, filters, panel sizes) | [Persistence](./persistence.md)                                                                                     |
+| Check roles, gates, or app access | [Authorization](./authorization.md)                                                                                 |
+| Configure client-side routing or URL-driven tabs | [Routing](./routing.md)                                                                                             |
+| Handle exceptions and display error dialogs | [Error Handling](./error-handling.md)                                                                               |
+| Add testId selectors for test automation | [Test Automation](./test-automation.md)                                                                             |
+| Use Promises with error handling and tracking | [`/promise/`](../promise/README.md)                                                                                 |
+| Work with MobX, `@bindable`, or `@observable` | [`/mobx/`](../mobx/README.md)                                                                                       |
+| Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md)                                                                                     |
+| Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md)                                                                       |
+| Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md)                                                                                       |
+| Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md)                                       |
+| Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md)                                                                             |
+| Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
+| Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-app-deployment.md) |
+| Configure local development environment | [Development Environment](./development-environment.md)                                                             |
+| Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
+| Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
+| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md)                                                                 |
+| Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes)                                                                                     |
 
 ## Package Documentation
 
@@ -134,7 +134,8 @@ for planned coverage:
 
 | Document | Description |
 |----------|-------------|
-| [Build & Deploy](./build-and-deploy.md) | CI configuration, build pipelines, and deployment considerations |
+| [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react |
+| [App Build & Deploy](./build-app-deployment.md) | Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
 
