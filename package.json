@@ -100,7 +100,7 @@
   },
   "peerDependencies": {
     "react": "~18.2.0",
-    "react-dom": "~18.2.0"
+    "react-dom": "~18.3.1"
   },
   "devDependencies": {
     "@types/react": "18.x",
@@ -117,7 +117,7 @@
     "postcss": "8.x",
     "prettier": "3.x",
     "react": "~18.2.0",
-    "react-dom": "~18.2.0",
+    "react-dom": "~18.3.1",
     "stylelint": "17.x",
     "stylelint-config-standard-scss": "17.x",
     "type-fest": "4.x",
