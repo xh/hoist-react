@@ -1,6 +1,6 @@
 # Hoist React v82 Upgrade Notes
 
-> **From:** v81.x → v82.0.0 | **Released:** 2026-02-25 | **Difficulty:** 🟢 LOW
+> **From:** v81.x → v82.0.0 | **Released:** 2026-02-27 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
