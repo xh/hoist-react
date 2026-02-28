@@ -1,5 +1,13 @@
 # Changelog
 
+## 83.0.0-SNAPSHOT - unreleased
+
+### ⚙️ Technical
+
+* Enhanced the MCP server's `hoist-search-symbols` tool to also search public members (properties,
+  methods, accessors) of 18 key framework classes. The TypeScript index is now built asynchronously
+  after server startup so the first tool call doesn't pay the initialization cost.
+
 ## 82.0.0 - 2026-02-27
 
 Note that a server-side upgrade to `hoist-core >= 36.3` is recommended to support new Admin Metrics

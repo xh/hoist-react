@@ -6,12 +6,15 @@
  * information. This module is consumed by the three TypeScript MCP tools:
  * hoist-search-symbols, hoist-get-symbol, and hoist-get-members.
  *
- * The ts-morph Project is created lazily (on first invocation, not at server
- * startup) to avoid cold start delays. Once created, a lightweight symbol
- * index is eagerly built using AST-level methods for fast search without
- * per-query AST traversal. Detailed symbol info is extracted on-demand.
+ * Initialization is kicked off asynchronously after server startup via
+ * `beginInitialization()`, so the index is typically ready before the first
+ * tool call arrives. If a tool call arrives before init completes,
+ * `ensureInitialized()` awaits the in-flight init. Once created, a
+ * lightweight symbol index and parallel member index are built using
+ * AST-level methods for fast search without per-query AST traversal.
+ * Detailed symbol info is extracted on-demand.
  */
-import {Project, Node, SyntaxKind} from 'ts-morph';
+import {Project, Node, Scope, SyntaxKind} from 'ts-morph';
 import type {ClassDeclaration, SourceFile} from 'ts-morph';
 import {resolve} from 'node:path';
 
@@ -61,12 +64,27 @@ export interface MemberInfo {
     returnType?: string;
 }
 
+/** Lightweight index entry for a class member, enabling search by member name. */
+export interface MemberIndexEntry {
+    name: string;
+    memberKind: 'property' | 'method' | 'accessor';
+    ownerName: string;
+    ownerDescription: string;
+    filePath: string;
+    sourcePackage: string;
+    isStatic: boolean;
+    type: string;
+    jsDoc: string;
+    decorators: string[];
+}
+
 //------------------------------------------------------------------
 // Module state (lazy initialization)
 //------------------------------------------------------------------
 
 let project: Project | null = null;
 let symbolIndex: Map<string, SymbolEntry[]> | null = null;
+let memberIndex: Map<string, MemberIndexEntry[]> | null = null;
 
 //------------------------------------------------------------------
 // Package derivation
@@ -91,6 +109,43 @@ const TOP_LEVEL_PACKAGES = [
     'inspector',
     'icon'
 ];
+
+/**
+ * Classes whose public members are indexed for search by member name.
+ * Values are brief role descriptions shown in search results to clarify
+ * how the class fits into the framework hierarchy.
+ */
+const MEMBER_INDEXED_CLASSES = new Map([
+    // Core framework base classes
+    ['HoistBase', 'base class for all Hoist objects (models, services, stores)'],
+    ['HoistModel', 'base class for all application models'],
+    ['HoistService', 'base class for all application services'],
+    ['XHApi', 'singleton (XH) providing global framework services'],
+
+    // Grid
+    ['GridModel', 'model backing all grid components'],
+    ['Column', 'column configuration for grids'],
+
+    // Data
+    ['Store', 'in-memory data store used by grids and other data components'],
+    ['StoreRecord', 'individual record within a Store'],
+    ['StoreSelectionModel', 'selection state manager for Store, used by grids'],
+    ['Field', 'metadata for a data field within a Store or Cube'],
+    ['RecordAction', 'reusable action for grid context menus and action columns'],
+
+    // Cube
+    ['Cube', 'multi-dimensional data store with aggregation and views'],
+    ['CubeField', 'field with aggregation metadata for use within a Cube'],
+    ['View', 'live or snapshot view of aggregated Cube data'],
+
+    // Form
+    ['FormModel', 'model for form state, field values, and validation'],
+    ['BaseFieldModel', 'base class for FieldModel — holds value, validation, and dirty tracking'],
+    ['FieldModel', 'model for a single form field (extends BaseFieldModel)'],
+
+    // Tabs
+    ['TabContainerModel', 'model for tabbed container with routing and refresh support']
+]);
 
 /**
  * Derive the source package from a file's absolute path.
@@ -134,18 +189,68 @@ function addToIndex(index: Map<string, SymbolEntry[]>, entry: SymbolEntry): void
     }
 }
 
+/** Add a member entry to the member index, keyed by lowercase member name. */
+function addToMemberIndex(index: Map<string, MemberIndexEntry[]>, entry: MemberIndexEntry): void {
+    const key = entry.name.toLowerCase();
+    const existing = index.get(key);
+    if (existing) {
+        existing.push(entry);
+    } else {
+        index.set(key, [entry]);
+    }
+}
+
+/**
+ * Check if a member should be excluded from the index as private/internal.
+ * Excludes members with the `private` keyword or names starting with `_`.
+ */
+function isPrivateMember(member: MemberInfo, cls: ClassDeclaration): boolean {
+    if (member.name.startsWith('_')) return true;
+
+    // Check for explicit `private` keyword on the AST node
+    try {
+        const node =
+            cls.getProperty(member.name) ??
+            cls.getGetAccessor(member.name) ??
+            cls.getMethod(member.name) ??
+            cls.getStaticProperty(member.name) ??
+            cls.getStaticMethod(member.name);
+        if (node) {
+            const scope = (node as unknown as {getScope?: () => string}).getScope?.();
+            if (scope === Scope.Private) return true;
+        }
+    } catch {
+        // If we can't determine scope, keep the member (assume public)
+    }
+
+    return false;
+}
+
+/** Format a method's parameter list and return type as a compact type string. */
+function formatMethodType(member: MemberInfo): string {
+    const params = (member.parameters ?? []).map(p => `${p.name}: ${p.type}`).join(', ');
+    const ret = member.returnType ?? 'void';
+    return `(${params}) => ${ret}`;
+}
+
 /**
  * Build the symbol index by scanning all source files using AST-level methods.
+ * Also builds a parallel member index for classes in MEMBER_INDEXED_CLASSES.
  *
  * Uses getClasses(), getInterfaces(), getTypeAliases(), getFunctions(),
  * getEnums(), and getVariableStatements() -- NOT getExportedDeclarations(),
  * which triggers full type binding and is ~1000x slower.
  */
-function buildSymbolIndex(proj: Project): Map<string, SymbolEntry[]> {
+function buildSymbolIndex(proj: Project): {
+    symbols: Map<string, SymbolEntry[]>;
+    members: Map<string, MemberIndexEntry[]>;
+} {
     const index = new Map<string, SymbolEntry[]>();
+    const mIndex = new Map<string, MemberIndexEntry[]>();
     const repoRoot = resolveRepoRoot();
 
     const counts = {total: 0, exported: 0, byKind: {} as Record<string, number>};
+    let memberCount = 0;
 
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
@@ -182,6 +287,33 @@ function buildSymbolIndex(proj: Project): Map<string, SymbolEntry[]> {
             counts.total++;
             if (entry.isExported) counts.exported++;
             counts.byKind['class'] = (counts.byKind['class'] || 0) + 1;
+
+            // Index public members for curated framework classes
+            const ownerDescription = MEMBER_INDEXED_CLASSES.get(name);
+            if (ownerDescription) {
+                try {
+                    const members = extractClassMembers(sourceFile, name);
+                    for (const m of members) {
+                        if (isPrivateMember(m, cls)) continue;
+                        const mEntry: MemberIndexEntry = {
+                            name: m.name,
+                            memberKind: m.kind,
+                            ownerName: name,
+                            ownerDescription,
+                            filePath,
+                            sourcePackage: pkg,
+                            isStatic: m.isStatic,
+                            type: m.kind === 'method' ? formatMethodType(m) : m.type,
+                            jsDoc: m.jsDoc.split('\n')[0],
+                            decorators: m.decorators
+                        };
+                        addToMemberIndex(mIndex, mEntry);
+                        memberCount++;
+                    }
+                } catch (e) {
+                    log.warn(`Failed to index members for ${name}: ${e}`);
+                }
+            }
         }
 
         // Interfaces
@@ -280,21 +412,22 @@ function buildSymbolIndex(proj: Project): Map<string, SymbolEntry[]> {
     log.info(
         `Symbol index built: ${counts.total} total symbols (${counts.exported} exported) -- ${kindSummary}`
     );
+    log.info(
+        `Member index built: ${memberCount} public members across ${MEMBER_INDEXED_CLASSES.size} classes`
+    );
 
-    return index;
+    return {symbols: index, members: mIndex};
 }
 
 //------------------------------------------------------------------
 // Public API
 //------------------------------------------------------------------
 
-/**
- * Ensure the ts-morph Project and symbol index are initialized.
- *
- * Creates the Project lazily on first call, then eagerly builds the symbol
- * index. Subsequent calls return immediately. Safe to call multiple times.
- */
-export function ensureInitialized(): void {
+/** Promise for in-flight initialization, used to coordinate eager and on-demand init. */
+let initPromise: Promise<void> | null = null;
+
+/** Synchronous init — heavy lifting, runs on a microtask when kicked off eagerly. */
+function doInitialize(): void {
     if (project) return;
 
     const startMs = Date.now();
@@ -305,7 +438,9 @@ export function ensureInitialized(): void {
     });
     project.resolveSourceFileDependencies();
 
-    symbolIndex = buildSymbolIndex(project);
+    const result = buildSymbolIndex(project);
+    symbolIndex = result.symbols;
+    memberIndex = result.members;
 
     const elapsed = Date.now() - startMs;
     log.info(`TypeScript registry initialized in ${elapsed}ms`);
@@ -315,16 +450,43 @@ export function ensureInitialized(): void {
 }
 
 /**
+ * Begin TypeScript registry initialization in the background.
+ *
+ * Call this after server startup to warm the index asynchronously, so the
+ * first tool invocation doesn't pay the full init cost. Safe to call
+ * multiple times — subsequent calls are no-ops.
+ */
+export function beginInitialization(): void {
+    if (project || initPromise) return;
+    initPromise = Promise.resolve().then(() => {
+        doInitialize();
+        initPromise = null;
+    });
+}
+
+/**
+ * Ensure the ts-morph Project and symbol index are initialized.
+ *
+ * If {@link beginInitialization} was called, awaits the in-flight init.
+ * Otherwise initializes synchronously. Safe to call multiple times.
+ */
+export async function ensureInitialized(): Promise<void> {
+    if (project) return;
+    if (initPromise) return initPromise;
+    doInitialize();
+}
+
+/**
  * Search the symbol index by query string.
  *
  * Supports case-insensitive substring matching against symbol names.
  * Optionally filter by kind and/or export status.
  */
-export function searchSymbols(
+export async function searchSymbols(
     query: string,
     options?: {kind?: SymbolKind; exported?: boolean; limit?: number}
-): SymbolEntry[] {
-    ensureInitialized();
+): Promise<SymbolEntry[]> {
+    await ensureInitialized();
 
     const queryLower = query.toLowerCase().trim();
     if (!queryLower) return [];
@@ -359,14 +521,55 @@ export function searchSymbols(
 }
 
 /**
+ * Search the member index by query string.
+ *
+ * Supports case-insensitive substring matching against member names.
+ * Only searches members of classes in MEMBER_INDEXED_CLASSES.
+ */
+export async function searchMembers(
+    query: string,
+    options?: {limit?: number}
+): Promise<MemberIndexEntry[]> {
+    await ensureInitialized();
+
+    const queryLower = query.toLowerCase().trim();
+    if (!queryLower) return [];
+
+    const limit = options?.limit ?? 15;
+    const results: MemberIndexEntry[] = [];
+
+    for (const [key, entries] of memberIndex!) {
+        if (!key.includes(queryLower)) continue;
+        results.push(...entries);
+    }
+
+    // Sort: exact matches first, then alphabetically by member name, then by owner
+    results.sort((a, b) => {
+        const aExact = a.name.toLowerCase() === queryLower ? 0 : 1;
+        const bExact = b.name.toLowerCase() === queryLower ? 0 : 1;
+        if (aExact !== bExact) return aExact - bExact;
+
+        const nameCompare = a.name.localeCompare(b.name);
+        if (nameCompare !== 0) return nameCompare;
+
+        return a.ownerName.localeCompare(b.ownerName);
+    });
+
+    return results.slice(0, limit);
+}
+
+/**
  * Get detailed information about a specific symbol.
  *
  * Finds the symbol in the index by exact name match (case-sensitive).
  * If filePath is provided, filters to that specific file. If multiple matches
  * and no filePath, returns the first exported match.
  */
-export function getSymbolDetail(name: string, filePath?: string): SymbolDetail | null {
-    ensureInitialized();
+export async function getSymbolDetail(
+    name: string,
+    filePath?: string
+): Promise<SymbolDetail | null> {
+    await ensureInitialized();
 
     const entry = findIndexEntry(name, filePath);
     if (!entry) return null;
@@ -384,11 +587,11 @@ export function getSymbolDetail(name: string, filePath?: string): SymbolDetail |
  *
  * Returns null for symbol kinds other than class or interface.
  */
-export function getMembers(
+export async function getMembers(
     name: string,
     filePath?: string
-): {symbol: SymbolDetail; members: MemberInfo[]} | null {
-    ensureInitialized();
+): Promise<{symbol: SymbolDetail; members: MemberInfo[]} | null> {
+    await ensureInitialized();
 
     const entry = findIndexEntry(name, filePath);
     if (!entry) return null;

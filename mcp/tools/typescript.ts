@@ -9,11 +9,12 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {
-    ensureInitialized,
     searchSymbols,
+    searchMembers,
     getSymbolDetail,
     getMembers,
-    type MemberInfo
+    type MemberInfo,
+    type MemberIndexEntry
 } from '../data/ts-registry.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
@@ -59,6 +60,24 @@ function formatMember(member: MemberInfo): string {
 }
 
 /**
+ * Format a MemberIndexEntry as a readable line for search results.
+ * e.g. `1. [accessor] lastLoadCompleted: Date (on HoistModel — base class for all application models)`
+ *      `    Timestamp of most recent successful load completion`
+ */
+function formatMemberIndexEntry(entry: MemberIndexEntry, index: number): string {
+    const lines: string[] = [];
+    const staticPrefix = entry.isStatic ? 'static ' : '';
+    const typeStr = truncateType(entry.type);
+    lines.push(
+        `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${entry.ownerName} \u2014 ${entry.ownerDescription})`
+    );
+    if (entry.jsDoc) {
+        lines.push(`    ${entry.jsDoc}`);
+    }
+    return lines.join('\n');
+}
+
+/**
  * Register all TypeScript symbol exploration tools on the given MCP server.
  *
  * - `hoist-search-symbols`: Search for symbols by name.
@@ -74,12 +93,12 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name. Returns matching symbols with their kind, source file, and package. Use this to find symbols before getting detailed information.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name. Also searches public members (properties, methods, accessors) of key framework classes like HoistModel, GridModel, Store, and others. Returns matching symbols and members with their kind, source, and context.',
             inputSchema: z.object({
                 query: z
                     .string()
                     .describe(
-                        'Symbol name or partial name to search for (e.g. "GridModel", "Store", "Panel")'
+                        'Symbol or member name to search for (e.g. "GridModel", "Store", "lastLoadCompleted", "setSortBy")'
                     ),
                 kind: z
                     .enum(['class', 'interface', 'type', 'function', 'const', 'enum'])
@@ -99,25 +118,46 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({query, kind, exported, limit}) => {
-            ensureInitialized();
-            const results = searchSymbols(query, {
+            const symbolLimit = limit ?? 20;
+            const symbolResults = await searchSymbols(query, {
                 kind,
                 exported: exported ?? true,
-                limit: limit ?? 20
+                limit: symbolLimit
             });
 
-            let text: string;
-            if (results.length === 0) {
-                text = `No symbols found matching '${query}'. Try a broader search term.`;
-            } else {
-                const lines = [`Found ${results.length} symbols matching '${query}':\n`];
-                results.forEach((result, i) => {
+            // Search members with a separate cap; if no symbols match, give
+            // members more room so the query is still useful.
+            const memberLimit = symbolResults.length === 0 ? symbolLimit : 15;
+            const memberResults = await searchMembers(query, {limit: memberLimit});
+
+            const lines: string[] = [];
+
+            if (symbolResults.length > 0) {
+                lines.push(`Symbols (${symbolResults.length} matches):\n`);
+                symbolResults.forEach((result, i) => {
                     lines.push(
                         `${i + 1}. [${result.kind}] ${result.name} (package: ${result.sourcePackage}, file: ${toRelativePath(result.filePath)}, exported: ${result.isExported ? 'yes' : 'no'})`
                     );
                 });
-                text = lines.join('\n');
             }
+
+            if (memberResults.length > 0) {
+                if (lines.length > 0) lines.push('');
+                lines.push(`Members of key classes (${memberResults.length} matches):\n`);
+                memberResults.forEach((m, i) => {
+                    lines.push(formatMemberIndexEntry(m, i + 1));
+                });
+            }
+
+            if (lines.length > 0) {
+                lines.push('');
+                lines.push('Tip: Use hoist-get-members to see all members of a specific class.');
+            }
+
+            const text =
+                lines.length > 0
+                    ? lines.join('\n')
+                    : `No symbols or members found matching '${query}'. Try a broader search term.`;
 
             return {content: [{type: 'text' as const, text}]};
         }
@@ -151,8 +191,7 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({name, filePath}) => {
-            ensureInitialized();
-            const detail = getSymbolDetail(name, filePath);
+            const detail = await getSymbolDetail(name, filePath);
 
             let text: string;
             if (!detail) {
@@ -225,8 +264,7 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({name, filePath}) => {
-            ensureInitialized();
-            const result = getMembers(name, filePath);
+            const result = await getMembers(name, filePath);
 
             let text: string;
             if (!result) {

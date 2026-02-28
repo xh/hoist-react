@@ -7,7 +7,7 @@
  * to compose structured, context-rich prompt responses.
  */
 import {buildRegistry, loadDocContent, type DocEntry} from '../data/doc-registry.js';
-import {ensureInitialized, getSymbolDetail, getMembers} from '../data/ts-registry.js';
+import {getSymbolDetail, getMembers} from '../data/ts-registry.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
 //------------------------------------------------------------------
@@ -88,9 +88,8 @@ export function extractSection(markdown: string, sectionName: string): string {
  *
  * @returns A formatted markdown block, or a "not found" message.
  */
-export function formatSymbolSummary(name: string): string {
-    ensureInitialized();
-    const detail = getSymbolDetail(name);
+export async function formatSymbolSummary(name: string): Promise<string> {
+    const detail = await getSymbolDetail(name);
     if (!detail) return `(Symbol '${name}' not found)`;
 
     const lines: string[] = [
@@ -120,9 +119,11 @@ export function formatSymbolSummary(name: string): string {
  *
  * @returns The formatted member list as a string.
  */
-export function formatKeyMembers(symbolName: string, memberNames?: string[]): string {
-    ensureInitialized();
-    const result = getMembers(symbolName);
+export async function formatKeyMembers(
+    symbolName: string,
+    memberNames?: string[]
+): Promise<string> {
+    const result = await getMembers(symbolName);
     if (!result) return `(Symbol '${symbolName}' not found or has no members)`;
 
     let {members} = result;

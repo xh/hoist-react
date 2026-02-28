@@ -78,8 +78,8 @@ export async function buildTabsPrompt(args: {
     //------------------------------------------------------------------
     // Type information
     //------------------------------------------------------------------
-    const tabContainerModelSummary = formatSymbolSummary('TabContainerModel');
-    const tabContainerModelMembers = formatKeyMembers('TabContainerModel', [
+    const tabContainerModelSummary = await formatSymbolSummary('TabContainerModel');
+    const tabContainerModelMembers = await formatKeyMembers('TabContainerModel', [
         'tabs',
         'activeTabId',
         'route',

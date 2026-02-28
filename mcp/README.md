@@ -85,12 +85,14 @@ curated metadata (title, description, category, search keywords) that cannot be 
 from filenames alone. The metadata is aligned with the `docs/README.md` index tables. The
 tradeoff is manual maintenance -- see [Maintaining the MCP Server](#maintaining-the-mcp-server).
 
-**Lazy TypeScript initialization with eager indexing.** Parsing hoist-react's ~700 TypeScript files
-with ts-morph is expensive. The `Project` is created lazily on first TypeScript tool invocation
-(not at server startup), keeping cold start fast. Once created, a lightweight symbol index
-(name-to-location map) is built eagerly using AST-level methods (`getClasses()`,
-`getInterfaces()`, etc.) rather than full type resolution. Detailed symbol information (signatures,
-JSDoc, members) is extracted on-demand from individual source files.
+**Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
+is expensive (~2-3s). After the server connects, `beginInitialization()` kicks off index building
+asynchronously so it runs in the background while the client sets up. If a tool call arrives before
+init completes, `ensureInitialized()` awaits the in-flight work. In practice, the index is
+typically ready before the first tool invocation. The symbol and member indexes are built using
+AST-level methods (`getClasses()`, `getInterfaces()`, etc.) rather than full type resolution.
+Detailed symbol information (signatures, JSDoc, full member lists) is extracted on-demand from
+individual source files.
 
 **Resources for nouns, tools for verbs.** Following MCP protocol design guidance: resources serve
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
@@ -214,17 +216,24 @@ Verify the MCP server is running and responsive. Takes no parameters.
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name.
+Search for TypeScript classes, interfaces, types, and functions by name. Also searches public
+members (properties, methods, accessors) of key framework classes, returning results in two sections:
+matching symbols and matching members with their owning class and role description.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Symbol name or partial name (e.g. `"GridModel"`, `"Store"`) |
-| `kind` | enum | No | Filter: `class`, `interface`, `type`, `function`, `const`, `enum` |
+| `query` | string | Yes | Symbol or member name to search for (e.g. `"GridModel"`, `"lastLoadCompleted"`, `"setSortBy"`) |
+| `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
-| `limit` | number | No | Max results, 1-50. Default: 20 |
+| `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |
 
-**Note:** The TypeScript index is built lazily on first invocation (typically under 5 seconds).
-Subsequent calls are fast.
+**Member-indexed classes:** HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
+StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField, View, FormModel,
+BaseFieldModel, FieldModel, TabContainerModel. Only public members are indexed (private members and
+those prefixed with `_` are excluded).
+
+**Note:** The TypeScript index is built asynchronously after server startup (~2-3s). It is typically
+ready before the first tool call. Subsequent calls are fast in-memory lookups.
 
 #### `hoist-get-symbol`
 
@@ -373,6 +382,26 @@ const TOP_LEVEL_PACKAGES = [
 ];
 ```
 
+### Member-Indexed Classes
+
+**File:** `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`)
+
+This map lists classes whose public members are indexed for search by member name via
+`hoist-search-symbols`. Each entry maps a class name to a brief role description shown alongside
+member search results (e.g. "base class for all application models").
+
+**When to update:**
+- A new key base class is added to the framework and should have its members searchable
+- A member-indexed class is renamed or removed
+- The role description of a class should be clarified
+
+**Current value:**
+```
+HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
+StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField,
+View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
+```
+
 ### Prompt Documentation Section References
 
 **Files:** `mcp/prompts/grid.ts`, `mcp/prompts/form.ts`, `mcp/prompts/tabs.ts`
@@ -429,6 +458,7 @@ were replaced, or if `makeObservable` were no longer required.
 | Add/rename/remove a documentation file | `mcp/data/doc-registry.ts`, `docs/README.md` |
 | Add upgrade notes for a new major version | `mcp/data/doc-registry.ts`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
+| Add/rename/remove a member-indexed class | `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`) |
 | Rename a section header in a component README | Check `mcp/prompts/grid.ts`, `form.ts`, `tabs.ts` |
 | Rename a key class or remove a key member | Check `mcp/prompts/grid.ts`, `form.ts`, `tabs.ts` |
 | Change a fundamental coding convention | `mcp/prompts/util.ts` |

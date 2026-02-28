@@ -5,6 +5,7 @@ import {registerDocResources} from './resources/docs.js';
 import {registerDocTools} from './tools/docs.js';
 import {registerTsTools} from './tools/typescript.js';
 import {registerPrompts} from './prompts/index.js';
+import {beginInitialization} from './data/ts-registry.js';
 
 const server = new McpServer({
     name: 'hoist-react',
@@ -20,3 +21,7 @@ const transport = new StdioServerTransport();
 await server.connect(transport);
 
 log.info('Server started, awaiting MCP client connection via stdio');
+
+// Warm the TypeScript symbol and member indexes in the background so the
+// first tool invocation doesn't pay the full initialization cost.
+beginInitialization();

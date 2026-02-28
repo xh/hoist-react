@@ -66,8 +66,8 @@ export async function buildGridPrompt(args: {
     //------------------------------------------------------------------
     // Type information
     //------------------------------------------------------------------
-    const gridModelSummary = formatSymbolSummary('GridModel');
-    const gridModelMembers = formatKeyMembers('GridModel', [
+    const gridModelSummary = await formatSymbolSummary('GridModel');
+    const gridModelMembers = await formatKeyMembers('GridModel', [
         'store',
         'columns',
         'sortBy',
@@ -76,7 +76,7 @@ export async function buildGridPrompt(args: {
         'emptyText',
         'onRowDoubleClicked'
     ]);
-    const columnSummary = formatSymbolSummary('Column');
+    const columnSummary = await formatSymbolSummary('Column');
 
     //------------------------------------------------------------------
     // Build adaptive code template

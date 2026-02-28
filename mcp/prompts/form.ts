@@ -82,8 +82,8 @@ export async function buildFormPrompt(args: {
     //------------------------------------------------------------------
     // Type information
     //------------------------------------------------------------------
-    const formModelSummary = formatSymbolSummary('FormModel');
-    const formModelMembers = formatKeyMembers('FormModel', [
+    const formModelSummary = await formatSymbolSummary('FormModel');
+    const formModelMembers = await formatKeyMembers('FormModel', [
         'fields',
         'values',
         'isValid',
@@ -92,7 +92,7 @@ export async function buildFormPrompt(args: {
         'reset',
         'getData'
     ]);
-    const fieldModelSummary = formatSymbolSummary('FieldModel');
+    const fieldModelSummary = await formatSymbolSummary('FieldModel');
 
     //------------------------------------------------------------------
     // Build adaptive code template
