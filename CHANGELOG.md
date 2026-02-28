@@ -1,5 +1,10 @@
 # Changelog
 
+## 83.0.0-SNAPSHOT - unreleased
+
+### ⚙️ Technical
+* Catches and more gracefully logs an occasional race condition error when dashboard views are being town down but still receiving update requests.
+
 ## 82.0.0 - 2026-02-25
 
 Note that a server-side upgrade to `hoist-core >= 36.3` is recommended to support new Admin Metrics
