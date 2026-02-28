@@ -50,9 +50,6 @@ function convertGLToStateInner(
                 viewModel = dashContainerModel.getViewModel(viewModelId),
                 view = {type: 'view', viewModelId, id: viewSpecId} as PlainObject;
 
-            // Skip if viewModel not yet available (race condition during init)
-            if (!viewModel) return;
-
             if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
