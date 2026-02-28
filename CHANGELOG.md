@@ -24,7 +24,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
   to hoist-react documentation and TypeScript type information. Includes tools for keyword search
-  across docs, symbol lookup, and class/interface member inspection. Launched via `yarn hoist-mcp`.
+  across docs, symbol lookup, and class/interface member inspection.
+  See [`mcp/README.md`](mcp/README.md) for setup and usage details.
 * Added `DashCanvasWidgetChooser` component — a draggable widget well for adding views to a
   `DashCanvas` via drag-and-drop from an external container. Added `allowsDrop`, `onDropDone`,
   and `onDropDragOver` config options to `DashCanvasModel` to support this, along with
@@ -56,6 +57,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
   standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
   have been deprecated. Internal callers have been migrated to the new API.
+* Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build).
+  No change to library consumers - Hoist continues to be published to npm.
 
 ### 🐞 Bug Fixes
 

@@ -447,3 +447,16 @@
   - Added release dates to all early entries (v1–v16) sourced from git tags
 - Updated `docs/README.md`: added Version Compatibility to Quick Reference and Concepts tables, added archive changelog to Additional Resources
 - **Status: Done** — reviewed and approved by Anselm
+
+### 2026-02-27
+- Split `docs/build-and-deploy.md` into two documents as part of the GitHub Actions CI/CD branch:
+  - `docs/build-and-publish.md` — new doc covering hoist-react library CI/CD (GitHub Actions
+    workflows for lint, CodeQL, snapshot/release npm publishing, Dependabot, required secrets)
+  - `docs/build-app-deployment.md` — retitled and updated application build/deploy guide;
+    removed Teamcity-specific references, modernized nginx app.conf example (named capture groups,
+    `rewrite` directive, `^~` proxy location, inline cookie/cache directives replacing
+    `xh-hardeners.conf`), generic CI env vars
+- Updated all cross-references: `docs/README.md`, top-level `README.md`, `mcp/data/doc-registry.ts`
+  (old single entry replaced with two new entries)
+- Inter-doc link scan: no broken links from these changes; 5 pre-existing issues in archived/template
+  files noted but not addressed (historical changelog, template placeholders)
