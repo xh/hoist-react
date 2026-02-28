@@ -43,6 +43,19 @@ relative to existing tags), then:
 4. Creates a GitHub Release with auto-generated notes. Hotfixes are marked as not-latest so they
    don't supplant the most recent mainline release.
 
+## Unpublish Snapshots (`unpublishSnapshots.yml`)
+
+Removes old SNAPSHOT pre-release versions from npm. **Manually triggered** via `workflow_dispatch`.
+This is run periodically to clean up snapshot versions from older major releases (typically ~N-2 and
+below), keeping the npm registry tidy without affecting current or recent development lines.
+
+Inputs:
+
+- **Mode** — `dry-run` (default) previews what would be removed; `execute` actually unpublishes.
+- **Max Version** — unpublish SNAPSHOTs with a major version at or below this value (required).
+- **Delay** — seconds between unpublish calls for rate limiting (default: 1).
+- **Package** — package name (default: `@xh/hoist`).
+
 ## Dependabot (`dependabot.yml`)
 
 Automated dependency update PRs are configured for both GitHub Actions and npm dependencies, each
@@ -53,7 +66,7 @@ checking weekly.
 | Secret | Used By | Purpose |
 |--------|---------|---------|
 | `FONTAWESOME_PACKAGE_TOKEN` | CI, Snapshot, Release | Auth token for the Font Awesome Pro npm registry (`npm.fontawesome.com`) |
-| `NPM_TOKEN` | Snapshot, Release | Auth token for publishing to the npm public registry |
+| `NPM_TOKEN` | Snapshot, Release, Unpublish | Auth token for publishing to the npm public registry |
 | `GITHUB_TOKEN` | Release | Provided automatically by GitHub Actions; used for `gh release create` |
 
 Font Awesome Pro packages are sourced from the official Font Awesome registry at
