@@ -11,7 +11,7 @@
   "author": "Extremely Heavy Industries, Inc.",
   "license": "Apache-2.0",
   "bin": {
-    "hoist-mcp": "./bin/hoist-mcp.mjs"
+    "hoist-mcp": "bin/hoist-mcp.mjs"
   },
   "scripts": {
     "lint": "yarn lint:all",
