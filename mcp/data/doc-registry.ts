@@ -497,12 +497,26 @@ function getRawEntries(): RawEntry[] {
         // DevOps docs
         //--------------------------------------------------------------
         {
-            id: 'build-and-deploy',
-            title: 'Build & Deploy',
-            file: 'docs/build-and-deploy.md',
+            id: 'build-and-publish',
+            title: 'Build & Publish',
+            file: 'docs/build-and-publish.md',
             category: 'devops',
-            description: 'CI configuration, build pipelines, and deployment considerations.',
-            keywords: splitKeywords('build, deploy, CI, pipeline, webpack, gradle, Docker')
+            description:
+                'GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react.',
+            keywords: splitKeywords(
+                'CI, CD, GitHub Actions, lint, CodeQL, npm, publish, snapshot, release'
+            )
+        },
+        {
+            id: 'build-app-deployment',
+            title: 'App Build & Deploy',
+            file: 'docs/build-app-deployment.md',
+            category: 'devops',
+            description:
+                'Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker).',
+            keywords: splitKeywords(
+                'build, deploy, pipeline, webpack, gradle, Docker, nginx, Tomcat'
+            )
         },
         {
             id: 'development-environment',
