@@ -35,7 +35,7 @@
     ]
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "~2.9.1",
+    "@auth0/auth0-spa-js": "~2.17.0",
     "@azure/msal-browser": "~4.26.2",
     "@blueprintjs/core": "^6.3.2",
     "@blueprintjs/datetime": "^6.0.6",
@@ -109,7 +109,7 @@
     "ag-grid-community": "34.x",
     "ag-grid-react": "34.x",
     "csstype": "3.x",
-    "eslint": "9.x",
+    "eslint": "10.x",
     "eslint-config-prettier": "10.x",
     "eslint-plugin-tsdoc": "0.x",
     "husky": "9.x",
@@ -118,10 +118,10 @@
     "prettier": "3.x",
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
-    "stylelint": "16.x",
-    "stylelint-config-standard-scss": "16.x",
+    "stylelint": "17.x",
+    "stylelint-config-standard-scss": "17.x",
     "type-fest": "4.x",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.3"
   },
   "resolutions": {
     "@types/react": "18.x",

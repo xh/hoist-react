@@ -82,6 +82,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.9 → 2.17`
 * react-grid-layout `2.1 → 2.2.2`
 * react-window `2.2` (new — windowed rendering for `Picker` virtual option lists)
 * qs `6.14.0 → 6.15.0`
