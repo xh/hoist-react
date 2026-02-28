@@ -400,9 +400,13 @@ export class DashContainerModel
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
-        const newState = convertGLToState(goldenLayout, this);
-        if (!isEqual(this.state, newState)) {
-            runInAction(() => (this.state = newState));
+        try {
+            const newState = convertGLToState(goldenLayout, this);
+            if (!isEqual(this.state, newState)) {
+                runInAction(() => (this.state = newState));
+            }
+        } catch (e) {
+            this.logWarn('Failed to convert GL to state', e);
         }
     }
 
