@@ -1,6 +1,10 @@
 # Changelog
 
-## 83.0.0-SNAPSHOT - unreleased
+## 82.0.1 - 2026-02-28
+
+### 🐞 Bug Fixes
+
+* Fixed a CSS issue causing desktop submenus to clip.
 
 ### ⚙️ Technical
 
