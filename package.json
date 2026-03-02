@@ -19,6 +19,7 @@
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs",
+    "prepack": "tsc --build",
     "prepare": "husky"
   },
   "sideEffects": [

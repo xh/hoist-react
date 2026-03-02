@@ -1,5 +1,11 @@
 # Changelog
 
+## 82.0.2 - 2026-03-02
+
+### 🐞 Bug Fixes
+
+* Fixed TypeScript compilation errors caused by missing `.d.ts` declaration files in published build.
+
 ## 82.0.1 - 2026-02-28
 
 ### 🐞 Bug Fixes
