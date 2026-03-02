@@ -410,10 +410,9 @@ const favoriteMenuItem = hoistCmp.factory<GroupingChooserLocalModel>({
         return menuItem({
             text: label,
             className: 'xh-grouping-chooser__favorites__favorite',
-            onClick: e => {
-                parentModel.setValue(value);
-                model.closeEditor();
-                e.stopPropagation();
+            onClick: () => {
+                model.setPendingValue(value);
+                model.commitPendingValueAndClose();
             },
             labelElement: button({
                 icon: Icon.delete(),
