@@ -1,5 +1,12 @@
 # Changelog
 
+## 83.0.0-SNAPSHOT - unreleased
+
+### 🐞 Bug Fixes
+
+* Fixed bug where `DashCanvasModel.state` returned stale data when persisted state was restored
+  during construction.
+
 ## 82.0.2 - 2026-03-02
 
 ### 🐞 Bug Fixes

@@ -269,7 +269,8 @@ export class DashCanvasModel
 
         this.addReaction({
             track: () => this.viewState,
-            run: () => (this.state = this.buildState())
+            run: () => (this.state = this.buildState()),
+            fireImmediately: true
         });
 
         // Used to make the height of RGL available to the gridBackground component
