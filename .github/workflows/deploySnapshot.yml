@@ -74,3 +74,10 @@ jobs:
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           run: npm publish --tag next
+
+        - name: Trigger Toolbox snapshot build
+          env:
+              GH_TOKEN: ${{ secrets.TOOLBOX_DISPATCH_TOKEN }}
+          run: |
+              gh api repos/xh/toolbox/dispatches \
+                  -f event_type=hoist-react-snapshot
