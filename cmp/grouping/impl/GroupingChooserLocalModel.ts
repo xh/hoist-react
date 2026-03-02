@@ -102,6 +102,12 @@ export class GroupingChooserLocalModel extends HoistModel {
     //-------------------------
     // Value handling
     //-------------------------
+
+    @action
+    setPendingValue(value: string[]) {
+        this.pendingValue = value;
+    }
+
     @action
     addPendingDim(dimName: string) {
         if (!dimName) return;
