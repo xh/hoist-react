@@ -1,6 +1,6 @@
 # Changelog
 
-## 83.0.0-SNAPSHOT - unreleased
+## 82.0.3 - 2026-03-02
 
 ### 🐞 Bug Fixes
 
