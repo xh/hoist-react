@@ -1,12 +1,11 @@
 # Changelog
 
-## 82.1.0 - 2026-03-03
+## 82.1.0 - unreleased
 
 ### 🎁 New Features
 
-* Added publish controls to the Admin Metrics tab. A "Publish" checkbox column allows toggling
-  export state per metric, with bulk Publish/Unpublish actions available via toolbar buttons and
-  context menu. Changes are audit-tracked.
+* Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
+  feature in hoist-core 36.4.
 
 ## 82.0.3 - 2026-03-02
 
