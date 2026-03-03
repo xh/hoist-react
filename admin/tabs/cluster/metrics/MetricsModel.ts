@@ -4,12 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {AppModel} from '@xh/hoist/admin/AppModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
+import * as Col from '@xh/hoist/cmp/grid/columns';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {RecordActionSpec} from '@xh/hoist/data';
+import {CellClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {numberRenderer} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -60,13 +65,27 @@ export class MetricsModel extends BaseAdminTabModel {
                     {name: 'baseUnit', type: 'string', displayName: 'Unit'},
                     {name: 'type', type: 'string', isDimension: true},
                     {name: 'source', type: 'string', isDimension: true},
-                    {name: 'count', type: 'number'}
+                    {name: 'count', type: 'number'},
+                    {name: 'published', type: 'bool'}
                 ]
             },
             sortBy: 'name',
             selModel: 'multiple',
             colChooserModel: true,
+            contextMenu: [
+                this.publishAction,
+                this.unpublishAction,
+                '-',
+                ...GridModel.defaultContextMenu
+            ],
             columns: [
+                {
+                    field: 'published',
+                    headerName: 'Publish',
+                    ...Col.boolCheck,
+                    width: 70,
+                    onCellClicked: (e: CellClickedEvent) => this.togglePublishAsync(e)
+                },
                 {field: 'name'},
                 {field: 'source', width: 100},
                 {field: 'type', width: 120},
@@ -174,6 +193,64 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 
     //------------------
+    // Publish actions
+    //------------------
+    publishAction: RecordActionSpec = {
+        text: 'Publish',
+        icon: Icon.checkCircle(),
+        intent: 'success',
+        recordsRequired: true,
+        actionFn: ({selectedRecords}) =>
+            this.setPublishedAsync(
+                selectedRecords.map(r => r.data.name),
+                true
+            ),
+        displayFn: ({selectedRecords}) => ({
+            hidden: AppModel.readonly,
+            disabled: !selectedRecords?.some(r => !r.data.published)
+        })
+    };
+
+    unpublishAction: RecordActionSpec = {
+        text: 'Unpublish',
+        icon: Icon.disabled(),
+        intent: 'danger',
+        recordsRequired: true,
+        actionFn: ({selectedRecords}) =>
+            this.setPublishedAsync(
+                selectedRecords.map(r => r.data.name),
+                false
+            ),
+        displayFn: ({selectedRecords}) => ({
+            hidden: AppModel.readonly,
+            disabled: !selectedRecords?.some(r => r.data.published)
+        })
+    };
+
+    private async setPublishedAsync(names: string[], published: boolean) {
+        await XH.postJson({
+            url: 'metricsAdmin/setPublished',
+            body: {names, published}
+        }).track({
+            category: 'Audit',
+            message: 'Edited Metric Publishing',
+            data: {published, names}
+        });
+
+        await this.refreshAsync();
+    }
+
+    private async togglePublishAsync(e: CellClickedEvent) {
+        const {gridModel} = this,
+            clickedRecord = e.data,
+            selectedNames = gridModel.selectedRecords.map(r => r.data.name),
+            names = selectedNames.includes(clickedRecord.name)
+                ? selectedNames
+                : [clickedRecord.name];
+        await this.setPublishedAsync(names, !clickedRecord.published);
+    }
+
+    //------------------
     // Implementation
     //------------------
     private loadMasterGrid(enriched: any[]) {
@@ -182,8 +259,8 @@ export class MetricsModel extends BaseAdminTabModel {
                 ? enriched.filter(it => sourceFilter.includes(it.source))
                 : enriched;
         const masterData = Object.entries(groupBy(filtered, 'name')).map(([name, items]) => {
-            const {description, baseUnit, type, source} = items[0];
-            return {name, description, baseUnit, type, source, count: items.length};
+            const {description, baseUnit, type, source, published} = items[0];
+            return {name, description, baseUnit, type, source, count: items.length, published};
         });
         gridModel.loadData(masterData);
     }

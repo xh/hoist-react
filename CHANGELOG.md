@@ -1,5 +1,13 @@
 # Changelog
 
+## 82.1.0 - 2026-03-03
+
+### 🎁 New Features
+
+* Added publish controls to the Admin Metrics tab. A "Publish" checkbox column allows toggling
+  export state per metric, with bulk Publish/Unpublish actions available via toolbar buttons and
+  context menu. Changes are audit-tracked.
+
 ## 82.0.3 - 2026-03-02
 
 ### 🐞 Bug Fixes
