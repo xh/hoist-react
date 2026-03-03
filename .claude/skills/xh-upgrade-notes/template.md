@@ -9,7 +9,7 @@ sections as needed.
 ```markdown
 # Hoist React v{NN} Upgrade Notes
 
-> **From:** v{PRIOR}.x → v{VERSION} | **Released:** {DATE} | **Difficulty:** {DIFFICULTY}
+> **From:** v{PRIOR}.x → v{LATEST_PATCH} | **Released:** {DATE} | **Difficulty:** {DIFFICULTY}
 
 ## Overview
 
@@ -142,3 +142,10 @@ Order steps from build configuration outward to application code:
 
 This order lets developers build and test incrementally — the app should install and compile
 after the build system steps, then progressively fix source-level issues.
+
+## Target Version Convention
+
+The banner's target version (`v{LATEST_PATCH}`) should always be the **latest available patch** in
+the major release series — not the initial `.0.0` release. There is no reason to encourage
+developers to upgrade to an older patch when a newer one is available. Check `CHANGELOG.md` for the
+most recent `{NN}.x.x` entry to determine the correct target version.

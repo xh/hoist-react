@@ -1,6 +1,6 @@
 # Hoist React v80 Upgrade Notes
 
-> **From:** v79.x → v80.0.0 | **Released:** 2026-01-27 | **Difficulty:** 🟢 LOW
+> **From:** v79.x → v80.0.1 | **Released:** 2026-01-27 | **Difficulty:** 🟢 LOW
 
 ## Overview
 

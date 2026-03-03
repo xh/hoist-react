@@ -549,6 +549,39 @@ function getRawEntries(): RawEntry[] {
         // Upgrade Notes
         //--------------------------------------------------------------
         {
+            id: 'upgrade-v75',
+            title: 'v75 Upgrade Notes',
+            file: 'docs/upgrade-notes/v75-upgrade-notes.md',
+            category: 'devops',
+            description:
+                'Upgrade guide from v74.x to v75.0.1. Low difficulty — removed deprecated APIs, Cube View row data changes.',
+            keywords: splitKeywords(
+                'upgrade, migration, breaking changes, v75, v74, deprecation, ViewRowData, cube'
+            )
+        },
+        {
+            id: 'upgrade-v76',
+            title: 'v76 Upgrade Notes',
+            file: 'docs/upgrade-notes/v76-upgrade-notes.md',
+            category: 'devops',
+            description:
+                'Upgrade guide from v75.x to v76.0.0. Medium difficulty — AG Grid v31→v34, new module registration.',
+            keywords: splitKeywords(
+                'upgrade, migration, breaking changes, v76, v75, ag-grid, ag grid, module registration, groupRowRenderer'
+            )
+        },
+        {
+            id: 'upgrade-v77',
+            title: 'v77 Upgrade Notes',
+            file: 'docs/upgrade-notes/v77-upgrade-notes.md',
+            category: 'devops',
+            description:
+                'Upgrade guide from v76.x to v77.1.1. Medium difficulty — Highcharts v12, XSS protection API rename.',
+            keywords: splitKeywords(
+                'upgrade, migration, breaking changes, v77, v76, highcharts, xss, enableXssProtection'
+            )
+        },
+        {
             id: 'upgrade-v78',
             title: 'v78 Upgrade Notes',
             file: 'docs/upgrade-notes/v78-upgrade-notes.md',

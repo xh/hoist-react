@@ -59,9 +59,9 @@ Verified against both hoist-react and hoist-core changelogs.
 | 80.0 | -- | | 36.0 | | [Notes](./upgrade-notes/v80-upgrade-notes.md) |
 | 79.0 | -- | 35.0 | 35.0 | `clientAppCode` tracking, log file deletion | [Notes](./upgrade-notes/v79-upgrade-notes.md) |
 | 78.0 | -- | | 34.x | | [Notes](./upgrade-notes/v78-upgrade-notes.md) |
-| 77.x | -- | | 33.x | Highcharts v12 (client-only) | |
-| 76.0 | -- | 32.0 | 32.0 | View visibility editing, basic view state | |
-| 75.0 | -- | | 31.x | WebSockets enabled by default | |
+| 77.x | -- | | 33.x | Highcharts v12 (client-only) | [Notes](./upgrade-notes/v77-upgrade-notes.md) |
+| 76.0 | -- | 32.0 | 32.0 | View visibility editing, basic view state | [Notes](./upgrade-notes/v76-upgrade-notes.md) |
+| 75.0 | -- | | 31.x | WebSockets enabled by default | [Notes](./upgrade-notes/v75-upgrade-notes.md) |
 | 74.x | -- | | 31.x | ViewManager improvements | |
 | 73.0 | 31.0 | | 31.0 | Consolidated Admin Clients tab, TrackLog properties | |
 | 72.1 | -- | 28.1 | 28.1 | JSON Search in Admin Console | |

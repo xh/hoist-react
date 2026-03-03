@@ -482,7 +482,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Modified the `TabModel` constructor to take its owning container as a second argument.
     * Apps very rarely create `TabModels` directly, so this unlikely to require changes.
 * Moved the `Exception` class and `HoistException` type from `@xh\hoist\core` to a new lower-level
-  package `@xh\hoist\exception` to reduce the risk of circule dependencies within Hoist.
+  package `@xh\hoist\exception` to reduce the risk of circular dependencies within Hoist.
     * Apps rarely interact with these directly, so also unlikely to require changes.
 
 ### 🎁 New Features

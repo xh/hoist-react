@@ -145,6 +145,19 @@ Each upgrade step must include:
 
 Add a row to the table in `docs/README.md` for the new version.
 
+### Update the Version Compatibility Guide
+
+Add or update the upgrade notes link in the corresponding row of the compatibility matrix in
+`docs/version-compatibility.md`. Find the row for the target version and add a link in the
+Upgrade column:
+
+```markdown
+| {NN}.x | -- | | {CORE}.x | Notes | [Notes](./upgrade-notes/v{NN}-upgrade-notes.md) |
+```
+
+If the row already has an empty Upgrade column, add the link. If the row doesn't exist yet,
+this is a new release — add it following the existing pattern.
+
 ### Update the MCP Doc Registry
 
 Add a `RawEntry` to the `getRawEntries()` function in `mcp/data/doc-registry.ts` so the new

@@ -163,6 +163,9 @@ breaking changes, before/after code examples, and verification checklists.
 | [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
 | [v79](./upgrade-notes/v79-upgrade-notes.md) | 2026-01-05 | 🟠 MEDIUM | Blueprint 5→6, `moduleResolution: "bundler"`, `loadModel` → `loadObserver` |
 | [v78](./upgrade-notes/v78-upgrade-notes.md) | 2025-11-21 | 🎉 TRIVIAL | `GridModel.setColumnState` behavior change |
+| [v77](./upgrade-notes/v77-upgrade-notes.md) | 2025-10-29 | 🟠 MEDIUM | Highcharts v11→v12, `disableXssProtection` → `enableXssProtection`, AG Grid context menu markup |
+| [v76](./upgrade-notes/v76-upgrade-notes.md) | 2025-09-26 | 🟠 MEDIUM | AG Grid v31→v34, new package names and module registration, `groupRowRenderer` value change |
+| [v75](./upgrade-notes/v75-upgrade-notes.md) | 2025-08-11 | 🟢 LOW | Removed deprecated APIs, Cube View row data `_meta`/`buckets` removal |
 
 ## Additional Resources
 

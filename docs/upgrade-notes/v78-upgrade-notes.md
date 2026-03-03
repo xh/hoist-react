@@ -1,6 +1,6 @@
 # Hoist React v78 Upgrade Notes
 
-> **From:** v77.x → v78.0.0 | **Released:** 2025-11-21 | **Difficulty:** 🎉 TRIVIAL
+> **From:** v77.x → v78.1.4 | **Released:** 2025-11-21 | **Difficulty:** 🎉 TRIVIAL
 
 ## Overview
 
