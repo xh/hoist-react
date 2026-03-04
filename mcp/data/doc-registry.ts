@@ -345,7 +345,7 @@ function getRawEntries(): RawEntry[] {
             packageName: 'icon',
             description: 'Factory-based icon system wrapping FontAwesome Pro.',
             keywords: splitKeywords(
-                'Icon, IconProps, intent coloring, size variants, asHtml, fileIcon'
+                'Icon, IconProps, intent coloring, size variants, asHtml, fileIcon, spinner, Spinner, SpinnerProps, LoadingIndicator'
             )
         },
         {

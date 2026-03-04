@@ -51,6 +51,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md)                                                                                     |
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md)                                                                       |
 | Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md)                                                                                       |
+| Customize the spinner icon or animation | [`/icon/`](../icon/README.md#spinner-component)                                                                     |
 | Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md)                                       |
 | Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md)                                                                             |
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
@@ -118,7 +119,7 @@ Cross-cutting documentation that spans multiple packages:
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon |
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |

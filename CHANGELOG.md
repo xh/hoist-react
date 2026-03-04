@@ -1,5 +1,28 @@
 # Changelog
 
+## 83.0.0-SNAPSHOT
+
+### 🎁 New Features
+
+* Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
+  icon library. All previously supported icons remain and no app changes should be required.
+* Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
+  themeable, and consistent with the rest of the icon system. The icon, weight, and animation can be
+  configured globally via static defaults on `Spinner` or per-instance via props. A `usePng` flag
+  is available to preserve the original PNG appearance if desired.
+* Added `Icon.circleNotch()`, `Icon.spinnerScale()`, and `Icon.spinnerThird()` factory methods with
+  all four weight variants pre-registered.
+
+### ⚙️ Technical
+
+* Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
+  `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+
+### 📚 Libraries
+
+* @fortawesome/* `6.0 → 7.2`
+* @fortawesome/react-fontawesome `0.2 → 3.2`
+
 ## 82.0.3 - 2026-03-02
 
 ### 🐞 Bug Fixes
@@ -12,7 +35,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed TypeScript compilation errors caused by missing `.d.ts` declaration files in published build.
+* Fixed TypeScript compilation errors caused by missing `.d.ts` declarations in published build.
 
 ## 82.0.1 - 2026-02-28
 
