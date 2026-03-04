@@ -278,6 +278,9 @@ export const Icon = {
     circle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'circle'});
     },
+    circleNotch(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'circle-notch'});
+    },
     clipboard(p?: IconProps) {
         return Icon.icon({...p, iconName: 'clipboard'});
     },
@@ -659,6 +662,12 @@ export const Icon = {
     },
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
+    },
+    spinnerScale(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-scale'});
+    },
+    spinnerThird(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-third'});
     },
     square(p?: IconProps) {
         return Icon.icon({...p, iconName: 'square'});

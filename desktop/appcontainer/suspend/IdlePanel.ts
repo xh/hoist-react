@@ -4,14 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {div, filler, img, p, viewport} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {viewport, div, img, p, filler} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-
 import './IdlePanel.scss';
-// @ts-ignore
 import idleImage from './IdlePanelImage.png';
 
 /**
