@@ -102,6 +102,24 @@ before init completes.
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
 (keyword search across the corpus, symbol lookup).
 
+**Inheritance walking for class members.** `hoist-get-members` walks the full class inheritance
+chain rather than showing only directly declared members. This is critical for hoist-react where
+key framework patterns use deep hierarchies -- `FieldModel` delegates everything to
+`BaseFieldModel`, and `DashContainerModel` inherits essential members from `DashModel`. The walker
+resolves base classes through the symbol index (not the type system), so it stops at classes outside
+hoist-react's index. Members are deduplicated by name, with subclass overrides winning. Inherited
+members are tagged with their declaring class in the formatted output. The same `_`-prefix and
+`private` filtering applied by the member search index is also applied here, so `getMembers()` and
+`searchMembers()` show a consistent public API view.
+
+**Promise extension indexing via AST navigation.** Hoist's Promise prototype extensions are declared
+in a `declare global { interface Promise<T> { ... } }` block, which standard ts-morph APIs like
+`sourceFile.getFunction()` and `sourceFile.getInterface()` cannot reach. The indexer explicitly
+navigates the AST: `ModuleDeclaration("global") → ModuleBlock → InterfaceDeclaration("Promise") →
+MethodSignature`. Because these methods can't be extracted on-demand by the standard
+`extractSymbolDetail` path, their `SymbolDetail` objects are pre-computed at index time and stored
+in a separate lookup map.
+
 **Shared formatters.** The `formatters/` directory contains pure formatting functions used by both
 MCP tools and CLI commands. This ensures identical output regardless of interface, and keeps the
 MCP tool handlers and CLI subcommands thin.
@@ -281,6 +299,13 @@ StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField, View, Fo
 BaseFieldModel, FieldModel, TabContainerModel. Only public members are indexed (private members and
 those prefixed with `_` are excluded).
 
+**Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
+`catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
+`catchDefaultWhen` (declared in `promise/Promise.ts`). These are indexed both as standalone symbol
+entries (searchable by name) and as member entries on `Promise` (shown in member search results with
+context). `hoist-get-symbol` returns their full signature and JSDoc. The internal helper
+`throwIfFailsSelector` is excluded.
+
 **Note:** The TypeScript index is built asynchronously after server startup (~2-3s). It is typically
 ready before the first tool call. Subsequent calls are fast in-memory lookups.
 
@@ -289,14 +314,47 @@ ready before the first tool call. Subsequent calls are fast in-memory lookups.
 Get detailed type information for a specific symbol: full signature, JSDoc, inheritance, decorators,
 and source location. Use `hoist-search-symbols` first to find the exact name.
 
+For classes that use the config-object constructor pattern (e.g. `GridModel`, `FormModel`, `Store`),
+the output includes a `Constructor:` line showing the config type name. This gives agents a natural
+follow-up: call `hoist-get-members` on the config interface to see available options.
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Exact symbol name (e.g. `"GridModel"`) |
 | `filePath` | string | No | Source file path to disambiguate duplicate names |
 
+**Example output:**
+```
+# GridModel (class)
+Package: cmp/grid
+File: cmp/grid/GridModel.ts
+Exported: yes
+Extends: HoistModel
+Constructor: new GridModel(config: GridConfig)
+
+## Signature
+export class GridModel extends HoistModel
+
+## Documentation
+Core Model for a Grid, specifying the grid's data store, column definitions...
+```
+
+**Constructor detection logic:** The tool checks if the class has a constructor with exactly one
+parameter that has a named type annotation. Classes using destructured parameters (e.g.
+`TabContainerModel`) or multiple parameters (e.g. `Column(spec, gridModel)`) do not show a
+constructor line.
+
 #### `hoist-get-members`
 
 List all properties and methods of a class or interface with types, decorators, and JSDoc.
+
+For classes, walks the full inheritance chain and includes inherited members tagged with their
+declaring class. This is essential for framework classes with deep hierarchies -- e.g.
+`DashContainerModel` inherits key members like `viewSpecs` and `viewModels` from `DashModel`, and
+`FieldModel` inherits all of its members from `BaseFieldModel`.
+
+Members prefixed with `_` and those with the `private` keyword are excluded from the output,
+matching the member-index search behavior.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -305,18 +363,32 @@ List all properties and methods of a class or interface with types, decorators, 
 
 **Example output (abbreviated):**
 ```
-# GridModel Members
+# DashContainerModel Members
 
-## Properties (42)
-- @observable columns: ColumnOrGroup[]
-    Columns displayed in the grid.
-- @managed store: Store
-    Data source for the grid.
+### Properties (10)
+- @bindable showMenuButton: boolean
+- renderMode: RenderMode
 
-## Methods (18)
-- loadData(rawData: StoreRecord[]): void
-    Load data into the grid's store.
+### Methods (11)
+- @action restoreDefaultsAsync(): Promise<void>
+- addView(specId: string, container: any, index: number): void
+
+## Inherited from DashModel (12)
+
+### Properties (8)
+- viewSpecs: VSPEC[]  (inherited from DashModel)
+- @managed @ref viewModels: VMODEL[]  (inherited from DashModel)
+- @bindable layoutLocked: boolean  (inherited from DashModel)
 ```
+
+**Inheritance walking logic:** The tool resolves the `extends` clause at each level, looks up the
+base class in the symbol index, and extracts its members. Deduplication ensures that if a subclass
+overrides a parent member, only the subclass version appears. The walk stops when it reaches a class
+not in the index (e.g. a third-party base class) or a class with no `extends` clause.
+
+**Interface members:** For interfaces, members are extracted directly without inheritance walking.
+Interface `extends` clauses are shown in `hoist-get-symbol` output but the members tool does not
+currently merge members from extended interfaces.
 
 ## MCP Resources
 

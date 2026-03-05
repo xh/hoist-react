@@ -28,15 +28,20 @@ export function formatMember(member: MemberInfo): string {
     const lines: string[] = [];
     const decoratorPrefix =
         member.decorators.length > 0 ? member.decorators.map(d => `@${d}`).join(' ') + ' ' : '';
+    const inheritedSuffix = member.inheritedFrom
+        ? `  (inherited from ${member.inheritedFrom})`
+        : '';
 
     if (member.kind === 'method') {
         const params = (member.parameters ?? [])
             .map(p => `${p.name}: ${truncateType(p.type)}`)
             .join(', ');
         const ret = member.returnType ? truncateType(member.returnType) : 'void';
-        lines.push(`- ${decoratorPrefix}${member.name}(${params}): ${ret}`);
+        lines.push(`- ${decoratorPrefix}${member.name}(${params}): ${ret}${inheritedSuffix}`);
     } else {
-        lines.push(`- ${decoratorPrefix}${member.name}: ${truncateType(member.type)}`);
+        lines.push(
+            `- ${decoratorPrefix}${member.name}: ${truncateType(member.type)}${inheritedSuffix}`
+        );
     }
 
     if (member.jsDoc) {
@@ -116,6 +121,9 @@ export function formatSymbolDetail(detail: SymbolDetail | null, name: string): s
     if (detail.decorators && detail.decorators.length > 0) {
         lines.push(`Decorators: ${detail.decorators.map(d => `@${d}`).join(', ')}`);
     }
+    if (detail.constructorType) {
+        lines.push(`Constructor: new ${detail.name}(config: ${detail.constructorType})`);
+    }
 
     lines.push('');
     lines.push('## Signature');
@@ -141,6 +149,40 @@ export function formatMembers(
 
     const {members} = result;
 
+    // Separate own members from inherited
+    const ownMembers = members.filter(m => !m.inheritedFrom);
+    const inheritedMembers = members.filter(m => m.inheritedFrom);
+
+    const lines: string[] = [`# ${name} Members\n`];
+
+    // Format own members by category
+    formatMembersByCategory(ownMembers, lines);
+
+    // Format inherited members grouped by declaring class
+    if (inheritedMembers.length > 0) {
+        const bySource = new Map<string, MemberInfo[]>();
+        for (const m of inheritedMembers) {
+            const source = m.inheritedFrom!;
+            const group = bySource.get(source);
+            if (group) group.push(m);
+            else bySource.set(source, [m]);
+        }
+
+        for (const [source, sourceMembers] of bySource) {
+            lines.push(`## Inherited from ${source} (${sourceMembers.length})\n`);
+            formatMembersByCategory(sourceMembers, lines);
+        }
+    }
+
+    if (members.length === 0) {
+        lines.push('No members found.');
+    }
+
+    return lines.join('\n');
+}
+
+/** Format a list of members into categorized sections (properties, methods, static). */
+function formatMembersByCategory(members: MemberInfo[], lines: string[]): void {
     const instanceProps = members.filter(
         m => !m.isStatic && (m.kind === 'property' || m.kind === 'accessor')
     );
@@ -150,10 +192,8 @@ export function formatMembers(
     );
     const staticMethods = members.filter(m => m.isStatic && m.kind === 'method');
 
-    const lines: string[] = [`# ${name} Members\n`];
-
     if (instanceProps.length > 0) {
-        lines.push(`## Properties (${instanceProps.length})`);
+        lines.push(`### Properties (${instanceProps.length})`);
         for (const prop of instanceProps) {
             lines.push(formatMember(prop));
         }
@@ -161,7 +201,7 @@ export function formatMembers(
     }
 
     if (instanceMethods.length > 0) {
-        lines.push(`## Methods (${instanceMethods.length})`);
+        lines.push(`### Methods (${instanceMethods.length})`);
         for (const method of instanceMethods) {
             lines.push(formatMember(method));
         }
@@ -169,7 +209,7 @@ export function formatMembers(
     }
 
     if (staticProps.length > 0) {
-        lines.push(`## Static Properties (${staticProps.length})`);
+        lines.push(`### Static Properties (${staticProps.length})`);
         for (const prop of staticProps) {
             lines.push(formatMember(prop));
         }
@@ -177,16 +217,10 @@ export function formatMembers(
     }
 
     if (staticMethods.length > 0) {
-        lines.push(`## Static Methods (${staticMethods.length})`);
+        lines.push(`### Static Methods (${staticMethods.length})`);
         for (const method of staticMethods) {
             lines.push(formatMember(method));
         }
         lines.push('');
     }
-
-    if (members.length === 0) {
-        lines.push('No members found.');
-    }
-
-    return lines.join('\n');
 }

@@ -49,6 +49,7 @@ export interface SymbolDetail {
     extends?: string;
     implements?: string[];
     decorators?: string[];
+    constructorType?: string;
 }
 
 /** A member (property or method) of a class or interface. */
@@ -62,6 +63,7 @@ export interface MemberInfo {
     jsDoc: string;
     parameters?: Array<{name: string; type: string}>;
     returnType?: string;
+    inheritedFrom?: string;
 }
 
 /** Lightweight index entry for a class member, enabling search by member name. */
@@ -85,6 +87,8 @@ export interface MemberIndexEntry {
 let project: Project | null = null;
 let symbolIndex: Map<string, SymbolEntry[]> | null = null;
 let memberIndex: Map<string, MemberIndexEntry[]> | null = null;
+/** Pre-computed detail for Promise prototype extensions (not extractable via standard AST lookup). */
+let promiseExtensionDetails: Map<string, SymbolDetail> | null = null;
 
 //------------------------------------------------------------------
 // Package derivation
@@ -405,6 +409,12 @@ function buildSymbolIndex(proj: Project): {
         }
     }
 
+    // Index Promise prototype extensions from promise/Promise.ts
+    const promiseFile = proj.getSourceFile(sf => sf.getFilePath().endsWith('/promise/Promise.ts'));
+    if (promiseFile) {
+        indexPromiseExtensions(promiseFile, index, mIndex, resolveRepoRoot());
+    }
+
     const kindSummary = Object.entries(counts.byKind)
         .map(([kind, count]) => `${kind}: ${count}`)
         .join(', ');
@@ -417,6 +427,95 @@ function buildSymbolIndex(proj: Project): {
     );
 
     return {symbols: index, members: mIndex};
+}
+
+/**
+ * Index Promise prototype extension methods declared in promise/Promise.ts.
+ *
+ * These are declared via `declare global { interface Promise<T> { ... } }` and
+ * implemented on `Promise.prototype`. They're a core part of Hoist's async API
+ * but don't appear as standalone symbols or class members without special handling.
+ *
+ * Adds each method to the member index (searchable as members of "Promise") and
+ * as standalone function entries in the symbol index (searchable by name).
+ */
+function indexPromiseExtensions(
+    sourceFile: SourceFile,
+    symbolIdx: Map<string, SymbolEntry[]>,
+    memberIdx: Map<string, MemberIndexEntry[]>,
+    repoRoot: string
+): void {
+    const filePath = sourceFile.getFilePath();
+    const pkg = derivePackage(filePath, repoRoot);
+    promiseExtensionDetails = new Map();
+
+    // Find the `declare global { interface Promise<T> { ... } }` block
+    for (const globalDecl of sourceFile.getChildrenOfKind(SyntaxKind.ModuleDeclaration)) {
+        if (globalDecl.getName() !== 'global') continue;
+
+        const body = globalDecl.getBody();
+        if (!body || !Node.isModuleBlock(body)) continue;
+
+        for (const iface of body.getChildrenOfKind(SyntaxKind.InterfaceDeclaration)) {
+            if (iface.getName() !== 'Promise') continue;
+
+            for (const method of iface.getMethods()) {
+                const name = method.getName();
+                if (!name || name === 'throwIfFailsSelector') continue;
+
+                const jsDoc = extractJsDoc(method);
+                const params = method.getParameters().map(p => ({
+                    name: p.getName(),
+                    type: safeGetTypeText(p, p)
+                }));
+                let returnType: string;
+                try {
+                    returnType = method.getReturnType().getText(method);
+                } catch {
+                    returnType = 'Promise<T>';
+                }
+
+                // Add to member index as a Promise method
+                const paramStr = params.map(p => `${p.name}: ${p.type}`).join(', ');
+                addToMemberIndex(memberIdx, {
+                    name,
+                    memberKind: 'method',
+                    ownerName: 'Promise',
+                    ownerDescription: 'Promise prototype extension (Hoist async utility)',
+                    filePath,
+                    sourcePackage: pkg,
+                    isStatic: false,
+                    type: `(${paramStr}) => ${returnType}`,
+                    jsDoc: jsDoc.split('\n')[0],
+                    decorators: []
+                });
+
+                // Add as a searchable symbol entry
+                addToIndex(symbolIdx, {
+                    name,
+                    kind: 'function',
+                    filePath,
+                    isExported: true,
+                    sourcePackage: pkg
+                });
+
+                // Pre-compute detail for `getSymbolDetail()` since these can't be
+                // found via standard `sourceFile.getFunction()` lookup.
+                const sig = `${name}(${paramStr}): ${returnType}`;
+                promiseExtensionDetails.set(name, {
+                    name,
+                    kind: 'function',
+                    filePath,
+                    sourcePackage: pkg,
+                    isExported: true,
+                    signature: sig,
+                    jsDoc
+                });
+            }
+        }
+    }
+
+    log.info('Indexed Promise prototype extensions from promise/Promise.ts');
 }
 
 //------------------------------------------------------------------
@@ -585,6 +684,10 @@ export async function getSymbolDetail(
 /**
  * Get members (properties, methods, accessors) of a class or interface.
  *
+ * For classes, walks the inheritance chain and includes inherited members tagged
+ * with their declaring class. Filters out `_`-prefixed and `private` members to
+ * match the member index behavior.
+ *
  * Returns null for symbol kinds other than class or interface.
  */
 export async function getMembers(
@@ -601,15 +704,17 @@ export async function getMembers(
         const detail = extractSymbolDetail(entry);
         if (!detail) return null;
 
-        const sourceFile = project!.getSourceFile(entry.filePath);
-        if (!sourceFile) return null;
-
         let members: MemberInfo[];
         if (entry.kind === 'class') {
-            members = extractClassMembers(sourceFile, name);
+            members = extractClassMembersWithInheritance(entry.filePath, name);
         } else {
+            const sourceFile = project!.getSourceFile(entry.filePath);
+            if (!sourceFile) return null;
             members = extractInterfaceMembers(sourceFile, name);
         }
+
+        // Filter out _-prefixed and private members (match member index behavior)
+        members = members.filter(m => !m.name.startsWith('_'));
 
         return {symbol: detail, members};
     } catch (e) {
@@ -621,6 +726,61 @@ export async function getMembers(
 //------------------------------------------------------------------
 // Internal helpers for detail extraction
 //------------------------------------------------------------------
+
+/**
+ * Walk the inheritance chain of a class and collect members from each level.
+ * Members from the target class itself have no `inheritedFrom` tag; members
+ * from ancestor classes are tagged with the declaring class name.
+ *
+ * Deduplicates by member name — if a subclass overrides a parent member, only
+ * the subclass version is included.
+ */
+function extractClassMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
+    const allMembers: MemberInfo[] = [];
+    const seen = new Set<string>();
+
+    let currentFilePath: string | undefined = filePath;
+    let currentName: string | undefined = name;
+    let isFirst = true;
+
+    while (currentFilePath && currentName) {
+        const sourceFile = project!.getSourceFile(currentFilePath);
+        if (!sourceFile) break;
+
+        const cls = sourceFile.getClass(currentName);
+        if (!cls) break;
+
+        const members = extractClassMembers(sourceFile, currentName);
+        const inheritedFrom = isFirst ? undefined : currentName;
+
+        for (const m of members) {
+            // Skip private members at this level
+            if (isPrivateMember(m, cls)) continue;
+
+            // Deduplicate: subclass overrides win
+            const key = `${m.isStatic ? 'static:' : ''}${m.name}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+
+            allMembers.push({...m, inheritedFrom});
+        }
+
+        // Walk up to the parent class
+        isFirst = false;
+        const extendsExpr = cls.getExtends();
+        if (!extendsExpr) break;
+
+        // Resolve the base class name (strip type parameters)
+        const baseClassName = extendsExpr.getExpression().getText();
+        const baseEntry = findIndexEntry(baseClassName);
+        if (!baseEntry || baseEntry.kind !== 'class') break;
+
+        currentFilePath = baseEntry.filePath;
+        currentName = baseEntry.name;
+    }
+
+    return allMembers;
+}
 
 /**
  * Find a symbol in the index by exact name.
@@ -650,6 +810,11 @@ function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
  * Extract detailed information from a symbol's AST node.
  */
 function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
+    // Promise extensions are pre-computed since they live inside `declare global`
+    // and can't be found by standard sourceFile.getFunction() lookup.
+    const precomputed = promiseExtensionDetails?.get(entry.name);
+    if (precomputed && entry.filePath === precomputed.filePath) return precomputed;
+
     const sourceFile = project!.getSourceFile(entry.filePath);
     if (!sourceFile) return null;
 
@@ -724,13 +889,25 @@ function extractClassDetail(
     const implementsClauses = cls.getImplements().map(i => i.getText());
     const decorators = cls.getDecorators().map(d => d.getName());
 
+    // Detect constructor config type (e.g. `constructor(config: GridConfig)`)
+    let constructorType: string | undefined;
+    const ctors = cls.getConstructors();
+    if (ctors.length > 0) {
+        const params = ctors[0].getParameters();
+        if (params.length === 1) {
+            const paramType = params[0].getTypeNode()?.getText();
+            if (paramType) constructorType = paramType;
+        }
+    }
+
     return {
         ...base,
         signature: extractClassSignature(cls),
         jsDoc: extractJsDoc(cls),
         ...(extendsClause ? {extends: extendsClause} : {}),
         ...(implementsClauses.length > 0 ? {implements: implementsClauses} : {}),
-        ...(decorators.length > 0 ? {decorators} : {})
+        ...(decorators.length > 0 ? {decorators} : {}),
+        ...(constructorType ? {constructorType} : {})
     };
 }
 
