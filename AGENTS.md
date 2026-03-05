@@ -27,6 +27,45 @@ npx tsc --noEmit
 This is a library package - it has no test suite or dev server. It's meant to be used as a
 dependency in Hoist applications (e.g., Toolbox).
 
+## Hoist Developer Tools and Documentation
+
+Hoist-react includes dedicated developer tools that provide structured access to all framework
+documentation and TypeScript type information. **Before modifying or extending hoist-react code,
+use these tools** to understand existing architecture, configuration patterns, and common pitfalls.
+The package READMEs and concept docs are the authoritative reference for how Hoist works -- skipping
+them risks producing code that conflicts with established patterns or misses built-in functionality.
+
+Two interfaces are available. Both share the same underlying registries and produce identical output:
+
+**MCP Server (hoist-react)** -- When working in the hoist-react repository, an MCP server is
+configured via `.mcp.json` and is very likely already available. Use the `hoist-search-docs`,
+`hoist-list-docs`, `hoist-search-symbols`, `hoist-get-symbol`, and `hoist-get-members` tools, plus
+`hoist://docs/{id}` resources for direct document access.
+
+**CLI Tools** -- For environments without MCP support, or when you prefer shell commands:
+
+```bash
+# Documentation
+npx hoist-docs search "grid sorting"         # Search all docs by keyword
+npx hoist-docs read cmp/grid                 # Read a specific doc by ID
+npx hoist-docs list                          # List all available docs
+npx hoist-docs conventions                   # Print coding conventions
+npx hoist-docs index                         # Print the documentation catalog
+
+# TypeScript symbols and types
+npx hoist-ts search GridModel                # Search for symbols and class members
+npx hoist-ts symbol GridModel                # Get detailed type info for a symbol
+npx hoist-ts members GridModel               # List all members of a class/interface
+```
+
+Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
+
+**Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
+to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
+goal, then read the relevant README(s). Supplement with TypeScript symbol lookups for precise API
+details. The docs provide architectural context and common pitfalls; the TypeScript tools provide
+exact signatures, decorators, and member listings.
+
 ## GitHub MCP Server
 
 This repository includes a GitHub MCP server configuration (`.mcp.json`) that provides structured
@@ -64,16 +103,6 @@ See [`/core/README.md`](./core/README.md) for detailed coverage of all three art
 
 See [`/core/README.md`](./core/README.md) for the full XH API and
 [`/svc/README.md`](./svc/README.md) for built-in service details.
-
-### Hoist Documentation
-
-**Before modifying or extending hoist-react code, consult the documentation index at
-[`/docs/README.md`](./docs/README.md).** It catalogs all package READMEs and cross-cutting concept
-docs with descriptions and key topic keywords. Use the "Quick Reference by Task" table to find the
-right doc for your goal, then read the relevant README(s) to understand existing architecture,
-configuration patterns, and common pitfalls. These docs are the authoritative reference for how
-Hoist packages work and how they are intended to be used — skipping them risks producing code
-that conflicts with established patterns or misses built-in functionality.
 
 ### Element Factories vs JSX
 
