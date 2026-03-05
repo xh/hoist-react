@@ -29,11 +29,12 @@ dependency in Hoist applications (e.g., Toolbox).
 
 ## Hoist Developer Tools and Documentation
 
-Hoist-react includes dedicated developer tools that provide structured access to all framework
-documentation and TypeScript type information. **Before modifying or extending hoist-react code,
-use these tools** to understand existing architecture, configuration patterns, and common pitfalls.
-The package READMEs and concept docs are the authoritative reference for how Hoist works -- skipping
-them risks producing code that conflicts with established patterns or misses built-in functionality.
+**IMPORTANT: Do not guess at hoist-react APIs, component props, or framework patterns.** Hoist-react
+ships dedicated tools that provide structured access to all framework documentation and TypeScript
+type information. **You MUST use these tools before modifying or extending hoist-react code** to
+understand existing architecture, configuration patterns, and common pitfalls. The package READMEs
+and concept docs are the authoritative reference for how Hoist works -- skipping them risks producing
+code that conflicts with established patterns or misses built-in functionality.
 
 Two interfaces are available. Both share the same underlying registries and produce identical output:
 
@@ -42,7 +43,8 @@ configured via `.mcp.json` and is very likely already available. Use the `hoist-
 `hoist-list-docs`, `hoist-search-symbols`, `hoist-get-symbol`, and `hoist-get-members` tools, plus
 `hoist://docs/{id}` resources for direct document access.
 
-**CLI Tools** -- For environments without MCP support, or when you prefer shell commands:
+**CLI Tools** -- For environments without MCP support, or when you prefer shell commands. These are
+real `bin` entries in the hoist-react `package.json` — invoke them exactly as shown with `npx`:
 
 ```bash
 # Documentation
@@ -58,6 +60,8 @@ npx hoist-ts symbol GridModel                # Get detailed type info for a symb
 npx hoist-ts members GridModel               # List all members of a class/interface
 ```
 
+**Use `search` for discovery** — it does case-insensitive fuzzy matching across both symbol names
+and class members. Use `symbol` and `members` only when you already know the exact PascalCase name.
 Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
