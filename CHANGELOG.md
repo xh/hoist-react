@@ -12,6 +12,9 @@
 * Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks class inheritance chains,
   shows constructor config types, indexes Promise prototype extensions, and filters `_`-prefixed
   internal members.
+* Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
+  `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
+  indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
 
 ## 82.0.3 - 2026-03-02
 

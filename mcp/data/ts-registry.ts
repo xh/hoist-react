@@ -392,19 +392,41 @@ function buildSymbolIndex(proj: Project): {
         for (const stmt of sourceFile.getVariableStatements()) {
             if (!stmt.isExported()) continue;
             for (const decl of stmt.getDeclarations()) {
-                const name = decl.getName();
-                if (!name) continue;
-                const entry: SymbolEntry = {
-                    name,
-                    kind: 'const',
-                    filePath,
-                    isExported: true,
-                    sourcePackage: pkg
-                };
-                addToIndex(index, entry);
-                counts.total++;
-                counts.exported++;
-                counts.byKind['const'] = (counts.byKind['const'] || 0) + 1;
+                // For destructured exports (e.g. `export const [Foo, foo] = ...`),
+                // index each binding element as a separate symbol so both the
+                // PascalCase component and camelCase factory are individually
+                // searchable and resolvable via exact name lookup.
+                const nameNode = decl.getNameNode();
+                const names: string[] = [];
+                if (nameNode.isKind(SyntaxKind.ArrayBindingPattern)) {
+                    for (const el of nameNode.getElements()) {
+                        if (Node.isOmittedExpression(el)) continue;
+                        const n = el.getName();
+                        if (n) names.push(n);
+                    }
+                } else if (nameNode.isKind(SyntaxKind.ObjectBindingPattern)) {
+                    for (const el of nameNode.getElements()) {
+                        const n = el.getName();
+                        if (n) names.push(n);
+                    }
+                } else {
+                    const n = decl.getName();
+                    if (n) names.push(n);
+                }
+
+                for (const name of names) {
+                    const entry: SymbolEntry = {
+                        name,
+                        kind: 'const',
+                        filePath,
+                        isExported: true,
+                        sourcePackage: pkg
+                    };
+                    addToIndex(index, entry);
+                    counts.total++;
+                    counts.exported++;
+                    counts.byKind['const'] = (counts.byKind['const'] || 0) + 1;
+                }
             }
         }
     }

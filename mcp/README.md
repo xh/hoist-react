@@ -92,6 +92,14 @@ curated metadata (title, description, category, search keywords) that cannot be 
 from filenames alone. The metadata is aligned with the `docs/README.md` index tables. The
 tradeoff is manual maintenance -- see [Maintaining the Developer Tools](#maintaining-the-developer-tools).
 
+**Destructured export expansion.** Hoist components are exported via array destructuring --
+`export const [Button, button] = hoistCmp.withFactory(...)` -- where the first element is the
+React component and the second is its element factory. ts-morph's `decl.getName()` returns the
+entire binding pattern as a single string (e.g. `"[Button, button]"`). The indexer detects
+`ArrayBindingPattern` and `ObjectBindingPattern` name nodes and expands them into individual symbol
+entries, so both `Button` and `button` are separately searchable and resolvable via exact-name
+lookup.
+
 **Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
 is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
 in the background while the client sets up. The CLI pays this cost on each invocation -- acceptable
