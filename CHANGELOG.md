@@ -2,6 +2,11 @@
 
 ## 83.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
+  feature in hoist-core 36.4.
+
 ### ⚙️ Technical
 
 * Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks class inheritance chains,

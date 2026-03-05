@@ -10,6 +10,7 @@ import {relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
 import {picker} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -46,6 +47,10 @@ export const metricsPanel = hoistCmp.factory({
                         if (count === 1) return `Source: ${selOpts[0].label}`;
                         return `${count} sources`;
                     }
+                }),
+                recordActionBar({
+                    selModel: model.gridModel.selModel,
+                    actions: [model.publishAction, model.unpublishAction]
                 }),
                 filler(),
                 relativeTimestamp({bind: 'lastLoadCompleted'}),
