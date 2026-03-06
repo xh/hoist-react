@@ -7,15 +7,9 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {buildRegistry, searchDocs, type DocCategory} from '../data/doc-registry.js';
+import {buildRegistry, searchDocs} from '../data/doc-registry.js';
 import {formatSearchResults, formatDocList} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
-
-/** Valid category values for tool input schemas. */
-const categoryEnum = z
-    .enum(['package', 'concept', 'devops', 'conventions', 'all'])
-    .optional()
-    .describe('Filter by category. Default: all');
 
 /**
  * Register all documentation tools on the given MCP server.
@@ -25,7 +19,14 @@ const categoryEnum = z
  * - `hoist-ping`: Connectivity test.
  */
 export function registerDocTools(server: McpServer): void {
-    const registry = buildRegistry(resolveRepoRoot());
+    const {entries: registry, mcpCategories} = buildRegistry(resolveRepoRoot());
+    const categoryIds = mcpCategories.map(c => c.id);
+
+    /** Valid category values for tool input schemas. */
+    const categoryEnum = z
+        .enum([...(categoryIds as [string, ...string[]]), 'all'])
+        .optional()
+        .describe('Filter by category. Default: all');
 
     //------------------------------------------------------------------
     // Tool: hoist-search-docs
@@ -59,7 +60,7 @@ export function registerDocTools(server: McpServer): void {
         },
         async ({query, category, limit}) => {
             const results = searchDocs(registry, query, {
-                category: category as DocCategory | 'all' | undefined,
+                mcpCategory: category ?? undefined,
                 limit: limit ?? 10
             });
 
@@ -88,7 +89,7 @@ export function registerDocTools(server: McpServer): void {
             }
         },
         async ({category}) => {
-            let text = formatDocList(registry, category);
+            let text = formatDocList(registry, mcpCategories, category ?? undefined);
             text += 'Read any document using its ID with the hoist://docs/{id} resource.';
             return {content: [{type: 'text' as const, text}]};
         }
