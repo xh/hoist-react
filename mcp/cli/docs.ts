@@ -6,14 +6,15 @@
  */
 import {Command} from 'commander';
 
-import {buildRegistry, searchDocs, loadDocContent, type DocCategory} from '../data/doc-registry.js';
+import {buildRegistry, searchDocs, loadDocContent} from '../data/doc-registry.js';
 import {formatSearchResults, formatDocList} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
-const VALID_CATEGORIES = ['package', 'concept', 'devops', 'conventions', 'all'] as const;
+const {entries: registry, mcpCategories} = buildRegistry(resolveRepoRoot());
+const VALID_CATEGORIES = [...mcpCategories.map(c => c.id), 'all'];
 
 function validateCategory(value: string): string {
-    if (!VALID_CATEGORIES.includes(value as (typeof VALID_CATEGORIES)[number])) {
+    if (!VALID_CATEGORIES.includes(value)) {
         console.error(
             `Invalid category: "${value}". Valid categories: ${VALID_CATEGORIES.join(', ')}`
         );
@@ -31,8 +32,6 @@ function validateLimit(value: string, min: number, max: number): string {
     return value;
 }
 
-const registry = buildRegistry(resolveRepoRoot());
-
 const program = new Command()
     .name('hoist-docs')
     .description('Search, list, and read hoist-react documentation.')
@@ -46,8 +45,8 @@ Examples:
   hoist-docs search "authentication" -c concept  Search only concept docs
   hoist-docs list                                List all available documents
   hoist-docs list -c package                     List only package docs
-  hoist-docs read cmp/grid                       Read the Grid component README
-  hoist-docs conventions                         Print coding conventions (AGENTS.md)
+  hoist-docs read cmp/grid/README.md             Read the Grid component README
+  hoist-docs conventions                         Print coding conventions
   hoist-docs index                               Print the documentation index`
 );
 
@@ -60,7 +59,7 @@ program
     .argument('<query>', 'Search keywords (e.g. "grid column sorting")')
     .option(
         '-c, --category <category>',
-        'Filter by category: package, concept, devops, conventions, all',
+        'Filter by category: ' + VALID_CATEGORIES.join(', '),
         'all'
     )
     .option('-l, --limit <n>', 'Maximum number of results (1-20)', '10')
@@ -69,7 +68,7 @@ program
         validateLimit(opts.limit, 1, 20);
 
         const results = searchDocs(registry, query, {
-            category: opts.category as DocCategory | 'all',
+            mcpCategory: opts.category,
             limit: parseInt(opts.limit, 10)
         });
 
@@ -88,12 +87,12 @@ program
     .description('List all available documentation with descriptions.')
     .option(
         '-c, --category <category>',
-        'Filter by category: package, concept, devops, conventions, all',
+        'Filter by category: ' + VALID_CATEGORIES.join(', '),
         'all'
     )
     .action((opts: {category: string}) => {
         validateCategory(opts.category);
-        let text = formatDocList(registry, opts.category);
+        let text = formatDocList(registry, mcpCategories, opts.category);
         text += 'Read any document using: hoist-docs read <id>';
         process.stdout.write(text + '\n');
     });
@@ -103,7 +102,9 @@ program
 //----------------------------------------------------------------------
 program
     .command('read')
-    .description('Read a specific document by ID (e.g. "cmp/grid", "core", "lifecycle-app").')
+    .description(
+        'Read a specific document by ID (e.g. "cmp/grid/README.md", "docs/lifecycle-app.md").'
+    )
     .argument('<docId>', 'Document ID from search or list output')
     .action((docId: string) => {
         const entry = registry.find(e => e.id === docId);
@@ -120,9 +121,9 @@ program
 //----------------------------------------------------------------------
 program
     .command('conventions')
-    .description('Print coding conventions (AGENTS.md) -- shortcut for "read conventions".')
+    .description('Print coding conventions -- shortcut for "read docs/coding-conventions.md".')
     .action(() => {
-        const entry = registry.find(e => e.id === 'conventions');
+        const entry = registry.find(e => e.id === 'docs/coding-conventions.md');
         if (!entry) {
             console.error('Conventions document not found in registry.');
             process.exit(1);
@@ -135,9 +136,9 @@ program
 //----------------------------------------------------------------------
 program
     .command('index')
-    .description('Print documentation index (docs/README.md) -- shortcut for "read index".')
+    .description('Print documentation index -- shortcut for "read docs/README.md".')
     .action(() => {
-        const entry = registry.find(e => e.id === 'index');
+        const entry = registry.find(e => e.id === 'docs/README.md');
         if (!entry) {
             console.error('Index document not found in registry.');
             process.exit(1);

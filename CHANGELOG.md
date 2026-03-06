@@ -9,6 +9,7 @@
 
 ### ⚙️ Technical
 
+* Refactored documentation indexing to better support both MCP (LLM) and user-facing clients.
 * Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks class inheritance chains,
   shows constructor config types, indexes Promise prototype extensions, and filters `_`-prefixed
   internal members.
