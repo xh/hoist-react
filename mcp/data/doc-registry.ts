@@ -382,6 +382,19 @@ function getRawEntries(): RawEntry[] {
             )
         },
 
+        {
+            id: 'styles',
+            title: 'Styles & Theming',
+            file: 'styles/README.md',
+            category: 'package',
+            packageName: 'styles',
+            description:
+                'CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.',
+            keywords: splitKeywords(
+                'CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel'
+            )
+        },
+
         //--------------------------------------------------------------
         // Developer Tools
         //--------------------------------------------------------------

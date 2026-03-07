@@ -52,6 +52,7 @@ Smaller packages that provide important but more specialized functionality.
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
+| `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | 📝 [Draft](../../styles/README.md) |
 
 ## Concepts
 

@@ -481,3 +481,25 @@
 - Removed "Forgetting checkAccess" pitfall (TypeScript catches this at compile time)
 - Tightening pass: trimmed prose throughout without removing specifics
 - Opened GitHub issue #4290 for granular Admin Console permission roles
+
+### 2026-03-07 (cont.)
+- Created `/styles/README.md` (Draft) — comprehensive guide to Hoist's CSS/SCSS styling system:
+  - Overview of the three core files: `vars.scss`, `XH.scss`, `helpers.scss`
+  - Two-tier CSS custom property pattern (`--xh-*` framework vars with unprefixed app override hooks)
+  - Variable categories table covering ~300 CSS custom properties organized by purpose
+  - Unitless value convention with `-px` suffix pattern and `calc()` usage
+  - Intent color HSL decomposition system (7 lightness/opacity variants per intent)
+  - Material Design color functions (`mc()`, `mc-muted()`, `mc-trans()`) and their compile-time role
+  - Dark theme implementation via `ThemeModel` and `xh-dark` class toggling
+  - BEM class naming with `&`-based SCSS nesting (block, element, modifier examples)
+  - Component SCSS architecture: co-located stylesheets, side-effect imports, `className` merging
+  - Utility classes reference (colors, intents, alignment, borders, typography, spacing)
+  - SCSS feature usage guide: what Hoist uses (nesting, `&`, `@use`, functions) vs. avoids (`$variables`, `@extend`, `%placeholders`)
+  - Application customization patterns: overriding theme vars, app-prefixed BEM classes, third-party library integration
+  - Common pitfalls: redefining `--xh-*` directly, SCSS vars for themeable values, including units in overrides, high-specificity selectors
+- Added `/styles/` entry to `docs/planning/docs-roadmap.md` Priority 4 table (Draft)
+- Updated `docs/README.md`:
+  - Added styles entry to Supporting Packages table with key topics
+  - Added Quick Reference entry for "Customize colors, fonts, spacing, or theme"
+  - Removed `/styles/` from "Other Packages" paragraph (now has a dedicated README)
+- Added `styles` entry to `mcp/data/doc-registry.ts` with CSS/theme/BEM keywords
