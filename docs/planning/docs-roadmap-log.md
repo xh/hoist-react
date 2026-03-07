@@ -460,3 +460,24 @@
   (old single entry replaced with two new entries)
 - Inter-doc link scan: no broken links from these changes; 5 pre-existing issues in archived/template
   files noted but not addressed (historical changelog, template placeholders)
+
+### 2026-03-07
+- **Authorization concept doc reviewed and promoted to Done**
+- Major structural revision during interactive review with Anselm:
+  - Separated the client-side `hasRole()` API (source-agnostic array lookup) from the server-side
+    role management system (Hoist Core's opt-in `DefaultRoleService`)
+  - Added "Where Roles Come From" bridging section listing common role sources (Hoist Core module,
+    LDAP, JWT claims, external APIs, custom logic)
+  - Reframed "Role Management in Admin Console" → "Hoist Core Role Management" as opt-in, not default
+  - Moved "Checking Roles in Application Code" before server-side content to keep client-side story contiguous
+  - Moved typed role helper to first subsection with stronger recommendation language
+- New content:
+  - Two-tier role design best practices drawn from RBAC terminology: granular `UPPER_SNAKE_CASE`
+    permission roles (what code checks) vs `Sentence Case` functional roles (how users are assigned)
+  - Coherent hedge fund/trading example set for permission and functional roles
+  - Clarification that `HOIST_ADMIN` does not grant application-level permissions
+  - Explanation of `DefaultRoleService` enable/disable behavior in the Admin Console Roles tab
+  - Link to hoist-core authorization docs on GitHub
+- Removed "Forgetting checkAccess" pitfall (TypeScript catches this at compile time)
+- Tightening pass: trimmed prose throughout without removing specifics
+- Opened GitHub issue #4290 for granular Admin Console permission roles
