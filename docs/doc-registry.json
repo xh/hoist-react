@@ -1,0 +1,431 @@
+{
+    "mcpCategories": [
+        {"id": "package", "title": "Package Documentation"},
+        {"id": "concept", "title": "Concept Documentation"},
+        {"id": "devops", "title": "DevOps Documentation"},
+        {"id": "conventions", "title": "Conventions"},
+        {"id": "index", "title": "Index"}
+    ],
+    "viewerCategories": [
+        {"id": "overview", "title": "Overview"},
+        {"id": "concepts", "title": "Concepts"},
+        {"id": "core", "title": "Core Framework"},
+        {"id": "components", "title": "Components"},
+        {"id": "desktop", "title": "Desktop"},
+        {"id": "mobile", "title": "Mobile"},
+        {"id": "utilities", "title": "Utilities"},
+        {"id": "supporting", "title": "Supporting Packages"},
+        {"id": "devops", "title": "DevOps & Environment"},
+        {"id": "upgrade", "title": "Upgrade Notes"}
+    ],
+    "entries": [
+        {
+            "id": "docs/README.md",
+            "title": "Hoist Documentation Index",
+            "mcpCategory": "index",
+            "viewerCategory": "overview",
+            "description": "Primary catalog of all hoist-react documentation with descriptions and key topics for fast, targeted retrieval.",
+            "keywords": ["index", "catalog", "documentation", "quick reference", "packages", "concepts", "devops"]
+        },
+        {
+            "id": "docs/coding-conventions.md",
+            "title": "Coding Conventions",
+            "mcpCategory": "conventions",
+            "viewerCategory": "overview",
+            "description": "Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming.",
+            "keywords": ["conventions", "code style", "imports", "naming", "TypeScript", "class structure", "component patterns", "hoistCmp", "exports", "null", "undefined", "async", "await", "error handling", "logging", "equality", "CSS", "BEM", "section dividers", "declare config"]
+        },
+        {
+            "id": "core/README.md",
+            "title": "Core Framework",
+            "mcpCategory": "package",
+            "viewerCategory": "core",
+            "description": "Foundation classes defining Hoist's component, model, and service architecture.",
+            "keywords": ["HoistBase", "HoistModel", "HoistService", "HoistAppModel", "hoistCmp", "XH", "element factories", "decorators", "lifecycle", "@managed", "@lookup", "creates", "uses", "addReaction", "lookupModel"]
+        },
+        {
+            "id": "data/README.md",
+            "title": "Data Layer",
+            "mcpCategory": "package",
+            "viewerCategory": "core",
+            "description": "Observable data layer with filtering, validation, and aggregation.",
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "Cube", "View", "tree data", "loadData", "processRawData"]
+        },
+        {
+            "id": "svc/README.md",
+            "title": "Built-in Services",
+            "mcpCategory": "package",
+            "viewerCategory": "core",
+            "description": "Built-in singleton services for data access and app-wide operations.",
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService"]
+        },
+        {
+            "id": "cmp/README.md",
+            "title": "Components Overview",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cross-platform component overview and catalog.",
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"]
+        },
+        {
+            "id": "cmp/grid/README.md",
+            "title": "Grid Component",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Primary data grid built on ag-Grid.",
+            "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+        },
+        {
+            "id": "cmp/form/README.md",
+            "title": "Form Infrastructure",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Form infrastructure for data entry with validation.",
+            "keywords": ["FormModel", "FieldModel", "SubformsFieldModel", "validation rules", "data binding"]
+        },
+        {
+            "id": "cmp/input/README.md",
+            "title": "Input Components",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Base classes and interfaces for input components.",
+            "keywords": ["HoistInputModel", "HoistInputProps", "change/commit lifecycle", "commitOnChange", "value binding", "focus management", "Select", "TextInput", "DateInput", "NumberInput", "Checkbox", "SwitchInput"]
+        },
+        {
+            "id": "cmp/layout/README.md",
+            "title": "Layout Containers",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Flexbox-based layout containers.",
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+        },
+        {
+            "id": "cmp/tab/README.md",
+            "title": "Tabbed Interface",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Tabbed interface system.",
+            "keywords": ["TabContainerModel", "TabModel", "routing integration", "renderMode", "refreshMode", "RefreshContextModel", "dynamic tabs"]
+        },
+        {
+            "id": "cmp/viewmanager/README.md",
+            "title": "View Manager",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Save/load named bundles of component state.",
+            "keywords": ["ViewManagerModel", "views", "sharing", "pinning", "auto-save", "JsonBlob persistence"]
+        },
+        {
+            "id": "desktop/cmp/dash/README.md",
+            "title": "Dashboard System",
+            "mcpCategory": "package",
+            "viewerCategory": "desktop",
+            "description": "Configurable dashboard system with draggable, resizable widgets.",
+            "keywords": ["DashContainerModel", "DashCanvasModel", "DashViewSpec", "DashViewModel", "widget persistence", "ViewManager integration"]
+        },
+        {
+            "id": "desktop/cmp/panel/README.md",
+            "title": "Desktop Panel",
+            "mcpCategory": "package",
+            "viewerCategory": "desktop",
+            "description": "Desktop panel container with toolbars, masks, and collapsible behavior.",
+            "keywords": ["Panel", "PanelModel", "Toolbar", "mask", "loading indicator", "collapse/resize", "persistence", "modal support", "splitter", "compactHeader"]
+        },
+        {
+            "id": "desktop/README.md",
+            "title": "Desktop Components",
+            "mcpCategory": "package",
+            "viewerCategory": "desktop",
+            "description": "Desktop-specific components and app container.",
+            "keywords": ["desktop components", "Blueprint wrappers", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
+        },
+        {
+            "id": "mobile/README.md",
+            "title": "Mobile Components",
+            "mcpCategory": "package",
+            "viewerCategory": "mobile",
+            "description": "Mobile-specific components built on Onsen UI.",
+            "keywords": ["AppContainer", "NavigatorModel", "Panel", "AppBar", "mobile inputs", "touch navigation", "swipeable tabs", "DialogPanel", "pull to refresh"]
+        },
+        {
+            "id": "format/README.md",
+            "title": "Formatting",
+            "mcpCategory": "package",
+            "viewerCategory": "utilities",
+            "description": "Number, date, and miscellaneous formatting for grids and display.",
+            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision"]
+        },
+        {
+            "id": "appcontainer/README.md",
+            "title": "Application Shell",
+            "mcpCategory": "package",
+            "viewerCategory": "utilities",
+            "description": "Application shell -- lifecycle, dialogs, toasts, banners, theming, and environment.",
+            "keywords": ["AppContainerModel", "MessageSpec", "ToastSpec", "BannerSpec", "ThemeModel", "RouterModel", "AppOption", "dark mode", "light mode", "theming", "ExceptionDialogModel", "SizingModeModel", "XH.toast", "XH.confirm", "XH.alert"]
+        },
+        {
+            "id": "utils/README.md",
+            "title": "Utilities",
+            "mcpCategory": "package",
+            "viewerCategory": "utilities",
+            "description": "Async, datetime, JS, and React utility functions used throughout hoist-react.",
+            "keywords": ["Timer", "LocalDate", "forEachAsync", "@debounced", "@computeOnce", "@sharePendingPromise", "decorators", "logging", "hooks"]
+        },
+        {
+            "id": "promise/README.md",
+            "title": "Promise Extensions",
+            "mcpCategory": "package",
+            "viewerCategory": "utilities",
+            "description": "Promise prototype extensions for error handling, tracking, masking, and timeouts.",
+            "keywords": ["catchDefault", "catchWhen", "track", "linkTo", "timeout", "thenAction", "wait", "waitFor", "tap"]
+        },
+        {
+            "id": "mobx/README.md",
+            "title": "MobX Integration",
+            "mcpCategory": "package",
+            "viewerCategory": "utilities",
+            "description": "MobX integration layer -- re-exports, action enforcement, and @bindable decorator.",
+            "keywords": ["@bindable", "@bindable.ref", "makeObservable", "observer", "action", "observable", "computed", "enforceActions"]
+        },
+        {
+            "id": "public/README.md",
+            "title": "Public Resources",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "Public resources.",
+            "keywords": ["public", "resources", "assets"]
+        },
+        {
+            "id": "static/README.md",
+            "title": "Static Assets",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "Static assets.",
+            "keywords": ["static", "assets", "icons"]
+        },
+        {
+            "id": "icon/README.md",
+            "title": "Icon System",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "Factory-based icon system wrapping FontAwesome Pro.",
+            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon"]
+        },
+        {
+            "id": "security/README.md",
+            "title": "Security & OAuth",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL).",
+            "keywords": ["BaseOAuthClient", "AuthZeroClient", "MsalClient", "Token", "AccessTokenSpec", "auto-refresh"]
+        },
+        {
+            "id": "styles/README.md",
+            "title": "Styles & Theming",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+        },
+        {
+            "id": "kit/README.md",
+            "title": "Kit (Third-Party Wrappers)",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Centralized wrappers for third-party libraries used by Hoist.",
+            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Onsen", "GoldenLayout", "react-select"]
+        },
+        {
+            "id": "inspector/README.md",
+            "title": "Inspector",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "Built-in developer tool for real-time inspection of Hoist instances.",
+            "keywords": ["InspectorPanel", "StatsModel", "InstancesModel", "property watchlist", "model leak detection"]
+        },
+        {
+            "id": "mcp/README.md",
+            "title": "MCP Server",
+            "mcpCategory": "package",
+            "viewerCategory": "devops",
+            "description": "Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.",
+            "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
+        },
+        {
+            "id": "docs/lifecycle-app.md",
+            "title": "Lifecycle: App Initialization",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "How a Hoist app initializes -- from entry point to RUNNING state.",
+            "keywords": ["XH.renderApp", "AppSpec", "AppContainerModel", "initialization sequence", "AppState"]
+        },
+        {
+            "id": "docs/lifecycle-models-and-services.md",
+            "title": "Lifecycle: Models & Services",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Model, service, and load/refresh lifecycles after app startup.",
+            "keywords": ["HoistModel", "onLinked", "afterLinked", "doLoadAsync", "destroy", "cleanup", "HoistService", "initAsync", "LoadSupport", "LoadSpec", "RefreshContextModel", "@managed", "loadAsync", "refreshAsync"]
+        },
+        {
+            "id": "docs/authentication.md",
+            "title": "Authentication",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "How Hoist apps authenticate users via OAuth or form-based login.",
+            "keywords": ["HoistAuthModel", "MsalClient", "AuthZeroClient", "Token", "IdentityService", "checkAccess", "impersonation"]
+        },
+        {
+            "id": "docs/persistence.md",
+            "title": "Persistence",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Persisting user UI state to various backing stores.",
+            "keywords": ["@persist", "markPersist", "PersistenceProvider", "localStorage", "Preference", "ViewManager", "JsonBlob", "DashContainerModel", "GridModel", "save state", "restore state"]
+        },
+        {
+            "id": "docs/authorization.md",
+            "title": "Authorization",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Role-based authorization and config-driven feature gates.",
+            "keywords": ["HoistUser", "hasRole", "hasGate", "checkAccess", "HOIST_ADMIN", "roles", "gates"]
+        },
+        {
+            "id": "docs/routing.md",
+            "title": "Routing",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Client-side routing via RouterModel (Router5 wrapper).",
+            "keywords": ["RouterModel", "getRoutes", "XH.routerState", "XH.navigate", "route parameters", "TabContainerModel route integration"]
+        },
+        {
+            "id": "docs/error-handling.md",
+            "title": "Error Handling",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Centralized exception handling, display, and logging.",
+            "keywords": ["XH.handleException", "ExceptionDialog", "catchDefault", "alertType", "toast", "requireReload", "ErrorBoundary", "error boundary", "exception logging"]
+        },
+        {
+            "id": "docs/test-automation.md",
+            "title": "Test Automation",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Test automation support via testId selectors.",
+            "keywords": ["testId", "TestSupportProps", "data-testid", "getTestId", "FormField auto-testId"]
+        },
+        {
+            "id": "docs/version-compatibility.md",
+            "title": "Version Compatibility",
+            "mcpCategory": "concept",
+            "viewerCategory": "upgrade",
+            "description": "Reference mapping hoist-react releases to required/recommended hoist-core versions.",
+            "keywords": ["version", "compatibility", "hoist-core", "upgrade", "minimum", "required", "recommended", "matrix", "pairing", "hoist-dev-utils", "reverse lookup"]
+        },
+        {
+            "id": "docs/build-and-publish.md",
+            "title": "Build & Publish",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react.",
+            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release"]
+        },
+        {
+            "id": "docs/build-app-deployment.md",
+            "title": "App Build & Deploy",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker).",
+            "keywords": ["build", "deploy", "pipeline", "webpack", "gradle", "Docker", "nginx", "Tomcat", "WAR"]
+        },
+        {
+            "id": "docs/development-environment.md",
+            "title": "Development Environment",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "Local development environment setup for Hoist and app developers.",
+            "keywords": ["development", "environment", "setup", "local", "IDE", "Node", "yarn", "IntelliJ", "VS Code", "webpack dev server"]
+        },
+        {
+            "id": "docs/compilation-notes.md",
+            "title": "Compilation Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "Notes on TypeScript/Babel compilation and build tooling internals.",
+            "keywords": ["compilation", "TypeScript", "Babel", "transpilation", "build tooling"]
+        },
+        {
+            "id": "docs/changelog-format.md",
+            "title": "Changelog Format",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "CHANGELOG entry format conventions and section headers.",
+            "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
+        },
+        {
+            "id": "docs/upgrade-notes/v75-upgrade-notes.md",
+            "title": "v75 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v74.x to v75.0.1. Low difficulty — removed deprecated APIs, Cube View row data changes.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v75", "v74", "deprecation", "ViewRowData", "cube"]
+        },
+        {
+            "id": "docs/upgrade-notes/v76-upgrade-notes.md",
+            "title": "v76 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v75.x to v76.0.0. Medium difficulty — AG Grid v31→v34, new module registration.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v76", "v75", "ag-grid", "ag grid", "module registration", "groupRowRenderer"]
+        },
+        {
+            "id": "docs/upgrade-notes/v77-upgrade-notes.md",
+            "title": "v77 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v76.x to v77.1.1. Medium difficulty — Highcharts v12, XSS protection API rename.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v77", "v76", "highcharts", "xss", "enableXssProtection"]
+        },
+        {
+            "id": "docs/upgrade-notes/v78-upgrade-notes.md",
+            "title": "v78 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v77.x to v78.0.0. Trivial difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v78", "v77", "setColumnState"]
+        },
+        {
+            "id": "docs/upgrade-notes/v79-upgrade-notes.md",
+            "title": "v79 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v78.x to v79.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v79", "v78", "Blueprint 6", "moduleResolution"]
+        },
+        {
+            "id": "docs/upgrade-notes/v80-upgrade-notes.md",
+            "title": "v80 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v79.x to v80.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v80", "v79", "FormField", "appLoadObserver"]
+        },
+        {
+            "id": "docs/upgrade-notes/v81-upgrade-notes.md",
+            "title": "v81 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v80.x to v81.0.2. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v81", "v80", "Panel CSS", "BpCard"]
+        },
+        {
+            "id": "docs/upgrade-notes/v82-upgrade-notes.md",
+            "title": "v82 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v81.x to v82.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "Picker", "DashCanvas", "MCP", "Filter"]
+        }
+    ]
+}
