@@ -220,6 +220,14 @@
             "keywords": ["BaseOAuthClient", "AuthZeroClient", "MsalClient", "Token", "AccessTokenSpec", "auto-refresh"]
         },
         {
+            "id": "styles/README.md",
+            "title": "Styles & Theming",
+            "mcpCategory": "package",
+            "viewerCategory": "supporting",
+            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+        },
+        {
             "id": "kit/README.md",
             "title": "Kit (Third-Party Wrappers)",
             "mcpCategory": "package",
