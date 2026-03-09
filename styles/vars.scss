@@ -200,15 +200,15 @@ body {
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
   // Add -text variants - customized to lighter values for dark theme to optimize for legibility and contrast.
-  --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary));
-  --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success));
-  --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning));
+  --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary));
+  --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success));
+  --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning));
   --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger));
 
   &.xh-dark {
-    --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary-lighter));
-    --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success-lighter));
-    --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning-lighter));
+    --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary-lighter));
+    --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success-lighter));
+    --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning-lighter));
     --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger-lighter));
   }
 
