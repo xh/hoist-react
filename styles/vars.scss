@@ -29,138 +29,138 @@ body {
   //------------------------
   // Core Colors
   //------------------------
-  --xh-black: var(--black, #{mc('grey', '900')});
-  --xh-blue: var(--blue, #{mc('blue', '700')});
-  --xh-blue-muted: var(--blue-muted, #{mc-muted('blue', '800', 40%)});
-  --xh-blue-dark: var(--blue-dark, #{mc('light-blue', '900')});
-  --xh-blue-light: var(--blue-light, #{mc('light-blue', '600')});
-  --xh-blue-gray: var(--blue-gray, #{mc('blue-grey', '600')});
-  --xh-blue-gray-light: var(--blue-gray-light, #{mc('blue-grey', '50')});
-  --xh-blue-gray-dark: var(--blue-gray-dark, #{mc('blue-grey', '900')});
-  --xh-gray: var(--gray, #{mc('grey', '500')});
-  --xh-gray-dark: var(--gray-dark, #{mc('grey', '800')});
-  --xh-gray-light: var(--gray-light, #{mc('grey', '100')});
-  --xh-green: var(--green, #{mc('green', '800')});
-  --xh-green-muted: var(--green-muted, #{mc-muted('green', '700')});
-  --xh-orange: var(--orange, #{mc('orange', '800')});
-  --xh-orange-muted: var(--orange-muted, #{mc-muted('orange', '800')});
-  --xh-purple: var(--purple, #{mc('purple', '800')});
-  --xh-red: var(--red, #{mc('red', '900')});
-  --xh-red-muted: var(--red-muted, #{mc-muted('red', '900', 40%, 20%)});
-  --xh-white: var(--white, hsl(0, 0%, 100%));
-  --xh-yellow: var(--yellow, #{mc('yellow', '800')});
-  --xh-yellow-light: var(--yellow-light, #{mc('yellow', '50')});
+  --xh-black: #{mc('grey', '900')};
+  --xh-blue: #{mc('blue', '700')};
+  --xh-blue-muted: #{mc-muted('blue', '800', 40%)};
+  --xh-blue-dark: #{mc('light-blue', '900')};
+  --xh-blue-light: #{mc('light-blue', '600')};
+  --xh-blue-gray: #{mc('blue-grey', '600')};
+  --xh-blue-gray-light: #{mc('blue-grey', '50')};
+  --xh-blue-gray-dark: #{mc('blue-grey', '900')};
+  --xh-gray: #{mc('grey', '500')};
+  --xh-gray-dark: #{mc('grey', '800')};
+  --xh-gray-light: #{mc('grey', '100')};
+  --xh-green: #{mc('green', '800')};
+  --xh-green-muted: #{mc-muted('green', '700')};
+  --xh-orange: #{mc('orange', '800')};
+  --xh-orange-muted: #{mc-muted('orange', '800')};
+  --xh-purple: #{mc('purple', '800')};
+  --xh-red: #{mc('red', '900')};
+  --xh-red-muted: #{mc-muted('red', '900', 40%, 20%)};
+  --xh-white: hsl(0, 0%, 100%);
+  --xh-yellow: #{mc('yellow', '800')};
+  --xh-yellow-light: #{mc('yellow', '50')};
 
   &.xh-dark {
-    --xh-black: var(--black, hsl(202, 17%, 9%));
-    --xh-gray-dark: var(--gray-dark, #{mc('grey', '900')});
-    --xh-green: var(--green, hsl(120, 100%, 40%));
-    --xh-green-muted: var(--green-muted, #{mc-muted('green', '800', 20%, 5%)});
-    --xh-red: var(--red, hsl(357, 100%, 65%));
+    --xh-black: hsl(202, 17%, 9%);
+    --xh-gray-dark: #{mc('grey', '900')};
+    --xh-green: hsl(120, 100%, 40%);
+    --xh-green-muted: #{mc-muted('green', '800', 20%, 5%)};
+    --xh-red: hsl(357, 100%, 65%);
   }
 
   &.xh-mobile {
-    --xh-accent-color: var(--accent-color, var(--xh-blue-light));
-    --xh-list-select-color: var(--list-select-color, var(--xh-blue-light));
+    --xh-accent-color: var(--xh-blue-light);
+    --xh-list-select-color: var(--xh-blue-light);
   }
 
   //-------------------------------
   // Positive/Negative Value Colors
   //-------------------------------
-  --xh-pos-val-color: var(--pos-val-color, var(--xh-green));
-  --xh-neg-val-color: var(--neg-val-color, var(--xh-red));
-  --xh-neutral-val-color: var(--neutral-val-color, var(--xh-gray));
+  --xh-pos-val-color: var(--xh-green);
+  --xh-neg-val-color: var(--xh-red);
+  --xh-neutral-val-color: var(--xh-gray);
 
   //--------------------------------------------------------
   // Intent Colors - HSL supports varying lightness w/o hue
   //--------------------------------------------------------
   // Neutral (no intent) - default gray - e.g. standard buttons.
-  --xh-intent-neutral-h: var(--intent-neutral-h, 180);
-  --xh-intent-neutral-s: var(--intent-neutral-s, 10%);
-  --xh-intent-neutral-l1: var(--intent-neutral-l1, 82%);
-  --xh-intent-neutral-l2: var(--intent-neutral-l2, 86%);
-  --xh-intent-neutral-l3: var(--intent-neutral-l3, 90%);
-  --xh-intent-neutral-l4: var(--intent-neutral-l4, 94%);
-  --xh-intent-neutral-l5: var(--intent-neutral-l5, 98%);
+  --xh-intent-neutral-h: 180;
+  --xh-intent-neutral-s: 10%;
+  --xh-intent-neutral-l1: 82%;
+  --xh-intent-neutral-l2: 86%;
+  --xh-intent-neutral-l3: 90%;
+  --xh-intent-neutral-l4: 94%;
+  --xh-intent-neutral-l5: 98%;
   // Primary - default blue - indicates a prominent call-to-action button/element.
-  --xh-intent-primary-h: var(--intent-primary-h, 206);
-  --xh-intent-primary-s: var(--intent-primary-s, 100%);
-  --xh-intent-primary-l1: var(--intent-primary-l1, 23%);
-  --xh-intent-primary-l2: var(--intent-primary-l2, 26%);
-  --xh-intent-primary-l3: var(--intent-primary-l3, 30%);
-  --xh-intent-primary-l4: var(--intent-primary-l4, 85%);
-  --xh-intent-primary-l5: var(--intent-primary-l5, 95%);
+  --xh-intent-primary-h: 206;
+  --xh-intent-primary-s: 100%;
+  --xh-intent-primary-l1: 23%;
+  --xh-intent-primary-l2: 26%;
+  --xh-intent-primary-l3: 30%;
+  --xh-intent-primary-l4: 85%;
+  --xh-intent-primary-l5: 95%;
   // Success - default green - indicates OK, confirm, or a successful result.
-  --xh-intent-success-h: var(--intent-success-h, 123);
-  --xh-intent-success-s: var(--intent-success-s, 43%);
-  --xh-intent-success-l1: var(--intent-success-l1, 26%);
-  --xh-intent-success-l2: var(--intent-success-l2, 30%);
-  --xh-intent-success-l3: var(--intent-success-l3, 37%);
-  --xh-intent-success-l4: var(--intent-success-l4, 85%);
-  --xh-intent-success-l5: var(--intent-success-l5, 95%);
+  --xh-intent-success-h: 123;
+  --xh-intent-success-s: 43%;
+  --xh-intent-success-l1: 26%;
+  --xh-intent-success-l2: 30%;
+  --xh-intent-success-l3: 37%;
+  --xh-intent-success-l4: 85%;
+  --xh-intent-success-l5: 95%;
   // Warning - default orange - indicates need for caution, or a potential error condition.
-  --xh-intent-warning-h: var(--intent-warning-h, 30);
-  --xh-intent-warning-s: var(--intent-warning-s, 100%);
-  --xh-intent-warning-l1: var(--intent-warning-l1, 34%);
-  --xh-intent-warning-l2: var(--intent-warning-l2, 38%);
-  --xh-intent-warning-l3: var(--intent-warning-l3, 43%);
-  --xh-intent-warning-l4: var(--intent-warning-l4, 85%);
-  --xh-intent-warning-l5: var(--intent-warning-l5, 95%);
+  --xh-intent-warning-h: 30;
+  --xh-intent-warning-s: 100%;
+  --xh-intent-warning-l1: 34%;
+  --xh-intent-warning-l2: 38%;
+  --xh-intent-warning-l3: 43%;
+  --xh-intent-warning-l4: 85%;
+  --xh-intent-warning-l5: 95%;
   // Danger - default red - indicates dangerous operation, delete, or a serious error condition.
-  --xh-intent-danger-h: var(--intent-danger-h, 0);
-  --xh-intent-danger-s: var(--intent-danger-s, 73%);
-  --xh-intent-danger-l1: var(--intent-danger-l1, 26%);
-  --xh-intent-danger-l2: var(--intent-danger-l2, 30%);
-  --xh-intent-danger-l3: var(--intent-danger-l3, 40%);
-  --xh-intent-danger-l4: var(--intent-danger-l4, 85%);
-  --xh-intent-danger-l5: var(--intent-danger-l5, 95%);
+  --xh-intent-danger-h: 0;
+  --xh-intent-danger-s: 73%;
+  --xh-intent-danger-l1: 26%;
+  --xh-intent-danger-l2: 30%;
+  --xh-intent-danger-l3: 40%;
+  --xh-intent-danger-l4: 85%;
+  --xh-intent-danger-l5: 95%;
 
   &.xh-dark {
     // Dark theme Neutral intent
-    --xh-intent-neutral-h: var(--intent-neutral-h, 180);
-    --xh-intent-neutral-s: var(--intent-neutral-s, 10%);
-    --xh-intent-neutral-l1: var(--intent-neutral-l1, 20%);
-    --xh-intent-neutral-l2: var(--intent-neutral-l2, 25%);
-    --xh-intent-neutral-l3: var(--intent-neutral-l3, 32%);
-    --xh-intent-neutral-l4: var(--intent-neutral-l4, 44%);
-    --xh-intent-neutral-l5: var(--intent-neutral-l5, 50%);
+    --xh-intent-neutral-h: 180;
+    --xh-intent-neutral-s: 10%;
+    --xh-intent-neutral-l1: 20%;
+    --xh-intent-neutral-l2: 25%;
+    --xh-intent-neutral-l3: 32%;
+    --xh-intent-neutral-l4: 44%;
+    --xh-intent-neutral-l5: 50%;
     // Dark theme Primary intent
-    --xh-intent-primary-h: var(--intent-primary-h, 206);
-    --xh-intent-primary-s: var(--intent-primary-s, 100%);
-    --xh-intent-primary-l1: var(--intent-primary-l1, 25%);
-    --xh-intent-primary-l2: var(--intent-primary-l2, 30%);
-    --xh-intent-primary-l3: var(--intent-primary-l3, 45%);
-    --xh-intent-primary-l4: var(--intent-primary-l4, 65%);
-    --xh-intent-primary-l5: var(--intent-primary-l5, 75%);
+    --xh-intent-primary-h: 206;
+    --xh-intent-primary-s: 100%;
+    --xh-intent-primary-l1: 25%;
+    --xh-intent-primary-l2: 30%;
+    --xh-intent-primary-l3: 45%;
+    --xh-intent-primary-l4: 65%;
+    --xh-intent-primary-l5: 75%;
     // Dark theme Success intent
-    --xh-intent-success-h: var(--intent-success-h, 123);
-    --xh-intent-success-s: var(--intent-success-s, 50%);
-    --xh-intent-success-l1: var(--intent-success-l1, 23%);
-    --xh-intent-success-l2: var(--intent-success-l2, 30%);
-    --xh-intent-success-l3: var(--intent-success-l3, 40%);
-    --xh-intent-success-l4: var(--intent-success-l4, 60%);
-    --xh-intent-success-l5: var(--intent-success-l5, 75%);
+    --xh-intent-success-h: 123;
+    --xh-intent-success-s: 50%;
+    --xh-intent-success-l1: 23%;
+    --xh-intent-success-l2: 30%;
+    --xh-intent-success-l3: 40%;
+    --xh-intent-success-l4: 60%;
+    --xh-intent-success-l5: 75%;
     // Dark theme Warning intent
-    --xh-intent-warning-h: var(--intent-warning-h, 30);
-    --xh-intent-warning-s: var(--intent-warning-s, 100%);
-    --xh-intent-warning-l1: var(--intent-warning-l1, 25%);
-    --xh-intent-warning-l2: var(--intent-warning-l2, 30%);
-    --xh-intent-warning-l3: var(--intent-warning-l3, 40%);
-    --xh-intent-warning-l4: var(--intent-warning-l4, 65%);
-    --xh-intent-warning-l5: var(--intent-warning-l5, 75%);
+    --xh-intent-warning-h: 30;
+    --xh-intent-warning-s: 100%;
+    --xh-intent-warning-l1: 25%;
+    --xh-intent-warning-l2: 30%;
+    --xh-intent-warning-l3: 40%;
+    --xh-intent-warning-l4: 65%;
+    --xh-intent-warning-l5: 75%;
     // Dark theme Danger intent
-    --xh-intent-danger-h: var(--intent-danger-h, 0);
-    --xh-intent-danger-s: var(--intent-danger-s, 70%);
-    --xh-intent-danger-l1: var(--intent-danger-l1, 25%);
-    --xh-intent-danger-l2: var(--intent-danger-l2, 30%);
-    --xh-intent-danger-l3: var(--intent-danger-l3, 38%);
-    --xh-intent-danger-l4: var(--intent-danger-l4, 55%);
-    --xh-intent-danger-l5: var(--intent-danger-l5, 65%);
+    --xh-intent-danger-h: 0;
+    --xh-intent-danger-s: 70%;
+    --xh-intent-danger-l1: 25%;
+    --xh-intent-danger-l2: 30%;
+    --xh-intent-danger-l3: 38%;
+    --xh-intent-danger-l4: 55%;
+    --xh-intent-danger-l5: 65%;
   }
 
   // Alpha (opacity) variants for use in the `trans` variants below.
-  --xh-intent-a1: var(--intent-a1, 0.15);
-  --xh-intent-a2: var(--intent-a2, 0.3);
+  --xh-intent-a1: 0.15;
+  --xh-intent-a2: 0.3;
 
   // Bake intent HSL values into a set of seven defined colors per-intent.
   --xh-intent-neutral-darkest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l1));
@@ -200,46 +200,46 @@ body {
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
   // Add -text variants - customized to lighter values for dark theme to optimize for legibility and contrast.
-  --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary));
-  --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success));
-  --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning));
-  --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger));
+  --xh-intent-primary-text-color: var(--xh-intent-primary);
+  --xh-intent-success-text-color: var(--xh-intent-success);
+  --xh-intent-warning-text-color: var(--xh-intent-warning);
+  --xh-intent-danger-text-color: var(--xh-intent-danger);
 
   &.xh-dark {
-    --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary-lighter));
-    --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success-lighter));
-    --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning-lighter));
-    --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger-lighter));
+    --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
+    --xh-intent-success-text-color: var(--xh-intent-success-lighter);
+    --xh-intent-warning-text-color: var(--xh-intent-warning-lighter);
+    --xh-intent-danger-text-color: var(--xh-intent-danger-lighter);
   }
 
 
   //---------
   // AppBar
   //---------
-  --xh-appbar-bg: var(--appbar-bg, var(--xh-bg-alt));
-  --xh-appbar-border-color: var(--appbar-border-color, transparent);
-  --xh-appbar-box-shadow: var(--appbar-box-shadow, #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)});
-  --xh-appbar-color: var(--appbar-color, var(--xh-text-color));
-  --xh-appbar-height: var(--appbar-height, 42);
+  --xh-appbar-bg: var(--xh-bg-alt);
+  --xh-appbar-border-color: transparent;
+  --xh-appbar-box-shadow: #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)};
+  --xh-appbar-color: var(--xh-text-color);
+  --xh-appbar-height: 42;
   --xh-appbar-height-px: calc(var(--xh-appbar-height) * 1px);
-  --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '700')});
-  --xh-appbar-title-font-size: var(--appbar-title-font-size, calc(var(--xh-font-size) * 1.9));
+  --xh-appbar-title-color: #{mc('blue-grey', '700')};
+  --xh-appbar-title-font-size: calc(var(--xh-font-size) * 1.9);
   --xh-appbar-title-font-size-px: calc(var(--xh-appbar-title-font-size) * 1px);
-  --xh-appbar-user-profile-hover-color: var(--appbar-user-profile-hover-color, var(--xh-orange));
+  --xh-appbar-user-profile-hover-color: var(--xh-orange);
 
   &.xh-dark {
-    --xh-appbar-border-color: var(--appbar-border-color, #{mc('blue-grey', '700')});
-    --xh-appbar-title-color: var(--appbar-title-color, #{mc('blue-grey', '50')});
+    --xh-appbar-border-color: #{mc('blue-grey', '700')};
+    --xh-appbar-title-color: #{mc('blue-grey', '50')};
   }
 
   &.xh-mobile {
-    --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '600')});
-    --xh-appbar-color: var(--appbar-color, #{mc('blue-grey', '50')});
-    --xh-appbar-title-color: var(--appbar-title-color, var(--xh-appbar-color));
-    --xh-appbar-title-font-size: var(--appbar-title-font-size, 19);
+    --xh-appbar-bg: #{mc('blue-grey', '600')};
+    --xh-appbar-color: #{mc('blue-grey', '50')};
+    --xh-appbar-title-color: var(--xh-appbar-color);
+    --xh-appbar-title-font-size: 19;
 
     &.xh-dark {
-      --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+      --xh-appbar-bg: #{mc('blue-grey', '700')};
     }
   }
 
@@ -248,48 +248,48 @@ body {
   // Backdrop mask - overlay shown behind modal dialogs
   //---------------------------------------------------
   // Light mode uses neutral gray + higher opacity for stronger masking relative to `--xh-mask-bg`.
-  --xh-backdrop-bg: var(--backdrop-bg, rgb(128, 128, 128, 0.6));
+  --xh-backdrop-bg: rgb(128, 128, 128, 0.6);
 
   &.xh-dark {
     // Dark mode applies higher opacity only.
-    --xh-backdrop-bg: var(--backdrop-bg, rgb(0, 0, 0, 0.6));
+    --xh-backdrop-bg: rgb(0, 0, 0, 0.6);
   }
 
 
   //-----------------------------------------
   // Background (app / components in general)
   //-----------------------------------------
-  --xh-bg: var(--bg, white);
-  --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
-  --xh-bg-highlight: var(--bg-highlight, hsl(205, 85%, 85%));
+  --xh-bg: white;
+  --xh-bg-alt: var(--xh-blue-gray-light);
+  --xh-bg-highlight: hsl(205, 85%, 85%);
 
   &.xh-dark {
-    --xh-bg: var(--bg, var(--xh-black));
-    --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
-    --xh-bg-highlight: var(--bg-highlight, hsl(200, 50%, 27%));
+    --xh-bg: var(--xh-black);
+    --xh-bg-alt: var(--xh-blue-gray-dark);
+    --xh-bg-highlight: hsl(200, 50%, 27%);
   }
 
   //-----------------------------------------
   // Badges
   //-----------------------------------------
-  --xh-badge-bg: var(--badge-bg, var(--xh-blue-gray));
-  --xh-badge-border-radius: var(--badge-border-radius, var(--xh-border-radius-px));
-  --xh-badge-font-size: var(--badge-font-size, 0.75em);
-  --xh-badge-font-weight: var(--badge-font-weight, bold);
-  --xh-badge-height: var(--badge-height, 1.6em);
-  --xh-badge-min-width: var(--badge-min-width, 15px);
-  --xh-badge-padding: var(--badge-padding, #{0 4px});
-  --xh-badge-text-color: var(--badge-text-color, white);
+  --xh-badge-bg: var(--xh-blue-gray);
+  --xh-badge-border-radius: var(--xh-border-radius-px);
+  --xh-badge-font-size: 0.75em;
+  --xh-badge-font-weight: bold;
+  --xh-badge-height: 1.6em;
+  --xh-badge-min-width: 15px;
+  --xh-badge-padding: #{0 4px};
+  --xh-badge-text-color: white;
 
   //------------------------
   // Borders
   //------------------------
-  --xh-border-color: var(--border-color, #{mc('grey', '400')});
-  --xh-border-width: var(--border-width, 1);
+  --xh-border-color: #{mc('grey', '400')};
+  --xh-border-width: 1;
   --xh-border-width-px: calc(var(--xh-border-width) * 1px);
 
   &.xh-dark {
-    --xh-border-color: var(--border-color, #{mc('blue-grey', '800')});
+    --xh-border-color: #{mc('blue-grey', '800')};
   }
 
   // Borders - one-stop definitions
@@ -297,131 +297,131 @@ body {
   --xh-border-dotted: #{(var(--xh-border-width-px) dotted var(--xh-border-color))};
 
   // Border Radius (buttons, panels)
-  --xh-border-radius: var(--border-radius, 4);
+  --xh-border-radius: 4;
   --xh-border-radius-px: calc(var(--xh-border-radius) * 1px);
 
 
   //------------------------
   // Buttons
   //------------------------
-  --xh-button-border-color: var(--button-border-color, var(--xh-border-color));
+  --xh-button-border-color: var(--xh-border-color);
   --xh-button-bg: var(--xh-intent-neutral);
   --xh-button-bg-darker: var(--xh-intent-neutral-darker);
   --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
   --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
   --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
-  --xh-button-border-radius-px: var(--button-border-radius-px, var(--xh-border-radius-px));
-  --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.4);
-  --xh-button-font-family: var(--button-font-family, var(--xh-font-family));
-  --xh-button-font-size: var(--button-font-size, var(--xh-font-size));
+  --xh-button-border-radius-px: var(--xh-border-radius-px);
+  --xh-button-disabled-opacity: 0.4;
+  --xh-button-font-family: var(--xh-font-family);
+  --xh-button-font-size: var(--xh-font-size);
   --xh-button-font-size-px: calc(var(--xh-button-font-size) * 1px);
-  --xh-button-text-color: var(--button-text-color, var(--xh-text-color));
+  --xh-button-text-color: var(--xh-text-color);
 
   // Buttons - override available to color active button in buttonGroups w/standard (null/neutral) intent styling.
-  --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-darkest));
-  --xh-button-active-text-color: var(--button-active-text-color, var(--xh-button-text-color));
-  --xh-button-active-box-shadow: var(--button-active-box-shadow, #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)});
+  --xh-button-active-bg: var(--xh-button-bg-darkest);
+  --xh-button-active-text-color: var(--xh-button-text-color);
+  --xh-button-active-box-shadow: #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)};
 
   &.xh-dark {
     // This breaks the standard of having the active button bg default to the pressed bg, but in
     // dark mode having the active button take the darkest color simply does not read as "active" -
     // especially for buttonGroupInputs with only two buttons. So we flip it on its head and make
     // the active button the lightest in dark mode so it stands out as much as possible.
-    --xh-button-active-bg: var(--button-active-bg, var(--xh-button-bg-lightest));
-    --xh-button-disabled-opacity: var(--button-disabled-opacity, 0.3);
+    --xh-button-active-bg: var(--xh-button-bg-lightest);
+    --xh-button-disabled-opacity: 0.3;
   }
 
   &.xh-mobile {
-    --xh-button-active-bg: var(--button-active-bg, #{color.mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)});
-    --xh-button-active-text-color: var(--button-active-text-color, white);
-    --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
-    --xh-button-text-color: var(--button-text-color, white);
-    --xh-button-height: var(--button-height, 28px);
-    --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
+    --xh-button-active-bg: #{color.mix(mc('blue-grey', '400'), mc('light-blue', '600'), 60%)};
+    --xh-button-active-text-color: white;
+    --xh-button-bg: #{mc('blue-grey', '600')};
+    --xh-button-text-color: white;
+    --xh-button-height: 28px;
+    --xh-toolbar-button-bg: var(--xh-button-bg);
 
     // Light theme pressed bg for 'minimal' / 'outlined'
-    --xh-button-bg-darker: var(--button-bg-darker, var(--xh-intent-neutral-darkest));
+    --xh-button-bg-darker: var(--xh-intent-neutral-darkest);
     // Light theme pressed bg for 'standard'
-    --xh-button-bg-darkest: var(--button-bg-darkest, #{mc('blue-grey', '800')});
+    --xh-button-bg-darkest: #{mc('blue-grey', '800')};
     // Dark theme pressed bg for 'minimal' / 'outlined'
-    --xh-button-bg-lighter: var(--button-bg-lighter, var(--xh-intent-neutral-lightest));
+    --xh-button-bg-lighter: var(--xh-intent-neutral-lightest);
     // Dark theme pressed bg for 'standard'
-    --xh-button-bg-lightest: var(--button-bg-lightest, #{mc('blue-grey', '400')});
+    --xh-button-bg-lightest: #{mc('blue-grey', '400')};
 
     &.xh-dark {
-      --xh-button-active-bg: var(--button-active-bg, #{color.mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)});
+      --xh-button-active-bg: #{color.mix(mc('blue-grey', '800'), mc('light-blue', '600'), 50%)};
     }
   }
 
   //------------------------
   // Cards
   //------------------------
-  --xh-card-bg: var(--card-bg, var(--xh-bg));
-  --xh-card-border-color: var(--card-border-color, var(--xh-border-color));
-  --xh-card-border-radius: var(--card-border-radius, var(--xh-border-radius));
+  --xh-card-bg: var(--xh-bg);
+  --xh-card-border-color: var(--xh-border-color);
+  --xh-card-border-radius: var(--xh-border-radius);
   --xh-card-border-radius-px: calc(var(--xh-card-border-radius) * 1px);
-  --xh-card-danger-color: var(--card-danger-color, var(--xh-intent-danger-text-color));
-  --xh-card-header-font-size: var(--card-header-font-size, var(--xh-font-size));
+  --xh-card-danger-color: var(--xh-intent-danger-text-color);
+  --xh-card-header-font-size: var(--xh-font-size);
   --xh-card-header-font-size-px: calc(var(--xh-card-header-font-size) * 1px);
-  --xh-card-header-gap: var(--card-header-gap, 8);
+  --xh-card-header-gap: 8;
   --xh-card-header-gap-px: calc(var(--xh-card-header-gap) * 1px);
-  --xh-card-header-min-height: var(--card-header-min-height, 30);
+  --xh-card-header-min-height: 30;
   --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
-  --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
-  --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
-  --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
-  --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+  --xh-card-header-text-color: var(--xh-text-color);
+  --xh-card-primary-color: var(--xh-intent-primary-text-color);
+  --xh-card-success-color: var(--xh-intent-success-text-color);
+  --xh-card-warning-color: var(--xh-intent-warning-text-color);
 
 
   //------------------------
   // Menus
   //------------------------
-  --xh-menu-bg: var(--menu-bg, var(--xh-bg));
-  --xh-menu-border: var(--menu-border, var(--xh-border-solid));
-  --xh-menu-item-font-size-px: var(--menu-item-font-size-px, var(--xh-font-size-px));
+  --xh-menu-bg: var(--xh-bg);
+  --xh-menu-border: var(--xh-border-solid);
+  --xh-menu-item-font-size-px: var(--xh-font-size-px);
   // Highlight applied on hover for desktop, press for mobile.
-  --xh-menu-item-highlight-bg: var(--menu-item-highlight-bg, var(--xh-grid-bg-hover));
-  --xh-menu-item-text-color: var(--menu-item-text-color, var(--xh-text-color));
+  --xh-menu-item-highlight-bg: var(--xh-grid-bg-hover);
+  --xh-menu-item-text-color: var(--xh-text-color);
 
   &.xh-mobile {
-    --xh-menu-item-height-px: var(--menu-item-height-px, 40px);
+    --xh-menu-item-height-px: 40px;
   }
 
 
   //------------------------
   // Charts
   //------------------------
-  --xh-chart-bg: var(--chart-bg, var(--xh-bg));
-  --xh-chart-font-family: var(--chart-font-family, var(--xh-font-family));
+  --xh-chart-bg: var(--xh-bg);
+  --xh-chart-font-family: var(--xh-font-family);
 
 
   //------------------------
   // Focus
   //------------------------
-  // Focus indicator outline for interactive components - apps can use `--focus-outline: 0;` if
-  // they wish to disable completely. Note form inputs provide their own dedicated props.
-  --xh-focus-outline-width-px: var(--focus-outline-width-px, 0.5px);
-  --xh-focus-outline-offset-px: var(--focus-outline-offset-px, -1px);
-  --xh-focus-outline-color: var(--focus-outline-color, rgba(19, 124, 189, 0.6));
-  --xh-focus-outline: var(--focus-outline, #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))});
+  // Focus indicator outline for interactive components - apps can set `--xh-focus-outline: 0;` to
+  // disable completely. Note form inputs provide their own dedicated props.
+  --xh-focus-outline-width-px: 0.5px;
+  --xh-focus-outline-offset-px: -1px;
+  --xh-focus-outline-color: rgba(19, 124, 189, 0.6);
+  --xh-focus-outline: #{(var(--xh-focus-outline-width-px) auto var(--xh-focus-outline-color))};
 
 
   //------------------------
   // Fonts
   //------------------------
-  --xh-font-family: var(--font-family, #{("InterVariable", system-ui, sans-serif)});
-  --xh-font-family-headings: var(--font-family-headings, var(--xh-font-family));
-  --xh-font-family-mono: var(--font-family-mono, #{(Monaco, Consolas, monospace)});
+  --xh-font-family: #{("InterVariable", system-ui, sans-serif)};
+  --xh-font-family-headings: var(--xh-font-family);
+  --xh-font-family-mono: #{(Monaco, Consolas, monospace)};
 
   // Control font features such as tabular numbers.
   // For Hoist's default Inter font, see https://rsms.me/inter/#features
-  --xh-font-feature-settings: var(--font-feature-settings, 'tnum');
+  --xh-font-feature-settings: 'tnum';
 
-  --xh-font-size: var(--font-size, 13);
-  --xh-font-size-large-mult: var(--font-size-large-mult, 1.2);
-  --xh-font-size-large-em: var(--font-size-large-em, 1.2em);
-  --xh-font-size-small-mult: var(--font-size-small-mult, 0.8);
-  --xh-font-size-small-em: var(--font-size-small-em, 0.9em);
+  --xh-font-size: 13;
+  --xh-font-size-large-mult: 1.2;
+  --xh-font-size-large-em: 1.2em;
+  --xh-font-size-small-mult: 0.8;
+  --xh-font-size-small-em: 0.9em;
   --xh-font-size-px: calc(var(--xh-font-size) * 1px);
   --xh-font-size-large: calc(var(--xh-font-size) * var(--xh-font-size-large-mult));
   --xh-font-size-large-px: calc(var(--xh-font-size-large) * 1px);
@@ -429,12 +429,12 @@ body {
   --xh-font-size-small-px: calc(var(--xh-font-size-small) * 1px);
 
   &.xh-mobile {
-    --xh-font-size: var(--font-size, 16);
+    --xh-font-size: 16;
     // Important: Do not override to be less than 16px as this will make Safari auto-zoom on focus
-    --xh-mobile-input-font-size: var(--mobile-input-font-size, var(--xh-font-size));
+    --xh-mobile-input-font-size: var(--xh-font-size);
     --xh-mobile-input-font-size-px: calc(var(--xh-mobile-input-font-size) * 1px);
-    --xh-mobile-input-height-px: var(--mobile-input-height-px, 34px);
-    --xh-mobile-input-label-font-size: var(--mobile-input-label-font-size, var(--xh-font-size));
+    --xh-mobile-input-height-px: 34px;
+    --xh-mobile-input-label-font-size: var(--xh-font-size);
     --xh-mobile-input-label-font-size-px: calc(var(--xh-mobile-input-label-font-size) * 1px);
   }
 
@@ -442,65 +442,65 @@ body {
   //------------------------
   // Form Fields
   //------------------------
-  --xh-form-field-margin: var(--form-field-margin, 0 0 var(--xh-pad-px) 0);
-  --xh-form-field-padding: var(--form-field-padding, 3px);
+  --xh-form-field-margin: 0 0 var(--xh-pad-px) 0;
+  --xh-form-field-padding: 3px;
 
   // Box shadow + focus border
-  --xh-form-field-box-shadow: var(--form-field-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)});
-  --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '100', 0.2)});
-  --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '100', 0.15)});
-  --xh-form-field-focused-border-color: var(--form-field-focused-border-color, var(--xh-focus-outline-color));
-  --xh-form-field-focused-box-shadow: var(--form-field-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)});
+  --xh-form-field-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)};
+  --xh-form-field-box-shadow-color-bottom: #{mc-trans('blue-grey', '100', 0.2)};
+  --xh-form-field-box-shadow-color-top: #{mc-trans('blue-grey', '100', 0.15)};
+  --xh-form-field-focused-border-color: var(--xh-focus-outline-color);
+  --xh-form-field-focused-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)};
 
   // Label styling - common to all variants
-  --xh-form-field-label-color: var(--form-field-label-color, var(--xh-text-color));
-  --xh-form-field-label-font-size: var(--form-field-label-font-size, var(--xh-font-size-px));
-  --xh-form-field-label-font-style: var(--form-field-label-font-style, normal);
-  --xh-form-field-label-font-weight: var(--form-field-label-font-weight, normal);
-  --xh-form-field-label-text-transform: var(--form-field-label-text-transform, none);
+  --xh-form-field-label-color: var(--xh-text-color);
+  --xh-form-field-label-font-size: var(--xh-font-size-px);
+  --xh-form-field-label-font-style: normal;
+  --xh-form-field-label-font-weight: normal;
+  --xh-form-field-label-text-transform: none;
 
   // Label borders + padding - editable, not inline - the default case.
-  --xh-form-field-label-border-bottom: var(--form-field-label-border-bottom, none);
-  --xh-form-field-label-margin: var(--form-field-label-margin, 0 0 3px 0);
-  --xh-form-field-label-padding: var(--form-field-label-padding, 0);
+  --xh-form-field-label-border-bottom: none;
+  --xh-form-field-label-margin: 0 0 3px 0;
+  --xh-form-field-label-padding: 0;
 
   // Label borders + padding - readonly, not inline
-  --xh-form-field-readonly-label-border-bottom: var(--form-field-readonly-label-border-bottom, var(--xh-form-field-label-border-bottom));
-  --xh-form-field-readonly-label-margin: var(--form-field-readonly-label-margin, var(--xh-form-field-label-margin));
-  --xh-form-field-readonly-label-padding: var(--form-field-readonly-label-padding, var(--xh-form-field-label-padding));
+  --xh-form-field-readonly-label-border-bottom: var(--xh-form-field-label-border-bottom);
+  --xh-form-field-readonly-label-margin: var(--xh-form-field-label-margin);
+  --xh-form-field-readonly-label-padding: var(--xh-form-field-label-padding);
 
   // Label borders + padding - inline, both editable and readonly
-  --xh-form-field-inline-label-border-bottom: var(--form-field-inline-label-border-bottom, var(--xh-form-field-label-border-bottom));
-  --xh-form-field-inline-label-margin: var(--form-field-inline-label-margin, 0); // Defaulted to zero for inline
-  --xh-form-field-inline-label-padding: var(--form-field-inline-label-padding, var(--xh-form-field-label-padding));
+  --xh-form-field-inline-label-border-bottom: var(--xh-form-field-label-border-bottom);
+  --xh-form-field-inline-label-margin: 0; // Defaulted to zero for inline
+  --xh-form-field-inline-label-padding: var(--xh-form-field-label-padding);
 
   // Messages (general info text + validation results)
-  --xh-form-field-msg-font-size: var(--form-field-msg-font-size, var(--xh-font-size-small-px));
-  --xh-form-field-msg-line-height: var(--form-field-msg-line-height, 1.5em);
-  --xh-form-field-msg-margin: var(--form-field-msg-margin, var(--xh-pad-half-px) 0 0 0);
-  --xh-form-field-msg-text-transform: var(--form-field-msg-text-transform, none);
+  --xh-form-field-msg-font-size: var(--xh-font-size-small-px);
+  --xh-form-field-msg-line-height: 1.5em;
+  --xh-form-field-msg-margin: var(--xh-pad-half-px) 0 0 0;
+  --xh-form-field-msg-text-transform: none;
 
   // Validation colors + borders
   --xh-form-field-info-border: #{(var(--xh-form-field-info-border-width-px) solid var(--xh-form-field-info-border-color))};
-  --xh-form-field-info-border-color: var(--form-field-info-border-color, var(--xh-intent-primary-text-color));
-  --xh-form-field-info-border-width: var(--form-field-info-border-width, 1);
+  --xh-form-field-info-border-color: var(--xh-intent-primary-text-color);
+  --xh-form-field-info-border-width: 1;
   --xh-form-field-info-border-width-px: calc(var(--xh-form-field-info-border-width) * 1px);
-  --xh-form-field-info-box-shadow: var(--form-field-info-border-color, #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)});
-  --xh-form-field-info-color: var(--form-field-info-color, var(--xh-intent-primary-text-color));
+  --xh-form-field-info-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-info-border-color), inset 0 1px 1px var(--xh-form-field-info-border-color)};
+  --xh-form-field-info-color: var(--xh-intent-primary-text-color);
 
   --xh-form-field-invalid-border: #{(var(--xh-form-field-invalid-border-width-px) solid var(--xh-form-field-invalid-border-color))};
-  --xh-form-field-invalid-border-color: var(--form-field-invalid-border-color, var(--xh-intent-danger-text-color));
-  --xh-form-field-invalid-border-width: var(--form-field-invalid-border-width, 1);
+  --xh-form-field-invalid-border-color: var(--xh-intent-danger-text-color);
+  --xh-form-field-invalid-border-width: 1;
   --xh-form-field-invalid-border-width-px: calc(var(--xh-form-field-invalid-border-width) * 1px);
-  --xh-form-field-invalid-box-shadow: var(--form-field-invalid-border-color, #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)});
-  --xh-form-field-invalid-color: var(--form-field-invalid-color, var(--xh-intent-danger-text-color));
+  --xh-form-field-invalid-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-invalid-border-color), inset 0 1px 1px var(--xh-form-field-invalid-border-color)};
+  --xh-form-field-invalid-color: var(--xh-intent-danger-text-color);
 
   --xh-form-field-warning-border: #{(var(--xh-form-field-warning-border-width-px) solid var(--xh-form-field-warning-border-color))};
-  --xh-form-field-warning-border-color: var(--form-field-warning-border-color, var(--xh-intent-warning-text-color));
-  --xh-form-field-warning-border-width: var(--form-field-warning-border-width, 1);
+  --xh-form-field-warning-border-color: var(--xh-intent-warning-text-color);
+  --xh-form-field-warning-border-width: 1;
   --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
-  --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
-  --xh-form-field-warning-color: var(--form-field-warning-color, var(--xh-intent-warning-text-color));
+  --xh-form-field-warning-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)};
+  --xh-form-field-warning-color: var(--xh-intent-warning-text-color);
 
   // Input intent indicators — reusable box-shadows for input-styled components with intent.
   // Follows the same inset box-shadow pattern as form field validation states.
@@ -510,173 +510,173 @@ body {
   --xh-input-intent-danger-box-shadow: #{inset 0 0 0 1px var(--xh-intent-danger-text-color), inset 0 1px 1px var(--xh-intent-danger-text-color)};
 
   &.xh-dark {
-    --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
-    --xh-form-field-box-shadow-color-bottom: var(--form-field-box-shadow-color-bottom, #{mc-trans('blue-grey', '800', 0.2)});
+    --xh-form-field-box-shadow-color-top: #{mc-trans('blue-grey', '800', 0.15)};
+    --xh-form-field-box-shadow-color-bottom: #{mc-trans('blue-grey', '800', 0.2)};
   }
 
 
   //------------------------
   // Slider Handles
   //------------------------
-  --xh-slider-handle-focused-box-shadow: var(--slider-handle-focused-box-shadow, #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)});
+  --xh-slider-handle-focused-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)};
 
 
   //------------------------
   // Grids
   //------------------------
-  --xh-grid-bg-hover: var(--grid-bg-hover, hsl(205, 85%, 90%));
-  --xh-grid-bg-odd: var(--grid-bg-odd, #{mc('grey', '100')});
-  --xh-grid-bg: var(--grid-bg, var(--xh-bg));
-  --xh-grid-border-color: var(--grid-border-color, #{mc('grey', '200')});
-  --xh-grid-cell-focus-border-color: var(--grid-cell-focus-border-color, var(--xh-focus-outline-color));
-  --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('yellow', '400', 0.6)});
+  --xh-grid-bg-hover: hsl(205, 85%, 90%);
+  --xh-grid-bg-odd: #{mc('grey', '100')};
+  --xh-grid-bg: var(--xh-bg);
+  --xh-grid-border-color: #{mc('grey', '200')};
+  --xh-grid-cell-focus-border-color: var(--xh-focus-outline-color);
+  --xh-grid-cell-change-bg-highlight: #{mc-trans('yellow', '400', 0.6)};
   --xh-grid-cell-lr-pad-px: calc(var(--xh-grid-cell-lr-pad) * 1px);
-  --xh-grid-cell-lr-pad: var(--grid-cell-lr-pad, 11);
-  --xh-grid-empty-text-color: var(--grid-empty-text-color, var(--xh-text-color-muted));
-  --xh-grid-font-family: var(--grid-font-family, var(--xh-font-family));
+  --xh-grid-cell-lr-pad: 11;
+  --xh-grid-empty-text-color: var(--xh-text-color-muted);
+  --xh-grid-font-family: var(--xh-font-family);
   --xh-grid-font-size-px: calc(var(--xh-grid-font-size) * 1px);
-  --xh-grid-font-size: var(--grid-font-size, var(--xh-font-size));
-  --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '400')});
-  --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '200')});
-  --xh-grid-group-text-color: var(--grid-group-text-color, white);
-  --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(205, 85%, 94%));
-  --xh-grid-tree-group-border-color: var(--grid-tree-group-border-color, var(--xh-grid-selected-row-bg));
-  --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-  --xh-grid-header-bg: var(--grid-header-bg, var(--xh-grid-bg));
-  --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 80%, 95%));
-  --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(125, 80%, 95%));
-  --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, hsl(55, 80%, 95%));
-  --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(30, 80%, 95%));
-  --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(250, 50%, 95%));
-  --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(330, 50%, 95%));
-  --xh-grid-tree-group-color-level-6: var(--grid-tree-group-color-level-6, var(--xh-grid-tree-group-color-level-0));
-  --xh-grid-tree-group-color-level-7: var(--grid-tree-group-color-level-7, var(--xh-grid-tree-group-color-level-1));
-  --xh-grid-tree-group-color-level-8: var(--grid-tree-group-color-level-8, var(--xh-grid-tree-group-color-level-2));
-  --xh-grid-tree-group-color-level-9: var(--grid-tree-group-color-level-9, var(--xh-grid-tree-group-color-level-3));
+  --xh-grid-font-size: var(--xh-font-size);
+  --xh-grid-group-bg: #{mc('blue-grey', '400')};
+  --xh-grid-group-border-color: #{mc('blue-grey', '200')};
+  --xh-grid-group-text-color: white;
+  --xh-grid-tree-group-bg: hsl(205, 85%, 94%);
+  --xh-grid-tree-group-border-color: var(--xh-grid-selected-row-bg);
+  --xh-grid-total-row-bg: var(--xh-grid-tree-group-bg);
+  --xh-grid-header-bg: var(--xh-grid-bg);
+  --xh-grid-tree-group-color-level-0: hsl(205, 80%, 95%);
+  --xh-grid-tree-group-color-level-1: hsl(125, 80%, 95%);
+  --xh-grid-tree-group-color-level-2: hsl(55, 80%, 95%);
+  --xh-grid-tree-group-color-level-3: hsl(30, 80%, 95%);
+  --xh-grid-tree-group-color-level-4: hsl(250, 50%, 95%);
+  --xh-grid-tree-group-color-level-5: hsl(330, 50%, 95%);
+  --xh-grid-tree-group-color-level-6: var(--xh-grid-tree-group-color-level-0);
+  --xh-grid-tree-group-color-level-7: var(--xh-grid-tree-group-color-level-1);
+  --xh-grid-tree-group-color-level-8: var(--xh-grid-tree-group-color-level-2);
+  --xh-grid-tree-group-color-level-9: var(--xh-grid-tree-group-color-level-3);
 
-  --xh-grid-header-border-color: var(--grid-header-border-color, var(--xh-grid-border-color));
-  --xh-grid-header-icon-color: var(--grid-header-icon-color, var(--xh-text-color-muted));
-  --xh-grid-header-icon-width: var(--grid-header-icon-width, 1.4em);
-  --xh-grid-header-lr-pad: var(--grid-header-cell-lr-pad, 11);
+  --xh-grid-header-border-color: var(--xh-grid-border-color);
+  --xh-grid-header-icon-color: var(--xh-text-color-muted);
+  --xh-grid-header-icon-width: 1.4em;
+  --xh-grid-header-lr-pad: 11;
   --xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px);
-  --xh-grid-header-font-family: var(--grid-header-font-family, var(--xh-grid-font-family));
-  --xh-grid-header-font-size: var(--grid-header-font-size, var(--xh-grid-font-size));
+  --xh-grid-header-font-family: var(--xh-grid-font-family);
+  --xh-grid-header-font-size: var(--xh-grid-font-size);
   --xh-grid-header-font-size-px: calc(var(--xh-grid-header-font-size) * 1px);
-  --xh-grid-header-font-weight: var(--grid-header-font-weight, 600);
-  --xh-grid-header-text-color: var(--grid-header-text-color, var(--xh-text-color-muted));
-  --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '300')});
-  --xh-grid-selected-row-bg: var(--grid-selected-row-bg, var(--xh-bg-highlight));
-  --xh-grid-selected-row-text-color: var(--grid-selected-row-text-color, var(--xh-grid-text-color));
-  --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
-  --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
-  --xh-grid-tree-indent: var(--grid-tree-indent, 1.2em);
-  --xh-grid-tree-icon-px: var(--grid-tree-icon-px, 10px);
+  --xh-grid-header-font-weight: 600;
+  --xh-grid-header-text-color: var(--xh-text-color-muted);
+  --xh-grid-pinned-column-border-color: #{mc('grey', '300')};
+  --xh-grid-selected-row-bg: var(--xh-bg-highlight);
+  --xh-grid-selected-row-text-color: var(--xh-grid-text-color);
+  --xh-grid-summary-row-border-color: var(--xh-grid-border-color);
+  --xh-grid-text-color: var(--xh-text-color);
+  --xh-grid-tree-indent: 1.2em;
+  --xh-grid-tree-icon-px: 10px;
 
   // Large Grid
-  --xh-grid-large-cell-lr-pad: var(--grid-large-cell-lr-pad, 12);
+  --xh-grid-large-cell-lr-pad: 12;
   --xh-grid-large-cell-lr-pad-px: calc(var(--xh-grid-large-cell-lr-pad) * 1px);
-  --xh-grid-large-font-size: var(--grid-large-font-size, 14);
+  --xh-grid-large-font-size: 14;
   --xh-grid-large-font-size-px: calc(var(--xh-grid-large-font-size) * 1px);
-  --xh-grid-large-header-font-size: var(--grid-large-header-font-size, var(--xh-grid-large-font-size));
+  --xh-grid-large-header-font-size: var(--xh-grid-large-font-size);
   --xh-grid-large-header-font-size-px: calc(var(--xh-grid-large-header-font-size) * 1px);
-  --xh-grid-large-header-lr-pad: var(--grid-large-header-lr-pad, 12);
+  --xh-grid-large-header-lr-pad: 12;
   --xh-grid-large-header-lr-pad-px: calc(var(--xh-grid-large-header-lr-pad) * 1px);
 
   // Compact Grid
-  --xh-grid-compact-cell-lr-pad: var(--grid-compact-cell-lr-pad, 4);
+  --xh-grid-compact-cell-lr-pad: 4;
   --xh-grid-compact-cell-lr-pad-px: calc(var(--xh-grid-compact-cell-lr-pad) * 1px);
-  --xh-grid-compact-font-size: var(--grid-compact-font-size, 12);
+  --xh-grid-compact-font-size: 12;
   --xh-grid-compact-font-size-px: calc(var(--xh-grid-compact-font-size) * 1px);
-  --xh-grid-compact-header-font-size: var(--grid-compact-header-font-size, var(--xh-grid-compact-font-size));
+  --xh-grid-compact-header-font-size: var(--xh-grid-compact-font-size);
   --xh-grid-compact-header-font-size-px: calc(var(--xh-grid-compact-header-font-size) * 1px);
-  --xh-grid-compact-header-lr-pad: var(--grid-compact-header-lr-pad, 6);
+  --xh-grid-compact-header-lr-pad: 6;
   --xh-grid-compact-header-lr-pad-px: calc(var(--xh-grid-compact-header-lr-pad) * 1px);
 
   // Tiny Grid
-  --xh-grid-tiny-cell-lr-pad: var(--grid-tiny-cell-lr-pad, 2);
+  --xh-grid-tiny-cell-lr-pad: 2;
   --xh-grid-tiny-cell-lr-pad-px: calc(var(--xh-grid-tiny-cell-lr-pad) * 1px);
-  --xh-grid-tiny-font-size: var(--grid-tiny-font-size, 11);
+  --xh-grid-tiny-font-size: 11;
   --xh-grid-tiny-font-size-px: calc(var(--xh-grid-tiny-font-size) * 1px);
-  --xh-grid-tiny-header-font-size: var(--grid-tiny-header-font-size, var(--xh-grid-tiny-font-size));
+  --xh-grid-tiny-header-font-size: var(--xh-grid-tiny-font-size);
   --xh-grid-tiny-header-font-size-px: calc(var(--xh-grid-tiny-header-font-size) * 1px);
-  --xh-grid-tiny-header-lr-pad: var(--grid-tiny-header-lr-pad, 4);
+  --xh-grid-tiny-header-lr-pad: 4;
   --xh-grid-tiny-header-lr-pad-px: calc(var(--xh-grid-tiny-header-lr-pad) * 1px);
 
   // ZoneGrid
-  --xh-zone-grid-top-text-color: var(--zone-grid-top-text-color, var(--xh-grid-text-color));
-  --xh-zone-grid-top-font-size: var(--zone-grid-top-font-size, 14);
+  --xh-zone-grid-top-text-color: var(--xh-grid-text-color);
+  --xh-zone-grid-top-font-size: 14;
   --xh-zone-grid-top-font-size-px: calc(var(--xh-zone-grid-top-font-size) * 1px);
-  --xh-zone-grid-bottom-text-color: var(--zone-grid-bottom-text-color, var(--xh-grid-text-color));
-  --xh-zone-grid-bottom-font-size: var(--zone-grid-bottom-font-size, 11);
+  --xh-zone-grid-bottom-text-color: var(--xh-grid-text-color);
+  --xh-zone-grid-bottom-font-size: 11;
   --xh-zone-grid-bottom-font-size-px: calc(var(--xh-zone-grid-bottom-font-size) * 1px);
-  --xh-zone-grid-cell-lr-pad-px: var(--zone-grid-cell-pad-px, var(--xh-grid-cell-lr-pad-px));
-  --xh-zone-grid-delimiter-color: var(--zone-grid-delimiter-color, inherit);
-  --xh-zone-grid-label-color: var(--zone-grid-label-color, inherit);
+  --xh-zone-grid-cell-lr-pad-px: var(--xh-grid-cell-lr-pad-px);
+  --xh-zone-grid-delimiter-color: inherit;
+  --xh-zone-grid-label-color: inherit;
 
   // Grid column-header-based filter popover (desktop only)
-  --xh-grid-filter-popover-height-px: var(--grid-filter-popover-height-px, 400px);
-  --xh-grid-filter-popover-width-px: var(--grid-filter-popover-width-px, 280px);
+  --xh-grid-filter-popover-height-px: 400px;
+  --xh-grid-filter-popover-width-px: 280px;
 
   // Dark Grid
   &.xh-dark {
-    --xh-grid-bg-hover: var(--grid-bg-hover, hsl(200, 50%, 22%));
-    --xh-grid-bg-odd: var(--grid-bg-odd, hsl(200, 26%, 11%));
-    --xh-grid-border-color: var(--grid-border-color, hsl(186, 11%, 18%));
-    --xh-grid-cell-change-bg-highlight: var(--grid-cell-bg-highlight, #{mc-trans('orange', '800', 0.8)});
-    --xh-grid-group-bg: var(--grid-group-bg, #{mc('blue-grey', '800')});
-    --xh-grid-group-border-color: var(--grid-group-border-color, #{mc('blue-grey', '700')});
-    --xh-grid-tree-group-bg: var(--grid-tree-group-bg, hsl(200, 50%, 18%));
-    --xh-grid-total-row-bg: var(--grid-total-row-bg, var(--xh-grid-tree-group-bg));
-    --xh-grid-tree-group-color-level-0: var(--grid-tree-group-color-level-0, hsl(205, 65%, 15%));
-    --xh-grid-tree-group-color-level-1: var(--grid-tree-group-color-level-1, hsl(250, 65%, 15%));
-    --xh-grid-tree-group-color-level-2: var(--grid-tree-group-color-level-2, hsl(295, 65%, 15%));
-    --xh-grid-tree-group-color-level-3: var(--grid-tree-group-color-level-3, hsl(340, 65%, 15%));
-    --xh-grid-tree-group-color-level-4: var(--grid-tree-group-color-level-4, hsl(385, 65%, 15%));
-    --xh-grid-tree-group-color-level-5: var(--grid-tree-group-color-level-5, hsl(60, 25%, 15%));
-    --xh-grid-pinned-column-border-color: var(--grid-pinned-column-border-color, #{mc('grey', '800')});
+    --xh-grid-bg-hover: hsl(200, 50%, 22%);
+    --xh-grid-bg-odd: hsl(200, 26%, 11%);
+    --xh-grid-border-color: hsl(186, 11%, 18%);
+    --xh-grid-cell-change-bg-highlight: #{mc-trans('orange', '800', 0.8)};
+    --xh-grid-group-bg: #{mc('blue-grey', '800')};
+    --xh-grid-group-border-color: #{mc('blue-grey', '700')};
+    --xh-grid-tree-group-bg: hsl(200, 50%, 18%);
+    --xh-grid-total-row-bg: var(--xh-grid-tree-group-bg);
+    --xh-grid-tree-group-color-level-0: hsl(205, 65%, 15%);
+    --xh-grid-tree-group-color-level-1: hsl(250, 65%, 15%);
+    --xh-grid-tree-group-color-level-2: hsl(295, 65%, 15%);
+    --xh-grid-tree-group-color-level-3: hsl(340, 65%, 15%);
+    --xh-grid-tree-group-color-level-4: hsl(385, 65%, 15%);
+    --xh-grid-tree-group-color-level-5: hsl(60, 25%, 15%);
+    --xh-grid-pinned-column-border-color: #{mc('grey', '800')};
   }
 
   // Mobile Grid
   &.xh-mobile {
-    --xh-grid-font-size: var(--grid-font-size, 14);
-    --xh-grid-compact-font-size: var(--grid-compact-font-size, 13);
+    --xh-grid-font-size: 14;
+    --xh-grid-compact-font-size: 13;
   }
 
 
   //------------------------
   // Inputs
   //------------------------
-  --xh-input-bg: var(--input-bg, var(--xh-bg));
-  --xh-input-disabled-bg: var(--input-disabled-bg, rgba(206, 217, 224, 0.5));  // This and below currently matched from Blueprint defaults
-  --xh-input-disabled-text-color: var(--input-disabled-text-color, rgba(92, 112, 128, 0.5));
-  --xh-input-font-family: var(--input-font-family, var(--xh-font-family));
-  --xh-input-font-feature-settings: var(--input-font-feature-settings, var(--xh-font-feature-settings));
-  --xh-input-text-color: var(--input-text-color, var(--xh-text-color));
-  --xh-input-placeholder-text-color: var(--input-placeholder-color, rgb(175, 183, 191));
-  --xh-input-disabled-checkmark-svg: var(--input-disabled-checkmark-svg, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e"));
+  --xh-input-bg: var(--xh-bg);
+  --xh-input-disabled-bg: rgba(206, 217, 224, 0.5);  // This and below currently matched from Blueprint defaults
+  --xh-input-disabled-text-color: rgba(92, 112, 128, 0.5);
+  --xh-input-font-family: var(--xh-font-family);
+  --xh-input-font-feature-settings: var(--xh-font-feature-settings);
+  --xh-input-text-color: var(--xh-text-color);
+  --xh-input-placeholder-text-color: rgb(175, 183, 191);
+  --xh-input-disabled-checkmark-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e");
 
   &.xh-dark {
-    --xh-input-bg: var(--input-bg, rgba(0, 0, 0, 0.3)); // Allow some blending w/backgrounds - e.g. in dialog.
-    --xh-input-disabled-bg: var(--input-disabled-bg, rgba(57, 75, 89, 0.5)); // This and below currently matched from Blueprint defaults
-    --xh-input-disabled-text-color: var(--input-disabled-text-color, rgba(191, 204, 214, 0.5));
-    --xh-input-disabled-checkmark-svg: var(--input-disabled-checkmark-svg, url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(191, 204, 214, 0.5)'/%3e%3c/svg%3e"));
+    --xh-input-bg: rgba(0, 0, 0, 0.3); // Allow some blending w/backgrounds - e.g. in dialog.
+    --xh-input-disabled-bg: rgba(57, 75, 89, 0.5); // This and below currently matched from Blueprint defaults
+    --xh-input-disabled-text-color: rgba(191, 204, 214, 0.5);
+    --xh-input-disabled-checkmark-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(191, 204, 214, 0.5)'/%3e%3c/svg%3e");
   }
 
   //------------------------
   // Mask + LoadingIndicator
   //------------------------
-  --xh-mask-bg: var(--mask-bg, rgba(255, 255, 255, 0.4));
-  --xh-mask-text-bg: var(--mask-text-bg, var(--xh-bg-alt));
-  --xh-mask-text-border: var(--mask-text-border, var(--xh-border-solid));
-  --xh-mask-text-color: var(--mask-text-color, var(--xh-text-color));
-  --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
-  --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
-  --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
+  --xh-mask-bg: rgba(255, 255, 255, 0.4);
+  --xh-mask-text-bg: var(--xh-bg-alt);
+  --xh-mask-text-border: var(--xh-border-solid);
+  --xh-mask-text-color: var(--xh-text-color);
+  --xh-loading-indicator-bg: #{mc('blue-grey', '100')};
+  --xh-loading-indicator-border-color: var(--xh-border-color);
+  --xh-loading-indicator-color: #{mc('blue-grey', '600')};
 
   &.xh-dark {
-    --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
-    --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '700')});
-    --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '200')});
+    --xh-mask-bg: rgba(0, 0, 0, 0.4);
+    --xh-loading-indicator-bg: #{mc('blue-grey', '700')};
+    --xh-loading-indicator-color: #{mc('blue-grey', '200')};
   }
 
 
@@ -685,12 +685,12 @@ body {
   // Applicable to mobile only at this time
   //---------------------------------------
   &.xh-mobile {
-    --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(128, 128, 128, 0.2));
-    --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.4)});
+    --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
+    --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.4)};
 
     &.xh-dark {
-      --xh-popover-backdrop-bg: var(--popover-backdrop, rgb(0, 0, 0, 0.2));
-      --xh-popover-box-shadow: var(--popover-shadow, #{0 0 20px rgba(0, 0, 0, 0.7)});
+      --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
+      --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.7)};
     }
   }
 
@@ -698,7 +698,7 @@ body {
   //------------------------
   // Padding / Margins
   //------------------------
-  --xh-pad: var(--pad, 10);
+  --xh-pad: 10;
   --xh-pad-px: calc(var(--xh-pad) * 1px);
   --xh-pad-double: calc(var(--xh-pad) * 2);
   --xh-pad-double-px: calc(var(--xh-pad-double) * 1px);
@@ -716,38 +716,38 @@ body {
   //------------------------
   // Panels
   //------------------------
-  --xh-panel-bg: var(--panel-bg, var(--xh-bg));
-  --xh-panel-border-color: var(--panel-border-color, var(--xh-border-color));
-  --xh-panel-border-width: var(--panel-border-width, 0);
+  --xh-panel-bg: var(--xh-bg);
+  --xh-panel-border-color: var(--xh-border-color);
+  --xh-panel-border-width: 0;
   --xh-panel-border-width-px: calc(var(--xh-panel-border-width) * 1px);
-  --xh-panel-title-bg: var(--panel-title-bg, var(--xh-title-bg));
-  --xh-panel-title-font-family: var(--panel-title-font-family, var(--xh-title-font-family));
-  --xh-panel-title-font-size: var(--panel-title-font-size, var(--xh-title-font-size));
+  --xh-panel-title-bg: var(--xh-title-bg);
+  --xh-panel-title-font-family: var(--xh-title-font-family);
+  --xh-panel-title-font-size: var(--xh-title-font-size);
   --xh-panel-title-font-size-px: calc(var(--xh-panel-title-font-size) * 1px);
-  --xh-panel-title-text-color: var(--panel-title-text-color, var(--xh-title-text-color));
+  --xh-panel-title-text-color: var(--xh-title-text-color);
 
   &.xh-mobile {
-    --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '100')});
-    --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '800')});
+    --xh-panel-title-bg: #{mc('blue-grey', '100')};
+    --xh-panel-title-text-color: #{mc('blue-grey', '800')};
 
     &.xh-dark {
-      --xh-panel-title-bg: var(--panel-title-bg, #{mc('blue-grey', '900')});
-      --xh-panel-title-text-color: var(--panel-title-text-color, #{mc('blue-grey', '50')});
+      --xh-panel-title-bg: #{mc('blue-grey', '900')};
+      --xh-panel-title-text-color: #{mc('blue-grey', '50')};
     }
   }
 
   //------------------------
   // Popups / dialogs
   //------------------------
-  --xh-popup-bg: var(--popup-bg, var(--xh-bg));
-  --xh-popup-border-color: var(--popup-border-color, var(--xh-border-color));
-  --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
+  --xh-popup-bg: var(--xh-bg);
+  --xh-popup-border-color: var(--xh-border-color);
+  --xh-popup-border-width: var(--xh-border-width);
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
-  --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));
-  --xh-popup-title-font-family: var(--popup-title-font-family, var(--xh-title-font-family));
-  --xh-popup-title-font-size: var(--popup-title-font-size, var(--xh-title-font-size));
+  --xh-popup-title-bg: var(--xh-title-bg);
+  --xh-popup-title-font-family: var(--xh-title-font-family);
+  --xh-popup-title-font-size: var(--xh-title-font-size);
   --xh-popup-title-font-size-px: calc(var(--xh-popup-title-font-size) * 1px);
-  --xh-popup-title-text-color: var(--popup-title-text-color, var(--xh-title-text-color));
+  --xh-popup-title-text-color: var(--xh-title-text-color);
 
   &.xh-mobile {
     --xh-popup-border-width: 2;
@@ -756,126 +756,126 @@ body {
   //------------------------
   // Resizable splitters
   //------------------------
-  --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});
-  --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '100')});
-  --xh-resizable-border-width: var(--resizable-border-width, 1);
+  --xh-resizable-bg: #{mc('blue-grey', '50')};
+  --xh-resizable-border-color: #{mc('blue-grey', '100')};
+  --xh-resizable-border-width: 1;
   --xh-resizable-border-width-px: calc(var(--xh-resizable-border-width) * 1px);
-  --xh-resizable-button-bg: var(--resizable-button-bg, rgba(0, 0, 0, 0.05));
-  --xh-resizable-button-icon-color: var(--resizable-button-icon-color, var(--xh-blue-gray));
-  --xh-resizable-size: var(--resizable-size, 8);
+  --xh-resizable-button-bg: rgba(0, 0, 0, 0.05);
+  --xh-resizable-button-icon-color: var(--xh-blue-gray);
+  --xh-resizable-size: 8;
   --xh-resizable-size-px: calc(var(--xh-resizable-size) * 1px);
 
   &.xh-dark {
-    --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '800')});
-    --xh-resizable-border-color: var(--resizable-border-color, #{mc('blue-grey', '900')});
-    --xh-resizable-button-bg: var(--resizable-button-bg, rgba(255, 255, 255, 0.08));
-    --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
+    --xh-resizable-bg: #{mc('blue-grey', '800')};
+    --xh-resizable-border-color: #{mc('blue-grey', '900')};
+    --xh-resizable-button-bg: rgba(255, 255, 255, 0.08);
+    --xh-resizable-button-icon-color: #{mc('blue-grey', '900')};
   }
 
 
   //------------------------
   // Scrollbars
   //------------------------
-  --xh-scrollbar-bg: var(--scrollbar-bg, #{mc('blue-grey', '100')});
-  --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '300')});
-  --xh-scrollbar-size-px: var(--scrollbar-size-px, 10px);
+  --xh-scrollbar-bg: #{mc('blue-grey', '100')};
+  --xh-scrollbar-thumb: #{mc('blue-grey', '300')};
+  --xh-scrollbar-size-px: 10px;
 
   &.xh-dark {
-    --xh-scrollbar-bg: var(--scrollbar-bg, var(--xh-black));
-    --xh-scrollbar-thumb: var(--scrollbar-thumb, #{mc('blue-grey', '900')});
+    --xh-scrollbar-bg: var(--xh-black);
+    --xh-scrollbar-thumb: #{mc('blue-grey', '900')};
   }
 
 
   //------------------------
   // Tabs
   //------------------------
-  --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
-  --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary));
-  --xh-tab-disabled-text-color: var(--tab-disabled-text-color, var(--xh-text-color-muted));
-  --xh-tab-border-width: var(--tab-border-width, var(--xh-border-width));
+  --xh-tab-text-color: var(--xh-text-color);
+  --xh-tab-active-text-color: var(--xh-intent-primary);
+  --xh-tab-disabled-text-color: var(--xh-text-color-muted);
+  --xh-tab-border-width: var(--xh-border-width);
   --xh-tab-border-width-px: calc(var(--xh-tab-border-width) * 1px);
-  --xh-tab-font-family: var(--tab-font-family, var(--xh-font-family));
-  --xh-tab-font-size: var(--tab-font-size, var(--xh-font-size));
+  --xh-tab-font-family: var(--xh-font-family);
+  --xh-tab-font-size: var(--xh-font-size);
   --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
 
   &.xh-dark {
-    --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));
+    --xh-tab-active-text-color: var(--xh-intent-primary-lighter);
   }
 
 
   //------------------------
   // Text
   //------------------------
-  --xh-text-color: var(--text-color, var(--xh-blue-gray-dark));
-  --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
-  --xh-text-color-headings: var(--text-color-headings, var(--xh-text-color));
-  --xh-text-color-highlight: var(--text-color-highlight, #{mc('blue-grey', '800')});
-  --xh-text-color-muted: var(--text-color-muted, var(--xh-gray));
+  --xh-text-color: var(--xh-blue-gray-dark);
+  --xh-text-color-accent: var(--xh-orange);
+  --xh-text-color-headings: var(--xh-text-color);
+  --xh-text-color-highlight: #{mc('blue-grey', '800')};
+  --xh-text-color-muted: var(--xh-gray);
 
   &.xh-dark {
-    --xh-text-color: var(--text-color, white);
-    --xh-text-color-accent: var(--text-color-accent, var(--xh-orange));
-    --xh-text-color-highlight: var(--text-color-highlight, white);
-    --xh-text-color-muted: var(--text-color-muted, #{mc('grey', '600')});
+    --xh-text-color: white;
+    --xh-text-color-accent: var(--xh-orange);
+    --xh-text-color-highlight: white;
+    --xh-text-color-muted: #{mc('grey', '600')};
   }
 
 
   //------------------------------
   // Titles (e.g. panels, dialogs)
   //------------------------------
-  --xh-title-bg: var(--title-bg, var(--xh-blue-gray));
-  --xh-title-text-color: var(--title-text-color, var(--xh-blue-gray-light));
-  --xh-title-font-family: var(--title-font-family, var(--xh-font-family-headings));
-  --xh-title-font-size: var(--title-font-size, var(--xh-font-size-large));
+  --xh-title-bg: var(--xh-blue-gray);
+  --xh-title-text-color: var(--xh-blue-gray-light);
+  --xh-title-font-family: var(--xh-font-family-headings);
+  --xh-title-font-size: var(--xh-font-size-large);
   --xh-title-font-size-px: calc(var(--xh-title-font-size) * 1px);
-  --xh-title-height: var(--title-height, 36);
+  --xh-title-height: 36;
   --xh-title-height-px: calc(var(--xh-title-height) * 1px);
-  --xh-title-icon-size: var(--title-icon-size, var(--xh-title-font-size));
+  --xh-title-icon-size: var(--xh-title-font-size);
   --xh-title-icon-size-px: calc(var(--xh-title-icon-size) * 1px);
-  --xh-title-pad: var(--title-pad, var(--xh-pad-half));
+  --xh-title-pad: var(--xh-pad-half);
   --xh-title-pad-px: calc(var(--xh-title-pad) * 1px);
-  --xh-title-compact-font-size: var(--title-compact-font-size, var(--xh-font-size));
+  --xh-title-compact-font-size: var(--xh-font-size);
   --xh-title-compact-font-size-px: calc(var(--xh-title-compact-font-size) * 1px);
-  --xh-title-compact-height: var(--title-compact-height, 28);
+  --xh-title-compact-height: 28;
   --xh-title-compact-height-px: calc(var(--xh-title-compact-height) * 1px);
 
   &.xh-mobile {
-    --xh-title-font-size: var(--title-font-size, var(--xh-font-size));
+    --xh-title-font-size: var(--xh-font-size);
   }
 
 
   //------------------------
   // Toolbars
   //------------------------
-  --xh-tbar-bg: var(--tbar-bg, var(--xh-bg-alt));
-  --xh-tbar-border-color: var(--tbar-border-color, #{mc('grey', '400')});
-  --xh-tbar-item-pad: var(--tbar-item-pad, var(--xh-pad-half));
+  --xh-tbar-bg: var(--xh-bg-alt);
+  --xh-tbar-border-color: #{mc('grey', '400')};
+  --xh-tbar-item-pad: var(--xh-pad-half);
   --xh-tbar-item-pad-px: calc(var(--xh-tbar-item-pad) * 1px);
-  --xh-tbar-font-size: var(--tbar-font-size, var(--xh-font-size));
+  --xh-tbar-font-size: var(--xh-font-size);
   --xh-tbar-font-size-px: calc(var(--xh-tbar-font-size) * 1px);
-  --xh-tbar-min-size: var(--tbar-min-size, 41);
+  --xh-tbar-min-size: 41;
   --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
-  --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('grey', '400')});
-  --xh-tbar-text-color: var(--tbar-text-color, var(--xh-text-color));
-  --xh-tbar-compact-font-size: var(--tbar-compact-font-size, var(--xh-font-size-small));
+  --xh-tbar-separator-color: #{mc('grey', '400')};
+  --xh-tbar-text-color: var(--xh-text-color);
+  --xh-tbar-compact-font-size: var(--xh-font-size-small);
   --xh-tbar-compact-font-size-px: calc(var(--xh-tbar-compact-font-size) * 1px);
-  --xh-tbar-compact-min-size: var(--tbar-compact-min-size, 24);
+  --xh-tbar-compact-min-size: 24;
   --xh-tbar-compact-min-size-px: calc(var(--xh-tbar-compact-min-size) * 1px);
   --xh-tbar-compact-item-height-px: calc(var(--xh-tbar-compact-min-size-px) - 4px);
 
   &.xh-dark {
-    --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
-    --xh-tbar-border-color: var(--tbar-border-color, #{mc('blue-grey', '800')});
-    --xh-tbar-separator-color: var(--tbar-separator-color, #{mc('blue-grey', '600')});
+    --xh-tbar-bg: #{mc('blue-grey', '900')};
+    --xh-tbar-border-color: #{mc('blue-grey', '800')};
+    --xh-tbar-separator-color: #{mc('blue-grey', '600')};
   }
 
   &.xh-mobile {
     // Larger toolbars on mobile to account for relatively larger inputs that can be nested within them.
-    --xh-tbar-min-size: var(--tbar-min-size, 44);
+    --xh-tbar-min-size: 44;
     --xh-tbar-min-size-px: calc(var(--xh-tbar-min-size) * 1px);
 
     &.xh-dark {
-      --xh-tbar-bg: var(--tbar-bg, #{mc('blue-grey', '900')});
+      --xh-tbar-bg: #{mc('blue-grey', '900')};
     }
   }
 
@@ -894,9 +894,9 @@ body {
   //------------------------
   // DashCanvas
   //------------------------
-  --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color, #{mc-muted('blue-grey', '50', 0%, 4%)});
+  --xh-dash-canvas-grid-cell-color: #{mc-muted('blue-grey', '50', 0%, 4%)};
 
   &.xh-dark {
-    --xh-dash-canvas-grid-cell-color: var(--dash-canvas-grid-cell-color,  var(--black, hsl(202, 17%, 8%)));
+    --xh-dash-canvas-grid-cell-color: hsl(202, 17%, 8%);
   }
 }

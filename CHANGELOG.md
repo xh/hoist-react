@@ -2,6 +2,25 @@
 
 ## 83.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v83-upgrade-notes.md`](docs/upgrade-notes/v83-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed the two-tier CSS custom property override system. Applications that customized Hoist's
+  appearance by setting unprefixed CSS variables (e.g. `--grid-bg`, `--pad`, `--font-size`) must
+  now set the `--xh-` prefixed variables directly (e.g. `--xh-grid-bg`, `--xh-pad`,
+  `--xh-font-size`). This is a mechanical find-and-replace for most apps. A small number of
+  unprefixed hook names did not match their `--xh-` counterpart — see the upgrade notes for a
+  complete mapping.
+
+### 🐞 Bug Fixes
+
+* Fixed a copy-paste bug in `vars.scss` where the `--xh-intent-primary-text-color`,
+  `--xh-intent-success-text-color`, and `--xh-intent-warning-text-color` CSS variables all
+  referenced `--intent-danger-text-color` as their override hook, making their individual hooks
+  non-functional.
+
 ### 🎁 New Features
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
