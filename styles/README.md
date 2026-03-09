@@ -26,30 +26,33 @@ selectors, and a small number of color functions used to generate default values
 
 ## CSS Custom Properties
 
-### The Two-Tier Variable Pattern
+### Overriding `--xh-*` Variables
 
-Every `--xh-*` variable follows a two-tier pattern that enables app-level overrides:
-
-```scss
-// In vars.scss — framework default
---xh-grid-bg: var(--grid-bg, var(--xh-bg));
-```
-
-This reads as: "Use `--grid-bg` if the app has defined it, otherwise fall back to `--xh-bg`." The
-outer `--xh-grid-bg` is the variable that component SCSS files actually reference. The inner
-`--grid-bg` (without the `xh-` prefix) is the app-level override hook.
-
-This means applications can customize any Hoist style by setting the unprefixed variable:
+All Hoist CSS custom properties use the `--xh-` prefix. Applications customize Hoist's appearance
+by overriding these variables directly on `body.xh-app`:
 
 ```scss
-// In an app's SCSS — override grid background
 body.xh-app {
-    --grid-bg: #fafafa;
+    --xh-border-color: #cccccc;
+    --xh-grid-group-bg: hsl(206, 20%, 65%);
+    --xh-text-color-muted: #5d5d5d;
+    --xh-tbar-compact-min-size: 32;
 }
 ```
 
-Applications should **not** redefine `--xh-*` variables directly — those are framework-managed.
-Use the unprefixed override hooks instead.
+Component SCSS files reference these variables for all themeable properties. Because `--xh-*` vars
+are defined on `body` and inherited by default, an override on `body.xh-app` (which has higher
+specificity than `body`) takes precedence over the framework defaults.
+
+Scoped overrides also work — setting a variable on a more specific selector limits the change to
+that subtree:
+
+```scss
+// Only grids within this panel get a different background
+.my-special-panel {
+    --xh-grid-bg: #fafafa;
+}
+```
 
 ### Variable Categories
 
@@ -76,20 +79,22 @@ Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, and Viewport.
 Many size-related variables store **unitless numbers** and provide a computed `-px` companion:
 
 ```scss
---xh-pad: var(--pad, 10);
+--xh-pad: 10;
 --xh-pad-px: calc(var(--xh-pad) * 1px);
 ```
 
-This enables `calc()` operations on the base value while providing a ready-to-use pixel variant
-for direct property assignment. Apps overriding these values should set the unprefixed variable
-to a unitless number:
+The unitless base value supports `calc()` arithmetic (e.g. deriving `--xh-pad-half` and
+`--xh-pad-double`), while the `-px` companion is ready for direct use in CSS properties. Most
+component SCSS files reference the `-px` suffixed versions.
+
+Apps overriding these variables should set a **unitless number**:
 
 ```scss
-// ✅ Do: Set a unitless number
-body.xh-app { --pad: 8; }
+// Do: Set a unitless number
+body.xh-app { --xh-pad: 8; }
 
-// ❌ Don't: Include units in the override
-body.xh-app { --pad: 8px; }
+// Don't: Include units — breaks calc() expressions
+body.xh-app { --xh-pad: 8px; }
 ```
 
 ### Intent Color System
@@ -98,12 +103,12 @@ Intent colors (neutral, primary, success, warning, danger) use an HSL decomposit
 supports multiple lightness variants from a single hue/saturation definition:
 
 ```scss
-// Base HSL components
---xh-intent-primary-h: var(--intent-primary-h, 206);
---xh-intent-primary-s: var(--intent-primary-s, 100%);
---xh-intent-primary-l3: var(--intent-primary-l3, 30%);
+// Base HSL components — override these to shift an entire intent palette
+--xh-intent-primary-h: 206;
+--xh-intent-primary-s: 100%;
+--xh-intent-primary-l3: 30%;
 
-// Composed into named variants
+// Composed into named variants (derived automatically)
 --xh-intent-primary: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3));
 --xh-intent-primary-darker: hsl(..., var(--xh-intent-primary-l2));
 --xh-intent-primary-lighter: hsl(..., var(--xh-intent-primary-l4));
@@ -112,7 +117,8 @@ supports multiple lightness variants from a single hue/saturation definition:
 
 Each intent provides seven usable variants: `-darkest`, `-darker`, (base), `-lighter`, `-lightest`,
 `-trans1`, and `-trans2`. This gives component styles a rich palette without requiring apps to
-define every shade — overriding just the hue (`--intent-primary-h`) will shift all derived variants.
+define every shade — overriding just the hue (`--xh-intent-primary-h`) will shift all derived
+variants.
 
 ### Material Design Color Functions
 
@@ -125,7 +131,7 @@ The framework defaults for core colors are derived from Google's Material Design
 @function mc-trans($color-name, $color-variant, ...) { ... }  // Semi-transparent
 ```
 
-These functions run **at compile time** to generate static CSS fallback values. They are used only
+These functions run **at compile time** to generate static CSS default values. They are used only
 within `vars.scss` to seed defaults — component SCSS files and application stylesheets reference
 CSS custom properties, never these functions directly.
 
@@ -144,16 +150,35 @@ Hoist's dark theme is implemented via CSS class toggling on the `<body>` element
 4. All component styles automatically adapt because they reference CSS vars, not static colors
 
 ```scss
-// vars.scss
---xh-bg: var(--bg, white);
+// vars.scss — framework defaults
+--xh-bg: white;
 
 &.xh-dark {
-    --xh-bg: var(--bg, var(--xh-black));
+    --xh-bg: var(--xh-black);
 }
 ```
 
 The `system` option listens for `prefers-color-scheme` media query changes and automatically
 tracks the OS-level preference.
+
+### App-Level Dark Overrides
+
+Applications provide per-theme overrides using the same `&.xh-dark` nesting pattern:
+
+```scss
+body.xh-app {
+    --xh-border-color: #cccccc;
+    --xh-text-color-muted: #5d5d5d;
+
+    &.xh-dark {
+        --xh-border-color: #37474f;
+        --xh-text-color-muted: #acacac;
+    }
+}
+```
+
+A variable set without a `&.xh-dark` block applies to both themes. When you need different values
+per theme, provide both.
 
 ### Dark Overrides in Component SCSS
 
@@ -182,10 +207,10 @@ font sizes, taller toolbars, different AppBar colors). These combine with dark t
 
 ```scss
 &.xh-mobile {
-    --xh-font-size: var(--font-size, 16);
+    --xh-font-size: 16;
 
     &.xh-dark {
-        --xh-appbar-bg: var(--appbar-bg, #{mc('blue-grey', '700')});
+        --xh-appbar-bg: #{mc('blue-grey', '700')};
     }
 }
 ```
@@ -337,19 +362,19 @@ CSS custom properties for anything that needs to be themeable or overridable at 
 
 ### Overriding Theme Variables
 
-Applications customize Hoist's appearance by setting the unprefixed override hooks in their own
-SCSS. A typical app-level stylesheet:
+Applications customize Hoist's appearance by setting `--xh-*` variables in their own SCSS. A
+typical app-level stylesheet:
 
 ```scss
 // App.scss
 body.xh-app {
     // Override core spacing
-    --pad: 8;
+    --xh-pad: 8;
 
     // Customize form field labels
-    --form-field-label-color: var(--xh-text-color-muted);
-    --form-field-label-font-size: var(--xh-font-size-small-px);
-    --form-field-label-text-transform: uppercase;
+    --xh-form-field-label-color: var(--xh-text-color-muted);
+    --xh-form-field-label-font-size: var(--xh-font-size-small-px);
+    --xh-form-field-label-text-transform: uppercase;
 
     // Dark theme specific overrides
     &.xh-dark {
@@ -360,12 +385,12 @@ body.xh-app {
 
 ### App-Specific Component Styling
 
-Applications define their own classes using an app-specific prefix (e.g. `tb-` for Toolbox, `js-`
-for Jobsite) and can also target Hoist framework classes for contextual overrides:
+Applications define their own classes using an app-specific prefix (e.g. `tb-` for Toolbox) and
+can also target Hoist framework classes for contextual overrides:
 
 ```scss
 // App-prefixed classes follow the same BEM pattern
-.js-release-date-badge {
+.tb-release-date-badge {
     font-weight: 500;
     &--clickable:hover {
         cursor: pointer;
@@ -413,31 +438,14 @@ body.xh-app {
 
 ## Common Pitfalls
 
-### Redefining `--xh-*` Variables Directly
-
-```scss
-// ❌ Don't: Override the framework-managed variable
-body.xh-app {
-    --xh-grid-bg: #fafafa;
-}
-
-// ✅ Do: Use the unprefixed override hook
-body.xh-app {
-    --grid-bg: #fafafa;
-}
-```
-
-The `--xh-*` prefix is reserved for the framework. While directly overriding them will technically
-work, it bypasses the two-tier indirection and may be overwritten by future framework updates.
-
 ### Using SCSS Variables for Themeable Values
 
 ```scss
-// ❌ Don't: Use SCSS variable — won't respond to theme changes
+// Don't: Use SCSS variable — won't respond to theme changes
 $my-bg: white;
 .my-panel { background: $my-bg; }
 
-// ✅ Do: Use CSS custom property — adapts with theme
+// Do: Use CSS custom property — adapts with theme
 .my-panel { background: var(--xh-bg); }
 ```
 
@@ -446,11 +454,11 @@ SCSS variables are resolved at compile time and cannot respond to runtime theme 
 ### Including Units in Override Values
 
 ```scss
-// ❌ Don't: Include px units — breaks calc() expressions
-body.xh-app { --font-size: 14px; }
+// Don't: Include px units — breaks calc() expressions
+body.xh-app { --xh-font-size: 14px; }
 
-// ✅ Do: Use unitless numbers for size overrides
-body.xh-app { --font-size: 14; }
+// Do: Use unitless numbers for size overrides
+body.xh-app { --xh-font-size: 14; }
 ```
 
 Hoist's unitless-plus-`-px` pattern uses `calc(var(...) * 1px)` to add units — if the source
@@ -459,10 +467,10 @@ value already includes units, the calculation produces invalid values like `14px
 ### High-Specificity Selectors
 
 ```scss
-// ❌ Don't: Over-nest to create high-specificity chains
+// Don't: Over-nest to create high-specificity chains
 body.xh-app .xh-panel .xh-panel__inner .xh-grid { ... }
 
-// ✅ Do: Target the class directly
+// Do: Target the class directly
 .xh-grid { ... }
 ```
 
