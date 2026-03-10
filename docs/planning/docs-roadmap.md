@@ -29,6 +29,7 @@ interacts with Hoist.
 | `/desktop/cmp/panel/` | 7 | Panel container — toolbars, masks, collapse/resize, persistence, modal support | [Done](../../desktop/cmp/panel/README.md) |
 | `/desktop/cmp/dash/` | 14 | Dashboard system — DashContainer (GoldenLayout) and DashCanvas (react-grid-layout), widget persistence, ViewManager integration | [Done](../../desktop/cmp/dash/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |
+| `/cmp/filter/` | 9 | FilterChooser and FilterBuilder — cross-platform models for filter construction UIs | [Done](../../cmp/filter/README.md) |
 
 ## Priority 3 - Key Utilities
 

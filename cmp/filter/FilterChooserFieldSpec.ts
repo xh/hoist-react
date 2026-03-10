@@ -5,10 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {parseFieldValue} from '@xh/hoist/data';
-import {
-    BaseFilterFieldSpec,
-    BaseFilterFieldSpecConfig
-} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {FilterFieldSpec, FilterFieldSpecConfig} from '@xh/hoist/data/filter/FilterFieldSpec';
 import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
@@ -16,7 +13,7 @@ import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 import {isValidElement, ReactNode} from 'react';
 
-export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
+export interface FilterChooserFieldSpecConfig extends FilterFieldSpecConfig {
     /**
      * Function to produce a suitably formatted string for display to the user
      * for any given field value.
@@ -40,7 +37,7 @@ export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig 
  * Apps should NOT instantiate this class directly. Instead see {@link FilterChooserModel.fieldSpecs}
  * for the relevant config to set these options.
  */
-export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
+export class FilterChooserFieldSpec extends FilterFieldSpec {
     valueRenderer: FilterChooserValueRenderer;
     valueParser: FilterChooserValueParser;
     example: string;
