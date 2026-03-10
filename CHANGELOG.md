@@ -18,8 +18,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Fixed a copy-paste bug in `vars.scss` where the `--xh-intent-primary-text-color`,
   `--xh-intent-success-text-color`, and `--xh-intent-warning-text-color` CSS variables all
-  referenced `--intent-danger-text-color` as their override hook, making their individual hooks
-  non-functional.
+  incorrectly referenced the danger intent's fallback value. (This bug is now moot given the
+  removal of the two-tier override system above, but was fixed independently.)
 
 ### 🎁 New Features
 
