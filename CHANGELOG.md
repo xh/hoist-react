@@ -16,15 +16,22 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed a copy-paste bug in `vars.scss` where the `--xh-intent-primary-text-color`,
-  `--xh-intent-success-text-color`, and `--xh-intent-warning-text-color` CSS variables all
-  incorrectly referenced the danger intent's fallback value. (This bug is now moot given the
-  removal of the two-tier override system above, but was fixed independently.)
+* Fixed copy-paste bug where three intent text-color CSS variables incorrectly referenced the
+  danger intent's fallback. Moot given the override system removal above, but fixed independently.
 
 ### 🎁 New Features
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
+
+### ✨ Styles
+
+* Added `css-data.json`, a VS Code Custom Data file providing autocomplete and hover
+  documentation for all ~425 `--xh-*` CSS custom properties. Also serves as a machine-readable
+  index for coding agents and LLMs. Generated from `vars.scss` by `bin/generate-css-data.mjs`
+  and kept in sync via a pre-commit hook.
+* Added `///` doc comment convention for CSS variable descriptions in `vars.scss`, with
+  auto-generated fallback descriptions based on variable name structure and value relationships.
 
 ### ⚙️ Technical
 

@@ -426,6 +426,54 @@ body.xh-app {
 }
 ```
 
+## IDE and Agent Support (`css-data.json`)
+
+Hoist ships a `css-data.json` file at the package root, generated from `vars.scss` by
+`bin/generate-css-data.mjs`. This file follows the
+[VS Code Custom Data](https://code.visualstudio.com/blogs/2020/02/24/custom-data-format) format
+and provides autocomplete and hover documentation for all `--xh-*` CSS custom properties.
+
+To enable in VS Code, add to your workspace or user settings:
+
+```json
+{
+    "css.customData": ["./node_modules/@xh/hoist/css-data.json"]
+}
+```
+
+The file also serves as a machine-readable index for coding agents and LLMs — each entry includes
+a description that conveys what the variable controls, whether it's a direct override point or a
+computed derivation, and its relationship to other variables.
+
+### Maintaining `css-data.json`
+
+The file is checked into source control and included in the published npm package. A pre-commit
+hook validates it stays in sync whenever `.scss` files change — if stale, the commit is blocked
+with instructions to regenerate:
+
+```bash
+node bin/generate-css-data.mjs          # regenerate
+node bin/generate-css-data.mjs --check  # validate without writing
+```
+
+### Documenting Variables with `///` Comments
+
+Descriptions are auto-generated from the variable name and value, but explicit descriptions can
+be provided using SassDoc-style `///` comments immediately above a declaration:
+
+```scss
+/// Primary background color for the application and component chrome.
+--xh-bg: white;
+
+/// Base padding unit (unitless number). Derived `-px`, `-double`, and `-half` variants
+/// are computed from this value.
+--xh-pad: 10;
+```
+
+When a `///` comment is present, it is used verbatim. Otherwise, the generator produces a
+description from the variable's name structure and value — identifying component prefixes,
+property terms, derived/computed relationships, and alias defaults.
+
 ## Related Packages
 
 - [`/appcontainer/`](../appcontainer/README.md) — `ThemeModel` manages dark/light theme toggling

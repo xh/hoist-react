@@ -1,0 +1,1705 @@
+{
+  "version": 1.1,
+  "properties": [
+    {
+      "name": "--xh-black",
+      "description": "Core palette color: black."
+    },
+    {
+      "name": "--xh-blue",
+      "description": "Core palette color: blue."
+    },
+    {
+      "name": "--xh-blue-muted",
+      "description": "Core palette color: muted blue."
+    },
+    {
+      "name": "--xh-blue-dark",
+      "description": "Core palette color: dark blue."
+    },
+    {
+      "name": "--xh-blue-light",
+      "description": "Core palette color: light blue."
+    },
+    {
+      "name": "--xh-blue-gray",
+      "description": "Core palette color: blue-gray."
+    },
+    {
+      "name": "--xh-blue-gray-light",
+      "description": "Core palette color: light blue-gray."
+    },
+    {
+      "name": "--xh-blue-gray-dark",
+      "description": "Core palette color: dark blue-gray."
+    },
+    {
+      "name": "--xh-gray",
+      "description": "Core palette color: gray."
+    },
+    {
+      "name": "--xh-gray-dark",
+      "description": "Core palette color: dark gray."
+    },
+    {
+      "name": "--xh-gray-light",
+      "description": "Core palette color: light gray."
+    },
+    {
+      "name": "--xh-green",
+      "description": "Core palette color: green."
+    },
+    {
+      "name": "--xh-green-muted",
+      "description": "Core palette color: muted green."
+    },
+    {
+      "name": "--xh-orange",
+      "description": "Core palette color: orange."
+    },
+    {
+      "name": "--xh-orange-muted",
+      "description": "Core palette color: muted orange."
+    },
+    {
+      "name": "--xh-purple",
+      "description": "Core palette color: purple."
+    },
+    {
+      "name": "--xh-red",
+      "description": "Core palette color: red."
+    },
+    {
+      "name": "--xh-red-muted",
+      "description": "Core palette color: muted red."
+    },
+    {
+      "name": "--xh-white",
+      "description": "Core palette color: white."
+    },
+    {
+      "name": "--xh-yellow",
+      "description": "Core palette color: yellow."
+    },
+    {
+      "name": "--xh-yellow-light",
+      "description": "Core palette color: light yellow."
+    },
+    {
+      "name": "--xh-accent-color",
+      "description": "Accent color. Defaults to `--xh-blue-light`."
+    },
+    {
+      "name": "--xh-list-select-color",
+      "description": "List select color. Defaults to `--xh-blue-light`."
+    },
+    {
+      "name": "--xh-pos-val-color",
+      "description": "Pos val color. Defaults to `--xh-green`."
+    },
+    {
+      "name": "--xh-neg-val-color",
+      "description": "Neg val color. Defaults to `--xh-red`."
+    },
+    {
+      "name": "--xh-neutral-val-color",
+      "description": "Neutral val color. Defaults to `--xh-gray`."
+    },
+    {
+      "name": "--xh-intent-neutral-h",
+      "description": "HSL hue for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-s",
+      "description": "HSL saturation for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-l1",
+      "description": "HSL lightness level 1 for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-l2",
+      "description": "HSL lightness level 2 for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-l3",
+      "description": "HSL lightness level 3 for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-l4",
+      "description": "HSL lightness level 4 for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-neutral-l5",
+      "description": "HSL lightness level 5 for the neutral intent. Override to shift all derived neutral colors."
+    },
+    {
+      "name": "--xh-intent-primary-h",
+      "description": "HSL hue for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-s",
+      "description": "HSL saturation for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-l1",
+      "description": "HSL lightness level 1 for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-l2",
+      "description": "HSL lightness level 2 for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-l3",
+      "description": "HSL lightness level 3 for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-l4",
+      "description": "HSL lightness level 4 for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-primary-l5",
+      "description": "HSL lightness level 5 for the primary intent. Override to shift all derived primary colors."
+    },
+    {
+      "name": "--xh-intent-success-h",
+      "description": "HSL hue for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-s",
+      "description": "HSL saturation for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-l1",
+      "description": "HSL lightness level 1 for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-l2",
+      "description": "HSL lightness level 2 for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-l3",
+      "description": "HSL lightness level 3 for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-l4",
+      "description": "HSL lightness level 4 for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-success-l5",
+      "description": "HSL lightness level 5 for the success intent. Override to shift all derived success colors."
+    },
+    {
+      "name": "--xh-intent-warning-h",
+      "description": "HSL hue for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-s",
+      "description": "HSL saturation for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-l1",
+      "description": "HSL lightness level 1 for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-l2",
+      "description": "HSL lightness level 2 for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-l3",
+      "description": "HSL lightness level 3 for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-l4",
+      "description": "HSL lightness level 4 for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-warning-l5",
+      "description": "HSL lightness level 5 for the warning intent. Override to shift all derived warning colors."
+    },
+    {
+      "name": "--xh-intent-danger-h",
+      "description": "HSL hue for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-s",
+      "description": "HSL saturation for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-l1",
+      "description": "HSL lightness level 1 for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-l2",
+      "description": "HSL lightness level 2 for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-l3",
+      "description": "HSL lightness level 3 for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-l4",
+      "description": "HSL lightness level 4 for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-danger-l5",
+      "description": "HSL lightness level 5 for the danger intent. Override to shift all derived danger colors."
+    },
+    {
+      "name": "--xh-intent-a1",
+      "description": "Alpha (opacity) value for intent transparency variants (trans1)."
+    },
+    {
+      "name": "--xh-intent-a2",
+      "description": "Alpha (opacity) value for intent transparency variants (trans2)."
+    },
+    {
+      "name": "--xh-intent-neutral-darkest",
+      "description": "Darkest shade of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral-darker",
+      "description": "Darker shade of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral",
+      "description": "Base color for the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral-lighter",
+      "description": "Lighter shade of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral-lightest",
+      "description": "Lightest shade of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral-trans1",
+      "description": "Semi-transparent (lower opacity) of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-neutral-trans2",
+      "description": "Semi-transparent (higher opacity) of the neutral intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-darkest",
+      "description": "Darkest shade of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-darker",
+      "description": "Darker shade of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary",
+      "description": "Base color for the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-lighter",
+      "description": "Lighter shade of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-lightest",
+      "description": "Lightest shade of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-trans1",
+      "description": "Semi-transparent (lower opacity) of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-trans2",
+      "description": "Semi-transparent (higher opacity) of the primary intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-darkest",
+      "description": "Darkest shade of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-darker",
+      "description": "Darker shade of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success",
+      "description": "Base color for the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-lighter",
+      "description": "Lighter shade of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-lightest",
+      "description": "Lightest shade of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-trans1",
+      "description": "Semi-transparent (lower opacity) of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-success-trans2",
+      "description": "Semi-transparent (higher opacity) of the success intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-darkest",
+      "description": "Darkest shade of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-darker",
+      "description": "Darker shade of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning",
+      "description": "Base color for the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-lighter",
+      "description": "Lighter shade of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-lightest",
+      "description": "Lightest shade of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-trans1",
+      "description": "Semi-transparent (lower opacity) of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-warning-trans2",
+      "description": "Semi-transparent (higher opacity) of the warning intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-darkest",
+      "description": "Darkest shade of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-darker",
+      "description": "Darker shade of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger",
+      "description": "Base color for the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-lighter",
+      "description": "Lighter shade of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-lightest",
+      "description": "Lightest shade of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-trans1",
+      "description": "Semi-transparent (lower opacity) of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-danger-trans2",
+      "description": "Semi-transparent (higher opacity) of the danger intent. Composed from HSL components."
+    },
+    {
+      "name": "--xh-intent-primary-text-color",
+      "description": "Intent primary text color. Defaults to `--xh-intent-primary`."
+    },
+    {
+      "name": "--xh-intent-success-text-color",
+      "description": "Intent success text color. Defaults to `--xh-intent-success`."
+    },
+    {
+      "name": "--xh-intent-warning-text-color",
+      "description": "Intent warning text color. Defaults to `--xh-intent-warning`."
+    },
+    {
+      "name": "--xh-intent-danger-text-color",
+      "description": "Intent danger text color. Defaults to `--xh-intent-danger`."
+    },
+    {
+      "name": "--xh-appbar-bg",
+      "description": "AppBar background. Defaults to `--xh-bg-alt`."
+    },
+    {
+      "name": "--xh-appbar-border-color",
+      "description": "AppBar border color."
+    },
+    {
+      "name": "--xh-appbar-box-shadow",
+      "description": "AppBar box shadow."
+    },
+    {
+      "name": "--xh-appbar-color",
+      "description": "AppBar color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-appbar-height",
+      "description": "AppBar height."
+    },
+    {
+      "name": "--xh-appbar-height-px",
+      "description": "Pixel value of `--xh-appbar-height`. Derived — override `--xh-appbar-height` instead."
+    },
+    {
+      "name": "--xh-appbar-title-color",
+      "description": "AppBar title color."
+    },
+    {
+      "name": "--xh-appbar-title-font-size",
+      "description": "1.9x scale of `--xh-font-size`. Derived — override `--xh-font-size` instead."
+    },
+    {
+      "name": "--xh-appbar-title-font-size-px",
+      "description": "Pixel value of `--xh-appbar-title-font-size`. Derived — override `--xh-appbar-title-font-size` instead."
+    },
+    {
+      "name": "--xh-appbar-user-profile-hover-color",
+      "description": "AppBar user profile hover color. Defaults to `--xh-orange`."
+    },
+    {
+      "name": "--xh-backdrop-bg",
+      "description": "Backdrop background."
+    },
+    {
+      "name": "--xh-bg",
+      "description": "Primary background color for the application and component chrome."
+    },
+    {
+      "name": "--xh-bg-alt",
+      "description": "Secondary/alternate background for sidebars, toolbars, and header areas."
+    },
+    {
+      "name": "--xh-bg-highlight",
+      "description": "Background highlight color for selections, hovers, and emphasis."
+    },
+    {
+      "name": "--xh-badge-bg",
+      "description": "Badge background. Defaults to `--xh-blue-gray`."
+    },
+    {
+      "name": "--xh-badge-border-radius",
+      "description": "Badge border radius. Defaults to `--xh-border-radius-px`."
+    },
+    {
+      "name": "--xh-badge-font-size",
+      "description": "Badge font size."
+    },
+    {
+      "name": "--xh-badge-font-weight",
+      "description": "Badge font weight."
+    },
+    {
+      "name": "--xh-badge-height",
+      "description": "Badge height."
+    },
+    {
+      "name": "--xh-badge-min-width",
+      "description": "Badge minimum width."
+    },
+    {
+      "name": "--xh-badge-padding",
+      "description": "Badge padding."
+    },
+    {
+      "name": "--xh-badge-text-color",
+      "description": "Badge text color."
+    },
+    {
+      "name": "--xh-border-color",
+      "description": "Default border color used throughout the application."
+    },
+    {
+      "name": "--xh-border-width",
+      "description": "Default border width (unitless number)."
+    },
+    {
+      "name": "--xh-border-width-px",
+      "description": "Pixel value of `--xh-border-width`. Derived — override `--xh-border-width` instead."
+    },
+    {
+      "name": "--xh-border-solid",
+      "description": "Border solid."
+    },
+    {
+      "name": "--xh-border-dotted",
+      "description": "Border dotted."
+    },
+    {
+      "name": "--xh-border-radius",
+      "description": "Border radius."
+    },
+    {
+      "name": "--xh-border-radius-px",
+      "description": "Pixel value of `--xh-border-radius`. Derived — override `--xh-border-radius` instead."
+    },
+    {
+      "name": "--xh-button-border-color",
+      "description": "Button border color. Defaults to `--xh-border-color`."
+    },
+    {
+      "name": "--xh-button-bg",
+      "description": "Button background. Defaults to `--xh-intent-neutral`."
+    },
+    {
+      "name": "--xh-button-bg-darker",
+      "description": "Button bg darker. Defaults to `--xh-intent-neutral-darker`."
+    },
+    {
+      "name": "--xh-button-bg-darkest",
+      "description": "Button bg darkest. Defaults to `--xh-intent-neutral-darkest`."
+    },
+    {
+      "name": "--xh-button-bg-lighter",
+      "description": "Button bg lighter. Defaults to `--xh-intent-neutral-lighter`."
+    },
+    {
+      "name": "--xh-button-bg-lightest",
+      "description": "Button bg lightest. Defaults to `--xh-intent-neutral-lightest`."
+    },
+    {
+      "name": "--xh-button-border-radius-px",
+      "description": "Button border radius px. Defaults to `--xh-border-radius-px`."
+    },
+    {
+      "name": "--xh-button-disabled-opacity",
+      "description": "Button disabled opacity."
+    },
+    {
+      "name": "--xh-button-font-family",
+      "description": "Button font family. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-button-font-size",
+      "description": "Button font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-button-font-size-px",
+      "description": "Pixel value of `--xh-button-font-size`. Derived — override `--xh-button-font-size` instead."
+    },
+    {
+      "name": "--xh-button-text-color",
+      "description": "Button text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-button-active-bg",
+      "description": "Button active background. Defaults to `--xh-button-bg-darkest`."
+    },
+    {
+      "name": "--xh-button-active-text-color",
+      "description": "Button active text color. Defaults to `--xh-button-text-color`."
+    },
+    {
+      "name": "--xh-button-active-box-shadow",
+      "description": "Button active box shadow."
+    },
+    {
+      "name": "--xh-button-height",
+      "description": "Button height."
+    },
+    {
+      "name": "--xh-toolbar-button-bg",
+      "description": "Toolbar button background. Defaults to `--xh-button-bg`."
+    },
+    {
+      "name": "--xh-card-bg",
+      "description": "Card background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-card-border-color",
+      "description": "Card border color. Defaults to `--xh-border-color`."
+    },
+    {
+      "name": "--xh-card-border-radius",
+      "description": "Card border radius. Defaults to `--xh-border-radius`."
+    },
+    {
+      "name": "--xh-card-border-radius-px",
+      "description": "Pixel value of `--xh-card-border-radius`. Derived — override `--xh-card-border-radius` instead."
+    },
+    {
+      "name": "--xh-card-danger-color",
+      "description": "Card danger color. Defaults to `--xh-intent-danger-text-color`."
+    },
+    {
+      "name": "--xh-card-header-font-size",
+      "description": "Card header font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-card-header-font-size-px",
+      "description": "Pixel value of `--xh-card-header-font-size`. Derived — override `--xh-card-header-font-size` instead."
+    },
+    {
+      "name": "--xh-card-header-gap",
+      "description": "Card header gap."
+    },
+    {
+      "name": "--xh-card-header-gap-px",
+      "description": "Pixel value of `--xh-card-header-gap`. Derived — override `--xh-card-header-gap` instead."
+    },
+    {
+      "name": "--xh-card-header-min-height",
+      "description": "Card header minimum height."
+    },
+    {
+      "name": "--xh-card-header-min-height-px",
+      "description": "Pixel value of `--xh-card-header-min-height`. Derived — override `--xh-card-header-min-height` instead."
+    },
+    {
+      "name": "--xh-card-header-text-color",
+      "description": "Card header text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-card-primary-color",
+      "description": "Card primary color. Defaults to `--xh-intent-primary-text-color`."
+    },
+    {
+      "name": "--xh-card-success-color",
+      "description": "Card success color. Defaults to `--xh-intent-success-text-color`."
+    },
+    {
+      "name": "--xh-card-warning-color",
+      "description": "Card warning color. Defaults to `--xh-intent-warning-text-color`."
+    },
+    {
+      "name": "--xh-menu-bg",
+      "description": "Menu background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-menu-border",
+      "description": "Menu border. Defaults to `--xh-border-solid`."
+    },
+    {
+      "name": "--xh-menu-item-font-size-px",
+      "description": "Menu item font size px. Defaults to `--xh-font-size-px`."
+    },
+    {
+      "name": "--xh-menu-item-highlight-bg",
+      "description": "Menu item highlight background. Defaults to `--xh-grid-bg-hover`."
+    },
+    {
+      "name": "--xh-menu-item-text-color",
+      "description": "Menu item text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-menu-item-height-px",
+      "description": "Menu item height px."
+    },
+    {
+      "name": "--xh-chart-bg",
+      "description": "Chart background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-chart-font-family",
+      "description": "Chart font family. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-focus-outline-width-px",
+      "description": "Focus outline width px."
+    },
+    {
+      "name": "--xh-focus-outline-offset-px",
+      "description": "Focus outline offset px."
+    },
+    {
+      "name": "--xh-focus-outline-color",
+      "description": "Focus outline color."
+    },
+    {
+      "name": "--xh-focus-outline",
+      "description": "Focus outline."
+    },
+    {
+      "name": "--xh-font-family",
+      "description": "Primary font family for the application."
+    },
+    {
+      "name": "--xh-font-family-headings",
+      "description": "Font family for headings. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-font-family-mono",
+      "description": "Monospace font family for code and data display."
+    },
+    {
+      "name": "--xh-font-feature-settings",
+      "description": "OpenType font feature settings. For Hoist's default Inter font, see https://rsms.me/inter/#features."
+    },
+    {
+      "name": "--xh-font-size",
+      "description": "Base font size (unitless number). All derived font size variants are computed from this value."
+    },
+    {
+      "name": "--xh-font-size-large-mult",
+      "description": "Font size large mult."
+    },
+    {
+      "name": "--xh-font-size-large-em",
+      "description": "Font size large em."
+    },
+    {
+      "name": "--xh-font-size-small-mult",
+      "description": "Font size small mult."
+    },
+    {
+      "name": "--xh-font-size-small-em",
+      "description": "Font size small em."
+    },
+    {
+      "name": "--xh-font-size-px",
+      "description": "Pixel value of `--xh-font-size`. Derived — override `--xh-font-size` instead."
+    },
+    {
+      "name": "--xh-font-size-large",
+      "description": "Product of `--xh-font-size` and `--xh-font-size-large-mult`. Derived."
+    },
+    {
+      "name": "--xh-font-size-large-px",
+      "description": "Pixel value of `--xh-font-size-large`. Derived — override `--xh-font-size-large` instead."
+    },
+    {
+      "name": "--xh-font-size-small",
+      "description": "Product of `--xh-font-size` and `--xh-font-size-small-mult`. Derived."
+    },
+    {
+      "name": "--xh-font-size-small-px",
+      "description": "Pixel value of `--xh-font-size-small`. Derived — override `--xh-font-size-small` instead."
+    },
+    {
+      "name": "--xh-mobile-input-font-size",
+      "description": "Mobile input font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-mobile-input-font-size-px",
+      "description": "Pixel value of `--xh-mobile-input-font-size`. Derived — override `--xh-mobile-input-font-size` instead."
+    },
+    {
+      "name": "--xh-mobile-input-height-px",
+      "description": "Mobile input height px."
+    },
+    {
+      "name": "--xh-mobile-input-label-font-size",
+      "description": "Mobile input label font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-mobile-input-label-font-size-px",
+      "description": "Pixel value of `--xh-mobile-input-label-font-size`. Derived — override `--xh-mobile-input-label-font-size` instead."
+    },
+    {
+      "name": "--xh-form-field-margin",
+      "description": "FormField margin."
+    },
+    {
+      "name": "--xh-form-field-padding",
+      "description": "FormField padding."
+    },
+    {
+      "name": "--xh-form-field-box-shadow",
+      "description": "FormField box shadow."
+    },
+    {
+      "name": "--xh-form-field-box-shadow-color-bottom",
+      "description": "FormField box shadow color bottom."
+    },
+    {
+      "name": "--xh-form-field-box-shadow-color-top",
+      "description": "FormField box shadow color top."
+    },
+    {
+      "name": "--xh-form-field-focused-border-color",
+      "description": "FormField focused border color. Defaults to `--xh-focus-outline-color`."
+    },
+    {
+      "name": "--xh-form-field-focused-box-shadow",
+      "description": "FormField focused box shadow."
+    },
+    {
+      "name": "--xh-form-field-label-color",
+      "description": "FormField label color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-form-field-label-font-size",
+      "description": "FormField label font size. Defaults to `--xh-font-size-px`."
+    },
+    {
+      "name": "--xh-form-field-label-font-style",
+      "description": "FormField label font style."
+    },
+    {
+      "name": "--xh-form-field-label-font-weight",
+      "description": "FormField label font weight."
+    },
+    {
+      "name": "--xh-form-field-label-text-transform",
+      "description": "FormField label text transform."
+    },
+    {
+      "name": "--xh-form-field-label-border-bottom",
+      "description": "FormField label border bottom."
+    },
+    {
+      "name": "--xh-form-field-label-margin",
+      "description": "FormField label margin."
+    },
+    {
+      "name": "--xh-form-field-label-padding",
+      "description": "FormField label padding."
+    },
+    {
+      "name": "--xh-form-field-readonly-label-border-bottom",
+      "description": "FormField readonly label border bottom. Defaults to `--xh-form-field-label-border-bottom`."
+    },
+    {
+      "name": "--xh-form-field-readonly-label-margin",
+      "description": "FormField readonly label margin. Defaults to `--xh-form-field-label-margin`."
+    },
+    {
+      "name": "--xh-form-field-readonly-label-padding",
+      "description": "FormField readonly label padding. Defaults to `--xh-form-field-label-padding`."
+    },
+    {
+      "name": "--xh-form-field-inline-label-border-bottom",
+      "description": "FormField inline label border bottom. Defaults to `--xh-form-field-label-border-bottom`."
+    },
+    {
+      "name": "--xh-form-field-inline-label-margin",
+      "description": "FormField inline label margin."
+    },
+    {
+      "name": "--xh-form-field-inline-label-padding",
+      "description": "FormField inline label padding. Defaults to `--xh-form-field-label-padding`."
+    },
+    {
+      "name": "--xh-form-field-msg-font-size",
+      "description": "FormField msg font size. Defaults to `--xh-font-size-small-px`."
+    },
+    {
+      "name": "--xh-form-field-msg-line-height",
+      "description": "FormField msg line height."
+    },
+    {
+      "name": "--xh-form-field-msg-margin",
+      "description": "FormField msg margin."
+    },
+    {
+      "name": "--xh-form-field-msg-text-transform",
+      "description": "FormField msg text transform."
+    },
+    {
+      "name": "--xh-form-field-info-border",
+      "description": "FormField info border."
+    },
+    {
+      "name": "--xh-form-field-info-border-color",
+      "description": "FormField info border color. Defaults to `--xh-intent-primary-text-color`."
+    },
+    {
+      "name": "--xh-form-field-info-border-width",
+      "description": "FormField info border width."
+    },
+    {
+      "name": "--xh-form-field-info-border-width-px",
+      "description": "Pixel value of `--xh-form-field-info-border-width`. Derived — override `--xh-form-field-info-border-width` instead."
+    },
+    {
+      "name": "--xh-form-field-info-box-shadow",
+      "description": "FormField info box shadow."
+    },
+    {
+      "name": "--xh-form-field-info-color",
+      "description": "FormField info color. Defaults to `--xh-intent-primary-text-color`."
+    },
+    {
+      "name": "--xh-form-field-invalid-border",
+      "description": "FormField invalid border."
+    },
+    {
+      "name": "--xh-form-field-invalid-border-color",
+      "description": "FormField invalid border color. Defaults to `--xh-intent-danger-text-color`."
+    },
+    {
+      "name": "--xh-form-field-invalid-border-width",
+      "description": "FormField invalid border width."
+    },
+    {
+      "name": "--xh-form-field-invalid-border-width-px",
+      "description": "Pixel value of `--xh-form-field-invalid-border-width`. Derived — override `--xh-form-field-invalid-border-width` instead."
+    },
+    {
+      "name": "--xh-form-field-invalid-box-shadow",
+      "description": "FormField invalid box shadow."
+    },
+    {
+      "name": "--xh-form-field-invalid-color",
+      "description": "FormField invalid color. Defaults to `--xh-intent-danger-text-color`."
+    },
+    {
+      "name": "--xh-form-field-warning-border",
+      "description": "FormField warning border."
+    },
+    {
+      "name": "--xh-form-field-warning-border-color",
+      "description": "FormField warning border color. Defaults to `--xh-intent-warning-text-color`."
+    },
+    {
+      "name": "--xh-form-field-warning-border-width",
+      "description": "FormField warning border width."
+    },
+    {
+      "name": "--xh-form-field-warning-border-width-px",
+      "description": "Pixel value of `--xh-form-field-warning-border-width`. Derived — override `--xh-form-field-warning-border-width` instead."
+    },
+    {
+      "name": "--xh-form-field-warning-box-shadow",
+      "description": "FormField warning box shadow."
+    },
+    {
+      "name": "--xh-form-field-warning-color",
+      "description": "FormField warning color. Defaults to `--xh-intent-warning-text-color`."
+    },
+    {
+      "name": "--xh-input-intent-primary-box-shadow",
+      "description": "Input intent primary box shadow."
+    },
+    {
+      "name": "--xh-input-intent-success-box-shadow",
+      "description": "Input intent success box shadow."
+    },
+    {
+      "name": "--xh-input-intent-warning-box-shadow",
+      "description": "Input intent warning box shadow."
+    },
+    {
+      "name": "--xh-input-intent-danger-box-shadow",
+      "description": "Input intent danger box shadow."
+    },
+    {
+      "name": "--xh-slider-handle-focused-box-shadow",
+      "description": "Slider handle focused box shadow."
+    },
+    {
+      "name": "--xh-grid-bg-hover",
+      "description": "Grid hover background."
+    },
+    {
+      "name": "--xh-grid-bg-odd",
+      "description": "Grid odd-row background."
+    },
+    {
+      "name": "--xh-grid-bg",
+      "description": "Grid background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-grid-border-color",
+      "description": "Grid border color."
+    },
+    {
+      "name": "--xh-grid-cell-focus-border-color",
+      "description": "Grid cell focus border color. Defaults to `--xh-focus-outline-color`."
+    },
+    {
+      "name": "--xh-grid-cell-change-bg-highlight",
+      "description": "Grid cell change bg highlight."
+    },
+    {
+      "name": "--xh-grid-cell-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-cell-lr-pad`. Derived — override `--xh-grid-cell-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-cell-lr-pad",
+      "description": "Grid cell left/right padding."
+    },
+    {
+      "name": "--xh-grid-empty-text-color",
+      "description": "Grid empty text color. Defaults to `--xh-text-color-muted`."
+    },
+    {
+      "name": "--xh-grid-font-family",
+      "description": "Grid font family. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-grid-font-size-px",
+      "description": "Pixel value of `--xh-grid-font-size`. Derived — override `--xh-grid-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-font-size",
+      "description": "Grid font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-grid-group-bg",
+      "description": "Grid group background."
+    },
+    {
+      "name": "--xh-grid-group-border-color",
+      "description": "Grid group border color."
+    },
+    {
+      "name": "--xh-grid-group-text-color",
+      "description": "Grid group text color."
+    },
+    {
+      "name": "--xh-grid-tree-group-bg",
+      "description": "Grid tree group background."
+    },
+    {
+      "name": "--xh-grid-tree-group-border-color",
+      "description": "Grid tree group border color. Defaults to `--xh-grid-selected-row-bg`."
+    },
+    {
+      "name": "--xh-grid-total-row-bg",
+      "description": "Grid total row background. Defaults to `--xh-grid-tree-group-bg`."
+    },
+    {
+      "name": "--xh-grid-header-bg",
+      "description": "Grid header background. Defaults to `--xh-grid-bg`."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-0",
+      "description": "Grid tree group color level 0."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-1",
+      "description": "Grid tree group color level 1."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-2",
+      "description": "Grid tree group color level 2."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-3",
+      "description": "Grid tree group color level 3."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-4",
+      "description": "Grid tree group color level 4."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-5",
+      "description": "Grid tree group color level 5."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-6",
+      "description": "Grid tree group color level 6. Defaults to `--xh-grid-tree-group-color-level-0`."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-7",
+      "description": "Grid tree group color level 7. Defaults to `--xh-grid-tree-group-color-level-1`."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-8",
+      "description": "Grid tree group color level 8. Defaults to `--xh-grid-tree-group-color-level-2`."
+    },
+    {
+      "name": "--xh-grid-tree-group-color-level-9",
+      "description": "Grid tree group color level 9. Defaults to `--xh-grid-tree-group-color-level-3`."
+    },
+    {
+      "name": "--xh-grid-header-border-color",
+      "description": "Grid header border color. Defaults to `--xh-grid-border-color`."
+    },
+    {
+      "name": "--xh-grid-header-icon-color",
+      "description": "Grid header icon color. Defaults to `--xh-text-color-muted`."
+    },
+    {
+      "name": "--xh-grid-header-icon-width",
+      "description": "Grid header icon width."
+    },
+    {
+      "name": "--xh-grid-header-lr-pad",
+      "description": "Grid header left/right padding."
+    },
+    {
+      "name": "--xh-grid-header-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-header-lr-pad`. Derived — override `--xh-grid-header-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-header-font-family",
+      "description": "Grid header font family. Defaults to `--xh-grid-font-family`."
+    },
+    {
+      "name": "--xh-grid-header-font-size",
+      "description": "Grid header font size. Defaults to `--xh-grid-font-size`."
+    },
+    {
+      "name": "--xh-grid-header-font-size-px",
+      "description": "Pixel value of `--xh-grid-header-font-size`. Derived — override `--xh-grid-header-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-header-font-weight",
+      "description": "Grid header font weight."
+    },
+    {
+      "name": "--xh-grid-header-text-color",
+      "description": "Grid header text color. Defaults to `--xh-text-color-muted`."
+    },
+    {
+      "name": "--xh-grid-pinned-column-border-color",
+      "description": "Grid pinned column border color."
+    },
+    {
+      "name": "--xh-grid-selected-row-bg",
+      "description": "Grid selected row background. Defaults to `--xh-bg-highlight`."
+    },
+    {
+      "name": "--xh-grid-selected-row-text-color",
+      "description": "Grid selected row text color. Defaults to `--xh-grid-text-color`."
+    },
+    {
+      "name": "--xh-grid-summary-row-border-color",
+      "description": "Grid summary row border color. Defaults to `--xh-grid-border-color`."
+    },
+    {
+      "name": "--xh-grid-text-color",
+      "description": "Grid text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-grid-tree-indent",
+      "description": "Grid tree indent."
+    },
+    {
+      "name": "--xh-grid-tree-icon-px",
+      "description": "Grid tree icon px."
+    },
+    {
+      "name": "--xh-grid-large-cell-lr-pad",
+      "description": "Grid large cell left/right padding."
+    },
+    {
+      "name": "--xh-grid-large-cell-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-large-cell-lr-pad`. Derived — override `--xh-grid-large-cell-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-large-font-size",
+      "description": "Grid large font size."
+    },
+    {
+      "name": "--xh-grid-large-font-size-px",
+      "description": "Pixel value of `--xh-grid-large-font-size`. Derived — override `--xh-grid-large-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-large-header-font-size",
+      "description": "Grid large header font size. Defaults to `--xh-grid-large-font-size`."
+    },
+    {
+      "name": "--xh-grid-large-header-font-size-px",
+      "description": "Pixel value of `--xh-grid-large-header-font-size`. Derived — override `--xh-grid-large-header-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-large-header-lr-pad",
+      "description": "Grid large header left/right padding."
+    },
+    {
+      "name": "--xh-grid-large-header-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-large-header-lr-pad`. Derived — override `--xh-grid-large-header-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-compact-cell-lr-pad",
+      "description": "Grid compact cell left/right padding."
+    },
+    {
+      "name": "--xh-grid-compact-cell-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-compact-cell-lr-pad`. Derived — override `--xh-grid-compact-cell-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-compact-font-size",
+      "description": "Grid compact font size."
+    },
+    {
+      "name": "--xh-grid-compact-font-size-px",
+      "description": "Pixel value of `--xh-grid-compact-font-size`. Derived — override `--xh-grid-compact-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-compact-header-font-size",
+      "description": "Grid compact header font size. Defaults to `--xh-grid-compact-font-size`."
+    },
+    {
+      "name": "--xh-grid-compact-header-font-size-px",
+      "description": "Pixel value of `--xh-grid-compact-header-font-size`. Derived — override `--xh-grid-compact-header-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-compact-header-lr-pad",
+      "description": "Grid compact header left/right padding."
+    },
+    {
+      "name": "--xh-grid-compact-header-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-compact-header-lr-pad`. Derived — override `--xh-grid-compact-header-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-tiny-cell-lr-pad",
+      "description": "Grid tiny cell left/right padding."
+    },
+    {
+      "name": "--xh-grid-tiny-cell-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-tiny-cell-lr-pad`. Derived — override `--xh-grid-tiny-cell-lr-pad` instead."
+    },
+    {
+      "name": "--xh-grid-tiny-font-size",
+      "description": "Grid tiny font size."
+    },
+    {
+      "name": "--xh-grid-tiny-font-size-px",
+      "description": "Pixel value of `--xh-grid-tiny-font-size`. Derived — override `--xh-grid-tiny-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-tiny-header-font-size",
+      "description": "Grid tiny header font size. Defaults to `--xh-grid-tiny-font-size`."
+    },
+    {
+      "name": "--xh-grid-tiny-header-font-size-px",
+      "description": "Pixel value of `--xh-grid-tiny-header-font-size`. Derived — override `--xh-grid-tiny-header-font-size` instead."
+    },
+    {
+      "name": "--xh-grid-tiny-header-lr-pad",
+      "description": "Grid tiny header left/right padding."
+    },
+    {
+      "name": "--xh-grid-tiny-header-lr-pad-px",
+      "description": "Pixel value of `--xh-grid-tiny-header-lr-pad`. Derived — override `--xh-grid-tiny-header-lr-pad` instead."
+    },
+    {
+      "name": "--xh-zone-grid-top-text-color",
+      "description": "ZoneGrid top text color. Defaults to `--xh-grid-text-color`."
+    },
+    {
+      "name": "--xh-zone-grid-top-font-size",
+      "description": "ZoneGrid top font size."
+    },
+    {
+      "name": "--xh-zone-grid-top-font-size-px",
+      "description": "Pixel value of `--xh-zone-grid-top-font-size`. Derived — override `--xh-zone-grid-top-font-size` instead."
+    },
+    {
+      "name": "--xh-zone-grid-bottom-text-color",
+      "description": "ZoneGrid bottom text color. Defaults to `--xh-grid-text-color`."
+    },
+    {
+      "name": "--xh-zone-grid-bottom-font-size",
+      "description": "ZoneGrid bottom font size."
+    },
+    {
+      "name": "--xh-zone-grid-bottom-font-size-px",
+      "description": "Pixel value of `--xh-zone-grid-bottom-font-size`. Derived — override `--xh-zone-grid-bottom-font-size` instead."
+    },
+    {
+      "name": "--xh-zone-grid-cell-lr-pad-px",
+      "description": "ZoneGrid cell lr pad px. Defaults to `--xh-grid-cell-lr-pad-px`."
+    },
+    {
+      "name": "--xh-zone-grid-delimiter-color",
+      "description": "ZoneGrid delimiter color."
+    },
+    {
+      "name": "--xh-zone-grid-label-color",
+      "description": "ZoneGrid label color."
+    },
+    {
+      "name": "--xh-grid-filter-popover-height-px",
+      "description": "Grid filter popover height px."
+    },
+    {
+      "name": "--xh-grid-filter-popover-width-px",
+      "description": "Grid filter popover width px."
+    },
+    {
+      "name": "--xh-input-bg",
+      "description": "Input background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-input-disabled-bg",
+      "description": "Input disabled background."
+    },
+    {
+      "name": "--xh-input-disabled-text-color",
+      "description": "Input disabled text color."
+    },
+    {
+      "name": "--xh-input-font-family",
+      "description": "Input font family. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-input-font-feature-settings",
+      "description": "Input font feature settings. Defaults to `--xh-font-feature-settings`."
+    },
+    {
+      "name": "--xh-input-text-color",
+      "description": "Input text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-input-placeholder-text-color",
+      "description": "Input placeholder text color."
+    },
+    {
+      "name": "--xh-input-disabled-checkmark-svg",
+      "description": "Input disabled checkmark svg."
+    },
+    {
+      "name": "--xh-mask-bg",
+      "description": "Mask background."
+    },
+    {
+      "name": "--xh-mask-text-bg",
+      "description": "Mask text background. Defaults to `--xh-bg-alt`."
+    },
+    {
+      "name": "--xh-mask-text-border",
+      "description": "Mask text border. Defaults to `--xh-border-solid`."
+    },
+    {
+      "name": "--xh-mask-text-color",
+      "description": "Mask text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-loading-indicator-bg",
+      "description": "LoadingIndicator background."
+    },
+    {
+      "name": "--xh-loading-indicator-border-color",
+      "description": "LoadingIndicator border color. Defaults to `--xh-border-color`."
+    },
+    {
+      "name": "--xh-loading-indicator-color",
+      "description": "LoadingIndicator color."
+    },
+    {
+      "name": "--xh-popover-backdrop-bg",
+      "description": "Popover backdrop background."
+    },
+    {
+      "name": "--xh-popover-box-shadow",
+      "description": "Popover box shadow."
+    },
+    {
+      "name": "--xh-pad",
+      "description": "Base padding unit (unitless number). Derived `-px`, `-double`, and `-half` variants are computed from this value."
+    },
+    {
+      "name": "--xh-pad-px",
+      "description": "Pixel value of `--xh-pad`. Derived — override `--xh-pad` instead."
+    },
+    {
+      "name": "--xh-pad-double",
+      "description": "2x scale of `--xh-pad`. Derived — override `--xh-pad` instead."
+    },
+    {
+      "name": "--xh-pad-double-px",
+      "description": "Pixel value of `--xh-pad-double`. Derived — override `--xh-pad-double` instead."
+    },
+    {
+      "name": "--xh-pad-half",
+      "description": "0.5x scale of `--xh-pad`. Derived — override `--xh-pad` instead."
+    },
+    {
+      "name": "--xh-pad-half-px",
+      "description": "Pixel value of `--xh-pad-half`. Derived — override `--xh-pad-half` instead."
+    },
+    {
+      "name": "--xh-pad-safe-top",
+      "description": "Padding safe top."
+    },
+    {
+      "name": "--xh-pad-safe-bottom",
+      "description": "Padding safe bottom."
+    },
+    {
+      "name": "--xh-pad-safe-left",
+      "description": "Padding safe left."
+    },
+    {
+      "name": "--xh-pad-safe-right",
+      "description": "Padding safe right."
+    },
+    {
+      "name": "--xh-pad-safe-all",
+      "description": "Padding safe all."
+    },
+    {
+      "name": "--xh-panel-bg",
+      "description": "Panel background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-panel-border-color",
+      "description": "Panel border color. Defaults to `--xh-border-color`."
+    },
+    {
+      "name": "--xh-panel-border-width",
+      "description": "Panel border width."
+    },
+    {
+      "name": "--xh-panel-border-width-px",
+      "description": "Pixel value of `--xh-panel-border-width`. Derived — override `--xh-panel-border-width` instead."
+    },
+    {
+      "name": "--xh-panel-title-bg",
+      "description": "Panel title background. Defaults to `--xh-title-bg`."
+    },
+    {
+      "name": "--xh-panel-title-font-family",
+      "description": "Panel title font family. Defaults to `--xh-title-font-family`."
+    },
+    {
+      "name": "--xh-panel-title-font-size",
+      "description": "Panel title font size. Defaults to `--xh-title-font-size`."
+    },
+    {
+      "name": "--xh-panel-title-font-size-px",
+      "description": "Pixel value of `--xh-panel-title-font-size`. Derived — override `--xh-panel-title-font-size` instead."
+    },
+    {
+      "name": "--xh-panel-title-text-color",
+      "description": "Panel title text color. Defaults to `--xh-title-text-color`."
+    },
+    {
+      "name": "--xh-popup-bg",
+      "description": "Popup background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-popup-border-color",
+      "description": "Popup border color. Defaults to `--xh-border-color`."
+    },
+    {
+      "name": "--xh-popup-border-width",
+      "description": "Popup border width. Defaults to `--xh-border-width`."
+    },
+    {
+      "name": "--xh-popup-border-width-px",
+      "description": "Pixel value of `--xh-popup-border-width`. Derived — override `--xh-popup-border-width` instead."
+    },
+    {
+      "name": "--xh-popup-title-bg",
+      "description": "Popup title background. Defaults to `--xh-title-bg`."
+    },
+    {
+      "name": "--xh-popup-title-font-family",
+      "description": "Popup title font family. Defaults to `--xh-title-font-family`."
+    },
+    {
+      "name": "--xh-popup-title-font-size",
+      "description": "Popup title font size. Defaults to `--xh-title-font-size`."
+    },
+    {
+      "name": "--xh-popup-title-font-size-px",
+      "description": "Pixel value of `--xh-popup-title-font-size`. Derived — override `--xh-popup-title-font-size` instead."
+    },
+    {
+      "name": "--xh-popup-title-text-color",
+      "description": "Popup title text color. Defaults to `--xh-title-text-color`."
+    },
+    {
+      "name": "--xh-resizable-bg",
+      "description": "Resizable background."
+    },
+    {
+      "name": "--xh-resizable-border-color",
+      "description": "Resizable border color."
+    },
+    {
+      "name": "--xh-resizable-border-width",
+      "description": "Resizable border width."
+    },
+    {
+      "name": "--xh-resizable-border-width-px",
+      "description": "Pixel value of `--xh-resizable-border-width`. Derived — override `--xh-resizable-border-width` instead."
+    },
+    {
+      "name": "--xh-resizable-button-bg",
+      "description": "Resizable button background."
+    },
+    {
+      "name": "--xh-resizable-button-icon-color",
+      "description": "Resizable button icon color. Defaults to `--xh-blue-gray`."
+    },
+    {
+      "name": "--xh-resizable-size",
+      "description": "Resizable size."
+    },
+    {
+      "name": "--xh-resizable-size-px",
+      "description": "Pixel value of `--xh-resizable-size`. Derived — override `--xh-resizable-size` instead."
+    },
+    {
+      "name": "--xh-scrollbar-bg",
+      "description": "Scrollbar background."
+    },
+    {
+      "name": "--xh-scrollbar-thumb",
+      "description": "Scrollbar thumb."
+    },
+    {
+      "name": "--xh-scrollbar-size-px",
+      "description": "Scrollbar size px."
+    },
+    {
+      "name": "--xh-tab-text-color",
+      "description": "Tab text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-tab-active-text-color",
+      "description": "Tab active text color. Defaults to `--xh-intent-primary`."
+    },
+    {
+      "name": "--xh-tab-disabled-text-color",
+      "description": "Tab disabled text color. Defaults to `--xh-text-color-muted`."
+    },
+    {
+      "name": "--xh-tab-border-width",
+      "description": "Tab border width. Defaults to `--xh-border-width`."
+    },
+    {
+      "name": "--xh-tab-border-width-px",
+      "description": "Pixel value of `--xh-tab-border-width`. Derived — override `--xh-tab-border-width` instead."
+    },
+    {
+      "name": "--xh-tab-font-family",
+      "description": "Tab font family. Defaults to `--xh-font-family`."
+    },
+    {
+      "name": "--xh-tab-font-size",
+      "description": "Tab font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-tab-font-size-px",
+      "description": "Pixel value of `--xh-tab-font-size`. Derived — override `--xh-tab-font-size` instead."
+    },
+    {
+      "name": "--xh-text-color",
+      "description": "Primary text color for the application."
+    },
+    {
+      "name": "--xh-text-color-accent",
+      "description": "Accent text color for emphasis and branding."
+    },
+    {
+      "name": "--xh-text-color-headings",
+      "description": "Text color for headings. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-text-color-highlight",
+      "description": "Text color for highlighted/emphasized content."
+    },
+    {
+      "name": "--xh-text-color-muted",
+      "description": "Muted/secondary text color for labels, placeholders, and de-emphasized content."
+    },
+    {
+      "name": "--xh-title-bg",
+      "description": "Title background. Defaults to `--xh-blue-gray`."
+    },
+    {
+      "name": "--xh-title-text-color",
+      "description": "Title text color. Defaults to `--xh-blue-gray-light`."
+    },
+    {
+      "name": "--xh-title-font-family",
+      "description": "Title font family. Defaults to `--xh-font-family-headings`."
+    },
+    {
+      "name": "--xh-title-font-size",
+      "description": "Title font size. Defaults to `--xh-font-size-large`."
+    },
+    {
+      "name": "--xh-title-font-size-px",
+      "description": "Pixel value of `--xh-title-font-size`. Derived — override `--xh-title-font-size` instead."
+    },
+    {
+      "name": "--xh-title-height",
+      "description": "Title height."
+    },
+    {
+      "name": "--xh-title-height-px",
+      "description": "Pixel value of `--xh-title-height`. Derived — override `--xh-title-height` instead."
+    },
+    {
+      "name": "--xh-title-icon-size",
+      "description": "Title icon size. Defaults to `--xh-title-font-size`."
+    },
+    {
+      "name": "--xh-title-icon-size-px",
+      "description": "Pixel value of `--xh-title-icon-size`. Derived — override `--xh-title-icon-size` instead."
+    },
+    {
+      "name": "--xh-title-pad",
+      "description": "Title pad. Defaults to `--xh-pad-half`."
+    },
+    {
+      "name": "--xh-title-pad-px",
+      "description": "Pixel value of `--xh-title-pad`. Derived — override `--xh-title-pad` instead."
+    },
+    {
+      "name": "--xh-title-compact-font-size",
+      "description": "Title compact font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-title-compact-font-size-px",
+      "description": "Pixel value of `--xh-title-compact-font-size`. Derived — override `--xh-title-compact-font-size` instead."
+    },
+    {
+      "name": "--xh-title-compact-height",
+      "description": "Title compact height."
+    },
+    {
+      "name": "--xh-title-compact-height-px",
+      "description": "Pixel value of `--xh-title-compact-height`. Derived — override `--xh-title-compact-height` instead."
+    },
+    {
+      "name": "--xh-tbar-bg",
+      "description": "Toolbar background. Defaults to `--xh-bg-alt`."
+    },
+    {
+      "name": "--xh-tbar-border-color",
+      "description": "Toolbar border color."
+    },
+    {
+      "name": "--xh-tbar-item-pad",
+      "description": "Toolbar item pad. Defaults to `--xh-pad-half`."
+    },
+    {
+      "name": "--xh-tbar-item-pad-px",
+      "description": "Pixel value of `--xh-tbar-item-pad`. Derived — override `--xh-tbar-item-pad` instead."
+    },
+    {
+      "name": "--xh-tbar-font-size",
+      "description": "Toolbar font size. Defaults to `--xh-font-size`."
+    },
+    {
+      "name": "--xh-tbar-font-size-px",
+      "description": "Pixel value of `--xh-tbar-font-size`. Derived — override `--xh-tbar-font-size` instead."
+    },
+    {
+      "name": "--xh-tbar-min-size",
+      "description": "Toolbar minimum size."
+    },
+    {
+      "name": "--xh-tbar-min-size-px",
+      "description": "Pixel value of `--xh-tbar-min-size`. Derived — override `--xh-tbar-min-size` instead."
+    },
+    {
+      "name": "--xh-tbar-separator-color",
+      "description": "Toolbar separator color."
+    },
+    {
+      "name": "--xh-tbar-text-color",
+      "description": "Toolbar text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-tbar-compact-font-size",
+      "description": "Toolbar compact font size. Defaults to `--xh-font-size-small`."
+    },
+    {
+      "name": "--xh-tbar-compact-font-size-px",
+      "description": "Pixel value of `--xh-tbar-compact-font-size`. Derived — override `--xh-tbar-compact-font-size` instead."
+    },
+    {
+      "name": "--xh-tbar-compact-min-size",
+      "description": "Toolbar compact minimum size."
+    },
+    {
+      "name": "--xh-tbar-compact-min-size-px",
+      "description": "Pixel value of `--xh-tbar-compact-min-size`. Derived — override `--xh-tbar-compact-min-size` instead."
+    },
+    {
+      "name": "--xh-tbar-compact-item-height-px",
+      "description": "Toolbar compact item height px."
+    },
+    {
+      "name": "--xh-viewport-bg",
+      "description": "Viewport background."
+    },
+    {
+      "name": "--xh-dash-canvas-grid-cell-color",
+      "description": "DashCanvas grid cell color."
+    }
+  ]
+}

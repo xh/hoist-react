@@ -259,8 +259,11 @@ body {
   //-----------------------------------------
   // Background (app / components in general)
   //-----------------------------------------
+  /// Primary background color for the application and component chrome.
   --xh-bg: white;
+  /// Secondary/alternate background for sidebars, toolbars, and header areas.
   --xh-bg-alt: var(--xh-blue-gray-light);
+  /// Background highlight color for selections, hovers, and emphasis.
   --xh-bg-highlight: hsl(205, 85%, 85%);
 
   &.xh-dark {
@@ -284,7 +287,9 @@ body {
   //------------------------
   // Borders
   //------------------------
+  /// Default border color used throughout the application.
   --xh-border-color: #{mc('grey', '400')};
+  /// Default border width (unitless number).
   --xh-border-width: 1;
   --xh-border-width-px: calc(var(--xh-border-width) * 1px);
 
@@ -409,14 +414,17 @@ body {
   //------------------------
   // Fonts
   //------------------------
+  /// Primary font family for the application.
   --xh-font-family: #{("InterVariable", system-ui, sans-serif)};
+  /// Font family for headings. Defaults to `--xh-font-family`.
   --xh-font-family-headings: var(--xh-font-family);
+  /// Monospace font family for code and data display.
   --xh-font-family-mono: #{(Monaco, Consolas, monospace)};
 
-  // Control font features such as tabular numbers.
-  // For Hoist's default Inter font, see https://rsms.me/inter/#features
+  /// OpenType font feature settings. For Hoist's default Inter font, see https://rsms.me/inter/#features.
   --xh-font-feature-settings: 'tnum';
 
+  /// Base font size (unitless number). All derived font size variants are computed from this value.
   --xh-font-size: 13;
   --xh-font-size-large-mult: 1.2;
   --xh-font-size-large-em: 1.2em;
@@ -698,6 +706,7 @@ body {
   //------------------------
   // Padding / Margins
   //------------------------
+  /// Base padding unit (unitless number). Derived `-px`, `-double`, and `-half` variants are computed from this value.
   --xh-pad: 10;
   --xh-pad-px: calc(var(--xh-pad) * 1px);
   --xh-pad-double: calc(var(--xh-pad) * 2);
@@ -806,10 +815,15 @@ body {
   //------------------------
   // Text
   //------------------------
+  /// Primary text color for the application.
   --xh-text-color: var(--xh-blue-gray-dark);
+  /// Accent text color for emphasis and branding.
   --xh-text-color-accent: var(--xh-orange);
+  /// Text color for headings. Defaults to `--xh-text-color`.
   --xh-text-color-headings: var(--xh-text-color);
+  /// Text color for highlighted/emphasized content.
   --xh-text-color-highlight: #{mc('blue-grey', '800')};
+  /// Muted/secondary text color for labels, placeholders, and de-emphasized content.
   --xh-text-color-muted: var(--xh-gray);
 
   &.xh-dark {
