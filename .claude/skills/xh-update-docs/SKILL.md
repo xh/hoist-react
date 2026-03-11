@@ -63,6 +63,9 @@ Check current documentation state for each affected package:
 
 3. **Documentation Roadmap** — Check `docs/planning/docs-roadmap.md` for status of affected packages.
 
+4. **Document Registry** — Check `docs/doc-registry.json` for existing entries matching the
+   affected packages. Each entry's `id` is the file path (e.g. `cmp/grid/README.md`).
+
 ## Step 4: Propose Updates
 
 Generate a categorized list of proposed documentation changes. For each change, explain
@@ -87,6 +90,12 @@ New or updated entries in the `docs/README.md` Package Documentation tables. Eac
 - Linked package path (relative from `docs/`, e.g., `../package/README.md`)
 - One-sentence description
 - Comma-separated list of key topics
+
+### Registry Updates
+New or updated entries in `docs/doc-registry.json`:
+- New entries for newly documented packages/concepts (with `id` = file path, `title`,
+  `mcpCategory`, `viewerCategory`, `description`, `keywords`)
+- Updated keywords or descriptions for existing entries affected by the changes
 
 ### Roadmap Updates
 Status changes in `docs/planning/docs-roadmap.md`:
@@ -113,5 +122,8 @@ Follow conventions from `references/doc-conventions.md`:
 - Fold defaults into description column (no separate Default column)
 - Use ✅/❌ markers for correct/incorrect code patterns
 - Use `**Avoid:**` prefix for inline warnings
+
+When new docs are added, also update `docs/doc-registry.json` with a new entry containing
+`id` (= file path), `title`, `mcpCategory`, `viewerCategory`, `description`, and `keywords`.
 
 After applying changes, present a summary of what was updated.

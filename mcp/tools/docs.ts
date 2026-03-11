@@ -7,24 +7,9 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {buildRegistry, searchDocs, type DocCategory} from '../data/doc-registry.js';
+import {buildRegistry, searchDocs} from '../data/doc-registry.js';
+import {formatSearchResults, formatDocList} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
-
-/** Valid category values for tool input schemas. */
-const categoryEnum = z
-    .enum(['package', 'concept', 'devops', 'conventions', 'all'])
-    .optional()
-    .describe('Filter by category. Default: all');
-
-/** Display order for categories in the list output. */
-const CATEGORY_ORDER: DocCategory[] = ['package', 'concept', 'devops', 'conventions', 'index'];
-const CATEGORY_LABELS: Record<DocCategory, string> = {
-    package: 'Package Documentation',
-    concept: 'Concept Documentation',
-    devops: 'DevOps Documentation',
-    conventions: 'Conventions',
-    index: 'Index'
-};
 
 /**
  * Register all documentation tools on the given MCP server.
@@ -34,7 +19,14 @@ const CATEGORY_LABELS: Record<DocCategory, string> = {
  * - `hoist-ping`: Connectivity test.
  */
 export function registerDocTools(server: McpServer): void {
-    const registry = buildRegistry(resolveRepoRoot());
+    const {entries: registry, mcpCategories} = buildRegistry(resolveRepoRoot());
+    const categoryIds = mcpCategories.map(c => c.id);
+
+    /** Valid category values for tool input schemas. */
+    const categoryEnum = z
+        .enum([...(categoryIds as [string, ...string[]]), 'all'])
+        .optional()
+        .describe('Filter by category. Default: all');
 
     //------------------------------------------------------------------
     // Tool: hoist-search-docs
@@ -68,31 +60,11 @@ export function registerDocTools(server: McpServer): void {
         },
         async ({query, category, limit}) => {
             const results = searchDocs(registry, query, {
-                category: category as DocCategory | 'all' | undefined,
+                mcpCategory: category ?? undefined,
                 limit: limit ?? 10
             });
 
-            let text: string;
-            if (results.length === 0) {
-                text = `No documents matched your search for "${query}".`;
-            } else {
-                const lines = [
-                    `Found ${results.length} result${results.length > 1 ? 's' : ''} for "${query}":\n`
-                ];
-                results.forEach((result, i) => {
-                    lines.push(
-                        `${i + 1}. [${result.entry.title}] (id: ${result.entry.id}, category: ${result.entry.category})`
-                    );
-                    lines.push(`   ${result.entry.description}`);
-                    lines.push(`   Matches: ${result.matchCount} | Snippets:`);
-                    for (const snippet of result.snippets) {
-                        lines.push(`   - L${snippet.lineNumber}: ${snippet.text}`);
-                    }
-                    lines.push('');
-                });
-                text = lines.join('\n');
-            }
-
+            const text = formatSearchResults(results, query);
             return {content: [{type: 'text' as const, text}]};
         }
     );
@@ -117,30 +89,9 @@ export function registerDocTools(server: McpServer): void {
             }
         },
         async ({category}) => {
-            const filtered =
-                category && category !== 'all'
-                    ? registry.filter(e => e.category === category)
-                    : registry;
-
-            const lines: string[] = [`Hoist Documentation (${filtered.length} documents):\n`];
-
-            // Group by category in display order.
-            for (const cat of CATEGORY_ORDER) {
-                const entries = filtered.filter(e => e.category === cat);
-                if (entries.length === 0) continue;
-
-                lines.push(
-                    `## ${CATEGORY_LABELS[cat]} (${entries.length} doc${entries.length > 1 ? 's' : ''})`
-                );
-                for (const entry of entries) {
-                    lines.push(`- ${entry.id}: ${entry.description}`);
-                }
-                lines.push('');
-            }
-
-            lines.push('Read any document using its ID with the hoist://docs/{id} resource.');
-
-            return {content: [{type: 'text' as const, text: lines.join('\n')}]};
+            let text = formatDocList(registry, mcpCategories, category ?? undefined);
+            text += 'Read any document using its ID with the hoist://docs/{id} resource.';
+            return {content: [{type: 'text' as const, text}]};
         }
     );
 

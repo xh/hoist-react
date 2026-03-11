@@ -4,7 +4,6 @@ import {log} from './util/logger.js';
 import {registerDocResources} from './resources/docs.js';
 import {registerDocTools} from './tools/docs.js';
 import {registerTsTools} from './tools/typescript.js';
-import {registerPrompts} from './prompts/index.js';
 import {beginInitialization} from './data/ts-registry.js';
 
 const server = new McpServer({
@@ -15,7 +14,6 @@ const server = new McpServer({
 registerDocResources(server);
 registerDocTools(server);
 registerTsTools(server);
-registerPrompts(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

@@ -425,7 +425,8 @@ XH.darkTheme;              // Observable boolean — true when dark theme is act
 
 `setTheme('system')` listens for OS preference changes and updates automatically.
 
-Theme is applied by adding `xh-dark` and `bp6-dark` CSS classes to the document body.
+Theme is applied by adding `xh-dark` and `bp6-dark` CSS classes to the document body. See
+[`/styles/`](../styles/README.md) for the full CSS custom property system that powers theming.
 
 ## Sizing Mode
 

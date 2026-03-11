@@ -1,5 +1,6 @@
 export * from './ButtonGroupInput';
 export * from './Checkbox';
+export * from './CheckboxButton';
 export * from './CodeInput';
 export * from './DateInput';
 export * from './JsonInput';

@@ -460,3 +460,46 @@
   (old single entry replaced with two new entries)
 - Inter-doc link scan: no broken links from these changes; 5 pre-existing issues in archived/template
   files noted but not addressed (historical changelog, template placeholders)
+
+### 2026-03-07
+- **Authorization concept doc reviewed and promoted to Done**
+- Major structural revision during interactive review with Anselm:
+  - Separated the client-side `hasRole()` API (source-agnostic array lookup) from the server-side
+    role management system (Hoist Core's opt-in `DefaultRoleService`)
+  - Added "Where Roles Come From" bridging section listing common role sources (Hoist Core module,
+    LDAP, JWT claims, external APIs, custom logic)
+  - Reframed "Role Management in Admin Console" → "Hoist Core Role Management" as opt-in, not default
+  - Moved "Checking Roles in Application Code" before server-side content to keep client-side story contiguous
+  - Moved typed role helper to first subsection with stronger recommendation language
+- New content:
+  - Two-tier role design best practices drawn from RBAC terminology: granular `UPPER_SNAKE_CASE`
+    permission roles (what code checks) vs `Sentence Case` functional roles (how users are assigned)
+  - Coherent hedge fund/trading example set for permission and functional roles
+  - Clarification that `HOIST_ADMIN` does not grant application-level permissions
+  - Explanation of `DefaultRoleService` enable/disable behavior in the Admin Console Roles tab
+  - Link to hoist-core authorization docs on GitHub
+- Removed "Forgetting checkAccess" pitfall (TypeScript catches this at compile time)
+- Tightening pass: trimmed prose throughout without removing specifics
+- Opened GitHub issue #4290 for granular Admin Console permission roles
+
+### 2026-03-07 (cont.)
+- Created `/styles/README.md` (Draft) — comprehensive guide to Hoist's CSS/SCSS styling system:
+  - Overview of the three core files: `vars.scss`, `XH.scss`, `helpers.scss`
+  - Two-tier CSS custom property pattern (`--xh-*` framework vars with unprefixed app override hooks)
+  - Variable categories table covering ~300 CSS custom properties organized by purpose
+  - Unitless value convention with `-px` suffix pattern and `calc()` usage
+  - Intent color HSL decomposition system (7 lightness/opacity variants per intent)
+  - Material Design color functions (`mc()`, `mc-muted()`, `mc-trans()`) and their compile-time role
+  - Dark theme implementation via `ThemeModel` and `xh-dark` class toggling
+  - BEM class naming with `&`-based SCSS nesting (block, element, modifier examples)
+  - Component SCSS architecture: co-located stylesheets, side-effect imports, `className` merging
+  - Utility classes reference (colors, intents, alignment, borders, typography, spacing)
+  - SCSS feature usage guide: what Hoist uses (nesting, `&`, `@use`, functions) vs. avoids (`$variables`, `@extend`, `%placeholders`)
+  - Application customization patterns: overriding theme vars, app-prefixed BEM classes, third-party library integration
+  - Common pitfalls: redefining `--xh-*` directly, SCSS vars for themeable values, including units in overrides, high-specificity selectors
+- Added `/styles/` entry to `docs/planning/docs-roadmap.md` Priority 4 table (Draft)
+- Updated `docs/README.md`:
+  - Added styles entry to Supporting Packages table with key topics
+  - Added Quick Reference entry for "Customize colors, fonts, spacing, or theme"
+  - Removed `/styles/` from "Other Packages" paragraph (now has a dedicated README)
+- Added `styles` entry to `mcp/data/doc-registry.ts` with CSS/theme/BEM keywords

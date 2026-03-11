@@ -456,6 +456,57 @@ export class DashCanvasModel
         return this.viewModels.filter(it => it.viewSpec.id === id);
     }
 
+    /**
+     * Load the given state array into the canvas, replacing the current set of views and layout.
+     * Applications can call this directly when they already hold a `DashCanvasItemState[]` and
+     * want to avoid constructing a `PersistableState` wrapper.
+     */
+    @action
+    loadState(state: DashCanvasItemState[]) {
+        const ids = new Set<string>(),
+            stateWithIds = state.map(it => {
+                const id = this.genViewId(it.viewSpecId, ids);
+                ids.add(id);
+                return {id, ...it};
+            });
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
+            existingViewModelsById = keyBy(keep, 'id');
+
+        XH.safeDestroy(remove);
+
+        this.viewModels = compact(
+            stateWithIds.map(it => {
+                const existingViewModel = existingViewModelsById[it.id];
+                if (existingViewModel) {
+                    existingViewModel.setViewState(it.state);
+                    existingViewModel.title = it.title;
+                    return existingViewModel;
+                }
+
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                if (!this.hasSpec(it.viewSpecId)) {
+                    this.logWarn(
+                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
+                    );
+                    return null;
+                }
+
+                return new DashCanvasViewModel({
+                    id: it.id,
+                    viewSpec: this.getSpec(it.viewSpecId),
+                    title: it.title,
+                    viewState: it.state,
+                    containerModel: this
+                });
+            })
+        );
+
+        this.setLayout(
+            stateWithIds.map(it => ({i: it.id, ...it.layout})),
+            false
+        );
+    }
+
     //------------------------
     // Persistable Interface
     //------------------------
@@ -549,52 +600,6 @@ export class DashCanvasModel
 
         this.layout = layout;
         if (buildAndSetState) this.state = this.buildState();
-    }
-
-    @action
-    private loadState(state: DashCanvasItemState[]) {
-        const ids = new Set<string>(),
-            stateWithIds = state.map(it => {
-                const id = this.genViewId(it.viewSpecId, ids);
-                ids.add(id);
-                return {id, ...it};
-            });
-        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
-            existingViewModelsById = keyBy(keep, 'id');
-
-        XH.safeDestroy(remove);
-
-        this.viewModels = compact(
-            stateWithIds.map(it => {
-                const existingViewModel = existingViewModelsById[it.id];
-                if (existingViewModel) {
-                    existingViewModel.setViewState(it.state);
-                    existingViewModel.title = it.title;
-                    return existingViewModel;
-                }
-
-                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-                if (!this.hasSpec(it.viewSpecId)) {
-                    this.logWarn(
-                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
-                    );
-                    return null;
-                }
-
-                return new DashCanvasViewModel({
-                    id: it.id,
-                    viewSpec: this.getSpec(it.viewSpecId),
-                    title: it.title,
-                    viewState: it.state,
-                    containerModel: this
-                });
-            })
-        );
-
-        this.setLayout(
-            stateWithIds.map(it => ({i: it.id, ...it.layout})),
-            false
-        );
     }
 
     private buildState(): DashCanvasItemState[] {
