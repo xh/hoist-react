@@ -230,6 +230,14 @@ important guidelines to internalize:
 request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped
 line and let the viewing tool handle display wrapping.
 
+## Changelog Maintenance
+
+The project changelog is `CHANGELOG.md` at the repository root. New entries go under the topmost
+`-SNAPSHOT` version heading, using emoji-prefixed section headers (e.g. `### 🎁 New Features`,
+`### 🐞 Bug Fixes`). Use past-tense, action-driven language and name specific classes, methods, and
+config keys in backticks. See [`docs/changelog-format.md`](docs/changelog-format.md) for the full
+format reference including section headers, voice guidelines, and breaking change requirements.
+
 ## Key Dependencies
 
 - **MobX** - Reactive state management
