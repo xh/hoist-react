@@ -1,0 +1,43 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-segmented-control {
+  .bp6-segmented-control {
+    background-color: var(--xh-segmented-control-bg);
+    border-radius: var(--xh-segmented-control-border-radius-px);
+    padding: var(--xh-segmented-control-pad-px);
+    gap: var(--xh-segmented-control-pad-px);
+
+    // Selected option - solid button standing out from the tray.
+    > .bp6-button:not(.bp6-minimal) {
+      border-radius: var(--xh-segmented-control-border-radius-px);
+      color: var(--xh-segmented-control-selected-text-color);
+
+      &:not(.bp6-intent-primary) {
+        background-color: var(--xh-segmented-control-selected-bg);
+      }
+    }
+
+    // Unselected options - minimal buttons receding into the tray.
+    > .bp6-button.bp6-minimal {
+      color: var(--xh-segmented-control-text-color);
+    }
+  }
+
+  // Validation borders
+  &.xh-input--invalid .bp6-segmented-control {
+    border: var(--xh-form-field-invalid-border);
+  }
+
+  &.xh-input--warning .bp6-segmented-control {
+    border: var(--xh-form-field-warning-border);
+  }
+
+  &.xh-input--info .bp6-segmented-control {
+    border: var(--xh-form-field-info-border);
+  }
+}
