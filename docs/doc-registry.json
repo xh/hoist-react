@@ -15,13 +15,13 @@
         {"id": "mobile", "title": "Mobile"},
         {"id": "utilities", "title": "Utilities"},
         {"id": "supporting", "title": "Supporting Packages"},
-        {"id": "devops", "title": "DevOps & Environment"},
+        {"id": "devops", "title": "Development & Builds"},
         {"id": "upgrade", "title": "Upgrade Notes"}
     ],
     "entries": [
         {
             "id": "docs/README.md",
-            "title": "Hoist Documentation Index",
+            "title": "Documentation Index",
             "mcpCategory": "index",
             "viewerCategory": "overview",
             "description": "Primary catalog of all hoist-react documentation with descriptions and key topics for fast, targeted retrieval.",
