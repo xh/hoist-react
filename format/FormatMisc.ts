@@ -73,6 +73,17 @@ export function fmtJson(v: string | PlainObject, opts?: JSONFormatOptions): stri
 }
 
 /**
+ * Safe version of the above - pretty-print a JSON string, adding line breaks and indentation.
+ */
+export function safeFmtJson(str: string, opts?: JSONFormatOptions): string {
+    try {
+        return fmtJson(str, opts);
+    } catch (e) {
+        return str;
+    }
+}
+
+/**
  * Basic util for splitting a string (via ' ') and capitalizing each word - e.g. for names.
  * Not intended to handle more advanced usages such as HTML or other word boundary characters.
  */
