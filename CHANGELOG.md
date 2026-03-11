@@ -23,6 +23,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
+* Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
+  existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
+  mobile versions for custom icon support.
 
 ### ✨ Styles
 
@@ -33,10 +36,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * Refactored documentation indexing to better support both MCP (LLM) and the toolbox docviewer.
-* Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks class inheritance chains,
-  shows constructor config types, indexes Promise prototype extensions, and filters `_`-prefixed
-  internal members.
+* Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks both class and interface
+  inheritance chains, shows constructor config types, indexes Promise prototype extensions, and
+  filters `_`-prefixed internal members.
 * Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
   `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
   indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
@@ -53,7 +58,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed TypeScript compilation errors caused by missing `.d.ts` declaration files in published build.
+* Fixed TS compilation errors caused by missing `.d.ts` declaration files in published build.
 
 ## 82.0.1 - 2026-02-28
 
