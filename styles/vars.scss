@@ -665,7 +665,7 @@ body {
   //------------------------
   // Segmented Control
   //------------------------
-  --xh-segmented-control-bg: var(--segmented-control-bg, var(--xh-bg-alt));
+  --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '100'), mc('blue-grey', '50'))});
   --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, var(--xh-bg));
   --xh-segmented-control-text-color: var(--segmented-control-text-color, var(--xh-text-color-muted));
   --xh-segmented-control-selected-text-color: var(--segmented-control-selected-text-color, var(--xh-text-color));
@@ -675,6 +675,7 @@ body {
   --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
 
   &.xh-dark {
+    --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '800'), mc('blue-grey', '900'))});
     --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
   }
 
