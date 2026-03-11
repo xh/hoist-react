@@ -100,6 +100,7 @@ Desktop form inputs with Blueprint styling:
 | `RadioInput` | Radio button group |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
+| `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
 | `CodeInput` | Code editor with syntax highlighting |
 | `JsonInput` | JSON editor with validation |
 

@@ -663,6 +663,23 @@ body {
   }
 
   //------------------------
+  // Segmented Control
+  //------------------------
+  --xh-segmented-control-bg: var(--segmented-control-bg, var(--xh-bg-alt));
+  --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, var(--xh-bg));
+  --xh-segmented-control-text-color: var(--segmented-control-text-color, var(--xh-text-color-muted));
+  --xh-segmented-control-selected-text-color: var(--segmented-control-selected-text-color, var(--xh-text-color));
+  --xh-segmented-control-border-radius: var(--segmented-control-border-radius, var(--xh-border-radius));
+  --xh-segmented-control-border-radius-px: calc(var(--xh-segmented-control-border-radius) * 1px);
+  --xh-segmented-control-pad: var(--segmented-control-pad, 3);
+  --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
+
+  &.xh-dark {
+    --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
+  }
+
+
+  //------------------------
   // Mask + LoadingIndicator
   //------------------------
   --xh-mask-bg: var(--mask-bg, rgba(255, 255, 255, 0.4));
