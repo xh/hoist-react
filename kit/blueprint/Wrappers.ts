@@ -40,6 +40,7 @@ import {
     Radio,
     RadioGroup,
     RangeSlider,
+    SegmentedControl as BpSegmentedControl,
     Slider,
     Switch,
     Tab,
@@ -68,6 +69,7 @@ const Popover: React.FC<PopoverProps> = props =>
 //---------------------
 export {
     Alert,
+    BpSegmentedControl,
     Button,
     ButtonGroup,
     Callout,
@@ -114,6 +116,7 @@ export {
 // Primarily leaf Components
 //-----------------------------
 export const alert = elementFactory(Alert),
+    bpSegmentedControl = elementFactory(BpSegmentedControl),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
