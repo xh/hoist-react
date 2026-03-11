@@ -12,9 +12,14 @@
   Backwards-compatible — existing filters are unaffected.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
+* Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
+  existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
+  mobile versions for custom icon support.
 
 ### ⚙️ Technical
 
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * Refactored documentation indexing to better support both MCP (LLM) and the toolbox docviewer.
 * Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks both class and interface
   inheritance chains, shows constructor config types, indexes Promise prototype extensions, and
@@ -35,7 +40,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed TypeScript compilation errors caused by missing `.d.ts` declaration files in published build.
+* Fixed TS compilation errors caused by missing `.d.ts` declaration files in published build.
 
 ## 82.0.1 - 2026-02-28
 
