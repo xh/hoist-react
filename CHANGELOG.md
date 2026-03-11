@@ -12,6 +12,7 @@
 
 ### ⚙️ Technical
 
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * Refactored documentation indexing to better support both MCP (LLM) and the toolbox docviewer.
 * Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks both class and interface
   inheritance chains, shows constructor config types, indexes Promise prototype extensions, and
