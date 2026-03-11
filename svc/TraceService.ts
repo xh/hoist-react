@@ -183,6 +183,8 @@ export class TraceService extends HoistService {
         const method = opts.method ?? 'GET',
             url = this.extractUrlPath(opts.url);
 
+        if (url.endsWith('submitSpans')) return null;
+
         return this.createSpan({
             name: `fetch ${method} ${url}`,
             parent: opts.span,
