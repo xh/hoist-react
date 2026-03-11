@@ -6,7 +6,7 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
+import {spinner as spinnerCmp, SpinnerProps} from '@xh/hoist/cmp/spinner';
 import {
     Corner,
     hoistCmp,
@@ -18,8 +18,9 @@ import {
 } from '@xh/hoist/core';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {truncate} from 'lodash';
+import {isString, truncate} from 'lodash';
 import './LoadingIndicator.scss';
+import {ReactNode} from 'react';
 
 export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
@@ -28,12 +29,12 @@ export interface LoadingIndicatorProps extends HoistProps {
     corner?: Corner;
     /** True to display the indicator. */
     isDisplayed?: boolean;
-    /** Max characters allowed in message, after which it will be elided. Default 30. */
+    /** Max characters allowed in a String message, after which it will be elided. Default 30. */
     maxMessageLength?: number;
     /** Optional text to be displayed - can also be sourced from bound TaskObserver. */
-    message?: string;
-    /** True (default) to display with an animated spinner. */
-    spinner?: boolean;
+    message?: ReactNode;
+    /** True (default) to display with an animated spinner, or SpinnerProps to customize. */
+    spinner?: boolean | Omit<SpinnerProps, 'compact'>;
 }
 
 /**
@@ -56,7 +57,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 
         isDisplayed = withDefault(isDisplayed, impl.task?.isPending);
         message = withDefault(message, impl.task?.message);
-        message = truncate(message, {length: maxMessageLength});
+        message = isString(message) ? truncate(message, {length: maxMessageLength}) : message;
 
         if (!isDisplayed || (!spinner && !message)) return null;
 
@@ -65,7 +66,8 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
             cornerCls = `xh-loading-indicator--${corner}`;
 
         const innerItems = () => {
-            let spinnerEl = spinnerCmp({compact: true});
+            const spinnerProps = spinner === true ? {} : spinner || {};
+            let spinnerEl = spinnerCmp({compact: true, ...spinnerProps});
 
             if (!message) return [spinnerEl];
 
@@ -83,7 +85,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 });
 
 class LocalMaskModel extends HoistModel {
-    task;
+    task: TaskObserver;
 
     override onLinked() {
         const {bind} = this.componentProps;

@@ -787,6 +787,15 @@ body {
 
 
   //------------------------
+  // Spinner
+  //------------------------
+  --xh-spinner-color: var(--spinner-color, #{mc('blue-grey', '400')});
+
+  &.xh-dark {
+    --xh-spinner-color: var(--spinner-color, var(--xh-blue-gray));
+  }
+
+  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));

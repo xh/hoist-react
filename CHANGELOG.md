@@ -4,6 +4,12 @@
 
 ### 🎁 New Features
 
+* Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
+  icon library. All previously supported icons remain and no app changes should be required.
+* Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
+  themeable, and consistent with the rest of the icon system. The icon, weight, and animation can be
+  configured globally via static defaults on `Spinner` or per-instance via props. A `usePng` flag
+  is available to preserve the original PNG appearance if desired.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
@@ -21,6 +27,13 @@
 * Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
   `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
   indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
+* Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
+  `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+
+### 📚 Libraries
+
+* @fortawesome/* `6.0 → 7.2`
+* @fortawesome/react-fontawesome `0.2 → 3.2`
 
 ## 82.0.3 - 2026-03-02
 
@@ -34,7 +47,7 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed TS compilation errors caused by missing `.d.ts` declaration files in published build.
+* Fixed TypeScript compilation errors caused by missing `.d.ts` declarations in published build.
 
 ## 82.0.1 - 2026-02-28
 

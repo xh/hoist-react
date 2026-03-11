@@ -139,7 +139,7 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
             icon: !isLoading
                 ? icon
                 : box({
-                      item: spinner({width: 13, height: 13, style: {margin: 'auto'}}),
+                      item: spinner({compact: true}),
                       width: 16.25
                   }),
             rightIcon: Icon.chevronDown(),
