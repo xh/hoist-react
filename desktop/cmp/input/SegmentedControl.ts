@@ -12,11 +12,15 @@ import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './SegmentedControl.scss';
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
+    /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
+    compact?: boolean;
+
     /**
      * True (default) to stretch the control to fill available width,
      * distributing space equally among options.
@@ -145,7 +149,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         commitOnChange,
         // Consumed by model
         options,
-        // Consumed by wrapper div
+        // Consumed by this component
+        compact,
         testId,
         // Remainder passed to BP SegmentedControl
         ...bpProps
@@ -159,7 +164,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     }));
 
     return div({
-        className,
+        className: classNames(className, compact && 'xh-segmented-control--compact'),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
@@ -168,6 +173,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         item: bpSegmentedControl({
             ...bpProps,
             fill: bpProps.fill ?? true,
+            size: compact ? 'small' : undefined,
             options: bpOptions,
             value: model.selectedKey,
             onValueChange: model.onValueChange,

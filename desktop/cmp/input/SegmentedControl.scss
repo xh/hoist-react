@@ -35,6 +35,23 @@
     }
   }
 
+  // Compact mode - reduced sizing for toolbars and space-constrained contexts.
+  &--compact .bp6-segmented-control {
+    padding: 0;
+    gap: 0;
+
+    > .bp6-button {
+      min-height: var(--xh-tbar-compact-item-height-px);
+      max-height: var(--xh-tbar-compact-item-height-px);
+      font-size: var(--xh-tbar-compact-font-size-px);
+      padding: 0 var(--xh-pad-half-px);
+
+      > svg:not(:last-child) {
+        margin-right: 4px;
+      }
+    }
+  }
+
   // Validation borders
   &.xh-input--invalid .bp6-segmented-control {
     border: var(--xh-form-field-invalid-border);
