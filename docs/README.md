@@ -54,7 +54,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md)                                       |
 | Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md)                                                                             |
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
-| Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-app-deployment.md) |
+| Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
@@ -137,7 +137,7 @@ for planned coverage:
 | Document | Description |
 |----------|-------------|
 | [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react |
-| [App Build & Deploy](./build-app-deployment.md) | Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker) |
+| [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
 
