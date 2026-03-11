@@ -6,6 +6,9 @@
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
+* Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
+  existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
+  mobile versions for custom icon support.
 
 ### ⚙️ Technical
 
