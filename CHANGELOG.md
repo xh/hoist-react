@@ -4,6 +4,11 @@
 
 ### 🎁 New Features
 
+* Added `TraceService` — client-side component of Hoist's new end-to-end distributed tracing
+  support. Creates spans for user actions and fetch calls, sends `traceparent` headers on outgoing
+  requests so server spans nest under client spans, and batches completed spans for relay through
+  the server's export pipeline. Controlled by `xhTraceConfig` soft config. Requires hoist-core 37+.
+
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.
 

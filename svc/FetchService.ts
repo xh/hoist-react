@@ -14,6 +14,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -665,6 +666,12 @@ export interface FetchOptions {
      * here - use the top-level `correlationId` property instead.)
      */
     track?: string | TrackOptions;
+
+    /**
+     * If set, the fetch span created by TraceService will be parented under this span.
+     * Use to nest fetch calls under a business-level span.
+     */
+    span?: Span;
 }
 
 /**

@@ -18,6 +18,7 @@ export * from './InspectorService';
 export * from './JsonBlobService';
 export * from './PrefService';
 export * from './TrackService';
+export * from './TraceService';
 export * from './WebSocketService';
 export * from './ClientHealthService';
 export * from './storage/LocalStorageService';

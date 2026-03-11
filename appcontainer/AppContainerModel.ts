@@ -39,9 +39,11 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
+    TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -239,7 +241,7 @@ export class AppContainerModel extends HoistModel {
                 PrefService,
                 JsonBlobService
             ]);
-            await installServicesAsync(TrackService);
+            await installServicesAsync([TrackService, TraceService]);
 
             await installServicesAsync([
                 AlertBannerService,
@@ -289,6 +291,7 @@ export class AppContainerModel extends HoistModel {
             this.startRouter();
             this.startOptionsDialog();
             this.setAppState('RUNNING');
+            this.emitAppLoadSpans();
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
@@ -341,6 +344,48 @@ export class AppContainerModel extends HoistModel {
     //----------------------------
     // Implementation
     //-----------------------------
+    private emitAppLoadSpans() {
+        const svc = XH.traceService;
+        if (!svc.enabled) return;
+
+        const {loadStarted, timings} = this.appStateModel,
+            loginWait = timings.LOGIN_REQUIRED ?? 0;
+
+        // Build root app-load span with child spans from timing data.
+        // Timings record cumulative ms per state — reconstruct start/end times sequentially.
+        let startTime = loadStarted;
+
+        const emit = (name: string, duration: number, parent?: Span): Span => {
+            const span = svc.createSpan({name, parent, startTime, tags: {source: 'hoist'}});
+            if (span) {
+                span.endTime = startTime + duration;
+                span.status = 'ok';
+                svc.exportSpan(span);
+            }
+            return span;
+        };
+
+        const root = emit('app-load', Date.now() - loadStarted - loginWait);
+        if (!root) return;
+
+        let dur: number;
+
+        dur = timings.PRE_AUTH ?? 0;
+        emit('pre-auth', dur, root);
+        startTime += dur;
+
+        dur = timings.AUTHENTICATING ?? 0;
+        emit('auth', dur, root);
+        startTime += dur + loginWait;
+
+        dur = timings.INITIALIZING_HOIST ?? 0;
+        emit('hoist-init', dur, root);
+        startTime += dur;
+
+        dur = timings.INITIALIZING_APP ?? 0;
+        emit('app-init', dur, root);
+    }
+
     private setDocTitle() {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
