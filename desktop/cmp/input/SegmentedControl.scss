@@ -15,10 +15,17 @@
     // Selected option - solid button standing out from the tray.
     > .bp6-button:not(.bp6-minimal) {
       border-radius: var(--xh-segmented-control-border-radius-px);
-      color: var(--xh-segmented-control-selected-text-color);
 
       &:not(.bp6-intent-primary) {
         background-color: var(--xh-segmented-control-selected-bg);
+        color: var(--xh-segmented-control-selected-text-color);
+      }
+
+      // Override Blueprint's intent colors to use Hoist theme variables.
+      &.bp6-intent-primary {
+        --bp-intent-primary-rest: var(--xh-intent-primary);
+        --bp-intent-primary-hover: var(--xh-intent-primary-darker);
+        --bp-intent-primary-active: var(--xh-intent-primary-darkest);
       }
     }
 

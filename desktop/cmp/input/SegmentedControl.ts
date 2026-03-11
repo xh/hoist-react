@@ -12,7 +12,7 @@ import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
-import {filter, isNil, isObject} from 'lodash';
+import {filter, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './SegmentedControl.scss';
 
@@ -22,6 +22,12 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * distributing space equally among options.
      */
     fill?: boolean;
+
+    /**
+     * Visual intent applied to the selected option. Only `'primary'` is supported
+     * (in addition to the default `'none'`).
+     */
+    intent?: 'none' | 'primary';
 
     /**
      * Array of available options. Each entry may be a SegmentedControlOption object
@@ -100,7 +106,6 @@ class SegmentedControlModel extends HoistInputModel {
     @computed
     get selectedKey(): string {
         const {renderValue, normalizedOptions} = this;
-        if (isNil(renderValue)) return undefined;
         return normalizedOptions.find(o => o.value === renderValue)?._key;
     }
 
@@ -140,6 +145,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         commitOnChange,
         // Consumed by model
         options,
+        // Consumed by wrapper div
+        testId,
         // Remainder passed to BP SegmentedControl
         ...bpProps
     } = getNonLayoutProps(props);
