@@ -332,7 +332,7 @@
             "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release"]
         },
         {
-            "id": "docs/build-app-deployment.md",
+            "id": "docs/build-and-deploy-app.md",
             "title": "App Build & Deploy",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
