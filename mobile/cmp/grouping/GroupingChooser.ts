@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
+import {GroupingChooserLocalModel} from '@xh/hoist/cmp/grouping/impl/GroupingChooserLocalModel';
 import {box, div, filler, hbox, placeholder, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -39,7 +40,8 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
         {model, className, dialogTitle = 'Choose Group By', emptyText = 'Ungrouped', ...rest},
         ref
     ) {
-        const {value, allowEmpty} = model,
+        const impl = useLocalModel(GroupingChooserLocalModel),
+            {value, allowEmpty} = model,
             label = isEmpty(value) && allowEmpty ? emptyText : model.getValueLabel(value),
             [layoutProps, buttonProps] = splitLayoutProps(rest);
 
@@ -52,21 +54,22 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                     className: 'xh-grouping-chooser-button',
                     item: span(label),
                     ...buttonProps,
-                    onClick: () => model.toggleEditor()
+                    onClick: () => impl.toggleEditor()
                 }),
-                dialogCmp({dialogTitle, emptyText})
+                dialogCmp({model: impl, dialogTitle, emptyText})
             ]
         });
     }
 });
 
-const dialogCmp = hoistCmp.factory<GroupingChooserModel>({
+const dialogCmp = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, dialogTitle, emptyText}) {
+        const {parentModel} = model;
         return dialogPanel({
             isOpen: model.editorIsOpen,
             title: dialogTitle,
             icon: Icon.treeList(),
-            items: [editor({emptyText}), favoritesChooser({omit: !model.persistFavorites})],
+            items: [editor({emptyText}), favoritesChooser({omit: !parentModel.persistFavorites})],
             bbar: [
                 filler(),
                 button({
@@ -100,10 +103,10 @@ const editor = hoistCmp.factory({
     }
 });
 
-const dimensionList = hoistCmp.factory<GroupingChooserModel>({
+const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, emptyText}) {
         if (isEmpty(model.pendingValue)) {
-            return model.allowEmpty
+            return model.parentModel.allowEmpty
                 ? hbox({
                       className: 'xh-grouping-chooser__row',
                       items: [filler(), emptyText, filler()]
@@ -131,7 +134,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
+const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, dimension, idx}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
@@ -179,7 +182,7 @@ const dimensionRow = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
+const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model}) {
         if (!model.isAddEnabled) return null;
 
@@ -207,9 +210,11 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserModel>({
 //------------------
 // Favorites
 //------------------
-const favoritesChooser = hoistCmp.factory<GroupingChooserModel>({
+const favoritesChooser = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model}) {
-        const {favoritesOptions: options, isAddFavoriteEnabled} = model,
+        const {parentModel} = model,
+            {favoritesOptions: options} = parentModel,
+            {isAddFavoriteEnabled} = model,
             items = isEmpty(options)
                 ? [placeholder('No favorites saved.')]
                 : options.map(it => favoriteItem(it));
@@ -234,8 +239,9 @@ const favoritesChooser = hoistCmp.factory<GroupingChooserModel>({
     }
 });
 
-const favoriteItem = hoistCmp.factory<GroupingChooserModel>({
+const favoriteItem = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, value, label}) {
+        const {parentModel} = model;
         return hbox({
             className: 'xh-grouping-chooser__favorites__favorite',
             items: [
@@ -244,14 +250,14 @@ const favoriteItem = hoistCmp.factory<GroupingChooserModel>({
                     minimal: true,
                     flex: 1,
                     onClick: () => {
-                        model.setValue(value);
+                        parentModel.setValue(value);
                         model.closeEditor();
                     }
                 }),
                 button({
                     icon: Icon.delete(),
                     minimal: true,
-                    onClick: () => model.removeFavorite(value)
+                    onClick: () => parentModel.removeFavorite(value)
                 })
             ]
         });

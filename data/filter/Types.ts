@@ -97,3 +97,11 @@ export interface FilterValueSource {
 export function isFilterValueSource(v: unknown): v is FilterValueSource {
     return (v as any)?.isFilterValueSource === true;
 }
+
+/**
+ * Option to customize matching behavior for {@link StoreFilterField} and related components.
+ *   - `start`: match beginning of candidate strings only.
+ *   - `startWord`: match beginning of words within candidate strings.
+ *   - `any`: match anywhere within candidate strings.
+ */
+export type FilterMatchMode = 'start' | 'startWord' | 'any';

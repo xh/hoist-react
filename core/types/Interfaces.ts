@@ -8,11 +8,11 @@
 import {RuleLike} from '@xh/hoist/data';
 import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
-import {LoadSpec} from '../load';
+import {LoadSpec, LoadSpecConfig} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
 /**
- * User of the application, as loaded from the server.
+ * A user of the application, as loaded from the server.
  *
  * Note that instances of this class may contain other custom properties serialize by an
  * application.  Applications may wish to extend this interface
@@ -27,6 +27,23 @@ export interface HoistUser {
     isHoistRoleManager: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
+}
+
+/**
+ * Identity of the authenticated user using the application,
+ * along with any user being impersonated.
+ */
+export interface IdentityInfo {
+    /**
+     * Actual underlying user that has authenticated in the app.
+     */
+    authUser: HoistUser;
+
+    /**
+     * User the app should be displayed for.  Typically the same as authUser, but
+     * will be different during impersonation.
+     */
+    apparentUser: HoistUser;
 }
 
 /**
@@ -266,7 +283,7 @@ export interface TrackOptions {
     oncePerSession?: boolean;
 
     /** Optional LoadSpec associated with this track.*/
-    loadSpec?: LoadSpec;
+    loadSpec?: LoadSpec | LoadSpecConfig;
 
     /** Timestamp for action. */
     timestamp?: number;

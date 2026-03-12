@@ -123,7 +123,7 @@ export class TabContainerModel extends HoistModel {
 
     /**
      * @param config - TabContainer configuration.
-     * @param [depth] - Depth in hierarchy of nested TabContainerModels. Not for application use.
+     * @param depth - Depth in hierarchy of nested TabContainerModels. Not for application use.
      */
     constructor(
         {
@@ -138,7 +138,7 @@ export class TabContainerModel extends HoistModel {
             xhImpl = false,
             switcher = {mode: 'static'}
         }: TabContainerConfig,
-        depth = 0
+        depth: number = 0
     ) {
         super();
         makeObservable(this);

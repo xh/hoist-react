@@ -5,9 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs/composeRefs';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -25,7 +26,7 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     gridModel?: GridModel;
 
     /** Mode to use when searching (default 'startWord'). */
-    matchMode?: 'start' | 'startWord' | 'any';
+    matchMode?: FilterMatchMode;
 
     /**
      * Delay (in ms) to buffer searching the grid after the value changes from user input.

@@ -11,9 +11,16 @@ import {Icon} from '@xh/hoist/icon';
 import './CheckboxButton.scss';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
+import {ReactElement} from 'react';
 
 export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
     value?: boolean;
+
+    /** Icon to display when checked. Defaults to a solid check-square icon with primary intent. */
+    checkedIcon?: ReactElement;
+
+    /** Icon to display when unchecked. Defaults to a light outlined square icon. */
+    uncheckedIcon?: ReactElement;
 }
 
 /**
@@ -36,16 +43,18 @@ class CheckboxButtonInputModel extends HoistInputModel {
 //----------------------------------
 // Implementation
 //----------------------------------
-const cmp = hoistCmp.factory<CheckboxButtonInputModel>(({model, text, ...props}, ref) => {
-    const checked = !!model.renderValue;
-    return button({
-        text: withDefault(text, model.getField()?.displayName),
-        icon: checked
-            ? Icon.checkSquare({prefix: 'fas', intent: 'primary'})
-            : Icon.square({prefix: 'fal'}),
-        outlined: true,
-        onClick: e => model.noteValueChange(!checked),
-        ...props,
-        ref
-    });
-});
+const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
+    ({model, text, checkedIcon, uncheckedIcon, ...props}, ref) => {
+        const checked = !!model.renderValue;
+        return button({
+            text: withDefault(text, model.getField()?.displayName),
+            icon: checked
+                ? withDefault(checkedIcon, Icon.checkSquare({prefix: 'fas', intent: 'primary'}))
+                : withDefault(uncheckedIcon, Icon.square({prefix: 'fal'})),
+            outlined: true,
+            onClick: () => model.noteValueChange(!checked),
+            ...props,
+            ref
+        });
+    }
+);

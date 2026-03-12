@@ -14,7 +14,7 @@ import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {instancesTab, clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster';
+import {instancesTab, metricsPanel, clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster';
 import {aboutPanel, alertBannerPanel, configPanel} from '@xh/hoist/admin/tabs/general';
 import {
     jsonBlobPanel,
@@ -93,7 +93,8 @@ export class AppModel extends HoistAppModel {
                             {name: 'services', path: '/services'}
                         ]
                     },
-                    {name: 'objects', path: '/objects'}
+                    {name: 'objects', path: '/objects'},
+                    {name: 'metrics', path: '/metrics'}
                 ]
             },
             {
@@ -142,7 +143,8 @@ export class AppModel extends HoistAppModel {
                 content: {
                     tabs: [
                         {id: 'instances', icon: Icon.server(), content: instancesTab},
-                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel}
+                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel},
+                        {id: 'metrics', icon: Icon.gauge(), content: metricsPanel}
                     ]
                 }
             },

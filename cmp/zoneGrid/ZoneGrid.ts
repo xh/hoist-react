@@ -14,7 +14,8 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {ZoneGridModel} from './ZoneGridModel';
 import './ZoneGrid.scss';
 
-export interface ZoneGridProps extends HoistProps<ZoneGridModel>, LayoutProps, TestSupportProps {
+export interface ZoneGridProps<M extends ZoneGridModel = ZoneGridModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *

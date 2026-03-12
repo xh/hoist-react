@@ -379,7 +379,10 @@ export abstract class BaseOAuthClient<
     }
 
     protected setLocalStorage(key: string, value: any) {
-        if (value == null) window.localStorage.removeItem(value);
+        if (value == null) {
+            window.localStorage.removeItem(key);
+            return;
+        }
         if (isObject(value)) value = JSON.stringify(value);
         window.localStorage.setItem(key, value);
     }

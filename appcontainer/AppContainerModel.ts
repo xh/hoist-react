@@ -10,6 +10,7 @@ import {
     createElement,
     HoistAppModel,
     HoistModel,
+    IdentityInfo,
     managed,
     RootRefreshContextModel,
     TaskObserver,
@@ -197,23 +198,21 @@ export class AppContainerModel extends HoistModel {
             // Check auth, locking out, or showing login if possible
             this.setAppState('AUTHENTICATING');
             XH.authModel = createSingleton(appSpec.authModelClass);
-            const isAuthenticated = await XH.authModel.completeAuthAsync();
-            if (!isAuthenticated) {
+            const identity = await XH.authModel.completeAuthAsync();
+            if (identity) {
+                await this.completeInitAsync(identity);
+            } else {
                 throwIf(
                     !appSpec.enableLoginForm,
                     'Unable to complete required authentication (SSO/Auth failure).'
                 );
                 this.setAppState('LOGIN_REQUIRED');
-                return;
             }
         } catch (e) {
             this.setAppState('LOAD_FAILED');
             XH.handleException(e, {requireReload: true});
             return;
         }
-
-        // ...if made it to here, continue with initialization.
-        await this.completeInitAsync();
     }
 
     /**
@@ -221,20 +220,26 @@ export class AppContainerModel extends HoistModel {
      * authenticated and known to the server (regardless of application roles at this point).
      */
     @action
-    async completeInitAsync() {
-        this.setAppState('INITIALIZING_HOIST');
+    async completeInitAsync(identity: IdentityInfo) {
         try {
-            // Install identity service and confirm access
+            // Install identity and check roles
             await installServicesAsync(IdentityService);
+            XH.identityService.initIdentity(identity);
             if (!this.appStateModel.checkAccess()) {
                 this.setAppState('ACCESS_DENIED');
                 return;
             }
 
             // Complete initialization process
-            await installServicesAsync([ConfigService, LocalStorageService, SessionStorageService]);
+            this.setAppState('INITIALIZING_HOIST');
+            await installServicesAsync([LocalStorageService, SessionStorageService]);
+            await installServicesAsync([
+                EnvironmentService,
+                ConfigService,
+                PrefService,
+                JsonBlobService
+            ]);
             await installServicesAsync(TrackService);
-            await installServicesAsync([EnvironmentService, PrefService, JsonBlobService]);
 
             await installServicesAsync([
                 AlertBannerService,

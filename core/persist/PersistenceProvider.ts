@@ -163,6 +163,12 @@ export abstract class PersistenceProvider<S = any> {
         this.disposer?.();
     }
 
+    /** Push the current state of this provider to its target. */
+    pushStateToTarget() {
+        const state = this.read();
+        this.target.setPersistableState(state ? state : this.defaultState);
+    }
+
     //----------------
     // Protected API
     //----------------

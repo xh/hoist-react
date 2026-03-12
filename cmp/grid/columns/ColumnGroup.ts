@@ -13,7 +13,7 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
+import {ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
 export interface ColumnGroupSpec {
@@ -51,7 +51,7 @@ export interface ColumnGroupSpec {
  * Provided to GridModels as plain configuration objects.
  */
 export class ColumnGroup {
-    readonly children: Array<ColumnGroup | Column>;
+    readonly children: ColumnOrGroup[];
     readonly gridModel: GridModel;
     readonly groupId: string;
     readonly headerName: ReactNode | ColumnHeaderNameFn;
@@ -79,11 +79,7 @@ export class ColumnGroup {
      *
      * @internal
      */
-    constructor(
-        config: ColumnGroupSpec,
-        gridModel: GridModel,
-        children: Array<Column | ColumnGroup>
-    ) {
+    constructor(config: ColumnGroupSpec, gridModel: GridModel, children: ColumnOrGroup[]) {
         const {
             children: childrenSpecs,
             groupId,

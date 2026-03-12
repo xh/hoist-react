@@ -15,14 +15,14 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
     FilterBindTarget,
     FilterValueSource,
     isFilterValueSource,
-    parseFilter,
-    withFilterByTypes
+    parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -201,11 +201,13 @@ export class FilterChooserModel extends HoistModel {
         this.updateSelectValueAndBind();
 
         if (bind) {
+            // Inbound sync: when the bind target's filter changes externally (e.g. via
+            // Grid column filters on the same Store), update this model's value to match.
+            // FunctionFilters are stripped as they are unsupported by FilterChooser.
             this.addReaction({
                 track: () => bind.filter,
                 run: filter => {
-                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
-                    this.setValue(value);
+                    this.setValue(filter?.removeFunctionFilters());
                 }
             });
         }
@@ -604,12 +606,11 @@ export class FilterChooserModel extends HoistModel {
                     }
                 );
 
-                // Round-trip value to bound filter
+                // Outbound sync: replace the FieldFilter portion of the bind target's
+                // filter with this model's value, preserving any FunctionFilters
+                // installed by other components (e.g. StoreFilterField).
                 if (bind) {
-                    const filter = withFilterByTypes(bind.filter, value, [
-                        'FieldFilter',
-                        'CompoundFilter'
-                    ]);
+                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
                     bind.setFilter(filter);
                 }
             })

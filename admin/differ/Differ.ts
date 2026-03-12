@@ -49,7 +49,7 @@ const contents = hoistCmp.factory<DifferModel>(({model}) => {
               })
             : frame({
                   item: `No ${model.displayName}s loaded for comparison.`,
-                  padding: 10
+                  padding: true
               }),
         bbar: bbar(),
         mask: 'onLoad'

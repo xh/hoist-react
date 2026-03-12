@@ -29,7 +29,8 @@ import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
-    ModalSupportModel
+    ModalSupportModel,
+    DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -54,7 +55,8 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
-export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSupportProps {
+export interface GridProps<M extends GridModel = GridModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -188,7 +190,8 @@ export class GridLocalModel extends HoistModel {
             this.rowHeightReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
-            this.modalReaction()
+            this.modalReaction(),
+            this.dashContainerReaction()
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
@@ -588,6 +591,22 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => (modalSupportModel as any).isModal,
             run: () => this.model.agApi.redrawRows(),
+            debounce: 0
+        };
+    }
+
+    dashContainerReaction() {
+        // Force Grid to redraw rows when parent DashContainer view ref changes
+        const dashContainerViewModel = DashContainerViewModel
+            ? this.lookupModel(DashContainerViewModel)
+            : null;
+        if (!dashContainerViewModel) return null;
+
+        return {
+            track: () => (dashContainerViewModel as any).viewRef.current,
+            run: elem => {
+                if (elem) this.model.agApi.redrawRows();
+            },
             debounce: 0
         };
     }

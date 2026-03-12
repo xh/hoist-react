@@ -1,0 +1,215 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-picker {
+  display: inline-flex;
+
+  // Ensure popover target stretches to fill layout width.
+  > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+  }
+
+  &__trigger {
+    justify-content: flex-start;
+
+    .bp6-button-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
+    }
+
+    &--empty .bp6-button-text {
+      color: var(--xh-input-placeholder-text-color);
+    }
+  }
+
+  // Selector needs parent .xh-picker class for specificity (0,3,0)
+  // to beat Blueprint's `.bp6-dark .bp6-button.bp6-minimal { box-shadow: none }`.
+  .xh-picker__trigger--as-input.xh-button {
+    background-color: var(--xh-input-bg) !important;
+    border: none;
+    box-shadow: var(--xh-form-field-box-shadow);
+    padding-left: var(--xh-pad-px) !important;
+    padding-right: var(--xh-pad-px) !important;
+
+    & > .xh-icon {
+      color: var(--xh-text-color-muted);
+    }
+
+    // Preserve input-style box-shadow and add subtle surface highlight on hover/active —
+    // Blueprint's minimal button rules set `box-shadow: none` on these states, hiding the
+    // input outline in dark mode.
+    &:hover {
+      background-color: var(--xh-intent-neutral-trans1) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+
+    &:active,
+    &.bp6-active {
+      background-color: var(--xh-intent-neutral-trans2) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+
+    // Intent overrides — restore intent visuals that the --as-input rules above suppress.
+    @each $intent in primary, success, warning, danger {
+      &.xh-button--intent-#{$intent} {
+        box-shadow: var(--xh-input-intent-#{$intent}-box-shadow);
+
+        & > .xh-icon {
+          color: var(--xh-intent-#{$intent}-text-color);
+        }
+
+        &:hover {
+          background-color: var(--xh-intent-#{$intent}-trans1) !important;
+          box-shadow: var(--xh-input-intent-#{$intent}-box-shadow) !important;
+        }
+
+        &:active,
+        &.bp6-active {
+          background-color: var(--xh-intent-#{$intent}-trans2) !important;
+          box-shadow: var(--xh-input-intent-#{$intent}-box-shadow) !important;
+        }
+      }
+    }
+  }
+
+  // Compact mode - trigger button matches compact toolbar button sizing.
+  // .xh-button qualifier needed to beat `.xh-app .xh-button.bp6-button` font-size (0,3,0).
+  &--compact &__trigger.xh-button {
+    min-height: var(--xh-tbar-compact-item-height-px);
+    max-height: var(--xh-tbar-compact-item-height-px);
+    font-size: var(--xh-tbar-compact-font-size-px);
+    padding: 3px var(--xh-pad-half-px);
+  }
+
+  // Override --as-input padding in compact mode (needs !important to beat the
+  // !important declarations on the non-compact --as-input rule).
+  &--compact .xh-picker__trigger--as-input.xh-button {
+    padding: 3px var(--xh-pad-half-px) !important;
+  }
+
+  &__popover.bp6-popover {
+    .bp6-popover-content {
+      padding: 0;
+      border-radius: var(--xh-border-radius-px);
+      box-shadow: var(--xh-popup-shadow);
+      background: var(--xh-bg);
+    }
+  }
+
+  // Compact mode - popover content (renders in portal, outside root DOM).
+  &__popover--compact.bp6-popover {
+    font-size: var(--xh-tbar-compact-font-size-px);
+
+    .xh-picker__option {
+      padding: 2px var(--xh-pad-half-px);
+    }
+
+    .xh-picker__option-check {
+      width: 18px;
+      min-width: 18px;
+    }
+
+    .xh-picker__filter {
+      padding: 3px var(--xh-pad-half-px);
+    }
+  }
+
+  &__filter {
+    padding: var(--xh-pad-half-px);
+    border-bottom: 1px solid var(--xh-border-color);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    border-top: 1px solid var(--xh-border-color);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  &__footer-action {
+    cursor: pointer;
+    color: var(--xh-intent-primary);
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &--disabled {
+      cursor: default;
+      color: var(--xh-text-color-muted);
+      opacity: 0.5;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+
+  &__footer-separator {
+    margin: 0 var(--xh-pad-half-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  &__options {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  &__no-results {
+    padding: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--xh-bg-alt);
+      color: var(--xh-text-color-highlight);
+    }
+
+    &--selected {
+      font-weight: 500;
+    }
+
+    // Applied per-row via index to support both standard and virtual rendering modes.
+    &--striped {
+      background-color: var(--xh-grid-bg-odd);
+    }
+
+    &--border-top {
+      border-top: 1px solid var(--xh-border-color);
+    }
+  }
+
+  &__option-check {
+    width: 24px;
+    min-width: 24px;
+    text-align: center;
+    margin-right: 2px;
+    color: var(--xh-intent-primary);
+  }
+
+  &__option-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -7,11 +7,9 @@
 import {
     BlueprintProvider,
     Classes,
-    Dialog,
     FocusStyleManager,
     type HotkeyConfig,
     OverlayToaster,
-    Popover,
     PopoverInteractionKind,
     Position,
     type ToasterPosition,
@@ -25,12 +23,6 @@ import './styles.scss';
 // Only show focus indicators when tabbing through components - avoids drawing focus outlines
 // on focusable components when focused via mouse click.
 FocusStyleManager.onlyShowFocusOnTabs();
-
-// Disable fade/scale-in transitions.
-// See also popover & overlay related overrides in ./styles.scss.
-Dialog.defaultProps.transitionDuration = 0;
-Dialog.defaultProps.transitionName = 'none';
-Popover.defaultProps.transitionDuration = 0;
 
 //---------------------
 // Re-exports

@@ -200,15 +200,15 @@ body {
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
   // Add -text variants - customized to lighter values for dark theme to optimize for legibility and contrast.
-  --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary));
-  --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success));
-  --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning));
+  --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary));
+  --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success));
+  --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning));
   --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger));
 
   &.xh-dark {
-    --xh-intent-primary-text-color: var(--intent-danger-text-color, var(--xh-intent-primary-lighter));
-    --xh-intent-success-text-color: var(--intent-danger-text-color, var(--xh-intent-success-lighter));
-    --xh-intent-warning-text-color: var(--intent-danger-text-color, var(--xh-intent-warning-lighter));
+    --xh-intent-primary-text-color: var(--intent-primary-text-color, var(--xh-intent-primary-lighter));
+    --xh-intent-success-text-color: var(--intent-success-text-color, var(--xh-intent-success-lighter));
+    --xh-intent-warning-text-color: var(--intent-warning-text-color, var(--xh-intent-warning-lighter));
     --xh-intent-danger-text-color: var(--intent-danger-text-color, var(--xh-intent-danger-lighter));
   }
 
@@ -356,6 +356,26 @@ body {
   }
 
   //------------------------
+  // Cards
+  //------------------------
+  --xh-card-bg: var(--card-bg, var(--xh-bg));
+  --xh-card-border-color: var(--card-border-color, var(--xh-border-color));
+  --xh-card-border-radius: var(--card-border-radius, var(--xh-border-radius));
+  --xh-card-border-radius-px: calc(var(--xh-card-border-radius) * 1px);
+  --xh-card-danger-color: var(--card-danger-color, var(--xh-intent-danger-text-color));
+  --xh-card-header-font-size: var(--card-header-font-size, var(--xh-font-size));
+  --xh-card-header-font-size-px: calc(var(--xh-card-header-font-size) * 1px);
+  --xh-card-header-gap: var(--card-header-gap, 8);
+  --xh-card-header-gap-px: calc(var(--xh-card-header-gap) * 1px);
+  --xh-card-header-min-height: var(--card-header-min-height, 30);
+  --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
+  --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
+  --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
+  --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
+  --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+
+
+  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--menu-bg, var(--xh-bg));
@@ -483,6 +503,13 @@ body {
   --xh-form-field-warning-border-width-px: calc(var(--xh-form-field-warning-border-width) * 1px);
   --xh-form-field-warning-box-shadow: var(--form-field-warning-border-color, #{inset 0 0 0 1px var(--xh-form-field-warning-border-color), inset 0 1px 1px var(--xh-form-field-warning-border-color)});
   --xh-form-field-warning-color: var(--form-field-warning-color, var(--xh-intent-warning-text-color));
+
+  // Input intent indicators — reusable box-shadows for input-styled components with intent.
+  // Follows the same inset box-shadow pattern as form field validation states.
+  --xh-input-intent-primary-box-shadow: #{inset 0 0 0 1px var(--xh-intent-primary-text-color), inset 0 1px 1px var(--xh-intent-primary-text-color)};
+  --xh-input-intent-success-box-shadow: #{inset 0 0 0 1px var(--xh-intent-success-text-color), inset 0 1px 1px var(--xh-intent-success-text-color)};
+  --xh-input-intent-warning-box-shadow: #{inset 0 0 0 1px var(--xh-intent-warning-text-color), inset 0 1px 1px var(--xh-intent-warning-text-color)};
+  --xh-input-intent-danger-box-shadow: #{inset 0 0 0 1px var(--xh-intent-danger-text-color), inset 0 1px 1px var(--xh-intent-danger-text-color)};
 
   &.xh-dark {
     --xh-form-field-box-shadow-color-top: var(--form-field-box-shadow-color-top, #{mc-trans('blue-grey', '800', 0.15)});
@@ -638,6 +665,24 @@ body {
   }
 
   //------------------------
+  // Segmented Control
+  //------------------------
+  --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '100'), mc('blue-grey', '50'))});
+  --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, var(--xh-bg));
+  --xh-segmented-control-text-color: var(--segmented-control-text-color, color-mix(in srgb, var(--xh-text-color) 75%, var(--xh-segmented-control-bg)));
+  --xh-segmented-control-selected-text-color: var(--segmented-control-selected-text-color, var(--xh-text-color));
+  --xh-segmented-control-border-radius: var(--segmented-control-border-radius, var(--xh-border-radius));
+  --xh-segmented-control-border-radius-px: calc(var(--xh-segmented-control-border-radius) * 1px);
+  --xh-segmented-control-pad: var(--segmented-control-pad, 3);
+  --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
+
+  &.xh-dark {
+    --xh-segmented-control-bg: var(--segmented-control-bg, #{color.mix(mc('blue-grey', '800'), mc('blue-grey', '900'))});
+    --xh-segmented-control-selected-bg: var(--segmented-control-selected-bg, #{mc('blue-grey', '700')});
+  }
+
+
+  //------------------------
   // Mask + LoadingIndicator
   //------------------------
   --xh-mask-bg: var(--mask-bg, rgba(255, 255, 255, 0.4));
@@ -715,7 +760,7 @@ body {
   // Popups / dialogs
   //------------------------
   --xh-popup-bg: var(--popup-bg, var(--xh-bg));
-  --xh-popup-border-color: var(--popup-border-color, var(--xh-popup-title-bg));
+  --xh-popup-border-color: var(--popup-border-color, var(--xh-border-color));
   --xh-popup-border-width: var(--popup-border-width, var(--xh-border-width));
   --xh-popup-border-width-px: calc(var(--xh-popup-border-width) * 1px);
   --xh-popup-title-bg: var(--popup-title-bg, var(--xh-title-bg));

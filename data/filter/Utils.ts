@@ -7,8 +7,8 @@
 
 import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
-import {logError} from '@xh/hoist/utils/js';
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {apiDeprecated, logError} from '@xh/hoist/utils/js';
+import {castArray, compact, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
 import {FieldFilterSpec, FilterLike} from './Types';
@@ -61,64 +61,89 @@ export function parseFilter(spec: FilterLike): Filter {
 }
 
 /**
- * Replace filters in `filter` with `newFilter` by field.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add.
- * @param field - StoreRecord Field name used to identify filters for replacement
+ * Combine a `source` filter with one or more `additions` via AND.
+ *
+ * If `source` is already an AND CompoundFilter, additions are appended to its children
+ * (flattened) rather than nesting AND(AND(...), new). Null/empty values on either side are
+ * handled gracefully.
+ *
+ * @param source - existing filter to build on, or null.
+ * @param additions - one or more filters to append.
+ * @returns the combined filter, or null if all inputs are null/empty.
  */
+export function appendFilter(source: Filter, ...additions: FilterLike[]): Filter {
+    const parsed = compact(additions.map(parseFilter));
+    if (!source && parsed.length === 0) return null;
+    if (!source && parsed.length === 1) return parsed[0];
+
+    const sourceFilters =
+        source instanceof CompoundFilter && source.op === 'AND'
+            ? source.filters
+            : compact([source]);
+
+    return parseFilter({filters: [...sourceFilters, ...parsed], op: 'AND'});
+}
+
+//----------------------------------------------------------------------
+// Deprecated aliases - use Filter instance methods instead
+//----------------------------------------------------------------------
+/** @deprecated Use `filter.removeFieldFilters(field)` and `appendFilter()` instead. */
 export function withFilterByField(
     filter: FilterLike,
     newFilter: FilterLike,
     field: string
 ): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    apiDeprecated('withFilterByField', {
+        msg: 'Use filter.removeFieldFilters(field) and appendFilter() instead.',
+        v: '85.0'
+    });
+    const source = parseFilter(filter);
+    return appendFilter(source?.removeFieldFilters(field), newFilter);
 }
 
-/**
- * Replace filters in `filter` with `newFilter` by key.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add
- * @param key - FunctionFilter key used to identify filters for replacement
- */
+/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
 export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    apiDeprecated('withFilterByKey', {
+        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
+        v: '85.0'
+    });
+    const source = parseFilter(filter);
+    return appendFilter(source?.removeFunctionFilters(key), newFilter);
 }
 
-/**
- * Replace filters in `filter` with `newFilter` by filter types.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add.
- * @param types - Filter type(s) used to identify filters for replacement
- */
+/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
+export function replaceFilterByKey(
+    filter: FilterLike,
+    replacement: FilterLike,
+    key: string
+): Filter {
+    apiDeprecated('replaceFilterByKey', {
+        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
+        v: '85.0'
+    });
+    const source = parseFilter(filter);
+    return appendFilter(source?.removeFunctionFilters(key), replacement);
+}
+
+/** @deprecated Use `filter.removeFieldFilters()` and/or `filter.removeFunctionFilters()` with
+ * `appendFilter()` instead. */
 export function withFilterByTypes(
     filter: Filter,
     newFilter: FilterLike,
     types: Some<string>
 ): Filter {
-    const isCompound = filter instanceof CompoundFilter,
-        currFilters = isCompound ? filter.filters : ([filter] as FilterLike[]);
-
-    const ret = currFilters.filter(it => {
-        for (const type of castArray(types)) {
-            if (type === 'CompoundFilter' && it instanceof CompoundFilter) return false;
-            if (type === 'FieldFilter' && it instanceof FieldFilter) return false;
-            if (type === 'FunctionFilter' && it instanceof FunctionFilter) return false;
-        }
-        return true;
+    apiDeprecated('withFilterByTypes', {
+        msg: 'Use filter.removeFieldFilters() / filter.removeFunctionFilters() and appendFilter() instead.',
+        v: '85.0'
     });
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    const typeArr = castArray(types);
+    let source: Filter = filter;
+    for (const type of typeArr) {
+        if (!source) break;
+        if (type === 'FieldFilter') source = source.removeFieldFilters();
+        if (type === 'FunctionFilter') source = source.removeFunctionFilters();
+    }
+    return appendFilter(source, newFilter);
 }
 
 /**

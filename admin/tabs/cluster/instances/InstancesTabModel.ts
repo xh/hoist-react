@@ -155,9 +155,12 @@ export class InstancesTabModel extends HoistModel {
                     headerName: 'Heap (% Max)'
                 },
                 {
-                    field: 'wsConnections',
+                    field: {
+                        name: 'wsConnections',
+                        type: 'int',
+                        description: 'Active Websocket Connections'
+                    },
                     headerName: Icon.bolt(),
-                    headerTooltip: 'Active Websocket Connections',
                     ...numberCol
                 },
                 {

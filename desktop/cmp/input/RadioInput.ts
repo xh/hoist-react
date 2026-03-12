@@ -100,7 +100,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
             label: opt.label,
             value: opt.value,
             className: 'xh-radio-input-option',
-            [TEST_ID]: getTestId(props.testId, `${opt.label}`),
+            [TEST_ID]: getTestId(props.testId, `${opt.value}`),
             onFocus: model.onFocus,
             onBlur: model.onBlur
         });

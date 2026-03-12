@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
 import {
     Field,
@@ -113,12 +114,21 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Set to true to indicate that records can be cached and reused based on id and the
-     * raw data object they refer to.  This is a useful optimization for large datasets with
-     * immutable raw data, allowing them to avoid equality checks, object creation, and raw
-     * data processing when reloading reference-identical data. Should not be used if a
-     * processRawData function that depends on external state is provided, as this function
-     * will be circumvented on subsequent reloads.  Default false.
+     * Performance optimization for large datasets with immutable raw data objects.
+     *
+     * By default, Store reuses existing StoreRecord instances when new data is loaded with
+     * matching IDs and identical field values (determined via deep equality comparison). This
+     * preserves row state in grids for unchanged records.
+     *
+     * When `reuseRecords` is true, the Store skips the fieldwise comparison and instead reuses
+     * records when the raw data object itself is **reference-identical** to the previously loaded
+     * object. This avoids equality checks, record creation, and raw data processing overhead.
+     *
+     * Only use this when your data source provides stable object references for unchanged records.
+     * Should not be used with a `processRawData` function that depends on external state, as that
+     * function will be bypassed on subsequent reloads of reference-identical data.
+     *
+     * Default false.
      */
     reuseRecords?: boolean;
 
@@ -191,7 +201,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 /**
  * A managed and observable set of local, in-memory Records.
  */
-export class Store extends HoistBase implements FilterBindTarget, FilterValueSource {
+export class Store
+    extends HoistBase
+    implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
+{
     static isStore(obj: unknown): obj is Store {
         return obj instanceof Store;
     }
@@ -1217,12 +1230,14 @@ export class Store extends HoistBase implements FilterBindTarget, FilterValueSou
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
+            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
+            const data = {...recToRevert.committedData};
             const ret = new StoreRecord({
                 id: recToRevert.id,
                 store: this,
                 raw: recToRevert.raw,
-                data: recToRevert.committedData,
-                committedData: recToRevert.committedData,
+                data,
+                committedData: data,
                 parent: null,
                 isSummary: true
             });

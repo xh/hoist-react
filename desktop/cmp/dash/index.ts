@@ -11,3 +11,4 @@ export * from './canvas/DashCanvas';
 export * from './canvas/DashCanvasModel';
 export * from './canvas/DashCanvasViewModel';
 export * from './canvas/DashCanvasViewSpec';
+export * from './canvas/widgetchooser/DashCanvasWidgetChooser';

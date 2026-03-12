@@ -36,7 +36,8 @@ import {mergeDeep} from '@xh/hoist/utils/js';
 import './TreeMap.scss';
 import {TreeMapModel} from './TreeMapModel';
 
-export interface TreeMapProps extends HoistProps<TreeMapModel>, LayoutProps, TestSupportProps {}
+export interface TreeMapProps<M extends TreeMapModel = TreeMapModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {}
 
 /**
  * Component for rendering a TreeMap.

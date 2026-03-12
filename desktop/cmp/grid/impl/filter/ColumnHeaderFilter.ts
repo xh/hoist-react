@@ -32,7 +32,6 @@ export const columnHeaderFilter = hoistCmp.factory({
                 isOpen ? 'xh-column-header-filter__icon--open' : null,
                 hasFilter ? 'xh-column-header-filter__icon--active' : null
             ),
-            popoverClassName: 'xh-popup--framed',
             position: 'right-top',
             hasBackdrop: true,
             interactionKind: 'click',

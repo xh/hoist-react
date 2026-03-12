@@ -21,46 +21,110 @@ import {ModelSelector} from './';
 import {Class} from 'type-fest';
 
 /**
- * Core superclass for stateful Models in Hoist. Models are used throughout the toolkit and
- * applications as backing stores for components and as general all-purpose constructs for
- * loading, storing, processing, and observing business data and other application state.
+ * Base class for *stateful Hoist Models*.
  *
- * The most common use of `HoistModel` is to support Hoist components. Components can be configured
- * to create or lookup an instance of an appropriate model subclass using the `model` config passed
- * to {@link hoistCmp.factory}. Hoist will automatically pass the resolved model instance as a
- * prop to the component's `render()` function, where the model's properties can be read/rendered
- * and any imperative APIs wired to buttons, callbacks, and other handlers.
+ * A `HoistModel` is the canonical Hoist unit for:
+ * - holding observable state (MobX)
+ * - implementing business logic and derived/computed values
+ * - coordinating async loading / refresh via `loadAsync()`
+ * - optionally participating in the component context hierarchy as a **linked model**
  *
- * Certain models are instantiated by Hoist and linked directly in a one-to-one relationship with
- * a specific component that renders them. These models are considered "linked", and they play a
- * special role in the framework.  In particular, linked models:
- *      - are specified by the {@link creates} directive as well as the {@link useLocalModel} hook.
- *      - support an observable {@link componentProps} property which can be used to observe the
- *      props of their associated component.
- *      - support a {@link lookupModel} method and a `@lookup` decorator that can be used to acquire
- *      references to "ancestors" to this model in the component hierarchy.
- *      - support {@link onLinked} and {@link afterLinked} lifecycle methods, called during the
- *      first rendering of their associated component. Use these methods for any work requiring the
- *      availability of lookups or `componentProps`.
- *      - have `loadAsync()` called automatically when their component is first mounted, as well
- *      as register themselves for subsequent refreshes with the nearest {@link RefreshContextModel}
- *      in the component hierarchy.
- *      - are destroyed when their linked component is unmounted.
+ * PURPOSE
+ * - Provide a common lifecycle + MobX integration point for Hoist state.
+ * - Provide optional managed loading/refresh support when `doLoadAsync()` is implemented.
+ * - Provide linked-model features when a model is created via Hoist component wiring.
  *
- * It is very common to decorate properties on models with `@observable` and related field-level
- * annotations. This enables automatic, MobX-powered re-rendering of components when these model
- * properties change, or when specific reactions have been wired by the developer via
- * `addReaction()` and related utils from {@link HoistBase}.
+ * NON-GOALS
+ * - This is not a React component.
+ * - This is not a generic DI container / service locator (use `lookupModel()` only for linked models).
+ * - This does not prescribe app-specific data fetching patterns beyond the `doLoadAsync()` template.
  *
- * When declaring any observable properties on your model class, note that you **must** call
- * `makeObservable(this)` within your model's constructor in order for MobX to begin tracking your
- * observables and reacting to changes.
+ * KEY CONCEPTS (Hoist vocabulary)
+ * - **Model**: a long-lived stateful object backing UI and/or application state.
+ * - **Linked model**: a model created for (and bound to) a specific component instance.
+ * - **Load support**: managed async loading via {@link LoadSupport} + {@link LoadSpec}.
  *
- * HoistModels that need to load or refresh their state from any external source (e.g. a remote
- * API or local service call) are encouraged to implement the abstract `doLoadAsync()` method
- * defined on this superclass. This will trigger the installation of a {@link LoadSupport} instance
- * on the model and enable several extensions to help track and manage async loads via the model's
- * public `loadAsync()` entry point.
+ * LIFECYCLE / OWNERSHIP
+ * - Created by:
+ *   - Hoist component factories when configured with `model` (see {@link hoistCmp.factory}).
+ *   - The {@link creates} directive or {@link useLocalModel} hook (linked models).
+ *   - Application code (unlinked models) when used as general-purpose state holders.
+ * - Scope:
+ *   - Linked models are 1:1 with a component instance and are destroyed on unmount.
+ *   - Unlinked models are owned by application code; you are responsible for lifecycle.
+ *
+ * LINKED MODEL BEHAVIOR
+ * Linked models:
+ * - expose observable {@link componentProps} (shallow-observed per prop)
+ * - can acquire ancestor models via {@link lookupModel} / `@lookup`
+ * - receive {@link onLinked} during the *first render* of the linked component
+ * - receive {@link afterLinked} after the first render (via React effect)
+ * - are auto-loaded on mount via {@link loadAsync} (if load support is enabled)
+ * - register for subsequent refreshes via the nearest {@link RefreshContextModel}
+ * - are destroyed when their linked component is unmounted
+ *
+ * MANAGED LOADING / REFRESH
+ * - Implement {@link doLoadAsync} to opt into managed loading via {@link LoadSupport}.
+ * - When enabled, callers should use {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync}.
+ *   The {@link LoadSpec} instance passed to `doLoadAsync()` can be inspected to determine the
+ *   particular type of load that was triggered, as well as to determine if a newer load has already
+ *   been triggered via {@link LoadSpec.isStale} and {@link LoadSpec.isObsolete}.
+ * - Other load state/metadata is available via {@link loadModel} and timestamps/exceptions accessors.
+ *
+ * INVARIANTS / ASSUMPTIONS
+ * - `makeObservable(this)` is called by this base constructor, registering observables declared
+ *    directly on `HoistModel`.
+ * - {@link lookupModel} is only valid for linked models, and only during/after {@link onLinked}.
+ *
+ * ERROR + LOADING BEHAVIOR
+ * - If {@link doLoadAsync} is not overridden, load support is not installed and loading APIs are no-ops.
+ * - If {@link doLoadAsync} is overridden, {@link LoadSupport} is installed automatically.
+ *
+ * PERFORMANCE NOTES
+ * - {@link componentProps} uses shallow equality; only reference changes to individual props notify observers.
+ *
+ * COMMON PITFALLS
+ * - Declaring new `@observable` properties in a subclass but failing to call `makeObservable(this)`
+ *   in the subclass constructor. MobX requires each concrete class introducing observables to
+ *   register them explicitly.
+ * - Calling {@link lookupModel} before the model is linked (create via {@link creates}/{@link useLocalModel},
+ *   and call during/after {@link onLinked}).
+ * - Overriding the constructor and forgetting to call `super()`.
+ * - Mutating `@observables` outside MobX actions.
+ *
+ * CANONICAL USAGE
+ * ```ts
+ * // Linked model backing a Hoist component
+ * class MyModel extends HoistModel {
+ *   @observable.ref data: SomeData = null;
+ *
+ *   constructor() {
+ *     super();
+ *     makeObservable(this);
+ *   }
+ *
+ *   override async doLoadAsync(loadSpec: LoadSpec) {
+ *     this.data = await api.loadSomeData(loadSpec);
+ *   }
+ *
+ *   override onLinked() {
+ *     const parent = this.lookupModel(ParentModel);
+ *     // safe to use parent/componentProps here
+ *   }
+ * }
+ *
+ * // In a Hoist component factory
+ * export const myView = hoistCmp.factory<MyModel>(({model}) => {
+ *   // render using model.data, call model.loadAsync(), etc.
+ * });
+ * ```
+ *
+ * SEE ALSO
+ * - {@link HoistBase}
+ * - {@link LoadSupport}
+ * - {@link LoadSpec}
+ * - {@link creates}
+ * - {@link useLocalModel}
  */
 export abstract class HoistModel extends HoistBase implements Loadable {
     /** Type for constructing an instance of this model */
@@ -74,9 +138,12 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     }
 
     // Internal State
-    @observable.ref _componentProps = null;
-    _modelLookup = null;
-    _created = Date.now();
+    // - `_componentProps` is only set for linked models and mirrors the current React props.
+    // - `_modelLookup` is injected by Hoist when this model is linked into a component hierarchy.
+    // - `_created` is basic lifecycle metadata (useful for diagnostics/ordering).
+    @observable.ref _componentProps: DefaultHoistProps | null = null;
+    _modelLookup: any = null;
+    _created: number = Date.now();
 
     constructor() {
         super();
@@ -129,6 +196,12 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
+    /**
+     * Template method for subclasses that want managed loading.
+     *
+     * Override this method to opt into Hoist's managed loading (i.e. installation of {@link LoadSupport}).
+     * Do not call this method directly - call {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync}.
+     */
     async doLoadAsync(loadSpec: LoadSpec) {}
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
@@ -185,7 +258,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * @param selector - type of model to lookup.
      * @returns model, or null if no matching model found.
      */
-    lookupModel<T extends HoistModel>(selector: ModelSelector<T>): T {
+    lookupModel<T extends HoistModel>(selector: ModelSelector<T>): T | null {
         warnIf(
             !this.isLinked,
             'Attempted to execute a lookup from a model that has not yet been linked. ' +
@@ -198,13 +271,23 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     //------------------
     // For use by Hoist
     //------------------
-    /** @internal */
+    /** @internal - called by Hoist to keep {@link componentProps} in sync for linked models. */
     @action
-    setComponentProps(newProps) {
+    setComponentProps(newProps: DefaultHoistProps | null) {
         this._componentProps = newProps;
     }
 
-    /** @internal */
+    /**
+     * @internal
+     * Selector matching used by Hoist model lookup.
+     *
+     * Supported selectors include:
+     * - a HoistModel class reference
+     * - a predicate function `(model) => selector`
+     * - `true` (match any)
+     * - `'*'` (match any if `acceptWildcard` is true)
+     * - a class name string
+     */
     matchesSelector(selector: ModelSelector, acceptWildcard: boolean = false): boolean {
         let sel: any = selector;
         // 1) check class ref first, it's a function, but distinct from callable function below
