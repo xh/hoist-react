@@ -32,6 +32,7 @@ export function initPersist(
         PersistenceProvider.create({
             persistOptions: {
                 path: `${path}.columns`,
+                persistDefaultValue: true,
                 ...persistWith
             },
             target: {
