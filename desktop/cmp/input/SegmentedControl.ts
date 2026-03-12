@@ -10,12 +10,15 @@ import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import {ReactElement} from 'react';
 import './SegmentedControl.scss';
+
+type OptionPrimitive = string | number | boolean | LocalDate;
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
@@ -38,12 +41,12 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * with value/label/icon/disabled properties, or a primitive value used as both
      * the value and the display label.
      */
-    options: (SegmentedControlOption | any)[];
+    options: (SegmentedControlOption | OptionPrimitive)[];
 }
 
 export interface SegmentedControlOption {
     /** Value for this option. */
-    value: any;
+    value: OptionPrimitive;
 
     /** Display label. Defaults to `value.toString()` if omitted. */
     label?: string;
@@ -95,7 +98,7 @@ class SegmentedControlModel extends HoistInputModel {
                 const {label, value, icon, disabled} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
-                    label: label ?? String(value),
+                    label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
                     _key: key
