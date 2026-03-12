@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {FetchOptions} from '@xh/hoist/svc/FetchService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {isEmpty, isString} from 'lodash';
@@ -45,7 +46,6 @@ export class TraceService extends HoistService {
     get conf(): TraceConfig {
         return {
             enabled: false,
-            sampleRate: 1.0,
             ...XH.getConf('xhTraceConfig', {})
         };
     }
@@ -86,8 +86,10 @@ export class TraceService extends HoistService {
     }
 
     /**
-     * Create a new span, or return null if tracing is disabled or the span is sampled out.
+     * Create a new span, or return null if tracing is disabled.
      * Inherits the parent's `source` tag if not specified.
+     *
+     * Note: sampling is handled server-side when spans are relayed to the collector.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
@@ -95,11 +97,6 @@ export class TraceService extends HoistService {
         if (!this.enabled) return null;
 
         const ret: SpanConfig = isString(config) ? {name: config} : {...config};
-
-        // Apply sampling to root spans
-        if (!ret.parent && Math.random() >= this.conf.sampleRate) {
-            return null;
-        }
 
         // Apply default tags.
         ret.tags = {
@@ -180,24 +177,25 @@ export class TraceService extends HoistService {
     }
 
     private startFetchSpan(opts: PlainObject): Span {
-        const method = opts.method ?? 'GET',
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             url = this.extractUrlPath(opts.url);
 
         if (url.endsWith('submitSpans')) return null;
 
         return this.createSpan({
-            name: `fetch ${method} ${url}`,
-            parent: opts.span,
-            tags: {'http.method': method, 'http.url': url, source: 'hoist'}
+            name: method,
+            kind: 'client',
+            parent: opts.parentSpan ?? opts.loadSpec?.parentSpan,
+            tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'}
         });
     }
 
-    private endFetchSpan(opts: PlainObject, value?: any, error?: unknown) {
+    private endFetchSpan(opts: FetchOptions, value?: any, error?: unknown) {
         const span: Span = (opts as any)._tracingSpan;
         if (!span) return;
 
         if (value?.status != null) {
-            span.tags['http.status_code'] = value.status;
+            span.tags['http.response.status_code'] = value.status;
         }
 
         if (error) {
@@ -225,5 +223,4 @@ export class TraceService extends HoistService {
 
 interface TraceConfig {
     enabled: boolean;
-    sampleRate: number;
 }

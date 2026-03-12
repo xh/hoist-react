@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Span} from '@xh/hoist/utils/telemetry';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -33,8 +34,11 @@ export type LoadSpecConfig = {
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application specific information about the load request. */
+
+    /** Application-specific information about the load request. */
     meta?: PlainObject;
+    /** Parent Span for tracing purposes */
+    parentSpan?: Span;
 };
 
 export class LoadSpec {
@@ -43,6 +47,9 @@ export class LoadSpec {
 
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
+
+    /** Parent Span for tracing purposes. */
+    parentSpan: Span;
 
     /** Application specific information about the load request. */
     meta: PlainObject;
@@ -82,9 +89,10 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta} = config;
+        const {isRefresh, isAutoRefresh, meta, parentSpan} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
+        this.parentSpan = parentSpan;
         this.meta = meta ?? {};
         this.owner = owner;
 

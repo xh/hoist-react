@@ -36,6 +36,7 @@ export class Span {
         return this.endTime - this.startTime;
     }
 
+    kind: SpanKind;
     status: SpanStatus = 'unset';
     tags: PlainObject;
     events: SpanEvent[] = [];
@@ -46,6 +47,7 @@ export class Span {
         this.spanId = genSpanId();
         this.parentSpanId = parent?.spanId ?? null;
         this.name = config.name;
+        this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
         this.tags = {...config.tags};
     }
@@ -73,6 +75,7 @@ export class Span {
             spanId: this.spanId,
             parentSpanId: this.parentSpanId,
             name: this.name,
+            kind: this.kind,
             startTime: this.startTime,
             endTime: this.endTime,
             duration: this.duration,
@@ -85,6 +88,7 @@ export class Span {
 
 export interface SpanConfig {
     name: string;
+    kind?: SpanKind;
     tags?: PlainObject;
     parent?: Span;
     startTime?: number;
@@ -96,6 +100,7 @@ export interface SpanEvent {
     attributes?: PlainObject;
 }
 
+export type SpanKind = 'internal' | 'client' | 'server' | 'producer' | 'consumer';
 export type SpanStatus = 'ok' | 'error' | 'unset';
 
 /**
