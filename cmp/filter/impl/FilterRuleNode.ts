@@ -7,7 +7,7 @@
 import {HoistBase} from '@xh/hoist/core';
 import {FieldFilter} from '@xh/hoist/data';
 import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 
 /**
  * Mutable observable node representing a single filter rule in the working tree.
@@ -23,6 +23,7 @@ export class FilterRuleNode extends HoistBase {
         makeObservable(this);
     }
 
+    @computed
     get isComplete(): boolean {
         const {field, op, value} = this;
         return field != null && op != null && value != null;

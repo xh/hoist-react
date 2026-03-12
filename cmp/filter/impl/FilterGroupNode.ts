@@ -34,12 +34,7 @@ export class FilterGroupNode extends HoistBase {
 
     @computed
     get isComplete(): boolean {
-        return (
-            this.children.length > 0 &&
-            this.children.every(child =>
-                child instanceof FilterGroupNode ? child.isComplete : child.isComplete
-            )
-        );
+        return this.children.length > 0 && this.children.every(child => child.isComplete);
     }
 
     /** Convert to an immutable CompoundFilter, or null if empty. */
@@ -100,7 +95,7 @@ export class FilterGroupNode extends HoistBase {
         if (!filter) return group;
 
         if (CompoundFilter.isCompoundFilter(filter)) {
-            group.op = filter.op === 'AND' || filter.op === 'and' ? 'AND' : 'OR';
+            group.op = filter.op?.toUpperCase() === 'AND' ? 'AND' : 'OR';
             group.not = filter.not;
             group.children = filter.filters
                 .map(child => {

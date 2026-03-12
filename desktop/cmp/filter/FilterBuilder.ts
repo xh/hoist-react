@@ -359,7 +359,7 @@ const favoritesMenu = hoistCmp.factory<FilterBuilderModel>({
                 items.push(
                     menuItem({
                         key: idx,
-                        text: describeFavorite(fav),
+                        text: describeFavorite(fav, model),
                         onClick: () => model.loadFavorite(fav),
                         labelElement: button({
                             icon: Icon.delete(),
@@ -388,10 +388,14 @@ const favoritesMenu = hoistCmp.factory<FilterBuilderModel>({
     }
 });
 
-function describeFavorite(filter: any): string {
+function describeFavorite(filter: any, model: FilterBuilderModel): string {
     if (!filter) return 'Empty';
     const json = filter.toJSON();
-    if (json.field) return `${json.field} ${json.op} ${json.value}`;
+    if (json.field) {
+        const spec = model.getFieldSpec(json.field),
+            displayName = spec?.displayName ?? json.field;
+        return `${displayName} ${json.op} ${json.value}`;
+    }
     if (json.filters) {
         const count = json.filters.length,
             op = json.op || 'AND',
