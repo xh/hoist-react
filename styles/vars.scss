@@ -262,11 +262,13 @@ body {
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
   --xh-bg-highlight: var(--bg-highlight, hsl(205, 85%, 85%));
+  --xh-bg-highlight-alt: var(--bg-highlight-alt, hsl(45, 100%, 70%));
 
   &.xh-dark {
     --xh-bg: var(--bg, var(--xh-black));
     --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
     --xh-bg-highlight: var(--bg-highlight, hsl(200, 50%, 27%));
+    --xh-bg-highlight-alt: var(--bg-highlight-alt, hsl(45, 80%, 35%));
   }
 
   //-----------------------------------------
