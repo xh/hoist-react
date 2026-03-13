@@ -39,6 +39,7 @@ export const actionCol: ColumnSpec = {
     sortable: false,
     resizable: false,
     filterable: false,
+    headerHasExpandCollapse: false,
     excludeFromExport: true,
     rendererIsComplex: true,
     renderer: (value, {record, column}) => {
