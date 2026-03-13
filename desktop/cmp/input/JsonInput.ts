@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, PlainObject} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
 import Ajv, {Options, SchemaObject, ValidateFunction} from 'ajv';
@@ -49,13 +49,18 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
 //----------------------
 // JSON Linter helper
 //----------------------
-function jsonLinterWrapper(ajvSchema?: PlainObject, ajvOptions?: Options) {
+function jsonLinterWrapper(ajvSchema?: SchemaObject, ajvOptions?: Options) {
     // No schema → only use JSONLint
     if (!ajvSchema) {
-        return (text: string) => jsonLintOnly(text);
+        return (text: string) => {
+            const annotations: any[] = [];
+            if (!text) return annotations;
+            runJsonLint(text, annotations);
+            return annotations;
+        };
     }
 
-    const ajv = new Ajv({...ajvOptions}),
+    const ajv = new Ajv(ajvOptions),
         validate = ajv.compile(ajvSchema);
 
     return (text: string) => {
@@ -140,15 +145,6 @@ function formatAjvMessage(err: any): string {
         return `Unexpected property "${err.params.additionalProperty}"`;
     }
     return `${path} ${err.message}`;
-}
-
-/** JSONLint-only linter (used when no jsonSchema prop) */
-function jsonLintOnly(text: string) {
-    const annotations: any[] = [];
-    if (!text) return annotations;
-
-    runJsonLint(text, annotations);
-    return annotations;
 }
 
 /** Convert line/col to string index */

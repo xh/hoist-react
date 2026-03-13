@@ -39,13 +39,13 @@
   }
 
   &.xh-input--warning {
-    div.CodeMirror {
+    div.cm-editor {
       border: var(--xh-form-field-warning-border);
     }
   }
 
   &.xh-input--info {
-    div.CodeMirror {
+    div.cm-editor {
       border: var(--xh-form-field-info-border);
     }
   }
@@ -71,31 +71,6 @@
       bottom: 0;
       left: 0;
       right: 0;
-
-      .cm-editor-selected {
-        background-color: var(--xh-bg-highlight);
-      }
-
-      .cm-editor-simplescroll-vertical,
-      .cm-editor-simplescroll-horizontal {
-        background-color: var(--xh-scrollbar-bg);
-        > div {
-          background-color: var(--xh-scrollbar-thumb);
-          border: none;
-        }
-      }
-
-      .cm-editor-scrollbar-filler {
-        background-color: var(--xh-scrollbar-bg);
-      }
-
-      .cm-editor-simplescroll-horizontal {
-        height: var(--xh-scrollbar-size-px);
-      }
-
-      .cm-editor-simplescroll-vertical {
-        width: var(--xh-scrollbar-size-px);
-      }
     }
   }
 

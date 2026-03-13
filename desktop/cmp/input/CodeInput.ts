@@ -163,13 +163,13 @@ class CodeInputModel extends HoistInputModel {
     editor: EditorView;
 
     // Support for internal search feature.
-    cursor = null;
     @bindable query: string = '';
     @observable currentMatchIdx: number = -1;
     @observable.ref matches: {from: number; to: number}[] = [];
     private updateMatchesEffect = StateEffect.define<void>();
 
     private themeCompartment = new Compartment();
+    private editableCompartment = new Compartment();
 
     get fullScreen(): boolean {
         return this.modalSupportModel.isModal;
@@ -293,7 +293,9 @@ class CodeInputModel extends HoistInputModel {
                     const {editor} = this;
                     if (editor)
                         editor.dispatch({
-                            effects: StateEffect.appendConfig.of(EditorView.editable.of(!readOnly))
+                            effects: this.editableCompartment.reconfigure(
+                                EditorView.editable.of(!readOnly)
+                            )
                         });
                 }
             },
@@ -349,24 +351,20 @@ class CodeInputModel extends HoistInputModel {
         this.findNext();
     }
 
-    @action
     findNext() {
-        const {editor, matches} = this;
-        if (!editor || !matches.length) return;
-        this.currentMatchIdx = (this.currentMatchIdx + 1) % matches.length;
-        const match = matches[this.currentMatchIdx];
-        this.updateMatchDecorations();
-        editor.dispatch({
-            selection: {anchor: match.from, head: match.to},
-            scrollIntoView: true
-        });
+        this.navigateMatch(true);
+    }
+
+    findPrevious() {
+        this.navigateMatch(false);
     }
 
     @action
-    findPrevious() {
+    private navigateMatch(forward: boolean) {
         const {editor, matches} = this;
         if (!editor || !matches.length) return;
-        this.currentMatchIdx = (this.currentMatchIdx - 1 + matches.length) % matches.length;
+        this.currentMatchIdx =
+            (this.currentMatchIdx + (forward ? 1 : -1) + matches.length) % matches.length;
         const match = matches[this.currentMatchIdx];
         this.updateMatchDecorations();
         editor.dispatch({
@@ -405,7 +403,7 @@ class CodeInputModel extends HoistInputModel {
                 this.getThemeExtension(),
 
                 // Makes the editor read-only if `readonly` is true.
-                EditorView.editable.of(!readonly),
+                this.editableCompartment.of(EditorView.editable.of(!readonly)),
 
                 // Listens for changes in the document.
                 // - Calls `noteValueChange` to update the Hoist input model.
@@ -525,8 +523,6 @@ class CodeInputModel extends HoistInputModel {
                     const builder = new RangeSetBuilder<Decoration>();
                     this.matches.forEach((match, idx) => {
                         const isActive = idx === this.currentMatchIdx;
-                        // DEBUG
-                        console.log(isActive);
                         builder.add(
                             match.from,
                             match.to,
