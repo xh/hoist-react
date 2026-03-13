@@ -808,7 +808,7 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
  * Members from the target interface itself have no `inheritedFrom` tag; members
  * from ancestor interfaces are tagged with the declaring interface name.
  *
- * Deduplicates by member name — first occurrence wins (root > first parent > ...).
+ * Deduplicates by member name — first occurrence wins (root › first parent › ...).
  * Parents not found in our symbol index (e.g. React's HTMLAttributes) are skipped.
  */
 function extractInterfaceMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
