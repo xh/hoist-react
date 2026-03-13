@@ -291,6 +291,28 @@ export class TabContainerModel extends HoistModel {
     }
 
     /**
+     * Set the currently active Tab by ID.
+     *
+     * This method may be bound directly to a UI control (e.g., a SegmentedControl). It handles
+     * routing-aware navigation: if this container is route-enabled, the tab will only be updated
+     * once the router state changes. Otherwise, the active Tab will be updated immediately.
+     *
+     * @param id - ID of TabModel to be activated.
+     */
+    setActiveTabId(id: string) {
+        const tab = this.findTab(id);
+        if (!tab || tab.disabled || tab.isActive) return;
+
+        const {route} = this;
+        if (route) {
+            const {params} = XH.router.getState();
+            XH.navigate(route + '.' + tab.id, params);
+        } else {
+            this.setActiveTabIdInternal(tab.id);
+        }
+    }
+
+    /**
      * Set the currently active Tab.
      *
      * If using routing, this method will navigate to the new tab via the router and the active Tab
@@ -302,17 +324,7 @@ export class TabContainerModel extends HoistModel {
      * @param tab - TabModel or id of TabModel to be activated.
      */
     activateTab(tab: TabModel | string) {
-        tab = this.findTab(tab instanceof TabModel ? tab.id : tab);
-
-        if (!tab || tab.disabled || tab.isActive) return;
-
-        const {route} = this;
-        if (route) {
-            const {params} = XH.router.getState();
-            XH.navigate(route + '.' + tab.id, params);
-        } else {
-            this.setActiveTabIdInternal(tab.id);
-        }
+        this.setActiveTabId(tab instanceof TabModel ? tab.id : tab);
     }
 
     /**

@@ -410,12 +410,14 @@ this.addReaction({
 // ❌ Don't: Setting activeTabId directly won't trigger proper tab activation
 tabModel.activeTabId = 'details';
 
-// ✅ Do: Use the activateTab API
+// ✅ Do: Use the setActiveTabId() or activateTab() APIs
+tabModel.setActiveTabId('details');
 tabModel.activateTab('details');
 ```
 
-The `activateTab()` method handles routing updates, refresh triggers, and other side effects that
-direct property assignment would bypass.
+The `setActiveTabId()` and `activateTab()` methods handle routing updates, refresh triggers, and
+other side effects that direct property assignment would bypass. Note that `setActiveTabId()` can
+be used as a bind target for UI controls (e.g., SegmentedControl) that need to switch tabs.
 
 ### Missing Route Definitions
 
