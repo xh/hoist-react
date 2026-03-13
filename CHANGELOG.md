@@ -4,6 +4,12 @@
 
 ### 🎁 New Features
 
+* Added `FilterBuilder` — a new panel-based component for constructing filters of arbitrary
+  complexity. Provides a visual query builder UI with nested AND/OR groups, NOT negation,
+  type-appropriate value editors, favorites, and full integration with Hoist's filter binding
+  system. Includes cross-platform `FilterBuilderModel` and desktop `FilterBuilder` component.
+* Added `not` support to `CompoundFilter`, enabling negated filter groups (e.g. NOT (A AND B)).
+  Backwards-compatible — existing filters are unaffected.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in `hoist-core >= 36.4`.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the

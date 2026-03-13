@@ -176,6 +176,13 @@ All Hoist artifacts extend `HoistBase`, which provides:
   (`model.myProp = value`) over calling the generated setter (`model.setMyProp(value)`).
 - `@computed` MobX decorator - Marks getter properties as derived/computed state
 
+**IMPORTANT: `makeObservable(this)` requirement** — Any `HoistModel` or `HoistService` subclass
+that declares `@observable`, `@bindable`, `@computed`, or `@action` members **must** call
+`makeObservable(this)` in its constructor. Omitting this call silently breaks reactivity and
+produces a runtime console warning: *"Observable properties not initialized properly. Ensure you
+call makeObservable(this) in your constructor."* This is easy to miss when you are not monitoring
+the browser console. When creating or modifying model classes, always verify this call is present.
+
 #### Memory/lifecycle Management Conventions
 
 - `@managed` decorator - marks child objects for automatic cleanup - apply to properties holding
@@ -205,6 +212,21 @@ wrappers and custom SCSS that duplicate what Hoist already provides.
 
 Components in `/desktop/` and `/mobile/` are platform-specific. Shared code lives in `/cmp/`,
 `/core/`, `/data/`, and `/svc/`.
+
+## Interactive Debugging with Chrome
+
+When using browser automation tools (e.g. Chrome MCP) to interactively test Hoist components:
+
+- **Always check the browser console** after significant interactions — runtime errors and warnings
+  are invisible in screenshots but often critical. Look for MobX strict-mode violations, uncaught
+  promise rejections, React key/prop warnings, and Hoist-specific diagnostics. Surface any console
+  errors to the developer immediately rather than continuing to test against broken state.
+- **Use `data-testid` attributes** for reliable element targeting. Hoist components support a
+  `testId` prop (via `TestSupportProps`) that renders as `data-testid` in the DOM. Use `getTestId()`
+  to create hierarchical IDs for sub-elements (e.g. `getTestId(testId, 'add-rule')`). Prefer
+  testId-based selectors over fragile coordinate or text-based targeting.
+- **Watch for HMR state loss** — hot module replacement during development resets model state. After
+  code changes, a full page reload may be needed to get a clean baseline before testing.
 
 ## Code Style
 
