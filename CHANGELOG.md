@@ -8,6 +8,13 @@
   support. Creates spans for user actions and fetch calls, sends `traceparent` headers on outgoing
   requests so server spans nest under client spans, and batches completed spans for relay through
   the server's export pipeline. Controlled by `xhTraceConfig` soft config. Requires hoist-core 37+.
+    - `XH.withSpanAsync()` wraps async operations in a span with automatic timing and error capture.
+    - `Promise.span()` provides a chainable API for tracing promise-based operations.
+    - Automatic app-load spans emitted at startup, breaking down time spent in pre-auth,
+      authentication, hoist init, and app init phases.
+    - `FetchService` automatically creates CLIENT spans for all fetch calls and injects
+      `traceparent` headers. Use `parentSpan` in fetch options to nest concurrent fetches
+      under a business-level span.
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in hoist-core 36.4.

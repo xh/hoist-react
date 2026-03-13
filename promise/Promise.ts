@@ -266,16 +266,16 @@ const enhancePromise = promisePrototype => {
             return this.then(
                 (v: T) => {
                     span.end('ok');
-                    svc.exportSpan(span);
                     return v;
                 },
                 (e: unknown) => {
                     span.recordError(e);
                     span.end('error');
-                    svc.exportSpan(span);
                     throw e;
                 }
-            );
+            ).finally(() => {
+                svc.exportSpan(span);
+            });
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {
