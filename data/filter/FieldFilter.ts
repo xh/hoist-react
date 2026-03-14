@@ -115,7 +115,12 @@ export class FieldFilter extends Filter {
 
         if (store) {
             const storeField = store.getField(field);
-            if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
+            if (!storeField) {
+                console.warn(
+                    `FieldFilter references field '${field}', which is not present in the target store. This filter will be ignored.`
+                );
+                return () => true;
+            }
 
             const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
             value = isArray(value)
