@@ -188,7 +188,7 @@ export class HeaderFilterModel extends HoistModel {
         this.resetTabModels();
         toTab.syncWithFilter();
 
-        tabContainerModel.activateTab(toTabId);
+        tabContainerModel.setActiveTabId(toTabId);
     }
 
     private setColumnFilters(filters) {
