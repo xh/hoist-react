@@ -4,6 +4,7 @@
 
 ### 🎁 New Features
 
+* Added `TabContainerModel.setActiveTabId()` method as the primary API for programmatic tab activation. This method accepts a string tab ID, handles routing-aware navigation, and can be used as a bind target for UI controls (e.g. `SegmentedControl`). The existing `activateTab()` method is retained as a convenience wrapper.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in `hoist-core >= 36.4`.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
