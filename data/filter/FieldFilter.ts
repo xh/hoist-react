@@ -7,7 +7,7 @@
 
 import {XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     difference,
@@ -25,6 +25,8 @@ import {Store} from '../Store';
 import {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
 import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
+
+const _warnedFields = new Set<string>();
 
 /**
  * Filters by comparing the value of a given field to one or more given candidate values using one
@@ -115,7 +117,16 @@ export class FieldFilter extends Filter {
 
         if (store) {
             const storeField = store.getField(field);
-            if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
+            if (!storeField) {
+                if (!_warnedFields.has(field)) {
+                    _warnedFields.add(field);
+                    logWarn(
+                        `Unknown field '${field}' - not found in the target store. This filter will be ignored.`,
+                        this
+                    );
+                }
+                return () => true;
+            }
 
             const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
             value = isArray(value)

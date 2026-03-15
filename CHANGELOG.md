@@ -24,6 +24,7 @@
 * Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
   `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
   indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
+* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
 
 ## 82.0.3 - 2026-03-02
 
