@@ -503,3 +503,23 @@
   - Added Quick Reference entry for "Customize colors, fonts, spacing, or theme"
   - Removed `/styles/` from "Other Packages" paragraph (now has a dedicated README)
 - Added `styles` entry to `mcp/data/doc-registry.ts` with CSS/theme/BEM keywords
+
+### 2026-03-10
+- Created `/cmp/filter/README.md` (Done) as part of the FilterBuilder feature work:
+  - Overview of the two complementary filter UI approaches (FilterChooser vs FilterBuilder)
+  - FilterChooserModel section with basic usage, key configuration table, favorites, platform components
+  - FilterBuilderModel section with basic usage, key configuration, working tree architecture, apply/cancel workflow, favorites, bi-directional binding
+  - FilterBuilderFieldSpec reference
+  - Combined usage example showing FilterBuilder + FilterChooser on the same Store
+  - Cross-references to data/README.md filter system, cmp/grid for GridFilterModel, persistence docs
+- Updated `docs/README.md`:
+  - Added cmp/filter entry to Components table
+  - Added Quick Reference entry for "Build a visual query builder or filter chooser"
+- Updated `docs/planning/docs-roadmap.md`:
+  - Added `/cmp/filter/` to Priority 2 table as Done
+- Updated `docs/doc-registry.json`:
+  - Added cmp/filter/README.md entry with component category and filter-specific keywords
+- Updated `data/README.md`:
+  - Linked `/cmp/filter/` reference in Related Packages section to the new README
+- Updated `cmp/README.md`:
+  - Enhanced `/filter/` catalog entry description and linked to new README

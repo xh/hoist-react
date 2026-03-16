@@ -48,6 +48,9 @@ export interface CompoundFilterSpec {
 
     /** logical operator 'AND' (default) or 'OR'. */
     op?: CompoundFilterOperator;
+
+    /** True to negate the result of this compound filter. Default false. */
+    not?: boolean;
 }
 
 export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';

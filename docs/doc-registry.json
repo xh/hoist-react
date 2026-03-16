@@ -68,6 +68,14 @@
             "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"]
         },
         {
+            "id": "cmp/filter/README.md",
+            "title": "Filter Components",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cross-platform models for filter construction UIs — FilterChooser (typeahead) and FilterBuilder (visual query builder).",
+            "keywords": ["FilterBuilderModel", "FilterChooserModel", "FilterBuilderFieldSpec", "FilterChooserFieldSpec", "fieldSpecs", "bind", "FilterBindTarget", "favorites", "commitOnChange", "AND", "OR", "NOT", "query builder", "filter groups"]
+        },
+        {
             "id": "cmp/grid/README.md",
             "title": "Grid Component",
             "mcpCategory": "package",

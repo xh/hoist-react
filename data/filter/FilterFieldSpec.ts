@@ -9,7 +9,7 @@ import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '
 import {compact, isArray, isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
-export interface BaseFilterFieldSpecConfig {
+export interface FilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;
     /** Type of field, will default from related field on source if provided, or 'auto'. */
@@ -42,7 +42,7 @@ export interface BaseFilterFieldSpecConfig {
  * @see FilterChooserFieldSpec
  * @see GridFilterFieldSpec
  */
-export abstract class BaseFilterFieldSpec extends HoistBase {
+export abstract class FilterFieldSpec extends HoistBase {
     field: string;
     fieldType: FieldType;
     displayName: string;
@@ -62,7 +62,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         enableValues,
         forceSelection,
         values
-    }: BaseFilterFieldSpecConfig) {
+    }: FilterFieldSpecConfig) {
         super();
         this.field = field;
         this.source = source;
