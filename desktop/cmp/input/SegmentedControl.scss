@@ -1,0 +1,77 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-segmented-control {
+  .bp6-segmented-control {
+    background-color: var(--xh-segmented-control-bg);
+    border-radius: var(--xh-segmented-control-border-radius-px);
+    padding: var(--xh-segmented-control-pad-px);
+    gap: var(--xh-segmented-control-pad-px);
+
+    // Constrain buttons to fit within a standard toolbar without growing it.
+    // Toolbar (min-size - padding - border) minus tray padding on each side.
+    // prettier-ignore
+    --seg-btn-h: calc(var(--xh-tbar-min-size-px) - var(--xh-pad-half-px) * 2 - var(--xh-segmented-control-pad-px) * 2 - 1px);
+
+    > .bp6-button {
+      min-height: var(--seg-btn-h);
+      max-height: var(--seg-btn-h);
+    }
+
+    // Selected option - solid button standing out from the tray.
+    > .bp6-button:not(.bp6-minimal) {
+      border-radius: var(--xh-segmented-control-border-radius-px);
+
+      &:not(.bp6-intent-primary) {
+        background-color: var(--xh-segmented-control-selected-bg);
+        color: var(--xh-segmented-control-selected-text-color);
+      }
+
+      // Override Blueprint's intent colors to use Hoist theme variables.
+      &.bp6-intent-primary {
+        --bp-intent-primary-rest: var(--xh-intent-primary);
+        --bp-intent-primary-hover: var(--xh-intent-primary-darker);
+        --bp-intent-primary-active: var(--xh-intent-primary-darkest);
+      }
+    }
+
+    // Unselected options - minimal buttons receding into the tray.
+    > .bp6-button.bp6-minimal {
+      color: var(--xh-segmented-control-text-color);
+    }
+  }
+
+  // Compact mode - reduced sizing for toolbars and space-constrained contexts.
+  &--compact .bp6-segmented-control {
+    padding: 0;
+    gap: 0;
+
+    > .bp6-button {
+      min-height: var(--xh-tbar-compact-item-height-px);
+      max-height: var(--xh-tbar-compact-item-height-px);
+      font-size: var(--xh-tbar-compact-font-size-px);
+      padding: 0 var(--xh-pad-half-px);
+
+      > svg:not(:last-child) {
+        margin-right: 4px;
+      }
+    }
+  }
+
+  // Validation borders
+  &.xh-input--invalid .bp6-segmented-control {
+    border: var(--xh-form-field-invalid-border);
+  }
+
+  &.xh-input--warning .bp6-segmented-control {
+    border: var(--xh-form-field-warning-border);
+  }
+
+  &.xh-input--info .bp6-segmented-control {
+    border: var(--xh-form-field-info-border);
+  }
+}

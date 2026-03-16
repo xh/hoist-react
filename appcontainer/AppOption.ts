@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {XH, AppOptionSpec} from '@xh/hoist/core';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
@@ -19,13 +20,14 @@ import {isFunction} from 'lodash';
  * primary AppBar menu.
  */
 export class AppOption {
-    name;
-    prefName;
-    fieldModel;
-    formField;
-    valueGetter;
-    valueSetter;
-    reloadRequired;
+    name: string;
+    prefName: string;
+    fieldModel: Omit<BaseFieldConfig, 'name'>;
+    formField: any;
+    valueGetter: () => any;
+    valueSetter: (s: any) => any;
+    reloadRequired: boolean;
+    refreshRequired: boolean;
 
     constructor({
         name,
@@ -34,7 +36,8 @@ export class AppOption {
         fieldModel,
         valueGetter,
         valueSetter,
-        reloadRequired = false
+        reloadRequired = false,
+        refreshRequired = true
     }: AppOptionSpec) {
         warnIf(
             !(prefName && XH.prefService.hasKey(prefName)) && !(valueGetter && valueSetter),
@@ -53,6 +56,7 @@ export class AppOption {
         this.valueGetter = valueGetter;
         this.valueSetter = valueSetter;
         this.reloadRequired = reloadRequired;
+        this.refreshRequired = refreshRequired;
     }
 
     async getValueAsync() {

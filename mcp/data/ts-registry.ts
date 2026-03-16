@@ -730,9 +730,7 @@ export async function getMembers(
         if (entry.kind === 'class') {
             members = extractClassMembersWithInheritance(entry.filePath, name);
         } else {
-            const sourceFile = project!.getSourceFile(entry.filePath);
-            if (!sourceFile) return null;
-            members = extractInterfaceMembers(sourceFile, name);
+            members = extractInterfaceMembersWithInheritance(entry.filePath, name);
         }
 
         // Filter out _-prefixed and private members (match member index behavior)
@@ -799,6 +797,58 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
 
         currentFilePath = baseEntry.filePath;
         currentName = baseEntry.name;
+    }
+
+    return allMembers;
+}
+
+/**
+ * Walk the inheritance chain of an interface and collect members from each level.
+ * Uses BFS to handle multiple parent interfaces (interfaces support multiple extends).
+ * Members from the target interface itself have no `inheritedFrom` tag; members
+ * from ancestor interfaces are tagged with the declaring interface name.
+ *
+ * Deduplicates by member name — first occurrence wins (root › first parent › ...).
+ * Parents not found in our symbol index (e.g. React's HTMLAttributes) are skipped.
+ */
+function extractInterfaceMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
+    const allMembers: MemberInfo[] = [];
+    const seen = new Set<string>();
+    const visited = new Set<string>();
+
+    const queue: Array<{filePath: string; name: string; isRoot: boolean}> = [
+        {filePath, name, isRoot: true}
+    ];
+
+    while (queue.length > 0) {
+        const current = queue.shift()!;
+        const visitKey = `${current.filePath}:${current.name}`;
+        if (visited.has(visitKey)) continue;
+        visited.add(visitKey);
+
+        const sourceFile = project!.getSourceFile(current.filePath);
+        if (!sourceFile) continue;
+
+        const iface = sourceFile.getInterface(current.name);
+        if (!iface) continue;
+
+        const members = extractInterfaceMembers(sourceFile, current.name);
+        const inheritedFrom = current.isRoot ? undefined : current.name;
+
+        for (const m of members) {
+            const key = `${m.isStatic ? 'static:' : ''}${m.name}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            allMembers.push({...m, inheritedFrom});
+        }
+
+        // Enqueue all parent interfaces from extends clauses
+        for (const extendsExpr of iface.getExtends()) {
+            const parentName = extendsExpr.getExpression().getText();
+            const parentEntry = findIndexEntry(parentName);
+            if (!parentEntry || parentEntry.kind !== 'interface') continue;
+            queue.push({filePath: parentEntry.filePath, name: parentEntry.name, isRoot: false});
+        }
     }
 
     return allMembers;

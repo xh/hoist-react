@@ -110,15 +110,17 @@ before init completes.
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
 (keyword search across the corpus, symbol lookup).
 
-**Inheritance walking for class members.** `hoist-get-members` walks the full class inheritance
-chain rather than showing only directly declared members. This is critical for hoist-react where
-key framework patterns use deep hierarchies -- `FieldModel` delegates everything to
-`BaseFieldModel`, and `DashContainerModel` inherits essential members from `DashModel`. The walker
-resolves base classes through the symbol index (not the type system), so it stops at classes outside
-hoist-react's index. Members are deduplicated by name, with subclass overrides winning. Inherited
-members are tagged with their declaring class in the formatted output. The same `_`-prefix and
-`private` filtering applied by the member search index is also applied here, so `getMembers()` and
-`searchMembers()` show a consistent public API view.
+**Inheritance walking for classes and interfaces.** `hoist-get-members` walks the full inheritance
+chain for both classes and interfaces rather than showing only directly declared members. This is
+critical for hoist-react where key framework patterns use deep hierarchies -- `FieldModel` delegates
+everything to `BaseFieldModel`, and `DashContainerModel` inherits essential members from `DashModel`
+-- and where Props interfaces compose multiple parents (e.g. `PlaceholderProps` extends `HoistProps`
+and `BoxProps`). Classes use a linear walk (single inheritance); interfaces use BFS to handle
+multiple `extends` parents. Both walkers resolve parents through the symbol index (not the type
+system), so they stop at types outside hoist-react's index. Members are deduplicated by name, with
+child declarations winning. Inherited members are tagged with their declaring type in the formatted
+output. The same `_`-prefix and `private` filtering applied by the member search index is also
+applied here, so `getMembers()` and `searchMembers()` show a consistent public API view.
 
 **Promise extension indexing via AST navigation.** Hoist's Promise prototype extensions are declared
 in a `declare global { interface Promise<T> { ... } }` block, which standard ts-morph APIs like
@@ -357,9 +359,12 @@ constructor line.
 List all properties and methods of a class or interface with types, decorators, and JSDoc.
 
 For classes, walks the full inheritance chain and includes inherited members tagged with their
-declaring class. This is essential for framework classes with deep hierarchies -- e.g.
-`DashContainerModel` inherits key members like `viewSpecs` and `viewModels` from `DashModel`, and
-`FieldModel` inherits all of its members from `BaseFieldModel`.
+declaring class. For interfaces, walks the `extends` chain (with BFS fan-out for multiple parents)
+and includes inherited members tagged with their declaring interface. This is essential for
+framework classes with deep hierarchies -- e.g. `DashContainerModel` inherits key members like
+`viewSpecs` and `viewModels` from `DashModel`, and `FieldModel` inherits all of its members from
+`BaseFieldModel` -- and for Props interfaces that compose multiple parent interfaces (e.g.
+`PlaceholderProps` extends `HoistProps` and `BoxProps`).
 
 Members prefixed with `_` and those with the `private` keyword are excluded from the output,
 matching the member-index search behavior.
@@ -389,14 +394,12 @@ matching the member-index search behavior.
 - @bindable layoutLocked: boolean  (inherited from DashModel)
 ```
 
-**Inheritance walking logic:** The tool resolves the `extends` clause at each level, looks up the
-base class in the symbol index, and extracts its members. Deduplication ensures that if a subclass
-overrides a parent member, only the subclass version appears. The walk stops when it reaches a class
-not in the index (e.g. a third-party base class) or a class with no `extends` clause.
-
-**Interface members:** For interfaces, members are extracted directly without inheritance walking.
-Interface `extends` clauses are shown in `hoist-get-symbol` output but the members tool does not
-currently merge members from extended interfaces.
+**Inheritance walking logic:** For classes, the tool resolves the `extends` clause at each level,
+looks up the base class in the symbol index, and extracts its members. For interfaces, it performs a
+BFS traversal of the `extends` chain, handling multiple parents. In both cases, deduplication ensures
+that if a child overrides a parent member, only the child version appears. The walk stops when it
+reaches a type not in the index (e.g. a third-party class or React's `HTMLAttributes`) or a type
+with no `extends` clause.
 
 ## MCP Resources
 

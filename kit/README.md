@@ -1,7 +1,7 @@
+# Kit
+
 > **Status: DRAFT** — This document is awaiting review by an XH developer. Content may be
 > incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
-# Kit
 
 The `/kit/` package provides centralized wrappers for all third-party UI and charting libraries
 used by Hoist. It serves two purposes:

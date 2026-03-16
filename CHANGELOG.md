@@ -15,16 +15,27 @@
     - `FetchService` automatically creates CLIENT spans for all fetch calls and injects
       `traceparent` headers. Use `span` in fetch options to nest concurrent fetches
       under a business-level span.
-
+* Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
+  with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
+  for small option sets.
+* Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
+  existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
+  mobile versions for custom icon support.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
-  feature in hoist-core 36.4.
+  feature in `hoist-core >= 36.4`.
 
 ### ⚙️ Technical
 
-* Refactored documentation indexing to better support both MCP (LLM) and the toolbox docviewer.
-* Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks class inheritance chains,
-  shows constructor config types, indexes Promise prototype extensions, and filters `_`-prefixed
-  internal members.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
+* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
+
+### 🤖 AI Docs + Tooling
+
+* Refactored documentation indexing to better support both MCP (LLM) and the Toolbox Docs viewer.
+* Improved MCP/CLI TypeScript tools: `hoist-get-members` now walks both class and interface
+  inheritance chains, shows constructor config types, indexes Promise prototype extensions, and
+  filters `_`-prefixed internal members.
 * Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
   `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
   indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
@@ -35,13 +46,13 @@
 
 * Fixed bug where `DashCanvasModel.state` returned stale data when persisted state was restored
   during construction.
-* Fixed bug preventing selection of favorites in the GroupingChooser
+* Fixed bug preventing selection of favorites in the `GroupingChooser`.
 
 ## 82.0.2 - 2026-03-02
 
 ### 🐞 Bug Fixes
 
-* Fixed TypeScript compilation errors caused by missing `.d.ts` declaration files in published build.
+* Fixed TS compilation errors caused by missing `.d.ts` declaration files in published build.
 
 ## 82.0.1 - 2026-02-28
 
@@ -49,7 +60,7 @@
 
 * Fixed a CSS issue causing desktop submenus to clip.
 
-### ⚙️ Technical
+### 🤖 AI Docs + Tooling
 
 * Enhanced the MCP server's `hoist-search-symbols` tool to also search public members (properties,
   methods, accessors) of 18 key framework classes. The TypeScript index is now built asynchronously
@@ -77,10 +88,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
-* Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
-  to hoist-react documentation and TypeScript type information. Includes tools for keyword search
-  across docs, symbol lookup, and class/interface member inspection.
-  See [`mcp/README.md`](mcp/README.md) for setup and usage details.
 * Added `DashCanvasWidgetChooser` component — a draggable widget well for adding views to a
   `DashCanvas` via drag-and-drop from an external container. Added `allowsDrop`, `onDropDone`,
   and `onDropDragOver` config options to `DashCanvasModel` to support this, along with
@@ -106,16 +113,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   components (`Checkbox`, `DateInput`, `NumberInput`, `SearchInput`, `Select`, `SwitchInput`,
   `TextArea`, `TextInput`).
 
-### ⚙️ Technical
-
-* Added instance methods to the `Filter` class hierarchy for removing child filters by type or
-  field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
-  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
-  have been deprecated. Internal callers have been migrated to the new API.
-* Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build).
-  No change to library consumers - Hoist continues to be published to npm.
-* Catches and logs an occasional, non-fatal race condition error on `DashContainer` state changes.
-
 ### 🐞 Bug Fixes
 
 * Fixed `testId` generation in `RadioInput` (use option `value` instead of `label`) and `RestGrid`
@@ -129,6 +126,23 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `GroupingChooser` to support multiple instances sharing the same `GroupingChooserModel`.
   Transient UI state (e.g. editor open/closed, pending value) is now held per-component, so
   opening one chooser no longer opens all others bound to the same model.
+
+### ⚙️ Technical
+
+* Added instance methods to the `Filter` class hierarchy for removing child filters by type or
+  field, plus a new `appendFilter()` utility for composing filters via AND. These replace the
+  standalone `withFilterByField`, `withFilterByKey`, and `withFilterByTypes` utilities, which
+  have been deprecated. Internal callers have been migrated to the new API.
+* Transitioned the hoist-react build itself to GitHub Actions (from our previous Teamcity build).
+  No change to library consumers - Hoist continues to be published to npm.
+* Catches and logs an occasional, non-fatal race condition error on `DashContainer` state changes.
+
+### 🤖 AI Docs + Tooling
+
+* Added an embedded MCP (Model Context Protocol) server that gives AI coding tools structured access
+  to hoist-react documentation and TypeScript type information. Includes tools for keyword search
+  across docs, symbol lookup, and class/interface member inspection.
+  See [`mcp/README.md`](mcp/README.md) for setup and usage details.
 
 ### ✨ Styles
 
@@ -165,12 +179,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `Card` component, a bordered container for grouping related content with an optional inline
   header and collapsible content.
-* Added `FormFieldSet` component for grouping `FormFields` and displaying their aggregate validation
-  state.
+* Added `FormFieldSet` component for grouping `FormFields` with aggregated validation state.
 * Added `contentBoxProps` to desktop and mobile `Panel`, providing direct control over the inner
   frame wrapping content items. Use to apply padding, change flex direction, enable scrolling, or
-  add custom classes without extra wrapper elements. Matches the existing `contentBoxProps` API on
-  `Card`.
+  add custom classes without extra nesting. Matches the existing `contentBoxProps` API on `Card`.
 * Added `scrollable` prop to desktop `Panel`, matching the existing mobile `Panel` API. Sets
   `overflowY: 'auto'` on the content area.
 * Enhanced layout props `padding`, `margin` (and their directional variants), and `gap` to accept a
@@ -225,10 +237,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Replaced `LeftRightChooserFilter.anyMatch` with `matchMode`. Changes are not expected to be
   required as apps typically do not create this component directly.
 
-### 🐞 Bug Fixes
-
-* Fixed error encountered when attempting to `store.revert()` on a store with summary records.
-
 ### 🎁 New Features
 
 * Enhanced `Field.rules` to support `warning` and `info` severity. Useful for non-blocking
@@ -240,6 +248,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
   `startWord`, or `any`.
 * Added support for reconnecting a `View` to its associated `Cube`.
+
+### 🐞 Bug Fixes
+
+* Fixed error encountered when attempting to `store.revert()` on a store with summary records.
 
 ### ⚙️ Typescript API Adjustments
 

@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
 import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
@@ -219,7 +220,7 @@ export interface AppOptionSpec {
     formField: any;
 
     /** Config for FieldModel for the option.*/
-    fieldModel?: any;
+    fieldModel?: Omit<BaseFieldConfig, 'name'>;
 
     /** Function, possibly async, which returns the value. */
     valueGetter?: () => any;
@@ -229,6 +230,14 @@ export interface AppOptionSpec {
 
     /** True to reload the app after changing this option.  Default false. */
     reloadRequired?: boolean;
+
+    /**
+     * True (default) to refresh the app after changing this option.
+     *
+     * Set to false for options that take effect immediately without requiring a full app
+     * refresh (e.g. visual options unrelated to data). Ignored if `reloadRequired` is true.
+     */
+    refreshRequired?: boolean;
 
     /** Optional flag to omit displaying option. */
     omit?: Thunkable<boolean>;

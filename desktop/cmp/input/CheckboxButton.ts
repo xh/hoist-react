@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import '@xh/hoist/mobile/register';
+import '@xh/hoist/desktop/register';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import './CheckboxButton.scss';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
+import './CheckboxButton.scss';
 
-export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
+export interface CheckboxButtonProps extends Omit<ButtonProps, 'onChange'>, HoistInputProps {
     value?: boolean;
 
     /** Icon to display when checked. Defaults to a solid check-square icon with primary intent. */
@@ -21,6 +21,9 @@ export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
 
     /** Icon to display when unchecked. Defaults to a light outlined square icon. */
     uncheckedIcon?: ReactElement;
+
+    /** Side of the button on which to render the checkbox icon. Default 'left'. */
+    iconSide?: 'left' | 'right';
 }
 
 /**
@@ -44,13 +47,17 @@ class CheckboxButtonInputModel extends HoistInputModel {
 // Implementation
 //----------------------------------
 const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
-    ({model, text, checkedIcon, uncheckedIcon, ...props}, ref) => {
-        const checked = !!model.renderValue;
-        return button({
-            text: withDefault(text, model.getField()?.displayName),
-            icon: checked
+    ({model, text, icon, rightIcon, checkedIcon, uncheckedIcon, iconSide, ...props}, ref) => {
+        const checked = !!model.renderValue,
+            toggleIcon = checked
                 ? withDefault(checkedIcon, Icon.checkSquare({prefix: 'fas', intent: 'primary'}))
                 : withDefault(uncheckedIcon, Icon.square({prefix: 'fal'})),
+            onRight = iconSide === 'right';
+
+        return button({
+            text: withDefault(text, model.getField()?.displayName),
+            icon: onRight ? icon : toggleIcon,
+            rightIcon: onRight ? toggleIcon : rightIcon,
             outlined: true,
             onClick: () => model.noteValueChange(!checked),
             ...props,
