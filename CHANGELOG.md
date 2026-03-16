@@ -35,7 +35,7 @@
 
 * Fixed bug where `DashCanvasModel.state` returned stale data when persisted state was restored
   during construction.
-* Fixed bug preventing selection of favorites in the GroupingChooser
+* Fixed bug preventing selection of favorites in the `GroupingChooser`.
 
 ## 82.0.2 - 2026-03-02
 
