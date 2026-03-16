@@ -4,7 +4,6 @@
 
 ### 🎁 New Features
 
-* Added `TabContainerModel.setActiveTabId()` method as the primary API for programmatic tab activation. This method accepts a string tab ID, handles routing-aware navigation, and can be used as a bind target for UI controls (e.g. `SegmentedControl`). The existing `activateTab()` method is retained as a convenience wrapper.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
   for small option sets.
@@ -18,7 +17,9 @@
 
 * Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
   from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
-* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
+* Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
+  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 
 ### 🤖 AI Docs + Tooling
 
