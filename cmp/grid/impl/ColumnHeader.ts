@@ -81,12 +81,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
 
         const expandCollapseIcon = () => {
             const {xhColumn} = model;
-            if (
-                !xhColumn ||
-                !xhColumn.isTreeColumn ||
-                !xhColumn.headerHasExpandCollapse ||
-                !model.rootsWithChildren
-            ) {
+            if (!xhColumn || !xhColumn.headerHasExpandCollapse || !model.showExpandCollapseIcon) {
                 return null;
             }
 
@@ -235,14 +230,67 @@ class ColumnHeaderModel extends HoistModel {
     };
 
     @computed
+    get showExpandCollapseIcon(): boolean {
+        const {xhColumn, gridModel} = this;
+        if (!xhColumn || !gridModel) return false;
+
+        // Tree grids: icon on the tree column
+        if (xhColumn.isTreeColumn) return this.rootsWithChildren > 0;
+
+        // Grouped grids: icon on the first visible eligible column
+        if (!isEmpty(gridModel.groupBy)) {
+            return this.isGroupExpandCollapseColumn && this.topLevelGroupCount > 0;
+        }
+
+        return false;
+    }
+
+    @computed
+    get isGroupExpandCollapseColumn(): boolean {
+        const {gridModel, xhColumn} = this;
+        if (!gridModel || !xhColumn || isEmpty(gridModel.groupBy)) return false;
+
+        const visibleCols = gridModel.columnState.filter(cs => !cs.hidden);
+        // Sort by visual position: pinned-left first, then center, then pinned-right
+        const sorted = [...visibleCols].sort((a, b) => {
+            const pinOrder = p => (p === 'left' ? 0 : p === 'right' ? 2 : 1);
+            return pinOrder(a.pinned) - pinOrder(b.pinned);
+        });
+
+        const firstEligible = sorted.find(cs => {
+            const col = gridModel.getColumn(cs.colId);
+            return col && col.headerHasExpandCollapse;
+        });
+
+        return firstEligible?.colId === xhColumn.colId;
+    }
+
+    @computed
     get rootsWithChildren() {
         return filter(this.gridModel.store.rootRecords, it => !isEmpty(it.children)).length;
     }
 
     @computed
+    get topLevelGroupCount(): number {
+        const {gridModel} = this;
+        if (!gridModel || isEmpty(gridModel.groupBy)) return 0;
+        const firstGroupColId = gridModel.groupBy[0],
+            col = gridModel.getColumn(firstGroupColId),
+            fieldName = col?.field ?? firstGroupColId,
+            records = gridModel.store.records;
+        if (isEmpty(records)) return 0;
+        return new Set(records.map(r => r.get(fieldName))).size;
+    }
+
+    @computed
     get majorityIsExpanded() {
-        const {expandState} = this.gridModel;
-        return !isEmpty(expandState) && size(expandState) > this.rootsWithChildren / 2;
+        const {gridModel} = this,
+            {expandState} = gridModel;
+        if (isEmpty(expandState)) return false;
+        const expandableCount = this.xhColumn?.isTreeColumn
+            ? this.rootsWithChildren
+            : this.topLevelGroupCount;
+        return size(expandState) > expandableCount / 2;
     }
 
     // Desktop click handling
