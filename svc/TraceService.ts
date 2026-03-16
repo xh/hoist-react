@@ -185,7 +185,7 @@ export class TraceService extends HoistService {
         return this.createSpan({
             name: method,
             kind: 'client',
-            parent: opts.parentSpan ?? opts.loadSpec?.parentSpan,
+            parent: opts.span,
             tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'}
         });
     }

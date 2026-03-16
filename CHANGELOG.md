@@ -13,7 +13,7 @@
     - Automatic app-load spans emitted at startup, breaking down time spent in pre-auth,
       authentication, hoist init, and app init phases.
     - `FetchService` automatically creates CLIENT spans for all fetch calls and injects
-      `traceparent` headers. Use `parentSpan` in fetch options to nest concurrent fetches
+      `traceparent` headers. Use `span` in fetch options to nest concurrent fetches
       under a business-level span.
 
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export

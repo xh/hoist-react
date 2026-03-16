@@ -671,7 +671,7 @@ export interface FetchOptions {
      * If set, the fetch span created by TraceService will be parented under this span.
      * Use to nest fetch calls under a business-level span.
      */
-    parentSpan?: Span;
+    span?: Span;
 }
 
 /**
