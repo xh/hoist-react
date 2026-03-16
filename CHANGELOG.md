@@ -17,7 +17,9 @@
 
 * Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
   from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
-* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
+* Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
+  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 
 ### 🤖 AI Docs + Tooling
 
