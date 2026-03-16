@@ -28,13 +28,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * {Fix description}
 
+### ⚙️ Technical
+
+* {Internal change description}
+
 ### ⚙️ Typescript API Adjustments
 
 * {Type-level change description}
 
-### ⚙️ Technical
+### 🤖 AI Docs + Tooling
 
-* {Internal change description}
+* {AI docs/tooling change description}
 
 ### ✨ Styles
 
@@ -54,8 +58,9 @@ Use these emoji-prefixed headers consistently:
 | Breaking Changes | `### 💥 Breaking Changes` | Required app changes exist |
 | New Features | `### 🎁 New Features` | New capabilities added |
 | Bug Fixes | `### 🐞 Bug Fixes` | Bugs fixed |
-| TS API Adjustments | `### ⚙️ Typescript API Adjustments` | Type-level changes (signatures, generics, exports) |
 | Technical | `### ⚙️ Technical` | Internal changes worth noting |
+| TS API Adjustments | `### ⚙️ Typescript API Adjustments` | Type-level changes (signatures, generics, exports) |
+| AI Docs + Tooling | `### 🤖 AI Docs + Tooling` | AI assistant docs, MCP server, CLI tools |
 | Styles | `### ✨ Styles` | CSS/SCSS changes, new variables, class renames |
 | Libraries | `### 📚 Libraries` | Major dependency version bumps |
 
