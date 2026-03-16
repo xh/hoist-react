@@ -532,14 +532,7 @@ class SelectInputModel extends HoistInputModel {
     }
 
     private valueToOption(src): SelectOption {
-        if (src == null) return {label: '-null-', value: src};
-        if (isPlainObject(src)) {
-            const labelField = withDefault(this.componentProps.labelField, 'label'),
-                valueField = withDefault(this.componentProps.valueField, 'value');
-            const label = src[labelField] ?? src[valueField] ?? JSON.stringify(src);
-            return {label, value: src};
-        }
-        return {label: src.toString(), value: src};
+        return {label: src != null ? src.toString() : '-null-', value: src};
     }
 
     //------------------------
