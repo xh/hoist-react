@@ -9,7 +9,7 @@ import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/js';
 
 export interface ModalToggleButtonProps extends ButtonProps {
     panelModel?: PanelModel;
@@ -23,8 +23,8 @@ export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<Modal
     className: 'xh-modal-toggle-button',
     model: false,
 
-    render({className, panelModel, disabled, ...rest}, ref) {
-        panelModel = withDefault(panelModel, useContextModel(PanelModel));
+    render({className, title, tooltip, panelModel, disabled, ...rest}, ref) {
+        panelModel = panelModel ?? useContextModel(PanelModel);
 
         if (!panelModel) {
             logError(
@@ -34,10 +34,18 @@ export const [ModalToggleButton, modalToggleButton] = hoistCmp.withFactory<Modal
             disabled = true;
         }
 
+        const isModal = panelModel?.isModal;
+
+        if (!title && !tooltip) {
+            tooltip = isModal ? 'Close dialog' : 'Pop out as dialog';
+        }
+
         return button({
             ref,
-            icon: panelModel.isModal ? Icon.close() : Icon.openExternal(),
-            onClick: () => panelModel.toggleIsModal(),
+            icon: isModal ? Icon.close() : Icon.openExternal(),
+            title,
+            tooltip,
+            onClick: () => panelModel?.toggleIsModal(),
             minimal: true,
             className,
             disabled,
