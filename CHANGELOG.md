@@ -4,17 +4,11 @@
 
 ### 🎁 New Features
 
-* Added `TraceService` — client-side component of Hoist's new end-to-end distributed tracing
-  support. Creates spans for user actions and fetch calls, sends `traceparent` headers on outgoing
-  requests so server spans nest under client spans, and batches completed spans for relay through
-  the server's export pipeline. Controlled by `xhTraceConfig` soft config. Requires hoist-core 37+.
-    - `XH.withSpanAsync()` wraps async operations in a span with automatic timing and error capture.
+* Added `TraceService` — client-side distributed tracing. Controlled by `xhTraceConfig`. Requires hoist-core 37+.
+    - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
-    - Automatic app-load spans emitted at startup, breaking down time spent in pre-auth,
-      authentication, hoist init, and app init phases.
-    - `FetchService` automatically creates CLIENT spans for all fetch calls and injects
-      `traceparent` headers. Use `span` in fetch options to nest concurrent fetches
-      under a business-level span.
+    - Automatic app-load spans for pre-auth, hoist init, and app init phases.
+    - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
   for small option sets.
@@ -26,8 +20,9 @@
 
 ### ⚙️ Technical
 
-* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
-  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
+* Extracted `NameSource` type and `parseNameSource()` to `LangUtils`, shared by logging and tracing.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly from
+    a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
 
 ### 🤖 AI Docs + Tooling

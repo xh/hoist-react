@@ -7,7 +7,7 @@
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc/FetchService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {debounced} from '@xh/hoist/utils/js';
+import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {isEmpty, isString} from 'lodash';
 import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
@@ -59,13 +59,37 @@ export class TraceService extends HoistService {
     // Span Lifecycle
     //------------------
     /**
+     * Create a span wrapping a synchronous operation.
+     * Automatically handles timing, error recording, and export.
+     *
+     * @param config - span name string, or a SpanConfig with name and optional tags.
+     * @param fn - the function to wrap.
+     */
+    override withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
+        const span = this.createSpan(config);
+        if (!span) return fn(null);
+
+        try {
+            const result = fn(span);
+            span.end('ok');
+            return result;
+        } catch (e) {
+            span.recordError(e);
+            span.end('error');
+            throw e;
+        } finally {
+            this.exportSpan(span);
+        }
+    }
+
+    /**
      * Create a span wrapping an async operation.
      * Automatically handles timing, error recording, and export.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      * @param fn - the async function to wrap.
      */
-    async withSpanAsync<T>(
+    override async withSpanAsync<T>(
         config: string | SpanConfig,
         fn: (span: Span) => Promise<T>
     ): Promise<T> {
@@ -104,6 +128,7 @@ export class TraceService extends HoistService {
             loadId: XH.loadId,
             tabId: XH.tabId,
             source: ret.parent?.tags?.source ?? 'app',
+            ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
             ...ret.tags
         };
 

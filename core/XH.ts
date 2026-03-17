@@ -33,7 +33,6 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -337,15 +336,6 @@ export class XHApi {
      */
     track(opts: string | TrackOptions) {
         return this.trackService?.track(opts);
-    }
-
-    /**
-     * Create a span wrapping an async operation.
-     * @see TraceService.withSpanAsync
-     */
-    async withSpanAsync<T>(config: string | SpanConfig, fn: (span) => Promise<T>): Promise<T> {
-        const svc = this.traceService;
-        return svc ? svc.withSpanAsync(config, fn) : fn(null);
     }
 
     /**

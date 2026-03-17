@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {NameSource} from '@xh/hoist/utils/js';
 
 /**
  * Lightweight client-side span representation for distributed tracing.
@@ -92,6 +93,7 @@ export interface SpanConfig {
     tags?: PlainObject;
     parent?: Span;
     startTime?: number;
+    caller?: NameSource;
 }
 
 export interface SpanEvent {

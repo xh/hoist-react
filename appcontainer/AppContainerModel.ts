@@ -344,6 +344,10 @@ export class AppContainerModel extends HoistModel {
     //----------------------------
     // Implementation
     //-----------------------------
+    /**
+     * Construct these post-load with lower level api.
+     * TraceService not yet ready, and code path spread across multiple methods.
+     */
     private emitAppLoadSpans() {
         const svc = XH.traceService;
         if (!svc.enabled) return;
