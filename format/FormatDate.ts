@@ -28,7 +28,10 @@ export interface DateFormatOptions extends FormatOptions<DateLike> {
     /** Display value for null values. */
     nullDisplay?: ReactNode;
 
-    /** A MomentJs format string. */
+    /**
+     * A MomentJs format string. Wrap literal text in square brackets to prevent
+     * interpretation as format tokens — e.g. `'[today at] h:mma'`.
+     */
     fmt?: string;
 }
 
@@ -95,19 +98,20 @@ export function fmtTime(v: DateLike, opts?: DateFormatOptions | string) {
 
 export interface CompactDateFormatOptions extends FormatOptions<DateLike> {
     /**
-     * Format for date matching current day, defaults to 'hh:mma' for dates, 'MMM D' for LocalDates.
+     * Format for date matching current day, defaults to 'hh:mma' for dates, 'MMM D' for
+     * LocalDates. Wrap literal text in square brackets — e.g. `'[today]'` or `'[today at] h:mma'`.
      */
     sameDayFmt?: string;
 
     /**
-     *  Format for dates within the number of months specified by the distantThreshold, defaults
-     *  to 'MMM D'.
+     * Format for dates within the number of months specified by the distantThreshold, defaults
+     * to 'MMM D'. Wrap literal text in square brackets — e.g. `'[recent]'`.
      */
     nearFmt?: string;
 
     /**
      * Format for dates beyond number of months specified by the distantThreshold, defaults to
-     * 'YYYY-MM-DD'.
+     * 'YYYY-MM-DD'. Wrap literal text in square brackets — e.g. `'[older]'`.
      */
     distantFmt?: string;
 
