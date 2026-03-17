@@ -36,6 +36,7 @@ import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
+    CellSelectionChangedEvent,
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
@@ -158,6 +159,7 @@ export class GridLocalModel extends HoistModel {
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
     private prevRs: RecordSet;
+    private _lastCellMouseDownHadModifier = false;
 
     /** @returns true if any root-level records have children */
     @computed
@@ -273,14 +275,26 @@ export class GridLocalModel extends HoistModel {
         };
 
         if (selModel.mode != 'disabled') {
+            const {enableClickDragSelection} = model;
             ret.rowSelection = {
                 mode: selModel.mode == 'single' ? 'singleRow' : 'multiRow',
-                enableClickSelection: selModel.isEnabled,
+                // Disable native click selection when cellSelection is active to avoid
+                // conflicts - cell selection handler manages all mouse-based selection.
+
+                // FALSE lets you get cmd + click and drag to select
+                // TRUE lets you click and drag + SHIFT click to select a range
+                // Cannot seem to get both with altering AG-Grid itself
+                enableClickSelection: false,
                 isRowSelectable: () => selModel.isEnabled,
                 copySelectedRows: selModel.isEnabled,
                 checkboxes: false,
                 headerCheckbox: false
             };
+
+            if (enableClickDragSelection && selModel.mode === 'multiple') {
+                ret.cellSelection = true;
+                ret.onCellSelectionChanged = this.onCellSelectionChanged;
+            }
         }
 
         // Platform specific defaults
@@ -764,6 +778,11 @@ export class GridLocalModel extends HoistModel {
         this.syncSelection();
     }, 0);
 
+    onCellSelectionChanged = (event: CellSelectionChangedEvent) => {
+        if (!event.finished) return;
+        this.model.noteCellSelectionChanged(this._lastCellMouseDownHadModifier);
+    };
+
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = ev => {
         this.model.noteAgColumnStateChanged(ev.api.getColumnState());
@@ -846,7 +865,9 @@ export class GridLocalModel extends HoistModel {
     };
 
     onCellMouseDown = evt => {
-        const {model} = this;
+        const {model} = this,
+            browserEvent = evt.event;
+        this._lastCellMouseDownHadModifier = !!(browserEvent?.ctrlKey || browserEvent?.metaKey);
         if (model.highlightRowOnClick) {
             model.agApi.flashCells({
                 rowNodes: [evt.node],
