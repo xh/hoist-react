@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
-import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {box, frame, hframe, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {
     BoxProps,
     hoistCmp,
@@ -28,7 +28,16 @@ import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {omitBy} from 'lodash';
-import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
+import {
+    Children,
+    cloneElement,
+    isValidElement,
+    ReactElement,
+    ReactNode,
+    useLayoutEffect,
+    useRef
+} from 'react';
+import {drawerOverlay} from '../drawer/Drawer';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -102,6 +111,12 @@ export interface PanelProps<M extends PanelModel = PanelModel>
 
     /** Allow the panel content area to scroll vertically. */
     scrollable?: boolean;
+
+    /** A Drawer to dock on the left edge of this panel. */
+    lDrawer?: ReactElement;
+
+    /** A Drawer to dock on the right edge of this panel. */
+    rDrawer?: ReactElement;
 }
 
 /**
@@ -144,6 +159,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             hotkeys,
             contentBoxProps,
             scrollable,
+            lDrawer: lDrawerProp,
+            rDrawer: rDrawerProp,
             children,
             ...rest
         } = nonLayoutProps;
@@ -219,7 +236,17 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
         }
 
-        // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
+        // 3) Wrap with drawers if configured. Drawers sit alongside core content in an hframe.
+        // Overlays are rendered separately at the panel level so they can cover the full panel.
+        const hasDrawers = lDrawerProp || rDrawerProp;
+        let mainBody: ReactNode = coreContents;
+        if (hasDrawers) {
+            const lDrawer = lDrawerProp ? cloneElement(lDrawerProp, {side: 'left'}) : null;
+            const rDrawer = rDrawerProp ? cloneElement(rDrawerProp, {side: 'right'}) : null;
+            mainBody = hframe(lDrawer, vframe({flex: 'auto', item: coreContents}), rDrawer);
+        }
+
+        // 4) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
             className: 'xh-panel__inner',
             items: [
@@ -232,19 +259,21 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     className: headerClassName,
                     headerItems
                 }),
-                coreContents,
+                mainBody,
                 parseLoadDecorator(maskProp, 'mask', contextModel),
-                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel)
+                parseLoadDecorator(loadingIndicatorProp, 'loadingIndicator', contextModel),
+                drawerOverlay({drawerElement: lDrawerProp, side: 'left'}),
+                drawerOverlay({drawerElement: rDrawerProp, side: 'right'})
             ],
             ...rest
         });
 
-        // 4) Additional optional wrappers
+        // 5) Additional optional wrappers
         if (refreshContextModel) {
             item = refreshContextView({model: refreshContextModel, item});
         }
 
-        // 5) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
+        // 6) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
 
         const useResizeContainer = resizable || collapsible || showSplitter;
 

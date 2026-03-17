@@ -380,6 +380,15 @@ body {
 
 
   //------------------------
+  // Drawers
+  //------------------------
+  --xh-drawer-bg: var(--drawer-bg, var(--xh-bg));
+  --xh-drawer-border-color: var(--drawer-border-color, var(--xh-border-color));
+  --xh-drawer-header-font-size: var(--drawer-header-font-size, var(--xh-font-size));
+  --xh-drawer-header-font-size-px: calc(var(--xh-drawer-header-font-size) * 1px);
+  --xh-drawer-header-text-color: var(--drawer-header-text-color, var(--xh-text-color));
+
+  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--menu-bg, var(--xh-bg));

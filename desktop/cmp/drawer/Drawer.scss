@@ -1,0 +1,80 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-drawer {
+  &__pinned {
+    background-color: var(--xh-drawer-bg);
+    overflow: hidden;
+
+    &--left {
+      border-right: 1px solid var(--xh-drawer-border-color);
+    }
+
+    &--right {
+      border-left: 1px solid var(--xh-drawer-border-color);
+    }
+  }
+
+  &__header {
+    align-items: center;
+    color: var(--xh-drawer-header-text-color);
+    display: flex;
+    font-size: var(--xh-drawer-header-font-size-px);
+    font-weight: 500;
+    gap: var(--xh-pad-half-px);
+    min-height: var(--xh-tbar-min-size-px);
+    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    border-bottom: 1px solid var(--xh-drawer-border-color);
+    flex: none;
+  }
+
+  &__header-title {
+    flex: auto;
+  }
+
+  &__content {
+    overflow: auto;
+  }
+
+  &__collapsed {
+    flex: none;
+  }
+
+  // Panel-scoped overlay: absolutely positioned within the panel
+  &__overlay-container {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    outline: none;
+  }
+
+  &__overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    background-color: var(--xh-drawer-bg);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+
+    &--left {
+      left: 0;
+      border-right: 1px solid var(--xh-drawer-border-color);
+    }
+
+    &--right {
+      right: 0;
+      border-left: 1px solid var(--xh-drawer-border-color);
+    }
+  }
+}
