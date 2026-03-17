@@ -4,12 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
-import {FetchOptions} from '@xh/hoist/svc/FetchService';
+import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {isEmpty, isString} from 'lodash';
-import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
+import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
  * Client-side distributed tracing service for Hoist applications.
@@ -36,7 +35,6 @@ export class TraceService extends HoistService {
     override async initAsync() {
         if (!this.enabled) return;
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        this.installFetchSpans();
     }
 
     //------------------
@@ -172,77 +170,6 @@ export class TraceService extends HoistService {
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
         this.pushPendingAsync();
-    }
-
-    //-----------------------------------------------
-    // FetchService Integration
-    //-----------------------------------------------
-    private installFetchSpans() {
-        XH.fetchService.addDefaultHeaders(opts => {
-            if (!this.enabled) return {};
-
-            const span = this.startFetchSpan(opts);
-            if (span) {
-                (opts as any)._tracingSpan = span;
-                return {traceparent: formatTraceparent(span.traceId, span.spanId)};
-            }
-            return {};
-        });
-
-        XH.fetchService.addInterceptor({
-            onFulfilled: async (opts, value) => {
-                this.endFetchSpan(opts, value);
-                return value;
-            },
-            onRejected: async (opts, cause) => {
-                this.endFetchSpan(opts, null, cause);
-                throw cause;
-            }
-        });
-    }
-
-    private startFetchSpan(opts: PlainObject): Span {
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            url = this.extractUrlPath(opts.url);
-
-        if (url.endsWith('submitSpans')) return null;
-
-        return this.createSpan({
-            name: method,
-            kind: 'client',
-            parent: opts.span,
-            tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'}
-        });
-    }
-
-    private endFetchSpan(opts: FetchOptions, value?: any, error?: unknown) {
-        const span: Span = (opts as any)._tracingSpan;
-        if (!span) return;
-
-        if (value?.status != null) {
-            span.tags['http.response.status_code'] = value.status;
-        }
-
-        if (error) {
-            span.recordError(error);
-            span.end('error');
-        } else {
-            span.end('ok');
-        }
-        this.exportSpan(span);
-    }
-
-    private extractUrlPath(url: string): string {
-        if (!url) return '';
-        try {
-            // Strip origin for absolute URLs
-            if (url.includes('//')) {
-                return new URL(url).pathname;
-            }
-            return url.split('?')[0];
-        } catch (e) {
-            return url.split('?')[0];
-        }
     }
 }
 

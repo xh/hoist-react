@@ -14,7 +14,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {Span} from '@xh/hoist/utils/telemetry';
+import {formatTraceparent, Span} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -211,8 +211,13 @@ export class FetchService extends HoistService {
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
 
-        // Core Promise - chained with custom headers callback to ensure that work is included in overall tracked time.
-        let ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
+        // Tracing — create span for this request.
+        const span = this.startFetchSpan(opts);
+
+        // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
+        let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
+            this.managedFetchAsync(opts)
+        );
 
         // Apply tracking
         const {correlationId, loadSpec, track} = opts;
@@ -223,6 +228,20 @@ export class FetchService extends HoistService {
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
             );
             ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+        }
+
+        // Tracing — end span on completion or failure.
+        if (span) {
+            ret = ret.then(
+                value => {
+                    this.endFetchSpan(span, value);
+                    return value;
+                },
+                cause => {
+                    this.endFetchSpan(span, null, cause);
+                    throw cause;
+                }
+            );
         }
 
         // Apply interceptors
@@ -261,7 +280,7 @@ export class FetchService extends HoistService {
         return opts;
     }
 
-    private async withDefaultHeadersAsync(opts: FetchOptions): Promise<FetchOptions> {
+    private async withResolvedHeadersAsync(opts: FetchOptions, span?: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -274,6 +293,7 @@ export class FetchService extends HoistService {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
+            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
             ...opts.headers
         };
 
@@ -396,6 +416,53 @@ export class FetchService extends HoistService {
             return await response.text();
         } catch (ignore) {
             return null;
+        }
+    }
+
+    //------------------
+    // Tracing
+    //------------------
+    private startFetchSpan(opts: FetchOptions): Span {
+        const traceService = XH.traceService;
+        if (!traceService?.enabled) return null;
+
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+            url = this.extractUrlPath(opts.url);
+
+        if (url.endsWith('submitSpans')) return null;
+
+        return traceService.createSpan({
+            name: method,
+            kind: 'client',
+            parent: opts.span,
+            tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'},
+            caller: this
+        });
+    }
+
+    private endFetchSpan(span: Span, value?: any, error?: unknown) {
+        if (!span) return;
+
+        if (value?.status != null) {
+            span.tags['http.response.status_code'] = value.status;
+        }
+
+        if (error) {
+            span.recordError(error);
+            span.end('error');
+        } else {
+            span.end('ok');
+        }
+        XH.traceService.exportSpan(span);
+    }
+
+    private extractUrlPath(url: string): string {
+        if (!url) return '';
+        try {
+            if (url.includes('//')) return new URL(url).pathname;
+            return url.split('?')[0];
+        } catch (e) {
+            return url.split('?')[0];
         }
     }
 
