@@ -5,8 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput, ButtonGroupInputProps} from '@xh/hoist/desktop/cmp/input';
+import {segmentedControl, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
 import {startCase, values} from 'lodash';
 import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
@@ -16,8 +15,8 @@ interface SizingModeAppOptionSpec {
     modes?: SizingMode[];
     /** Props for nested FormField */
     formFieldProps?: FormFieldProps;
-    /** Props for nested ButtonGroupInput */
-    inputProps?: ButtonGroupInputProps;
+    /** Props for nested SegmentedControl */
+    inputProps?: SegmentedControlProps;
 }
 
 /**
@@ -33,21 +32,13 @@ export const sizingModeAppOption = ({
         name: 'sizingMode',
         formField: {
             label: 'Grid sizing',
-            item: buttonGroupInput({
-                items: modes.map(mode =>
-                    button({
-                        value: mode,
-                        text: startCase(mode),
-                        flex: 1,
-                        style: {
-                            fontSize: `var(--xh-grid-${mode}-font-size-px)`
-                        }
-                    })
-                ),
+            item: segmentedControl({
+                options: modes.map(mode => ({value: mode, label: startCase(mode)})),
                 ...inputProps
             }),
             ...formFieldProps
         },
+        refreshRequired: false,
         valueGetter: () => XH.sizingMode,
         valueSetter: v => XH.setSizingMode(v)
     };

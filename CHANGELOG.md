@@ -15,11 +15,13 @@
 
 ### ⚙️ Technical
 
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
+  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
+* Switched `sizingModeAppOption` and `themeAppOption` app option control presets to use new
+  `SegmentedControl` and set new `refreshRequired: false` flag to avoid data refresh when changed.
 * Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
   from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
-* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
-  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 
 ### 🤖 AI Docs + Tooling
 
