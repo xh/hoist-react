@@ -15,9 +15,9 @@ interface SizingModeAppOptionSpec {
     /** Supported SizingModes */
     modes?: SizingMode[];
     /** Props for nested FormField. */
-    formFieldProps?: FormFieldProps;
+    formFieldProps?: Partial<FormFieldProps>;
     /** Props for nested ButtonGroupInput. */
-    inputProps?: ButtonGroupInputProps;
+    inputProps?: Partial<ButtonGroupInputProps>;
 }
 
 /**

@@ -12,9 +12,9 @@ import '@xh/hoist/desktop/register';
 
 interface ThemeAppOptionSpec {
     /** Props for nested FormField */
-    formFieldProps?: FormFieldProps;
+    formFieldProps?: Partial<FormFieldProps>;
     /** Props for nested SegmentedControl */
-    inputProps?: SegmentedControlProps;
+    inputProps?: Partial<SegmentedControlProps>;
 }
 
 /**
