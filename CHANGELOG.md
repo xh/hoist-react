@@ -12,6 +12,9 @@
   mobile versions for custom icon support.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
   feature in `hoist-core >= 36.4`.
+* Added `activeFilterIcon` config to `GridFilterModel` to customize the icon displayed in
+  column headers when a filter is active. Accepts any `Icon` element, enabling use of a
+  different icon, prefix (e.g. solid), or intent (e.g. warning).
 
 ### ⚙️ Technical
 

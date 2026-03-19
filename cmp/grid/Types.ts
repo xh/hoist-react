@@ -113,6 +113,13 @@ export interface GridFilterModelConfig {
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
     fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
+
+    /**
+     * Icon element rendered in the column header when a filter is active on that column.
+     * Use to customize the icon's appearance with e.g. a specific intent or prefix.
+     * Defaults to `Icon.filter()` (the standard funnel icon in regular/outline style).
+     */
+    activeFilterIcon?: ReactElement;
 }
 
 /**

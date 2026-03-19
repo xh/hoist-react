@@ -20,9 +20,11 @@ import {
     FilterLike,
     flattenFilter
 } from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
+import {ReactElement} from 'react';
 import {GridModel} from '../GridModel';
 
 /**
@@ -36,6 +38,7 @@ export class GridFilterModel extends HoistModel {
     bind: GridFilterBindTarget;
     @bindable commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
+    activeFilterIcon: ReactElement;
 
     get filter(): Filter {
         return this.bind.filter;
@@ -48,7 +51,13 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor(
-        {bind, commitOnChange = false, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        {
+            bind,
+            commitOnChange = false,
+            fieldSpecs,
+            fieldSpecDefaults,
+            activeFilterIcon
+        }: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
@@ -56,6 +65,7 @@ export class GridFilterModel extends HoistModel {
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;
+        this.activeFilterIcon = activeFilterIcon ?? Icon.filter();
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 
