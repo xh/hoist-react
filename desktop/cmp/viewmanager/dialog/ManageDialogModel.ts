@@ -217,7 +217,7 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private async selectViewAsync(view: ViewInfo) {
-        this.tabContainerModel.activateTab(
+        this.tabContainerModel.setActiveTabId(
             view.isOwned ? 'owned' : view.isGlobal ? 'global' : 'shared'
         );
         await this.gridModel.selectAsync(view.token);

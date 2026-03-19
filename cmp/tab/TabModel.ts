@@ -141,7 +141,7 @@ export class TabModel extends HoistModel {
     }
 
     activate() {
-        this.containerModel.activateTab(this.id);
+        this.containerModel.setActiveTabId(this.id);
     }
 
     get renderMode(): RenderMode {
@@ -164,7 +164,7 @@ export class TabModel extends HoistModel {
                 tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
 
             throwIf(!tab, 'Cannot disable last enabled tab.');
-            containerModel.activateTab(tab.id);
+            containerModel.setActiveTabId(tab.id);
         }
 
         this.disabled = disabled;

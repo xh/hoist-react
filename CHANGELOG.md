@@ -4,7 +4,8 @@
 
 ### 🎁 New Features
 
-* Added `TraceService` — client-side distributed tracing. Controlled by `xhTraceConfig`. Requires hoist-core 37+.
+* Added `TraceService` — client-side distributed tracing. Controlled by `xhTraceConfig`. Requires
+  hoist-core 37+.
     - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
     - Automatic app-load spans for pre-auth, hoist init, and app init phases.
@@ -20,9 +21,16 @@
 
 ### ⚙️ Technical
 
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
+  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
+* Switched `sizingModeAppOption` and `themeAppOption` app option control presets to use new
+  `SegmentedControl` and set new `refreshRequired: false` flag to avoid data refresh when changed.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
+* Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
 * Extracted `NameSource` type and `parseNameSource()` to `LangUtils`, shared by logging and tracing.
-* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly from
-    a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
 
 ### 🤖 AI Docs + Tooling
