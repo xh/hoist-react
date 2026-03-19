@@ -125,6 +125,22 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 | `autoAbortKey` | string | Cancel previous requests with same key |
 | `loadSpec` | LoadSpec | Metadata for tracking |
 
+**App-Level Defaults (`FetchService.defaults`):**
+
+FetchService exposes a `static defaults` object for correlation ID configuration. Best configured
+in the app's `Bootstrap` module to ensure settings are active from the very first request.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `autoGenCorrelationIds` | `boolean \| function` | `false` | Auto-generate correlation IDs. Set `true` or a `(opts) => boolean` function for per-request control |
+| `genCorrelationId` | `() => string` | 16-char random string | Custom ID generator function |
+| `correlationIdHeaderKey` | `string` | `'X-Correlation-ID'` | HTTP header name for correlation IDs |
+
+```typescript
+// In Bootstrap module
+FetchService.defaults.autoGenCorrelationIds = true;
+```
+
 #### ConfigService
 **File**: `ConfigService.ts` | **Access**: `XH.configService` or `XH.getConf()`
 

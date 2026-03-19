@@ -10,7 +10,7 @@ import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItem
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
-import {mergeDeep} from '@xh/hoist/utils/js';
+import {apiDeprecated, mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -28,10 +28,28 @@ interface ChartConfig {
     xhImpl?: boolean;
 }
 
+export interface ChartModelDefaults {
+    contextMenu?: ChartMenuToken[];
+}
+
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
  */
 export class ChartModel extends HoistModel {
+    /** App-level defaults for ChartModel. Instance config takes precedence. */
+    static defaults: ChartModelDefaults = {
+        contextMenu: [
+            'viewFullscreen',
+            '-',
+            'copyToClipboard',
+            'printChart',
+            '-',
+            'downloadPNG',
+            'downloadSVG',
+            'downloadCSV'
+        ]
+    };
+
     @observable.ref
     highchartsConfig: PlainObject = {};
 
@@ -39,17 +57,6 @@ export class ChartModel extends HoistModel {
     series: any[] = [];
 
     contextMenu: ChartContextMenuSpec;
-
-    static defaultContextMenu: ChartMenuToken[] = [
-        'viewFullscreen',
-        '-',
-        'copyToClipboard',
-        'printChart',
-        '-',
-        'downloadPNG',
-        'downloadSVG',
-        'downloadCSV'
-    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -115,7 +122,7 @@ export class ChartModel extends HoistModel {
 
     private parseContextMenu(spec: ChartContextMenuSpec): ChartContextMenuSpec {
         if (spec === false || !XH.isDesktop) return null;
-        if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
+        if (isNil(spec) || spec === true) spec = ChartModel.defaults.contextMenu;
 
         return (e: MouseEvent | PointerEvent) => {
             // Convert hoverpoints to points for use in actionFn.
@@ -132,5 +139,17 @@ export class ChartModel extends HoistModel {
 
             return getContextMenuItems(items, context);
         };
+    }
+
+    //------------------------------
+    // Deprecated static setters
+    //------------------------------
+    /** @deprecated - use `ChartModel.defaults.contextMenu` */
+    static set defaultContextMenu(v: ChartMenuToken[]) {
+        apiDeprecated('ChartModel.defaultContextMenu', {
+            msg: 'Use ChartModel.defaults.contextMenu instead.',
+            v: '85.0'
+        });
+        ChartModel.defaults.contextMenu = v;
     }
 }

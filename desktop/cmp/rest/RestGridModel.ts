@@ -167,7 +167,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
+            contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
             enableExport: true,

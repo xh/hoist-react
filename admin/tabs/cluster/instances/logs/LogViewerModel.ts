@@ -206,7 +206,7 @@ export class LogViewerModel extends BaseInstanceModel {
                 this.downloadFileAction,
                 this.deleteFileAction,
                 '-',
-                ...GridModel.defaultContextMenu
+                ...GridModel.defaults.contextMenu
             ]
         });
     }

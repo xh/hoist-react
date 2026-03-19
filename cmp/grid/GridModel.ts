@@ -107,7 +107,7 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
-import {GridContextMenuSpec} from './GridContextMenu';
+import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
@@ -119,6 +119,12 @@ import {
     RowClassFn,
     RowClassRuleFn
 } from './Types';
+
+export interface GridModelDefaults {
+    autosizeMode?: GridAutosizeMode;
+    restoreDefaultsWarning?: ReactNode;
+    contextMenu?: GridContextMenuItemLike[];
+}
 
 export interface GridConfig {
     /** Columns for this grid. */
@@ -402,14 +408,33 @@ interface GridExperimentalFlags {
  *
  */
 export class GridModel extends HoistModel {
-    static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
-        p(
-            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+    /** App-level defaults for GridModel. Instance config takes precedence. */
+    static defaults: GridModelDefaults = {
+        autosizeMode: 'onSizingModeChange',
+        restoreDefaultsWarning: fragment(
+            p(
+                'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+            ),
+            p('OK to proceed?')
         ),
-        p('OK to proceed?')
-    );
-
-    static DEFAULT_AUTOSIZE_MODE: GridAutosizeMode = 'onSizingModeChange';
+        contextMenu: [
+            'filter',
+            '-',
+            'copy',
+            'copyWithHeaders',
+            'copyCell',
+            '-',
+            'expandCollapse',
+            '-',
+            'exportExcel',
+            'exportCsv',
+            '-',
+            'restoreDefaults',
+            '-',
+            'colChooser',
+            'autosizeColumns'
+        ]
+    };
 
     //------------------------
     // Immutable public properties
@@ -491,23 +516,6 @@ export class GridModel extends HoistModel {
      */
     @observable isInEditingMode: boolean = false;
 
-    static defaultContextMenu = [
-        'filter',
-        '-',
-        'copy',
-        'copyWithHeaders',
-        'copyCell',
-        '-',
-        'expandCollapse',
-        '-',
-        'exportExcel',
-        'exportCsv',
-        '-',
-        'restoreDefaults',
-        '-',
-        'colChooser',
-        'autosizeColumns'
-    ];
     @observable.ref private editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
@@ -582,7 +590,7 @@ export class GridModel extends HoistModel {
             useVirtualColumns = false,
             autosizeOptions = {},
             restoreDefaultsFn,
-            restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            restoreDefaultsWarning = GridModel.defaults.restoreDefaultsWarning,
             fullRowEditing = false,
             clicksToEdit = 2,
             expandLevel = treeMode ? 0 : 1,
@@ -612,14 +620,14 @@ export class GridModel extends HoistModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
+            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridModel.DEFAULT_AUTOSIZE_MODE,
+                mode: GridModel.defaults.autosizeMode,
                 renderedRowsOnly: false,
                 includeCollapsedChildren: false,
                 showMask: false,
@@ -2010,6 +2018,36 @@ export class GridModel extends HoistModel {
             // See https://github.com/xh/hoist-react/issues/4102.
             manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
+    }
+
+    //------------------------------
+    // Deprecated static setters
+    //------------------------------
+    /** @deprecated - use `GridModel.defaults.restoreDefaultsWarning` */
+    static set DEFAULT_RESTORE_DEFAULTS_WARNING(v: ReactNode) {
+        apiDeprecated('GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING', {
+            msg: 'Use GridModel.defaults.restoreDefaultsWarning instead.',
+            v: '85.0'
+        });
+        GridModel.defaults.restoreDefaultsWarning = v;
+    }
+
+    /** @deprecated - use `GridModel.defaults.autosizeMode` */
+    static set DEFAULT_AUTOSIZE_MODE(v: GridAutosizeMode) {
+        apiDeprecated('GridModel.DEFAULT_AUTOSIZE_MODE', {
+            msg: 'Use GridModel.defaults.autosizeMode instead.',
+            v: '85.0'
+        });
+        GridModel.defaults.autosizeMode = v;
+    }
+
+    /** @deprecated - use `GridModel.defaults.contextMenu` */
+    static set defaultContextMenu(v: GridContextMenuItemLike[]) {
+        apiDeprecated('GridModel.defaultContextMenu', {
+            msg: 'Use GridModel.defaults.contextMenu instead.',
+            v: '85.0'
+        });
+        GridModel.defaults.contextMenu = v;
     }
 }
 

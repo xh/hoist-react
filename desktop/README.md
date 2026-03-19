@@ -239,7 +239,7 @@ const gridModel = new GridModel({
             actionFn: ({selectedRecords}) => createInvoice(selectedRecords)
         },
         '-',
-        ...GridModel.defaultContextMenu
+        ...GridModel.defaults.contextMenu
     ],
     columns: [...]
 });
