@@ -4,8 +4,8 @@
 
 ### 🎁 New Features
 
-* Added `TraceService` — client-side distributed tracing. Controlled by `xhTraceConfig`. Requires
-  hoist-core 37+.
+* Added `TraceService` - client-side distributed OTEL tracing.
+    - Requires `hoist-core >= 36.4` and configurable via `xhTraceConfig`.
     - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
     - Automatic app-load spans for pre-auth, hoist init, and app init phases.
