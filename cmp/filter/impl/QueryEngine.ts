@@ -253,10 +253,8 @@ export class QueryEngine {
             }
         });
 
-        // Blank/not-blank options for fields with null values. Both ops are always
-        // included — the 'is' pseudo-operator handles blank/not-blank as a pair, and
-        // they're useful to surface regardless of whether the user typed '=' or '!='.
-        if (spec.hasBlankValues) {
+        // Blank/not-blank options for fields with null values.
+        if (values.some(v => v == null)) {
             const blankTestFn = queryStr ? testFn : null,
                 blankEntries: Array<{label: string; op: FieldFilterOperator}> = [
                     {label: 'blank', op: '='},
