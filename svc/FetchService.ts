@@ -199,6 +199,7 @@ export class FetchService extends HoistService {
 
         // Tracing — create span for this request.
         const span = this.startFetchSpan(opts);
+        if (span) opts = {...opts, traceId: span.traceId};
 
         // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
         let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
@@ -589,9 +590,10 @@ export class FetchService extends HoistService {
     }
 
     private createException(attributes: PlainObject) {
+        const {fetchOptions} = attributes;
         const correlationId: string =
-            attributes.fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ??
-            null;
+            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ?? null;
+        const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
             isFetchAborted: false,
@@ -599,6 +601,7 @@ export class FetchService extends HoistService {
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
             correlationId,
+            traceId,
             ...attributes
         }) as FetchException;
     }
@@ -756,6 +759,12 @@ export interface FetchOptions {
      * Use to nest fetch calls under a business-level span.
      */
     span?: Span;
+
+    /**
+     * Distributed trace ID for this request. Set automatically by FetchService
+     * @internal
+     */
+    traceId?: string;
 }
 
 /**
@@ -770,6 +779,9 @@ export interface FetchException extends HoistException {
 
     /** Options of underlying fetch call. */
     fetchOptions: FetchOptions;
+
+    /** Distributed trace ID associated with the failed request, if tracing was enabled. */
+    traceId: string;
 
     /**
      * True if exception resulted from the fetch being aborted by fetchService, or the application.

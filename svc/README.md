@@ -91,7 +91,7 @@ Managed HTTP requests with enhancements over the native Fetch API.
 - Configurable timeouts (default 30 seconds)
 - Auto-abort of duplicate requests via `autoAbortKey`
 - Request/response interceptors
-- Rich exception handling with HTTP status and server details
+- Rich exception handling with HTTP status, server details, and trace IDs
 
 ```typescript
 // Basic JSON request
@@ -300,7 +300,8 @@ category while all other entries continue to require INFO or above.
 
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
 `traceparent` headers on outgoing requests, and batches completed spans for export to the
-Hoist server. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
+Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
+with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
 
 ```typescript
 // Wrap an async operation in a span (from any HoistBase subclass)

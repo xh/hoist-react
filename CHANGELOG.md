@@ -10,6 +10,7 @@
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
     - Automatic app-load spans for pre-auth, hoist init, and app init phases.
     - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
+    - Exceptions thrown during traced operations include a top-level `traceId` for correlation.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
   for small option sets.
