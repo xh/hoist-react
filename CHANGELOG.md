@@ -2,47 +2,59 @@
 
 ## 83.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v83-upgrade-notes.md`](docs/upgrade-notes/v83-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Requires `hoist-core >= 37.0` (paired major release — tracing and metrics features depend on
+  new server-side infrastructure).
+* Deprecated ad-hoc static properties on `GridModel`, `ChartModel`, `ExceptionHandler`, and
+  `FetchService` in favor of the new `static defaults` pattern. Old properties log warnings
+  and are scheduled for removal in v85.
+
 ### 🎁 New Features
 
-* Added `TraceService` - client-side distributed OTEL tracing.
-    - Requires `hoist-core >= 36.4` and configurable via `xhTraceConfig`.
+* Added `TraceService` — client-side distributed OTEL tracing, configurable via `xhTraceConfig`.
     - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
-    - Automatic app-load spans for pre-auth, hoist init, and app init phases.
     - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
     - Exceptions thrown during traced operations include a top-level `traceId` for correlation.
+    - Automated app-load spans covering pre-auth, hoist init, and app init phases.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
-  with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
-  for small option sets.
+  with strong visual differentiation of the active selection. Consider as replacement for
+  `ButtonGroupInput`.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
   existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
   mobile versions for custom icon support.
 * Added publish controls to the Admin Metrics tab, supporting the new opt-in metrics export
-  feature in `hoist-core >= 36.4`.
+  feature in `hoist-core >= 37.0`.
 * Added `activeFilterIcon` config to `GridFilterModel` to customize the icon displayed in
   column headers when a filter is active. Accepts any `Icon` element, enabling use of a
   different icon, prefix (e.g. solid), or intent (e.g. warning).
 
 ### ⚙️ Technical
 
-* Introduced a standard `static defaults` pattern for app-level configuration overrides on
-  `GridModel`, `GridFilterModel`, `ChartModel`, `ExceptionHandler`, and `FetchService`. Each
-  class exposes a typed `defaults` object with a curated set of properties that apps can set
-  at startup to change framework-wide behavior. Instance-level config always takes precedence.
-  Previous static properties (e.g. `GridModel.DEFAULT_AUTOSIZE_MODE`,
-  `GridModel.defaultContextMenu`, `ExceptionHandler.ALERT_TYPE`, `FetchService.autoGenCorrelationIds`)
-  are deprecated — update to the new `ClassName.defaults.propName` form.
-* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
-  `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
+* Introduced a standard `static defaults` pattern for app configuration overrides across several
+  core models. `GridModel.defaults` is the prime example — see `GridModelDefaults` for the
+  full set of visual, behavioral, and structural props now available. Apps should review
+  available defaults and set them at startup to reduce per-instance boilerplate. Instance-level
+  config always takes precedence. Previous ad-hoc static properties (e.g.
+  `GridModel.DEFAULT_AUTOSIZE_MODE`) are deprecated — update to the new
+  `ModelClassName.defaults.propName` form.
+* Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use
+  as a `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 * Switched `sizingModeAppOption` and `themeAppOption` app option control presets to use new
   `SegmentedControl` and set new `refreshRequired: false` flag to avoid data refresh when changed.
-* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
-  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
-* Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
-* Extracted `NameSource` type and `parseNameSource()` to `LangUtils`, shared by logging and tracing.
-* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
-  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
-* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state
+  directly from a `DashCanvasItemState[]` array without wrapping as `PersistableState`.
+* Updated `FieldFilter` to log console warning for any field not found in linked `Store`.
+
+### 🐞 Bug Fixes
+
+* Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
+  null/undefined values. Previously these were silently excluded, preventing grid column filters
+  from offering a [blank] option.
 
 ### 🤖 AI Docs + Tooling
 
