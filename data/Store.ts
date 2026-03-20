@@ -145,6 +145,10 @@ export interface StoreConfig {
     experimental?: PlainObject;
 }
 
+export interface StoreDefaults {
+    freezeData?: boolean;
+}
+
 /**
  * Object representing data changes to perform on a Store's committed record set in a single
  * transaction.
@@ -205,6 +209,11 @@ export class Store
     extends HoistBase
     implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
 {
+    /** App-level defaults for Store. Instance config takes precedence. */
+    static defaults: StoreDefaults = {
+        freezeData: true
+    };
+
     static isStore(obj: unknown): obj is Store {
         return obj instanceof Store;
     }
@@ -277,7 +286,7 @@ export class Store
         loadTreeData = true,
         loadTreeDataFrom = 'children',
         loadRootAsSummary = false,
-        freezeData = true,
+        freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
         reuseRecords = false,
         validationIsComplex = false,

@@ -120,12 +120,6 @@ import {
     RowClassRuleFn
 } from './Types';
 
-export interface GridModelDefaults {
-    autosizeMode?: GridAutosizeMode;
-    restoreDefaultsWarning?: ReactNode;
-    contextMenu?: GridContextMenuItemLike[];
-}
-
 export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
@@ -394,6 +388,30 @@ interface GridExperimentalFlags {
     disableScrollOptimization?: boolean;
 }
 
+export interface GridModelDefaults {
+    autosizeMode?: GridAutosizeMode;
+    cellBorders?: boolean;
+    clicksToExpand?: number | null;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean | null;
+    colDefaults?: Partial<ColumnSpec> | null;
+    contextMenu?: GridContextMenuItemLike[];
+    emptyText?: ReactNode | null;
+    enableColumnPinning?: boolean;
+    enableExport?: boolean;
+    enableFullWidthScroll?: boolean;
+    exportOptions?: ExportOptions;
+    headerMenuDisplay?: 'always' | 'hover';
+    lockColumnGroups?: boolean;
+    restoreDefaultsWarning?: ReactNode;
+    rowBorders?: boolean | null;
+    showCellFocus?: boolean;
+    showGroupRowCounts?: boolean;
+    showHover?: boolean;
+    sizingMode?: SizingMode | null;
+    stripeRows?: boolean | null;
+    treeStyle?: TreeStyle;
+}
+
 /**
  * Core Model for a Grid, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
@@ -411,12 +429,10 @@ export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
     static defaults: GridModelDefaults = {
         autosizeMode: 'onSizingModeChange',
-        restoreDefaultsWarning: fragment(
-            p(
-                'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
-            ),
-            p('OK to proceed?')
-        ),
+        cellBorders: false,
+        clicksToExpand: null,
+        colChooserModel: null,
+        colDefaults: null,
         contextMenu: [
             'filter',
             '-',
@@ -433,7 +449,27 @@ export class GridModel extends HoistModel {
             '-',
             'colChooser',
             'autosizeColumns'
-        ]
+        ],
+        emptyText: null,
+        enableColumnPinning: true,
+        enableExport: false,
+        enableFullWidthScroll: false,
+        exportOptions: {},
+        headerMenuDisplay: 'always',
+        lockColumnGroups: true,
+        restoreDefaultsWarning: fragment(
+            p(
+                'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+            ),
+            p('OK to proceed?')
+        ),
+        rowBorders: null,
+        showCellFocus: false,
+        showGroupRowCounts: true,
+        showHover: false,
+        sizingMode: null,
+        stripeRows: null,
+        treeStyle: 'highlights'
     };
 
     //------------------------
@@ -553,28 +589,28 @@ export class GridModel extends HoistModel {
             showSummary = false,
             selModel,
             filterModel,
-            colChooserModel,
-            emptyText = null,
+            colChooserModel = GridModel.defaults.colChooserModel,
+            emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
             groupBy = null,
-            showGroupRowCounts = true,
+            showGroupRowCounts = GridModel.defaults.showGroupRowCounts,
             externalSort = false,
             persistWith,
-            sizingMode,
-            showHover = false,
-            rowBorders = XH.isMobileApp,
+            sizingMode = GridModel.defaults.sizingMode,
+            showHover = GridModel.defaults.showHover,
+            rowBorders = GridModel.defaults.rowBorders ?? XH.isMobileApp,
             rowClassFn = null,
             rowClassRules = {},
-            cellBorders = false,
-            treeStyle = 'highlights',
-            stripeRows = !treeMode || treeStyle === 'none',
-            showCellFocus = false,
+            cellBorders = GridModel.defaults.cellBorders,
+            treeStyle = GridModel.defaults.treeStyle,
+            stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
+            showCellFocus = GridModel.defaults.showCellFocus,
             hideHeaders = false,
-            headerMenuDisplay = 'always',
-            lockColumnGroups = true,
-            enableColumnPinning = true,
-            enableExport = false,
+            headerMenuDisplay = GridModel.defaults.headerMenuDisplay,
+            lockColumnGroups = GridModel.defaults.lockColumnGroups,
+            enableColumnPinning = GridModel.defaults.enableColumnPinning,
+            enableExport = GridModel.defaults.enableExport,
             exportOptions = {},
             groupRowHeight,
             groupRowRenderer,
@@ -585,7 +621,7 @@ export class GridModel extends HoistModel {
             onCellClicked,
             onCellDoubleClicked,
             onCellContextMenu,
-            clicksToExpand = XH.isMobileApp ? 1 : 2,
+            clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
             useVirtualColumns = false,
             autosizeOptions = {},
@@ -596,7 +632,7 @@ export class GridModel extends HoistModel {
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
-            enableFullWidthScroll = false,
+            enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
             experimental,
             appData,
             xhImpl,
@@ -655,11 +691,11 @@ export class GridModel extends HoistModel {
         this.lockColumnGroups = lockColumnGroups;
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
-        this.exportOptions = exportOptions;
+        this.exportOptions = defaultsDeep({}, exportOptions, GridModel.defaults.exportOptions);
 
         Object.assign(this, rest);
 
-        this.colDefaults = colDefaults;
+        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);

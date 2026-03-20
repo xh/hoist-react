@@ -47,8 +47,8 @@ const defaultIdGenerator = new ShortUniqueId({length: 16});
  */
 export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
-    genCorrelationId?: () => string;
     correlationIdHeaderKey?: string;
+    genCorrelationId?: () => string;
 }
 
 export class FetchService extends HoistService {
@@ -57,8 +57,8 @@ export class FetchService extends HoistService {
     /** App-level defaults for FetchService. Instance options take precedence. */
     static defaults: FetchServiceDefaults = {
         autoGenCorrelationIds: false,
-        genCorrelationId: () => defaultIdGenerator.rnd(),
-        correlationIdHeaderKey: 'X-Correlation-ID'
+        correlationIdHeaderKey: 'X-Correlation-ID',
+        genCorrelationId: () => defaultIdGenerator.rnd()
     };
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];

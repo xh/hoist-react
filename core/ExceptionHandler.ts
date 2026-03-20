@@ -69,8 +69,8 @@ export interface ExceptionHandlerLoggingOptions {
 }
 
 export interface ExceptionHandlerDefaults {
-    redactPaths?: string[];
     alertType?: 'dialog' | 'toast';
+    redactPaths?: string[];
     toastProps?: object;
 }
 
@@ -81,8 +81,8 @@ export interface ExceptionHandlerDefaults {
 export class ExceptionHandler {
     /** App-level defaults for ExceptionHandler. Instance options take precedence. */
     static defaults: ExceptionHandlerDefaults = {
-        redactPaths: ['fetchOptions.headers.Authorization'],
         alertType: 'dialog',
+        redactPaths: ['fetchOptions.headers.Authorization'],
         toastProps: {timeout: 10000}
     };
 

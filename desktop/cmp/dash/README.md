@@ -130,6 +130,9 @@ dashContainer({model: dashModel})
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
 | `goldenLayoutSettings` | `PlainObject` | Passthrough config for the GoldenLayout instance. |
 
+`DashContainerModel.defaults` exposes `margin` and `showMenuButton` for app-wide override — see
+`DashContainerModelDefaults` for details.
+
 ### State Structure
 
 State is nested arrays of containers and views:
@@ -268,6 +271,10 @@ dashCanvas({model: canvasModel})
 | `emptyText` | `string` | Placeholder text when empty. Default `'No widgets have been added.'` |
 | `addViewButtonText` | `string` | Button label in empty overlay. Default `'Add Widget'`. |
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
+
+`DashCanvasModel.defaults` exposes layout properties (`columns`, `rowHeight`, `margin`,
+`containerPadding`, `maxRows`, `showGridBackground`) for app-wide override — see
+`DashCanvasModelDefaults` for details.
 
 ### State Structure
 

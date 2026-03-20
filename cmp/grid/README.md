@@ -327,19 +327,13 @@ GridModel and GridFilterModel expose a `static defaults` object for app-wide con
 overrides. Set these at app startup (e.g. in your `AppModel` constructor) to change framework
 defaults for all grids. Instance-level config always takes precedence.
 
-### GridModel.defaults
+`GridModel.defaults` covers a wide range of visual, behavioral, and structural properties —
+including `enableExport`, `showHover`, `rowBorders`, `stripeRows`, `cellBorders`,
+`headerMenuDisplay`, `colDefaults`, `exportOptions`, and more. See the `GridModelDefaults`
+interface for the full typed list with all available properties.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `autosizeMode` | `GridAutosizeMode` | `'onSizingModeChange'` | Default autosize mode for all grids |
-| `restoreDefaultsWarning` | `ReactNode` | Confirmation message | Warning shown before restoring grid defaults |
-| `contextMenu` | `GridContextMenuItemLike[]` | Standard menu items | Base context menu for all grids |
-
-### GridFilterModel.defaults
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `activeFilterIcon` | `ReactElement` | `Icon.filter()` | Icon shown in column headers when a filter is active |
+`GridFilterModel.defaults` provides `activeFilterIcon` to customize the icon displayed in
+column headers when a filter is active.
 
 ### Example
 
@@ -348,8 +342,12 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 
-// In AppModel constructor
-GridModel.defaults.autosizeMode = 'managed';
+// In AppModel constructor — set app-wide grid preferences
+GridModel.defaults.enableExport = true;
+GridModel.defaults.showHover = true;
+GridModel.defaults.rowBorders = true;
+GridModel.defaults.headerMenuDisplay = 'hover';
+GridModel.defaults.colDefaults = {sortable: false};
 GridModel.defaults.contextMenu = [
     ...GridModel.defaults.contextMenu,
     '-',
