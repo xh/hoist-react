@@ -384,6 +384,13 @@ export class ExceptionHandler {
     // Deprecated static setters
     //------------------------------
     /** @deprecated - use `ExceptionHandler.defaults.redactPaths` */
+    static get REDACT_PATHS(): string[] {
+        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
+            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
+            v: '85.0'
+        });
+        return ExceptionHandler.defaults.redactPaths;
+    }
     static set REDACT_PATHS(v: string[]) {
         apiDeprecated('ExceptionHandler.REDACT_PATHS', {
             msg: 'Use ExceptionHandler.defaults.redactPaths instead.',

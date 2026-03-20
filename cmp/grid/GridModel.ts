@@ -2042,6 +2042,13 @@ export class GridModel extends HoistModel {
     }
 
     /** @deprecated - use `GridModel.defaults.contextMenu` */
+    static get defaultContextMenu(): GridContextMenuItemLike[] {
+        apiDeprecated('GridModel.defaultContextMenu', {
+            msg: 'Use GridModel.defaults.contextMenu instead.',
+            v: '85.0'
+        });
+        return GridModel.defaults.contextMenu;
+    }
     static set defaultContextMenu(v: GridContextMenuItemLike[]) {
         apiDeprecated('GridModel.defaultContextMenu', {
             msg: 'Use GridModel.defaults.contextMenu instead.',

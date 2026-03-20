@@ -145,6 +145,13 @@ export class ChartModel extends HoistModel {
     // Deprecated static setters
     //------------------------------
     /** @deprecated - use `ChartModel.defaults.contextMenu` */
+    static get defaultContextMenu(): ChartMenuToken[] {
+        apiDeprecated('ChartModel.defaultContextMenu', {
+            msg: 'Use ChartModel.defaults.contextMenu instead.',
+            v: '85.0'
+        });
+        return ChartModel.defaults.contextMenu;
+    }
     static set defaultContextMenu(v: ChartMenuToken[]) {
         apiDeprecated('ChartModel.defaultContextMenu', {
             msg: 'Use ChartModel.defaults.contextMenu instead.',
