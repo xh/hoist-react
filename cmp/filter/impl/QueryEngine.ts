@@ -6,7 +6,7 @@
  */
 
 import {Some} from '@xh/hoist/core';
-import {FieldFilter} from '@xh/hoist/data';
+import {FieldFilter, FieldFilterOperator} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {
     castArray,
@@ -98,20 +98,12 @@ export class QueryEngine {
         // Suggest matching *fields* for the user to select on their way to a more targeted query.
         let ret = this.getFieldOpts(q.field);
 
-        // If a single field matches, reasonable to assume user is looking to search on it.
-        // Suggest *all values from that field* for immediate selection with the = operator,
-        // plus 'is blank' / 'is not blank' options if the field has null values.
-        if (ret.length === 1) {
-            const spec = ret[0].fieldSpec;
-            ret.push(...this.getValueMatchesForField('=', '', spec));
-            ret.push(...this.getBlankOptionsForField('', spec));
-        }
-
-        // Also suggest *matching values* across all suggest-enabled fields to support the user
-        // searching for a value directly, without them needing to type or select a field name.
+        // If a single field matches, show *all* its values for immediate selection (empty
+        // queryStr). Otherwise, filter each field's values against the user's query text.
+        const singleMatchSpec = ret.length === 1 ? ret[0].fieldSpec : null;
         this.fieldSpecs.forEach(spec => {
-            ret.push(...this.getValueMatchesForField('=', q.field, spec));
-            ret.push(...this.getBlankOptionsForField(q.field, spec));
+            const queryStr = spec === singleMatchSpec ? '' : q.field;
+            ret.push(...this.getMatchesForField('=', queryStr, spec));
         });
 
         ret = this.sortAndTruncate(ret);
@@ -161,7 +153,7 @@ export class QueryEngine {
         // Get suggestions if supported
         const supportsSuggestions = spec.supportsSuggestions(q.op);
         if (supportsSuggestions) {
-            ret = this.getValueMatchesForField(q.op, q.value, spec);
+            ret = this.getMatchesForField(q.op, q.value, spec);
             ret = this.sortAndTruncate(ret);
         }
 
@@ -203,9 +195,7 @@ export class QueryEngine {
     // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     valueSearchingOnAll(q): Some<FilterChooserOption> {
-        let ret = flatMap(this.fieldSpecs, spec =>
-            this.getValueMatchesForField(q.op, q.value, spec)
-        );
+        let ret = flatMap(this.fieldSpecs, spec => this.getMatchesForField(q.op, q.value, spec));
         ret = this.sortAndTruncate(ret);
 
         return isEmpty(ret) ? msgOption('No matches found') : ret;
@@ -230,33 +220,25 @@ export class QueryEngine {
         return this.fieldSpecs.map(fieldSpec => minimalFieldOption({fieldSpec}));
     }
 
-    getBlankOptionsForField(queryStr: string, spec: FilterChooserFieldSpec): FilterChooserOption[] {
-        if (!spec.hasBlankValues) return [];
-
-        const {field} = spec,
-            testFn = queryStr ? createWordBoundaryTest(queryStr) : null;
-        return ['blank', 'not blank']
-            .filter(label => !testFn || testFn(label))
-            .map(label => {
-                const op = label.startsWith('not') ? '!=' : '=';
-                return fieldFilterOption({
-                    filter: new FieldFilter({field, op, value: null}),
-                    fieldSpec: spec,
-                    isExact: caselessEquals(label, queryStr)
-                });
-            });
-    }
-
-    getValueMatchesForField(op, queryStr, spec): FilterChooserOption[] {
+    /**
+     * Get all matching value suggestions for a field, including 'is blank' / 'is not blank'
+     * options when the field contains null values. Both blank options are always included
+     * regardless of the specified op, filtered only by the query text.
+     */
+    getMatchesForField(
+        op: FieldFilterOperator,
+        queryStr: string,
+        spec: FilterChooserFieldSpec
+    ): FilterChooserOption[] {
         if (!spec.supportsSuggestions(op)) return [];
 
         const {values, field} = spec,
-            value = spec.parseValue(queryStr, '='),
+            parsedValue = spec.parseValue(queryStr, '='),
             testFn = createWordBoundaryTest(queryStr);
 
-        // Assume spec will not produce dup values. React-select will de-dup identical opts as well.
-        // Null values are skipped here — they are handled by getBlankOptionsForField() instead.
         const ret = [];
+
+        // Non-null value matches
         values.forEach(v => {
             if (isNil(v)) return;
             const formattedValue = spec.renderValue(v, '=');
@@ -265,11 +247,34 @@ export class QueryEngine {
                     fieldFilterOption({
                         filter: new FieldFilter({field, op, value: v}),
                         fieldSpec: spec,
-                        isExact: value === v || caselessEquals(formattedValue, queryStr)
+                        isExact: parsedValue === v || caselessEquals(formattedValue, queryStr)
                     })
                 );
             }
         });
+
+        // Blank/not-blank options for fields with null values. Both ops are always
+        // included — the 'is' pseudo-operator handles blank/not-blank as a pair, and
+        // they're useful to surface regardless of whether the user typed '=' or '!='.
+        if (spec.hasBlankValues) {
+            const blankTestFn = queryStr ? testFn : null,
+                blankEntries: Array<{label: string; op: FieldFilterOperator}> = [
+                    {label: 'blank', op: '='},
+                    {label: 'not blank', op: '!='}
+                ];
+            blankEntries
+                .filter(e => !blankTestFn || blankTestFn(e.label))
+                .forEach(e =>
+                    ret.push(
+                        fieldFilterOption({
+                            filter: new FieldFilter({field, op: e.op, value: null}),
+                            fieldSpec: spec,
+                            isExact: caselessEquals(e.label, queryStr)
+                        })
+                    )
+                );
+        }
+
         return ret;
     }
 
