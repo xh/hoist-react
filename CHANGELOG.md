@@ -1,5 +1,13 @@
 # Changelog
 
+## 82.0.4 - 2026-03-23
+
+### 🐞 Bug Fixes
+
+* Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
+  null/undefined values. Previously these were silently excluded, preventing grid column filters
+  from offering a [blank] option.
+
 ## 82.0.3 - 2026-03-02
 
 ### 🐞 Bug Fixes
