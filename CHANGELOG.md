@@ -2,6 +2,10 @@
 
 ## 83.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Removed `downloadjs` dependency. Apps that imported `downloadjs` directly (relying on it as a transitive hoist-react dependency) must replace those usages. Use the new `downloadBlob(blob, filename)` or `downloadViaUrl(url, filename?)` utilities from `@xh/hoist/utils/js` instead.
+
 ### 🎁 New Features
 
 * Added `TraceService` - client-side distributed OTEL tracing.
