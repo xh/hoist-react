@@ -858,12 +858,12 @@ export class Store
         const ret = new Set();
         recs.forEach(rec => {
             const val = rec.get(fieldName);
-            if (!isNil(val)) {
-                if (field.type === 'tags') {
-                    val.forEach(it => ret.add(it));
-                } else {
-                    ret.add(val);
-                }
+            if (isNil(val)) {
+                ret.add(null);
+            } else if (field.type === 'tags') {
+                val.forEach(it => ret.add(it));
+            } else {
+                ret.add(val);
             }
         });
 

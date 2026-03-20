@@ -43,6 +43,12 @@
   from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
 
+### 🐞 Bug Fixes
+
+* Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
+  null/undefined values. Previously these were silently excluded, preventing grid column filters
+  from offering a [blank] option.
+
 ### 🤖 AI Docs + Tooling
 
 * Refactored documentation indexing to better support both MCP (LLM) and the Toolbox Docs viewer.
