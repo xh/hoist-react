@@ -13,8 +13,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import download from 'downloadjs';
+import {downloadBlob, pluralize} from '@xh/hoist/utils/js';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
@@ -160,7 +159,7 @@ export class LogViewerModel extends BaseInstanceModel {
                 });
 
             const blob = await response.blob();
-            download(blob, filename);
+            downloadBlob(blob, filename);
 
             XH.toast({
                 icon: Icon.download(),
