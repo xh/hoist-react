@@ -24,6 +24,13 @@
 
 ### ⚙️ Technical
 
+* Introduced a standard `static defaults` pattern for app-level configuration overrides on
+  `GridModel`, `GridFilterModel`, `ChartModel`, `ExceptionHandler`, and `FetchService`. Each
+  class exposes a typed `defaults` object with a curated set of properties that apps can set
+  at startup to change framework-wide behavior. Instance-level config always takes precedence.
+  Previous static properties (e.g. `GridModel.DEFAULT_AUTOSIZE_MODE`,
+  `GridModel.defaultContextMenu`, `ExceptionHandler.ALERT_TYPE`, `FetchService.autoGenCorrelationIds`)
+  are deprecated — update to the new `ClassName.defaults.propName` form.
 * Added `TabContainerModel.setActiveTabId()` for programmatic tab activation, suitable for use as a
   `bind` target (e.g. with `SegmentedControl`). Previously required calling `activateTab()`.
 * Switched `sizingModeAppOption` and `themeAppOption` app option control presets to use new

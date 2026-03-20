@@ -112,7 +112,7 @@ try {
 | `showAsError` | `boolean` | `true` (false if `isRoutine`) | Treat as an unexpected error -- affects styling, console log level, and server logging default |
 | `logOnServer` | `boolean` | `true` when `showAsError` and not auto-refresh | Send the exception to the server for Admin Console review |
 | `showAlert` | `boolean` | `true` (false for auto-refresh and aborted fetches) | Display any alert to the user |
-| `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.ALERT_TYPE` |
+| `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.defaults.alertType` |
 | `requireReload` | `boolean` | `false` (true for session mismatches) | Force user to reload the app to dismiss the error |
 | `hideParams` | `string[]` | none | Parameter names to redact from the exception log and alert display |
 
@@ -142,7 +142,7 @@ application, set the static property on `ExceptionHandler`:
 import {ExceptionHandler} from '@xh/hoist/core';
 
 // In AppModel.initAsync() or similar startup code
-ExceptionHandler.ALERT_TYPE = 'toast';
+ExceptionHandler.defaults.alertType = 'toast';
 ```
 
 Individual calls to `XH.handleException()` can still override this with `alertType: 'dialog'`
@@ -486,11 +486,11 @@ The logged payload includes:
 ### Sensitive Data Redaction
 
 The handler automatically redacts values at paths listed in
-`ExceptionHandler.REDACT_PATHS`. By default this includes `Authorization` headers. Applications
+`ExceptionHandler.defaults.redactPaths`. By default this includes `Authorization` headers. Applications
 can add additional paths:
 
 ```typescript
-ExceptionHandler.REDACT_PATHS.push('fetchOptions.params.apiKey');
+ExceptionHandler.defaults.redactPaths.push('fetchOptions.params.apiKey');
 ```
 
 The `hideParams` option provides per-call redaction of specific request parameters:

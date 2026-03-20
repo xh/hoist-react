@@ -75,7 +75,7 @@ export class ServiceModel extends BaseInstanceModel {
             this.clearCachesAction,
             this.clearClusterCachesAction,
             '-',
-            ...GridModel.defaultContextMenu
+            ...GridModel.defaults.contextMenu
         ]
     });
 

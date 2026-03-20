@@ -76,7 +76,7 @@ export class MetricsModel extends BaseAdminTabModel {
                 this.publishAction,
                 this.unpublishAction,
                 '-',
-                ...GridModel.defaultContextMenu
+                ...GridModel.defaults.contextMenu
             ],
             columns: [
                 {

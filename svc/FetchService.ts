@@ -17,7 +17,7 @@ import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {formatTraceparent, Span} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -32,7 +32,7 @@ const defaultIdGenerator = new ShortUniqueId({length: 16});
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Set {@link FetchService.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
+ * Set {@link FetchService.defaults.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
  * for requests issued by this service. Best configured in the app's `Bootstrap` module to ensure
  * coverage of early hoist core init requests. Can also be set on a per-request basis via
  * {@link FetchOptions.correlationId}.
@@ -45,8 +45,21 @@ const defaultIdGenerator = new ShortUniqueId({length: 16});
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
  */
+export interface FetchServiceDefaults {
+    autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
+    genCorrelationId?: () => string;
+    correlationIdHeaderKey?: string;
+}
+
 export class FetchService extends HoistService {
     static instance: FetchService;
+
+    /** App-level defaults for FetchService. Instance options take precedence. */
+    static defaults: FetchServiceDefaults = {
+        autoGenCorrelationIds: false,
+        genCorrelationId: () => defaultIdGenerator.rnd(),
+        correlationIdHeaderKey: 'X-Correlation-ID'
+    };
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
@@ -59,33 +72,6 @@ export class FetchService extends HoistService {
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
-    //-----------------------------------
-    // Public properties, Getters/Setters
-    //------------------------------------
-    /**
-     * Should hoist auto-generate a Correlation ID for a request when not otherwise specified?
-     * Set to `true` or a dynamic per-request function to enable. Default false.
-     *
-     * Static property — best configured in the app's `Bootstrap` module to ensure correlation
-     * IDs are active from the very first request.
-     */
-    static autoGenCorrelationIds: boolean | ((opts: FetchOptions) => boolean) = false;
-
-    /**
-     * Method for generating Correlation IDs. Defaults to a 16 character random string with
-     * an extremely low probability of collisions. Applications may customize to improve
-     * readability or provide a stronger uniqueness guarantee.
-     *
-     * Static property — best configured in the app's `Bootstrap` module.
-     */
-    static genCorrelationId: () => string = () => defaultIdGenerator.rnd();
-
-    /**
-     * Request header name to be used for Correlation ID tracking.
-     *
-     * Static property — best configured in the app's `Bootstrap` module.
-     */
-    static correlationIdHeaderKey: string = 'X-Correlation-ID';
 
     /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
@@ -270,12 +256,12 @@ export class FetchService extends HoistService {
     // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const cid = opts.correlationId,
-            autoCid = FetchService.autoGenCorrelationIds;
+            autoCid = FetchService.defaults.autoGenCorrelationIds;
 
         if (isString(cid)) return opts;
         if (cid === false || cid === null) return omit(opts, 'correlationId');
         if (cid === true || autoCid === true || (isFunction(autoCid) && autoCid(opts))) {
-            return {...opts, correlationId: FetchService.genCorrelationId()};
+            return {...opts, correlationId: FetchService.defaults.genCorrelationId()};
         }
         return opts;
     }
@@ -297,7 +283,7 @@ export class FetchService extends HoistService {
             ...opts.headers
         };
 
-        const {correlationIdHeaderKey} = FetchService;
+        const {correlationIdHeaderKey} = FetchService.defaults;
         if (opts.correlationId) {
             if (headers[correlationIdHeaderKey]) {
                 this.logWarn(
@@ -604,7 +590,8 @@ export class FetchService extends HoistService {
 
     private createException(attributes: PlainObject) {
         const correlationId: string =
-            attributes.fetchOptions?.headers?.[FetchService.correlationIdHeaderKey] ?? null;
+            attributes.fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ??
+            null;
 
         return Exception.create({
             isFetchAborted: false,
@@ -644,6 +631,36 @@ export class FetchService extends HoistService {
 
         // Fallback to statusText if we have nothing else.
         return ret || statusText;
+    }
+
+    //------------------------------
+    // Deprecated static setters
+    //------------------------------
+    /** @deprecated - use `FetchService.defaults.autoGenCorrelationIds` */
+    static set autoGenCorrelationIds(v: boolean | ((opts: FetchOptions) => boolean)) {
+        apiDeprecated('FetchService.autoGenCorrelationIds', {
+            msg: 'Use FetchService.defaults.autoGenCorrelationIds instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.autoGenCorrelationIds = v;
+    }
+
+    /** @deprecated - use `FetchService.defaults.genCorrelationId` */
+    static set genCorrelationId(v: () => string) {
+        apiDeprecated('FetchService.genCorrelationId', {
+            msg: 'Use FetchService.defaults.genCorrelationId instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.genCorrelationId = v;
+    }
+
+    /** @deprecated - use `FetchService.defaults.correlationIdHeaderKey` */
+    static set correlationIdHeaderKey(v: string) {
+        apiDeprecated('FetchService.correlationIdHeaderKey', {
+            msg: 'Use FetchService.defaults.correlationIdHeaderKey instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.correlationIdHeaderKey = v;
     }
 }
 

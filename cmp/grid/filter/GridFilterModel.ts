@@ -27,12 +27,21 @@ import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
 import {ReactElement} from 'react';
 import {GridModel} from '../GridModel';
 
+export interface GridFilterModelDefaults {
+    activeFilterIcon?: ReactElement;
+}
+
 /**
  * Model for managing a Grid's column filters.
  * @internal
  */
 export class GridFilterModel extends HoistModel {
     override xhImpl = true;
+
+    /** App-level defaults for GridFilterModel. Instance config takes precedence. */
+    static defaults: GridFilterModelDefaults = {
+        activeFilterIcon: Icon.filter()
+    };
 
     gridModel: GridModel;
     bind: GridFilterBindTarget;
@@ -65,7 +74,7 @@ export class GridFilterModel extends HoistModel {
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;
-        this.activeFilterIcon = activeFilterIcon ?? Icon.filter();
+        this.activeFilterIcon = activeFilterIcon ?? GridFilterModel.defaults.activeFilterIcon;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 

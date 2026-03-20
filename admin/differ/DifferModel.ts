@@ -135,7 +135,7 @@ export class DifferModel extends HoistModel {
                     renderer: this.valueRenderer
                 }
             ],
-            contextMenu: [this.applyRemoteAction, '-', ...GridModel.defaultContextMenu]
+            contextMenu: [this.applyRemoteAction, '-', ...GridModel.defaults.contextMenu]
         });
 
         this.addReaction({

@@ -41,7 +41,7 @@ export class AppModel extends HoistAppModel {
         });
 
         // Enable managed autosize mode across Hoist Admin console grids.
-        GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+        GridModel.defaults.autosizeMode = 'managed';
     }
 
     override async initAsync() {

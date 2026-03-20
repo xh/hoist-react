@@ -321,6 +321,43 @@ new GridModel({
 });
 ```
 
+## App-Level Defaults
+
+GridModel and GridFilterModel expose a `static defaults` object for app-wide configuration
+overrides. Set these at app startup (e.g. in your `AppModel` constructor) to change framework
+defaults for all grids. Instance-level config always takes precedence.
+
+### GridModel.defaults
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `autosizeMode` | `GridAutosizeMode` | `'onSizingModeChange'` | Default autosize mode for all grids |
+| `restoreDefaultsWarning` | `ReactNode` | Confirmation message | Warning shown before restoring grid defaults |
+| `contextMenu` | `GridContextMenuItemLike[]` | Standard menu items | Base context menu for all grids |
+
+### GridFilterModel.defaults
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `activeFilterIcon` | `ReactElement` | `Icon.filter()` | Icon shown in column headers when a filter is active |
+
+### Example
+
+```typescript
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridFilterModel} from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
+
+// In AppModel constructor
+GridModel.defaults.autosizeMode = 'managed';
+GridModel.defaults.contextMenu = [
+    ...GridModel.defaults.contextMenu,
+    '-',
+    'myCustomAction'
+];
+GridFilterModel.defaults.activeFilterIcon = Icon.filter({prefix: 'fas', intent: 'warning'});
+```
+
 ## Pitfalls
 
 ### Duplicate Column IDs
