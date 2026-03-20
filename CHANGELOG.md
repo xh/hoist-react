@@ -4,6 +4,12 @@
 
 ### 🎁 New Features
 
+* Added `TraceService` - client-side distributed OTEL tracing.
+    - Requires `hoist-core >= 36.4` and configurable via `xhTraceConfig`.
+    - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
+    - `Promise.span()` provides a chainable API for tracing promise-based operations.
+    - Automatic app-load spans for pre-auth, hoist init, and app init phases.
+    - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection, an improvement over `ButtonGroupInput`
   for small option sets.
@@ -25,6 +31,10 @@
 * Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
   from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
 * Updated `FieldFilter` to log console warning if configured with field not found in linked `Store`.
+* Extracted `NameSource` type and `parseNameSource()` to `LangUtils`, shared by logging and tracing.
+* Made `DashCanvasModel.loadState()` public, allowing applications to restore canvas state directly
+  from a `DashCanvasItemState[]` array without wrapping it in a `PersistableState` object.
+* `FieldFilter` logs console warning if configured with unknown field not found in linked Store.
 
 ### 🤖 AI Docs + Tooling
 

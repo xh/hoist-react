@@ -57,7 +57,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "withSpan", "withSpanAsync", "traceparent", "distributed tracing"]
         },
         {
             "id": "cmp/README.md",

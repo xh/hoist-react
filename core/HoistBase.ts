@@ -23,6 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
+import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -111,6 +112,14 @@ export abstract class HoistBase {
 
     withDebug<T>(messages: Some<unknown>, fn: () => T): T {
         return withDebug<T>(messages, fn, this);
+    }
+
+    withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
+        return XH.traceService.withSpan(config, fn);
+    }
+
+    withSpanAsync<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
+        return XH.traceService.withSpanAsync(config, fn);
     }
 
     /**

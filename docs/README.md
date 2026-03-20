@@ -37,6 +37,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
+| Add distributed tracing spans to operations | [`/svc/`](../svc/README.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
 | Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
@@ -70,7 +71,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
 | [`/data/`](../data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
-| [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, WebSocketService |
+| [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components
 
