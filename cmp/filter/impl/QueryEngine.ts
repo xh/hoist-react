@@ -254,9 +254,11 @@ export class QueryEngine {
             value = spec.parseValue(queryStr, '='),
             testFn = createWordBoundaryTest(queryStr);
 
-        // assume spec will not produce dup values.  React-select will de-dup identical opts as well
+        // Assume spec will not produce dup values. React-select will de-dup identical opts as well.
+        // Null values are skipped here — they are handled by getBlankOptionsForField() instead.
         const ret = [];
         values.forEach(v => {
+            if (isNil(v)) return;
             const formattedValue = spec.renderValue(v, '=');
             if (testFn(formattedValue)) {
                 ret.push(

@@ -128,6 +128,10 @@ export class FilterChooserFieldSpec extends BaseFilterFieldSpec {
         return valueParser;
     }
 
+    get hasBlankValues(): boolean {
+        return this.values?.some(v => v == null) ?? false;
+    }
+
     loadValuesFromSource() {
         this.values = this.source.getValuesForFieldFilter(this.field);
     }
