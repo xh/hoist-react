@@ -148,7 +148,8 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
   Concisely note *why* a change is an improvement when not obvious from context (e.g.
   "Improved shutdown handling — ensures full cleanup if the component unmounts unexpectedly").
   Accuracy always takes precedence — bug fixes should be reported clearly as such.
-- **Conciseness**: This is a changelog, not a guide. One bullet = one change, 1-2 lines max.
+- **Conciseness**: This is a changelog, not a guide. One bullet = one change, 1-3 lines max.
+  Upgrade notes provide granular detail when needed; keep changelog entries brief and scannable.
 - **Specificity**: Name classes, methods, and config keys in backticks.
 - **Completeness**: Changes that modify behavior, APIs, or configuration in ways developers need
   to know about should be accounted for. Trivial changes (formatting, internal refactors with no
