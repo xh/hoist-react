@@ -12,6 +12,12 @@
     overflow-y: auto;
   }
 
+  &__trace-id {
+    margin-top: var(--xh-pad-half-px);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
   &__details {
     pre {
       border: var(--xh-border-solid);
