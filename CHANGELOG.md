@@ -19,7 +19,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
     - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
-    - App load automatically creates spans covering pre-auth, hoist init, and app init phases.
+    - Exceptions thrown during traced operations include a top-level `traceId` for correlation.
+    - Automated app-load spans covering pre-auth, hoist init, and app init phases.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection. Consider as replacement for
   `ButtonGroupInput`.

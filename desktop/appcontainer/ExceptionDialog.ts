@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -38,7 +38,19 @@ export const exceptionDialog = hoistCmp.factory({
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),
-                items: [dialogBody(options.message), bbar()]
+                items: [
+                    dialogBody({
+                        items: [
+                            options.message,
+                            div({
+                                omit: !exception.traceId,
+                                className: 'xh-exception-dialog__trace-id',
+                                item: `Trace ID: ${exception.traceId}`
+                            })
+                        ]
+                    }),
+                    bbar()
+                ]
             }),
             exceptionDialogDetails()
         );
