@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {wait} from '@xh/hoist/promise';
 
 /**
  * Trigger a browser file download by navigating to a URL.
@@ -24,5 +25,5 @@ export function downloadViaUrl(url: string, filename?: string) {
 export function downloadBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
     downloadViaUrl(url, filename);
-    URL.revokeObjectURL(url);
+    wait(100).then(() => URL.revokeObjectURL(url));
 }
