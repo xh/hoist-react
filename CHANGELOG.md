@@ -23,7 +23,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     - `withSpan()` and `withSpanAsync()` wrap operations with automatic timing and error capture.
     - `Promise.span()` provides a chainable API for tracing promise-based operations.
     - `FetchService` auto-creates CLIENT spans and injects `traceparent` headers.
-    - App load automatically creates spans covering pre-auth, hoist init, and app init phases.
+    - Exceptions thrown during traced operations include a top-level `traceId` for correlation.
+    - Automated app-load spans covering pre-auth, hoist init, and app init phases.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection. Consider as replacement for
   `ButtonGroupInput`.
@@ -53,12 +54,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   directly from a `DashCanvasItemState[]` array without wrapping as `PersistableState`.
 * Updated `FieldFilter` to log console warning for any field not found in linked `Store`.
 
-### 🐞 Bug Fixes
-
-* Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
-  null/undefined values. Previously these were silently excluded, preventing grid column filters
-  from offering a [blank] option.
-
 ### 🤖 AI Docs + Tooling
 
 * Refactored documentation indexing to better support both MCP (LLM) and the Toolbox Docs viewer.
@@ -68,6 +63,19 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed MCP/CLI TypeScript symbol indexing for destructured exports (e.g.
   `export const [Button, button] = hoistCmp.withFactory(...)`). Individual binding names are now
   indexed as separate symbols, enabling exact-match lookups via `hoist-ts symbol`.
+
+## 82.0.4 - 2026-03-23
+
+### 🐞 Bug Fixes
+
+* Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
+  null/undefined values. Previously these were silently excluded, preventing grid column filters
+  from offering a [blank] option.
+* Fixed `FilterChooser` `QueryEngine` to handle null values in suggestion generation without
+  throwing. Added error logging so failures in `queryAsync` surface in the console rather than
+  silently killing the dropdown. The 'is' pseudo-operator is now listed in the e.g. operator
+  hints, and 'is blank' / 'is not blank' suggestions are offered when a field contains null
+  values.
 
 ## 82.0.3 - 2026-03-02
 

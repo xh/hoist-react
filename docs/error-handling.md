@@ -478,6 +478,7 @@ Console's activity tracking log with a `'Client Error'` category.
 The logged payload includes:
 - Exception name, message, and stack trace
 - HTTP status and server details (for fetch exceptions)
+- Distributed trace ID, when tracing is enabled (for correlation with server-side traces)
 - Fetch request details (URL, params, headers -- with sensitive values redacted)
 - App version, username, and browser metadata
 - Whether the user was shown an alert
@@ -508,6 +509,13 @@ when the error occurred, plus a "Send" button to submit this report. The report 
 `ExceptionHandler.logOnServerAsync()` and includes the user's message alongside the full
 exception details. The support email displayed on failure is configured via the `xhEmailSupport`
 soft config.
+
+## Trace ID Correlation
+
+When distributed tracing is enabled, exceptions include a `traceId` property — the 32-character
+hex trace identifier for correlating client-side errors with server-side traces. Set automatically
+by `FetchService` and `TraceService.withSpan()`. Displayed in the error details dialog header
+when present.
 
 ## FetchService Exception Integration
 
