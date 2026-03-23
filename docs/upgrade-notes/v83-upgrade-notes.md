@@ -6,13 +6,18 @@
 
 Hoist React v83 is a major release paired with hoist-core v37. The headline addition is
 client-side distributed tracing via `TraceService`, providing OTEL-based end-to-end observability
-across browser and server. This release also introduces the `static defaults` pattern for
-app-level configuration overrides across several core models, new `SegmentedControl` and
-`CheckboxButton` input components, and Admin Console support for opt-in metrics publishing.
+across browser and server. Traced exceptions now include a `traceId` for correlation with
+server-side traces, displayed in both error dialogs and toasts. This release also introduces the
+`static defaults` pattern for app-level configuration overrides across several core models, new
+`SegmentedControl` and `CheckboxButton` input components, and Admin Console support for opt-in
+metrics publishing.
 
-There are no must-take breaking changes in this release beyond the hoist-core version bump.
-Apps should take the opportunity to migrate deprecated static properties to the new
-`ModelClassName.defaults` pattern (scheduled for removal in v85).
+The `downloadjs` third-party dependency has been removed and replaced with built-in utilities.
+Apps that imported `downloadjs` directly (relying on it as a transitive hoist-react dependency)
+must update those usages.
+
+Apps should also take the opportunity to migrate deprecated static
+properties to the new `ModelClassName.defaults` pattern (scheduled for removal in v85).
 
 ## Prerequisites
 
@@ -142,7 +147,45 @@ import {FetchService} from '@xh/hoist/svc';
 FetchService.defaults.autoGenCorrelationIds = true;
 ```
 
-### 4. Migrate Deprecated Filter Utilities (recommended)
+### 4. Replace `downloadjs` Imports (if applicable)
+
+The `downloadjs` third-party package has been removed from hoist-react's dependencies. Hoist
+itself has migrated to new built-in utilities. If your app imported `downloadjs` directly (relying
+on it as a transitive dependency of hoist-react), you must replace those usages with the new
+`downloadBlob()` or `downloadViaUrl()` utilities from `@xh/hoist/utils/js`.
+
+**Find affected files:**
+```bash
+grep -rE "from 'downloadjs'|from \"downloadjs\"|require\('downloadjs'\)" client-app/src/
+```
+
+Before:
+```typescript
+import download from 'downloadjs';
+
+const blob = await response.blob();
+download(blob, 'export.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+```
+
+After:
+```typescript
+import {downloadBlob} from '@xh/hoist/utils/js';
+
+const blob = await response.blob();
+downloadBlob(blob, 'export.xlsx');
+```
+
+For URL-based downloads (where you have a URL rather than a Blob):
+```typescript
+import {downloadViaUrl} from '@xh/hoist/utils/js';
+
+downloadViaUrl('/api/export/report', 'report.pdf');
+```
+
+Note that these utilities do not require a content type parameter — the browser infers the type
+from the Blob or URL.
+
+### 5. Migrate Deprecated Filter Utilities (recommended)
 
 If you have not yet migrated from the deprecated standalone filter utilities (`withFilterByField`,
 `withFilterByKey`, `replaceFilterByKey`, `withFilterByTypes`), do so now. These were deprecated
@@ -155,7 +198,7 @@ before/after examples.
 grep -rE "withFilterByField|withFilterByKey|replaceFilterByKey|withFilterByTypes" client-app/src/
 ```
 
-### 5. Consider `SegmentedControl` as a `ButtonGroupInput` Alternative (optional)
+### 6. Consider `SegmentedControl` as a `ButtonGroupInput` Alternative (optional)
 
 v83 introduces `SegmentedControl`, a new desktop input component for mutually exclusive option
 sets. It provides stronger visual differentiation of the active selection compared to
@@ -184,6 +227,8 @@ After completing all steps:
 - [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
+- [ ] No `downloadjs` imports remain:
+  `grep -rE "from 'downloadjs'|from \"downloadjs\"" client-app/src/`
 - [ ] No deprecated static property warnings in console:
   `grep -rE "DEFAULT_AUTOSIZE_MODE|DEFAULT_RESTORE_DEFAULTS_WARNING|defaultContextMenu|REDACT_PATHS|ALERT_TYPE|TOAST_PROPS" client-app/src/`
 - [ ] No deprecated filter utilities remain:
