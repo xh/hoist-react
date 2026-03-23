@@ -745,6 +745,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - minor changes to ViewManagerModel, ChartModel)
 
+See [`docs/upgrade-notes/v74-upgrade-notes.md`](docs/upgrade-notes/v74-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 * Removed `ViewManagerModel.settleTime`. Now set via individual `PersistOptions.settleTime` instead.
 * ️Removed `ChartModel.showContextMenu`. Use a setting of `false` for the new
   `ChartModel.contextMenu` property instead.

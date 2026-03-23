@@ -169,6 +169,7 @@ breaking changes, before/after code examples, and verification checklists.
 | [v77](./upgrade-notes/v77-upgrade-notes.md) | 2025-10-29 | 🟠 MEDIUM | Highcharts v11→v12, `disableXssProtection` → `enableXssProtection`, AG Grid context menu markup |
 | [v76](./upgrade-notes/v76-upgrade-notes.md) | 2025-09-26 | 🟠 MEDIUM | AG Grid v31→v34, new package names and module registration, `groupRowRenderer` value change |
 | [v75](./upgrade-notes/v75-upgrade-notes.md) | 2025-08-11 | 🟢 LOW | Removed deprecated APIs, Cube View row data `_meta`/`buckets` removal |
+| [v74](./upgrade-notes/v74-upgrade-notes.md) | 2025-06-11 | 🟢 LOW | `ViewManagerModel.settleTime` removal, `ChartModel.showContextMenu` → `contextMenu` |
 | [v73](./upgrade-notes/v73-upgrade-notes.md) | 2025-05-16 | 🟢 LOW | `hoist-core >= 31`, `makeObservable` enforcement, admin `initAsync` super call, ESLint 9 |
 
 ## Additional Resources

@@ -372,6 +372,14 @@
             "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72", "makeObservable", "eslint", "admin", "commitOnChange"]
         },
         {
+            "id": "docs/upgrade-notes/v74-upgrade-notes.md",
+            "title": "v74 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v73.x to v74.1.2. Low difficulty — ViewManagerModel.settleTime removal, ChartModel.showContextMenu replaced.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v74", "v73", "settleTime", "showContextMenu", "contextMenu", "ViewManager", "ChartModel"]
+        },
+        {
             "id": "docs/upgrade-notes/v75-upgrade-notes.md",
             "title": "v75 Upgrade Notes",
             "mcpCategory": "devops",
