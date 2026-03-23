@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-import {div, filler, fragment} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
@@ -34,7 +34,7 @@ export const exceptionDialog = hoistCmp.factory({
                 title: options.title,
                 className: 'xh-exception-dialog',
                 icon: Icon.warning(),
-                content: fragment(
+                content: vbox(
                     options.message,
                     div({
                         omit: !exception.traceId,
