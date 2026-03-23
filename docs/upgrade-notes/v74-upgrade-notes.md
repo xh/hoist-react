@@ -76,8 +76,8 @@ Most apps that relied on `settleTime` were doing so to prevent false dirty indic
 ViewManager-linked components. The new `PersistOptions.settleTime` applies the same delay at the
 persistence provider level.
 
-If you were using the default `settleTime: 1000` and not setting it explicitly, you can safely
-remove it — the behavior has been delegated to the persistence layer automatically.
+If you never set `settleTime` explicitly, no action is needed — the equivalent behavior has been
+delegated to the persistence layer automatically.
 
 ### 3. Replace `ChartModel.showContextMenu`
 
