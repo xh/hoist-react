@@ -6,7 +6,7 @@
  */
 
 import {Some} from '@xh/hoist/core';
-import {FieldFilter} from '@xh/hoist/data';
+import {FieldFilter, FieldFilterOperator} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {
     castArray,
@@ -50,23 +50,28 @@ export class QueryEngine {
     // Returns a set of options appropriate for react-select to display.
     //-----------------------------------------------------------------
     async queryAsync(query: string): Promise<FilterChooserOption[]> {
-        const q = this.getDecomposedQuery(query);
+        try {
+            const q = this.getDecomposedQuery(query);
 
-        //-----------------------------------------------------------------------
-        // We respond in five primary states, described and implemented below.
-        //-----------------------------------------------------------------------
-        if (!q) {
-            return this.whenNoQuery();
-        } else if (q.field && !q.op) {
-            return castArray(this.openSearching(q));
-        } else if (q.field && q.op === 'is') {
-            return castArray(this.withIsSearchingOnField(q));
-        } else if (q.field && q.op) {
-            return castArray(this.valueSearchingOnField(q));
-        } else if (!q.field && q.op && q.value) {
-            return castArray(this.valueSearchingOnAll(q));
+            //-----------------------------------------------------------------------
+            // We respond in five primary states, described and implemented below.
+            //-----------------------------------------------------------------------
+            if (!q) {
+                return this.whenNoQuery();
+            } else if (q.field && !q.op) {
+                return castArray(this.openSearching(q));
+            } else if (q.field && q.op === 'is') {
+                return castArray(this.withIsSearchingOnField(q));
+            } else if (q.field && q.op) {
+                return castArray(this.valueSearchingOnField(q));
+            } else if (!q.field && q.op && q.value) {
+                return castArray(this.valueSearchingOnAll(q));
+            }
+            return [];
+        } catch (e) {
+            this.model.logError('Error generating suggestions', e);
+            return [];
         }
-        return [];
     }
 
     //------------------------------------------------------------------------
@@ -93,16 +98,12 @@ export class QueryEngine {
         // Suggest matching *fields* for the user to select on their way to a more targeted query.
         let ret = this.getFieldOpts(q.field);
 
-        // If a single field matches, reasonable to assume user is looking to search on it.
-        // Suggest *all values from that field* for immediate selection with the = operator.
-        if (ret.length === 1) {
-            ret.push(...this.getValueMatchesForField('=', '', ret[0].fieldSpec));
-        }
-
-        // Also suggest *matching values* across all suggest-enabled fields to support the user
-        // searching for a value directly, without them needing to type or select a field name.
+        // If a single field matches, show *all* its values for immediate selection (empty
+        // queryStr). Otherwise, filter each field's values against the user's query text.
+        const singleMatchSpec = ret.length === 1 ? ret[0].fieldSpec : null;
         this.fieldSpecs.forEach(spec => {
-            ret.push(...this.getValueMatchesForField('=', q.field, spec));
+            const queryStr = spec === singleMatchSpec ? '' : q.field;
+            ret.push(...this.getMatchesForField('=', queryStr, spec));
         });
 
         ret = this.sortAndTruncate(ret);
@@ -152,7 +153,7 @@ export class QueryEngine {
         // Get suggestions if supported
         const supportsSuggestions = spec.supportsSuggestions(q.op);
         if (supportsSuggestions) {
-            ret = this.getValueMatchesForField(q.op, q.value, spec);
+            ret = this.getMatchesForField(q.op, q.value, spec);
             ret = this.sortAndTruncate(ret);
         }
 
@@ -194,9 +195,7 @@ export class QueryEngine {
     // 5) We have an op and a value but no field-- look in *all* fields for matching candidates
     //-------------------------------------------------------------------------------------------
     valueSearchingOnAll(q): Some<FilterChooserOption> {
-        let ret = flatMap(this.fieldSpecs, spec =>
-            this.getValueMatchesForField(q.op, q.value, spec)
-        );
+        let ret = flatMap(this.fieldSpecs, spec => this.getMatchesForField(q.op, q.value, spec));
         ret = this.sortAndTruncate(ret);
 
         return isEmpty(ret) ? msgOption('No matches found') : ret;
@@ -221,27 +220,59 @@ export class QueryEngine {
         return this.fieldSpecs.map(fieldSpec => minimalFieldOption({fieldSpec}));
     }
 
-    getValueMatchesForField(op, queryStr, spec): FilterChooserOption[] {
+    /**
+     * Get all matching value suggestions for a field, including 'is blank' / 'is not blank'
+     * options when the field contains null values. Both blank options are always included
+     * regardless of the specified op, filtered only by the query text.
+     */
+    getMatchesForField(
+        op: FieldFilterOperator,
+        queryStr: string,
+        spec: FilterChooserFieldSpec
+    ): FilterChooserOption[] {
         if (!spec.supportsSuggestions(op)) return [];
 
         const {values, field} = spec,
-            value = spec.parseValue(queryStr, '='),
+            parsedValue = spec.parseValue(queryStr, '='),
             testFn = createWordBoundaryTest(queryStr);
 
-        // assume spec will not produce dup values.  React-select will de-dup identical opts as well
         const ret = [];
+
+        // Non-null value matches
         values.forEach(v => {
+            if (isNil(v)) return;
             const formattedValue = spec.renderValue(v, '=');
             if (testFn(formattedValue)) {
                 ret.push(
                     fieldFilterOption({
                         filter: new FieldFilter({field, op, value: v}),
                         fieldSpec: spec,
-                        isExact: value === v || caselessEquals(formattedValue, queryStr)
+                        isExact: parsedValue === v || caselessEquals(formattedValue, queryStr)
                     })
                 );
             }
         });
+
+        // Blank/not-blank options for fields with null values.
+        if (values.some(v => v == null)) {
+            const blankTestFn = queryStr ? testFn : null,
+                blankEntries: Array<{label: string; op: FieldFilterOperator}> = [
+                    {label: 'blank', op: '='},
+                    {label: 'not blank', op: '!='}
+                ];
+            blankEntries
+                .filter(e => !blankTestFn || blankTestFn(e.label))
+                .forEach(e =>
+                    ret.push(
+                        fieldFilterOption({
+                            filter: new FieldFilter({field, op: e.op, value: null}),
+                            fieldSpec: spec,
+                            isExact: caselessEquals(e.label, queryStr)
+                        })
+                    )
+                );
+        }
+
         return ret;
     }
 
