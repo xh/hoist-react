@@ -59,7 +59,7 @@ export class Span {
         this.status = status;
     }
 
-    /** Record an error event on this span. */
+    /** Record an error event on this span and stamp traceId onto the error if not already set. */
     recordError(error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
         this.events.push({
@@ -67,6 +67,7 @@ export class Span {
             timestamp: Date.now(),
             attributes: {message}
         });
+        if (error && !error['traceId']) error['traceId'] = this.traceId;
     }
 
     /** Serialize for export to the server. */

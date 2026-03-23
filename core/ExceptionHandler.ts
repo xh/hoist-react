@@ -120,7 +120,12 @@ export class ExceptionHandler {
                 XH.toast({
                     message: fragment(
                         span({className: 'xh-toast__title', item: title, omit: !title}),
-                        span({className: 'xh-toast__body', item: message})
+                        span({className: 'xh-toast__body', item: message}),
+                        span({
+                            className: 'xh-toast__trace-id',
+                            item: `Trace ID: ${e.traceId}`,
+                            omit: !e.traceId
+                        })
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
@@ -258,16 +263,20 @@ export class ExceptionHandler {
                 delete serverDetails.lineNumber;
             }
 
-            // Remove verbose loadSpec from fetchOptions, extracting summary fields
-            // if a full LoadSpec instance (vs. a plain LoadSpecConfig) was provided.
+            // Clean up fetchOptions for serialization.
             const {fetchOptions} = ret;
-            if (fetchOptions?.loadSpec) {
-                const {loadSpec} = fetchOptions;
-                if (loadSpec instanceof LoadSpec) {
-                    fetchOptions.loadType = loadSpec.typeDisplay;
-                    fetchOptions.loadNumber = loadSpec.loadNumber;
+            if (fetchOptions) {
+                // Extract summary fields from verbose loadSpec, then remove it.
+                if (fetchOptions.loadSpec) {
+                    const {loadSpec} = fetchOptions;
+                    if (loadSpec instanceof LoadSpec) {
+                        fetchOptions.loadType = loadSpec.typeDisplay;
+                        fetchOptions.loadNumber = loadSpec.loadNumber;
+                    }
+                    delete fetchOptions.loadSpec;
                 }
-                delete fetchOptions.loadSpec;
+                // Remove Span object — not useful in serialized output.
+                delete fetchOptions.span;
             }
 
             // 4) Redact specified values
