@@ -12,6 +12,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Deprecated ad-hoc static properties on `GridModel`, `ChartModel`, `ExceptionHandler`, and
   `FetchService` in favor of the new `static defaults` pattern. Old properties log warnings
   and are scheduled for removal in v85.
+* Removed `downloadjs` dependency. Apps that imported `downloadjs` directly (relying on it
+  as a transitive hoist-react dependency) must replace those usages. Use the new
+  `downloadBlob(blob, filename)` or `downloadViaUrl(url, filename?)`
+  utilities from `@xh/hoist/utils/js` instead.
 
 ### 🎁 New Features
 
