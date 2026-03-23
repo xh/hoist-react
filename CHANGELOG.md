@@ -54,6 +54,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `Store.getFieldValues()` to include `null` in its returned set when records contain
   null/undefined values. Previously these were silently excluded, preventing grid column filters
   from offering a [blank] option.
+* Fixed `FilterChooser` `QueryEngine` to handle null values in suggestion generation without
+  throwing. Added error logging so failures in `queryAsync` surface in the console rather than
+  silently killing the dropdown. The 'is' pseudo-operator is now listed in the e.g. operator
+  hints, and 'is blank' / 'is not blank' suggestions are offered when a field contains null
+  values.
 
 ### 🤖 AI Docs + Tooling
 
