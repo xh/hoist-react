@@ -64,7 +64,7 @@ Verified against both hoist-react and hoist-core changelogs.
 | 76.0 | -- | 32.0 | 32.0 | View visibility editing, basic view state | [Notes](./upgrade-notes/v76-upgrade-notes.md) |
 | 75.0 | -- | | 31.x | WebSockets enabled by default | [Notes](./upgrade-notes/v75-upgrade-notes.md) |
 | 74.x | -- | | 31.x | ViewManager improvements | |
-| 73.0 | 31.0 | | 31.0 | Consolidated Admin Clients tab, TrackLog properties | |
+| 73.0 | 31.0 | | 31.0 | Consolidated Admin Clients tab, TrackLog properties | [Notes](./upgrade-notes/v73-upgrade-notes.md) |
 | 72.1 | -- | 28.1 | 28.1 | JSON Search in Admin Console | |
 | 72.0 | -- | | 28.0 | Mobile Navigator rebuild | |
 | 71.0 | 27.0 | | 27.0 | ViewManager, cluster state monitoring | |

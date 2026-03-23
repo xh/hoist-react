@@ -364,6 +364,14 @@
             "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
         },
         {
+            "id": "docs/upgrade-notes/v73-upgrade-notes.md",
+            "title": "v73 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v72.x to v73.0.1. Low difficulty — hoist-core >= 31, makeObservable enforcement, ESLint 9.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72", "makeObservable", "eslint", "admin", "commitOnChange"]
+        },
+        {
             "id": "docs/upgrade-notes/v75-upgrade-notes.md",
             "title": "v75 Upgrade Notes",
             "mcpCategory": "devops",

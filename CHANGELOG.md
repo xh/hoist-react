@@ -776,6 +776,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - upgrade to Hoist Core)
 
+See [`docs/upgrade-notes/v73-upgrade-notes.md`](docs/upgrade-notes/v73-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
 * Requires `hoist-core >= 31` with new APIs to support the consolidated Admin Console "Clients"
   tab and new properties on `TrackLog`.
 * Apps with a custom `AppModel` for their admin app that extends `@xh/hoist/admin/AppModel` must
