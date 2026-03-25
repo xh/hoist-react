@@ -2,6 +2,11 @@
 
 ## 84.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* Updated `WebSocketService` to support same-origin `baseUrl` values (e.g. `/api/`). Previously
+  assumed a cross-origin `baseUrl` in dev mode. Required for compatibility with the new
+  webpack-dev-server proxy in `@xh/hoist-dev-utils` v12.
 
 ## 83.0.0 - 2026-03-24
 
