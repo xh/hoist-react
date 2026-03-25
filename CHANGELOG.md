@@ -3,6 +3,12 @@
 ## 84.0.0-SNAPSHOT - unreleased
 
 
+## 83.0.1 - 2026-03-25
+
+### ⚙️ Technical
+
+* Update upgrade notes skill to properly register upgrade note
+
 ## 83.0.0 - 2026-03-24
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)

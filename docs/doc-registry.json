@@ -442,6 +442,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v81.x to v82.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "Picker", "DashCanvas", "MCP", "Filter"]
+        },
+        {
+            "id": "docs/upgrade-notes/v83-upgrade-notes.md",
+            "title": "v83 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v82.x to v83.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v83", "v82", "TraceService", "tracing", "OTEL", "static defaults", "GridModel", "downloadBlob", "downloadViaUrl", "downloadjs", "SegmentedControl", "CheckboxButton"]
         }
     ]
 }
