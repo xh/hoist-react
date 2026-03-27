@@ -17,8 +17,9 @@ on:
                 default: ''
                 type: string
 
+# Debounce builds by branch. Newer runs from a branch will cancel the current run and start over.
 concurrency:
-    group: deploy-snapshot
+    group: deploy-snapshot-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -49,21 +50,11 @@ jobs:
         - name: Yarn lint
           run: yarn lint:all
 
-        - name: Read current version from package.json
-          id: current-version
-          shell: bash
-          run: echo "current-version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
-        - name: Resolve and validate snapshot version
+        - name: Prepare snapshot version
           id: snapshot
-          uses: xh/hoist-dev-utils/.github/actions/set-validate-snapshot-version@develop
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@master
           with:
-              version: ${{ inputs.version || steps.current-version.outputs.current-version }}
-
-        - name: Set snapshot version in package.json
-          run: npm version --no-git-tag-version --new-version "$VERSION"
-          env:
-              VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
+              version: ${{ inputs.version }}
 
         - name: Publish snapshot to npm
           env:

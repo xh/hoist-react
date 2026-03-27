@@ -1,8 +1,8 @@
 # Deploy Release — Publishes a numbered release to npm.
 #
-# Manually triggered from the master branch. Validates the version input, publishes to npm,
-# tags the commit, and creates a GitHub release with auto-generated notes. For snapshot
-# builds, see Deploy Snapshot.
+# Manually triggered. Standard releases run from master; hotfixes run from a dedicated
+# branch. Validates the version input, publishes to npm, tags the commit, and creates a
+# GitHub release with auto-generated notes. For snapshot builds, see Deploy Snapshot.
 
 name: Deploy Release
 
@@ -19,6 +19,7 @@ on:
                 default: false
                 type: boolean
 
+# Run all release builds one-by-one, but never cancel a release build due to another one.
 concurrency:
     group: deploy-release
     cancel-in-progress: false
@@ -39,8 +40,9 @@ jobs:
               fetch-depth: 0
               fetch-tags: true
 
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Validate release version
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@develop
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
@@ -71,10 +73,21 @@ jobs:
         - name: Publish release to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          run: npm publish
+              IS_HOTFIX: ${{ inputs.is-hotfix }}
+          run: |
+              TAG_FLAG=""
+              if [ "$IS_HOTFIX" = "true" ]; then
+                  TAG_FLAG="--tag hotfix"
+              fi
+              npm publish $TAG_FLAG
 
+        # Note: The tag intentionally points to a commit where package.json still has the
+        # SNAPSHOT version. We chose not to commit the version change back to the repo to
+        # avoid paired set/reset commits on every release. The published npm artifact has
+        # the correct release version — the tag is just a pointer to the source commit.
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@develop
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
