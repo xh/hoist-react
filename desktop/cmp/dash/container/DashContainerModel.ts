@@ -73,6 +73,11 @@ export interface DashContainerConfig extends DashConfig<
     goldenLayoutSettings?: PlainObject;
 }
 
+export interface DashContainerModelDefaults {
+    margin?: number;
+    showMenuButton?: boolean;
+}
+
 // TODO - review other state inserted by library, determine if we want to model here
 export interface DashContainerViewState {
     type: 'row' | 'column' | 'stack' | 'view';
@@ -144,6 +149,12 @@ export class DashContainerModel
     extends DashModel<DashContainerViewSpec, DashContainerViewState, DashContainerViewModel>
     implements Persistable<{state: DashContainerViewState[]}>
 {
+    /** App-level defaults for DashContainerModel. Instance config takes precedence. */
+    static defaults: DashContainerModelDefaults = {
+        margin: 6,
+        showMenuButton: false
+    };
+
     //---------------------
     // Settable State
     //----------------------
@@ -179,8 +190,8 @@ export class DashContainerModel
         layoutLocked = false,
         contentLocked = false,
         renameLocked = false,
-        showMenuButton = false,
-        margin = 6,
+        showMenuButton = DashContainerModel.defaults.showMenuButton,
+        margin = DashContainerModel.defaults.margin,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',

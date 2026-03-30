@@ -34,7 +34,8 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
         tbody(
             row('Name', exception.name),
             row('Message', truncate(exception.msg || exception.message || 'N/A', {length: 300})),
-            row('App Version', XH.appVersion)
+            row('App Version', XH.appVersion),
+            exception.traceId ? row('Trace ID', exception.traceId) : null
         )
     );
 

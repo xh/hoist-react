@@ -90,6 +90,8 @@ const store = new Store({
 | `idEncodesTreePath` | `boolean` | `false` | IDs imply fixed tree position (performance)                                            |
 | `validationIsComplex` | `boolean` | `false` | Validate all uncommitted records on every change                                       |
 
+`Store.defaults` exposes `freezeData` for app-wide override — see `StoreDefaults` for details.
+
 ### Data Loading
 
 **`loadData(rawData, rawSummaryData?)`** - Complete dataset replacement:

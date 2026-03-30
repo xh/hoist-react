@@ -14,6 +14,7 @@ import {
     isFunction,
     isObject,
     isPlainObject,
+    isString,
     isUndefined,
     mergeWith,
     mixin,
@@ -278,4 +279,19 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
     return mergeWith(target, ...sources, (tgtVal, srcVal) =>
         isArray(srcVal) ? srcVal : undefined
     );
+}
+
+/**
+ * A string, or an object from which a name can be derived — via `displayName` (e.g. React
+ * components) or `constructor.name` (e.g. class instances). Used for logging and tracing.
+ */
+export type NameSource = string | {displayName: string} | {constructor: {name: string}};
+
+/** Resolve a {@link NameSource} to a string, or null if unresolvable. */
+export function parseNameSource(source: NameSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    if (source['displayName']) return source['displayName'];
+    if (source.constructor) return source.constructor.name;
+    return null;
 }

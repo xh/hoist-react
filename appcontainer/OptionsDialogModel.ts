@@ -62,6 +62,15 @@ export class OptionsDialogModel extends HoistModel {
         );
     }
 
+    @computed
+    get refreshRequired(): boolean {
+        const {formModel} = this;
+        return (
+            formModel &&
+            this.options.some(o => formModel.fields[o.name].isDirty && o.refreshRequired)
+        );
+    }
+
     //-------------------
     // Dialog
     //-------------------
@@ -95,13 +104,13 @@ export class OptionsDialogModel extends HoistModel {
     }
 
     async saveAsync(): Promise<void> {
-        await this.formModel.validateAsync();
-        if (!this.formModel.isValid) return;
+        const {formModel, reloadRequired, refreshRequired, loadTask} = this;
 
-        const reloadApp = this.reloadRequired;
+        await formModel.validateAsync();
+        if (!formModel.isValid) return;
 
-        if (reloadApp) {
-            this.loadTask.setMessage('Reloading app to apply changes...');
+        if (reloadRequired) {
+            loadTask.setMessage('Reloading app to apply changes...');
         }
 
         await resolve()
@@ -109,13 +118,13 @@ export class OptionsDialogModel extends HoistModel {
             .wait(1000)
             .then(() => {
                 this.hide();
-                if (reloadApp) {
+                if (reloadRequired) {
                     XH.reloadApp();
-                } else {
+                } else if (refreshRequired) {
                     XH.refreshAppAsync();
                 }
             })
-            .linkTo(this.loadTask)
+            .linkTo(loadTask)
             .catchDefault();
     }
 

@@ -43,6 +43,20 @@
       color: var(--xh-text-color-muted);
     }
 
+    // Preserve input-style box-shadow and add subtle surface highlight on hover/active —
+    // Blueprint's minimal button rules set `box-shadow: none` on these states, hiding the
+    // input outline in dark mode.
+    &:hover {
+      background-color: color-mix(in srgb, var(--xh-input-bg) 94%, gray) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+
+    &:active,
+    &.bp6-active {
+      background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
+      box-shadow: var(--xh-form-field-box-shadow) !important;
+    }
+
     // Intent overrides — restore intent visuals that the --as-input rules above suppress.
     @each $intent in primary, success, warning, danger {
       &.xh-button--intent-#{$intent} {
@@ -53,12 +67,14 @@
         }
 
         &:hover {
-          background-color: var(--xh-intent-#{$intent}-lightest) !important;
+          background-color: var(--xh-intent-#{$intent}-trans1) !important;
+          box-shadow: var(--xh-input-intent-#{$intent}-box-shadow) !important;
         }
 
         &:active,
         &.bp6-active {
-          background-color: var(--xh-intent-#{$intent}-trans1) !important;
+          background-color: var(--xh-intent-#{$intent}-trans2) !important;
+          box-shadow: var(--xh-input-intent-#{$intent}-box-shadow) !important;
         }
       }
     }

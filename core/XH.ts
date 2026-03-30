@@ -29,6 +29,7 @@ import {
     PrefService,
     SessionStorageService,
     TrackService,
+    TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
 import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
@@ -157,6 +158,7 @@ export class XHApi {
     prefService: PrefService;
     sessionStorageService: SessionStorageService;
     trackService: TrackService;
+    traceService: TraceService;
     webSocketService: WebSocketService;
 
     //----------------------------

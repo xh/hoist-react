@@ -11,9 +11,9 @@ import '@xh/hoist/mobile/register';
 
 interface AutoRefreshAppOptionSpec {
     /** Props for nested FormField. */
-    formFieldProps?: FormFieldProps;
+    formFieldProps?: Partial<FormFieldProps>;
     /** Props for nested SwitchInput. */
-    inputProps?: SwitchInputProps;
+    inputProps?: Partial<SwitchInputProps>;
 }
 
 /**
