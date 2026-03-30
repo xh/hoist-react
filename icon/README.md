@@ -111,24 +111,24 @@ SVG-based animation, making it performant even in remote desktop environments su
 
 Spinner ships with several pre-registered icon choices — `faSpinnerThird`, `faCircleNotch`, and
 `faSpinnerScale` — all available in all four weight variants. The default icon, prefix, and
-animation can be configured globally via static properties on the `Spinner` class, typically set in
-an app's `Bootstrap.ts`:
+animation can be configured globally via `Spinner.defaults`, typically set in an app's
+`Bootstrap.ts`:
 
 ```typescript
 import {Spinner} from '@xh/hoist/cmp/spinner';
 
 // Override icon and/or weight globally
-Spinner.iconName = 'circle-notch';
-Spinner.prefix = 'far';
-Spinner.animation = 'spinPulse';
+Spinner.defaults.iconName = 'circle-notch';
+Spinner.defaults.prefix = 'far';
+Spinner.defaults.animation = 'spinPulse';
 ```
 
-| Static Property     | Type              | Default           | Description                                      |
-|---------------------|-------------------|-------------------|--------------------------------------------------|
-| `Spinner.iconName`  | `IconName`        | `'spinner-third'` | FA icon name for the spinner                     |
-| `Spinner.prefix`    | `HoistIconPrefix` | `'fal'`           | FA icon weight/prefix                            |
-| `Spinner.animation` | `string`          | `'spin'`          | FA animation: `spin`, `spinPulse`, `pulse`, etc. |
-| `Spinner.usePng` | `boolean`         | `false`           | Fall back to animated PNG images                 |
+| Default                        | Type               | Default           | Description                                      |
+|--------------------------------|--------------------|-------------------|--------------------------------------------------|
+| `Spinner.defaults.iconName`    | `IconName`         | `'spinner-third'` | FA icon name for the spinner                     |
+| `Spinner.defaults.prefix`      | `HoistIconPrefix`  | `'fal'`           | FA icon weight/prefix                            |
+| `Spinner.defaults.animation`   | `SpinnerAnimation` | `'spin'`          | FA animation: `spin`, `spinPulse`, `pulse`, etc. |
+| `Spinner.defaults.usePng`      | `boolean`          | `false`           | Fall back to animated PNG images                 |
 
 Per-instance overrides can be passed as props to `spinner()` or via `LoadingIndicator`'s `spinner`
 prop, which accepts either `true` (use defaults) or a `SpinnerProps` object:
@@ -141,7 +141,7 @@ loadingIndicator({
 ```
 
 A legacy PNG fallback is retained for environments where even CSS animations may be problematic.
-Set `Spinner.usePng = true` globally to revert to the original animated PNG behavior.
+Set `Spinner.defaults.usePng = true` globally to revert to the original animated PNG behavior.
 
 ### Weight Variants
 

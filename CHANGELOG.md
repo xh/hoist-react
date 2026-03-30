@@ -8,7 +8,7 @@
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
   themeable, and consistent with the rest of the icon system. The icon, weight, and animation can be
-  configured globally via static defaults on `Spinner` or per-instance via props. A `usePng` flag
+  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag
   is available to preserve the original PNG appearance if desired.
 
 ### ⚙️ Technical
