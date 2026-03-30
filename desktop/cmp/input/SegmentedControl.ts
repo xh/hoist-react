@@ -42,6 +42,12 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * the value and the display label.
      */
     options: (SegmentedControlOption | OptionPrimitive)[];
+
+    /**
+     * True to render with an outlined style — a border around the control tray
+     * with no inner background fill. Border color follows the current intent.
+     */
+    outlined?: boolean;
 }
 
 export interface SegmentedControlOption {
@@ -154,6 +160,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         options,
         // Consumed by this component
         compact,
+        intent,
+        outlined,
         testId,
         // Remainder passed to BP SegmentedControl
         ...bpProps
@@ -167,7 +175,12 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     }));
 
     return div({
-        className: classNames(className, compact && 'xh-segmented-control--compact'),
+        className: classNames(
+            className,
+            compact && 'xh-segmented-control--compact',
+            intent === 'primary' && 'xh-segmented-control--primary',
+            outlined && 'xh-segmented-control--outlined'
+        ),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
@@ -175,6 +188,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         [TEST_ID]: props.testId,
         item: bpSegmentedControl({
             ...bpProps,
+            intent,
             fill: bpProps.fill ?? true,
             size: compact ? 'small' : undefined,
             options: bpOptions,

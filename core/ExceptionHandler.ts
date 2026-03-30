@@ -6,7 +6,7 @@
  */
 import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {apiDeprecated, logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {LoadSpec, PlainObject, XH} from './';
@@ -37,7 +37,8 @@ export interface ExceptionHandlerOptions {
     showAlert?: boolean;
 
     /**
-     * If `showAlert`, which type of alert to display. Defaults to ExceptionHandler.ALERT_TYPE.
+     * If `showAlert`, which type of alert to display.
+     * Defaults to ExceptionHandler.defaults.alertType.
      */
     alertType?: 'dialog' | 'toast';
 
@@ -67,26 +68,22 @@ export interface ExceptionHandlerLoggingOptions {
     userMessage?: string;
 }
 
+export interface ExceptionHandlerDefaults {
+    alertType?: 'dialog' | 'toast';
+    redactPaths?: string[];
+    toastProps?: object;
+}
+
 /**
  * Provides Centralized Exception Handling for Hoist Application.
  * Manages the logging and display of exceptions.
  */
 export class ExceptionHandler {
-    /**
-     * Property paths within error details JSON to replace with '******'
-     */
-    static REDACT_PATHS: string[] = ['fetchOptions.headers.Authorization'];
-
-    /**
-     * Default type of alert to use to display exceptions with `showAlert`.
-     */
-    static ALERT_TYPE: 'dialog' | 'toast' = 'dialog';
-
-    /**
-     * Default props provided to toast, when alert type is 'toast'
-     */
-    static TOAST_PROPS: object = {
-        timeout: 10000
+    /** App-level defaults for ExceptionHandler. Instance options take precedence. */
+    static defaults: ExceptionHandlerDefaults = {
+        alertType: 'dialog',
+        redactPaths: ['fetchOptions.headers.Authorization'],
+        toastProps: {timeout: 10000}
     };
 
     /**
@@ -123,14 +120,19 @@ export class ExceptionHandler {
                 XH.toast({
                     message: fragment(
                         span({className: 'xh-toast__title', item: title, omit: !title}),
-                        span({className: 'xh-toast__body', item: message})
+                        span({className: 'xh-toast__body', item: message}),
+                        span({
+                            className: 'xh-toast__trace-id',
+                            item: `Trace ID: ${e.traceId}`,
+                            omit: !e.traceId
+                        })
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
                         onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
-                    ...ExceptionHandler.TOAST_PROPS
+                    ...ExceptionHandler.defaults.toastProps
                 });
             } else {
                 exceptionDialogModel.show(e, opts);
@@ -261,20 +263,24 @@ export class ExceptionHandler {
                 delete serverDetails.lineNumber;
             }
 
-            // Remove verbose loadSpec from fetchOptions, extracting summary fields
-            // if a full LoadSpec instance (vs. a plain LoadSpecConfig) was provided.
+            // Clean up fetchOptions for serialization.
             const {fetchOptions} = ret;
-            if (fetchOptions?.loadSpec) {
-                const {loadSpec} = fetchOptions;
-                if (loadSpec instanceof LoadSpec) {
-                    fetchOptions.loadType = loadSpec.typeDisplay;
-                    fetchOptions.loadNumber = loadSpec.loadNumber;
+            if (fetchOptions) {
+                // Extract summary fields from verbose loadSpec, then remove it.
+                if (fetchOptions.loadSpec) {
+                    const {loadSpec} = fetchOptions;
+                    if (loadSpec instanceof LoadSpec) {
+                        fetchOptions.loadType = loadSpec.typeDisplay;
+                        fetchOptions.loadNumber = loadSpec.loadNumber;
+                    }
+                    delete fetchOptions.loadSpec;
                 }
-                delete fetchOptions.loadSpec;
+                // Remove Span object — not useful in serialized output.
+                delete fetchOptions.span;
             }
 
             // 4) Redact specified values
-            ExceptionHandler.REDACT_PATHS.forEach(path => {
+            ExceptionHandler.defaults.redactPaths.forEach(path => {
                 if (has(ret, path)) set(ret, path, '******');
             });
 
@@ -335,7 +341,7 @@ export class ExceptionHandler {
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
         ret.requireReload = ret.requireReload ?? !!e.requireReload;
-        ret.alertType = ret.alertType ?? ExceptionHandler.ALERT_TYPE;
+        ret.alertType = ret.alertType ?? ExceptionHandler.defaults.alertType;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';
@@ -381,5 +387,42 @@ export class ExceptionHandler {
         });
 
         return ret;
+    }
+
+    //------------------------------
+    // Deprecated static setters
+    //------------------------------
+    /** @deprecated - use `ExceptionHandler.defaults.redactPaths` */
+    static get REDACT_PATHS(): string[] {
+        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
+            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
+            v: '85.0'
+        });
+        return ExceptionHandler.defaults.redactPaths;
+    }
+    static set REDACT_PATHS(v: string[]) {
+        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
+            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
+            v: '85.0'
+        });
+        ExceptionHandler.defaults.redactPaths = v;
+    }
+
+    /** @deprecated - use `ExceptionHandler.defaults.alertType` */
+    static set ALERT_TYPE(v: 'dialog' | 'toast') {
+        apiDeprecated('ExceptionHandler.ALERT_TYPE', {
+            msg: 'Use ExceptionHandler.defaults.alertType instead.',
+            v: '85.0'
+        });
+        ExceptionHandler.defaults.alertType = v;
+    }
+
+    /** @deprecated - use `ExceptionHandler.defaults.toastProps` */
+    static set TOAST_PROPS(v: object) {
+        apiDeprecated('ExceptionHandler.TOAST_PROPS', {
+            msg: 'Use ExceptionHandler.defaults.toastProps instead.',
+            v: '85.0'
+        });
+        ExceptionHandler.defaults.toastProps = v;
     }
 }

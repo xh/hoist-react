@@ -112,7 +112,18 @@ export interface TreeMapConfig {
     filter?: FilterLike;
 }
 
+export interface TreeMapModelDefaults {
+    algorithm?: TreeMapAlgorithm;
+    maxNodes?: number;
+}
+
 export class TreeMapModel extends HoistModel {
+    /** App-level defaults for TreeMapModel. Instance config takes precedence. */
+    static defaults: TreeMapModelDefaults = {
+        algorithm: 'squarified',
+        maxNodes: 1000
+    };
+
     //------------------------
     // Immutable public properties
     //------------------------
@@ -151,7 +162,7 @@ export class TreeMapModel extends HoistModel {
         const {
             store,
             gridModel,
-            maxNodes = 1000,
+            maxNodes = TreeMapModel.defaults.maxNodes,
             maxLabels = 250,
             highchartsConfig = {},
             labelField = 'name',
@@ -161,7 +172,7 @@ export class TreeMapModel extends HoistModel {
             heatRenderer = numberRenderer({asHtml: true}) as TreeMapValueRendererFn,
             maxHeat,
             maxDepth,
-            algorithm = 'squarified',
+            algorithm = TreeMapModel.defaults.algorithm,
             colorMode = 'linear',
             theme,
             onClick,

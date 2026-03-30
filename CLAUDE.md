@@ -228,15 +228,26 @@ important guidelines to internalize:
 
 **Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull
 request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped
-line and let the viewing tool handle display wrapping.
+line and let the viewing tool handle display wrapping. Keep PR descriptions concise — XH developers
+review these regularly, so favor brief summaries over exhaustive detail. Bullet the key changes and
+let the diff and any upgrade notes speak for themselves.
+
+**Feature branch workflow**: On feature branches, prefer multiple small commits over amending — PRs
+are squash-merged into `develop`, so intermediate commits are collapsed automatically. Never
+force-push a feature branch; if the branch falls behind `develop`, use a simple merge commit rather
+than a rebase. Merge commits and extra commits are harmless on feature branches and are squashed out
+on merge, while force-pushes risk losing work and complicate collaboration.
 
 ## Changelog Maintenance
 
 The project changelog is `CHANGELOG.md` at the repository root. New entries go under the topmost
 `-SNAPSHOT` version heading, using emoji-prefixed section headers (e.g. `### 🎁 New Features`,
 `### 🐞 Bug Fixes`). Use past-tense, action-driven language and name specific classes, methods, and
-config keys in backticks. See [`docs/changelog-format.md`](docs/changelog-format.md) for the full
-format reference including section headers, voice guidelines, and breaking change requirements.
+config keys in backticks. Keep entries concise — one bullet per change, 1-3 lines max. Upgrade notes
+provide granular detail when needed; the changelog should not. Hard-wrap changelog entries at 100
+characters (unlike commit messages and PR descriptions, which should not be wrapped). See
+[`docs/changelog-format.md`](docs/changelog-format.md) for the full format reference including
+section headers, voice guidelines, and breaking change requirements.
 
 ## Key Dependencies
 

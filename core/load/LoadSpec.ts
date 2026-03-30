@@ -33,7 +33,7 @@ export type LoadSpecConfig = {
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application specific information about the load request. */
+    /** Application-specific information about the load request. */
     meta?: PlainObject;
 };
 

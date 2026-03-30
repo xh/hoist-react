@@ -45,6 +45,16 @@
     }
   }
 
+  // Outlined mode - border around control tray with no inner background.
+  &--outlined .bp6-segmented-control {
+    background-color: transparent;
+    border: 1px solid var(--xh-border-color);
+  }
+
+  &--outlined#{&}--primary .bp6-segmented-control {
+    border-color: var(--xh-intent-primary);
+  }
+
   // Compact mode - reduced sizing for toolbars and space-constrained contexts.
   &--compact .bp6-segmented-control {
     padding: 0;
@@ -60,6 +70,13 @@
         margin-right: 4px;
       }
     }
+  }
+
+  // Compact + outlined - shrink buttons to account for the border.
+  &--compact#{&}--outlined .bp6-segmented-control > .bp6-button {
+    --compact-btn-h: calc(var(--xh-tbar-compact-item-height-px) - 2px);
+    min-height: var(--compact-btn-h);
+    max-height: var(--compact-btn-h);
   }
 
   // Validation borders

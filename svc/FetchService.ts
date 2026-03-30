@@ -14,9 +14,10 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
+import {formatTraceparent, Span} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -31,7 +32,7 @@ const defaultIdGenerator = new ShortUniqueId({length: 16});
  * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
  * included, and redirects followed.
  *
- * Set {@link FetchService.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
+ * Set {@link FetchService.defaults.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
  * for requests issued by this service. Best configured in the app's `Bootstrap` module to ensure
  * coverage of early hoist core init requests. Can also be set on a per-request basis via
  * {@link FetchOptions.correlationId}.
@@ -44,8 +45,21 @@ const defaultIdGenerator = new ShortUniqueId({length: 16});
  * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
  * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
  */
+export interface FetchServiceDefaults {
+    autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
+    correlationIdHeaderKey?: string;
+    genCorrelationId?: () => string;
+}
+
 export class FetchService extends HoistService {
     static instance: FetchService;
+
+    /** App-level defaults for FetchService. Instance options take precedence. */
+    static defaults: FetchServiceDefaults = {
+        autoGenCorrelationIds: false,
+        correlationIdHeaderKey: 'X-Correlation-ID',
+        genCorrelationId: () => defaultIdGenerator.rnd()
+    };
 
     NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
 
@@ -58,33 +72,6 @@ export class FetchService extends HoistService {
     private autoAborters = {};
     private _defaultHeaders: DefaultHeaders[] = [];
     private _interceptors: FetchInterceptor[] = [];
-    //-----------------------------------
-    // Public properties, Getters/Setters
-    //------------------------------------
-    /**
-     * Should hoist auto-generate a Correlation ID for a request when not otherwise specified?
-     * Set to `true` or a dynamic per-request function to enable. Default false.
-     *
-     * Static property — best configured in the app's `Bootstrap` module to ensure correlation
-     * IDs are active from the very first request.
-     */
-    static autoGenCorrelationIds: boolean | ((opts: FetchOptions) => boolean) = false;
-
-    /**
-     * Method for generating Correlation IDs. Defaults to a 16 character random string with
-     * an extremely low probability of collisions. Applications may customize to improve
-     * readability or provide a stronger uniqueness guarantee.
-     *
-     * Static property — best configured in the app's `Bootstrap` module.
-     */
-    static genCorrelationId: () => string = () => defaultIdGenerator.rnd();
-
-    /**
-     * Request header name to be used for Correlation ID tracking.
-     *
-     * Static property — best configured in the app's `Bootstrap` module.
-     */
-    static correlationIdHeaderKey: string = 'X-Correlation-ID';
 
     /** Default timeout to be used for all requests made via this service */
     defaultTimeout: PromiseTimeoutSpec = 30 * SECONDS;
@@ -210,8 +197,14 @@ export class FetchService extends HoistService {
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
 
-        // Core Promise - chained with custom headers callback to ensure that work is included in overall tracked time.
-        let ret = this.withDefaultHeadersAsync(opts).then(opts => this.managedFetchAsync(opts));
+        // Tracing — create span for this request.
+        const span = this.startFetchSpan(opts);
+        if (span) opts = {...opts, traceId: span.traceId};
+
+        // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
+        let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
+            this.managedFetchAsync(opts)
+        );
 
         // Apply tracking
         const {correlationId, loadSpec, track} = opts;
@@ -222,6 +215,20 @@ export class FetchService extends HoistService {
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
             );
             ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+        }
+
+        // Tracing — end span on completion or failure.
+        if (span) {
+            ret = ret.then(
+                value => {
+                    this.endFetchSpan(span, value);
+                    return value;
+                },
+                cause => {
+                    this.endFetchSpan(span, null, cause);
+                    throw cause;
+                }
+            );
         }
 
         // Apply interceptors
@@ -250,17 +257,17 @@ export class FetchService extends HoistService {
     // Resolve convenience options for Correlation ID to server-ready string
     private withCorrelationId(opts: FetchOptions): FetchOptions {
         const cid = opts.correlationId,
-            autoCid = FetchService.autoGenCorrelationIds;
+            autoCid = FetchService.defaults.autoGenCorrelationIds;
 
         if (isString(cid)) return opts;
         if (cid === false || cid === null) return omit(opts, 'correlationId');
         if (cid === true || autoCid === true || (isFunction(autoCid) && autoCid(opts))) {
-            return {...opts, correlationId: FetchService.genCorrelationId()};
+            return {...opts, correlationId: FetchService.defaults.genCorrelationId()};
         }
         return opts;
     }
 
-    private async withDefaultHeadersAsync(opts: FetchOptions): Promise<FetchOptions> {
+    private async withResolvedHeadersAsync(opts: FetchOptions, span?: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -273,10 +280,11 @@ export class FetchService extends HoistService {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
+            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
             ...opts.headers
         };
 
-        const {correlationIdHeaderKey} = FetchService;
+        const {correlationIdHeaderKey} = FetchService.defaults;
         if (opts.correlationId) {
             if (headers[correlationIdHeaderKey]) {
                 this.logWarn(
@@ -395,6 +403,53 @@ export class FetchService extends HoistService {
             return await response.text();
         } catch (ignore) {
             return null;
+        }
+    }
+
+    //------------------
+    // Tracing
+    //------------------
+    private startFetchSpan(opts: FetchOptions): Span {
+        const traceService = XH.traceService;
+        if (!traceService?.enabled) return null;
+
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+            url = this.extractUrlPath(opts.url);
+
+        if (url.endsWith('submitSpans')) return null;
+
+        return traceService.createSpan({
+            name: method,
+            kind: 'client',
+            parent: opts.span,
+            tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'},
+            caller: this
+        });
+    }
+
+    private endFetchSpan(span: Span, value?: any, error?: unknown) {
+        if (!span) return;
+
+        if (value?.status != null) {
+            span.tags['http.response.status_code'] = value.status;
+        }
+
+        if (error) {
+            span.recordError(error);
+            span.end('error');
+        } else {
+            span.end('ok');
+        }
+        XH.traceService.exportSpan(span);
+    }
+
+    private extractUrlPath(url: string): string {
+        if (!url) return '';
+        try {
+            if (url.includes('//')) return new URL(url).pathname;
+            return url.split('?')[0];
+        } catch (e) {
+            return url.split('?')[0];
         }
     }
 
@@ -535,8 +590,10 @@ export class FetchService extends HoistService {
     }
 
     private createException(attributes: PlainObject) {
+        const {fetchOptions} = attributes;
         const correlationId: string =
-            attributes.fetchOptions?.headers?.[FetchService.correlationIdHeaderKey] ?? null;
+            fetchOptions?.headers?.[FetchService.defaults.correlationIdHeaderKey] ?? null;
+        const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
             isFetchAborted: false,
@@ -544,6 +601,7 @@ export class FetchService extends HoistService {
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
             correlationId,
+            traceId,
             ...attributes
         }) as FetchException;
     }
@@ -576,6 +634,36 @@ export class FetchService extends HoistService {
 
         // Fallback to statusText if we have nothing else.
         return ret || statusText;
+    }
+
+    //------------------------------
+    // Deprecated static setters
+    //------------------------------
+    /** @deprecated - use `FetchService.defaults.autoGenCorrelationIds` */
+    static set autoGenCorrelationIds(v: boolean | ((opts: FetchOptions) => boolean)) {
+        apiDeprecated('FetchService.autoGenCorrelationIds', {
+            msg: 'Use FetchService.defaults.autoGenCorrelationIds instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.autoGenCorrelationIds = v;
+    }
+
+    /** @deprecated - use `FetchService.defaults.genCorrelationId` */
+    static set genCorrelationId(v: () => string) {
+        apiDeprecated('FetchService.genCorrelationId', {
+            msg: 'Use FetchService.defaults.genCorrelationId instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.genCorrelationId = v;
+    }
+
+    /** @deprecated - use `FetchService.defaults.correlationIdHeaderKey` */
+    static set correlationIdHeaderKey(v: string) {
+        apiDeprecated('FetchService.correlationIdHeaderKey', {
+            msg: 'Use FetchService.defaults.correlationIdHeaderKey instead.',
+            v: '85.0'
+        });
+        FetchService.defaults.correlationIdHeaderKey = v;
     }
 }
 
@@ -665,6 +753,18 @@ export interface FetchOptions {
      * here - use the top-level `correlationId` property instead.)
      */
     track?: string | TrackOptions;
+
+    /**
+     * If set, the fetch span created by TraceService will be parented under this span.
+     * Use to nest fetch calls under a business-level span.
+     */
+    span?: Span;
+
+    /**
+     * Distributed trace ID for this request. Set automatically by FetchService
+     * @internal
+     */
+    traceId?: string;
 }
 
 /**
@@ -679,6 +779,9 @@ export interface FetchException extends HoistException {
 
     /** Options of underlying fetch call. */
     fetchOptions: FetchOptions;
+
+    /** Distributed trace ID associated with the failed request, if tracing was enabled. */
+    traceId: string;
 
     /**
      * True if exception resulted from the fetch being aborted by fetchService, or the application.

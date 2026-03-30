@@ -57,7 +57,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "withSpan", "withSpanAsync", "traceparent", "distributed tracing"]
         },
         {
             "id": "cmp/README.md",
@@ -364,6 +364,22 @@
             "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
         },
         {
+            "id": "docs/upgrade-notes/v73-upgrade-notes.md",
+            "title": "v73 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v72.x to v73.0.1. Low difficulty — hoist-core >= 31, makeObservable enforcement, ESLint 9.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72", "makeObservable", "eslint", "admin", "commitOnChange"]
+        },
+        {
+            "id": "docs/upgrade-notes/v74-upgrade-notes.md",
+            "title": "v74 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v73.x to v74.1.2. Low difficulty — ViewManagerModel.settleTime removal, ChartModel.showContextMenu replaced.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v74", "v73", "settleTime", "showContextMenu", "contextMenu", "ViewManager", "ChartModel"]
+        },
+        {
             "id": "docs/upgrade-notes/v75-upgrade-notes.md",
             "title": "v75 Upgrade Notes",
             "mcpCategory": "devops",
@@ -426,6 +442,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v81.x to v82.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "Picker", "DashCanvas", "MCP", "Filter"]
+        },
+        {
+            "id": "docs/upgrade-notes/v83-upgrade-notes.md",
+            "title": "v83 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v82.x to v83.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v83", "v82", "TraceService", "tracing", "OTEL", "static defaults", "GridModel", "downloadBlob", "downloadViaUrl", "downloadjs", "SegmentedControl", "CheckboxButton"]
         }
     ]
 }

@@ -80,6 +80,15 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     showAddViewButtonWhenEmpty?: boolean;
 }
 
+export interface DashCanvasModelDefaults {
+    columns?: number;
+    containerPadding?: [number, number] | null;
+    margin?: [number, number];
+    maxRows?: number;
+    rowHeight?: number;
+    showGridBackground?: boolean;
+}
+
 /** Serializable state for a single widget on a DashCanvas, including its layout and view config. */
 export interface DashCanvasItemState {
     layout: DashCanvasItemLayout;
@@ -115,6 +124,16 @@ export class DashCanvasModel
     extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel>
     implements Persistable<{state: DashCanvasItemState[]}>
 {
+    /** App-level defaults for DashCanvasModel. Instance config takes precedence. */
+    static defaults: DashCanvasModelDefaults = {
+        columns: 12,
+        containerPadding: null,
+        margin: [10, 10],
+        maxRows: Infinity,
+        rowHeight: 50,
+        showGridBackground: false
+    };
+
     //-----------------------------
     // Settable State
     //------------------------------
@@ -189,14 +208,14 @@ export class DashCanvasModel
         persistWith = null,
         emptyText = 'No widgets have been added.',
         addViewButtonText = 'Add Widget',
-        columns = 12,
-        rowHeight = 50,
+        columns = DashCanvasModel.defaults.columns,
+        rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
-        margin = [10, 10],
-        maxRows = Infinity,
-        containerPadding = margin,
+        margin = DashCanvasModel.defaults.margin,
+        maxRows = DashCanvasModel.defaults.maxRows,
+        containerPadding = DashCanvasModel.defaults.containerPadding ?? margin,
         extraMenuItems,
-        showGridBackground = false,
+        showGridBackground = DashCanvasModel.defaults.showGridBackground,
         showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,

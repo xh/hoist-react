@@ -65,6 +65,10 @@ export interface GroupingChooserConfig {
     sortDimensions?: boolean;
 }
 
+export interface GroupingChooserModelDefaults {
+    commitOnChange?: boolean;
+}
+
 /**
  * Metadata for dimensions that are available for selection via a GroupingChooser control.
  * Note that {@link CubeField} instances satisfy this interface.
@@ -89,6 +93,11 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
 export type GroupingBindTarget = GridModel | View;
 
 export class GroupingChooserModel extends HoistModel {
+    /** App-level defaults for GroupingChooserModel. Instance config takes precedence. */
+    static defaults: GroupingChooserModelDefaults = {
+        commitOnChange: false
+    };
+
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
@@ -115,7 +124,7 @@ export class GroupingChooserModel extends HoistModel {
     constructor({
         allowEmpty = false,
         bind = null,
-        commitOnChange = false,
+        commitOnChange = GroupingChooserModel.defaults.commitOnChange,
         dimensions,
         initialFavorites = [],
         initialValue = [],

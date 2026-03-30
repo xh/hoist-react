@@ -160,22 +160,20 @@ this is a new release — add it following the existing pattern.
 
 ### Update the MCP Doc Registry
 
-Add a `RawEntry` to the `getRawEntries()` function in `mcp/data/doc-registry.ts` so the new
-upgrade notes are discoverable via `hoist-search-docs`. Place the entry after the existing upgrade
-note entries in the "Upgrade Notes" section, following this pattern:
+Add an entry to the `entries` array in `docs/doc-registry.json` so the new upgrade notes are
+discoverable via `hoist-search-docs`. Place the entry after the last existing upgrade-notes entry
+(at the end of the `entries` array), following this pattern:
 
-```typescript
+```json
 {
-    id: 'upgrade-v{NN}',
-    title: 'v{NN} Upgrade Notes',
-    file: 'docs/upgrade-notes/v{NN}-upgrade-notes.md',
-    category: 'devops',
-    description:
-        'Upgrade guide from v{PRIOR}.x to v{VERSION}. {Difficulty} difficulty.',
-    keywords: splitKeywords(
-        'upgrade, migration, breaking changes, v{NN}, v{PRIOR}'
-    )
+    "id": "docs/upgrade-notes/v{NN}-upgrade-notes.md",
+    "title": "v{NN} Upgrade Notes",
+    "mcpCategory": "devops",
+    "viewerCategory": "upgrade",
+    "description": "Upgrade guide from v{PRIOR}.x to v{NN}.0.0. {Difficulty} difficulty.",
+    "keywords": ["upgrade", "migration", "breaking changes", "v{NN}", "v{PRIOR}"]
 }
+```
 
 ## Phase 4: Dry-Run Validation
 

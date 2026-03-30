@@ -87,10 +87,21 @@ export interface RestGridEditor {
     omit?: boolean | ((fieldValue: unknown, model: RestFormModel) => boolean);
 }
 
+export interface RestGridModelDefaults {
+    showRefreshButton?: boolean;
+    unit?: string;
+}
+
 /**
  * Core Model for a RestGrid.
  */
 export class RestGridModel extends HoistModel {
+    /** App-level defaults for RestGridModel. Instance config takes precedence. */
+    static defaults: RestGridModelDefaults = {
+        showRefreshButton: false,
+        unit: 'record'
+    };
+
     declare config: RestGridConfig;
 
     //----------------
@@ -134,10 +145,10 @@ export class RestGridModel extends HoistModel {
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
-        showRefreshButton = false,
+        showRefreshButton = RestGridModel.defaults.showRefreshButton,
         actionWarning,
         prepareCloneFn,
-        unit = 'record',
+        unit = RestGridModel.defaults.unit,
         filterFields,
         editors = [],
         onRowDoubleClicked,
@@ -167,7 +178,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
+            contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
             enableExport: true,

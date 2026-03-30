@@ -9,8 +9,7 @@ import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
-import download from 'downloadjs';
+import {downloadBlob, withDefault} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
@@ -129,10 +128,9 @@ export class GridExportService extends HoistService {
             });
 
             const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
-                fileExt = this.getFileExtension(type),
-                contentType = this.getContentType(type);
+                fileExt = this.getFileExtension(type);
 
-            download(blob, `${filename}${fileExt}`, contentType);
+            if (blob) downloadBlob(blob, `${filename}${fileExt}`);
             await dismissStartToast();
             XH.successToast('Export complete.');
 
@@ -382,16 +380,6 @@ export class GridExportService extends HoistService {
                 return this.getExportableValueForCell({gridModel, record, column, node, forExcel});
             });
         return {data, depth};
-    }
-
-    private getContentType(type) {
-        switch (type) {
-            case 'excelTable':
-            case 'excel':
-                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-            case 'csv':
-                return 'text/csv';
-        }
     }
 
     private getFileExtension(type) {
