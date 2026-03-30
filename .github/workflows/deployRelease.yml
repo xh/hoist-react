@@ -14,7 +14,7 @@ on:
                 required: true
                 type: string
             is-hotfix:
-                description: 'As hotfix. Check when releasing a hotfix to a version other than the latest.'
+                description: 'Check when releasing a hotfix to a version *other than* the latest.'
                 required: true
                 default: false
                 type: boolean
