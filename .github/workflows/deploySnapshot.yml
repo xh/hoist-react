@@ -11,14 +11,15 @@ on:
         branches: [ "develop" ]
     workflow_dispatch:
         inputs:
-            xhSnapshotVersion:
+            version:
                 description: '(Optional) Snapshot version to override default in package.json. Note that the suffix "-SNAPSHOT" will be automatically appended if not present.'
                 required: false
                 default: ''
                 type: string
 
+# Debounce builds by branch. Newer runs from a branch will cancel the current run and start over.
 concurrency:
-    group: deploy-snapshot
+    group: deploy-snapshot-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -36,6 +37,7 @@ jobs:
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
+              cache: 'yarn'
 
         - name: Configure Font Awesome registry auth
           env:
@@ -48,27 +50,10 @@ jobs:
         - name: Yarn lint
           run: yarn lint:all
 
-        - name: Override snapshot version in package.json
-          if: inputs.xhSnapshotVersion != ''
-          env:
-              VERSION: ${{ inputs.xhSnapshotVersion }}
-          run: |
-              if [[ ! "$VERSION" == *-SNAPSHOT ]]; then
-                VERSION="$VERSION-SNAPSHOT"
-              fi
-              npm version --no-git-tag-version --new-version "$VERSION"
-              echo "Updated version to SNAPSHOT: $VERSION"
-
-        - name: Validate SNAPSHOT version
-          run: |
-              VERSION=$(node -p "require('./package.json').version")
-              TIME=$(node -p "new Date().getTime()")
-              if [[ ! "$VERSION" == *-SNAPSHOT ]]; then
-                echo "::error::'$VERSION' is not a SNAPSHOT version. Aborting."
-                exit 1
-              fi
-              npm version --no-git-tag-version --new-version "$VERSION.$TIME"
-              echo "Validated snapshot version: $VERSION.$TIME"
+        - name: Prepare snapshot version
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@master
+          with:
+              version: ${{ inputs.version }}
 
         - name: Publish snapshot to npm
           env:

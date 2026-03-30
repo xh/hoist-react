@@ -1,29 +1,34 @@
 # Deploy Release — Publishes a numbered release to npm.
 #
-# Manually triggered from the master branch. Validates the version input, publishes to npm,
-# tags the commit, and creates a GitHub release with auto-generated notes. For snapshot
-# builds, see Deploy Snapshot.
+# Manually triggered. Standard releases run from master; hotfixes run from a dedicated
+# branch. Validates the version input, publishes to npm, tags the commit, and creates a
+# GitHub release with auto-generated notes. For snapshot builds, see Deploy Snapshot.
 
 name: Deploy Release
 
 on:
     workflow_dispatch:
         inputs:
-            xhReleaseVersion:
+            version:
                 description: 'Release Version'
                 required: true
                 type: string
-            isHotfix:
-                description: 'As hotfix. Check when releasing a hotfix to a version other than the latest.'
+            is-hotfix:
+                description: 'Check when releasing a hotfix to a version *other than* the latest.'
                 required: true
                 default: false
                 type: boolean
 
+# Run all release builds one-by-one, but never cancel a release build due to another one.
+concurrency:
+    group: deploy-release
+    cancel-in-progress: false
+
 jobs:
     build:
         # Guards against accidental release from develop. Requires master for standard
-        # releases and a branch other than master (or develop) when isHotfix is set.
-        if: github.ref != 'refs/heads/develop' && ((github.ref == 'refs/heads/master') != inputs.isHotfix)
+        # releases and a branch other than master (or develop) when is-hotfix is set.
+        if: github.ref != 'refs/heads/develop' && ((github.ref == 'refs/heads/master') != inputs.is-hotfix)
 
         runs-on: ubuntu-latest
         permissions:
@@ -35,84 +40,19 @@ jobs:
               fetch-depth: 0
               fetch-tags: true
 
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Validate release version
-          env:
-              VERSION: ${{ inputs.xhReleaseVersion }}
-              IS_HOTFIX: ${{ inputs.isHotfix }}
-          run: |
-              # Must be semver (X.Y.Z) with no leading zeros.
-              if [[ ! "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-                  echo "::error::Invalid version '$VERSION'. Must be semver with no leading zeros (e.g. 82.0.0)."
-                  exit 1
-              fi
-
-              # Must not duplicate an existing release
-              if git tag -l "v$VERSION" | grep -q .; then
-                  echo "::error::Tag v$VERSION already exists. This version has already been released."
-                  exit 1
-              fi
-
-              # Strict version validation — the new version must be exactly one
-              # increment from the latest relevant tag and hotfix cannot be latest.
-              LATEST=$(git tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
-              if [ -z "$LATEST" ]; then
-                  echo "::error::No existing release tags found. Cannot validate version."
-                  exit 1
-              fi
-              LATEST_MAJOR=$(echo "$LATEST" | cut -d. -f1)
-              LATEST_MINOR=$(echo "$LATEST" | cut -d. -f2)
-              LATEST_PATCH=$(echo "$LATEST" | cut -d. -f3)
-
-              # The three versions that would be valid as a standard (non-hotfix) release.
-              NEXT_MAJOR="$(( LATEST_MAJOR + 1 )).0.0"
-              NEXT_MINOR="${LATEST_MAJOR}.$(( LATEST_MINOR + 1 )).0"
-              NEXT_PATCH="${LATEST_MAJOR}.${LATEST_MINOR}.$(( LATEST_PATCH + 1 ))"
-
-              if [ "$IS_HOTFIX" = "true" ]; then
-                  # A hotfix must NOT be a standard next-release version.
-                  if [ "$VERSION" = "$NEXT_MAJOR" ] || [ "$VERSION" = "$NEXT_MINOR" ] || [ "$VERSION" = "$NEXT_PATCH" ]; then
-                      echo "::error::Hotfix version $VERSION matches a standard release increment (latest is v$LATEST). Use a standard release instead."
-                      exit 1
-                  fi
-
-                  NEW_MAJOR=$(echo "$VERSION" | cut -d. -f1)
-                  NEW_MINOR=$(echo "$VERSION" | cut -d. -f2)
-
-                  # Validate against the highest tags for this major version.
-                  MAX_MINOR=$(git tag -l "v${NEW_MAJOR}.*" | grep -E "^v${NEW_MAJOR}\.[0-9]+\.[0-9]+$" | sed 's/^v//' | cut -d. -f2 | sort -n | tail -1)
-                  if [ -z "$MAX_MINOR" ]; then
-                      echo "::error::No existing tags found for major version ${NEW_MAJOR}. Cannot validate hotfix."
-                      exit 1
-                  fi
-
-                  # Allowed: next minor bump for this major.
-                  ALLOWED_MINOR="${NEW_MAJOR}.$(( MAX_MINOR + 1 )).0"
-
-                  # Only offer a patch bump if tags exist for this specific MAJOR.MINOR.
-                  MAX_PATCH=$(git tag -l "v${NEW_MAJOR}.${NEW_MINOR}.*" | grep -E "^v${NEW_MAJOR}\.${NEW_MINOR}\.[0-9]+$" | sed 's/^v//' | cut -d. -f3 | sort -n | tail -1)
-                  if [ -n "$MAX_PATCH" ]; then
-                      ALLOWED_PATCH="${NEW_MAJOR}.${NEW_MINOR}.$(( MAX_PATCH + 1 ))"
-                  fi
-
-                  if [ "$VERSION" != "$ALLOWED_MINOR" ] && [ "$VERSION" != "${ALLOWED_PATCH:-}" ]; then
-                      ALLOWED="$ALLOWED_MINOR"
-                      [ -n "${ALLOWED_PATCH:-}" ] && ALLOWED="$ALLOWED or $ALLOWED_PATCH"
-                      echo "::error::Hotfix version $VERSION is not a valid next version. Allowed: $ALLOWED."
-                      exit 1
-                  fi
-              else
-                  # Standard release: must be exactly one increment from the latest tag.
-                  if [ "$VERSION" != "$NEXT_MAJOR" ] && [ "$VERSION" != "$NEXT_MINOR" ] && [ "$VERSION" != "$NEXT_PATCH" ]; then
-                      echo "::error::Version $VERSION is not a valid next version (latest is v$LATEST). Allowed: $NEXT_MAJOR, $NEXT_MINOR, or $NEXT_PATCH."
-                      exit 1
-                  fi
-              fi
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@master
+          with:
+              version: ${{ inputs.version }}
+              is-hotfix: ${{ inputs.is-hotfix }}
 
         - name: Setup Node.js
           uses: actions/setup-node@v6
           with:
               node-version-file: '.nvmrc'
               registry-url: 'https://registry.npmjs.org'
+              cache: 'yarn'
 
         - name: Configure Font Awesome registry auth
           env:
@@ -127,32 +67,29 @@ jobs:
 
         - name: Set release version in package.json
           env:
-              VERSION: ${{ inputs.xhReleaseVersion }}
+              VERSION: ${{ inputs.version }}
           run: npm version --no-git-tag-version --new-version "$VERSION"
 
         - name: Publish release to npm
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          run: npm publish
-
-        - name: Tag release
-          env:
-              VERSION: ${{ inputs.xhReleaseVersion }}
+              IS_HOTFIX: ${{ inputs.is-hotfix }}
           run: |
-              git tag "v$VERSION"
-              git push origin "v$VERSION"
+              TAG_FLAG=""
+              if [ "$IS_HOTFIX" = "true" ]; then
+                  TAG_FLAG="--tag hotfix"
+              fi
+              npm publish $TAG_FLAG
 
-        - name: Create GitHub release
+        # Note: The tag intentionally points to a commit where package.json still has the
+        # SNAPSHOT version. We chose not to commit the version change back to the repo to
+        # avoid paired set/reset commits on every release. The published npm artifact has
+        # the correct release version — the tag is just a pointer to the source commit.
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
+        - name: Create tag and GitHub release
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@master
+          with:
+              version: ${{ inputs.version }}
+              is-hotfix: ${{ inputs.is-hotfix }}
           env:
               GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              VERSION: ${{ inputs.xhReleaseVersion }}
-              IS_HOTFIX: ${{ inputs.isHotfix }}
-          run: |
-              LATEST_FLAG="--latest"
-              if [ "$IS_HOTFIX" = "true" ]; then
-                  LATEST_FLAG="--latest=false"
-              fi
-              gh release create "v$VERSION" \
-                  --title "v$VERSION" \
-                  --generate-notes \
-                  "$LATEST_FLAG"
