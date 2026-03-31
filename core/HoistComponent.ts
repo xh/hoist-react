@@ -12,7 +12,8 @@ import {
     DefaultHoistProps,
     elementFactory,
     ElementFactory,
-    TestSupportProps
+    TestSupportProps,
+    PlainObject
 } from './';
 import {
     useModelLinker,
@@ -64,10 +65,16 @@ export type RenderPropsOf<P extends HoistProps> = P & {
 };
 
 /**
+ * Props specific to a component, excluding framework-provided HoistProps.
+ * Used as the constraint for component-level defaults.
+ */
+export type OwnProps<P extends HoistProps> = Omit<P, keyof HoistProps>;
+
+/**
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps> =
+export type ComponentConfig<P extends HoistProps, D extends Partial<OwnProps<P>> = never> =
     | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
     | {
           /** Render function defining the component. */
@@ -103,6 +110,14 @@ export type ComponentConfig<P extends HoistProps> =
            *  state may set this to `false`, but this is not typically done by application code.
            */
           observer?: boolean;
+
+          /**
+           * Default values for selected component props. Attached to the returned component
+           * as a typed `defaults` object that applications can modify to override framework
+           * defaults for all instances (e.g. `Button.defaults.minimal = false` in Bootstrap.ts).
+           * Instance props always take precedence over defaults.
+           */
+          defaults?: D;
       };
 
 let cmpIndex = 0; // index for anonymous component dispay names
@@ -124,6 +139,11 @@ let cmpIndex = 0; // index for anonymous component dispay names
  * render function that accepts two arguments. In that case, the second arg will be considered a
  * ref, and this utility will apply `React.forwardRef` as required.
  *
+ * Components can also declare a typed `defaults` object in their config to provide app-level
+ * overridable default values for selected props. When specified, the returned component exposes a
+ * `defaults` property that applications can modify (e.g. `Button.defaults.minimal = false` in
+ * Bootstrap.ts). Instance props always take precedence over defaults.
+ *
  * @param config - specification object, or a render function defining the component.
  * @returns a functional React Component for use within Hoist apps.
  *
@@ -140,6 +160,9 @@ let cmpIndex = 0; // index for anonymous component dispay names
 export function hoistCmp<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): FC<DefaultHoistProps<M>>;
+export function hoistCmp<P extends HoistProps, D extends Partial<OwnProps<P>>>(
+    config: ComponentConfig<P, D>
+): FC<P> & {defaults: D};
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P>;
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P> {
     // 0) Pre-process/parse args.
@@ -159,7 +182,8 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
             isMemo: withDefault(config.memo, true),
             isObserver: withDefault(config.observer, true),
             isForwardRef: render.length === 2,
-            modelSpec: modelSpec ? modelSpec : null
+            modelSpec: modelSpec ? modelSpec : null,
+            defaults: config.defaults ?? null
         };
 
     warnIf(
@@ -178,16 +202,16 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
         render = wrapWithClonedProps(render);
     }
 
-    // 4) Wrap with standard react HOCs, mark, and return.
+    // 4) Wrap with standard react HOCs, mark, install defaults if specified, and return.
     let ret = render as any;
     ret.displayName = cfg.displayName;
     if (cfg.isForwardRef) ret = forwardRef(ret);
     if (cfg.isObserver) ret = observer(ret);
     if (cfg.isMemo && !cfg.isObserver) ret = memo(ret);
 
-    // 4) Mark and return.
     ret.displayName = cfg.displayName;
     ret.isHoistComponent = true;
+    if (cfg.defaults) ret.defaults = cfg.defaults;
 
     return ret;
 }
@@ -222,6 +246,9 @@ hoistCmp.factory = hoistCmpFactory;
 export function hoistCmpWithFactory<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): [FC<DefaultHoistProps<M>>, ElementFactory<DefaultHoistProps<M>>];
+export function hoistCmpWithFactory<P extends HoistProps, D extends Partial<OwnProps<P>>>(
+    config: ComponentConfig<P, D>
+): [FC<P> & {defaults: D}, ElementFactory<P>];
 export function hoistCmpWithFactory<P extends HoistProps>(
     config: ComponentConfig<P>
 ): [FC<P>, ElementFactory<P>];
@@ -247,6 +274,7 @@ interface Config {
     isForwardRef: boolean;
     isMemo: boolean;
     modelSpec: ModelSpec;
+    defaults: PlainObject;
 }
 
 interface ResolvedModel {
