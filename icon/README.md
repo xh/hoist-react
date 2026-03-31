@@ -1,10 +1,10 @@
 # Icon
 
-Hoist's icon system provides a factory-based API for rendering [FontAwesome](https://fontawesome.com/)
-Pro icons throughout an application. Rather than importing individual FA icon definitions in each
-file that uses them, applications use the `Icon` singleton — a centralized catalog of 150+ direct
-icon factories and ~40 semantic aliases, all pre-registered with the FA library in four weight
-variants (regular, solid, light, thin).
+Hoist's icon system provides a factory-based API for
+rendering [FontAwesome](https://fontawesome.com/) Pro icons throughout an application. Rather than
+importing individual FA icon definitions in each file that uses them, applications use the `Icon`
+singleton — a centralized catalog of 150+ direct icon factories and ~40 semantic aliases, all
+pre-registered with the FA library in four weight variants (regular, solid, light, thin).
 
 ## Overview
 
@@ -103,6 +103,46 @@ Icon.star({rotation: 90})        // rotated 90 degrees
 Icon.warning({bounce: true})     // bouncing warning
 ```
 
+### Spinner Component
+
+The `Spinner` component (`cmp/spinner/`) renders an animated FA icon for use by `Mask` and
+`LoadingIndicator`. It uses FontAwesome's CSS-based `transform: rotate()` animation rather than
+SVG-based animation, making it performant even in remote desktop environments such as Citrix.
+
+Spinner ships with several pre-registered icon choices — `faSpinnerThird`, `faCircleNotch`, and
+`faSpinnerScale` — all available in all four weight variants. The default icon, prefix, and
+animation can be configured globally via `Spinner.defaults`, typically set in an app's
+`Bootstrap.ts`:
+
+```typescript
+import {Spinner} from '@xh/hoist/cmp/spinner';
+
+// Override icon and/or weight globally
+Spinner.defaults.iconName = 'circle-notch';
+Spinner.defaults.prefix = 'far';
+Spinner.defaults.animation = 'spinPulse';
+```
+
+| Default                        | Type               | Default           | Description                                      |
+|--------------------------------|--------------------|-------------------|--------------------------------------------------|
+| `Spinner.defaults.iconName`    | `IconName`         | `'spinner-third'` | FA icon name for the spinner                     |
+| `Spinner.defaults.prefix`      | `HoistIconPrefix`  | `'fal'`           | FA icon weight/prefix                            |
+| `Spinner.defaults.animation`   | `SpinnerAnimation` | `'spin'`          | FA animation: `spin`, `spinPulse`, `pulse`, etc. |
+| `Spinner.defaults.usePng`      | `boolean`          | `false`           | Fall back to animated PNG images                 |
+
+Per-instance overrides can be passed as props to `spinner()` or via `LoadingIndicator`'s `spinner`
+prop, which accepts either `true` (use defaults) or a `SpinnerProps` object:
+
+```typescript
+loadingIndicator({
+    bind: myTask,
+    spinner: {iconName: 'circle-notch', animation: 'spinPulse'}
+})
+```
+
+A legacy PNG fallback is retained for environments where even CSS animations may be problematic.
+Set `Spinner.defaults.usePng = true` globally to revert to the original animated PNG behavior.
+
 ### Weight Variants
 
 ```typescript
@@ -191,16 +231,16 @@ else that accepts an icon element.
 
 ## IconProps Reference
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `iconName` | `IconName` | FA icon name (e.g. `'check'`, `'gear'`). Required for `Icon.icon()`, provided automatically by named factories |
-| `prefix` | `HoistIconPrefix` | Weight variant: `'far'` (regular, default), `'fas'` (solid), `'fal'` (light), `'fat'` (thin), `'fab'` (brands) |
-| `intent` | `Intent` | Applies `xh-intent-{intent}` CSS class for semantic coloring |
-| `title` | `string` | Tooltip text rendered as SVG `<title>` |
-| `size` | `string` | FA size: `'2xs'` through `'10x'` |
-| `asHtml` | `boolean` | Return raw SVG string instead of React element |
-| `className` | `string` | Additional CSS class(es) |
-| `omit` | `Thunkable<boolean>` | Skip rendering this icon when true |
+| Prop        | Type                 | Description                                                                                                    |
+|-------------|----------------------|----------------------------------------------------------------------------------------------------------------|
+| `iconName`  | `IconName`           | FA icon name (e.g. `'check'`, `'gear'`). Required for `Icon.icon()`, provided automatically by named factories |
+| `prefix`    | `HoistIconPrefix`    | Weight variant: `'far'` (regular, default), `'fas'` (solid), `'fal'` (light), `'fat'` (thin), `'fab'` (brands) |
+| `intent`    | `Intent`             | Applies `xh-intent-{intent}` CSS class for semantic coloring                                                   |
+| `title`     | `string`             | Tooltip text rendered as SVG `<title>`                                                                         |
+| `size`      | `string`             | FA size: `'2xs'` through `'10x'`                                                                               |
+| `asHtml`    | `boolean`            | Return raw SVG string instead of React element                                                                 |
+| `className` | `string`             | Additional CSS class(es)                                                                                       |
+| `omit`      | `Thunkable<boolean>` | Skip rendering this icon when true                                                                             |
 
 ## Serialization
 
@@ -258,15 +298,14 @@ packages — don't reach for a different library.
 
 ### Referencing Icons From the Wrong FontAwesome Version
 
-FontAwesome updates frequently and adds new icons with each release. When browsing the
-FA site to find an icon for your app, use
-the version picker to filter results to the version Hoist currently depends on (check
-`@fortawesome/pro-regular-svg-icons` in `package.json`). Attempting to import an icon that only
-exists in a newer FA version will fail at build time. Hoist endeavors to keep its FA dependency up
-to date, but always verify the version before spending time wiring up a new icon.
+FontAwesome updates frequently and adds new icons with each release. When browsing the FA site to
+find an icon for your app, use the version picker to filter results to the version Hoist currently
+depends on (check `@fortawesome/pro-regular-svg-icons` in `package.json`). Attempting to import an
+icon that only exists in a newer FA version will fail at build time. Hoist endeavors to keep its FA
+dependency up to date, but always verify the version before spending time wiring up a new icon.
 
 * [FA icon search (latest version)](https://fontawesome.com/search?ip=classic&s=regular)
-* [FA icon search (v6)](https://fontawesome.com/v6/search?ip=classic&s=regular)
+* [FA icon search (v7)](https://fontawesome.com/v7/search?ip=classic&s=regular)
 
 ### Using Brand Icons Without Registration
 
@@ -276,6 +315,8 @@ with Hoist by default.
 
 ## Related Packages
 
+- [`/cmp/spinner/`](../cmp/spinner/) — Spinner component renders an animated FA icon, configurable
+  via static defaults on the `Spinner` class
 - [`/desktop/`](../desktop/README.md) — Desktop components use icons extensively in buttons,
   toolbars, menus, and grid columns
 - [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — DashContainer uses icon serialization

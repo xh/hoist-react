@@ -4,28 +4,58 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {img} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {ImgHTMLAttributes} from 'react';
-
-// @ts-ignore
+import {HoistIconPrefix, Icon} from '@xh/hoist/icon';
 import compactSpinnerImg from './spinner-20px.png';
-// @ts-ignore
 import spinnerImg from './spinner-50px.png';
+import './Spinner.scss';
 
-export interface SpinnerProps extends HoistProps, ImgHTMLAttributes<HTMLImageElement> {
-    /** True to return a smaller 20px image vs default 50px. */
+/** Animation type for FA spinner icons. */
+export type SpinnerAnimation =
+    | 'spin'
+    | 'spinPulse'
+    | 'pulse'
+    | 'beat'
+    | 'beatFade'
+    | 'bounce'
+    | 'shake'
+    | 'fade';
+
+export interface SpinnerDefaults {
+    iconName?: IconName;
+    prefix?: HoistIconPrefix;
+    animation?: SpinnerAnimation;
+    usePng?: boolean;
+}
+
+export interface SpinnerProps extends HoistProps {
+    /** True to return a smaller spinner suitable for inline/compact use. */
     compact?: boolean;
+    /** FA icon name to use. Default set via `Spinner.defaults.iconName`. */
+    iconName?: IconName;
+    /** FA icon prefix/weight. Default set via `Spinner.defaults.prefix`. */
+    prefix?: HoistIconPrefix;
+    /** FA animation prop to apply. Default set via `Spinner.defaults.animation`. */
+    animation?: SpinnerAnimation;
+    /** True to use legacy animated PNG images. Default set via `Spinner.defaults.usePng`. */
+    usePng?: boolean;
 }
 
 /**
- * Returns an img-based spinner in one of two sizes - default 50px spinner or smaller 20px spinner
- * when `compact: true`. Used for the platform-specific `Mask` and `LoadingIndicator` components.
+ * An animated spinner rendered via a FontAwesome icon with a CSS animation. Used for the
+ * platform-specific `Mask` and `LoadingIndicator` components.
  *
- * Note that the source images are animated PNGs generated via https://loading.io. These are used
- * in place of SVG-based options to reduce rendering overhead, especially when accessing an app
- * via a remote desktop technology such as Citrix (where the spinners bundled with e.g. Blueprint
- * were observed to cause unpredictable and unexpectedly severe performance issues).
+ * The icon, animation, and legacy PNG fallback can be configured per-instance via props or
+ * globally via `Spinner.defaults` (e.g. in app Bootstrap.ts):
+ *
+ * ```ts
+ * Spinner.defaults.iconName = 'spinner-third';
+ * Spinner.defaults.prefix = 'far';
+ * Spinner.defaults.animation = 'spinPulse';
+ * Spinner.defaults.usePng = true;  // fall back to animated PNG
+ * ```
  */
 export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
     displayName: 'Spinner',
@@ -34,13 +64,36 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
     observer: false,
 
     render({compact, className, ...props}) {
-        const pxSize = compact ? '20px' : '50px';
-        return img({
-            src: compact ? compactSpinnerImg : spinnerImg,
-            width: pxSize,
-            height: pxSize,
+        const {defaults} = Spinner as any,
+            iconName: IconName = props.iconName ?? defaults.iconName,
+            prefix = props.prefix ?? defaults.prefix,
+            animation = props.animation ?? defaults.animation,
+            usePng = props.usePng ?? defaults.usePng;
+
+        if (usePng) {
+            const pxSize = compact ? '20px' : '50px';
+            return img({
+                src: compact ? compactSpinnerImg : spinnerImg,
+                width: pxSize,
+                height: pxSize,
+                className
+            });
+        }
+
+        return Icon.icon({
+            iconName,
+            prefix,
             className,
-            ...props
+            size: compact ? 'lg' : '3x',
+            [animation]: true
         });
     }
 });
+
+/** App-level defaults for Spinner. Instance props take precedence. */
+(Spinner as any).defaults = {
+    iconName: 'spinner-third',
+    prefix: 'fal',
+    animation: 'spin',
+    usePng: false
+} as SpinnerDefaults;
