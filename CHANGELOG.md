@@ -2,6 +2,13 @@
 
 ## 84.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `EnvironmentService.ensureVersionRunnable()` to correctly detect client/server version
+  mismatches on startup. The previous check compared two values both sourced from the server
+  response, making it a tautology that could never fail. Now compares the webpack-baked
+  `clientVersion` against the server-reported `appVersion`.
+
 ## 83.0.2 - 2026-03-30
 
 ### ⚙️ Technical
