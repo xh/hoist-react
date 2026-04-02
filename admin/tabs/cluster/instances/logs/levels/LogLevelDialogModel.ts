@@ -62,15 +62,13 @@ export class LogLevelDialogModel extends HoistModel {
                     {name: 'level', type: 'string', displayName: 'Override', lookupName: 'levels'},
                     {
                         name: 'suppressStackTrace',
-                        type: 'auto',
-                        displayName: 'Suppress Stack',
-                        lookupName: 'suppressStackTraces'
+                        type: 'bool',
+                        displayName: 'Suppress Stack'
                     },
                     {
                         name: 'includeStartMessages',
-                        type: 'auto',
-                        displayName: 'Start Msgs',
-                        lookupName: 'includeStartMessages'
+                        type: 'bool',
+                        displayName: 'Start Msgs'
                     },
                     {name: 'defaultLevel', type: 'string', displayName: 'Initial', editable: false},
                     {
@@ -90,8 +88,8 @@ export class LogLevelDialogModel extends HoistModel {
                 {field: 'defaultLevel', width: 110},
                 {field: 'level', width: 110},
                 {field: 'effectiveLevel', width: 110},
-                {field: 'suppressStackTrace', width: 120, renderer: boolFlagRenderer},
-                {field: 'includeStartMessages', width: 120, renderer: boolFlagRenderer},
+                {field: 'suppressStackTrace', width: 120},
+                {field: 'includeStartMessages', width: 120},
                 Col.lastUpdated,
                 Col.lastUpdatedBy
             ],
@@ -101,15 +99,11 @@ export class LogLevelDialogModel extends HoistModel {
                     formField: {
                         item: textInput({
                             placeholder: 'com.myapp.MyClassWithLogging (or partial path)'
-                        })
+                        }),
+                        info: 'Hint - leave in place with no values set below to easily adjust again later.'
                     }
                 },
-                {
-                    field: 'level',
-                    formField: {
-                        info: 'Hint - clear to leave at default while keeping record in place to adjust again later.'
-                    }
-                },
+                {field: 'level'},
                 {field: 'suppressStackTrace'},
                 {field: 'includeStartMessages'},
                 {field: 'lastUpdated'},
@@ -117,8 +111,4 @@ export class LogLevelDialogModel extends HoistModel {
             ]
         });
     }
-}
-
-function boolFlagRenderer(v: any): string {
-    return v == null ? 'None' : String(v);
 }
