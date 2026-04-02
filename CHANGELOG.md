@@ -2,6 +2,15 @@
 
 ## 84.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Requires `hoist-core >= 38.0`.
+
+### ⚙️ Technical
+
+* Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
+  supporting the new hoist-core per-logger logging behavior overrides.
+
 ## 83.0.2 - 2026-03-30
 
 ### ⚙️ Technical
