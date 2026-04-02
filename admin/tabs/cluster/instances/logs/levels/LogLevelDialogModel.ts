@@ -60,6 +60,18 @@ export class LogLevelDialogModel extends HoistModel {
                         required: true
                     },
                     {name: 'level', type: 'string', displayName: 'Override', lookupName: 'levels'},
+                    {
+                        name: 'suppressStackTrace',
+                        type: 'auto',
+                        displayName: 'Suppress Stack',
+                        lookupName: 'suppressStackTraces'
+                    },
+                    {
+                        name: 'includeStartMessages',
+                        type: 'auto',
+                        displayName: 'Start Msgs',
+                        lookupName: 'includeStartMessages'
+                    },
                     {name: 'defaultLevel', type: 'string', displayName: 'Initial', editable: false},
                     {
                         name: 'effectiveLevel',
@@ -78,6 +90,8 @@ export class LogLevelDialogModel extends HoistModel {
                 {field: 'defaultLevel', width: 110},
                 {field: 'level', width: 110},
                 {field: 'effectiveLevel', width: 110},
+                {field: 'suppressStackTrace', width: 120, renderer: boolFlagRenderer},
+                {field: 'includeStartMessages', width: 120, renderer: boolFlagRenderer},
                 Col.lastUpdated,
                 Col.lastUpdatedBy
             ],
@@ -96,9 +110,15 @@ export class LogLevelDialogModel extends HoistModel {
                         info: 'Hint - clear to leave at default while keeping record in place to adjust again later.'
                     }
                 },
+                {field: 'suppressStackTrace'},
+                {field: 'includeStartMessages'},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ]
         });
     }
+}
+
+function boolFlagRenderer(v: any): string {
+    return v == null ? 'None' : String(v);
 }
