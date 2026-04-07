@@ -24,7 +24,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  *     to customize via the global options dialog, or set a default pref value if per-user
  *     customization is not desirable.
  *
- * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
+ * @see RefreshContextModel
  */
 export class AutoRefreshService extends HoistService {
     override xhImpl = true;
