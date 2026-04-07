@@ -25,32 +25,34 @@ import ShortUniqueId from 'short-unique-id';
 
 const defaultIdGenerator = new ShortUniqueId({length: 16});
 
-/**
- * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
- *
- * Wrapper around the standard Fetch API with some enhancements to streamline the process for
- * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
- * included, and redirects followed.
- *
- * Set {@link FetchService.defaults.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
- * for requests issued by this service. Best configured in the app's `Bootstrap` module to ensure
- * coverage of early hoist core init requests. Can also be set on a per-request basis via
- * {@link FetchOptions.correlationId}.
- *
- * Custom headers can be set on a request via {@link FetchOptions.headers}. Default headers for all
- * requests can be set / customized using {@link addDefaultHeaders}.
- *
- * Also see the {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API | Fetch API Docs}.
- *
- * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
- * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
- */
 export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
     correlationIdHeaderKey?: string;
     genCorrelationId?: () => string;
 }
 
+/**
+ * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
+ *
+ * Typically accessed via `XH.fetchService` or the convenience methods on XH — `XH.fetch()`,
+ * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` — which delegate here.
+ *
+ * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
+ * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
+ * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically.
+ *
+ * Key features:
+ * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
+ * - Auto-abort of duplicate in-flight requests via {@link FetchOptions.autoAbortKey}
+ * - Optional correlation IDs for request tracking (see `defaults.autoGenCorrelationIds`)
+ * - Request/response interceptors via {@link addInterceptor}
+ * - Default headers for all requests via {@link addDefaultHeaders}
+ * - Rich exception handling with HTTP status, server messages, and trace IDs
+ *
+ * All convenience methods accept the same {@link FetchOptions} as the main `fetch()` entry point.
+ *
+ * @see FetchOptions
+ */
 export class FetchService extends HoistService {
     static instance: FetchService;
 
