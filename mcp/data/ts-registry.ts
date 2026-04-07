@@ -15,7 +15,7 @@
  * Detailed symbol info is extracted on-demand.
  */
 import {Project, Node, Scope, SyntaxKind} from 'ts-morph';
-import type {ClassDeclaration, SourceFile} from 'ts-morph';
+import type {ClassDeclaration, FunctionDeclaration, SourceFile} from 'ts-morph';
 import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
@@ -371,7 +371,7 @@ function buildSymbolIndex(proj: Project): {
                 filePath,
                 isExported: func.isExported(),
                 sourcePackage: pkg,
-                jsDoc: extractJsDoc(func)
+                jsDoc: extractFunctionJsDoc(func)
             };
             addToIndex(index, entry);
             counts.total++;
@@ -1012,6 +1012,23 @@ function extractCompanionJsDoc(sourceFile: SourceFile, propsName: string): strin
     return varStmt ? extractJsDoc(varStmt) : '';
 }
 
+/**
+ * Extract JSDoc from a function, falling back to the first overload signature if the
+ * implementation has no JSDoc. TypeScript best practice places JSDoc on overload signatures
+ * (which are visible to consumers) rather than the implementation (which is hidden).
+ */
+function extractFunctionJsDoc(func: FunctionDeclaration): string {
+    const implDoc = extractJsDoc(func);
+    if (implDoc) return implDoc;
+
+    const overloads = func.getOverloads();
+    for (const overload of overloads) {
+        const doc = extractJsDoc(overload);
+        if (doc) return doc;
+    }
+    return '';
+}
+
 /** Safely extract a type's text representation. */
 function safeGetTypeText(node: Node, enclosing?: Node): string {
     try {
@@ -1143,7 +1160,7 @@ function extractFunctionDetail(
     return {
         ...base,
         signature,
-        jsDoc: extractJsDoc(func)
+        jsDoc: extractFunctionJsDoc(func)
     };
 }
 
