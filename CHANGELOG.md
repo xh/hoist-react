@@ -9,6 +9,14 @@
   response, making it a tautology that could never fail. Now compares the webpack-baked
   `clientVersion` against the server-reported `appVersion`.
 
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI TypeScript symbol tools to surface full JSDoc documentation in search results
+  and resolve a discoverability gap around component Props interfaces. `hoist-search-symbols`
+  now includes JSDoc snippets with each result. Props interfaces (e.g. `PanelProps`) without
+  their own JSDoc inherit documentation from their companion component via naming convention.
+  `hoist-get-symbol` now cross-references between Props interfaces and their components.
+
 ## 83.0.2 - 2026-03-30
 
 ### ⚙️ Technical
