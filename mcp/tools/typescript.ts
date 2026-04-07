@@ -8,7 +8,13 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {searchSymbols, searchMembers, getSymbolDetail, getMembers} from '../data/ts-registry.js';
+import {
+    searchSymbols,
+    searchMembers,
+    getSymbolDetail,
+    getMembers,
+    getCompanionSymbols
+} from '../data/ts-registry.js';
 import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
 /**
@@ -100,7 +106,8 @@ export function registerTsTools(server: McpServer): void {
         },
         async ({name, filePath}) => {
             const detail = await getSymbolDetail(name, filePath);
-            let text = formatSymbolDetail(detail, name);
+            const companions = detail ? await getCompanionSymbols(detail) : [];
+            let text = formatSymbolDetail(detail, name, companions);
 
             if (detail && (detail.kind === 'class' || detail.kind === 'interface')) {
                 text += '\n\nUse hoist-get-members to see all properties and methods.';
