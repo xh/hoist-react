@@ -23,6 +23,18 @@ export interface ErrorBoundaryConfig {
     errorRenderer?: (e: unknown) => ReactNode;
 }
 
+/**
+ * Model for an ErrorBoundary component that catches unhandled React lifecycle errors.
+ *
+ * Tracks a caught error and provides {@link handleError} for applications to programmatically
+ * trigger error display for non-lifecycle exceptions. Use {@link showError} to display an
+ * already-handled error without re-running the error handler.
+ *
+ * Configure via `errorHandler` to customize exception handling (defaults to suppressing the
+ * alert dialog) and `errorRenderer` to customize the error display.
+ *
+ * @see ErrorBoundary
+ */
 export class ErrorBoundaryModel extends HoistModel {
     errorHandler: ExceptionHandlerOptions | ((e: unknown) => void);
     errorRenderer: (e: unknown) => ReactNode;

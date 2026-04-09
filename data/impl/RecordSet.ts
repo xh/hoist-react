@@ -12,15 +12,15 @@ import {StoreRecord, StoreRecordId} from '../StoreRecord';
 import {Store} from '../Store';
 import {Filter} from '../filter/Filter';
 
+type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
+type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
+
 /**
  * Internal container for StoreRecord management within a Store.
  * Note this is an immutable object; its update and filtering APIs return new instances as required.
  *
  * @internal
  */
-type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
-type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;
-
 export class RecordSet {
     store: Store;
     recordMap: StoreRecordMap; // Map of all Records by id

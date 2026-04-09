@@ -100,7 +100,7 @@ export class LeftRightChooserModel extends HoistModel {
      * Note that this will *not* affect the actual 'value' property, which will continue
      * to include unfiltered records.
      *
-     * @see LeftRightChooserFilter - a component to easily control this field.
+     * @see LeftRightChooserFilter
      * @param fn - predicate function for filtering.
      */
     setDisplayFilter(fn: FilterTestFn) {

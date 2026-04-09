@@ -7,6 +7,14 @@
 import type {MemberInfo, MemberIndexEntry, SymbolEntry, SymbolDetail} from '../data/ts-registry.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
+/** Remove blank lines from a JSDoc string to produce more compact output. */
+function collapseJsDoc(jsDoc: string): string {
+    return jsDoc
+        .split('\n')
+        .filter(l => l.trim().length > 0)
+        .join('\n');
+}
+
 /** Maximum length for type strings before truncation. */
 const MAX_TYPE_LENGTH = 200;
 
@@ -45,7 +53,11 @@ export function formatMember(member: MemberInfo): string {
     }
 
     if (member.jsDoc) {
-        lines.push(`    ${member.jsDoc.split('\n')[0]}`);
+        const indented = collapseJsDoc(member.jsDoc)
+            .split('\n')
+            .map(l => `    ${l}`)
+            .join('\n');
+        lines.push(indented);
     }
 
     return lines.join('\n');
@@ -62,7 +74,11 @@ export function formatMemberIndexEntry(entry: MemberIndexEntry, index: number): 
         `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${entry.ownerName} \u2014 ${entry.ownerDescription})`
     );
     if (entry.jsDoc) {
-        lines.push(`    ${entry.jsDoc}`);
+        const indented = collapseJsDoc(entry.jsDoc)
+            .split('\n')
+            .map(l => `    ${l}`)
+            .join('\n');
+        lines.push(indented);
     }
     return lines.join('\n');
 }
@@ -81,6 +97,13 @@ export function formatSymbolSearch(
             lines.push(
                 `${i + 1}. [${result.kind}] ${result.name} (package: ${result.sourcePackage}, file: ${toRelativePath(result.filePath)}, exported: ${result.isExported ? 'yes' : 'no'})`
             );
+            if (result.jsDoc) {
+                const indented = collapseJsDoc(result.jsDoc)
+                    .split('\n')
+                    .map(l => `    ${l}`)
+                    .join('\n');
+                lines.push(indented);
+            }
         });
     }
 
@@ -100,7 +123,11 @@ export function formatSymbolSearch(
 }
 
 /** Format detailed symbol information as a readable text block. */
-export function formatSymbolDetail(detail: SymbolDetail | null, name: string): string {
+export function formatSymbolDetail(
+    detail: SymbolDetail | null,
+    name: string,
+    companionSymbols?: SymbolEntry[]
+): string {
     if (!detail) {
         return `Symbol '${name}' not found. Use search to find available symbols.`;
     }
@@ -132,7 +159,26 @@ export function formatSymbolDetail(detail: SymbolDetail | null, name: string): s
     if (detail.jsDoc) {
         lines.push('');
         lines.push('## Documentation');
-        lines.push(detail.jsDoc);
+        lines.push(collapseJsDoc(detail.jsDoc));
+    }
+
+    // Cross-reference: link Props interfaces to their companion component and vice versa
+    if (companionSymbols && companionSymbols.length > 0) {
+        lines.push('');
+        const companionNames = companionSymbols.map(s => `\`${s.name}\``).join(', ');
+        if (detail.kind === 'interface' && detail.name.endsWith('Props')) {
+            lines.push(`## Component`);
+            lines.push(
+                `This is the Props interface for ${companionNames}. ` +
+                    `Use hoist-get-members on ${detail.name} to see all available props.`
+            );
+        } else {
+            const propsName = companionSymbols[0].name;
+            lines.push(`## Props`);
+            lines.push(
+                `Accepts \`${propsName}\` — use hoist-get-members on ${propsName} to see all available props.`
+            );
+        }
     }
 
     return lines.join('\n');
