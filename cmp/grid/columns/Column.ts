@@ -124,8 +124,9 @@ export interface ColumnSpec {
     headerTooltip?: string;
 
     /**
-     * True if this column header will host an expand/collapse all icon. `Column.isTreeColumn`
-     * must be enabled. Defaults to true.
+     * True if this column header can host an expand/collapse all icon. For tree grids, the icon
+     * appears on the column with `isTreeColumn` enabled. For grouped grids, the icon appears on
+     * the leftmost visible column (with this flag set to true). Defaults to true.
      */
     headerHasExpandCollapse?: boolean;
 
