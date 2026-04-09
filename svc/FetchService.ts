@@ -424,7 +424,7 @@ export class FetchService extends HoistService {
             name: method,
             kind: 'client',
             parent: opts.span,
-            tags: {'http.request.method': method, 'url.path': opts.url, 'xh.source': 'hoist'},
+            tags: {'http.request.method': method, 'url.path': opts.url, 'hoist.source': 'hoist'},
             caller: this
         });
     }

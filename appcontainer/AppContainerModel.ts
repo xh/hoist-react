@@ -360,7 +360,7 @@ export class AppContainerModel extends HoistModel {
         let startTime = loadStarted;
 
         const emit = (name: string, duration: number, parent?: Span): Span => {
-            const span = svc.createSpan({name, parent, startTime, tags: {'xh.source': 'hoist'}});
+            const span = svc.createSpan({name, parent, startTime, tags: {'hoist.source': 'hoist'}});
             if (span) {
                 span.endTime = startTime + duration;
                 span.status = 'ok';
