@@ -125,7 +125,7 @@ export class TraceService extends HoistService {
             clientApp: XH.clientAppCode,
             loadId: XH.loadId,
             tabId: XH.tabId,
-            'hoist.source': ret.parent?.tags?.['hoist.source'] ?? 'app',
+            'xh.source': ret.parent?.tags?.['xh.source'] ?? 'app',
             ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
             ...ret.tags
         };
