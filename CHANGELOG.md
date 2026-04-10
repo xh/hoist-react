@@ -6,6 +6,10 @@
 
 * Requires `hoist-core >= 38.0`.
 
+### 🎁 New Features
+
+* Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.samplingRules` at span creation, with child spans inheriting their parent's decision. Error spans are always exported when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to the server.
+
 ### ⚙️ Technical
 
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
