@@ -176,8 +176,8 @@ export class MetricsModel extends BaseAdminTabModel {
             if (loadSpec.isStale) return;
 
             const enriched = data.map(it => {
-                const instance = it.tags.find(t => t.key === 'instance')?.value,
-                    source = it.tags.find(t => t.key === 'source')?.value,
+                const instance = it.tags.find(t => t.key === 'xh.instance')?.value,
+                    source = it.tags.find(t => t.key === 'xh.source')?.value,
                     tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
                 return {...it, instance, source, tags};
             });
@@ -282,7 +282,7 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 }
 
-const PRIORITY_KEYS = ['application', 'source', 'instance'];
+const PRIORITY_KEYS = ['xh.application', 'xh.source', 'xh.instance'];
 
 function sortTags(tags: {key: string; value: string}[]) {
     return [...tags].sort((a, b) => {
