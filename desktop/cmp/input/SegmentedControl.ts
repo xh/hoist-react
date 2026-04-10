@@ -66,7 +66,7 @@ export interface SegmentedControlOption {
 
 /**
  * Variant of SegmentedControlOption for representing a null/"no value" selection.
- * Label is required since we *generally* never want the default string 'null'.
+ * Label is required to force use case to override default js 'null' toString rendering.
  */
 export interface SegmentedControlNullOption {
     /** Null value for this option. */
