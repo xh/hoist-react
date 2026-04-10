@@ -282,7 +282,9 @@ export class FetchService extends HoistService {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
+            ...(span
+                ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
+                : {}),
             ...opts.headers
         };
 

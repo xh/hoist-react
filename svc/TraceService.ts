@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {isEmpty, isString} from 'lodash';
+import {clamp, every, isEmpty, isString} from 'lodash';
 import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
@@ -111,7 +111,10 @@ export class TraceService extends HoistService {
      * Create a new span, or return null if tracing is disabled.
      * Inherits the parent's `source` tag if not specified.
      *
-     * Note: sampling is handled server-side when spans are relayed to the collector.
+     * Sampling rules from `xhTraceConfig.samplingRules` are evaluated against the span's tags
+     * at creation time (head-based). Child spans inherit their parent's sampling decision.
+     * Unsampled spans may still be exported if they end in error and `alwaysSampleErrors` is
+     * enabled — see {@link exportSpan}.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
@@ -130,6 +133,9 @@ export class TraceService extends HoistService {
             ...ret.tags
         };
 
+        // Sampling: children inherit parent decision; root spans evaluate rules.
+        ret.sampled = ret.parent ? ret.parent.sampled : this.shouldSample(ret.tags);
+
         return new Span(ret);
     }
 
@@ -138,8 +144,10 @@ export class TraceService extends HoistService {
     //------------------
     /** Submit a completed span for export. */
     exportSpan(span: Span) {
-        this._pending.push(span);
-        this.pushPendingBuffered();
+        if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
+            this._pending.push(span);
+            this.pushPendingBuffered();
+        }
     }
 
     /**
@@ -171,8 +179,52 @@ export class TraceService extends HoistService {
     private pushPendingBuffered() {
         this.pushPendingAsync();
     }
+
+    /** Evaluate sampling rules against a span's tags. */
+    private shouldSample(tags: PlainObject): boolean {
+        try {
+            return Math.random() < clamp(this.getSampleRate(tags), 0, 1);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    private getSampleRate(tags: PlainObject): number {
+        const {conf} = this;
+        for (const rule of conf.samplingRules ?? []) {
+            if (every(rule.match, (v, k) => this.matchesValue(tags[k], v))) {
+                return rule.sampleRate;
+            }
+        }
+        return conf.sampleRate;
+    }
+
+    /** For strings, simple glob matching: `*` = any, `foo*` = prefix, `*foo` = suffix, `*foo*` = contains. */
+    private matchesValue(actual: any, pattern: any): boolean {
+        if (!isString(actual) || !isString(pattern)) {
+            return actual === pattern;
+        }
+
+        if (pattern === '*') return true;
+        const startsWithWild = pattern.startsWith('*'),
+            endsWithWild = pattern.endsWith('*'),
+            core = pattern.replace(/^\*|\*$/g, '');
+
+        if (startsWithWild && endsWithWild) return actual.includes(core);
+        if (startsWithWild) return actual.endsWith(core);
+        if (endsWithWild) return actual.startsWith(core);
+        return actual === pattern;
+    }
 }
 
 interface TraceConfig {
     enabled: boolean;
+    samplingRules?: SamplingRule[];
+    sampleRate?: number;
+    alwaysSampleErrors?: boolean;
+}
+
+interface SamplingRule {
+    match: Record<string, string>;
+    sampleRate: number;
 }
