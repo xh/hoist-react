@@ -65,7 +65,7 @@ export class LogLevelDialogModel extends HoistModel {
                     {
                         name: 'level',
                         type: 'string',
-                        displayName: 'Log Level Override',
+                        displayName: 'Level Override',
                         lookupName: 'levels'
                     },
                     {
@@ -87,19 +87,19 @@ export class LogLevelDialogModel extends HoistModel {
                     {
                         name: 'effectiveLevel',
                         type: 'string',
-                        displayName: 'Log Level',
+                        displayName: 'Log Level (effective)',
                         editable: false
                     },
                     {
                         name: 'effectiveSuppressStackTrace',
                         type: 'bool',
-                        displayName: 'Suppress Stack',
+                        displayName: 'Suppress Stack (effective)',
                         editable: false
                     },
                     {
                         name: 'effectiveIncludeStartMessages',
                         type: 'bool',
-                        displayName: 'Start Msgs',
+                        displayName: 'Start Msgs (effective)',
                         editable: false
                     },
                     {...(Col.lastUpdated.field as FieldSpec), editable: false},
@@ -136,9 +136,17 @@ export class LogLevelDialogModel extends HoistModel {
                     headerName: 'Effective',
                     headerAlign: 'center',
                     children: [
-                        {field: 'effectiveLevel', headerName: 'Suppress Stack', width: 110},
-                        {...customBoolCheckCol, field: 'effectiveSuppressStackTrace'},
-                        {...customBoolCheckCol, field: 'effectiveIncludeStartMessages'}
+                        {field: 'effectiveLevel', headerName: 'Log Level', width: 110},
+                        {
+                            ...customBoolCheckCol,
+                            field: 'effectiveSuppressStackTrace',
+                            headerName: 'Suppress Stack'
+                        },
+                        {
+                            ...customBoolCheckCol,
+                            field: 'effectiveIncludeStartMessages',
+                            headerName: 'Start Msgs'
+                        }
                     ]
                 },
                 Col.lastUpdated,
@@ -151,7 +159,7 @@ export class LogLevelDialogModel extends HoistModel {
                         item: textInput({
                             placeholder: 'com.myapp.MyClassWithLogging (or partial path)'
                         }),
-                        info: 'Hint - leave in place with no values set below to easily adjust again later.'
+                        info: 'Hint - leave in place with no overrides set below to easily adjust again later.'
                     }
                 },
                 {field: 'level'},
