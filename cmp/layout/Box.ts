@@ -48,6 +48,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
+/** A Box with vertical (column) flex layout. */
 export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'VBox',
     model: false,
@@ -64,6 +65,7 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
+/** A Box with horizontal (row) flex layout. */
 export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'HBox',
     model: false,

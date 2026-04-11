@@ -14,6 +14,13 @@ export interface GridSorterSpec {
     abs?: boolean;
 }
 
+/**
+ * Immutable value object representing a sort specification for a single grid column.
+ *
+ * Typically used in arrays for multi-column sorting. Create via the static `parse()` method,
+ * which accepts a `GridSorterSpec` object, a pipe-delimited string (from `toString()`), or
+ * an existing `GridSorter` instance.
+ */
 export class GridSorter {
     readonly colId: string;
     readonly sort: 'asc' | 'desc';

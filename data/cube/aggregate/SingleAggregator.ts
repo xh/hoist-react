@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Returns the value if there is exactly one row, otherwise null. */
 export class SingleAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         return rows.length === 1 ? rows[0].data[fieldName] : null;

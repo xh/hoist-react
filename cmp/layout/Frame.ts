@@ -28,6 +28,7 @@ export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
     }
 });
 
+/** A Frame with vertical (column) flex layout. */
 export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'VFrame',
     model: false,
@@ -45,6 +46,7 @@ export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     }
 });
 
+/** A Frame with horizontal (row) flex layout. */
 export const [HFrame, hframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'HFrame',
     model: false,
