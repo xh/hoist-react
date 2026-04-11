@@ -349,7 +349,7 @@ export const userDetail = hoistCmp.factory({
 // Simple component with no model
 export const statusBadge = hoistCmp.factory({
     model: false,
-    className: 'status-badge',
+    className: 'my-app-status-badge',
     render({status, className}) {
         return div({className, item: status});
     }
@@ -367,10 +367,18 @@ export const statusBadge = hoistCmp.factory({
 | `memo` | `true` | Wrap with React.memo |
 | `observer` | `true` | Enable MobX reactivity |
 
-> **Note:** When `className` is specified in the component config, it becomes the base class for
-> the component. Any `className` passed by callers is added as an additional class, and the
-> combined value is provided to `render()` via props. Apply this merged `className` to the
-> component's root element.
+> **Best practice: Define `className` in the component spec** rather than hardcoding it inside
+> the render function. The framework automatically merges the spec's base class with any
+> `className` passed by callers, ensuring every component consistently supports caller-provided
+> CSS class overrides without each render function needing to handle the merging itself.
+>
+> The merged `className` is provided to `render()` via props — it already contains both the
+> base class from the spec and any caller-supplied classes. Apply it to the component's root
+> element. If you need to add conditional modifier classes, combine them with the prop value
+> (e.g. via the `classNames` library) — but don't re-add the base class, it's already included.
+>
+> Hoist library components use the `xh-` prefix for their base class names (e.g.
+> `className: 'xh-panel'`). Applications should standardize on their own app-specific prefix.
 
 ### Model Specs: creates() vs uses()
 
