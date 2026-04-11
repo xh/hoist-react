@@ -61,10 +61,16 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
 }
 
 /**
- * Props for Components that support standard Layout attributes
+ * Props for components that support standard layout attributes (margin, padding, dimensions,
+ * flex, alignment, overflow). Extends {@link LayoutProps} with test support and standard
+ * HTML div attributes.
  *
- * Most component will typically separate these props out and pass them along to another component
- * which also supports this interface.  Eventually, they should be passed to a Box class.
+ * Higher-level components accept these props and pass them through to a {@link Box} or
+ * {@link Frame} at the bottom of their render tree, where they are resolved to CSS styles.
+ *
+ * @see Box
+ * @see Frame
+ * @see LayoutProps
  */
 export interface BoxProps
     extends

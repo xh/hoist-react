@@ -17,9 +17,9 @@ export interface GridSorterSpec {
 /**
  * Immutable value object representing a sort specification for a single grid column.
  *
- * Typically used in arrays for multi-column sorting. Create via the static `parse()` method,
- * which accepts a `GridSorterSpec` object, a pipe-delimited string (from `toString()`), or
- * an existing `GridSorter` instance.
+ * Applications typically don't need to construct these directly — pass `GridSorterSpec` objects
+ * or pipe-delimited strings to {@link GridModel.sortBy} and the framework will parse them
+ * automatically.
  */
 export class GridSorter {
     readonly colId: string;

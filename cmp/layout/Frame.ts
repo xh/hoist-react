@@ -7,15 +7,19 @@
 import {hoistCmp, BoxProps, HoistProps} from '@xh/hoist/core';
 import {box} from './Box';
 
+/**
+ * Props for {@link Frame}, {@link VFrame}, and {@link HFrame} layout containers.
+ * Combines {@link HoistProps} with {@link BoxProps} (layout attributes resolved to CSS styles).
+ */
 export interface FrameProps extends HoistProps, BoxProps {}
 
 /**
- * A Box class that flexes to grow and stretch within its *own* parent via flex:'auto', useful for
- * creating nested layouts.
+ * A {@link Box} that stretches to fill its parent via `flex: auto`. Like Box, it supports
+ * all {@link LayoutProps} and merges them onto its rendered `div`.
  *
- * Like Box, Frame provides access to its internal div via a ref argument.
- *
- * VFrame and HFrame variants support internal vertical (column) and horizontal (row) flex layouts.
+ * **Application code should generally prefer {@link VFrame} or {@link HFrame}**, which make
+ * layout direction explicit. Bare `frame()` inherits the CSS default direction (row) but does
+ * not communicate that intent clearly.
  */
 export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
     displayName: 'Frame',
@@ -28,7 +32,10 @@ export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
     }
 });
 
-/** A Frame with vertical (column) flex layout. */
+/**
+ * A {@link Frame} with vertical (column) flex layout. Stretches to fill its parent via
+ * `flex: auto` — use {@link VBox} instead when the container should size to its content.
+ */
 export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'VFrame',
     model: false,
@@ -46,7 +53,10 @@ export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     }
 });
 
-/** A Frame with horizontal (row) flex layout. */
+/**
+ * A {@link Frame} with horizontal (row) flex layout. Stretches to fill its parent via
+ * `flex: auto` — use {@link HBox} instead when the container should size to its content.
+ */
 export const [HFrame, hframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'HFrame',
     model: false,
