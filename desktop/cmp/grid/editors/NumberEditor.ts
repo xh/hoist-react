@@ -17,6 +17,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type NumberEditorProps = EditorProps<NumberInputProps>;
 
+/** Numeric input inline cell editor with guards to reject non-numeric key presses. */
 export const [NumberEditor, numberEditor] = hoistCmp.withFactory<NumberEditorProps>({
     displayName: 'NumberEditor',
     className: 'xh-number-editor',

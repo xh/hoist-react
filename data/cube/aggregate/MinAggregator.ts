@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Returns the minimum value across rows, skipping nulls. */
 export class MinAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         return rows.reduce((ret, it) => {

@@ -7,6 +7,7 @@
 import {Aggregator} from './Aggregator';
 import {isEmpty, isEqual} from 'lodash';
 
+/** Returns the value if all rows share the same value, otherwise null. */
 export class UniqueAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;

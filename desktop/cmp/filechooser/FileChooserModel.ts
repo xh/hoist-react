@@ -10,10 +10,17 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {isEmpty} from 'codemirror/src/util/misc';
 import {filesize} from 'filesize';
-import {find, uniqBy, without} from 'lodash';
+import {find, isEmpty, uniqBy, without} from 'lodash';
 
+/**
+ * Model managing file selection state for a FileChooser component.
+ *
+ * Tracks selected files, supports add/remove/clear operations, and de-duplicates by filename.
+ * Includes a managed GridModel to display selected files with name and size columns.
+ *
+ * @see FileChooser
+ */
 export class FileChooserModel extends HoistModel {
     @observable.ref
     files: File[] = [];
