@@ -34,6 +34,8 @@ export interface ChartModelDefaults {
 
 /**
  * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ *
+ * @see Chart
  */
 export class ChartModel extends HoistModel {
     /** App-level defaults for ChartModel. Instance config takes precedence. */

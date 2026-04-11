@@ -5,6 +5,9 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * Requires `hoist-core >= 38.0`.
+* Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
+  remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
+  `hoistCmp.withFactory()` handles base class merging automatically.
 
 ### 🎁 New Features
 

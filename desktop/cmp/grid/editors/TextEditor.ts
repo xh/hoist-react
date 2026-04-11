@@ -13,6 +13,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type TextEditorProps = EditorProps<TextInputProps>;
 
+/** Text input inline cell editor for string values in a Grid. */
 export const [TextEditor, textEditor] = hoistCmp.withFactory<TextEditorProps>({
     displayName: 'TextEditor',
     className: 'xh-text-editor',

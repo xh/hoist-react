@@ -113,8 +113,9 @@ export interface PanelPersistState {
 }
 
 /**
- * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
+ * PanelModel supports configuration and state-management for user-driven {@link Panel} resizing
+ * and expand/collapse, along with support for saving this state via a configured
+ * PersistenceProvider.
  */
 export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;

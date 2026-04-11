@@ -131,10 +131,11 @@ export type ItemHeightFn = (params: {
 }) => number;
 
 /**
- * DataViewModel is a wrapper around GridModel, which shows sorted data in a single column,
- * using a configured component for rendering each item.
+ * DataViewModel is a wrapper around {@link GridModel}, which shows sorted data in a single
+ * column, using a configured component for rendering each item.
  *
- * This is the primary app entry-point for specifying DataView component options and behavior.
+ * This is the primary app entry-point for specifying {@link DataView} component options and
+ * behavior.
  */
 export class DataViewModel extends HoistModel {
     @managed gridModel: GridModel;

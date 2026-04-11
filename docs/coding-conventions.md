@@ -394,20 +394,13 @@ element factory for functional-style rendering:
 
 ```typescript
 // Library/public component — exports both Component and factory
-export const [MyPanel, myPanel] = hoistCmp.withFactory<MyPanelProps>({
-    displayName: 'MyPanel',
-    model: uses(MyPanelModel),
-    className: 'xh-my-panel',
+export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
+    displayName: 'Grid',
+    model: uses(GridModel),
+    className: 'xh-grid',
 
     render({model, className, ...props}, ref) {
-        return frame({
-            className,
-            ref,
-            item: grid({model: model.gridModel}),
-            bbar: toolbar(
-                button({text: 'Refresh', onClick: () => model.refreshAsync()})
-            )
-        });
+        // ... component render implementation
     }
 });
 ```
@@ -417,16 +410,14 @@ which returns only the element factory. Since these components are rendered via 
 JSX), the PascalCase React component is not needed:
 
 ```typescript
-// App or impl component — only the factory is used
-const myDetail = hoistCmp.factory<MyDetailProps>({
-    displayName: 'MyDetail',
-    model: uses(MyDetailModel),
+// App component — only the factory is used.
+const tradeDetail = hoistCmp.factory<TradeDetailProps>({
+    displayName: 'TradeDetail',
+    model: uses(TradeDetailModel),
+    className: 'myapp-trade-detail',
 
-    render({model}) {
-        return vbox(
-            label(model.title),
-            grid({model: model.gridModel})
-        );
+    render({model, className}) {
+        // ... component render implementation
     }
 });
 ```
@@ -460,6 +451,16 @@ render({model, className, ...rest}, ref) {
 
 Always set `displayName` on components. It appears in React DevTools and error messages. It should
 match the PascalCase export name.
+
+### `className`
+
+Define a base CSS class in the component spec rather than hardcoding it inside the render function.
+The framework automatically merges the spec's base class with any `className` passed by callers, so
+every component consistently supports CSS class overrides without manual merging in render. The
+merged value is provided to `render()` via props — apply it to the component's root element.
+
+The `xh-` prefix is reserved for Hoist library components; applications should standardize on their
+own app-specific prefix.
 
 ### Element Factories vs JSX
 

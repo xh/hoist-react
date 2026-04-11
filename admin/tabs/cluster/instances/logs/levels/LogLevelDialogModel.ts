@@ -8,10 +8,13 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import {LogViewerModel} from '@xh/hoist/admin/tabs/cluster/instances/logs/LogViewerModel';
+import {ColumnSpec} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, lookup, LoadSpec} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {segmentedControl, textInput} from '@xh/hoist/desktop/cmp/input';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import {Icon} from '@xh/hoist/icon';
+import {isNil} from 'lodash';
 
 /**
  * @internal
@@ -59,7 +62,12 @@ export class LogLevelDialogModel extends HoistModel {
                         displayName: 'Package/Class',
                         required: true
                     },
-                    {name: 'level', type: 'string', displayName: 'Override', lookupName: 'levels'},
+                    {
+                        name: 'level',
+                        type: 'string',
+                        displayName: 'Level Override',
+                        lookupName: 'levels'
+                    },
                     {
                         name: 'suppressStackTrace',
                         type: 'bool',
@@ -70,11 +78,28 @@ export class LogLevelDialogModel extends HoistModel {
                         type: 'bool',
                         displayName: 'Start Msgs'
                     },
-                    {name: 'defaultLevel', type: 'string', displayName: 'Initial', editable: false},
+                    {
+                        name: 'defaultLevel',
+                        type: 'string',
+                        displayName: 'Log Level',
+                        editable: false
+                    },
                     {
                         name: 'effectiveLevel',
                         type: 'string',
-                        displayName: 'Effective',
+                        displayName: 'Log Level (effective)',
+                        editable: false
+                    },
+                    {
+                        name: 'effectiveSuppressStackTrace',
+                        type: 'bool',
+                        displayName: 'Suppress Stack (effective)',
+                        editable: false
+                    },
+                    {
+                        name: 'effectiveIncludeStartMessages',
+                        type: 'bool',
+                        displayName: 'Start Msgs (effective)',
                         editable: false
                     },
                     {...(Col.lastUpdated.field as FieldSpec), editable: false},
@@ -85,11 +110,45 @@ export class LogLevelDialogModel extends HoistModel {
             filterFields: ['name'],
             columns: [
                 {field: 'name', width: 400},
-                {field: 'defaultLevel', width: 110},
-                {field: 'level', width: 110},
-                {field: 'effectiveLevel', width: 110},
-                {field: 'suppressStackTrace', width: 120},
-                {field: 'includeStartMessages', width: 120},
+                {
+                    groupId: 'initial',
+                    headerName: 'Initial',
+                    headerAlign: 'center',
+                    children: [{field: 'defaultLevel', width: 110}]
+                },
+                {
+                    groupId: 'override',
+                    headerName: 'Override',
+                    headerAlign: 'center',
+                    children: [
+                        {
+                            field: 'level',
+                            headerName: 'Log Level',
+                            width: 110,
+                            renderer: v => (isNil(v) ? '-' : v)
+                        },
+                        {...customBoolCheckCol, field: 'suppressStackTrace'},
+                        {...customBoolCheckCol, field: 'includeStartMessages'}
+                    ]
+                },
+                {
+                    groupId: 'effective',
+                    headerName: 'Effective',
+                    headerAlign: 'center',
+                    children: [
+                        {field: 'effectiveLevel', headerName: 'Log Level', width: 110},
+                        {
+                            ...customBoolCheckCol,
+                            field: 'effectiveSuppressStackTrace',
+                            headerName: 'Suppress Stack'
+                        },
+                        {
+                            ...customBoolCheckCol,
+                            field: 'effectiveIncludeStartMessages',
+                            headerName: 'Start Msgs'
+                        }
+                    ]
+                },
                 Col.lastUpdated,
                 Col.lastUpdatedBy
             ],
@@ -100,15 +159,42 @@ export class LogLevelDialogModel extends HoistModel {
                         item: textInput({
                             placeholder: 'com.myapp.MyClassWithLogging (or partial path)'
                         }),
-                        info: 'Hint - leave in place with no values set below to easily adjust again later.'
+                        info: 'Hint - leave in place with no overrides set below to easily adjust again later.'
                     }
                 },
                 {field: 'level'},
-                {field: 'suppressStackTrace'},
-                {field: 'includeStartMessages'},
+                {
+                    field: 'suppressStackTrace',
+                    formField: {
+                        item: segmentedControl({options: customBoolSegmentOptions})
+                    }
+                },
+                {
+                    field: 'includeStartMessages',
+                    formField: {
+                        item: segmentedControl({options: customBoolSegmentOptions})
+                    }
+                },
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ]
         });
     }
 }
+
+const customBoolSegmentOptions = [
+    {label: 'Inherit', value: null},
+    {label: 'On', value: true},
+    {label: 'Off', value: false}
+];
+
+const customBoolCheckCol: ColumnSpec = {
+    align: 'center',
+    width: 120,
+    renderer: v =>
+        isNil(v)
+            ? '-'
+            : v
+              ? Icon.check({prefix: 'fas', intent: 'success'})
+              : Icon.cross({prefix: 'fas', intent: 'warning'})
+};
