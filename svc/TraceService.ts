@@ -7,7 +7,7 @@
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {clamp, every, isEmpty, isString} from 'lodash';
+import {every, isEmpty, isString} from 'lodash';
 import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
@@ -183,8 +183,9 @@ export class TraceService extends HoistService {
     /** Evaluate sampling rules against a span's tags. */
     private shouldSample(tags: PlainObject): boolean {
         try {
-            return Math.random() < clamp(this.getSampleRate(tags), 0, 1);
+            return Math.random() < this.getSampleRate(tags);
         } catch (e) {
+            this.logError('Failed to compute sample rate', e);
             return false;
         }
     }
