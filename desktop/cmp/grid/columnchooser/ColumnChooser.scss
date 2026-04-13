@@ -6,34 +6,6 @@
   background: var(--xh-bg-alt);
   overflow: hidden;
 
-  &__pin-section {
-    display: flex;
-    flex-direction: column;
-    min-height: 50px;
-
-    &-label {
-      padding: var(--xh-pad-half-px) var(--xh-pad-px);
-      font-weight: bold;
-      font-size: var(--xh-font-size-small-px);
-      color: var(--xh-text-color-muted);
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--xh-border-color);
-    }
-
-    // Center section takes remaining space
-    &--center {
-      flex: 1;
-      overflow: hidden;
-    }
-
-    // Pinned sections size to content
-    &--pinned {
-      flex: none;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-  }
-
   &__description {
     padding: var(--xh-pad-px);
     border-top: 1px solid var(--xh-border-color);

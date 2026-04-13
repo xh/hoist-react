@@ -1,3 +1,4 @@
+import {grid} from '@xh/hoist/cmp/grid';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {box, filler, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
@@ -7,7 +8,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {ColumnChooserModel} from './ColumnChooserModel';
-import {pinSection} from './PinSection';
 import './ColumnChooser.scss';
 
 export interface ColumnChooserProps extends HoistProps, LayoutProps {
@@ -55,14 +55,14 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                         })
                     ]
                 }),
-                pinSection({
-                    model: impl.leftPinModel,
-                    omit: impl.leftPinModel.gridModel.store.count === 0
-                }),
-                pinSection({model: impl.centerPinModel}),
-                pinSection({
-                    model: impl.rightPinModel,
-                    omit: impl.rightPinModel.gridModel.store.count === 0
+                grid({
+                    model: impl.chooserGridModel,
+                    flex: 1,
+                    agOptions: {
+                        rowDragManaged: true,
+                        animateRows: true,
+                        onRowDoubleClicked: () => {}
+                    }
                 }),
                 box({
                     className: 'xh-column-chooser__description',
