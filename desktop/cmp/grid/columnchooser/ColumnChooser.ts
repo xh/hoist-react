@@ -1,7 +1,8 @@
 import type {GridModel} from '@xh/hoist/cmp/grid';
-import {vbox} from '@xh/hoist/cmp/layout';
+import {filler, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -29,12 +30,23 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
             ...layoutProps,
             items: [
                 toolbar({
-                    omit: !impl.hasColumnGroups,
                     items: [
                         button({
+                            omit: !impl.hasColumnGroups,
                             icon: impl.showGroups ? Icon.treeList() : Icon.list(),
                             text: impl.showGroups ? 'Tree' : 'Flat',
                             onClick: () => impl.setShowGroups(!impl.showGroups)
+                        }),
+                        filler({omit: !impl.hasColumnGroups}),
+                        textInput({
+                            model: impl,
+                            bind: 'filterText',
+                            placeholder: 'Filter columns...',
+                            leftIcon: Icon.search(),
+                            enableClear: true,
+                            commitOnChange: true,
+                            width: null,
+                            flex: 1
                         })
                     ]
                 }),

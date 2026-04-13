@@ -80,6 +80,13 @@ export class ColumnChooserModel extends HoistModel {
             track: () => this.showGroups,
             run: () => this.syncFromGridModel()
         });
+
+        // Apply quick-filter when filterText changes
+        this.addReaction({
+            track: () => this.filterText,
+            run: filterText => this.applyFilter(filterText),
+            debounce: 200
+        });
     }
 
     toggleVisibility(recordId: string) {
@@ -158,6 +165,25 @@ export class ColumnChooserModel extends HoistModel {
 
         walk(columns);
         return records;
+    }
+
+    private applyFilter(filterText: string) {
+        const filter = filterText
+            ? rec => {
+                  const lower = filterText.toLowerCase();
+                  if (!rec.data.isGroup) {
+                      return rec.data.name?.toLowerCase().includes(lower);
+                  }
+                  return rec.data.leafColIds?.some(colId => {
+                      const leaf = rec.store.getById(colId);
+                      return leaf?.data.name?.toLowerCase().includes(lower);
+                  });
+              }
+            : null;
+
+        this.leftPinModel.gridModel.store.setFilter(filter);
+        this.centerPinModel.gridModel.store.setFilter(filter);
+        this.rightPinModel.gridModel.store.setFilter(filter);
     }
 
     private findRecord(id: string) {
