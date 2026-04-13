@@ -20,7 +20,14 @@ export const pinSection = hoistCmp.factory<{model: PinSectionModel}>(({model}) =
         className: 'xh-column-chooser__pin-section',
         items: [
             label({item: title, className: 'xh-column-chooser__pin-section-label'}),
-            grid({model: model.gridModel})
+            grid({
+                model: model.gridModel,
+                agOptions: {
+                    rowDragManaged: true,
+                    animateRows: true,
+                    onRowDragEnd: event => model.onRowDragEnd(event)
+                }
+            })
         ]
     });
 });

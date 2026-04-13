@@ -3,6 +3,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import type {HSide, PlainObject} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
+import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import type {ColumnChooserRecord} from './ColumnChooserModel';
 
 /**
@@ -21,6 +22,9 @@ export class PinSectionModel extends HoistModel {
 
     /** Callback set by ColumnChooserModel for visibility toggling. */
     onToggleVisibility: (recordId: string) => void;
+
+    /** Callback set by ColumnChooserModel for reorder handling. */
+    onReorder: (colIds: string[], pinned: HSide) => void;
 
     constructor({pinned}: {pinned: HSide}) {
         super();
@@ -44,7 +48,6 @@ export class PinSectionModel extends HoistModel {
             },
             emptyText: 'No columns',
             selModel: 'single',
-            sortBy: 'sortOrder',
             hideHeaders: true,
             onCellClicked: e => {
                 if (e.column?.getColId() === 'visible') {
@@ -66,10 +69,26 @@ export class PinSectionModel extends HoistModel {
                     colId: 'name',
                     headerName: 'Column',
                     flex: 1,
-                    isTreeColumn: true
+                    isTreeColumn: true,
+                    agOptions: {
+                        rowDrag: true
+                    }
                 }
             ]
         });
+    }
+
+    /** Handle row drag end — read new order from AG Grid and notify ColumnChooserModel. */
+    onRowDragEnd(event: RowDragEndEvent) {
+        const newOrder: string[] = [];
+        this.gridModel.agApi?.forEachNodeAfterFilterAndSort(node => {
+            if (node.data && !node.data.isGroup) {
+                newOrder.push(node.data.id);
+            }
+        });
+        if (newOrder.length > 0) {
+            this.onReorder?.(newOrder, this.pinned);
+        }
     }
 
     /** Load records for this pin zone. */

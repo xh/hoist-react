@@ -78,6 +78,11 @@ export class ColumnChooserModel extends HoistModel {
         this.centerPinModel.onToggleVisibility = id => this.toggleVisibility(id);
         this.rightPinModel.onToggleVisibility = id => this.toggleVisibility(id);
 
+        // Wire reorder callbacks
+        this.leftPinModel.onReorder = (ids, pinned) => this.handleReorder(ids, pinned);
+        this.centerPinModel.onReorder = (ids, pinned) => this.handleReorder(ids, pinned);
+        this.rightPinModel.onReorder = (ids, pinned) => this.handleReorder(ids, pinned);
+
         // React to changes in the target grid's column state
         this.addReaction({
             track: () => [this.gridModel?.columnState, this.gridModel?.columns],
@@ -208,6 +213,48 @@ export class ColumnChooserModel extends HoistModel {
         this.leftPinModel.gridModel.store.setFilter(filter);
         this.centerPinModel.gridModel.store.setFilter(filter);
         this.rightPinModel.gridModel.store.setFilter(filter);
+    }
+
+    private handleReorder(reorderedColIds: string[], pinned: HSide) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        // Build the full new column order: left-pinned + center + right-pinned
+        const leftIds = this.getOrderedColIds(
+            this.leftPinModel,
+            pinned === 'left' ? reorderedColIds : null
+        );
+        const centerIds = this.getOrderedColIds(
+            this.centerPinModel,
+            pinned === null ? reorderedColIds : null
+        );
+        const rightIds = this.getOrderedColIds(
+            this.rightPinModel,
+            pinned === 'right' ? reorderedColIds : null
+        );
+
+        const fullOrder = [...leftIds, ...centerIds, ...rightIds];
+
+        // Build full columnState in new order — must include ALL leaf columns for
+        // GridModel.updateColumnState() to recognize it as a reorder operation
+        const newState = fullOrder.map(colId => {
+            const existing = gridModel.getStateForColumn(colId);
+            return {...existing};
+        });
+
+        gridModel.updateColumnState(newState);
+    }
+
+    private getOrderedColIds(pinModel: PinSectionModel, overrideOrder: string[]): string[] {
+        if (overrideOrder) return overrideOrder;
+        // Read current leaf column order from this pin section's AG Grid
+        const ids: string[] = [];
+        pinModel.gridModel.agApi?.forEachNodeAfterFilterAndSort(node => {
+            if (node.data && !node.data.isGroup) {
+                ids.push(node.data.id);
+            }
+        });
+        return ids;
     }
 
     private findRecord(id: string) {
