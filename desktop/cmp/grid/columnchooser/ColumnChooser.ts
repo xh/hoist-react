@@ -1,7 +1,9 @@
 import type {GridModel} from '@xh/hoist/cmp/grid';
-import {box} from '@xh/hoist/cmp/layout';
+import {vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {ColumnChooserModel} from './ColumnChooserModel';
+import {pinSection} from './PinSection';
 import './ColumnChooser.scss';
 
 export interface ColumnChooserProps extends HoistProps, LayoutProps {
@@ -18,9 +20,15 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
     className: 'xh-column-chooser',
     render({className, ...props}) {
         const impl = useLocalModel(ColumnChooserModel);
-        return box({
+        const [layoutProps] = splitLayoutProps(props);
+        return vbox({
             className,
-            item: `ColumnChooser bound to: ${impl.gridModel ? 'GridModel' : 'nothing'}`
+            ...layoutProps,
+            items: [
+                pinSection({model: impl.leftPinModel}),
+                pinSection({model: impl.centerPinModel}),
+                pinSection({model: impl.rightPinModel})
+            ]
         });
     }
 });
