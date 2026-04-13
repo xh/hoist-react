@@ -1,7 +1,6 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {span} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed} from '@xh/hoist/core';
-import type {HSide} from '@xh/hoist/core';
+import type {HSide, PlainObject} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
@@ -37,6 +36,7 @@ export class PinSectionModel extends HoistModel {
         this.pinned = pinned;
 
         this.gridModel = new GridModel({
+            treeMode: true,
             store: {
                 idSpec: 'id',
                 fields: [
@@ -47,8 +47,7 @@ export class PinSectionModel extends HoistModel {
                     {name: 'hideable', type: 'bool'},
                     {name: 'parentId', type: 'string'},
                     {name: 'sortOrder', type: 'int'},
-                    {name: 'leafColIds', type: 'json'},
-                    {name: 'depth', type: 'int'}
+                    {name: 'leafColIds', type: 'json'}
                 ]
             },
             emptyText: 'No columns',
@@ -75,14 +74,8 @@ export class PinSectionModel extends HoistModel {
                     colId: 'name',
                     headerName: 'Column',
                     flex: 1,
-                    rendererIsComplex: true,
-                    renderer: (v, {record}) => {
-                        const {name, depth, isGroup} = record.data;
-                        return span({
-                            style: {paddingLeft: depth * 16, fontWeight: isGroup ? 'bold' : null},
-                            item: name
-                        });
-                    },
+                    isTreeColumn: true,
+                    renderer: (v, {record}) => record.data.name,
                     agOptions: {
                         rowDrag: true
                     }
@@ -124,33 +117,36 @@ export class PinSectionModel extends HoistModel {
         sourceApi.addRowDropZone(dropZoneParams);
     }
 
-    /** Load records for this pin zone, in columnState order. */
+    /** Load records for this pin zone. */
     loadRecords(records: ColumnChooserRecord[], showGroups: boolean) {
-        // Leaf records belonging to this pin zone
-        const leaves = records.filter(
-            r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null)
-        );
+        // Leaf records belonging to this pin zone, sorted by columnState order
+        const leaves = records
+            .filter(r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null))
+            .sort((a, b) => a.sortOrder - b.sortOrder);
         const leafIdSet = new Set(leaves.map(r => r.id));
 
         if (!showGroups) {
-            // Flat mode: load leaf records sorted by columnState order, depth 0
-            const flat = leaves
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map(r => ({...r, depth: 0}));
-            this.gridModel.store.loadData(flat);
+            // Flat mode: load sorted leaf records with no parent nesting
+            this.gridModel.store.loadData(leaves);
             return;
         }
 
-        // Tree mode: build a flat list in display order with depth for indentation.
-        // Groups are included inline with their children, indented by nesting level.
+        // Tree mode: build nested structure with groups as parents
         const groups = records.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id)));
         const groupIdSet = new Set(groups.map(r => r.id));
-        // Build children map
+
+        // Build a map of group -> children (both subgroups and leaves), sorted by sortOrder
         const childrenMap = new Map<string, ColumnChooserRecord[]>();
-        for (const rec of [...groups, ...leaves]) {
-            if (rec.parentId && groupIdSet.has(rec.parentId)) {
-                if (!childrenMap.has(rec.parentId)) childrenMap.set(rec.parentId, []);
-                childrenMap.get(rec.parentId).push(rec);
+        for (const leaf of leaves) {
+            if (leaf.parentId && groupIdSet.has(leaf.parentId)) {
+                if (!childrenMap.has(leaf.parentId)) childrenMap.set(leaf.parentId, []);
+                childrenMap.get(leaf.parentId).push(leaf);
+            }
+        }
+        for (const group of groups) {
+            if (group.parentId && groupIdSet.has(group.parentId)) {
+                if (!childrenMap.has(group.parentId)) childrenMap.set(group.parentId, []);
+                childrenMap.get(group.parentId).push(group);
             }
         }
         // Sort children within each group by sortOrder
@@ -158,21 +154,19 @@ export class PinSectionModel extends HoistModel {
             children.sort((a, b) => a.sortOrder - b.sortOrder);
         }
 
-        // Flatten the tree in display order with depth
-        const result: (ColumnChooserRecord & {depth: number})[] = [];
-        const flatten = (r: ColumnChooserRecord, depth: number) => {
-            result.push({...r, depth});
+        // Recursive function to build nested record with children array
+        const buildNested = (r: ColumnChooserRecord): PlainObject => {
             const children = childrenMap.get(r.id);
-            if (children) children.forEach(c => flatten(c, depth + 1));
+            return children ? {...r, children: children.map(buildNested)} : {...r};
         };
 
-        // Root records: groups or leaves with no parent in the visible group set
-        const roots = [
-            ...groups.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
-            ...leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId))
-        ].sort((a, b) => a.sortOrder - b.sortOrder);
+        // Root records are groups or leaves with no parent in the visible group set, sorted
+        const rootGroups = groups.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
+        const rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
+        const rootRecords = [...rootGroups, ...rootLeaves]
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map(buildNested);
 
-        roots.forEach(r => flatten(r, 0));
-        this.gridModel.store.loadData(result);
+        this.gridModel.store.loadData(rootRecords);
     }
 }
