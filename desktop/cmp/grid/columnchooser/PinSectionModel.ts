@@ -5,7 +5,7 @@ import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import type {RowDropZoneEvents} from 'ag-grid-community';
-import type {ColumnChooserRecord} from './ColumnChooserModel';
+import type {ColumnChooserData} from './ColumnChooserModel';
 
 /**
  * @internal
@@ -28,7 +28,7 @@ export class PinSectionModel extends HoistModel {
     onReorder: (colIds: string[], pinned: HSide) => void;
 
     /** Callback set by ColumnChooserModel for cross-zone drops. */
-    onCrossZoneDrop: (records: ColumnChooserRecord[], targetPinned: HSide) => void;
+    onCrossZoneDrop: (records: ColumnChooserData[], targetPinned: HSide) => void;
 
     constructor({pinned}: {pinned: HSide}) {
         super();
@@ -37,6 +37,8 @@ export class PinSectionModel extends HoistModel {
 
         this.gridModel = new GridModel({
             treeMode: true,
+            treeStyle: 'none',
+            expandLevel: -1,
             store: {
                 idSpec: 'id',
                 fields: [
@@ -117,7 +119,7 @@ export class PinSectionModel extends HoistModel {
     }
 
     /** Load records for this pin zone. */
-    loadRecords(records: ColumnChooserRecord[], showGroups: boolean) {
+    loadRecords(records: ColumnChooserData[], showGroups: boolean) {
         // Leaf records belonging to this pin zone
         const leaves = records.filter(
             r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null)
@@ -135,7 +137,7 @@ export class PinSectionModel extends HoistModel {
         const groupIdSet = new Set(groups.map(r => r.id));
 
         // Build a map of group -> children (both subgroups and leaves)
-        const childrenMap = new Map<string, ColumnChooserRecord[]>();
+        const childrenMap = new Map<string, ColumnChooserData[]>();
         for (const leaf of leaves) {
             if (leaf.parentId && groupIdSet.has(leaf.parentId)) {
                 if (!childrenMap.has(leaf.parentId)) childrenMap.set(leaf.parentId, []);
@@ -150,7 +152,7 @@ export class PinSectionModel extends HoistModel {
         }
 
         // Recursive function to build nested record with children array
-        const buildNested = (r: ColumnChooserRecord): PlainObject => {
+        const buildNested = (r: ColumnChooserData): PlainObject => {
             const children = childrenMap.get(r.id);
             return children ? {...r, children: children.map(buildNested)} : {...r};
         };
