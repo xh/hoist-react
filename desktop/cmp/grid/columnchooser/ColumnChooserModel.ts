@@ -5,6 +5,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /** Shape of record data in the ColumnChooser's internal grid. */
@@ -88,7 +89,6 @@ export class ColumnChooserModel extends HoistModel {
             },
             emptyText: 'No columns',
             selModel: 'single',
-            sortBy: 'sortOrder',
             hideHeaders: true,
             columns: [
                 {
@@ -113,18 +113,22 @@ export class ColumnChooserModel extends HoistModel {
                     ]
                 },
                 {
-                    colId: 'name',
-                    headerName: 'Column',
-                    flex: 1,
-                    isTreeColumn: true,
-                    renderer: (v, {record}) => record.data.name,
+                    colId: 'drag',
+                    headerName: '',
+                    width: 28,
+                    sortable: false,
+                    resizable: false,
+                    renderer: () => null,
                     agOptions: {
                         rowDrag: true
                     }
                 },
                 {
-                    colId: 'sortOrder',
-                    hidden: true
+                    colId: 'name',
+                    headerName: 'Column',
+                    flex: 1,
+                    isTreeColumn: true,
+                    renderer: (v, {record}) => record.data.name
                 }
             ]
         });
@@ -163,6 +167,41 @@ export class ColumnChooserModel extends HoistModel {
         const colIds: string[] = record.data.leafColIds;
 
         gridModel.updateColumnState(colIds.map(colId => ({colId, hidden: newHidden})));
+    }
+
+    /**
+     * Handle row drag end. With rowDragManaged, AG Grid has already moved the rows visually.
+     * Read the new display order from AG Grid and push the reordered columnState to the
+     * target GridModel.
+     */
+    handleRowDragEnd(event: RowDragEndEvent) {
+        const {gridModel, chooserGridModel} = this;
+        if (!gridModel) return;
+
+        // Read the new leaf column order from AG Grid's display order.
+        // node.data is a StoreRecord — access fields via node.data.data.
+        const reorderedIds: string[] = [];
+        chooserGridModel.agApi?.forEachNodeAfterFilterAndSort(node => {
+            if (node.data && !node.data.data?.isGroup) {
+                reorderedIds.push(node.data.data.id);
+            }
+        });
+
+        if (!reorderedIds.length) return;
+
+        // The chooser may not show all columns (e.g. excludeFromChooser columns).
+        // Append any missing colIds from the current columnState to maintain a
+        // complete list — required for updateColumnState to apply reordering.
+        const reorderedSet = new Set(reorderedIds);
+        for (const cs of gridModel.columnState) {
+            if (!reorderedSet.has(cs.colId)) {
+                reorderedIds.push(cs.colId);
+            }
+        }
+
+        // Build full columnState in the new order
+        const newState = reorderedIds.map(colId => ({...gridModel.getStateForColumn(colId)}));
+        gridModel.updateColumnState(newState);
     }
 
     async restoreDefaultsAsync() {

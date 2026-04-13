@@ -61,6 +61,7 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                     agOptions: {
                         rowDragManaged: true,
                         animateRows: true,
+                        onRowDragEnd: event => impl.handleRowDragEnd(event),
                         onRowDoubleClicked: () => {}
                     }
                 }),
