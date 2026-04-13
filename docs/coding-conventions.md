@@ -608,6 +608,13 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
 
+### Avoid Unicode in Code Comments
+
+Use plain ASCII in code comments and JSDoc. In particular, use ` - ` (spaced hyphen) rather
+than em dashes (`—`) for parenthetical asides. Unicode characters can cause encoding issues with
+tooling (e.g. grep, MCP tools) and offer no benefit in a monospace code context. Em dashes are
+fine in prose-style `.md` documentation where they render naturally.
+
 ### Observable Annotation Comments
 
 When a property's observable behavior is significant to callers, annotate it in a comment:

@@ -34,7 +34,7 @@ export const [Frame, frame] = hoistCmp.withFactory<FrameProps>({
 
 /**
  * A {@link Frame} with vertical (column) flex layout. Stretches to fill its parent via
- * `flex: auto` — use {@link VBox} instead when the container should size to its content.
+ * `flex: auto` - use {@link VBox} instead when the container should size to its content.
  */
 export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'VFrame',
@@ -55,7 +55,7 @@ export const [VFrame, vframe] = hoistCmp.withFactory<FrameProps>({
 
 /**
  * A {@link Frame} with horizontal (row) flex layout. Stretches to fill its parent via
- * `flex: auto` — use {@link HBox} instead when the container should size to its content.
+ * `flex: auto` - use {@link HBox} instead when the container should size to its content.
  */
 export const [HFrame, hframe] = hoistCmp.withFactory<FrameProps>({
     displayName: 'HFrame',

@@ -136,7 +136,7 @@ export interface FilterChooserConfig {
  * across multiple data fields.
  *
  * Manages the current filter value, user-managed favorites, and available field specs. Supports
- * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config — filters
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
  * are automatically applied to the target as they change, and external filter changes on the
  * target are reflected back into this model.
  *

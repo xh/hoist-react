@@ -18,7 +18,7 @@ import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
  * end-to-end traces from user interaction through server processing and back.
  *
  * Controlled by the `xhTraceConfig` soft config. When disabled (the default), all
- * span-creation methods are no-ops — the wrapped function still executes normally.
+ * span-creation methods are no-ops - the wrapped function still executes normally.
  *
  * Completed spans are batched and exported to the Hoist server endpoint `xh/submitSpans`,
  * which relays them to the configured collector.

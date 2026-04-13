@@ -119,7 +119,7 @@ export type ComponentConfig<P extends HoistProps, D extends PlainObject = never>
 let cmpIndex = 0; // index for anonymous component dispay names
 
 /**
- * The primary entry point for defining Hoist components — functional React components enhanced
+ * The primary entry point for defining Hoist components - functional React components enhanced
  * with MobX reactivity and integrated model support.
  *
  * Accepts a configuration object (or a bare render function) and returns a React functional
@@ -131,20 +131,20 @@ let cmpIndex = 0; // index for anonymous component dispay names
  * when observable state read during render changes.
  *
  * Forward refs ({@link https://reactjs.org/docs/forwarding-refs.html}) are supported by
- * specifying a render function with two arguments — the second is treated as a ref, and
+ * specifying a render function with two arguments - the second is treated as a ref, and
  * `React.forwardRef` is applied automatically.
  *
  * Most components should be defined via one of two convenience methods rather than calling
  * this function directly:
- * - `hoistCmp.factory()` — returns an element factory (the standard pattern for app components).
- * - `hoistCmp.withFactory()` — returns a `[Component, factory]` pair (the standard pattern for
+ * - `hoistCmp.factory()` - returns an element factory (the standard pattern for app components).
+ * - `hoistCmp.withFactory()` - returns a `[Component, factory]` pair (the standard pattern for
  *    library components that need to export both).
  *
  * See `core/README.md` for full documentation on component configuration, model specs, and
  * context lookup behavior.
  *
  * Components can also declare a typed `defaults` object in their config to expose static,
- * app-wide configuration — most typically default values for selected props, but also other
+ * app-wide configuration - most typically default values for selected props, but also other
  * settings designed to be overridden by applications at bootstrap (e.g.
  * `Button.defaults.minimal = false` in Bootstrap.ts). When specified, the returned component
  * exposes a typed `defaults` property.

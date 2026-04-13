@@ -22,7 +22,7 @@ export interface PinPadConfig {
 }
 
 /**
- * Model for a PinPad — a numeric keypad prompt for collecting a PIN from the user.
+ * Model for a PinPad - a numeric keypad prompt for collecting a PIN from the user.
  *
  * Tracks entered digits, validates PIN completion, and provides observable `value` and
  * `isComplete` getters. Supports configurable PIN length and custom header/subheader text.

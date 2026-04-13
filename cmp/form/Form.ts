@@ -43,7 +43,8 @@ export interface FormProps<M extends FormModel = FormModel>
     extends HoistProps<M>, TestSupportProps {
     /**
      * Defaults for certain props on child/nested FormFields.
-     * @see FormField (note there are both desktop and mobile implementations).
+     * Note there are both desktop and mobile implementations of FormField.
+     * @see FormField
      */
     fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
 }

@@ -31,7 +31,7 @@ export interface FormFieldSetConfig {
 }
 
 /**
- * Model for a FormFieldSet — a collapsible container for grouping related form fields.
+ * Model for a FormFieldSet - a collapsible container for grouping related form fields.
  *
  * Aggregates validation state from all descendant FieldModels and child FormFieldSetModels,
  * and supports disabling or setting readonly state on all contained fields at once.

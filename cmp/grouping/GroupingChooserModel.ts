@@ -21,7 +21,7 @@ export interface GroupingChooserConfig {
      * should be automatically applied as it changes. When bound to a GridModel, calls
      * `setGroupBy()`; when bound to a View, calls `updateQuery({dimensions: ...})`.
      *
-     * This is a two-way binding — changes to the target's value are reflected back into
+     * This is a two-way binding - changes to the target's value are reflected back into
      * the GroupingChooserModel automatically.
      */
     bind?: GroupingBindTarget;
@@ -98,7 +98,7 @@ export type GroupingBindTarget = GridModel | View;
  *
  * Manages the current dimension selection, available dimensions, user-managed favorites, and
  * drag-and-drop reordering. Supports bidirectional binding to a {@link GridModel} or Cube
- * {@link View} via the `bind` config — grouping changes are automatically applied to the
+ * {@link View} via the `bind` config - grouping changes are automatically applied to the
  * target, and external changes to the target are reflected back into this model.
  *
  * Dimensions can be auto-populated from the bind target or specified explicitly. When binding

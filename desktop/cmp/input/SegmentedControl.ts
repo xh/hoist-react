@@ -44,7 +44,7 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     options: Array<SegmentedControlOption | SegmentedControlNullOption | OptionPrimitive>;
 
     /**
-     * True to render with an outlined style — a border around the control tray
+     * True to render with an outlined style - a border around the control tray
      * with no inner background fill. Border color follows the current intent.
      */
     outlined?: boolean;
@@ -72,7 +72,7 @@ export interface SegmentedControlNullOption {
     /** Null value for this option. */
     value: null;
 
-    /** Display label — required for null options. */
+    /** Display label - required for null options. */
     label: string;
 
     /** Icon element, displayed before the label. */

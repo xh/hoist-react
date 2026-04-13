@@ -120,6 +120,16 @@ import {
     RowClassRuleFn
 } from './Types';
 
+/**
+ * Configuration for a {@link GridModel} - the primary model backing the Hoist Grid component.
+ *
+ * At minimum, provide `columns` (an array of {@link ColumnSpec} or {@link ColumnGroupSpec}
+ * objects). A {@link Store} can be provided or will be auto-created with fields inferred
+ * from the column configs. Use `colDefaults` to apply shared settings across all columns.
+ *
+ * @see GridModel
+ * @see ColumnSpec
+ */
 export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
