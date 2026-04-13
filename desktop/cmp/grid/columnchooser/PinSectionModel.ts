@@ -64,7 +64,6 @@ export class PinSectionModel extends HoistModel {
                     headerName: '',
                     width: 40,
                     align: 'center',
-                    rendererIsComplex: true,
                     renderer: (v, {record}) => {
                         if (!record.data.hideable) return Icon.lock();
                         return record.data.visible ? Icon.checkSquare() : Icon.square();
@@ -119,14 +118,14 @@ export class PinSectionModel extends HoistModel {
 
     /** Load records for this pin zone. */
     loadRecords(records: ColumnChooserRecord[], showGroups: boolean) {
-        // Leaf records belonging to this pin zone, sorted by columnState order
-        const leaves = records
-            .filter(r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null))
-            .sort((a, b) => a.sortOrder - b.sortOrder);
+        // Leaf records belonging to this pin zone
+        const leaves = records.filter(
+            r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null)
+        );
         const leafIdSet = new Set(leaves.map(r => r.id));
 
         if (!showGroups) {
-            // Flat mode: load sorted leaf records with no parent nesting
+            // Flat mode: load leaf records with no parent nesting
             this.gridModel.store.loadData(leaves);
             return;
         }
@@ -135,7 +134,7 @@ export class PinSectionModel extends HoistModel {
         const groups = records.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id)));
         const groupIdSet = new Set(groups.map(r => r.id));
 
-        // Build a map of group -> children (both subgroups and leaves), sorted by sortOrder
+        // Build a map of group -> children (both subgroups and leaves)
         const childrenMap = new Map<string, ColumnChooserRecord[]>();
         for (const leaf of leaves) {
             if (leaf.parentId && groupIdSet.has(leaf.parentId)) {
@@ -149,10 +148,6 @@ export class PinSectionModel extends HoistModel {
                 childrenMap.get(group.parentId).push(group);
             }
         }
-        // Sort children within each group by sortOrder
-        for (const children of childrenMap.values()) {
-            children.sort((a, b) => a.sortOrder - b.sortOrder);
-        }
 
         // Recursive function to build nested record with children array
         const buildNested = (r: ColumnChooserRecord): PlainObject => {
@@ -160,12 +155,10 @@ export class PinSectionModel extends HoistModel {
             return children ? {...r, children: children.map(buildNested)} : {...r};
         };
 
-        // Root records are groups or leaves with no parent in the visible group set, sorted
+        // Root records are groups or leaves with no parent in the visible group set
         const rootGroups = groups.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
         const rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
-        const rootRecords = [...rootGroups, ...rootLeaves]
-            .sort((a, b) => a.sortOrder - b.sortOrder)
-            .map(buildNested);
+        const rootRecords = [...rootGroups, ...rootLeaves].map(buildNested);
 
         this.gridModel.store.loadData(rootRecords);
     }
