@@ -1,6 +1,6 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import type {HSide} from '@xh/hoist/core';
+import type {HSide, PlainObject} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import type {ColumnChooserRecord} from './ColumnChooserModel';
@@ -28,6 +28,7 @@ export class PinSectionModel extends HoistModel {
         this.pinned = pinned;
 
         this.gridModel = new GridModel({
+            treeMode: true,
             store: {
                 idSpec: 'id',
                 fields: [
@@ -64,24 +65,57 @@ export class PinSectionModel extends HoistModel {
                 {
                     colId: 'name',
                     headerName: 'Column',
-                    flex: 1
+                    flex: 1,
+                    isTreeColumn: true
                 }
             ]
         });
     }
 
     /** Load records for this pin zone. */
-    loadRecords(records: ColumnChooserRecord[]) {
-        const filtered = records.filter(r => {
-            if (r.isGroup) return true;
-            return (r.pinned ?? null) === (this.pinned ?? null);
-        });
-        // Also filter out groups that have no leaf children in this zone
-        const leafIds = new Set(filtered.filter(r => !r.isGroup).map(r => r.id));
-        const finalRecords = filtered.filter(r => {
-            if (!r.isGroup) return true;
-            return r.leafColIds.some(id => leafIds.has(id));
-        });
-        this.gridModel.store.loadData(finalRecords);
+    loadRecords(records: ColumnChooserRecord[], showGroups: boolean) {
+        // Leaf records belonging to this pin zone
+        const leaves = records.filter(
+            r => !r.isGroup && (r.pinned ?? null) === (this.pinned ?? null)
+        );
+        const leafIdSet = new Set(leaves.map(r => r.id));
+
+        if (!showGroups) {
+            // Flat mode: load leaf records with no parent nesting
+            this.gridModel.store.loadData(leaves);
+            return;
+        }
+
+        // Tree mode: build nested structure with groups as parents
+        const groups = records.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id)));
+        const groupIdSet = new Set(groups.map(r => r.id));
+
+        // Build a map of group -> children (both subgroups and leaves)
+        const childrenMap = new Map<string, ColumnChooserRecord[]>();
+        for (const leaf of leaves) {
+            if (leaf.parentId && groupIdSet.has(leaf.parentId)) {
+                if (!childrenMap.has(leaf.parentId)) childrenMap.set(leaf.parentId, []);
+                childrenMap.get(leaf.parentId).push(leaf);
+            }
+        }
+        for (const group of groups) {
+            if (group.parentId && groupIdSet.has(group.parentId)) {
+                if (!childrenMap.has(group.parentId)) childrenMap.set(group.parentId, []);
+                childrenMap.get(group.parentId).push(group);
+            }
+        }
+
+        // Recursive function to build nested record with children array
+        const buildNested = (r: ColumnChooserRecord): PlainObject => {
+            const children = childrenMap.get(r.id);
+            return children ? {...r, children: children.map(buildNested)} : {...r};
+        };
+
+        // Root records are groups or leaves with no parent in the visible group set
+        const rootGroups = groups.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
+        const rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId));
+        const rootRecords = [...rootGroups, ...rootLeaves].map(buildNested);
+
+        this.gridModel.store.loadData(rootRecords);
     }
 }

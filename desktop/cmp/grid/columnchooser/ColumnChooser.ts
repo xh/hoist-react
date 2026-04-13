@@ -1,6 +1,9 @@
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {ColumnChooserModel} from './ColumnChooserModel';
 import {pinSection} from './PinSection';
@@ -25,6 +28,16 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
             className,
             ...layoutProps,
             items: [
+                toolbar({
+                    omit: !impl.hasColumnGroups,
+                    items: [
+                        button({
+                            icon: impl.showGroups ? Icon.treeList() : Icon.list(),
+                            text: impl.showGroups ? 'Tree' : 'Flat',
+                            onClick: () => impl.setShowGroups(!impl.showGroups)
+                        })
+                    ]
+                }),
                 pinSection({model: impl.leftPinModel}),
                 pinSection({model: impl.centerPinModel}),
                 pinSection({model: impl.rightPinModel})
