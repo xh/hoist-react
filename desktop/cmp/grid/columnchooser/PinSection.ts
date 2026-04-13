@@ -28,6 +28,7 @@ export const pinSection = hoistCmp.factory<{model: PinSectionModel}>(({model}) =
             label({item: title, className: 'xh-column-chooser__pin-section-label'}),
             grid({
                 model: model.gridModel,
+                flex: 1,
                 agOptions: {
                     rowDragManaged: true,
                     animateRows: true,

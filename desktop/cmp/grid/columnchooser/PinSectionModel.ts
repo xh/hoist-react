@@ -66,7 +66,7 @@ export class PinSectionModel extends HoistModel {
                     align: 'center',
                     renderer: (v, {record}) => {
                         if (!record.data.hideable) return Icon.lock();
-                        return v ? Icon.checkSquare() : Icon.square();
+                        return record.data.visible ? Icon.checkSquare() : Icon.square();
                     }
                 },
                 {
@@ -74,6 +74,7 @@ export class PinSectionModel extends HoistModel {
                     headerName: 'Column',
                     flex: 1,
                     isTreeColumn: true,
+                    renderer: (v, {record}) => record.data.name,
                     agOptions: {
                         rowDrag: true
                     }
