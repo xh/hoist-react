@@ -17,6 +17,12 @@
  Added initial defaults to `Panel`, `Button`, and `Toolbar`.
 
 
+### 🐞 Bug Fixes
+
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
+  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
+  app-level customization of background, border, border-radius, padding, and max-width.
+
 ### ⚙️ Technical
 
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
