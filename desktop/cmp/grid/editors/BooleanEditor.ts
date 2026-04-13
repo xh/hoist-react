@@ -25,6 +25,7 @@ export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     quickToggle?: boolean;
 }
 
+/** Checkbox-based inline cell editor for boolean values in a Grid. */
 export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditorProps>({
     displayName: 'BooleanEditor',
     className: 'xh-boolean-editor',

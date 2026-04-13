@@ -47,6 +47,7 @@ export const exceptionDialog = hoistCmp.factory({
                     button({
                         icon: Icon.search(),
                         text: 'Details',
+                        testId: 'xh-exception-details-btn',
                         onClick: () => model.openDetails(),
                         omit: !options.showAsError
                     }),
@@ -54,6 +55,7 @@ export const exceptionDialog = hoistCmp.factory({
                         omit: !identityService?.isImpersonating,
                         text: 'End Impers',
                         minimal: true,
+                        testId: 'xh-exception-end-impersonation-btn',
                         onClick: () => identityService.endImpersonateAsync()
                     }),
                     filler(),
@@ -74,10 +76,12 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
         ? button({
               icon: Icon.refresh(),
               text: 'Reload App',
+              testId: 'xh-exception-dismiss-btn',
               onClick: () => XH.reloadApp()
           })
         : button({
               text: 'Close',
+              testId: 'xh-exception-dismiss-btn',
               onClick: () => model.close()
           });
 });

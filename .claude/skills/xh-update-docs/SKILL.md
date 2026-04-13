@@ -1,6 +1,6 @@
 ---
 name: xh-update-docs
-description: Update hoist-react documentation after adding new components or features. Use when a developer has made changes to hoist-react and wants to update README files, AGENTS.md, and the documentation roadmap (docs/planning/docs-roadmap.md) to reflect those changes. Invoke with a commit hash or PR number. Also use when you detect that recent commits or PRs have added new components, models, or services that are not yet reflected in the documentation.
+description: Update hoist-react documentation after adding new components or features. Use when a developer has made changes to hoist-react and wants to update README files, AGENTS.md, and the documentation roadmap (docs/planning/docs-roadmap.md) to reflect those changes. Invoke with a commit hash or PR number. Also use when you detect that recent commits or PRs have added new components, models, or services that are not yet reflected in the documentation. Use whenever asked to "document recent changes", "update the docs for this PR", or "write a README for this package". This skill writes and updates documentation content — for syncing indexes, links, and the doc registry without writing new content, see `xh-update-doc-links`.
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -9,6 +9,9 @@ tools: Read, Glob, Grep, Bash, Edit, Write
 Update hoist-react documentation to reflect recent code changes. This skill analyzes
 commits or PRs, identifies documentation-worthy changes, and proposes targeted updates
 to package READMEs, AGENTS.md, and the documentation roadmap.
+
+This skill writes and updates documentation content. For syncing indexes, inter-doc links,
+and the doc registry without writing new content, see `xh-update-doc-links`.
 
 ## Step 1: Resolve Input
 
@@ -20,6 +23,8 @@ Accept `$ARGUMENTS` as a commit hash or PR number.
   - **If `gh` CLI is not available:** Use the GitHub MCP server tools instead — call
     `pull_request_read` with method `get_diff` for the unified diff and method `details`
     for PR metadata. The MCP server is configured in `.mcp.json` at the repo root.
+  - **If neither `gh` nor the GitHub MCP server is available:** Ask the user to provide
+    the commit hash instead, or to check out the PR branch locally.
 - Otherwise treat it as a commit hash and use `git diff <hash>~1..<hash>`
 
 **If no arguments are provided:**
@@ -103,7 +108,8 @@ Status changes in `docs/planning/docs-roadmap.md`:
 - Status changes (e.g., `Planned` → `Done` with link)
 
 Progress notes in `docs/planning/docs-roadmap-log.md`:
-- Append a new dated entry following the existing chronological format
+- When meaningful changes occur (new READMEs created, roadmap status promotions — not minor
+  edits or cosmetic fixes), append a new dated entry following the existing chronological format
 
 ## Step 5: Confirm with User
 
@@ -122,8 +128,5 @@ Follow conventions from `references/doc-conventions.md`:
 - Fold defaults into description column (no separate Default column)
 - Use ✅/❌ markers for correct/incorrect code patterns
 - Use `**Avoid:**` prefix for inline warnings
-
-When new docs are added, also update `docs/doc-registry.json` with a new entry containing
-`id` (= file path), `title`, `mcpCategory`, `viewerCategory`, `description`, and `keywords`.
 
 After applying changes, present a summary of what was updated.

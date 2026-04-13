@@ -64,6 +64,11 @@ export interface AppMenuButtonProps extends ButtonProps {
 
 type RenderWithUserProfileCustomFn = (user: HoistUser) => ReactNode;
 
+/**
+ * Application-level menu button rendered in the AppBar. Provides a dropdown menu with standard
+ * items for About, Admin, Feedback, Options, Theme, Impersonation, Changelog, and Logout.
+ * Individual items can be hidden via props, and custom items added via `extraItems`.
+ */
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,

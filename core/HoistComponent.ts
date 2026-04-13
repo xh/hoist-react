@@ -123,21 +123,29 @@ export type ComponentConfig<P extends HoistProps, D extends Partial<OwnProps<P>>
 let cmpIndex = 0; // index for anonymous component dispay names
 
 /**
- * Hoist utility for defining functional components. This is the primary method for creating
- * components for use in Hoist applications. Accepts either a render function (directly) or a
- * configuration object to specify that function and additional options, as described below.
+ * The primary entry point for defining Hoist components — functional React components enhanced
+ * with MobX reactivity and integrated model support.
  *
- * The primary additional config option is `model`. It specifies how a backing HoistModel will be
- * provided to / created by this component and if the component should publish its model to any
- * subcomponents via context.
+ * Accepts a configuration object (or a bare render function) and returns a React functional
+ * component. The `model` config is the key option: use {@link creates} to have the component
+ * create and own its backing model, {@link uses} to source a model from props or context, or
+ * `false` for simple components with no model. Defaults to `uses('*')` if not specified.
  *
- * By default, this utility wraps the returned component in the MobX 'observer' HOC, enabling
- * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
- * any other sources of observable state.
+ * Components are wrapped in the MobX `observer` HOC by default, enabling automatic re-rendering
+ * when observable state read during render changes.
  *
- * Forward refs {@link https://reactjs.org/docs/forwarding-refs.html} are supported by specifying a
- * render function that accepts two arguments. In that case, the second arg will be considered a
- * ref, and this utility will apply `React.forwardRef` as required.
+ * Forward refs ({@link https://reactjs.org/docs/forwarding-refs.html}) are supported by
+ * specifying a render function with two arguments — the second is treated as a ref, and
+ * `React.forwardRef` is applied automatically.
+ *
+ * Most components should be defined via one of two convenience methods rather than calling
+ * this function directly:
+ * - `hoistCmp.factory()` — returns an element factory (the standard pattern for app components).
+ * - `hoistCmp.withFactory()` — returns a `[Component, factory]` pair (the standard pattern for
+ *    library components that need to export both).
+ *
+ * See `core/README.md` for full documentation on component configuration, model specs, and
+ * context lookup behavior.
  *
  * Components can also declare a typed `defaults` object in their config to provide app-level
  * overridable default values for selected props. When specified, the returned component exposes a
@@ -146,16 +154,6 @@ let cmpIndex = 0; // index for anonymous component dispay names
  *
  * @param config - specification object, or a render function defining the component.
  * @returns a functional React Component for use within Hoist apps.
- *
- * @see hoistCmp - a shorthand alias to this function.
- *
- * This function also has several related functions
- *
- *   - `hoistCmp.factory` - return an elementFactory for a newly defined Component.
- *           instead of the Component itself.
- *
- *   - `hoistCmp.withFactory` - return a 2-element list containing both the newly
- *          defined Component and an elementFactory for it.
  */
 export function hoistCmp<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>

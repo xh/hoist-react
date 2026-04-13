@@ -146,7 +146,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     /**
      * Type of value to publish. Defaults to 'date'. The use of 'localDate' is often a good
      * choice for use cases where there is no time component.
-     * @see LocalDate - the class that will be published when localDate mode.
+     * @see LocalDate
      */
     valueType?: 'date' | 'localDate';
 }

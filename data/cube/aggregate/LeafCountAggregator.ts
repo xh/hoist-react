@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Returns the count of all leaf (non-aggregate) descendant rows. */
 export class LeafCountAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         let count = 0;

@@ -93,7 +93,8 @@ export interface RestGridModelDefaults {
 }
 
 /**
- * Core Model for a RestGrid.
+ * Core Model for a {@link RestGrid}. Configures the grid's columns, editors, toolbar and
+ * context menu actions, and its backing {@link RestStore} for server-side CRUD operations.
  */
 export class RestGridModel extends HoistModel {
     /** App-level defaults for RestGridModel. Instance config takes precedence. */

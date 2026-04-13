@@ -53,6 +53,7 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
 
         return panel({
             className: 'xh-suspend-panel',
+            testId: 'xh-suspend-panel',
             title,
             icon,
             items: [
@@ -74,12 +75,14 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
                                     icon: Icon.refresh(),
                                     intent: 'primary',
                                     flex: 1,
+                                    testId: 'xh-suspend-reload-btn',
                                     onClick: () => XH.reloadApp()
                                 }),
                                 button({
                                     text: 'More Details',
                                     icon: Icon.detail(),
                                     minimal: true,
+                                    testId: 'xh-suspend-details-btn',
                                     omit: !exception,
                                     onClick: () =>
                                         XH.exceptionHandler.showExceptionDetails(exception)

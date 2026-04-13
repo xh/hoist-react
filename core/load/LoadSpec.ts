@@ -8,26 +8,6 @@
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
-/**
- * Object describing a load/refresh request in Hoist.
- *
- * Instances of this class are created within the public APIs provided by {@link LoadSupport}
- * and are passed to subclass (i.e. app-level) implementations of `doLoadAsync()`.
- *
- * Application implementations of `doLoadAsync()` can consult this object's flags. Of particular
- * interest are {@link isStale} and {@link isObsolete}, which implementations can read after any
- * async calls return to determine if a newer, subsequent load has already been requested.
- *
- * In addition, `doLoadAsync()` implementations should typically pass along this object to any
- * calls they make to `loadAsync()` on other objects + all calls to {@link FetchService} APIs.
- *
- * Note that Hoist's exception handling and activity tracking will consult the {@link isAutoRefresh}
- * flag on specs passed to their calls to automatically adjust their behavior (e.g. not showing an
- * exception dialog on error, not tracking background refresh activity).
- *
- * @see LoadSupport
- */
-
 export type LoadSpecConfig = {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
@@ -37,6 +17,25 @@ export type LoadSpecConfig = {
     meta?: PlainObject;
 };
 
+/**
+ * Immutable descriptor for a load/refresh request, passed to `doLoadAsync()` implementations.
+ *
+ * Instances are created automatically by {@link LoadSupport} when `loadAsync()`,
+ * `refreshAsync()`, or `autoRefreshAsync()` are called. Application code should not construct
+ * LoadSpec instances directly.
+ *
+ * Within `doLoadAsync()`, check {@link isStale} after any async call to determine if a newer
+ * load has already been requested — if so, return early to avoid applying outdated results.
+ * Check {@link isAutoRefresh} to adjust behavior for background refreshes (e.g. skip expensive
+ * operations, avoid user-facing error dialogs).
+ *
+ * Pass this object along to any nested `loadAsync()` calls and to all {@link FetchService}
+ * requests. Hoist's exception handling and activity tracking consult the LoadSpec to
+ * automatically suppress error dialogs and skip tracking for auto-refresh operations.
+ *
+ * @see LoadSupport
+ * @see HoistModel.doLoadAsync
+ */
 export class LoadSpec {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh: boolean;

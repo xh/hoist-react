@@ -2,6 +2,13 @@
 
 ## 84.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Requires `hoist-core >= 38.0`.
+* Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
+  remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
+  `hoistCmp.withFactory()` handles base class merging automatically.
+
 ### 🎁 New Features
 
 * Added support for typed `defaults` on `hoistCmp` components, allowing library components to
@@ -9,6 +16,29 @@
   globally (e.g. `Button.defaults.minimal = false` in Bootstrap.ts) without passing props to every
   instance. Added initial defaults to `Panel` (`compactHeader`), `Button` (`minimal`, `outlined`),
   and `Toolbar` (`compact`).
+
+
+### ⚙️ Technical
+
+* Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
+  supporting the new hoist-core per-logger logging behavior overrides.
+
+## 83.1.0 - 2026-04-07
+
+### 🐞 Bug Fixes
+
+* Fixed `EnvironmentService.ensureVersionRunnable()` to correctly detect client/server version
+  mismatches on startup. The previous check compared two values both sourced from the server
+  response, making it a tautology that could never fail. Now compares the webpack-baked
+  `clientVersion` against the server-reported `appVersion`.
+
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI TypeScript symbol tools to surface full JSDoc documentation in search results
+  and resolve a discoverability gap around component Props interfaces. `hoist-search-symbols`
+  now includes JSDoc snippets with each result. Props interfaces (e.g. `PanelProps`) without
+  their own JSDoc inherit documentation from their companion component via naming convention.
+  `hoist-get-symbol` now cross-references between Props interfaces and their components.
 
 ## 83.0.2 - 2026-03-30
 

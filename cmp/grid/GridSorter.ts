@@ -14,6 +14,13 @@ export interface GridSorterSpec {
     abs?: boolean;
 }
 
+/**
+ * Immutable value object representing a sort specification for a single grid column.
+ *
+ * Applications typically don't need to construct these directly — pass `GridSorterSpec` objects
+ * or pipe-delimited strings to {@link GridModel.sortBy} and the framework will parse them
+ * automatically.
+ */
 export class GridSorter {
     readonly colId: string;
     readonly sort: 'asc' | 'desc';

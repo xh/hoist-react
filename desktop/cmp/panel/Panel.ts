@@ -113,7 +113,7 @@ export interface PanelDefaults {
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
  * Panels also support resizing and collapsing their contents via its `model` prop. Provide an
- * optional `PanelModel` config as a prop to enable and customize these features.
+ * optional {@link PanelModel} config as a prop to enable and customize these features.
  *
  * A Panel will accept a ref argument to provide access to its top level DOM element.
  */
