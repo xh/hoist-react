@@ -9,6 +9,14 @@
   remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
   `hoistCmp.withFactory()` handles base class merging automatically.
 
+### 🎁 New Features
+
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
+ override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
+ prop values (instance props take precedence), but may hold other app-overridable settings.
+ Added initial defaults to `Panel`, `Button`, and `Toolbar`.
+
+
 ### ⚙️ Technical
 
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,

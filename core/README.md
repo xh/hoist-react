@@ -1,5 +1,19 @@
 # Core Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Architecture overview and primary artifact types |
+| [Class Hierarchy](#class-hierarchy) | Inheritance tree for Hoist's foundational classes |
+| [HoistBase](#hoistbase) | MobX integration, resource management, and lifecycle |
+| [HoistModel](#hoistmodel) | Stateful UI backing — linked/unlinked models, loading, lookup |
+| [HoistService](#hoistservice) | Singleton services for app-wide state and data access |
+| [Components and hoistCmp](#components-and-hoistcmp) | Functional components with MobX reactivity, model wiring, and defaults |
+| [Element Factories](#element-factories) | Declarative JS-native alternative to JSX |
+| [XH Singleton](#xh-singleton) | Top-level API entry point for the framework |
+| [Decorators Reference](#decorators-reference) | Quick reference for all Hoist and MobX decorators |
+| [Common Patterns](#common-patterns) | Constructor boilerplate, async naming, multiple models, error handling |
+| [Common Pitfalls](#common-pitfalls) | Frequently encountered issues and how to avoid them |
+
 ## Overview
 
 The `/core/` package contains the foundational classes and utilities that define Hoist's architecture.
@@ -366,6 +380,7 @@ export const statusBadge = hoistCmp.factory({
 | `displayName` | - | Component name for debugging |
 | `memo` | `true` | Wrap with React.memo |
 | `observer` | `true` | Enable MobX reactivity |
+| `defaults` | - | Typed static config for the component, overridable at app bootstrap (see below) |
 
 > **Best practice: Define `className` in the component spec** rather than hardcoding it inside
 > the render function. The framework automatically merges the spec's base class with any
@@ -461,6 +476,45 @@ export const myInput = hoistCmp.factory({
     }
 });
 ```
+
+### Component Defaults
+
+Components can declare a typed `defaults` object to expose **static, app-wide configuration** that
+applications can override at bootstrap (e.g. in `Bootstrap.ts`) to customize all instances of the
+component.
+
+Most often this supplies default values for selected props — when read in `render` as fallbacks,
+**instance props take precedence**. But `defaults` is not restricted to props and may carry other
+app-overridable settings (thresholds, modes, etc.).
+
+```typescript
+// 1) Define a defaults interface — typically mirrors a few props the author wants to be
+//    globally configurable, but may also include non-prop tunables.
+export interface ButtonDefaults {
+    minimal?: boolean;
+    outlined?: boolean;
+}
+
+// 2) Pass as a second generic and include in the component config
+export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults>({
+    displayName: 'Button',
+    defaults: {
+        minimal: true,
+        outlined: false
+    },
+    render(props) {
+        const {defaults} = Button;
+        const {minimal = defaults.minimal, outlined = defaults.outlined, ...rest} = props;
+        // ...
+    }
+});
+
+// 3) Override in app Bootstrap.ts — mutate fields directly.
+Button.defaults.minimal = false;
+```
+
+This pattern is analogous to `static defaults` on Model and Service classes (e.g.
+`GridModel.defaults`), adapted for functional components created via `hoistCmp`.
 
 ## Element Factories
 

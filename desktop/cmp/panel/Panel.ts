@@ -104,6 +104,10 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     scrollable?: boolean;
 }
 
+export interface PanelDefaults {
+    compactHeader?: boolean;
+}
+
 /**
  * A Panel container builds on the lower-level layout components to offer a header element
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
@@ -113,7 +117,7 @@ export interface PanelProps<M extends PanelModel = PanelModel>
  *
  * A Panel will accept a ref argument to provide access to its top level DOM element.
  */
-export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
@@ -121,6 +125,9 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         createDefault: () => new PanelModel({collapsible: false, resizable: false, xhImpl: true})
     }),
     className: 'xh-panel',
+    defaults: {
+        compactHeader: false
+    },
 
     render({model, className, testId, ...props}, ref) {
         const contextModel = useContextModel('*');
@@ -128,25 +135,26 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         let wasDisplayed = useRef(false),
             [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
-        const {
-            tbar,
-            bbar,
-            title,
-            icon,
-            compactHeader,
-            collapsedTitle,
-            collapsedIcon,
-            headerClassName,
-            headerItems,
-            mask: maskProp,
-            loadingIndicator: loadingIndicatorProp,
-            contextMenu,
-            hotkeys,
-            contentBoxProps,
-            scrollable,
-            children,
-            ...rest
-        } = nonLayoutProps;
+        const {defaults} = Panel,
+            {
+                tbar,
+                bbar,
+                title,
+                icon,
+                compactHeader = defaults.compactHeader,
+                collapsedTitle,
+                collapsedIcon,
+                headerClassName,
+                headerItems,
+                mask: maskProp,
+                loadingIndicator: loadingIndicatorProp,
+                contextMenu,
+                hotkeys,
+                contentBoxProps,
+                scrollable,
+                children,
+                ...rest
+            } = nonLayoutProps;
 
         useLayoutEffect(() => {
             model.enforceSizeLimits();
