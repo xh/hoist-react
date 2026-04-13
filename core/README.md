@@ -380,7 +380,7 @@ export const statusBadge = hoistCmp.factory({
 | `displayName` | - | Component name for debugging |
 | `memo` | `true` | Wrap with React.memo |
 | `observer` | `true` | Enable MobX reactivity |
-| `defaults` | - | Typed default values for selected props (see below) |
+| `defaults` | - | Typed static config for the component, overridable at app bootstrap (see below) |
 
 > **Best practice: Define `className` in the component spec** rather than hardcoding it inside
 > the render function. The framework automatically merges the spec's base class with any
@@ -479,16 +479,17 @@ export const myInput = hoistCmp.factory({
 
 ### Component Defaults
 
-Components can declare a typed `defaults` object to provide app-level overridable default values
-for selected props. This is useful for behavioral or stylistic props where an application may want
-a consistent value across all instances — without passing the prop every time.
+Components can declare a typed `defaults` object to expose **static, app-wide configuration** that
+applications can override at bootstrap (e.g. in `Bootstrap.ts`) to customize all instances of the
+component.
 
-Defaults are declared in the component config and exposed as a typed property on the returned
-component. Applications can modify them globally (e.g. in `Bootstrap.ts`), and instance props
-always take precedence.
+Most often this supplies default values for selected props — when read in `render` as fallbacks,
+**instance props take precedence**. But `defaults` is not restricted to props and may carry other
+app-overridable settings (thresholds, modes, etc.).
 
 ```typescript
-// 1) Define a defaults interface for the props you want to be globally configurable
+// 1) Define a defaults interface — typically mirrors a few props the author wants to be
+//    globally configurable, but may also include non-prop tunables.
 export interface ButtonDefaults {
     minimal?: boolean;
     outlined?: boolean;
@@ -508,7 +509,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
     }
 });
 
-// 3) Override in app Bootstrap.ts
+// 3) Override in app Bootstrap.ts — mutate fields directly.
 Button.defaults.minimal = false;
 ```
 

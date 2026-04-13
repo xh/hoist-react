@@ -65,16 +65,10 @@ export type RenderPropsOf<P extends HoistProps> = P & {
 };
 
 /**
- * Props specific to a component, excluding framework-provided HoistProps.
- * Used as the constraint for component-level defaults.
- */
-export type OwnProps<P extends HoistProps> = Omit<P, keyof HoistProps>;
-
-/**
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps, D extends Partial<OwnProps<P>> = never> =
+export type ComponentConfig<P extends HoistProps, D extends PlainObject = never> =
     | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
     | {
           /** Render function defining the component. */
@@ -112,10 +106,12 @@ export type ComponentConfig<P extends HoistProps, D extends Partial<OwnProps<P>>
           observer?: boolean;
 
           /**
-           * Default values for selected component props. Attached to the returned component
-           * as a typed `defaults` object that applications can modify to override framework
-           * defaults for all instances (e.g. `Button.defaults.minimal = false` in Bootstrap.ts).
-           * Instance props always take precedence over defaults.
+           * Static, app-wide configuration for the component, attached to the returned component
+           * as a typed `defaults` object that applications can modify at bootstrap to customize
+           * behavior for all instances (e.g. `Button.defaults.minimal = false` in Bootstrap.ts).
+           *
+           * Most commonly used to supply default values for selected props. May also be used for
+           * other app-overridable settings that are not exposed as props.
            */
           defaults?: D;
       };
@@ -147,10 +143,11 @@ let cmpIndex = 0; // index for anonymous component dispay names
  * See `core/README.md` for full documentation on component configuration, model specs, and
  * context lookup behavior.
  *
- * Components can also declare a typed `defaults` object in their config to provide app-level
- * overridable default values for selected props. When specified, the returned component exposes a
- * `defaults` property that applications can modify (e.g. `Button.defaults.minimal = false` in
- * Bootstrap.ts). Instance props always take precedence over defaults.
+ * Components can also declare a typed `defaults` object in their config to expose static,
+ * app-wide configuration — most typically default values for selected props, but also other
+ * settings designed to be overridden by applications at bootstrap (e.g.
+ * `Button.defaults.minimal = false` in Bootstrap.ts). When specified, the returned component
+ * exposes a typed `defaults` property.
  *
  * @param config - specification object, or a render function defining the component.
  * @returns a functional React Component for use within Hoist apps.
@@ -158,7 +155,7 @@ let cmpIndex = 0; // index for anonymous component dispay names
 export function hoistCmp<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): FC<DefaultHoistProps<M>>;
-export function hoistCmp<P extends HoistProps, D extends Partial<OwnProps<P>>>(
+export function hoistCmp<P extends HoistProps, D extends PlainObject>(
     config: ComponentConfig<P, D>
 ): FC<P> & {defaults: D};
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P>;
@@ -244,7 +241,7 @@ hoistCmp.factory = hoistCmpFactory;
 export function hoistCmpWithFactory<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): [FC<DefaultHoistProps<M>>, ElementFactory<DefaultHoistProps<M>>];
-export function hoistCmpWithFactory<P extends HoistProps, D extends Partial<OwnProps<P>>>(
+export function hoistCmpWithFactory<P extends HoistProps, D extends PlainObject>(
     config: ComponentConfig<P, D>
 ): [FC<P> & {defaults: D}, ElementFactory<P>];
 export function hoistCmpWithFactory<P extends HoistProps>(

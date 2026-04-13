@@ -11,11 +11,10 @@
 
 ### 🎁 New Features
 
-* Added support for typed `defaults` on `hoistCmp` components, allowing library components to
-  declare app-level overridable default values for selected props. Applications can modify these
-  globally (e.g. `Button.defaults.minimal = false` in Bootstrap.ts) without passing props to every
-  instance. Added initial defaults to `Panel` (`compactHeader`), `Button` (`minimal`, `outlined`),
-  and `Toolbar` (`compact`).
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
+ override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
+ prop values (instance props take precedence), but may hold other app-overridable settings.
+ Added initial defaults to `Panel`, `Button`, and `Toolbar`.
 
 
 ### ⚙️ Technical
