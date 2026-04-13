@@ -4,6 +4,7 @@ import type {HSide, PlainObject} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
 import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
+import type {RowDropZoneEvents} from 'ag-grid-community';
 import type {ColumnChooserRecord} from './ColumnChooserModel';
 
 /**
@@ -25,6 +26,9 @@ export class PinSectionModel extends HoistModel {
 
     /** Callback set by ColumnChooserModel for reorder handling. */
     onReorder: (colIds: string[], pinned: HSide) => void;
+
+    /** Callback set by ColumnChooserModel for cross-zone drops. */
+    onCrossZoneDrop: (records: ColumnChooserRecord[], targetPinned: HSide) => void;
 
     constructor({pinned}: {pinned: HSide}) {
         super();
@@ -89,6 +93,26 @@ export class PinSectionModel extends HoistModel {
         if (newOrder.length > 0) {
             this.onReorder?.(newOrder, this.pinned);
         }
+    }
+
+    /**
+     * Register another PinSectionModel's grid as a drop zone for this grid.
+     * Rows dragged from this grid can be dropped onto the target grid.
+     */
+    registerDropZone(targetPinModel: PinSectionModel) {
+        const targetApi = targetPinModel.gridModel.agApi;
+        const sourceApi = this.gridModel.agApi;
+        if (!targetApi || !sourceApi) return;
+
+        const dropZoneParams = targetApi.getRowDropZoneParams({
+            onDragStop: (event: RowDragEndEvent) => {
+                this.onCrossZoneDrop?.(
+                    event.nodes.map(n => n.data),
+                    targetPinModel.pinned
+                );
+            }
+        } as RowDropZoneEvents);
+        sourceApi.addRowDropZone(dropZoneParams);
     }
 
     /** Load records for this pin zone. */

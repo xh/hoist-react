@@ -103,6 +103,21 @@ export class ColumnChooserModel extends HoistModel {
             debounce: 200
         });
 
+        // Register cross-zone drop zones when AG APIs become available
+        this.addReaction({
+            track: () => [
+                this.leftPinModel.gridModel.agApi,
+                this.centerPinModel.gridModel.agApi,
+                this.rightPinModel.gridModel.agApi
+            ],
+            run: ([leftApi, centerApi, rightApi]) => {
+                if (leftApi && centerApi && rightApi) {
+                    this.registerDropZones();
+                }
+            },
+            fireImmediately: true
+        });
+
         // Ensure only one pin section has a selection at a time
         const pinModels = [this.leftPinModel, this.centerPinModel, this.rightPinModel];
         for (const pinModel of pinModels) {
@@ -134,6 +149,38 @@ export class ColumnChooserModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
+    private dropZonesRegistered = false;
+
+    private registerDropZones() {
+        if (this.dropZonesRegistered) return;
+
+        const models = [this.leftPinModel, this.centerPinModel, this.rightPinModel];
+
+        // Each grid registers the other two as drop targets
+        for (const source of models) {
+            for (const target of models) {
+                if (source === target) continue;
+                source.registerDropZone(target);
+            }
+        }
+
+        // Wire callbacks
+        for (const model of models) {
+            model.onCrossZoneDrop = (records, targetPinned) =>
+                this.handleCrossZoneDrop(records, targetPinned);
+        }
+
+        this.dropZonesRegistered = true;
+    }
+
+    private handleCrossZoneDrop(records: ColumnChooserRecord[], targetPinned: HSide) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const colIds = records.flatMap(r => r.leafColIds);
+        gridModel.updateColumnState(colIds.map(colId => ({colId, pinned: targetPinned})));
+    }
+
     @action
     private syncFromGridModel() {
         if (!this.gridModel) return;
