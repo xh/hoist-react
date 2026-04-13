@@ -1,5 +1,5 @@
 import type {GridModel} from '@xh/hoist/cmp/grid';
-import {filler, vbox} from '@xh/hoist/cmp/layout';
+import {box, filler, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
@@ -52,7 +52,12 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                 }),
                 pinSection({model: impl.leftPinModel}),
                 pinSection({model: impl.centerPinModel}),
-                pinSection({model: impl.rightPinModel})
+                pinSection({model: impl.rightPinModel}),
+                box({
+                    className: 'xh-column-chooser__description',
+                    omit: !impl.selectedDescription,
+                    item: impl.selectedDescription
+                })
             ]
         });
     }

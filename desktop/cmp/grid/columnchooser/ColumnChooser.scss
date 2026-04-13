@@ -1,4 +1,14 @@
 .xh-column-chooser {
   display: flex;
   flex-direction: column;
+
+  &__description {
+    padding: var(--xh-pad-px);
+    border-top: 1px solid var(--xh-border-color);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    min-height: 40px;
+    max-height: 80px;
+    overflow-y: auto;
+  }
 }

@@ -40,6 +40,16 @@ export class ColumnChooserModel extends HoistModel {
     @managed centerPinModel = new PinSectionModel({pinned: null});
     @managed rightPinModel = new PinSectionModel({pinned: 'right'});
 
+    /** Description of the currently selected column, or empty string if none selected. */
+    @computed
+    get selectedDescription(): string {
+        for (const pinModel of [this.leftPinModel, this.centerPinModel, this.rightPinModel]) {
+            const rec = pinModel.gridModel.selectedRecord;
+            if (rec) return rec.data.description ?? '';
+        }
+        return '';
+    }
+
     /** True when the target grid has at least one column group. */
     @computed
     get hasColumnGroups(): boolean {
@@ -87,6 +97,20 @@ export class ColumnChooserModel extends HoistModel {
             run: filterText => this.applyFilter(filterText),
             debounce: 200
         });
+
+        // Ensure only one pin section has a selection at a time
+        const pinModels = [this.leftPinModel, this.centerPinModel, this.rightPinModel];
+        for (const pinModel of pinModels) {
+            const others = pinModels.filter(m => m !== pinModel);
+            this.addReaction({
+                track: () => pinModel.gridModel.selectedRecord,
+                run: rec => {
+                    if (rec) {
+                        others.forEach(m => m.gridModel.clearSelection());
+                    }
+                }
+            });
+        }
     }
 
     toggleVisibility(recordId: string) {
