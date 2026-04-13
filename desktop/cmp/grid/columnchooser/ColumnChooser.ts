@@ -47,12 +47,23 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                             commitOnChange: true,
                             width: null,
                             flex: 1
+                        }),
+                        button({
+                            icon: Icon.reset(),
+                            tooltip: 'Restore Defaults',
+                            onClick: () => impl.restoreDefaultsAsync()
                         })
                     ]
                 }),
-                pinSection({model: impl.leftPinModel}),
+                pinSection({
+                    model: impl.leftPinModel,
+                    omit: impl.leftPinModel.gridModel.store.count === 0
+                }),
                 pinSection({model: impl.centerPinModel}),
-                pinSection({model: impl.rightPinModel}),
+                pinSection({
+                    model: impl.rightPinModel,
+                    omit: impl.rightPinModel.gridModel.store.count === 0
+                }),
                 box({
                     className: 'xh-column-chooser__description',
                     omit: !impl.selectedDescription,

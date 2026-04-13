@@ -304,6 +304,10 @@ export class ColumnChooserModel extends HoistModel {
         return ids;
     }
 
+    async restoreDefaultsAsync() {
+        await this.gridModel?.restoreDefaultsAsync();
+    }
+
     private findRecord(id: string) {
         return (
             this.leftPinModel.gridModel.store.getById(id) ??
