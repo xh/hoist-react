@@ -111,7 +111,7 @@ export class TraceService extends HoistService {
      * Create a new span, or return null if tracing is disabled.
      * Inherits the parent's `source` tag if not specified.
      *
-     * Sampling rules from `xhTraceConfig.samplingRules` are evaluated against the span's tags
+     * Sampling rules from `xhTraceConfig.sampleRules` are evaluated against the span's tags
      * at creation time (head-based). Child spans inherit their parent's sampling decision.
      * Unsampled spans may still be exported if they end in error and `alwaysSampleErrors` is
      * enabled — see {@link exportSpan}.
@@ -192,7 +192,7 @@ export class TraceService extends HoistService {
 
     private getSampleRate(tags: PlainObject): number {
         const {conf} = this;
-        for (const rule of conf.samplingRules ?? []) {
+        for (const rule of conf.sampleRules ?? []) {
             if (every(rule.match, (v, k) => this.matchesValue(tags[k], v))) {
                 return rule.sampleRate;
             }
@@ -220,7 +220,7 @@ export class TraceService extends HoistService {
 
 interface TraceConfig {
     enabled: boolean;
-    samplingRules?: SamplingRule[];
+    sampleRules?: SamplingRule[];
     sampleRate?: number;
     alwaysSampleErrors?: boolean;
 }
