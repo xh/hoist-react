@@ -57,14 +57,19 @@ export interface SpinnerProps extends HoistProps {
  * Spinner.defaults.usePng = true;  // fall back to animated PNG
  * ```
  */
-export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
+export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefaults>({
     displayName: 'Spinner',
     className: 'xh-spinner',
     model: false,
     observer: false,
-
+    defaults: {
+        iconName: 'spinner-third',
+        prefix: 'fal',
+        animation: 'spin',
+        usePng: false
+    },
     render({compact, className, ...props}) {
-        const {defaults} = Spinner as any,
+        const {defaults} = Spinner,
             iconName: IconName = props.iconName ?? defaults.iconName,
             prefix = props.prefix ?? defaults.prefix,
             animation = props.animation ?? defaults.animation,
@@ -89,11 +94,3 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps>({
         });
     }
 });
-
-/** App-level defaults for Spinner. Instance props take precedence. */
-(Spinner as any).defaults = {
-    iconName: 'spinner-third',
-    prefix: 'fal',
-    animation: 'spin',
-    usePng: false
-} as SpinnerDefaults;
