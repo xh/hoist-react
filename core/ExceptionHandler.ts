@@ -275,7 +275,7 @@ export class ExceptionHandler {
                     }
                     delete fetchOptions.loadSpec;
                 }
-                // Remove Span object — not useful in serialized output.
+                // Remove Span object - not useful in serialized output.
                 delete fetchOptions.span;
             }
 

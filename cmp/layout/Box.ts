@@ -16,8 +16,8 @@ import {div} from './Tags';
 export interface BoxComponentProps extends HoistProps, BoxProps {}
 
 /**
- * Base flexbox container that merges all {@link LayoutProps} — margin, padding, dimensions,
- * flex, alignment, and overflow — onto a rendered `div`. This is the terminal component where
+ * Base flexbox container that merges all {@link LayoutProps} - margin, padding, dimensions,
+ * flex, alignment, and overflow - onto a rendered `div`. This is the terminal component where
  * layout props are resolved to CSS; higher-level components pass layout props through to a
  * Box (or {@link Frame}) at the bottom of their render tree.
  *
@@ -53,7 +53,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
 });
 
 /**
- * A {@link Box} with vertical (column) flex layout. Does not stretch to fill its parent —
+ * A {@link Box} with vertical (column) flex layout. Does not stretch to fill its parent -
  * use {@link VFrame} instead when the container should grow to consume available space.
  */
 export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
@@ -73,7 +73,7 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
 });
 
 /**
- * A {@link Box} with horizontal (row) flex layout. Does not stretch to fill its parent —
+ * A {@link Box} with horizontal (row) flex layout. Does not stretch to fill its parent -
  * use {@link HFrame} instead when the container should grow to consume available space.
  */
 export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({

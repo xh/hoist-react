@@ -55,6 +55,12 @@ import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChoo
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
+/**
+ * Configuration for a {@link FilterChooserModel} - an interactive, tokenized filter builder
+ * that binds to a {@link Store} or Cube {@link View}.
+ *
+ * @see FilterChooserModel
+ */
 export interface FilterChooserConfig {
     /**
      * Specifies the fields this model supports for filtering and customizes how their available values
@@ -136,7 +142,7 @@ export interface FilterChooserConfig {
  * across multiple data fields.
  *
  * Manages the current filter value, user-managed favorites, and available field specs. Supports
- * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config — filters
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
  * are automatically applied to the target as they change, and external filter changes on the
  * target are reflected back into this model.
  *

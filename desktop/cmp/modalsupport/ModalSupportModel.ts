@@ -10,16 +10,45 @@ import '@xh/hoist/desktop/register';
 import {makeObservable, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 
+/**
+ * Configuration for a {@link ModalSupportModel}. Passed via the `modalSupport` config on
+ * {@link PanelConfig} - set to `true` for defaults or provide a config object to customize
+ * the dialog dimensions and behavior.
+ *
+ * @see ModalSupportModel
+ * @see PanelModel
+ */
 export interface ModalSupportConfig {
+    /** Width of the modal dialog. Default `'90vw'`. */
     width?: string | number;
+
+    /** Height of the modal dialog. Default `'90vh'`. */
     height?: string | number;
+
+    /** True to start in modal (popped-out) state. Default `false`. */
     defaultModal?: boolean;
+
+    /** True to allow closing the modal by clicking outside it. Default `true`. */
     canOutsideClickClose?: boolean;
 }
 
 /**
- * Core Model for a ModalSupport component.
- * This model will place its component's child in 1 of 2 managed DOM nodes (either modal or inline)
+ * Model enabling a {@link Panel}'s content to toggle between inline and modal (floating
+ * dialog) display while preserving all component state.
+ *
+ * Uses a React portal to move a single persistent DOM host node between an inline container
+ * and a Blueprint Dialog. Because the child component is rendered into the host node once
+ * and the node is physically relocated (not re-mounted), all React component state, MobX
+ * subscriptions, and DOM state (scroll position, focus, ag-Grid state, etc.) are preserved
+ * across toggles.
+ *
+ * This is the key advantage over the alternative of mounting a second copy of a component
+ * inside a separate dialog - ModalSupport guarantees zero state loss on toggle.
+ *
+ * Not created directly by applications - enable via `modalSupport` on {@link PanelConfig}.
+ *
+ * @see ModalSupportConfig
+ * @see PanelModel
  */
 export class ModalSupportModel extends HoistModel {
     override xhImpl = true;

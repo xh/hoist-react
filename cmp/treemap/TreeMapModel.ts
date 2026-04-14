@@ -108,9 +108,9 @@ export interface TreeMapModelDefaults {
  *
  * Node colors are normalized to a 0-1 range and mapped to a colorAxis. The `colorMode` config
  * controls how:
- * - 'linear' — distributes values across the colorAxis according to the heatField.
- * - 'wash' — ignores heat intensity, applying a single positive/negative color.
- * - 'none' — ignores the colorAxis entirely, using the neutral color.
+ * - 'linear' - distributes values across the colorAxis according to the heatField.
+ * - 'wash' - ignores heat intensity, applying a single positive/negative color.
+ * - 'none' - ignores the colorAxis entirely, using the neutral color.
  *
  * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
  * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts

@@ -29,7 +29,7 @@ export class Span {
     /** Epoch ms (Date.now()-based). */
     startTime: number;
 
-    /** Epoch ms — set when span ends. */
+    /** Epoch ms - set when span ends. */
     endTime: number;
 
     /** Duration in ms (endTime - startTime). */
@@ -93,6 +93,13 @@ export class Span {
     }
 }
 
+/**
+ * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
+ * Create via {@link TraceService} rather than directly.
+ *
+ * @see Span
+ * @see TraceService
+ */
 export interface SpanConfig {
     name: string;
     kind?: SpanKind;

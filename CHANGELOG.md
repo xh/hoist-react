@@ -11,12 +11,51 @@
 
 ### 🎁 New Features
 
-* Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.samplingRules` at span creation, with child spans inheriting their parent's decision. Error spans are always exported when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to the server.
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
+  override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
+  prop values (instance props take precedence), but may hold other app-overridable settings.
+  Added initial defaults to `Panel`, `Button`, and `Toolbar`.
+* Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
+  icon library. All previously supported icons remain and no app changes should be required.
+* Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
+  themeable, and consistent with the rest of the icon system. The rotation animation is applied
+  via Hoist-owned CSS rather than FA's animation props, ensuring the spinner remains functional
+  when the OS-level `prefers-reduced-motion` preference is enabled. The icon and weight can be
+  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
+  available to preserve the original PNG appearance if desired.
+* Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.samplingRules` at span
+  creation, with child spans inheriting their parent's decision. Error spans are always exported
+  when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
+  the server.
+
+### 🐞 Bug Fixes
+
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
+  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
+  app-level customization of background, border, border-radius, padding, and max-width.
+
+### 🤖 AI Docs + Tooling
+
+* Added JSDoc to ~60 exported Config/Spec interfaces and improved class-level docs on key
+  framework classes. Added README cross-references, when-to-use guidance, and `@see` navigation
+  links throughout.
+* Split Cube documentation into dedicated `data/cube/README.md` with expanded query patterns
+  covering grand totals, leaf drill-down, dynamic updates, and `executeQuery()`.
+* Enhanced MCP/CLI symbol search to match JSDoc content with multi-word AND queries (e.g.
+  `"panel modal"` finds `ModalSupportModel`). Added disambiguation hints for duplicate symbol
+  names and fixed resolution of symbols shadowed by dynamics stubs.
 
 ### ⚙️ Technical
 
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
   supporting the new hoist-core per-logger logging behavior overrides.
+* Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
+  `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+
+### 📚 Libraries
+
+* @fortawesome/* `6.0 → 7.2`
+* @fortawesome/react-fontawesome `0.2 → 3.2`
 
 ## 83.1.0 - 2026-04-07
 

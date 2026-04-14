@@ -34,8 +34,8 @@ export interface FetchServiceDefaults {
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
- * Typically accessed via `XH.fetchService` or the convenience methods on XH — `XH.fetch()`,
- * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` — which delegate here.
+ * Typically accessed via `XH.fetchService` or the convenience methods on XH - `XH.fetch()`,
+ * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` - which delegate here.
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
@@ -199,7 +199,7 @@ export class FetchService extends HoistService {
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         opts = this.withCorrelationId(opts);
 
-        // Tracing — create span for this request.
+        // Tracing - create span for this request.
         const span = this.startFetchSpan(opts);
         if (span) opts = {...opts, traceId: span.traceId};
 
@@ -219,7 +219,7 @@ export class FetchService extends HoistService {
             ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
         }
 
-        // Tracing — end span on completion or failure.
+        // Tracing - end span on completion or failure.
         if (span) {
             ret = ret.then(
                 value => {
@@ -789,7 +789,8 @@ export interface FetchException extends HoistException {
 
     /**
      * True if exception resulted from the fetch being aborted by fetchService, or the application.
-     * @see FetchService.abort and FetchOptions.autoAbortKey.
+     * @see FetchService.abort
+     * @see FetchOptions.autoAbortKey
      */
     isFetchAborted: boolean;
 }

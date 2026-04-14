@@ -1,5 +1,17 @@
 # MCP Server and CLI Tools
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose, audience, and design rationale |
+| [Architecture](#architecture) | Directory structure, data flow, and design decisions |
+| [CLI Tools](#cli-tools) | `hoist-docs` and `hoist-ts` shell commands |
+| [MCP Server Setup](#mcp-server-setup) | Prerequisites, startup methods, and debug logging |
+| [MCP Tools Reference](#mcp-tools-reference) | Documentation and TypeScript tool APIs |
+| [MCP Resources](#mcp-resources) | Direct URI-based access to documentation files |
+| [Maintaining the Developer Tools](#maintaining-the-developer-tools) | Registry sync, maintenance checklist, and update points |
+| [Extending the Developer Tools](#extending-the-developer-tools) | Adding new tools, resources, and doc registry entries |
+| [Common Pitfalls](#common-pitfalls) | Stdout corruption, path traversal, and naming conventions |
+
 ## Overview
 
 The Hoist developer tools give AI coding assistants structured access to hoist-react's documentation
@@ -169,14 +181,15 @@ Run `npx hoist-docs --help` for full usage.
 ### `hoist-ts` -- TypeScript Symbol Exploration
 
 ```bash
-# Search for symbols and class members by name
+# Search for symbols by name, keyword, or multi-word query
 npx hoist-ts search GridModel
 npx hoist-ts search lastLoadCompleted
 npx hoist-ts search Store --kind class
+npx hoist-ts search "panel modal"           # Matches name + JSDoc content
 
 # Get detailed type information for a symbol
 npx hoist-ts symbol GridModel
-npx hoist-ts symbol HoistModel
+npx hoist-ts symbol View --file data/cube/View.ts   # Disambiguate by file path
 
 # List all members of a class or interface
 npx hoist-ts members GridModel
@@ -293,13 +306,15 @@ Verify the MCP server is running and responsive. Takes no parameters.
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name. Also searches public
-members (properties, methods, accessors) of key framework classes, returning results in two sections:
-matching symbols and matching members with their owning class and role description.
+Search for TypeScript classes, interfaces, types, and functions by name and JSDoc content.
+Multi-word queries split into tokens matched with AND logic against the combined symbol name +
+JSDoc text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel in
+its JSDoc). Results are ranked with name matches above JSDoc-only matches. Also searches public
+members (properties, methods, accessors) of key framework classes.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Symbol or member name to search for (e.g. `"GridModel"`, `"lastLoadCompleted"`, `"setSortBy"`) |
+| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
 | `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
 | `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |
@@ -327,6 +342,10 @@ and source location. Use `hoist-search-symbols` first to find the exact name.
 For classes that use the config-object constructor pattern (e.g. `GridModel`, `FormModel`, `Store`),
 the output includes a `Constructor:` line showing the config type name. This gives agents a natural
 follow-up: call `hoist-get-members` on the config interface to see available options.
+
+When multiple exported symbols share the same name (e.g. `View` in both `cmp/viewmanager` and
+`data/cube`), the output appends a disambiguation note listing alternates with their file paths.
+Pass `filePath` to select a specific one. Dynamics stubs are excluded from the alternates list.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -425,10 +444,12 @@ are needed.
 
 ### Doc Registry Entries
 
-**File:** `mcp/data/doc-registry.ts` (function `getRawEntries()`)
+**File:** `docs/doc-registry.json`
 
-The doc registry is the single source of truth for all documentation that both the MCP server and
-CLI tools can search and serve. Each entry specifies an `id`, `title`, `file` path, `category`,
+The doc registry is the single source of truth for all documentation that both the MCP server
+and CLI tools can search and serve. It is a JSON file loaded at startup by
+`mcp/data/doc-registry.ts`. Each entry in the `entries` array specifies an `id` (which doubles
+as the file path relative to repo root), `title`, `mcpCategory`, `viewerCategory`,
 `description`, and `keywords` array.
 
 **When to update:**
@@ -438,9 +459,9 @@ CLI tools can search and serve. Each entry specifies an `id`, `title`, `file` pa
 - A documentation file is removed
 - The description or key topics for a doc change significantly
 
-**How to update:** Add, modify, or remove the corresponding `RawEntry` object in the
-`getRawEntries()` function. The `file` path is relative to the repo root. The `keywords` string
-is comma-separated and split automatically.
+**How to update:** Add, modify, or remove the corresponding entry object in the `entries` array
+of `docs/doc-registry.json`. The `id` field is the file path relative to the repo root (e.g.
+`cmp/grid/README.md`). Keywords are a JSON array of strings.
 
 **Automated support:** The `xh-update-doc-links` Claude Code skill
 (`.claude/skills/xh-update-doc-links/`) includes a dedicated step that reconciles the doc registry
@@ -492,8 +513,8 @@ View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
 
 | Change | Files to Update |
 |--------|----------------|
-| Add/rename/remove a documentation file | `mcp/data/doc-registry.ts`, `docs/README.md` |
-| Add upgrade notes for a new major version | `mcp/data/doc-registry.ts`, `docs/README.md` |
+| Add/rename/remove a documentation file | `docs/doc-registry.json`, `docs/README.md` |
+| Add upgrade notes for a new major version | `docs/doc-registry.json`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
 | Add/rename/remove a member-indexed class | `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`) |
 
@@ -561,22 +582,22 @@ server.registerResource(
 
 ### Adding a Doc Registry Entry
 
-Add a new `RawEntry` to the `getRawEntries()` function in `mcp/data/doc-registry.ts`:
+Add a new entry to the `entries` array in `docs/doc-registry.json`:
 
-```typescript
+```json
 {
-    id: 'my-package',
-    title: 'My Package',
-    file: 'my-package/README.md',        // Relative to repo root
-    category: 'package',
-    packageName: 'my-package',
-    description: 'What this package does.',
-    keywords: splitKeywords('keyword1, keyword2, keyword3')
-},
+    "id": "my-package/README.md",
+    "title": "My Package",
+    "mcpCategory": "package",
+    "viewerCategory": "components",
+    "description": "What this package does.",
+    "keywords": ["keyword1", "keyword2", "keyword3"]
+}
 ```
 
-**Categories:** `package` (package READMEs), `concept` (cross-cutting docs), `devops` (build/deploy
-docs), `conventions` (AGENTS.md), `index` (docs/README.md).
+**MCP categories:** `package`, `concept`, `devops`, `conventions`, `index`.
+**Viewer categories:** `overview`, `concepts`, `core`, `components`, `desktop`, `mobile`,
+`utilities`, `supporting`, `devops`, `upgrade`.
 
 ## Common Pitfalls
 

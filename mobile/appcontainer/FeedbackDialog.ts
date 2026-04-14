@@ -31,13 +31,15 @@ export const feedbackDialog = hoistCmp.factory({
             content: textArea({
                 placeholder: 'Please enter your comments...',
                 bind: 'message',
-                height: 250
+                height: 250,
+                testId: 'xh-feedback-message'
             }),
             buttons: [
                 filler(),
                 button({
                     text: 'Cancel',
                     minimal: true,
+                    testId: 'xh-feedback-cancel-btn',
                     onClick: () => model.hide()
                 }),
                 button({
@@ -45,6 +47,7 @@ export const feedbackDialog = hoistCmp.factory({
                     icon: Icon.mail(),
                     intent: 'primary',
                     outlined: true,
+                    testId: 'xh-feedback-send-btn',
                     onClick: () => model.submitAsync()
                 })
             ]

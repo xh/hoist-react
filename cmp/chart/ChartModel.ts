@@ -33,7 +33,15 @@ export interface ChartModelDefaults {
 }
 
 /**
- * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ * Model for a Highcharts-based {@link Chart} component. Holds the Highcharts configuration
+ * object and data series, providing observable state that drives chart rendering.
+ *
+ * Set `highchartsConfig` for chart-level options (chart type, axes, legend, etc.) and
+ * `series` for the data to display. Both are observable and can be updated at any time
+ * via their setters to trigger a re-render.
+ *
+ * The underlying Highcharts instance is available via the `highchart` property for
+ * read-only access - mutations should go through `setHighchartsConfig` or `setSeries`.
  *
  * @see Chart
  */

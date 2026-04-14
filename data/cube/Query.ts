@@ -22,6 +22,16 @@ import {CubeField} from './CubeField';
 
 /**
  * Queries determine what data is extracted, grouped, and aggregated from a {@link Cube}.
+ * Passed via the `query` property of {@link ViewConfig} when creating a View.
+ *
+ * Key options beyond `dimensions` and `filter`: `includeRoot` adds a grand-total row,
+ * `includeLeaves` exposes source records as tree children, and `provideLeaves` makes them
+ * accessible programmatically without rendering in the tree.
+ *
+ * See the Cube package README (`data/cube/README.md#querying-with-views`) for query patterns.
+ *
+ * @see Cube
+ * @see View
  */
 export interface QueryConfig {
     /**

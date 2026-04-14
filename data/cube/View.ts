@@ -32,6 +32,15 @@ import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
 
+/**
+ * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
+ * stay connected for live updates. Create via {@link Cube.createView}.
+ *
+ * See the Cube package README (`data/cube/README.md`) for query patterns.
+ *
+ * @see View
+ * @see QueryConfig
+ */
 export interface ViewConfig {
     /** Query to be used to construct this view. */
     query: Query;
@@ -64,8 +73,18 @@ export interface DimensionValue {
 }
 
 /**
- * Primary interface for consuming grouped and aggregated data from the cube.
- * Applications should create via the {@link Cube.createView} factory.
+ * Primary interface for consuming grouped and aggregated data from a {@link Cube}.
+ * Created via {@link Cube.createView} with a {@link QueryConfig} and optional connected
+ * stores. Views can be transient (run once) or connected for auto-updating results.
+ *
+ * Use `updateQuery()` to change dimensions, filters, or options dynamically.
+ *
+ * See the Cube package README (`data/cube/README.md`) for query patterns and examples
+ * of grand totals, leaf drill-down, and store integration.
+ *
+ * @see ViewConfig
+ * @see QueryConfig
+ * @see Cube
  */
 export class View
     extends HoistBase

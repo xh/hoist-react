@@ -9,7 +9,7 @@ import {isString} from 'lodash';
 
 /**
  * HTML attribute name used to tag elements with stable test identifiers. Use as a computed
- * property key on element specs — e.g. `{[TEST_ID]: 'my-grid'}` — to emit a `data-testid`
+ * property key on element specs - e.g. `{[TEST_ID]: 'my-grid'}` - to emit a `data-testid`
  * attribute that automated test drivers can locate reliably.
  */
 export const TEST_ID = 'data-testid';

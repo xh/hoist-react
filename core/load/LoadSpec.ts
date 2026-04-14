@@ -25,7 +25,7 @@ export type LoadSpecConfig = {
  * LoadSpec instances directly.
  *
  * Within `doLoadAsync()`, check {@link isStale} after any async call to determine if a newer
- * load has already been requested — if so, return early to avoid applying outdated results.
+ * load has already been requested - if so, return early to avoid applying outdated results.
  * Check {@link isAutoRefresh} to adjust behavior for background refreshes (e.g. skip expensive
  * operations, avoid user-facing error dialogs).
  *
