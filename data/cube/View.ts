@@ -32,6 +32,13 @@ import {BaseRow} from './row/BaseRow';
 import {BucketRow} from './row/BucketRow';
 import {LeafRow} from './row/LeafRow';
 
+/**
+ * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally
+ * stay connected for live updates. Create via {@link Cube.createView}.
+ *
+ * @see View
+ * @see Query
+ */
 export interface ViewConfig {
     /** Query to be used to construct this view. */
     query: Query;

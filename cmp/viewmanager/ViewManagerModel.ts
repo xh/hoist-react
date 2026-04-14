@@ -55,6 +55,12 @@ export interface ViewUserState {
     autoSave: boolean;
 }
 
+/**
+ * Configuration for a {@link ViewManagerModel} - persists and manages named user views
+ * (saved configurations) for grids, dashboards, or other stateful components.
+ *
+ * @see ViewManagerModel
+ */
 export interface ViewManagerConfig {
     /**
      * Required discriminator for the particular class of views to be loaded and managed by this
@@ -159,6 +165,9 @@ export interface ViewManagerConfig {
  *  - Views can be private to their owner, or optionally enabled for sharing to (all) other users.
  *  - Views can be marked as pinned for quick access.
  *  - See the desktop {@link ViewManager} component - the initial Hoist UI for this model.
+ *
+ * See the view manager package README (`cmp/viewmanager/README.md`) for architecture,
+ * integration patterns, and access control configuration.
  */
 export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /**

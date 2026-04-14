@@ -427,8 +427,8 @@ export interface ColumnSpec {
  * Every column must resolve to a unique `colId`, which defaults to `field` when not set.
  * If two columns reference the same `field`, provide an explicit `colId` on one of them.
  *
- * See {@link ColumnSpec} for all available configuration properties, and the Grid package
- * README for full configuration guidance, renderer patterns, and pitfalls.
+ * See {@link ColumnSpec} for all available configuration properties, and the grid package
+ * README (`cmp/grid/README.md`) for full configuration guidance, renderer patterns, and pitfalls.
  *
  * @see GridModel
  * @see ColumnGroup

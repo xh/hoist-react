@@ -296,7 +296,7 @@ export interface ZoneGridConfig {
 }
 
 /**
- * ZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
+ * ZoneGridModel is a wrapper around GridModel, which shows data in a grid with multi-line
  * full-width rows, each broken into four zones for top/bottom and left/right.
  *
  * This is the primary app entry-point for specifying ZoneGrid component options and behavior.

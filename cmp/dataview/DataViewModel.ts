@@ -33,7 +33,10 @@ import {isFunction, isNumber} from 'lodash';
 import {ReactNode} from 'react';
 
 /**
- * Configuration for a DataView.
+ * Configuration for a {@link DataViewModel} - a list-style data component that renders
+ * each record using a custom `renderer` function. Built on {@link GridModel} internally.
+ *
+ * @see DataViewModel
  */
 export interface DataViewConfig {
     /** A Store instance, or a config to create one. */

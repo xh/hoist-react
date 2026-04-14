@@ -20,6 +20,13 @@ import {addAction, deleteAction, editAction, viewAction} from './Actions';
 import {RestStore, RestStoreConfig} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
+/**
+ * Configuration for a {@link RestGridModel} - extends {@link GridConfig} with CRUD support
+ * for editing records via a built-in form backed by a hoist-core `RestController`.
+ *
+ * @see RestGridModel
+ * @see RestGrid
+ */
 export interface RestGridConfig extends GridConfig {
     store?: RestStore | RestStoreConfig;
 

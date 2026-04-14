@@ -47,6 +47,20 @@ import {
 import {instanceManager} from '../core/impl/InstanceManager';
 import {RecordSet} from './impl/RecordSet';
 
+/**
+ * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
+ * from GridModel columns). Data can be supplied at construction via `data`, or loaded later
+ * via `Store.loadData()`.
+ *
+ * Can also be passed inline as the `store` config on {@link GridConfig}, where it will be
+ * used to construct a Store automatically.
+ *
+ * See the data package README (`data/README.md`) for tree data, filtering, validation, and
+ * performance tuning guidance.
+ *
+ * @see Store
+ * @see FieldSpec
+ */
 export interface StoreConfig {
     /** Field names, configs, or instances. */
     fields?: Array<string | FieldSpec | Field>;
@@ -203,7 +217,27 @@ export interface ChildRawData {
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 
 /**
- * A managed and observable set of local, in-memory Records.
+ * A managed, observable collection of in-memory {@link StoreRecord}s - the core data container
+ * in Hoist. Used directly by applications and as the data source for {@link GridModel},
+ * {@link DataViewModel}, and other data-bound components.
+ *
+ * Stores provide:
+ * - Observable record collections with filtering via composable {@link Filter} objects
+ * - Hierarchical/tree data with parent-child navigation
+ * - Local modification tracking (add/modify/remove) with commit/revert
+ * - Record reuse across data reloads to preserve grid row state
+ * - Pluggable validation via {@link Field} rules
+ *
+ * Data is loaded via `loadData()` (full replacement) or `updateData()` (transactional). Fields
+ * can be defined explicitly or inferred from GridModel columns. `Store.defaults` provides
+ * app-wide configuration.
+ *
+ * See the data package README (`data/README.md`) for full documentation including tree data,
+ * filtering patterns, validation, and common pitfalls.
+ *
+ * @see StoreConfig
+ * @see StoreRecord
+ * @see Field
  */
 export class Store
     extends HoistBase

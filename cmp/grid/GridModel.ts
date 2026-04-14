@@ -434,6 +434,9 @@ export interface GridModelDefaults {
  *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
+ * See the grid package README (`cmp/grid/README.md`) for full documentation including column
+ * configuration, renderers, filtering, sorting, and common pitfalls.
+ *
  * @see Grid
  * @see DataView
  */

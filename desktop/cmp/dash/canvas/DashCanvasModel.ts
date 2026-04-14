@@ -32,6 +32,15 @@ import {
     compact
 } from 'lodash';
 
+/**
+ * Configuration for a {@link DashCanvasModel} - a grid-based dashboard layout with
+ * drag-and-drop positioning and resizing of views.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashCanvasModel
+ * @see DashCanvasViewSpec
+ */
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
     /**
      * Total number of columns (x coordinates for views correspond with column numbers).

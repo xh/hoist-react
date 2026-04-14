@@ -50,6 +50,15 @@ import {
 } from './impl/DashContainerUtils';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
+/**
+ * Configuration for a {@link DashContainerModel} - a tab-and-stack based dashboard layout
+ * with draggable, resizable views powered by GoldenLayout.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashContainerModel
+ * @see DashViewSpec
+ */
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
     DashContainerViewState

@@ -20,6 +20,16 @@ import {BucketRow} from './row/BucketRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
+/**
+ * Configuration for a {@link Cube}. Provide `fields` (including at least one dimension
+ * and one or more measures with aggregators) and load data via `data` or
+ * `Cube.loadDataAsync()`.
+ *
+ * See the data package README (`data/README.md`) for aggregator options and usage patterns.
+ *
+ * @see Cube
+ * @see CubeFieldSpec
+ */
 export interface CubeConfig {
     fields: CubeField[] | CubeFieldSpec[];
 
@@ -87,13 +97,23 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
 export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 
 /**
- * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
+ * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.
  *
- * This object is a wrapper around a "flat" Store containing leaf-level facts. It supports creating
- * Views on that data via structured Queries that can filter, group, and aggregate the flat source
- * data and produce a hierarchical result ready for use in (e.g.) tree grids and maps. Views can
- * be transiently created to run a Query once, on demand, or can be retained to provide efficient,
- * auto-updating results in response to updates to the underlying data.
+ * A Cube wraps a flat {@link Store} of leaf-level records and supports creating {@link View}s
+ * via structured {@link Query} objects. Each View filters, groups, and aggregates the source
+ * data into a hierarchical result for use in tree grids, treemaps, and other visualizations.
+ *
+ * Fields are defined as {@link CubeField}s - each marked as either a dimension (groupable)
+ * or a measure with an {@link Aggregator} (e.g. SUM, AVG, MIN, MAX). Views can be transient
+ * (run a query once) or connected for efficient, auto-updating results as source data changes.
+ *
+ * See the data package README (`data/README.md`) for full Cube documentation including
+ * aggregator options, querying patterns, and View integration with Store/GridModel.
+ *
+ * @see CubeConfig
+ * @see CubeField
+ * @see View
+ * @see Query
  */
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';

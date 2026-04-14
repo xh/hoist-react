@@ -935,8 +935,14 @@ function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
         return exact.find(e => e.filePath === resolved) ?? null;
     }
 
-    // Prefer exported symbols
-    return exact.find(e => e.isExported) ?? exact[0];
+    // Prefer exported symbols, and among those prefer class/interface over const/type stubs
+    // (e.g. dynamics/desktop.ts re-exports `export let Foo = null` alongside the real class).
+    const exported = exact.filter(e => e.isExported);
+    if (exported.length > 1) {
+        const preferred = exported.find(e => e.kind === 'class' || e.kind === 'interface');
+        if (preferred) return preferred;
+    }
+    return exported[0] ?? exact[0];
 }
 
 /**

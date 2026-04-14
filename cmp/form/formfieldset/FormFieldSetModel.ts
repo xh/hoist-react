@@ -13,6 +13,12 @@ import {makeObservable} from '@xh/hoist/mobx';
 import {uniq, without} from 'lodash';
 import {action, computed, observable} from 'mobx';
 
+/**
+ * Configuration for a {@link FormFieldSetModel} - a collapsible container for grouping
+ * related form fields with aggregated validation state.
+ *
+ * @see FormFieldSetModel
+ */
 export interface FormFieldSetConfig {
     /** Can form field set be collapsed? */
     collapsible?: boolean;

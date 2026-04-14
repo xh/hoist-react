@@ -28,6 +28,14 @@ import {difference, find, findLast, isObject, isString, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 
+/**
+ * Configuration for a {@link TabContainerModel} - the primary tabbed navigation container
+ * in Hoist. Supports routing, lazy rendering/refresh strategies, and optional persistence
+ * of the active tab.
+ *
+ * @see TabContainerModel
+ * @see TabConfig
+ */
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
     tabs: TabConfig[];
@@ -93,6 +101,9 @@ export interface TabContainerConfig {
  * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContextModel.
  *
  * Note: Routing is currently enabled for desktop applications only.
+ *
+ * See the tab package README (`cmp/tab/README.md`) for render/refresh mode options, routing
+ * configuration, and usage patterns.
  */
 export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;

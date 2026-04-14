@@ -140,8 +140,8 @@ let cmpIndex = 0; // index for anonymous component dispay names
  * - `hoistCmp.withFactory()` - returns a `[Component, factory]` pair (the standard pattern for
  *    library components that need to export both).
  *
- * See `core/README.md` for full documentation on component configuration, model specs, and
- * context lookup behavior.
+ * See the core package README (`core/README.md`) for full documentation on component
+ * configuration, model specs, and context lookup behavior.
  *
  * Components can also declare a typed `defaults` object in their config to expose static,
  * app-wide configuration - most typically default values for selected props, but also other

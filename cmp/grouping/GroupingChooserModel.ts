@@ -12,6 +12,13 @@ import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
+/**
+ * Configuration for a {@link GroupingChooserModel} - a control for selecting multi-level
+ * dimension groupings, typically bound to a Cube {@link View} or {@link GridModel}.
+ *
+ * @see GroupingChooserModel
+ * @see DimensionSpec
+ */
 export interface GroupingChooserConfig {
     /** True to accept an empty list as a valid value. */
     allowEmpty?: boolean;

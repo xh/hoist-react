@@ -11,9 +11,16 @@ import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
+/**
+ * Configuration for a {@link StoreSelectionModel}. Typically passed via the `selModel` config
+ * on {@link GridConfig} rather than constructed directly.
+ *
+ * @see StoreSelectionModel
+ */
 export interface StoreSelectionConfig {
     store?: Store;
     mode?: 'single' | 'multiple' | 'disabled';
+    /** @internal */
     xhImpl?: boolean;
 }
 
