@@ -1,5 +1,25 @@
 # Panel
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Panel as the standard desktop container with toolbars and masks |
+| [Basic Usage](#basic-usage) | Minimal panel examples with titles, icons, and toolbars |
+| [Layout](#layout) | Internal vframe structure and content flow |
+| [contentBoxProps](#contentboxprops) | Controlling the inner content frame (padding, flex, scroll) |
+| [scrollable](#scrollable) | Convenience shorthand for vertical content scrolling |
+| [Toolbars](#toolbars) | tbar/bbar, separators, compact mode, and overflow menus |
+| [Panel + Grid Pattern](#panel--grid-pattern) | Common panel-wrapping-grid structure from real apps |
+| [Mask](#mask) | Loading overlays with TaskObserver and onLoad binding |
+| [Collapsing and Resizing](#collapsing-and-resizing) | PanelModel config for collapse, resize, and splitters |
+| [collapsedTitle / collapsedIcon](#collapsedtitle--collapsedicon) | Identifying collapsed panels with custom titles and icons |
+| [compactHeader](#compactheader) | Reduced-size headers for visual hierarchy |
+| [headerItems](#headeritems) | Inline controls in the panel header |
+| [Persistence](#persistence) | Persisting collapsed state and size across sessions |
+| [Modal Support](#modal-support) | Popping panel content into a near-full-screen dialog |
+| [Configuration Reference](#configuration-reference) | Full Panel props and PanelModel config tables |
+| [Common Pitfalls](#common-pitfalls) | mask: 'onLoad' requirements and collapsible panel tips |
+| [Key Source Files](#key-source-files) | Source file locations for Panel and related components |
+
 ## Overview
 
 Panel is the standard container for desktop Hoist application views. Nearly every screen in a Hoist

@@ -1,5 +1,17 @@
 # Services Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose and principles of Hoist's built-in singleton services |
+| [Architecture](#architecture) | Service hierarchy, installation, and access via XH |
+| [Built-in Services](#built-in-services) | Reference for all 19 built-in services by category |
+| [Configuration Keys Reference](#configuration-keys-reference) | Soft config keys controlling service behavior |
+| [User Preference Keys Reference](#user-preference-keys-reference) | Per-user preference keys used by services |
+| [Creating Custom Services](#creating-custom-services) | How to create and install application services |
+| [Common Patterns](#common-patterns) | FetchService in loads, tracking, debounced search, WebSockets |
+| [Common Pitfalls](#common-pitfalls) | Fetch errors, native fetch, missing loadSpec, and more |
+| [Related Packages](#related-packages) | Links to core, cmp, promise, and admin packages |
+
 ## Overview
 
 The `/svc/` package contains Hoist's built-in singleton services - classes that provide app-wide

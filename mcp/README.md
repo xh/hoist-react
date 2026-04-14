@@ -1,5 +1,17 @@
 # MCP Server and CLI Tools
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose, audience, and design rationale |
+| [Architecture](#architecture) | Directory structure, data flow, and design decisions |
+| [CLI Tools](#cli-tools) | `hoist-docs` and `hoist-ts` shell commands |
+| [MCP Server Setup](#mcp-server-setup) | Prerequisites, startup methods, and debug logging |
+| [MCP Tools Reference](#mcp-tools-reference) | Documentation and TypeScript tool APIs |
+| [MCP Resources](#mcp-resources) | Direct URI-based access to documentation files |
+| [Maintaining the Developer Tools](#maintaining-the-developer-tools) | Registry sync, maintenance checklist, and update points |
+| [Extending the Developer Tools](#extending-the-developer-tools) | Adding new tools, resources, and doc registry entries |
+| [Common Pitfalls](#common-pitfalls) | Stdout corruption, path traversal, and naming conventions |
+
 ## Overview
 
 The Hoist developer tools give AI coding assistants structured access to hoist-react's documentation
