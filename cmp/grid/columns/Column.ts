@@ -252,7 +252,20 @@ export interface ColumnSpec {
      */
     pinned?: boolean | HSide;
 
-    /** Function returning a React Element for each cell value in this Column.*/
+    /**
+     * Function returning a React Element for each cell value in this Column.
+     *
+     * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
+     * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
+     * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
+     * `boolCheck` from `@xh/hoist/cmp/grid`) which bundle a renderer with appropriate alignment,
+     * sorting, and export formatting.
+     *
+     * For custom rendering based on record data beyond this column's field, set
+     * `rendererIsComplex: true` to ensure cells refresh on any record change.
+     *
+     * See the grid package README (`cmp/grid/README.md`) for renderer patterns and examples.
+     */
     renderer?: ColumnRenderer;
 
     /**

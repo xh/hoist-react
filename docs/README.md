@@ -36,6 +36,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
+| Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
 | Add distributed tracing spans to operations | [`/svc/`](../svc/README.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
@@ -71,7 +72,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components

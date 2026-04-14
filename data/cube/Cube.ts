@@ -25,7 +25,7 @@ import {ViewRowData} from './ViewRowData';
  * and one or more measures with aggregators) and load data via `data` or
  * `Cube.loadDataAsync()`.
  *
- * See the data package README (`data/README.md`) for aggregator options and usage patterns.
+ * See the Cube package README (`data/cube/README.md`) for aggregator options and usage patterns.
  *
  * @see Cube
  * @see CubeFieldSpec
@@ -107,7 +107,7 @@ export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
  * or a measure with an {@link Aggregator} (e.g. SUM, AVG, MIN, MAX). Views can be transient
  * (run a query once) or connected for efficient, auto-updating results as source data changes.
  *
- * See the data package README (`data/README.md`) for full Cube documentation including
+ * See the Cube package README (`data/cube/README.md`) for full documentation including
  * aggregator options, querying patterns, and View integration with Store/GridModel.
  *
  * @see CubeConfig

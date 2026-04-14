@@ -48,8 +48,16 @@
             "title": "Data Layer",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Observable data layer with filtering, validation, and aggregation.",
-            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "Cube", "View", "tree data", "loadData", "processRawData"]
+            "description": "Observable data layer with Store, Field, filtering, validation, and tree data.",
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData"]
+        },
+        {
+            "id": "data/cube/README.md",
+            "title": "Cube Aggregation",
+            "mcpCategory": "package",
+            "viewerCategory": "core",
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
         },
         {
             "id": "svc/README.md",
