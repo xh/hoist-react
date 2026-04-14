@@ -88,6 +88,13 @@ export class Span {
     }
 }
 
+/**
+ * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
+ * Create via {@link TraceService} rather than directly.
+ *
+ * @see Span
+ * @see TraceService
+ */
 export interface SpanConfig {
     name: string;
     kind?: SpanKind;

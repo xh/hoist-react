@@ -61,6 +61,14 @@ import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
+/**
+ * Configuration for a {@link ZoneGridModel} - a card-style grid that arranges column data
+ * into four zones (top-left, top-right, bottom-left, bottom-right) within each row.
+ * Provide `columns` and `mappings` to define which fields appear in each zone.
+ *
+ * @see ZoneGridModel
+ * @see ZoneMapperConfig
+ */
 export interface ZoneGridConfig {
     /**
      * Available columns for this grid. Columns with an omit property evaluating to true will be
@@ -296,10 +304,21 @@ export interface ZoneGridConfig {
 }
 
 /**
- * ZoneGridModel is a wrapper around GridModel, which shows data in a grid with multi-line
- * full-width rows, each broken into four zones for top/bottom and left/right.
+ * Model for a ZoneGrid - a card-style grid that renders each row as a full-width block
+ * divided into four zones: top-left, top-right, bottom-left, and bottom-right. Built on
+ * {@link GridModel} internally.
  *
- * This is the primary app entry-point for specifying ZoneGrid component options and behavior.
+ * Use ZoneGrid when you want a structured multi-field card layout per row without writing
+ * a fully custom renderer. Especially well-suited for mobile or other space-constrained
+ * contexts where horizontal scrolling is undesirable but four or more user-configurable
+ * fields need to be visible per row. The `mappings` config controls which columns appear
+ * in each zone, and users can rearrange them via the optional ZoneMapper UI.
+ *
+ * For a standard column-based grid, use {@link GridModel}. For fully custom row rendering,
+ * use {@link DataViewModel}.
+ *
+ * @see ZoneGrid
+ * @see ZoneGridConfig
  */
 export class ZoneGridModel extends HoistModel {
     @managed
