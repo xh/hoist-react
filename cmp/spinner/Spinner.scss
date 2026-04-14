@@ -1,5 +1,8 @@
 .xh-spinner {
   color: var(--xh-spinner-color);
+}
+
+svg.xh-spinner {
   animation: xh-spin 2s linear infinite;
 }
 
