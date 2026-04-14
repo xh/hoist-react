@@ -12,21 +12,9 @@ import compactSpinnerImg from './spinner-20px.png';
 import spinnerImg from './spinner-50px.png';
 import './Spinner.scss';
 
-/** Animation type for FA spinner icons. */
-export type SpinnerAnimation =
-    | 'spin'
-    | 'spinPulse'
-    | 'pulse'
-    | 'beat'
-    | 'beatFade'
-    | 'bounce'
-    | 'shake'
-    | 'fade';
-
 export interface SpinnerDefaults {
     iconName?: IconName;
     prefix?: HoistIconPrefix;
-    animation?: SpinnerAnimation;
     usePng?: boolean;
 }
 
@@ -37,23 +25,24 @@ export interface SpinnerProps extends HoistProps {
     iconName?: IconName;
     /** FA icon prefix/weight. Default set via `Spinner.defaults.prefix`. */
     prefix?: HoistIconPrefix;
-    /** FA animation prop to apply. Default set via `Spinner.defaults.animation`. */
-    animation?: SpinnerAnimation;
     /** True to use legacy animated PNG images. Default set via `Spinner.defaults.usePng`. */
     usePng?: boolean;
 }
 
 /**
- * An animated spinner rendered via a FontAwesome icon with a CSS animation. Used for the
- * platform-specific `Mask` and `LoadingIndicator` components.
+ * An animated spinner rendered via a FontAwesome icon with a CSS rotation animation. Used for
+ * the platform-specific `Mask` and `LoadingIndicator` components.
  *
- * The icon, animation, and legacy PNG fallback can be configured per-instance via props or
- * globally via `Spinner.defaults` (e.g. in app Bootstrap.ts):
+ * The rotation animation is applied via CSS on the `.xh-spinner` class rather than FA's
+ * animation props, ensuring the spinner remains functional when the OS-level
+ * `prefers-reduced-motion` preference is enabled (FA disables all its animations in that case).
+ *
+ * The icon and legacy PNG fallback can be configured per-instance via props or globally via
+ * `Spinner.defaults` (e.g. in app Bootstrap.ts):
  *
  * ```ts
- * Spinner.defaults.iconName = 'spinner-third';
+ * Spinner.defaults.iconName = 'circle-notch';
  * Spinner.defaults.prefix = 'far';
- * Spinner.defaults.animation = 'spinPulse';
  * Spinner.defaults.usePng = true;  // fall back to animated PNG
  * ```
  */
@@ -65,7 +54,6 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefa
     defaults: {
         iconName: 'spinner-third',
         prefix: 'fal',
-        animation: 'spin',
         usePng: false
     },
     render({compact, className, ...props}) {
