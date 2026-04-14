@@ -6,7 +6,13 @@
  */
 import {Command} from 'commander';
 
-import {searchSymbols, searchMembers, getSymbolDetail, getMembers} from '../data/ts-registry.js';
+import {
+    searchSymbols,
+    searchMembers,
+    getSymbolDetail,
+    getMembers,
+    getCompanionSymbols
+} from '../data/ts-registry.js';
 import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
 const VALID_KINDS = ['class', 'interface', 'type', 'function', 'const', 'enum'] as const;
@@ -101,7 +107,8 @@ program
             process.exit(1);
         }
 
-        let text = formatSymbolDetail(detail, name);
+        const companions = await getCompanionSymbols(detail);
+        let text = formatSymbolDetail(detail, name, companions);
         if (detail.kind === 'class' || detail.kind === 'interface') {
             text +=
                 '\n\nTip: Use `hoist-ts members ' + name + '` to see all properties and methods.';

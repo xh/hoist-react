@@ -29,7 +29,7 @@ export class Span {
     /** Epoch ms (Date.now()-based). */
     startTime: number;
 
-    /** Epoch ms — set when span ends. */
+    /** Epoch ms - set when span ends. */
     endTime: number;
 
     /** Duration in ms (endTime - startTime). */

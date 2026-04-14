@@ -9,6 +9,13 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager/ViewManagerModel';
 
+/**
+ * PersistenceProvider that delegates state storage to a ViewManagerModel, enabling components
+ * to persist their state as part of user-managed named views.
+ *
+ * @see ViewManagerModel
+ * @see PersistenceProvider
+ */
 export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;
 

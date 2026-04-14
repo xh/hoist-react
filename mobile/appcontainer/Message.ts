@@ -31,7 +31,7 @@ export const message = hoistCmp.factory({
         if (!isOpen) return null;
 
         if (cancelProps) {
-            buttons.push(button({minimal: true, ...cancelProps}));
+            buttons.push(button({testId: 'xh-message-cancel-btn', minimal: true, ...cancelProps}));
         }
 
         if (cancelProps || confirmProps) {
@@ -46,8 +46,12 @@ export const message = hoistCmp.factory({
             // Merge in formModel.isValid here in render stage to get reactivity.
             buttons.push(
                 formModel
-                    ? button({...confirmProps, disabled: !formModel.isValid})
-                    : button(confirmProps)
+                    ? button({
+                          testId: 'xh-message-confirm-btn',
+                          ...confirmProps,
+                          disabled: !formModel.isValid
+                      })
+                    : button({testId: 'xh-message-confirm-btn', ...confirmProps})
             );
         }
 
@@ -76,6 +80,7 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
         items.push(
             formField({
                 field: 'value',
+                testId: 'xh-message-value',
                 item: withDefault(input.item, textInput())
             })
         );
@@ -85,6 +90,7 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
             formField({
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
+                testId: 'xh-message-extra-confirm',
                 item: textInput()
             })
         );

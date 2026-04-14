@@ -472,7 +472,6 @@ for the full list of supported props and conversion details.
 
 | Function | Description |
 |----------|-------------|
-| `getClassName(baseName, props, ...extras)` | Combine a base CSS class with `props.className` and additional class names |
 | `createObservableRef()` | Create a ref that works as both a React ref object and callback ref, with a MobX-observable `current` property |
 | `elementFromContent(content, addProps?)` | Create a React element from a `Content` value (element, HoistComponent, or render function) |
 

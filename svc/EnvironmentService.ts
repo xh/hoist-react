@@ -162,16 +162,18 @@ export class EnvironmentService extends HoistService {
 
     private ensureVersionRunnable() {
         const hcVersion = this.get('hoistCoreVersion'),
-            clientVersion = this.get('appVersion'),
-            serverVersion = this.serverVersion;
+            // This app version value is sourced by the network call to 'xh/environment'.
+            serverAppVersion = this.get('appVersion'),
+            // This app version value is packaged from configureWebpack -> appVersion.
+            clientAppVersion = this.get('clientVersion');
 
         // Check for client/server mismatch version.  It's an ok transitory state *during* the
         // client app lifetime, but app should *never* start this way, would indicate caching issue.
         throwIf(
-            clientVersion != serverVersion,
+            clientAppVersion != serverAppVersion,
             XH.exception(
-                `The version of this client (${clientVersion}) is out of sync with the
-                available server (${serverVersion}). Please reload to continue.`
+                `The version of this client (${clientAppVersion}) is out of sync with the
+                available server (${serverAppVersion}). Please reload to continue.`
             )
         );
 

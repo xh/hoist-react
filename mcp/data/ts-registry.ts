@@ -15,7 +15,7 @@
  * Detailed symbol info is extracted on-demand.
  */
 import {Project, Node, Scope, SyntaxKind} from 'ts-morph';
-import type {ClassDeclaration, SourceFile} from 'ts-morph';
+import type {ClassDeclaration, FunctionDeclaration, SourceFile} from 'ts-morph';
 import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
@@ -35,6 +35,8 @@ export interface SymbolEntry {
     filePath: string;
     isExported: boolean;
     sourcePackage: string;
+    /** JSDoc, if available. Populated at index time; displayed in search results. */
+    jsDoc: string;
 }
 
 /** Detailed symbol information extracted on-demand. */
@@ -285,7 +287,8 @@ function buildSymbolIndex(proj: Project): {
                 kind: 'class',
                 filePath,
                 isExported: cls.isExported(),
-                sourcePackage: pkg
+                sourcePackage: pkg,
+                jsDoc: extractJsDoc(cls)
             };
             addToIndex(index, entry);
             counts.total++;
@@ -308,7 +311,7 @@ function buildSymbolIndex(proj: Project): {
                             sourcePackage: pkg,
                             isStatic: m.isStatic,
                             type: m.kind === 'method' ? formatMethodType(m) : m.type,
-                            jsDoc: m.jsDoc.split('\n')[0],
+                            jsDoc: m.jsDoc,
                             decorators: m.decorators
                         };
                         addToMemberIndex(mIndex, mEntry);
@@ -324,12 +327,15 @@ function buildSymbolIndex(proj: Project): {
         for (const iface of sourceFile.getInterfaces()) {
             const name = iface.getName();
             if (!name) continue;
+            let jsDoc = extractJsDoc(iface);
+            if (!jsDoc) jsDoc = extractCompanionJsDoc(sourceFile, name);
             const entry: SymbolEntry = {
                 name,
                 kind: 'interface',
                 filePath,
                 isExported: iface.isExported(),
-                sourcePackage: pkg
+                sourcePackage: pkg,
+                jsDoc
             };
             addToIndex(index, entry);
             counts.total++;
@@ -346,7 +352,8 @@ function buildSymbolIndex(proj: Project): {
                 kind: 'type',
                 filePath,
                 isExported: typeAlias.isExported(),
-                sourcePackage: pkg
+                sourcePackage: pkg,
+                jsDoc: extractJsDoc(typeAlias)
             };
             addToIndex(index, entry);
             counts.total++;
@@ -363,7 +370,8 @@ function buildSymbolIndex(proj: Project): {
                 kind: 'function',
                 filePath,
                 isExported: func.isExported(),
-                sourcePackage: pkg
+                sourcePackage: pkg,
+                jsDoc: extractFunctionJsDoc(func)
             };
             addToIndex(index, entry);
             counts.total++;
@@ -380,7 +388,8 @@ function buildSymbolIndex(proj: Project): {
                 kind: 'enum',
                 filePath,
                 isExported: enumDecl.isExported(),
-                sourcePackage: pkg
+                sourcePackage: pkg,
+                jsDoc: extractJsDoc(enumDecl)
             };
             addToIndex(index, entry);
             counts.total++;
@@ -391,6 +400,7 @@ function buildSymbolIndex(proj: Project): {
         // Exported const variables
         for (const stmt of sourceFile.getVariableStatements()) {
             if (!stmt.isExported()) continue;
+            const stmtJsDoc = extractJsDoc(stmt);
             for (const decl of stmt.getDeclarations()) {
                 // For destructured exports (e.g. `export const [Foo, foo] = ...`),
                 // index each binding element as a separate symbol so both the
@@ -420,7 +430,8 @@ function buildSymbolIndex(proj: Project): {
                         kind: 'const',
                         filePath,
                         isExported: true,
-                        sourcePackage: pkg
+                        sourcePackage: pkg,
+                        jsDoc: stmtJsDoc
                     };
                     addToIndex(index, entry);
                     counts.total++;
@@ -508,7 +519,7 @@ function indexPromiseExtensions(
                     sourcePackage: pkg,
                     isStatic: false,
                     type: `(${paramStr}) => ${returnType}`,
-                    jsDoc: jsDoc.split('\n')[0],
+                    jsDoc,
                     decorators: []
                 });
 
@@ -518,7 +529,8 @@ function indexPromiseExtensions(
                     kind: 'function',
                     filePath,
                     isExported: true,
-                    sourcePackage: pkg
+                    sourcePackage: pkg,
+                    jsDoc
                 });
 
                 // Pre-compute detail for `getSymbolDetail()` since these can't be
@@ -701,6 +713,55 @@ export async function getSymbolDetail(
         log.warn(`Failed to extract detail for symbol "${name}": ${e}`);
         return null;
     }
+}
+
+/**
+ * Find companion symbols for cross-referencing in detail output.
+ *
+ * For a Props interface (e.g. `PanelProps`), returns the companion component
+ * consts (`Panel`, `panel`) from the same file. For a component const, returns
+ * the companion Props interface. Returns an empty array if no companions found.
+ */
+export async function getCompanionSymbols(entry: SymbolEntry): Promise<SymbolEntry[]> {
+    await ensureInitialized();
+
+    if (entry.kind === 'interface' && entry.name.endsWith('Props')) {
+        // Props interface → look for companion component consts
+        const baseName = entry.name.slice(0, -5);
+        if (!baseName) return [];
+        return findCompanionEntries(baseName, entry.filePath);
+    }
+
+    if (entry.kind === 'const') {
+        // Component const → look for companion Props interface
+        const pascalName = entry.name[0].toUpperCase() + entry.name.slice(1) + 'Props';
+        const key = pascalName.toLowerCase();
+        const entries = symbolIndex!.get(key);
+        if (!entries) return [];
+        return entries.filter(
+            e => e.name === pascalName && e.kind === 'interface' && e.filePath === entry.filePath
+        );
+    }
+
+    return [];
+}
+
+/** Find companion const entries (PascalCase and camelCase) in the same file. */
+function findCompanionEntries(baseName: string, filePath: string): SymbolEntry[] {
+    const results: SymbolEntry[] = [];
+    const camelName = baseName[0].toLowerCase() + baseName.slice(1);
+
+    for (const name of [baseName, camelName]) {
+        const key = name.toLowerCase();
+        const entries = symbolIndex!.get(key);
+        if (!entries) continue;
+        for (const e of entries) {
+            if (e.name === name && e.kind === 'const' && e.filePath === filePath) {
+                results.push(e);
+            }
+        }
+    }
+    return results;
 }
 
 /**
@@ -929,6 +990,45 @@ function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => stri
     }
 }
 
+/**
+ * For a Props interface (e.g. `PanelProps`), look up the companion component's
+ * JSDoc from the same file. Uses the reliable `FooProps → Foo/foo` naming
+ * convention: strips the `Props` suffix and checks for a matching exported const.
+ *
+ * Returns the companion JSDoc string, or empty string if no match is found.
+ */
+function extractCompanionJsDoc(sourceFile: SourceFile, propsName: string): string {
+    if (!propsName.endsWith('Props')) return '';
+    const companionName = propsName.slice(0, -5);
+    if (!companionName) return '';
+
+    // Look for `const [Foo, foo] = ...` or `const foo = ...` in the same file
+    const varDecl =
+        sourceFile.getVariableDeclaration(companionName) ??
+        sourceFile.getVariableDeclaration(companionName[0].toLowerCase() + companionName.slice(1));
+    if (!varDecl) return '';
+
+    const varStmt = varDecl.getFirstAncestorByKind(SyntaxKind.VariableStatement);
+    return varStmt ? extractJsDoc(varStmt) : '';
+}
+
+/**
+ * Extract JSDoc from a function, falling back to the first overload signature if the
+ * implementation has no JSDoc. TypeScript best practice places JSDoc on overload signatures
+ * (which are visible to consumers) rather than the implementation (which is hidden).
+ */
+function extractFunctionJsDoc(func: FunctionDeclaration): string {
+    const implDoc = extractJsDoc(func);
+    if (implDoc) return implDoc;
+
+    const overloads = func.getOverloads();
+    for (const overload of overloads) {
+        const doc = extractJsDoc(overload);
+        if (doc) return doc;
+    }
+    return '';
+}
+
 /** Safely extract a type's text representation. */
 function safeGetTypeText(node: Node, enclosing?: Node): string {
     try {
@@ -996,10 +1096,14 @@ function extractInterfaceDetail(
     const braceIdx = text.indexOf('{');
     const signature = braceIdx === -1 ? text.trim() : text.slice(0, braceIdx).trim();
 
+    // For Props interfaces without their own JSDoc, inherit from the companion component
+    let jsDoc = extractJsDoc(iface);
+    if (!jsDoc) jsDoc = extractCompanionJsDoc(sourceFile, name);
+
     return {
         ...base,
         signature,
-        jsDoc: extractJsDoc(iface),
+        jsDoc,
         ...(extendsClauses.length > 0 ? {extends: extendsClauses.join(', ')} : {})
     };
 }
@@ -1056,7 +1160,7 @@ function extractFunctionDetail(
     return {
         ...base,
         signature,
-        jsDoc: extractJsDoc(func)
+        jsDoc: extractFunctionJsDoc(func)
     };
 }
 

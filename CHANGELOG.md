@@ -2,8 +2,19 @@
 
 ## 84.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Requires `hoist-core >= 38.0`.
+* Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
+  remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
+  `hoistCmp.withFactory()` handles base class merging automatically.
+
 ### 🎁 New Features
 
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
+ override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
+ prop values (instance props take precedence), but may hold other app-overridable settings.
+ Added initial defaults to `Panel`, `Button`, and `Toolbar`.
 * Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
@@ -11,7 +22,16 @@
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag
   is available to preserve the original PNG appearance if desired.
 
+### 🐞 Bug Fixes
+
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
+  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
+  app-level customization of background, border, border-radius, padding, and max-width.
+
 ### ⚙️ Technical
+
+* Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
+  supporting the new hoist-core per-logger logging behavior overrides.
 
 * Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
   `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
@@ -20,6 +40,23 @@
 
 * @fortawesome/* `6.0 → 7.2`
 * @fortawesome/react-fontawesome `0.2 → 3.2`
+
+## 83.1.0 - 2026-04-07
+
+### 🐞 Bug Fixes
+
+* Fixed `EnvironmentService.ensureVersionRunnable()` to correctly detect client/server version
+  mismatches on startup. The previous check compared two values both sourced from the server
+  response, making it a tautology that could never fail. Now compares the webpack-baked
+  `clientVersion` against the server-reported `appVersion`.
+
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI TypeScript symbol tools to surface full JSDoc documentation in search results
+  and resolve a discoverability gap around component Props interfaces. `hoist-search-symbols`
+  now includes JSDoc snippets with each result. Props interfaces (e.g. `PanelProps`) without
+  their own JSDoc inherit documentation from their companion component via naming convention.
+  `hoist-get-symbol` now cross-references between Props interfaces and their components.
 
 ## 83.0.2 - 2026-03-30
 

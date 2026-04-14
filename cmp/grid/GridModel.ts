@@ -120,6 +120,16 @@ import {
     RowClassRuleFn
 } from './Types';
 
+/**
+ * Configuration for a {@link GridModel} - the primary model backing the Hoist Grid component.
+ *
+ * At minimum, provide `columns` (an array of {@link ColumnSpec} or {@link ColumnGroupSpec}
+ * objects). A {@link Store} can be provided or will be auto-created with fields inferred
+ * from the column configs. Use `colDefaults` to apply shared settings across all columns.
+ *
+ * @see GridModel
+ * @see ColumnSpec
+ */
 export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
@@ -413,7 +423,7 @@ export interface GridModelDefaults {
 }
 
 /**
- * Core Model for a Grid, specifying the grid's data store, column definitions,
+ * Core Model for a {@link Grid}, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
@@ -424,6 +434,8 @@ export interface GridModelDefaults {
  *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
+ * @see Grid
+ * @see DataView
  */
 export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */

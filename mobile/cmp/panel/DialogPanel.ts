@@ -20,8 +20,6 @@ export interface DialogPanelProps extends PanelProps {
  *
  * These views do not participate in navigation or routing, and are used for showing fullscreen
  * views outside of the Navigator / TabContainer context.
- *
- * @see FullscreenPanel for a true fullscreen, non-floating alternative.
  */
 export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<DialogPanelProps>({
     displayName: 'DialogPanel',

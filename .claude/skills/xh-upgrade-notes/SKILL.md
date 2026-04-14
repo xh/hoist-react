@@ -1,6 +1,6 @@
 ---
 name: xh-upgrade-notes
-description: Create or update detailed upgrade notes and CHANGELOG entry for a major Hoist React release. Use when writing documentation for a new major version upgrade.
+description: Create or update detailed upgrade notes and CHANGELOG entry for a major Hoist React release. Use when writing documentation for a new major version upgrade (e.g. v79, v80). Produces two artifacts: a CHANGELOG entry and a detailed upgrade-notes document with before/after code examples, then validates via dry-run simulation against Toolbox.
 argument-hint: [version, e.g. v79 or 79.0.0]
 disable-model-invocation: true
 ---
@@ -61,8 +61,9 @@ These apps are available locally (see CLAUDE.local.md for paths):
 
 For each app, search git log for commits referencing the target version:
 ```bash
-git -C ../toolbox log --oneline --all --grep="v{NN}" --grep="hoist" --grep="{NN}.0"
+git -C ../toolbox log --oneline --all --grep="v{NN}\|{NN}.0\|hoist.*{NN}"
 ```
+This is a fuzzy search — filter results to find the actual upgrade commit(s).
 
 Read the key files from upgrade commits: `package.json`, `tsconfig.json`, `Bootstrap.ts`,
 and any files touching changed APIs.
@@ -143,7 +144,14 @@ Each upgrade step must include:
 
 ### Update the docs/README.md Index
 
-Add a row to the table in `docs/README.md` for the new version.
+Add a row to the **Upgrade Notes** table in `docs/README.md` for the new version. The table
+uses this format — add the new row at the top (most recent first):
+
+```markdown
+| [v{NN}](./upgrade-notes/v{NN}-upgrade-notes.md) | YYYY-MM-DD | {difficulty emoji} {DIFFICULTY} | Brief summary of key changes |
+```
+
+Difficulty levels: `🎉 TRIVIAL`, `🟢 LOW`, `🟠 MEDIUM`, `🔴 HIGH`.
 
 ### Update the Version Compatibility Guide
 

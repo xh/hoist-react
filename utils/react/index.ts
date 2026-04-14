@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './ClassName';
 export * from './ReactUtils';
 export * from './LayoutPropUtils';
 export * from './ObservableRef';

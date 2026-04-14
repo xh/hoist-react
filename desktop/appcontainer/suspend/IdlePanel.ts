@@ -31,6 +31,7 @@ export const idlePanel = hoistCmp.factory({
                 title: `${XH.clientAppName} is sleeping`,
                 icon: Icon.moon(),
                 className: 'xh-idle-panel',
+                testId: 'xh-idle-panel',
                 item: div(
                     img({
                         src: idleImage,
@@ -47,6 +48,7 @@ export const idlePanel = hoistCmp.factory({
                         intent: 'primary',
                         minimal: false,
                         autoFocus: true,
+                        testId: 'xh-idle-reactivate-btn',
                         onClick: onReactivate
                     })
                 ]

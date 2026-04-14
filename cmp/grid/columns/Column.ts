@@ -77,6 +77,17 @@ import type {
     CellClickedEvent
 } from '@xh/hoist/kit/ag-grid';
 
+/**
+ * Configuration object for defining a {@link Column} within a {@link GridModel}.
+ *
+ * Passed as plain objects in the `columns` array of a {@link GridConfig}. Each spec must
+ * identify its data via `field` (and/or `colId`). All other properties are optional and
+ * have sensible defaults - many are derived from the corresponding {@link Field} definition
+ * on the grid's store when available (e.g. `displayName`, `align`, `sortingOrder`).
+ *
+ * @see Column
+ * @see GridModel
+ */
 export interface ColumnSpec {
     /**
      * Name of data store field to display within the column, or object containing properties
@@ -406,7 +417,21 @@ export interface ColumnSpec {
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Provided to GridModels as plain configuration objects.
+ *
+ * Columns are defined as plain {@link ColumnSpec} objects within the `columns` array of a
+ * {@link GridConfig} - they are never constructed directly. GridModel also supports
+ * `colDefaults` for shared config applied to all columns, and `GridModel.defaults.colDefaults`
+ * for app-wide column defaults. Columns can be nested within {@link ColumnGroup}s for
+ * multi-level headers.
+ *
+ * Every column must resolve to a unique `colId`, which defaults to `field` when not set.
+ * If two columns reference the same `field`, provide an explicit `colId` on one of them.
+ *
+ * See {@link ColumnSpec} for all available configuration properties, and the Grid package
+ * README for full configuration guidance, renderer patterns, and pitfalls.
+ *
+ * @see GridModel
+ * @see ColumnGroup
  */
 export class Column {
     static DEFAULT_WIDTH = 60;

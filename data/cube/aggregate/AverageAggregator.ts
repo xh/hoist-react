@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Averages numeric values across all leaf rows, skipping nulls. */
 export class AverageAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         let total = null,

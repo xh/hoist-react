@@ -358,11 +358,16 @@
     display: none;
   }
 
-  // Default minimal styling. This is not applied when using a custom tooltip.
+  // Default minimal styling. Not applied when using a custom tooltip.
+  // Uses pre-wrap to honor intentional \n line breaks in tooltip content
+  // while still wrapping long lines at the max-width boundary.
   &--default {
-    padding: var(--xh-pad-half-px);
-    background: var(--xh-bg);
-    border: var(--xh-border-solid);
+    padding: var(--xh-grid-tooltip-padding);
+    background: var(--xh-grid-tooltip-bg);
+    border: var(--xh-grid-tooltip-border);
+    border-radius: var(--xh-grid-tooltip-border-radius);
+    max-width: var(--xh-grid-tooltip-max-width);
+    white-space: pre-wrap;
   }
 
   // Validation tooltip styling. Adjust depending on if within a default or custom tooltip.
@@ -383,12 +388,13 @@
   }
 
   &--custom > div > .xh-grid-tooltip--validation {
-    padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) 2em;
-    background: var(--xh-bg);
-    border: var(--xh-border-solid);
+    padding: var(--xh-grid-tooltip-padding) var(--xh-grid-tooltip-padding)
+      var(--xh-grid-tooltip-padding) 2em;
+    background: var(--xh-grid-tooltip-bg);
+    border: var(--xh-grid-tooltip-border);
 
     &--single {
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-grid-tooltip-padding);
     }
   }
 }

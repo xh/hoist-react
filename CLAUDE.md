@@ -225,12 +225,15 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
+- **Plain ASCII in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
+  comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
 
-**Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull
-request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped
-line and let the viewing tool handle display wrapping. Keep PR descriptions concise — XH developers
-review these regularly, so favor brief summaries over exhaustive detail. Bullet the key changes and
-let the diff and any upgrade notes speak for themselves.
+**Commit messages, PRs, and comments**: Do not hard-wrap lines at a fixed column width in commit
+message bodies, pull request descriptions, or issue/PR comments — let the viewing tool handle
+display wrapping. However, do use line breaks for structure: separate logical points into bullet
+lists, use blank lines between paragraphs, and break after the subject line. Keep PR descriptions
+concise — XH developers review these regularly, so favor brief summaries over exhaustive detail.
+Bullet the key changes and let the diff and any upgrade notes speak for themselves.
 
 **Feature branch workflow**: On feature branches, prefer multiple small commits over amending — PRs
 are squash-merged into `develop`, so intermediate commits are collapsed automatically. Never

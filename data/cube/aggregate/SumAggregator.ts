@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Sums numeric values, skipping nulls. */
 export class SumAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         let ret = null;

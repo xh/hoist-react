@@ -1,6 +1,6 @@
 ---
 name: xh-update-doc-links
-description: Pre-commit documentation consistency check. Ensures docs/README.md index, docs/planning/docs-roadmap.md, and the MCP server's hardcoded document registry stay in sync with documentation files on disk. Validates inter-doc links and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
+description: Pre-commit documentation consistency check. Ensures docs/README.md index, docs/planning/docs-roadmap.md, and the MCP server's document registry (docs/doc-registry.json) stay in sync with documentation files on disk. Validates inter-doc links and enhances cross-references when new docs are added. Use this skill whenever adding, renaming, moving, or deleting any README or concept doc — and before committing documentation changes. Also use when asked to "update the docs index", "check doc links", or "sync the doc registry".
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -8,6 +8,9 @@ tools: Read, Glob, Grep, Bash, Edit, Write
 
 Pre-commit skill to ensure documentation index files, the MCP document registry, inter-doc links,
 and cross-references stay consistent after editing READMEs or concept docs.
+
+This skill syncs indexes and links — it does not write or rewrite documentation content. See
+`xh-update-docs` for creating or updating doc content.
 
 ## Step 1: Discover Documentation Files
 
@@ -61,8 +64,10 @@ For each README on disk:
 - **Status updates:** Change `Planned` → `[Done](../../path/README.md)` for newly completed docs.
   Change `Drafted` → `[Done](../../path/README.md)` if appropriate.
 - **Missing entries:** Add entries for docs not yet on the roadmap.
-- **Progress notes:** Append a progress note entry for the current date to
-  `docs/planning/docs-roadmap-log.md`. Follow the existing chronological format.
+- **Progress notes:** When meaningful changes occur (new docs indexed, status promotions,
+  registry additions — not minor link fixes or cosmetic cleanups), append a progress note
+  entry for the current date to `docs/planning/docs-roadmap-log.md`. Follow the existing
+  chronological format.
 
 ## Step 4: Validate Inter-Doc Links
 
@@ -93,12 +98,14 @@ When new or recently changed docs are detected, look for cross-linking opportuni
    ```
 
 3. **Be conservative:** Only add links where the existing text already discusses the topic.
-   Do not restructure existing content or add new sections just to create links.
+   Do not restructure existing content or add new sections just to create links. Do not rewrite
+   or rephrase existing prose — only insert link references.
 
-## Step 6: Reconcile Document Registry JSON
+## Step 6: Reconcile Document Registry
 
 Ensure `docs/doc-registry.json` reflects the current documentation on disk. This JSON file is
-the single source of truth for both the MCP server and the toolbox documentation viewer.
+the single source of truth for both the MCP server (which loads it at startup via
+`mcp/data/doc-registry.ts`) and the toolbox documentation viewer.
 
 1. **Read and parse** `docs/doc-registry.json`. Each entry in the `entries` array is a JSON
    object. The entry's `id` field is also the file path relative to the repo root (e.g.

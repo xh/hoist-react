@@ -25,6 +25,7 @@ export const idlePanel = hoistCmp.factory({
     render({onReactivate}) {
         return panel({
             className: 'xh-idle-panel',
+            testId: 'xh-idle-panel',
             title: `${XH.clientAppName} is sleeping`,
             icon: Icon.moon(),
             items: [
@@ -44,6 +45,7 @@ export const idlePanel = hoistCmp.factory({
                             item: button({
                                 text: "I'm back!",
                                 flex: 1,
+                                testId: 'xh-idle-reactivate-btn',
                                 onClick: onReactivate
                             })
                         })

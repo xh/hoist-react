@@ -41,10 +41,10 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * with value/label/icon/disabled properties, or a primitive value used as both
      * the value and the display label.
      */
-    options: (SegmentedControlOption | OptionPrimitive)[];
+    options: Array<SegmentedControlOption | SegmentedControlNullOption | OptionPrimitive>;
 
     /**
-     * True to render with an outlined style — a border around the control tray
+     * True to render with an outlined style - a border around the control tray
      * with no inner background fill. Border color follows the current intent.
      */
     outlined?: boolean;
@@ -56,6 +56,24 @@ export interface SegmentedControlOption {
 
     /** Display label. Defaults to `value.toString()` if omitted. */
     label?: string;
+
+    /** Icon element, displayed before the label. */
+    icon?: ReactElement;
+
+    /** True to disable this individual option. */
+    disabled?: boolean;
+}
+
+/**
+ * Variant of SegmentedControlOption for representing a null/"no value" selection.
+ * Label is required to force use case to override default js 'null' toString rendering.
+ */
+export interface SegmentedControlNullOption {
+    /** Null value for this option. */
+    value: null;
+
+    /** Display label - required for null options. */
+    label: string;
 
     /** Icon element, displayed before the label. */
     icon?: ReactElement;

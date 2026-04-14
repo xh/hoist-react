@@ -14,26 +14,6 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
-/**
- * Core Model for a TreeMap.
- *
- * You should specify the TreeMap's data store, in addition to which StoreRecord fields should be
- * mapped to label (a node's display name), value (a node's size), and heat (a node's color).
- *
- * Can also (optionally) be bound to a GridModel. This will enable selection syncing and
- * expand / collapse syncing for GridModels in `treeMode`.
- *
- * Supports any Highcharts TreeMap algorithm ('squarified', 'sliceAndDice', 'stripes' or 'strip').
- *
- * Node colors are normalized to a 0-1 range and mapped to a colorAxis via the following colorModes:
- * 'linear' distributes normalized color values across the colorAxis according to the heatField.
- * 'wash' ignores the intensity of the heat value, applying a single positive and negative color.
- * 'none' will ignore the colorAxis, and instead use the neutral color.
- *
- * Color customization can be managed by setting colorAxis stops via the `highchartsConfig`.
- *
- * @see https://www.highcharts.com/docs/chart-and-series-types/treemap for Highcharts config options
- */
 export interface TreeMapConfig {
     /** A store containing records to be displayed. */
     store?: Store;
@@ -117,6 +97,25 @@ export interface TreeMapModelDefaults {
     maxNodes?: number;
 }
 
+/**
+ * Core Model for a TreeMap, backed by a data Store with fields mapped to each node's label
+ * (display name), value (size), and heat (color).
+ *
+ * Can optionally bind to a GridModel to enable selection and expand/collapse syncing for
+ * GridModels in `treeMode`.
+ *
+ * Supports Highcharts TreeMap algorithms: 'squarified', 'sliceAndDice', 'stripes', and 'strip'.
+ *
+ * Node colors are normalized to a 0-1 range and mapped to a colorAxis. The `colorMode` config
+ * controls how:
+ * - 'linear' - distributes values across the colorAxis according to the heatField.
+ * - 'wash' - ignores heat intensity, applying a single positive/negative color.
+ * - 'none' - ignores the colorAxis entirely, using the neutral color.
+ *
+ * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
+ * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts
+ * TreeMap config options.
+ */
 export class TreeMapModel extends HoistModel {
     /** App-level defaults for TreeMapModel. Instance config takes precedence. */
     static defaults: TreeMapModelDefaults = {

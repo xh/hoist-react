@@ -45,6 +45,7 @@ export const aboutDialog = hoistCmp.factory({
                     button({
                         text: 'Send Client Health Report',
                         icon: Icon.health(),
+                        testId: 'xh-about-health-report-btn',
                         omit: !XH.clientHealthService.enabled,
                         onClick: async () => {
                             try {
@@ -60,6 +61,7 @@ export const aboutDialog = hoistCmp.factory({
                         text: 'Close',
                         intent: 'primary',
                         outlined: true,
+                        testId: 'xh-about-close-btn',
                         onClick: onClose
                     })
                 )

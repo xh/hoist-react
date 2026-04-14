@@ -131,6 +131,24 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
+/**
+ * Model for a Select-based filter control that allows users to search for and compose filters
+ * across multiple data fields.
+ *
+ * Manages the current filter value, user-managed favorites, and available field specs. Supports
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
+ * are automatically applied to the target as they change, and external filter changes on the
+ * target are reflected back into this model.
+ *
+ * Field specs define which fields are available for filtering and how their values are parsed
+ * and displayed. If a `valueSource` is provided, field specs can be auto-populated from the
+ * source's fields.
+ *
+ * Supports persistence of both the current filter value and favorites via `persistWith`.
+ *
+ * @see FilterChooser
+ * @see FilterChooserFieldSpec
+ */
 export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
