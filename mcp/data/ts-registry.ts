@@ -916,6 +916,24 @@ function extractInterfaceMembersWithInheritance(filePath: string, name: string):
 }
 
 /**
+ * Find other exported symbols with the same name as the given entry, excluding
+ * dynamics stubs. Used to surface disambiguation hints when multiple real symbols
+ * share a name (e.g. `View` in both `cmp/viewmanager` and `data/cube`).
+ */
+export function findAlternateEntries(name: string, selectedFilePath: string): SymbolEntry[] {
+    const key = name.toLowerCase();
+    const entries = symbolIndex!.get(key);
+    if (!entries) return [];
+    return entries.filter(
+        e =>
+            e.name === name &&
+            e.isExported &&
+            e.filePath !== selectedFilePath &&
+            !e.sourcePackage.startsWith('dynamics')
+    );
+}
+
+/**
  * Find a symbol in the index by exact name.
  * Prefers exported symbols when multiple matches exist and no filePath filter.
  */

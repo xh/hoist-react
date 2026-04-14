@@ -13,7 +13,8 @@ import {
     searchMembers,
     getSymbolDetail,
     getMembers,
-    getCompanionSymbols
+    getCompanionSymbols,
+    findAlternateEntries
 } from '../data/ts-registry.js';
 import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
@@ -113,6 +114,19 @@ export function registerTsTools(server: McpServer): void {
                 text += '\n\nUse hoist-get-members to see all properties and methods.';
             }
 
+            if (detail && !filePath) {
+                const alternates = findAlternateEntries(name, detail.filePath);
+                if (alternates.length > 0) {
+                    const altList = alternates
+                        .map(
+                            a =>
+                                `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                        )
+                        .join('\n');
+                    text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
+                }
+            }
+
             return {content: [{type: 'text' as const, text}]};
         }
     );
@@ -146,7 +160,21 @@ export function registerTsTools(server: McpServer): void {
         },
         async ({name, filePath}) => {
             const result = await getMembers(name, filePath);
-            const text = formatMembers(result, name);
+            let text = formatMembers(result, name);
+
+            if (result && !filePath) {
+                const alternates = findAlternateEntries(name, result.symbol.filePath);
+                if (alternates.length > 0) {
+                    const altList = alternates
+                        .map(
+                            a =>
+                                `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                        )
+                        .join('\n');
+                    text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
+                }
+            }
+
             return {content: [{type: 'text' as const, text}]};
         }
     );

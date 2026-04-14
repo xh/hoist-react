@@ -11,7 +11,8 @@ import {
     searchMembers,
     getSymbolDetail,
     getMembers,
-    getCompanionSymbols
+    getCompanionSymbols,
+    findAlternateEntries
 } from '../data/ts-registry.js';
 import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
@@ -113,6 +114,20 @@ program
             text +=
                 '\n\nTip: Use `hoist-ts members ' + name + '` to see all properties and methods.';
         }
+
+        if (!opts.file) {
+            const alternates = findAlternateEntries(name, detail.filePath);
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
+            }
+        }
+
         process.stdout.write(text + '\n');
     });
 
@@ -132,7 +147,23 @@ program
             console.error(formatMembers(result, name));
             process.exit(1);
         }
-        process.stdout.write(formatMembers(result, name) + '\n');
+
+        let text = formatMembers(result, name);
+
+        if (!opts.file) {
+            const alternates = findAlternateEntries(name, result.symbol.filePath);
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
+            }
+        }
+
+        process.stdout.write(text + '\n');
     });
 
 program.parseAsync();
