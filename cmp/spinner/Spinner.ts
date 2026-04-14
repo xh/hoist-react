@@ -72,7 +72,6 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefa
         const {defaults} = Spinner,
             iconName: IconName = props.iconName ?? defaults.iconName,
             prefix = props.prefix ?? defaults.prefix,
-            animation = props.animation ?? defaults.animation,
             usePng = props.usePng ?? defaults.usePng;
 
         if (usePng) {
@@ -85,12 +84,13 @@ export const [Spinner, spinner] = hoistCmp.withFactory<SpinnerProps, SpinnerDefa
             });
         }
 
+        // Animation is applied via CSS on .xh-spinner rather than FA's animation props,
+        // which are disabled by FA's blanket prefers-reduced-motion override.
         return Icon.icon({
             iconName,
             prefix,
             className,
-            size: compact ? 'lg' : '3x',
-            [animation]: true
+            size: compact ? 'lg' : '3x'
         });
     }
 });
