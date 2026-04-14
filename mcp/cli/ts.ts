@@ -45,6 +45,7 @@ Examples:
   hoist-ts search GridModel                     Search for symbols named GridModel
   hoist-ts search Store --kind class             Search only classes
   hoist-ts search lastLoadCompleted              Search symbols and class members
+  hoist-ts search "panel modal"                  Multi-word search (matches name + JSDoc)
   hoist-ts symbol GridModel                      Get full details for GridModel
   hoist-ts members GridModel                     List all GridModel properties and methods
   hoist-ts members Store                         List all Store members`
@@ -56,9 +57,12 @@ Examples:
 program
     .command('search')
     .description(
-        'Search for TypeScript symbols and class members by name. Searches both top-level symbols (classes, interfaces, types, functions) and public members of key framework classes.'
+        'Search for TypeScript symbols and class members by name and JSDoc content. Multi-word queries match all terms against names and documentation. Also searches public members of key framework classes.'
     )
-    .argument('<query>', 'Symbol or member name to search for')
+    .argument(
+        '<query>',
+        'Search query — symbol name, keyword, or multiple terms (e.g. "panel modal")'
+    )
     .option(
         '-k, --kind <kind>',
         'Filter symbols by kind: class, interface, type, function, const, enum'

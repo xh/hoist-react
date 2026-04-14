@@ -34,12 +34,12 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name. Also searches public members (properties, methods, accessors) of key framework classes like HoistModel, GridModel, Store, and others. Returns matching symbols and members with their kind, source, and context.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name and JSDoc content. Multi-word queries match all terms (AND logic) against symbol names and their documentation — e.g. "panel modal" finds ModalSupportModel via its JSDoc. Also searches public members of key framework classes. Results are ranked: name matches above JSDoc-only matches.',
             inputSchema: z.object({
                 query: z
                     .string()
                     .describe(
-                        'Symbol or member name to search for (e.g. "GridModel", "Store", "lastLoadCompleted", "setSortBy")'
+                        'Search query — a symbol name (e.g. "GridModel"), a keyword (e.g. "tooltip"), or multiple terms (e.g. "panel modal", "cube view store")'
                     ),
                 kind: z
                     .enum(['class', 'interface', 'type', 'function', 'const', 'enum'])
