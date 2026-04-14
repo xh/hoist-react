@@ -18,9 +18,11 @@
 * Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
-  themeable, and consistent with the rest of the icon system. The icon, weight, and animation can be
-  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag
-  is available to preserve the original PNG appearance if desired.
+  themeable, and consistent with the rest of the icon system. The rotation animation is applied
+  via Hoist-owned CSS rather than FA's animation props, ensuring the spinner remains functional
+  when the OS-level `prefers-reduced-motion` preference is enabled. The icon and weight can be
+  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
+  available to preserve the original PNG appearance if desired.
 
 ### 🐞 Bug Fixes
 

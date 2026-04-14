@@ -106,13 +106,14 @@ Icon.warning({bounce: true})     // bouncing warning
 ### Spinner Component
 
 The `Spinner` component (`cmp/spinner/`) renders an animated FA icon for use by `Mask` and
-`LoadingIndicator`. It uses FontAwesome's CSS-based `transform: rotate()` animation rather than
-SVG-based animation, making it performant even in remote desktop environments such as Citrix.
+`LoadingIndicator`. The rotation animation is applied via Hoist-owned CSS (`@keyframes xh-spin`
+on `.xh-spinner`) rather than FA's animation props. This ensures the spinner remains functional
+when the OS-level `prefers-reduced-motion` preference is enabled (FA disables all its animations
+in that case) and keeps performance predictable in remote desktop environments such as Citrix.
 
-Spinner ships with several pre-registered icon choices — `faSpinnerThird`, `faCircleNotch`, and
-`faSpinnerScale` — all available in all four weight variants. The default icon, prefix, and
-animation can be configured globally via `Spinner.defaults`, typically set in an app's
-`Bootstrap.ts`:
+Spinner ships with several pre-registered icon choices - `faSpinnerThird`, `faCircleNotch`, and
+`faSpinnerScale` - all available in all four weight variants. The default icon and prefix can be
+configured globally via `Spinner.defaults`, typically set in an app's `Bootstrap.ts`:
 
 ```typescript
 import {Spinner} from '@xh/hoist/cmp/spinner';
@@ -120,15 +121,13 @@ import {Spinner} from '@xh/hoist/cmp/spinner';
 // Override icon and/or weight globally
 Spinner.defaults.iconName = 'circle-notch';
 Spinner.defaults.prefix = 'far';
-Spinner.defaults.animation = 'spinPulse';
 ```
 
-| Default                        | Type               | Default           | Description                                      |
-|--------------------------------|--------------------|-------------------|--------------------------------------------------|
-| `Spinner.defaults.iconName`    | `IconName`         | `'spinner-third'` | FA icon name for the spinner                     |
-| `Spinner.defaults.prefix`      | `HoistIconPrefix`  | `'fal'`           | FA icon weight/prefix                            |
-| `Spinner.defaults.animation`   | `SpinnerAnimation` | `'spin'`          | FA animation: `spin`, `spinPulse`, `pulse`, etc. |
-| `Spinner.defaults.usePng`      | `boolean`          | `false`           | Fall back to animated PNG images                 |
+| Default                        | Type              | Default           | Description                  |
+|--------------------------------|-------------------|-------------------|------------------------------|
+| `Spinner.defaults.iconName`    | `IconName`        | `'spinner-third'` | FA icon name for the spinner |
+| `Spinner.defaults.prefix`      | `HoistIconPrefix` | `'fal'`           | FA icon weight/prefix        |
+| `Spinner.defaults.usePng`      | `boolean`         | `false`           | Fall back to animated PNG    |
 
 Per-instance overrides can be passed as props to `spinner()` or via `LoadingIndicator`'s `spinner`
 prop, which accepts either `true` (use defaults) or a `SpinnerProps` object:
@@ -136,7 +135,7 @@ prop, which accepts either `true` (use defaults) or a `SpinnerProps` object:
 ```typescript
 loadingIndicator({
     bind: myTask,
-    spinner: {iconName: 'circle-notch', animation: 'spinPulse'}
+    spinner: {iconName: 'circle-notch'}
 })
 ```
 
