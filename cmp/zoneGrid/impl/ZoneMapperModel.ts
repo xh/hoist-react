@@ -15,6 +15,12 @@ import {ReactNode} from 'react';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
+/**
+ * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
+ * column mappings. Passed via the `zoneMapperModel` config on {@link ZoneGridConfig}.
+ *
+ * @see ZoneGridModel
+ */
 export interface ZoneMapperConfig {
     /** The ZoneGridModel to be configured. */
     zoneGridModel: ZoneGridModel;

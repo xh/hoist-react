@@ -134,11 +134,19 @@ export type ItemHeightFn = (params: {
 }) => number;
 
 /**
- * DataViewModel is a wrapper around {@link GridModel}, which shows sorted data in a single
- * column, using a configured component for rendering each item.
+ * Model for a {@link DataView} - a list-style data component that renders each record
+ * using a custom `renderer` function. Built on {@link GridModel} internally.
  *
- * This is the primary app entry-point for specifying {@link DataView} component options and
- * behavior.
+ * Use DataView when you need full control over how each row is rendered as a single
+ * custom element (e.g. a card or summary tile), as opposed to the column-based layout
+ * of a standard Grid. For a middle ground with multi-zone row layouts, see
+ * {@link ZoneGridModel}.
+ *
+ * Key configs: `renderer` (required - produces the visual for each row), `itemHeight`,
+ * `groupBy`, and standard store/selection options inherited from GridModel.
+ *
+ * @see DataView
+ * @see DataViewConfig
  */
 export class DataViewModel extends HoistModel {
     @managed gridModel: GridModel;

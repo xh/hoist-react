@@ -11,7 +11,8 @@ import {
     searchMembers,
     getSymbolDetail,
     getMembers,
-    getCompanionSymbols
+    getCompanionSymbols,
+    findAlternateEntries
 } from '../data/ts-registry.js';
 import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
@@ -44,6 +45,7 @@ Examples:
   hoist-ts search GridModel                     Search for symbols named GridModel
   hoist-ts search Store --kind class             Search only classes
   hoist-ts search lastLoadCompleted              Search symbols and class members
+  hoist-ts search "panel modal"                  Multi-word search (matches name + JSDoc)
   hoist-ts symbol GridModel                      Get full details for GridModel
   hoist-ts members GridModel                     List all GridModel properties and methods
   hoist-ts members Store                         List all Store members`
@@ -55,9 +57,12 @@ Examples:
 program
     .command('search')
     .description(
-        'Search for TypeScript symbols and class members by name. Searches both top-level symbols (classes, interfaces, types, functions) and public members of key framework classes.'
+        'Search for TypeScript symbols and class members by name and JSDoc content. Multi-word queries match all terms against names and documentation. Also searches public members of key framework classes.'
     )
-    .argument('<query>', 'Symbol or member name to search for')
+    .argument(
+        '<query>',
+        'Search query — symbol name, keyword, or multiple terms (e.g. "panel modal")'
+    )
     .option(
         '-k, --kind <kind>',
         'Filter symbols by kind: class, interface, type, function, const, enum'
@@ -113,6 +118,20 @@ program
             text +=
                 '\n\nTip: Use `hoist-ts members ' + name + '` to see all properties and methods.';
         }
+
+        if (!opts.file) {
+            const alternates = findAlternateEntries(name, detail.filePath);
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
+            }
+        }
+
         process.stdout.write(text + '\n');
     });
 
@@ -132,7 +151,23 @@ program
             console.error(formatMembers(result, name));
             process.exit(1);
         }
-        process.stdout.write(formatMembers(result, name) + '\n');
+
+        let text = formatMembers(result, name);
+
+        if (!opts.file) {
+            const alternates = findAlternateEntries(name, result.symbol.filePath);
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
+            }
+        }
+
+        process.stdout.write(text + '\n');
     });
 
 program.parseAsync();
