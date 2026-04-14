@@ -145,7 +145,7 @@
             "mcpCategory": "package",
             "viewerCategory": "desktop",
             "description": "Desktop-specific components and app container.",
-            "keywords": ["desktop components", "Blueprint wrappers", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
+            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
         },
         {
             "id": "mobile/README.md",
