@@ -15,7 +15,12 @@
  override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
  prop values (instance props take precedence), but may hold other app-overridable settings.
  Added initial defaults to `Panel`, `Button`, and `Toolbar`.
-
+* Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
+  icon library. All previously supported icons remain and no app changes should be required.
+* Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
+  themeable, and consistent with the rest of the icon system. The icon, weight, and animation can be
+  configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag
+  is available to preserve the original PNG appearance if desired.
 
 ### 🐞 Bug Fixes
 
@@ -27,6 +32,14 @@
 
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
   supporting the new hoist-core per-logger logging behavior overrides.
+
+* Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
+  `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+
+### 📚 Libraries
+
+* @fortawesome/* `6.0 → 7.2`
+* @fortawesome/react-fontawesome `0.2 → 3.2`
 
 ## 83.1.0 - 2026-04-07
 
