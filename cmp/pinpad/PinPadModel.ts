@@ -6,13 +6,7 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, computed, makeObservable, bindable} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
-
-// We import Onsen's FastClick fork to improve performance on touch devices (i.e. tablet).
-// Note that this is *only* FastClick, and does not include Onsen components, and thus is
-// safe to use with the desktop kit.
-import FastClick from '@onsenui/fastclick';
 
 /**
  * Configuration for a {@link PinPadModel} - a numeric keypad for collecting a PIN.
@@ -40,8 +34,6 @@ export class PinPadModel extends HoistModel {
     @bindable subHeaderText: string;
     @bindable errorText: string;
 
-    ref = createObservableRef();
-
     @observable
     private _enteredDigits: number[];
     private _deleteWasLast = false;
@@ -56,13 +48,6 @@ export class PinPadModel extends HoistModel {
 
         this._pinLength = pinLength;
         this._enteredDigits = [];
-
-        this.addReaction({
-            track: () => this.ref.current,
-            run: current => {
-                if (current) FastClick.attach(current);
-            }
-        });
     }
 
     //-------------------
