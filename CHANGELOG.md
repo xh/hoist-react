@@ -54,8 +54,11 @@
 
 ### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.17 → 2.19`
+* dompurify `3.3 → 3.4`
 * @fortawesome/* `6.0 → 7.2`
 * @fortawesome/react-fontawesome `0.2 → 3.2`
+* lodash `4.17 → 4.18`
 
 ## 83.1.0 - 2026-04-07
 
