@@ -146,7 +146,12 @@ export class TraceService extends HoistService {
     exportSpan(span: Span) {
         if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
             this._pending.push(span);
-            this.pushPendingBuffered();
+
+            // Queue the span, but if this is the submitSpans export itself, don't schedule
+            // another flush or we'll loop forever.
+            if (!span.tags['url.path']?.endsWith('xh/submitSpans')) {
+                this.pushPendingBuffered();
+            }
         }
     }
 
@@ -177,7 +182,7 @@ export class TraceService extends HoistService {
     //------------------
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        this.pushPendingAsync();
+        void this.pushPendingAsync();
     }
 
     /** Evaluate sampling rules against a span's tags. */
