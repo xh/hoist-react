@@ -125,9 +125,9 @@ export class TraceService extends HoistService {
 
         // Apply default tags.
         ret.tags = {
-            clientApp: XH.clientAppCode,
-            loadId: XH.loadId,
-            tabId: XH.tabId,
+            'xh.clientApp': XH.clientAppCode,
+            'xh.loadId': XH.loadId,
+            'xh.tabId': XH.tabId,
             'xh.source': ret.parent?.tags?.['xh.source'] ?? 'app',
             ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
             ...ret.tags
