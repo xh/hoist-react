@@ -2,7 +2,6 @@
 name: xh-upgrade-notes
 description: Create or update detailed upgrade notes and CHANGELOG entry for a major Hoist React release. Use when writing documentation for a new major version upgrade (e.g. v79, v80). Produces two artifacts: a CHANGELOG entry and a detailed upgrade-notes document with before/after code examples, then validates via dry-run simulation against Toolbox.
 argument-hint: [version, e.g. v79 or 79.0.0]
-disable-model-invocation: true
 ---
 
 # Upgrade Notes Skill
@@ -164,7 +163,14 @@ Upgrade column:
 ```
 
 If the row already has an empty Upgrade column, add the link. If the row doesn't exist yet,
-this is a new release — add it following the existing pattern.
+this is a new release — add it following the existing pattern. Also update the reverse lookup
+table (hoist-core → hoist-react) if a new core minimum is introduced.
+
+**Important:** The Notes columns in both tables should describe features that drive the
+**core/react pairing** — server-side features that the react version needs to support (e.g.
+span sampling, admin panel features backed by new core endpoints, OTEL tag alignment). Do not
+include purely client-side changes (e.g. FontAwesome upgrade, component defaults) — those are
+noise in a version compatibility context.
 
 ### Update the MCP Doc Registry
 
