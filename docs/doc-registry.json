@@ -368,7 +368,7 @@
             "title": "Changelog Format",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "CHANGELOG entry format conventions and section headers.",
+            "description": "Conventions for writing and reviewing CHANGELOG entries in the hoist-react library CHANGELOG — section headers, voice/tense, difficulty ratings, breaking changes, libraries.",
             "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
         },
         {

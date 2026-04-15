@@ -189,7 +189,7 @@ breaking changes, before/after code examples, and verification checklists.
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
 - [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
   versions prior to v56
-- [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
-  section headers
+- [`changelog-format.md`](./changelog-format.md) — Conventions for writing and reviewing
+  hoist-react library CHANGELOG entries
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
   patterns and components
