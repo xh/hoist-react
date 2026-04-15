@@ -74,11 +74,11 @@ function findChildModelMatching(model: HoistModel, selector: ModelSelector): Hoi
     }
 
     // 2) Accessor/getter properties on the prototype chain — covers `@observable.ref accessor foo`
-    //    style declarations. Stop at the base Object to avoid pulling in unrelated getters below
-    //    HoistBase, but do visit HoistBase/HoistModel getters (they're guarded by the `_`/prefix
-    //    check and the isHoistModel filter above).
+    //    style declarations. Stop at HoistModel.prototype: none of the framework-level getters on
+    //    HoistModel/HoistBase hold child models, and invoking them can have side effects (e.g.
+    //    the deprecated `loadModel` getter on HoistModel emits a console warning).
     let proto = Object.getPrototypeOf(model);
-    while (proto && proto !== Object.prototype) {
+    while (proto && proto !== HoistModel.prototype && proto !== Object.prototype) {
         for (const key of Object.getOwnPropertyNames(proto)) {
             const desc = Object.getOwnPropertyDescriptor(proto, key);
             if (!desc || !desc.get) continue;
