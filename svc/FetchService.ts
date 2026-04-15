@@ -427,13 +427,11 @@ export class FetchService extends HoistService {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             url = this.extractUrlPath(opts.url);
 
-        if (url.endsWith('submitSpans')) return null;
-
         return traceService.createSpan({
             name: method,
             kind: 'client',
             parent: opts.span as Span,
-            tags: {'http.request.method': method, 'url.path': opts.url, 'xh.source': 'hoist'},
+            tags: {'http.request.method': method, 'url.path': url, 'xh.source': 'hoist'},
             caller: this
         });
     }
@@ -464,7 +462,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private qsFilterFn = (prefix, value) => {
+    private qsFilterFn = (_prefix: string, value: any) => {
         if (isDate(value)) return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
