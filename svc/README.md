@@ -128,15 +128,16 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 **Configuration Options:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`) |
-| `body` | any | Request body |
-| `params` | object | Query string parameters |
-| `headers` | object | Additional headers |
-| `timeout` | number | Timeout in ms (default 30000) |
-| `autoAbortKey` | string | Cancel previous requests with same key |
-| `loadSpec` | LoadSpec | Metadata for tracking |
+| Option | Type | Description                                                                           |
+|--------|------|---------------------------------------------------------------------------------------|
+| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`)                                  |
+| `body` | any | Request body                                                                          |
+| `params` | object | Query string parameters                                                               |
+| `headers` | object | Additional headers                                                                    |
+| `timeout` | number | Timeout in ms (default 30000)                                                         |
+| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
+| `span` | `Span \| string \| SpanConfig` | Parent span for tracing. Accepts an existing `Span`, a `SpanConfig`, or a string name |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
@@ -335,6 +336,17 @@ const result = this.withSpan({name: 'computeTotals', caller: this}, span => {
 
 // Simple string-only config
 await this.withSpanAsync('loadData', async span => { ... });
+
+// Nest a fetch call under a parent span without manual span management.
+// FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: 'loadPortfolio'
+});
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
+});
 ```
 
 **SpanConfig:**

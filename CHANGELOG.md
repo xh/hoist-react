@@ -27,6 +27,9 @@
   creation, with child spans inheriting their parent's decision. Error spans are always exported
   when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
   the server.
+* `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
+  When a string or config is provided, `FetchService` creates and manages the parent span
+  internally, simplifying a common tracing pattern for fetch calls.
 
 ### 🐞 Bug Fixes
 
