@@ -2,10 +2,6 @@
 
 ## 85.0.0-SNAPSHOT - unreleased
 
-### 📚 Libraries
-
-* Removed several obsolete or redundant runtime dependencies. `react-transition-group`, `regenerator-runtime`, `core-js`, `resize-observer-polyfill`, `@onsenui/fastclick`, and the direct `@popperjs/core` entry are no longer needed given Hoist's modern browser matrix and existing transitive deps. `static/polyfills.js` is now a no-op kept for backwards compatibility with `@xh/hoist-dev-utils` v12. See xh/hoist-react#4332.
-
 ## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
