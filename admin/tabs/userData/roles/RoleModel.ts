@@ -14,7 +14,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, mapValues} from 'lodash';
 import moment from 'moment/moment';
@@ -38,10 +38,10 @@ export class RoleModel extends HoistModel {
     @managed readonly roleEditorModel = new RoleEditorModel(this);
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
 
-    @observable.ref allRoles: HoistRole[] = [];
-    @observable.ref moduleConfig: RoleModuleConfig;
+    @observable.ref accessor allRoles: HoistRole[] = [];
+    @observable.ref accessor moduleConfig: RoleModuleConfig;
 
-    @bindable showInGroups = true;
+    @bindable accessor showInGroups = true;
 
     get readonly() {
         return !XH.getUser().isHoistRoleManager;
@@ -55,7 +55,6 @@ export class RoleModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.showInGroups,
             run: showInGroups => {

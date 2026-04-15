@@ -7,7 +7,6 @@
 import {
     action,
     autorun as mobxAutorun,
-    checkMakeObservable,
     comparer,
     reaction as mobxReaction,
     runInAction,
@@ -36,9 +35,6 @@ import {
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
-import {wait} from '@xh/hoist/promise';
-
-declare const xhIsDevelopmentMode: boolean;
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -61,12 +57,6 @@ export abstract class HoistBase {
     }
     get isHoistBase(): boolean {
         return true;
-    }
-
-    constructor() {
-        if (xhIsDevelopmentMode) {
-            wait().then(() => checkMakeObservable(this));
-        }
     }
 
     /**

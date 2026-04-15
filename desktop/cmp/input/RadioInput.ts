@@ -8,7 +8,7 @@ import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cm
 import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {filter, isObject} from 'lodash';
 import './RadioInput.scss';
@@ -62,11 +62,6 @@ class RadioInputModel extends HoistInputModel {
                 return {value: this.toInternal(o), label: o.toString()};
             }
         });
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     //-------------------------

@@ -16,7 +16,7 @@ import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {datePicker as bpDatePicker, popover, Position} from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
@@ -174,7 +174,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 class DateInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    @bindable popoverOpen: boolean = false;
+    @bindable accessor popoverOpen: boolean = false;
 
     buttonRef = createRef<HTMLButtonElement>();
     popoverRef = createRef<HTMLElement>();
@@ -208,11 +208,6 @@ class DateInputModel extends HoistInputModel {
 
     get strictInputParsing(): boolean {
         return withDefault(this.componentProps.strictInputParsing, false);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override toExternal(internal: Date): Date | LocalDate {

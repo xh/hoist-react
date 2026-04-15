@@ -10,13 +10,13 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
     savedValue: AlertBannerSpec;
-    @bindable.ref savedPresets: PlainObject[] = [];
+    @bindable.ref accessor savedPresets: PlainObject[] = [];
 
     @managed
     formModel = new FormModel({
@@ -55,7 +55,7 @@ export class AlertBannerModel extends HoistModel {
 
     @managed
     @observable.ref
-    bannerModel = null;
+    accessor bannerModel = null;
 
     get intentOptions(): Intent[] {
         return ['primary', 'success', 'warning', 'danger'];
@@ -74,7 +74,6 @@ export class AlertBannerModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         const {formModel} = this;
         this.addReaction({

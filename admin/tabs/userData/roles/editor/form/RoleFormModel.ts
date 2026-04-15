@@ -11,7 +11,7 @@ import {HoistModel, managed, ReactionSpec, SelectOption, TaskObserver, XH} from 
 import {RecordActionSpec, required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {groupBy, isNil, isString, map, sortBy, uniq, without} from 'lodash';
 import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
@@ -30,13 +30,13 @@ export class RoleFormModel extends HoistModel {
     @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
     @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
 
-    @observable isEditingExistingRole = false;
+    @observable accessor isEditingExistingRole = false;
 
-    @observable.ref invalidNames: string[] = [];
-    @observable.ref categoryOptions: string[] = [];
-    @observable.ref userOptions: string[] = [];
-    @observable.ref directoryGroupOptions: string[] = [];
-    @observable.ref roleOptions: SelectOption[] = [];
+    @observable.ref accessor invalidNames: string[] = [];
+    @observable.ref accessor categoryOptions: string[] = [];
+    @observable.ref accessor userOptions: string[] = [];
+    @observable.ref accessor directoryGroupOptions: string[] = [];
+    @observable.ref accessor roleOptions: SelectOption[] = [];
 
     @computed
     get isDirty(): boolean {
@@ -72,7 +72,6 @@ export class RoleFormModel extends HoistModel {
 
     constructor(roleModel: RoleModel) {
         super();
-        makeObservable(this);
 
         this.roleModel = roleModel;
         this.addReaction(

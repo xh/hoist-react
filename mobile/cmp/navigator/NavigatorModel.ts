@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable} from '@xh/hoist/mobx';
+import {action, bindable} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys} from 'lodash';
@@ -59,10 +59,9 @@ export interface NavigatorConfig {
  * Provides support for routing based navigation.
  */
 export class NavigatorModel extends HoistModel {
-    @bindable disableAppRefreshButton: boolean;
+    @bindable accessor disableAppRefreshButton: boolean;
 
-    @bindable.ref
-    stack: PageModel[] = [];
+    @bindable.ref accessor stack: PageModel[] = [];
 
     pages: PageConfig[] = [];
     track: boolean;
@@ -104,7 +103,6 @@ export class NavigatorModel extends HoistModel {
         refreshMode = 'onShowLazy'
     }: NavigatorConfig) {
         super();
-        makeObservable(this);
 
         ensureNotEmpty(pages, 'NavigatorModel needs at least one page.');
         ensureUniqueBy(pages, 'id', 'Multiple NavigatorModel PageModels have the same id.');

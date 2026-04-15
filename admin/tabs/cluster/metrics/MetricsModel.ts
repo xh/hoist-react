@@ -15,7 +15,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {CellClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {groupBy} from 'lodash';
@@ -28,9 +28,9 @@ export class MetricsModel extends BaseAdminTabModel {
     @managed detailGridModel: GridModel;
     @managed private timer: Timer;
 
-    @bindable sourceFilter: string[] = [];
+    @bindable accessor sourceFilter: string[] = [];
 
-    @observable.ref allMetrics: any[] = [];
+    @observable.ref accessor allMetrics: any[] = [];
 
     @computed
     get sourceOptions(): string[] {
@@ -51,7 +51,6 @@ export class MetricsModel extends BaseAdminTabModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = new GridModel({
             persistWith: {...this.persistWith, path: 'mainGrid'},

@@ -7,7 +7,7 @@
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useLocalModel, MenuItemLike, isMenuItem} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
@@ -57,12 +57,7 @@ export const menu = hoistCmp.factory({
 class LocalMenuModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable pressedIdx: number;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor pressedIdx: number;
 
     parseMenuItems(items: MenuItemLike[], onDismiss: () => void): ReactNode[] {
         const {pressedIdx} = this;

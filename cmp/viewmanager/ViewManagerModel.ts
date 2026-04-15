@@ -18,7 +18,7 @@ import {
 import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, observable, comparer, runInAction} from '@xh/hoist/mobx';
 import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
@@ -208,9 +208,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
 
     /** Current view. Will not include uncommitted changes */
-    @observable.ref view: View<T> = null;
+    @observable.ref accessor view: View<T> = null;
     /** Loaded saved view library - both private and global */
-    @observable.ref views: ViewInfo[] = [];
+    @observable.ref accessor views: ViewInfo[] = [];
 
     /**
      * Map of user's preferred pinned state for views.
@@ -218,13 +218,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * Note that the actual pinned state for the views is determined by this value, layered
      * over the default state of the views themselves.
      */
-    @observable.ref userPinned: Record<string, boolean> = {};
+    @observable.ref accessor userPinned: Record<string, boolean> = {};
 
     /**
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSave = false;
+    @bindable accessor autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -239,8 +239,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Private, internal state.
     //-------------------------
     /** Unsaved changes on the current view.*/
-    @observable.ref
-    private pendingValue: PendingValue<T> = null;
+    @observable.ref private accessor pendingValue: PendingValue<T> = null;
 
     /**
      * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
@@ -324,7 +323,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         initialViewSpec = null
     }: ViewManagerConfig) {
         super();
-        makeObservable(this);
 
         throwIf(
             !enableDefault && !initialViewSpec,

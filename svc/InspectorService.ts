@@ -6,7 +6,7 @@
  */
 import {HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -47,26 +47,19 @@ export class InspectorService extends HoistService {
     /** True to start processing model stats and show the Inspector UI. */
     @observable
     @persist
-    active: boolean = false;
+    accessor active: boolean = false;
 
     /** Info on current services/models/stores (when active). */
-    @bindable.ref
-    activeInstances: InspectorInstanceData[] = [];
+    @bindable.ref accessor activeInstances: InspectorInstanceData[] = [];
 
     /** Timestamped model counts w/memory usage (when active). */
-    @observable.ref
-    stats: InspectorStat[] = [];
+    @observable.ref accessor stats: InspectorStat[] = [];
 
     @managed
     statsUpdateTimer: Timer;
 
     private _syncRun: number = 0;
     private _idToSyncRun = new Map<string, number>();
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override async initAsync() {
         // Ensure deactivated if not enabled - active could be persisted to true.

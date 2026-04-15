@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, observable} from '@xh/hoist/mobx';
 import {HoistModel, managed, RefreshContextModel} from '@xh/hoist/core';
 
 /**
@@ -16,7 +16,7 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
     // Core State
     //---------------------------
     viewSpecs: VSPEC[] = [];
-    @observable.ref state: VSTATE[];
+    @observable.ref accessor state: VSTATE[];
     @managed @observable.ref viewModels: VMODEL[] = [];
 
     @managed readonly refreshContextModel: RefreshContextModel;
@@ -24,9 +24,9 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
     //-----------------------------
     // Settable State
     //------------------------------
-    @bindable layoutLocked: boolean;
-    @bindable contentLocked: boolean;
-    @bindable renameLocked: boolean;
+    @bindable accessor layoutLocked: boolean;
+    @bindable accessor contentLocked: boolean;
+    @bindable accessor renameLocked: boolean;
 
     //------------------------------
     // Immutable public properties
@@ -44,7 +44,6 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.refreshContextModel = new RefreshContextModel();
     }

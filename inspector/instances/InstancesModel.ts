@@ -12,7 +12,7 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, isObservableProp, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
@@ -39,14 +39,14 @@ export class InstancesModel extends HoistModel {
         return this.statsModel?.selectedSyncRun;
     }
 
-    @bindable.ref propsWatchlist = [];
-    @bindable.ref loadedGetters = [];
+    @bindable.ref accessor propsWatchlist = [];
+    @bindable.ref accessor loadedGetters = [];
 
     // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
-    @bindable @persist instancesStoreFilter;
-    @bindable @persist propertiesStoreFilter;
+    @bindable @persist accessor instancesStoreFilter;
+    @bindable @persist accessor propertiesStoreFilter;
 
-    @bindable @persist instQuickFilters = ['showInGroups'];
+    @bindable @persist accessor instQuickFilters = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
@@ -54,7 +54,7 @@ export class InstancesModel extends HoistModel {
         return this.instQuickFilters?.includes('showXhImpl');
     }
 
-    @bindable @persist propQuickFilters = [];
+    @bindable @persist accessor propQuickFilters = [];
     get showUnderscoreProps() {
         return this.propQuickFilters?.includes('showUnderscoreProps');
     }
@@ -71,7 +71,6 @@ export class InstancesModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.instancesGridModel = this.createInstancesGridModel();
         this.propertiesGridModel = this.createPropertiesGridModel();

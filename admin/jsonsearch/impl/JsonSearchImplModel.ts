@@ -7,7 +7,7 @@
 
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, zipWith} from 'lodash';
 
@@ -23,15 +23,15 @@ export class JsonSearchImplModel extends HoistModel {
     @managed docLoadTask: TaskObserver = TaskObserver.trackLast();
     @managed nodeLoadTask: TaskObserver = TaskObserver.trackLast();
 
-    @observable groupBy: string = null;
-    @observable isOpen: boolean = false;
+    @observable accessor groupBy: string = null;
+    @observable accessor isOpen: boolean = false;
 
-    @bindable.ref error = null;
-    @bindable path: string = '';
-    @bindable readerContentType: 'document' | 'matches' = 'matches';
-    @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
-    @bindable readerContent: string = '';
-    @bindable matchingNodeCount: number = 0;
+    @bindable.ref accessor error = null;
+    @bindable accessor path: string = '';
+    @bindable accessor readerContentType: 'document' | 'matches' = 'matches';
+    @bindable accessor pathFormat: 'XPath' | 'JSONPath' = 'XPath';
+    @bindable accessor readerContent: string = '';
+    @bindable accessor matchingNodeCount: number = 0;
 
     get subjectName(): string {
         return pluralize(this.componentProps.subjectName);
@@ -63,11 +63,6 @@ export class JsonSearchImplModel extends HoistModel {
     @action
     toggleSearchIsOpen() {
         this.isOpen = !this.isOpen;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

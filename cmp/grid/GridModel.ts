@@ -62,7 +62,7 @@ import {
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
-import {action, bindable, makeObservable, observable, when} from '@xh/hoist/mobx';
+import {action, bindable, observable, when} from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
@@ -535,21 +535,21 @@ export class GridModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable.ref columns: ColumnOrGroup[] = [];
-    @observable.ref columnState: ColumnState[] = [];
-    @observable.ref expandState: any = {};
-    @observable.ref sortBy: GridSorter[] = [];
-    @observable.ref groupBy: string[] = null;
-    @observable expandLevel: number = 0;
+    @observable.ref accessor columns: ColumnOrGroup[] = [];
+    @observable.ref accessor columnState: ColumnState[] = [];
+    @observable.ref accessor expandState: any = {};
+    @observable.ref accessor sortBy: GridSorter[] = [];
+    @observable.ref accessor groupBy: string[] = null;
+    @observable accessor expandLevel: number = 0;
 
     @computed.struct
     get persistableColumnState(): ColumnState[] {
         return this.cleanColumnState(this.columnState);
     }
 
-    @bindable showSummary: boolean | VSide = false;
-    @bindable.ref emptyText: ReactNode;
-    @bindable treeStyle: TreeStyle;
+    @bindable accessor showSummary: boolean | VSide = false;
+    @bindable.ref accessor emptyText: ReactNode;
+    @bindable accessor treeStyle: TreeStyle;
 
     /**
      * Flag to track inline editing at a granular level. Will toggle each time row
@@ -565,9 +565,9 @@ export class GridModel extends HoistModel {
      * but rather is debounced such that grid editing will need to "settle" for a
      * short time before toggling.
      */
-    @observable isInEditingMode: boolean = false;
+    @observable accessor isInEditingMode: boolean = false;
 
-    @observable.ref private editingCell: {colId: string; rowIndex: number} = null;
+    @observable.ref private accessor editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
     /**
@@ -595,7 +595,6 @@ export class GridModel extends HoistModel {
 
     constructor(config: GridConfig) {
         super();
-        makeObservable(this);
         let {
             store,
             columns,

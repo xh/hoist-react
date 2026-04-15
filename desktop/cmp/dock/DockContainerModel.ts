@@ -6,7 +6,7 @@
  */
 import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {DockViewModel, DockViewConfig} from './DockViewModel';
@@ -41,7 +41,6 @@ export class DockContainerModel extends HoistModel {
         refreshMode = 'onShowLazy'
     }: DockContainerConfig = {}) {
         super();
-        makeObservable(this);
         views = views.filter(v => !isOmitted(v));
 
         ensureUniqueBy(views as [], 'id', 'Multiple DockContainerModel views have the same id.');

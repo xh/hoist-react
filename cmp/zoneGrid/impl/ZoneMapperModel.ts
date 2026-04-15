@@ -6,7 +6,7 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
@@ -45,19 +45,16 @@ export class ZoneMapperModel extends HoistModel {
     groupColumns: boolean;
 
     // Show in dialog
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     // Show in popover (desktop only)
-    @observable isPopoverOpen = false;
+    @observable accessor isPopoverOpen = false;
 
-    @bindable
-    selectedZone: Zone = 'tl';
+    @bindable accessor selectedZone: Zone = 'tl';
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observable.ref accessor mappings: Record<Zone, ZoneMapping[]>;
 
-    @observable.ref
-    sortBy: GridSorter;
+    @observable.ref accessor sortBy: GridSorter;
 
     fields: ZoneField[] = [];
     sampleRecord: StoreRecord;
@@ -105,7 +102,6 @@ export class ZoneMapperModel extends HoistModel {
 
     constructor(config: ZoneMapperConfig) {
         super();
-        makeObservable(this);
 
         const {zoneGridModel, showRestoreDefaults = true, groupColumns = true} = config;
 

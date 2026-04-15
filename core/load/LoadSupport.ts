@@ -13,7 +13,7 @@ import {
     TaskObserver
 } from '../';
 import {LoadSpec, Loadable} from './';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {observable, runInAction} from '@xh/hoist/mobx';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {isPlainObject, pull} from 'lodash';
 
@@ -34,20 +34,16 @@ export class LoadSupport extends HoistBase implements Loadable {
     @managed
     loadObserver: TaskObserver = TaskObserver.trackLast();
 
-    @observable.ref
-    lastLoadRequested: Date = null;
+    @observable.ref accessor lastLoadRequested: Date = null;
 
-    @observable.ref
-    lastLoadCompleted: Date = null;
+    @observable.ref accessor lastLoadCompleted: Date = null;
 
-    @observable.ref
-    lastLoadException: any = null;
+    @observable.ref accessor lastLoadException: any = null;
 
     target: Loadable;
 
     constructor(target: Loadable) {
         super();
-        makeObservable(this);
         this.target = target;
     }
 

@@ -7,7 +7,7 @@
 import {GridLocalModel, GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, HoistProps, useLocalModel} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {observeResize} from '@xh/hoist/utils/js';
 import {sumBy} from 'lodash';
 import {createRef, RefObject} from 'react';
@@ -55,8 +55,8 @@ class GridHScrollbarModel extends HoistModel {
     readonly SCROLLBAR_SIZE = 10;
     readonly scrollerRef = createRef<HTMLDivElement>();
 
-    @observable viewWidth: number;
-    @observable private isVerticalScrollbarVisible = false;
+    @observable accessor viewWidth: number;
+    @observable private accessor isVerticalScrollbarVisible = false;
 
     /** Observe AG's viewport to detect when vertical scrollbar visibility changes */
     private agViewportResizeObserver: ResizeObserver;
@@ -89,11 +89,6 @@ class GridHScrollbarModel extends HoistModel {
 
     private get viewRef(): RefObject<HTMLElement> {
         return this.componentProps.gridLocalModel.viewRef;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     scrollScroller(left: number) {

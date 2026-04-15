@@ -135,17 +135,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     telemetry: MsalClientTelemetry = null;
     private _telemetryCbHandle: string = null;
 
-    constructor(config: MsalClientConfig) {
-        super({
-            initRefreshTokenExpirationOffsetSecs: -1,
-            msalLogLevel: LogLevel.Warning,
-            domainHint: null,
-            enableTelemetry: true,
-            enableSsoSilent: true,
-            ...config
-        });
-    }
-
     //-------------------------------------------
     // Implementations of core lifecycle methods
     //-------------------------------------------

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, comparer, observable} from '@xh/hoist/mobx';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {
@@ -72,8 +72,8 @@ import {Class} from 'type-fest';
  * - Other load state/metadata is available via {@link loadModel} and timestamps/exceptions accessors.
  *
  * INVARIANTS / ASSUMPTIONS
- * - `makeObservable(this)` is called by this base constructor, registering observables declared
- *    directly on `HoistModel`.
+ * - Observable fields registered via TC39 accessor decorators (`@observable accessor foo = 0`)
+ *   are initialized at class-definition time; no `makeObservable(this)` call is required.
  * - {@link lookupModel} is only valid for linked models, and only during/after {@link onLinked}.
  *
  * ERROR + LOADING BEHAVIOR
@@ -84,9 +84,8 @@ import {Class} from 'type-fest';
  * - {@link componentProps} uses shallow equality; only reference changes to individual props notify observers.
  *
  * COMMON PITFALLS
- * - Declaring new `@observable` properties in a subclass but failing to call `makeObservable(this)`
- *   in the subclass constructor. MobX requires each concrete class introducing observables to
- *   register them explicitly.
+ * - Declaring an `@observable` or `@bindable` field without the `accessor` keyword. Hoist's
+ *   decorators require `accessor` to register the field as an observable getter/setter pair.
  * - Calling {@link lookupModel} before the model is linked (create via {@link creates}/{@link useLocalModel},
  *   and call during/after {@link onLinked}).
  * - Overriding the constructor and forgetting to call `super()`.
@@ -96,12 +95,7 @@ import {Class} from 'type-fest';
  * ```ts
  * // Linked model backing a Hoist component
  * class MyModel extends HoistModel {
- *   @observable.ref data: SomeData = null;
- *
- *   constructor() {
- *     super();
- *     makeObservable(this);
- *   }
+ *   @observable.ref accessor data: SomeData = null;
  *
  *   override async doLoadAsync(loadSpec: LoadSpec) {
  *     this.data = await api.loadSomeData(loadSpec);
@@ -141,13 +135,12 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     // - `_componentProps` is only set for linked models and mirrors the current React props.
     // - `_modelLookup` is injected by Hoist when this model is linked into a component hierarchy.
     // - `_created` is basic lifecycle metadata (useful for diagnostics/ordering).
-    @observable.ref _componentProps: DefaultHoistProps | null = null;
+    @observable.ref accessor _componentProps: DefaultHoistProps | null = null;
     _modelLookup: any = null;
     _created: number = Date.now();
 
     constructor() {
         super();
-        makeObservable(this);
 
         if (this.doLoadAsync !== HoistModel.prototype.doLoadAsync) {
             this.loadSupport = new LoadSupport(this);

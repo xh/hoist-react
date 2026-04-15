@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, Theme, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * @internal
@@ -13,13 +13,7 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 export class ThemeModel extends HoistModel {
     override xhImpl = true;
 
-    @observable
-    darkTheme: boolean;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor darkTheme: boolean;
 
     @action
     toggleTheme() {

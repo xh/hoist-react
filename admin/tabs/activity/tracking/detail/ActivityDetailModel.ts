@@ -12,7 +12,7 @@ import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, PersistOptions, PlainObject} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {timestampReplacer} from '@xh/hoist/format';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {get, isString} from 'lodash';
 
 /**
@@ -41,10 +41,10 @@ export class ActivityDetailModel extends HoistModel {
      * node or nodes, for easier browsing of records with a large data payload. Multiple paths
      * can be separated with `|`.
      */
-    @bindable formattedDataFilterPath: string;
+    @bindable accessor formattedDataFilterPath: string;
 
     /** Stringified, pretty-printed, optionally path-filtered `data` payload. */
-    @observable formattedData: string;
+    @observable accessor formattedData: string;
 
     get dataFields(): ActivityTrackingDataFieldSpec[] {
         return this.parentModel?.dataFields ?? [];
@@ -62,11 +62,6 @@ export class ActivityDetailModel extends HoistModel {
     @computed
     get hasSelection() {
         return this.gridModel?.selectedRecord != null;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

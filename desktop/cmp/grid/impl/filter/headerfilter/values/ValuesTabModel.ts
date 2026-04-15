@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 
@@ -22,16 +22,16 @@ export class ValuesTabModel extends HoistModel {
     @managed gridModel: GridModel;
 
     /** List of currently checked values. */
-    @observable.ref pendingValues: any[] = [];
+    @observable.ref accessor pendingValues: any[] = [];
 
     /** Bound search term for `StoreFilterField`. */
-    @bindable filterText: string = null;
+    @bindable accessor filterText: string = null;
 
     /**
      * Merge current filter with pendingValues on commit.
      * Used when commitOnChange is false.
      */
-    @bindable combineCurrentFilters: boolean = false;
+    @bindable accessor combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
     @computed.struct
@@ -96,7 +96,6 @@ export class ValuesTabModel extends HoistModel {
 
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
-        makeObservable(this);
 
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();

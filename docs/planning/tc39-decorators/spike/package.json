@@ -1,0 +1,20 @@
+{
+    "name": "tc39-decorators-spike",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Phase 0 sandbox — validates TC39 decorator patterns for the hoist-react migration.",
+    "scripts": {
+        "build": "tsc --noEmit",
+        "run": "tsx src/run.ts"
+    },
+    "dependencies": {
+        "lodash": "^4.17.21",
+        "mobx": "~6.15.0"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.17.7",
+        "@types/node": "^22.10.0",
+        "tsx": "^4.19.0",
+        "typescript": "~5.9.3"
+    }
+}

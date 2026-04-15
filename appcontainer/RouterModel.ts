@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '../core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
@@ -19,8 +19,7 @@ import browserPlugin from 'router5-plugin-browser';
  */
 export class RouterModel extends HoistModel {
     /** Router5 state object representing the current state. */
-    @observable.ref
-    currentState: State;
+    @observable.ref accessor currentState: State;
 
     /** Underlying Router5 Router object implementing the routing state. */
     router: Router = this.createRouter();
@@ -62,11 +61,6 @@ export class RouterModel extends HoistModel {
             match = name.match(/.*(?=\.)/);
         if (!match) return;
         return this.router.navigate(match[0], params);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     //-------------------------

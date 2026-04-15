@@ -12,7 +12,7 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {cloneDeep, isEqual, isNil, isString, omit, remove, trimEnd} from 'lodash';
 import {hspacer} from '../../cmp/layout';
@@ -38,11 +38,9 @@ export class DifferModel extends HoistModel {
     @managed
     gridModel: GridModel;
 
-    @bindable
-    remoteHost: string = null;
+    @bindable accessor remoteHost: string = null;
 
-    @observable
-    hasLoaded = false;
+    @observable accessor hasLoaded = false;
 
     get readonly() {
         return this.parentModel?.gridModel.readonly;
@@ -79,7 +77,6 @@ export class DifferModel extends HoistModel {
         valueRenderer
     }: Partial<DifferModel>) {
         super();
-        makeObservable(this);
         this.parentModel = parentModel;
         this.entityName = entityName;
         this.displayName = displayName ?? entityName;

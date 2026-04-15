@@ -11,7 +11,7 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, computed, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {isDisplayed, pluralize} from '@xh/hoist/utils/js';
 import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
@@ -19,11 +19,11 @@ import {createRef} from 'react';
 export class ClusterObjectsModel extends HoistModel {
     viewRef = createRef<HTMLElement>();
 
-    @observable.ref startTimestamp: Date = null;
-    @observable runDurationMs: number = 0;
+    @observable.ref accessor startTimestamp: Date = null;
+    @observable accessor runDurationMs: number = 0;
 
-    @bindable hideUnchecked: boolean = false;
-    @bindable.ref textFilter: FilterTestFn = null;
+    @bindable accessor hideUnchecked: boolean = false;
+    @bindable.ref accessor textFilter: FilterTestFn = null;
 
     clearHibernateCachesAction: RecordActionSpec = {
         text: 'Clear Selected Hibernate Caches',
@@ -113,7 +113,6 @@ export class ClusterObjectsModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => [this.textFilter, this.hideUnchecked],
             run: this.applyFilters,

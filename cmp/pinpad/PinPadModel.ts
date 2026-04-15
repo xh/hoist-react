@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, computed, makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, observable, computed, bindable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {times} from 'lodash';
 
@@ -35,21 +35,19 @@ export interface PinPadConfig {
  * @see PinPad
  */
 export class PinPadModel extends HoistModel {
-    @bindable disabled: boolean;
-    @bindable headerText: string;
-    @bindable subHeaderText: string;
-    @bindable errorText: string;
+    @bindable accessor disabled: boolean;
+    @bindable accessor headerText: string;
+    @bindable accessor subHeaderText: string;
+    @bindable accessor errorText: string;
 
     ref = createObservableRef();
 
-    @observable
-    private _enteredDigits: number[];
+    @observable private accessor _enteredDigits: number[];
     private _deleteWasLast = false;
     private _pinLength;
 
     constructor(config: PinPadConfig = {}) {
         super();
-        makeObservable(this);
         const {pinLength = 4, headerText = '', subHeaderText = ''} = config;
         this.headerText = headerText;
         this.subHeaderText = subHeaderText;

@@ -6,7 +6,7 @@
  */
 import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -57,10 +57,10 @@ export class WebSocketService extends HoistService {
     enabled: boolean = !XH.appSpec.disableWebSockets;
 
     /** Unique channel assigned by server upon successful connection. */
-    @observable channelKey: string = null;
+    @observable accessor channelKey: string = null;
 
     /** Last time a message was received, including heartbeat messages. */
-    @observable lastMessageTime: Date = null;
+    @observable accessor lastMessageTime: Date = null;
 
     /** Observable flag indicating service is connected and available for use. */
     get connected(): boolean {
@@ -78,11 +78,6 @@ export class WebSocketService extends HoistService {
 
     private _lastHeartbeatSent: number = null;
     private _lastHeartbeatReceived: number = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override async initAsync() {
         if (!this.enabled) return;

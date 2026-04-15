@@ -7,7 +7,7 @@
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
+import {bindable, computed} from '@xh/hoist/mobx';
 import {isArray, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
 
@@ -22,8 +22,8 @@ export class CustomRowModel extends HoistModel {
     parentModel: CustomTabModel;
     headerFilterModel: HeaderFilterModel;
 
-    @bindable op: OperatorOptionValue;
-    @bindable inputVal: any;
+    @bindable accessor op: OperatorOptionValue;
+    @bindable accessor inputVal: any;
 
     /** FieldFilter config output of this row. */
     @computed.struct
@@ -79,7 +79,6 @@ export class CustomRowModel extends HoistModel {
 
     constructor(parentModel: CustomTabModel, op?: FieldFilterOperator, value?: any) {
         super();
-        makeObservable(this);
 
         let newOp = op as OperatorOptionValue;
         if (isNil(value)) {

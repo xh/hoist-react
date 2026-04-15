@@ -1,5 +1,4 @@
 import {HoistModel} from '@xh/hoist/core';
-import {makeObservable} from '@xh/hoist/mobx';
 import {isNil} from 'lodash';
 import {action, computed, observable} from 'mobx';
 import {createRef} from 'react';
@@ -13,9 +12,9 @@ import {createRef} from 'react';
 export class ScrollerModel extends HoistModel {
     contentRef = createRef<HTMLDivElement>();
 
-    @observable private scrollStart: number;
-    @observable private scrollSize: number;
-    @observable private clientSize: number;
+    @observable private accessor scrollStart: number;
+    @observable private accessor scrollSize: number;
+    @observable private accessor clientSize: number;
 
     private animationFrameId: number;
 
@@ -37,11 +36,6 @@ export class ScrollerModel extends HoistModel {
 
     get isHorizontal(): boolean {
         return this.componentProps.orientation !== 'vertical';
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override afterLinked() {

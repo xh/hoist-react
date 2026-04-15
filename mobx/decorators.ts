@@ -5,47 +5,84 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
+import {action, observable} from 'mobx';
+
+type BindableAccessorDecorator = (
+    value: ClassAccessorDecoratorTarget<any, any>,
+    context: ClassAccessorDecoratorContext
+) => ClassAccessorDecoratorResult<any, any>;
 
 /**
  * Decorator to mark a property as observable and also provide a simple MobX action of the
  * form `setPropName()`.
  *
- * This decorator is especially useful for creating observable properties that are intended to be
- * bound to UI components that will both display and set the property.
+ * Especially useful for creating observable properties that are intended to be bound to UI
+ * components that will both display and set the property.
  *
- * Use `@bindable.ref` for a version of the function that will mark the property as observable by
- * reference. This will use the similarly named `@observable.ref` decorator in the core MobX API.
+ * Apply to an `accessor` class field. Use `@bindable.ref` for reference-equality observable
+ * semantics (wraps `@observable.ref`).
+ *
+ * ```ts
+ * class MyModel extends HoistModel {
+ *     @bindable accessor name: string = '';
+ *     @bindable.ref accessor items: Item[] = [];
+ * }
+ *
+ * // Consumers call the auto-generated setter...
+ * model.setName('Hello');  // action-wrapped, reactive
+ * // ...or use `setBindable()` when the property name is dynamic.
+ * model.setBindable('name', 'Hello');
+ * ```
  */
-export const bindable: any = (target, property, descriptor) => {
-    return createBindable(target, property, descriptor, false);
-};
-
-bindable.ref = function (target, property, descriptor) {
-    return createBindable(target, property, descriptor, true);
-};
+export const bindable: BindableAccessorDecorator & {ref: BindableAccessorDecorator} = Object.assign(
+    (value: ClassAccessorDecoratorTarget<any, any>, context: ClassAccessorDecoratorContext) =>
+        createBindable(value, context, false),
+    {
+        ref: (
+            value: ClassAccessorDecoratorTarget<any, any>,
+            context: ClassAccessorDecoratorContext
+        ) => createBindable(value, context, true)
+    }
+) as any;
 
 //-----------------
 // Implementation
 //-----------------
-function createBindable(target, name, descriptor, isRef) {
-    // 1) Set up a set function, on the prototype, if one does not exist.
-    // This is the original side effect of bindable, used for backward compat by `setBindable`
-    const setterName = 'set' + upperFirst(name);
-    if (!target.hasOwnProperty(setterName)) {
-        const value = function (v) {
-            this[name] = v;
-        };
-        Object.defineProperty(target, setterName, {value});
+function createBindable(
+    value: ClassAccessorDecoratorTarget<any, any>,
+    context: ClassAccessorDecoratorContext,
+    isRef: boolean
+): ClassAccessorDecoratorResult<any, any> {
+    if (context.kind !== 'accessor') {
+        throw new Error(
+            `@bindable${isRef ? '.ref' : ''} must be applied to an 'accessor' class field ` +
+                `(got kind='${context.kind}' for '${String(context.name)}'). ` +
+                `Add the \`accessor\` keyword, e.g. \`@bindable accessor foo = 0\`.`
+        );
     }
+    const accessorName = String(context.name),
+        setterName = 'set' + upperFirst(accessorName),
+        // Delegate to MobX's TC39 accessor decorator for storage/reactivity.
+        mobxResult = (isRef ? observable.ref : observable)(
+            value as any,
+            context as any
+        ) as unknown as ClassAccessorDecoratorResult<any, any>;
 
-    // 2) Record on class, so we can later create on *instance* in makeObservable.
-    // (Be sure to create cloned list since this will exist on prototype superclasses of this class)
-    const key = '_xhBindableProperties';
-    if (!target.hasOwnProperty(key)) {
-        target[key] = {...target[key]};
-    }
-    target[key][name] = {isRef};
+    // Install an action-wrapped setXxx() on the prototype the first time an instance is constructed.
+    // addInitializer runs once per instance but the setter only needs to be installed once per class —
+    // the hasOwnProperty guard ensures idempotency without paying for a repeated defineProperty.
+    context.addInitializer(function (this: any) {
+        const proto = Object.getPrototypeOf(this);
+        if (!Object.prototype.hasOwnProperty.call(proto, setterName)) {
+            Object.defineProperty(proto, setterName, {
+                value: action(function (this: any, val: any) {
+                    this[accessorName] = val;
+                }),
+                configurable: true,
+                writable: true
+            });
+        }
+    });
 
-    // 3) Return original descriptor.
-    return descriptor;
+    return mobxResult;
 }

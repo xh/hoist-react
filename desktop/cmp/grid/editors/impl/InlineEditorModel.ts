@@ -9,7 +9,7 @@ import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
 import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -66,7 +66,7 @@ export function useInlineEditorModel(
 class InlineEditorModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable value;
+    @bindable accessor value;
 
     ref = createObservableRef<HoistInputModel>();
 
@@ -78,7 +78,6 @@ class InlineEditorModel extends HoistModel {
 
     constructor(agParams: CustomCellEditorProps) {
         super();
-        makeObservable(this);
 
         this.agParams = agParams;
         this.value = agParams.value;

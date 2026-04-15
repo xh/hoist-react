@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {filesize} from 'filesize';
 import {find, isEmpty, uniqBy, without} from 'lodash';
 
@@ -22,18 +22,15 @@ import {find, isEmpty, uniqBy, without} from 'lodash';
  * @see FileChooser
  */
 export class FileChooserModel extends HoistModel {
-    @observable.ref
-    files: File[] = [];
+    @observable.ref accessor files: File[] = [];
 
-    @observable
-    lastRejectedCount: number;
+    @observable accessor lastRejectedCount: number;
 
     @managed
     gridModel: GridModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = this.createGridModel();
 

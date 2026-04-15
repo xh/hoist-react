@@ -6,7 +6,7 @@
  */
 
 import {sumBy, head} from 'lodash';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {ReactNode} from 'react';
 /**
@@ -115,15 +115,12 @@ export class TaskObserver {
 class CompoundObserver extends TaskObserver {
     private _mode: 'last' | 'all';
 
-    @observable.ref
-    private _subtasks: TaskObserver[];
+    @observable.ref private accessor _subtasks: TaskObserver[];
 
-    @observable.ref
-    private _message: ReactNode;
+    @observable.ref private accessor _message: ReactNode;
 
     constructor(mode, subtasks, message) {
         super();
-        makeObservable(this);
         this._mode = mode;
         this._message = message;
         this._subtasks = subtasks;
@@ -170,8 +167,7 @@ class CompoundObserver extends TaskObserver {
 class PromiseObserver extends TaskObserver {
     // Keep simple as we create these in Promise.linkTo, without managing/destroying.  Could change
     // to create internally in this file in a method.
-    @observable
-    private _isPending: boolean = true;
+    @observable private accessor _isPending: boolean = true;
     private _message: ReactNode;
 
     get isPromiseObserver() {
@@ -194,7 +190,6 @@ class PromiseObserver extends TaskObserver {
 
     constructor(promise, message) {
         super();
-        makeObservable(this);
         this._message = message;
         promise.finally(action(() => (this._isPending = false)));
     }

@@ -13,7 +13,7 @@ import {
     ValidationResult,
     ValidationState
 } from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -61,11 +61,11 @@ export abstract class BaseFieldModel extends HoistModel {
         return true;
     }
 
-    @observable.ref initialValue: any;
-    @bindable.ref value: any;
+    @observable.ref accessor initialValue: any;
+    @bindable.ref accessor value: any;
 
     name: string;
-    @observable displayName: string;
+    @observable accessor displayName: string;
     rules: Rule[] = null;
 
     /**
@@ -74,7 +74,7 @@ export abstract class BaseFieldModel extends HoistModel {
      * is not in fact valid. This is often preferable when the user has yet to interact with
      * this field since init/reset and eagerly showing validation errors would be confusing.
      */
-    @observable validationDisplayed: boolean = false;
+    @observable accessor validationDisplayed: boolean = false;
 
     /**
      * The input Component bound to this field.
@@ -97,8 +97,8 @@ export abstract class BaseFieldModel extends HoistModel {
     //----------------------
     // Implementation State
     //----------------------
-    @observable private _disabled;
-    @observable private _readonly;
+    @observable private accessor _disabled;
+    @observable private accessor _readonly;
 
     private _formModel: FormModel;
     private origInitialValue: any;
@@ -108,8 +108,7 @@ export abstract class BaseFieldModel extends HoistModel {
     // An array with the result of evaluating each rule. Each element will be an array of
     // ValidationResults for the rule. If validation for the rule has not completed will contain
     // null.
-    @observable
-    private validationResultsInternal: ValidationResult[][];
+    @observable private accessor validationResultsInternal: ValidationResult[][];
 
     @managed
     private validationTask = TaskObserver.trackLast();
@@ -124,7 +123,6 @@ export abstract class BaseFieldModel extends HoistModel {
         rules = []
     }: BaseFieldConfig) {
         super();
-        makeObservable(this);
         this.name = name;
         this.displayName = displayName ?? genDisplayName(name);
         this.origInitialValue = initialValue;

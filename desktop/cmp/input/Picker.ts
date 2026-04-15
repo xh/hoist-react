@@ -20,7 +20,7 @@ import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -193,9 +193,9 @@ export const [Picker, picker] = hoistCmp.withFactory<PickerProps>({
 class PickerModel extends HoistInputModel {
     override xhImpl = true;
 
-    @bindable.ref internalOptions: SelectOption[] = [];
-    @observable popoverIsOpen: boolean = false;
-    @bindable filterValue: string = '';
+    @bindable.ref accessor internalOptions: SelectOption[] = [];
+    @observable accessor popoverIsOpen: boolean = false;
+    @bindable accessor filterValue: string = '';
 
     get multiMode(): boolean {
         return !!this.componentProps.enableMulti;
@@ -215,11 +215,6 @@ class PickerModel extends HoistInputModel {
         const {enableFilter, filterThreshold} = this.componentProps;
         if (enableFilter != null) return enableFilter;
         return this.internalOptions.length > withDefault(filterThreshold, 8);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

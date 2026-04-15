@@ -23,7 +23,7 @@ import {
     tabs as bpTabs,
     tooltip as bpTooltip
 } from '@xh/hoist/kit/blueprint';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
     createObservableRef,
@@ -212,7 +212,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
 class TabSwitcherLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable.ref overflowIds = [];
+    @bindable.ref accessor overflowIds = [];
     switcherRef = createObservableRef<HTMLElement>();
     model;
     enableOverflow;
@@ -236,7 +236,6 @@ class TabSwitcherLocalModel extends HoistModel {
 
     constructor(model, enableOverflow, vertical) {
         super();
-        makeObservable(this);
         this.model = model;
         this.enableOverflow = enableOverflow;
         this.vertical = vertical;

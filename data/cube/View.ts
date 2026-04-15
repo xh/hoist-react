@@ -22,7 +22,7 @@ import {
     StoreRecordId
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {logWithDebug, throwIf} from '@xh/hoist/utils/js';
 import {castArray, find, forEach, groupBy, isEmpty, isNil, map, uniq} from 'lodash';
@@ -97,30 +97,25 @@ export class View
     readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */
-    @observable.ref
-    query: Query = null;
+    @observable.ref accessor query: Query = null;
 
     /**
      * Results of this view, an observable object with a `rows` property containing an array of
      * hierarchical {@link ViewRowData} objects.
      */
-    @observable.ref
-    result: ViewResult = null;
+    @observable.ref accessor result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
-    @observable.ref
-    info: PlainObject = null;
+    @observable.ref accessor info: PlainObject = null;
 
     /** The source {@link Cube.lastUpdated} as of the last time the view was updated. */
-    @observable
-    cubeUpdated: number;
+    @observable accessor cubeUpdated: number;
 
     /** Timestamp (ms) when the view was last updated. */
-    @observable
-    lastUpdated: number;
+    @observable accessor lastUpdated: number;
 
     // Implementation
     private _rowDatas: ViewRowData[] = null;
@@ -133,7 +128,6 @@ export class View
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
         super();
-        makeObservable(this);
 
         const {query, stores = [], connect = false} = config;
 

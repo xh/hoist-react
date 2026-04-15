@@ -11,7 +11,6 @@ import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
 import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
-import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 
 /**
@@ -32,7 +31,6 @@ export class ViewPanelModel extends HoistModel {
 
     constructor(parent: ManageDialogModel) {
         super();
-        makeObservable(this);
 
         this.parent = parent;
         this.formModel = this.createFormModel();
