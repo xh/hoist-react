@@ -29,12 +29,12 @@ export interface ActivityDetailProvider {
 
 export class ActivityDetailModel extends HoistModel {
     @lookup(model => {
-        return model.isActivityDetailProvider ?? false;
+        return (model as any).isActivityDetailProvider ?? false;
     })
     parentModel: ActivityDetailProvider;
 
-    @managed @observable.ref gridModel: GridModel;
-    @managed @observable.ref formModel: FormModel;
+    @managed @observable.ref accessor gridModel: GridModel;
+    @managed @observable.ref accessor formModel: FormModel;
 
     /**
      * Optional dot-delimited path(s) to filter the displayed `data` payload down to a particular

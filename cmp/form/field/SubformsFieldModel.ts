@@ -6,7 +6,7 @@
  */
 import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
 import {ValidationResult, ValidationState} from '@xh/hoist/data';
-import {action, bindable, computed, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
 import {executeIfFunction, withDefault} from '../../../utils/js';
@@ -84,7 +84,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         return this.value.map(s => s.getData());
     }
 
-    @override
+    @action
     override init(value: any) {
         value = executeIfFunction(withDefault(value, this.origInitialValues));
         this.initialValue = this.parseValue(value);
@@ -92,7 +92,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.cleanupModels();
     }
 
-    @override
+    @action
     override setValue(v: any) {
         super.setValue(this.parseValue(v));
         this.cleanupModels();
@@ -123,13 +123,13 @@ export class SubformsFieldModel extends BaseFieldModel {
         return [...this.validationResults, ...subVals];
     }
 
-    @override
+    @action
     override reset() {
         super.reset();
         this.value.forEach(s => s.reset());
     }
 
-    @override
+    @action
     override displayValidation(includeSubforms: boolean = true) {
         super.displayValidation(includeSubforms);
         if (includeSubforms) {
@@ -155,7 +155,7 @@ export class SubformsFieldModel extends BaseFieldModel {
         );
     }
 
-    @override
+    @action
     override async validateAsync(opts: {display?: boolean} = {}): Promise<boolean> {
         const {display = true} = opts,
             promises = this.value.map(m => m.validateAsync({display}));

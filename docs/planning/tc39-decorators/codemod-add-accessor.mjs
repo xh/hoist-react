@@ -40,13 +40,15 @@ const DECORATOR = '@(?:observable(?:\\.\\w+)?|bindable(?:\\.\\w+)?)';
 //   other decorators (e.g. `@persist`) and/or TS access modifiers, stacked same-line or wrapped.
 const INTERVENING = `(?:(?:@[\\w.]+(?:\\([^)]*\\))?|${ACCESS_MODIFIERS})\\s+)*`;
 
-// Form A: decorator + rest of line with optional intervening decorators/modifiers + field name
-// + field terminator/separator.
+// Form A: the observable/bindable decorator, optionally preceded AND followed by other decorators
+// or TS access modifiers on the same line (or wrapped across lines), then the field name and a
+// field terminator/separator.
 // Capture groups:
-//   1 = indent, 2 = decorator, 3 = intervening decorators/modifiers (possibly empty),
-//   4 = field name, 5 = what follows ('?' | '!' | ':' | '=' | ';' | end-of-line)
+//   1 = indent, 2 = pre-decorators/modifiers (possibly empty),
+//   3 = decorator (observable/bindable), 4 = post-decorators/modifiers (possibly empty),
+//   5 = field name, 6 = what follows ('?' | '!' | ':' | '=' | ';' | end-of-line)
 const RE_FORM_A = new RegExp(
-    String.raw`^(\s*)(${DECORATOR})\s+(${INTERVENING})(\w+)(\s*(?:[?!:;=]|$))`,
+    String.raw`^(\s*)(${INTERVENING})(${DECORATOR})\s+(${INTERVENING})(\w+)(\s*(?:[?!:;=]|$))`,
     'gm'
 );
 
@@ -106,10 +108,9 @@ async function processFile(filePath) {
     // Form A: inline decorator + field on same line.
     content = content.replace(
         RE_FORM_A,
-        (_match, indent, decorator, modifiers, fieldName, tail) => {
+        (_match, indent, pre, decorator, post, fieldName, tail) => {
             localFormA++;
-            const mods = modifiers ? modifiers : '';
-            return `${indent}${decorator} ${mods}accessor ${fieldName}${tail}`;
+            return `${indent}${pre}${decorator} ${post}accessor ${fieldName}${tail}`;
         }
     );
 

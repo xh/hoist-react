@@ -64,19 +64,35 @@ export function formatSelector(selector: ModelSelector): string {
  * Accessing properties decorated with `@lookup` should first be done in the
  * {@link HoistModel.onLinked} or {@link HoistModel.afterLinked} handlers.
  */
-export const lookup: any = (selector: ModelSelector) => {
+export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
-    return function (target, property, descriptor) {
-        throwIf(
-            !target.isHoistModel,
-            '@lookup decorator should be applied to a subclass of HoistModel'
-        );
-        // Be sure to create list for *this* particular class. Clone and include inherited values.
-        const key = '_xhInjectedParentProperties';
-        if (!target.hasOwnProperty(key)) {
-            target[key] = {...target[key]};
+    return function (_value: any, context: ClassFieldDecoratorContext) {
+        if (context.kind !== 'field') {
+            throw new Error(
+                `@lookup must be applied to a plain class field (got kind='${context.kind}').`
+            );
         }
-        target[key][property] = selector;
-        return descriptor;
+        const property = String(context.name);
+        // The returned initializer runs as part of field initialization — register this property
+        // on the class prototype so `useModelLinker` can resolve it at link time.
+        // (Babel's 2023-05 decorator pass does not reliably invoke addInitializer callbacks for
+        //  field decorators, so we piggyback on the init-return form instead.)
+        return function (this: any, initialValue: any) {
+            if (!this.isHoistModel) {
+                throw new Error('@lookup decorator should be applied to a subclass of HoistModel');
+            }
+            const proto = Object.getPrototypeOf(this),
+                key = '_xhInjectedParentProperties';
+            if (!Object.prototype.hasOwnProperty.call(proto, key)) {
+                Object.defineProperty(proto, key, {
+                    value: {...(proto[key] ?? {})},
+                    writable: true,
+                    configurable: true,
+                    enumerable: false
+                });
+            }
+            proto[key][property] = selector;
+            return initialValue;
+        };
     };
-};
+}

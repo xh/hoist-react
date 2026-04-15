@@ -17,7 +17,7 @@ export abstract class DashModel<VSPEC, VSTATE, VMODEL extends DashViewModel> ext
     //---------------------------
     viewSpecs: VSPEC[] = [];
     @observable.ref accessor state: VSTATE[];
-    @managed @observable.ref viewModels: VMODEL[] = [];
+    @managed @observable.ref accessor viewModels: VMODEL[] = [];
 
     @managed readonly refreshContextModel: RefreshContextModel;
 

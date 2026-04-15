@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {upperFirst} from 'lodash';
-import {action, observable} from 'mobx';
+import {action, observable, runInAction} from 'mobx';
 
 type BindableAccessorDecorator = (
     value: ClassAccessorDecoratorTarget<any, any>,
@@ -67,6 +67,16 @@ function createBindable(
             value as any,
             context as any
         ) as unknown as ClassAccessorDecoratorResult<any, any>;
+
+    // Wrap the accessor's set in runInAction so direct assignment (`model.foo = v`) is
+    // action-wrapped too — preserving the pre-v85 @bindable contract that code relying on
+    // `enforceActions: 'observed'` can set @bindable values without opting into an outer action.
+    const origSet = mobxResult.set;
+    if (origSet) {
+        mobxResult.set = function (this: any, v: any) {
+            runInAction(() => origSet.call(this, v));
+        };
+    }
 
     // Install an action-wrapped setXxx() on the prototype the first time an instance is constructed.
     // addInitializer runs once per instance but the setter only needs to be installed once per class —

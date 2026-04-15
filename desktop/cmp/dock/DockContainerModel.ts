@@ -29,7 +29,7 @@ interface DockContainerConfig {
  * and expanding / collapsing views programmatically.
  */
 export class DockContainerModel extends HoistModel {
-    @managed @observable.ref views: DockViewModel[] = [];
+    @managed @observable.ref accessor views: DockViewModel[] = [];
     direction: DockViewDirection;
     renderMode: RenderMode;
     refreshMode: RefreshMode;

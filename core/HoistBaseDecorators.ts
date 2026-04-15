@@ -6,84 +6,130 @@
  */
 import {wait} from '@xh/hoist/promise';
 import {observable} from 'mobx';
-import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
+import {PersistableState, PersistenceProvider, PersistOptions} from './';
+
+type ClassMemberDecoratorContext =
+    | ClassFieldDecoratorContext
+    | ClassAccessorDecoratorContext
+    | ClassMethodDecoratorContext
+    | ClassGetterDecoratorContext
+    | ClassSetterDecoratorContext;
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
- * are created by the referencing object and that implement a `destroy()` method.
+ * are created by the referencing object and that implement a `destroy()` method. On `destroy()`
+ * of the owner, each managed property is destroyed.
+ *
+ * Applies to plain class fields, `accessor` fields, methods, and getters.
  *
  * @see HoistBase.markManaged
  */
-export const managed: any = (target: HoistBaseClass, property: string, descriptor: any) => {
-    throwIf(!target.isHoistBase, '@managed decorator should be applied to a subclass of HoistBase');
-    // Be sure to create list for *this* particular class. Clone and include inherited values.
-    const key = '_xhManagedProperties';
-    if (!target.hasOwnProperty(key)) {
-        target[key] = [...(target[key] ?? [])];
+export function managed(value: any, context: ClassMemberDecoratorContext): any {
+    const {kind, name} = context;
+    const property = String(name);
+
+    // Install the property name on the class prototype, idempotently.
+    const register = function (this: any) {
+        if (!this.isHoistBase) {
+            throw new Error('@managed decorator should be applied to a subclass of HoistBase');
+        }
+        const proto = Object.getPrototypeOf(this),
+            key = '_xhManagedProperties';
+        if (!Object.prototype.hasOwnProperty.call(proto, key)) {
+            Object.defineProperty(proto, key, {
+                value: [...(proto[key] ?? [])],
+                writable: true,
+                configurable: true,
+                enumerable: false
+            });
+        }
+        const arr = proto[key];
+        if (!arr.includes(property)) arr.push(property);
+    };
+
+    // Babel's 2023-05 decorator pass does not reliably invoke addInitializer for field decorators,
+    // so use the kind-appropriate registration mechanism.
+    if (kind === 'field') {
+        return function (this: any, initialValue: any) {
+            register.call(this);
+            return initialValue;
+        };
     }
-    target[key].push(property);
-    return descriptor;
-};
+    if (kind === 'accessor') {
+        return {
+            init(this: any, initialValue: any) {
+                register.call(this);
+                return initialValue;
+            }
+        };
+    }
+    if (kind === 'method' || kind === 'getter') {
+        context.addInitializer(register);
+        return value;
+    }
+    throw new Error(
+        `@managed must be applied to a class field, accessor, method, or getter (got kind='${kind}').`
+    );
+}
 
 /**
  * Decorator to make a class property persistent.
  *
- * This decorator provides the same functionality as {@link HoistBase.markPersist}. See that method
- * for more details.
+ * Provides the same functionality as {@link HoistBase.markPersist}. Apply this decorator AFTER
+ * the mobx decorator — i.e. second in source order: `@bindable @persist accessor fooBarFlag = true`.
  *
- * This decorator should always be applied "before" the mobx decorator, i.e. second in file line
- * order: `@bindable @persist fooBarFlag = true`
- *
- * See also `@persist.with`, a higher-order version of this decorator that allows for setting
- * property-specific persistence options.
+ * See also `@persist.with(options)`, a higher-order variant that accepts custom `PersistOptions`.
  */
-export const persist: any = (target: HoistBaseClass, property: string, descriptor: any) => {
-    return createPersistDescriptor(target, property, descriptor, null);
-};
-
-/**
- * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
- * Use this variant as a function to provide custom PersistOptions.
- */
-persist.with = function (options: PersistOptions): any {
-    return function (target, property, descriptor) {
-        return createPersistDescriptor(target, property, descriptor, options);
-    };
-};
-
-//---------------------
-// Implementation
-//---------------------
-function createPersistDescriptor(
-    target: HoistBaseClass,
-    property: string,
-    descriptor: any,
-    options: PersistOptions
-) {
-    throwIf(
-        !target.isHoistBase,
-        '@persist decorator should be applied to an instance of HoistBase'
-    );
-    if (descriptor.get || descriptor.set) {
-        logError(
-            `Error defining ${property} : @persist or @persistWith should be defined closest ` +
-                `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`,
-            target
-        );
-        return descriptor;
+export const persist: ClassAccessorDecorator & {
+    with: (options: PersistOptions) => ClassAccessorDecorator;
+} = Object.assign(
+    (_value: any, context: ClassAccessorDecoratorContext) => createPersistDecorator(context, null),
+    {
+        with(options: PersistOptions) {
+            return function (_value: any, context: ClassAccessorDecoratorContext) {
+                return createPersistDecorator(context, options);
+            };
+        }
     }
-    const codeValue = descriptor.initializer,
-        initializer = function () {
-            // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
-            let ret = codeValue?.call(this);
+) as any;
 
-            // Property is not available on the instance until after the next tick.
+//---------------------
+// Types / Implementation
+//---------------------
+type ClassAccessorDecorator = (
+    value: ClassAccessorDecoratorTarget<any, any>,
+    context: ClassAccessorDecoratorContext
+) => ClassAccessorDecoratorResult<any, any>;
+
+function createPersistDecorator(
+    context: ClassAccessorDecoratorContext,
+    options: PersistOptions | null
+): ClassAccessorDecoratorResult<any, any> {
+    if (context.kind !== 'accessor') {
+        throw new Error(
+            '@persist must be applied to an `accessor` class field — typically combined with ' +
+                '`@bindable` or `@observable`, e.g. `@bindable @persist accessor foo = true`.'
+        );
+    }
+    const property = String(context.name);
+
+    return {
+        // Runs during instance initialization — `this` is the instance, `initialValue` is the
+        // value from the inner decorator's init chain (or the in-code initializer if no inner
+        // decorator). Returns the initial value (potentially overridden from the persisted state).
+        init(this: any, initialValue: any): any {
+            let ret = initialValue;
+
+            // The accessor's setter writes through the mobx observable, but only after the outer
+            // decorator (typically @bindable) has installed the getter/setter pair at the end of
+            // instance construction. We gate writes-back-to-instance on a `propertyAvailable`
+            // flag that flips on the next tick.
             const propertyAvailable = observable.box(false),
                 persistOptions = {
                     path: property,
                     ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
                 };
+
             PersistenceProvider.create({
                 persistOptions,
                 owner: this,
@@ -100,11 +146,8 @@ function createPersistDescriptor(
                 }
             });
 
-            // Wait for next tick to ensure construction has completed and property has been made
-            // observable via makeObservable.
             wait().thenAction(() => propertyAvailable.set(true));
-
             return ret;
-        };
-    return {...descriptor, initializer};
+        }
+    };
 }

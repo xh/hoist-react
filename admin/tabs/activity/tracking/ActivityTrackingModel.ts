@@ -29,10 +29,10 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     @managed formModel: FormModel;
 
     /** Models for data-handling components - can be rebuilt due to change in dataFields. */
-    @managed @observable.ref groupingChooserModel: GroupingChooserModel;
-    @managed @observable.ref cube: Cube;
-    @managed @observable.ref filterChooserModel: FilterChooserModel;
-    @managed @observable.ref gridModel: GridModel;
+    @managed @observable.ref accessor groupingChooserModel: GroupingChooserModel;
+    @managed @observable.ref accessor cube: Cube;
+    @managed @observable.ref accessor filterChooserModel: FilterChooserModel;
+    @managed @observable.ref accessor gridModel: GridModel;
     @managed dataFieldsEditorModel: DataFieldsEditorModel;
 
     /**
