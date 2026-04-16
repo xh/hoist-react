@@ -108,7 +108,7 @@ import {ReactNode} from 'react';
 import {frame, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 
 // Relative imports
 import {MyHelper} from './impl/MyHelper';
@@ -335,12 +335,11 @@ export class MyModel extends HoistModel {
     //---------------------
     // Observable State
     //---------------------
-    @observable selectedId: string = null;
-    @bindable filter: string = '';
+    @observable accessor selectedId: string = null;
+    @bindable accessor filter: string = '';
 
     constructor(config: MyModelConfig) {
         super();
-        makeObservable(this);
         // ...
     }
 
@@ -362,13 +361,12 @@ for visual balance.
 
 ### Constructor Pattern
 
-Model constructors call `super()`, then `makeObservable(this)`, then initialize properties from
-config:
+Model constructors call `super()`, then initialize properties from config. TC39 decorators handle
+observable registration at class-definition time, so no `makeObservable` call is needed:
 
 ```typescript
 constructor(config: MyModelConfig) {
     super();
-    makeObservable(this);
     const {name, sortable = true, defaultFilter = ''} = config;
     this.name = name;
     this.sortable = sortable;
@@ -539,8 +537,8 @@ Hoist uses `null` (not `undefined`) as the conventional "no value" sentinel for 
 properties and return values. Properties are initialized to `null` rather than left `undefined`:
 
 ```typescript
-@observable selectedId: string = null;
-@observable.ref lastResponse: Response = null;
+@observable accessor selectedId: string = null;
+@observable.ref accessor lastResponse: Response = null;
 ```
 
 ### `== null` Pattern
@@ -621,7 +619,7 @@ When a property's observable behavior is significant to callers, annotate it in 
 
 ```typescript
 /** Currently selected record, or null if none. (observable) */
-@observable.ref selectedRecord: StoreRecord = null;
+@observable.ref accessor selectedRecord: StoreRecord = null;
 ```
 
 ### Step-Numbered Comments

@@ -12,7 +12,6 @@ import {
     configure,
     extendObservable,
     isObservableProp,
-    makeObservable,
     observable,
     override,
     reaction,
@@ -29,9 +28,6 @@ configure({enforceActions: 'observed'});
 //---------------------
 // Re-exports
 //---------------------
-// `makeObservable` / `isObservableProp` are re-exported straight from MobX as a pass-through for
-// external code that still imports them. Hoist apps on v85+ no longer need to call them — TC39
-// accessor decorators register observables at class-definition time.
 export {
     action,
     autorun,
@@ -39,7 +35,6 @@ export {
     computed,
     extendObservable,
     isObservableProp,
-    makeObservable,
     observable,
     observer,
     override,

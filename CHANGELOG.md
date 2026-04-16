@@ -4,9 +4,18 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM — mechanical, codemod-assisted)
 
-* Migrated to TC39 Stage 3 modern decorators. `experimentalDecorators` must be removed from app `tsconfig.json`, `@observable` and `@bindable` fields now require the `accessor` keyword, and `makeObservable(this)` calls must be deleted from constructors. Apps must upgrade `@xh/hoist-dev-utils >= 14.0` simultaneously — mixing versions silently breaks reactivity. A codemod is provided in the v85 upgrade notes.
-* Accessor fields are non-enumerable. Code that iterates `@observable` / `@bindable` fields via `Object.keys()` / `JSON.stringify()` / spread / `for...in` will silently lose those fields — see v85 upgrade notes for audit grep commands.
-* `checkMakeObservable` and the custom `makeObservable` wrapper in `@xh/hoist/mobx` have been removed — native MobX `makeObservable` is now re-exported as a pass-through. `_xhBindableProperties` metadata is no longer set.
+* Migrated to TC39 Stage 3 modern decorators. `experimentalDecorators` must be removed from app
+  `tsconfig.json`, `@observable` and `@bindable` fields now require the `accessor` keyword, and
+  `makeObservable(this)` calls must be deleted from constructors. Apps must upgrade
+  `@xh/hoist-dev-utils >= 14.0` simultaneously — mixing versions silently breaks reactivity. A
+  codemod is provided in the v85 upgrade notes.
+* Accessor fields are non-enumerable. Code that iterates `@observable` / `@bindable` fields via
+  `Object.keys()` / `JSON.stringify()` / spread / `for...in` will silently lose those fields — see
+  v85 upgrade notes for audit grep commands.
+* `checkMakeObservable`, the custom `makeObservable` wrapper, and the `makeObservable` re-export
+  have been removed from `@xh/hoist/mobx`. Apps that still import `makeObservable` will get a
+  compile-time error — delete the import and any remaining calls. `_xhBindableProperties` metadata
+  is no longer set.
 
 ### 📚 Libraries
 
@@ -16,7 +25,7 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Requires `hoist-core >= 38.0`.
+* Requires `hoist-core >= 38.0
 * Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
   remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
   `hoistCmp.withFactory()` handles base class merging automatically.

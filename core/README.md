@@ -106,12 +106,11 @@ class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
 
     // Decorator form - syncs with configured PersistenceProvider
-    @persist @bindable showAdvanced = false;
+    @persist @bindable accessor showAdvanced = false;
 
     // Or programmatic form for custom timing
     constructor() {
         super();
-        makeObservable(this);
         this.markPersist('showAdvanced', {path: 'myModel.showAdvanced'});
     }
 }
@@ -157,20 +156,15 @@ Models can operate in two modes:
 
 ```typescript
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observable, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state
-    @observable.ref users: User[] = [];
-    @bindable selectedUserId: string = null;
+    @observable.ref accessor users: User[] = [];
+    @bindable accessor selectedUserId: string = null;
 
     // Managed child model - we create it, so we manage it
     @managed detailModel = new UserDetailModel();
-
-    constructor() {
-        super();
-        makeObservable(this);  // Required when adding new observables
-    }
 
     // Opt into managed loading by implementing this template method
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -651,14 +645,11 @@ XH.popRoute();
 
 ```typescript
 class MyModel extends HoistModel {
-    @observable value = null;
+    @observable accessor value = null;
     @managed childModel = new ChildModel();
 
     constructor() {
         super();
-        makeObservable(this);  // Always call when adding observables
-
-        // Set up reactions after makeObservable
         this.addReaction({
             track: () => this.value,
             run: () => this.onValueChange()
@@ -739,28 +730,26 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 ## Common Pitfalls
 
-### Forgetting `makeObservable(this)` in Subclasses
+### Forgetting the `accessor` Keyword on Observables
 
-MobX requires each class that introduces new `@observable` or `@computed` properties to call
-`makeObservable(this)` in its constructor. The base class call doesn't cover subclass decorators.
+TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
+`@observable.ref`, `@bindable`, or `@bindable.ref`. Without `accessor`, the decorator cannot
+intercept the property and observables silently won't react.
 
 ```typescript
-// ❌ Wrong: Observables won't work
+// ❌ Wrong: Missing accessor — observables won't react
 class MyModel extends HoistModel {
     @observable data = null;
-    // Missing makeObservable call!
 }
 
-// ✅ Correct: Call makeObservable in constructor
+// ✅ Correct: Use accessor with observable decorators
 class MyModel extends HoistModel {
-    @observable data = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor data = null;
 }
 ```
+
+Note: `@computed` (on getters), `@action` (on methods), and `@managed` (on properties) do **not**
+use `accessor`.
 
 ### Calling `lookupModel()` Before Model is Linked
 
@@ -823,7 +812,7 @@ async doLoadAsync() {
 }
 
 // ✅ Also correct: Use @bindable to reduce boilerplate
-@bindable data = null;  // Hoist installs an action-wrapped setter
+@bindable accessor data = null;  // Hoist installs an action-wrapped setter
 
 async doLoadAsync() {
     const data = await fetchData();
@@ -837,6 +826,6 @@ async doLoadAsync() {
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
 - [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components
-- [`/mobx/`](../mobx/README.md) - `@bindable`, `makeObservable`, MobX re-exports and configuration
+- [`/mobx/`](../mobx/README.md) - `@bindable`, MobX re-exports and configuration
 - [`/promise/`](../promise/README.md) - Promise extensions (`catchDefault`, `track`, `linkTo`, `timeout`)
 - [`/utils/`](../utils/README.md) - Decorators (`@debounced`, `@computeOnce`), Timer, LocalDate, logging

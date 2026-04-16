@@ -144,9 +144,9 @@ yarn start             # smoke-test interactively
 
 ## Other notable changes
 
-- **`mobx/overrides.ts` is gone.** `makeObservable` and `isObservableProp` are now re-exported
-  straight from MobX as pass-throughs; `checkMakeObservable` no longer exists. Apps that were
-  importing these from `@xh/hoist/mobx` continue to work (the calls are just no-ops).
+- **`mobx/overrides.ts` is gone.** `makeObservable` and `checkMakeObservable` are no longer
+  exported from `@xh/hoist/mobx`. Apps that still import `makeObservable` will get a compile-time
+  error — delete the import and any remaining calls.
 - **`_xhBindableProperties` metadata no longer exists.** Any tooling or app code reading this
   property off model prototypes must be updated.
 - **Direct assignments to `@bindable` fields still work** in strict mode (`enforceActions:
