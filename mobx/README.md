@@ -31,7 +31,6 @@ The following are re-exported from MobX and mobx-react-lite:
 | `autorun` | mobx | Run a side-effect whenever observed values change |
 | `reaction` | mobx | Run a side-effect when a specific data expression changes |
 | `when` | mobx | Run a side-effect once when a condition becomes true |
-| `override` | mobx | Re-declare inherited observable/action annotations in subclasses |
 | `toJS` | mobx | Convert observable data to plain JavaScript |
 | `extendObservable` | mobx | Add observable properties to an existing object |
 | `trace` | mobx | Debugging: log why a computed/reaction re-evaluated |

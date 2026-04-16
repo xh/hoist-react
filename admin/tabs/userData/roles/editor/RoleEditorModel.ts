@@ -19,7 +19,7 @@ export class RoleEditorModel extends HoistModel {
     @managed roleFormModel: RoleFormModel;
 
     @observable accessor isOpen = false;
-    @observable accessor role: HoistRole | undefined;
+    @observable accessor role: HoistRole;
 
     private resolve: (role?: HoistRole) => void;
 

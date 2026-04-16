@@ -63,7 +63,5 @@ class InstanceManager {
     getModelByTestId(testId: string): HoistModel {
         return this.modelsByTestId.get(testId);
     }
-
-    constructor() {}
 }
 export const instanceManager = new InstanceManager();

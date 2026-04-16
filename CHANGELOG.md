@@ -12,10 +12,11 @@
 * Accessor fields are non-enumerable. Code that iterates `@observable` / `@bindable` fields via
   `Object.keys()` / `JSON.stringify()` / spread / `for...in` will silently lose those fields — see
   v85 upgrade notes for audit grep commands.
-* `checkMakeObservable`, the custom `makeObservable` wrapper, and the `makeObservable` re-export
-  have been removed from `@xh/hoist/mobx`. Apps that still import `makeObservable` will get a
-  compile-time error — delete the import and any remaining calls. `_xhBindableProperties` metadata
-  is no longer set.
+* `checkMakeObservable`, `makeObservable`, and `override` have been removed from `@xh/hoist/mobx`.
+  Apps that still import any of these will get a compile-time error — delete the imports and any
+  remaining calls. MobX's `@override` is a no-op under TC39 decorators; use `@action` (or
+  `@computed`) directly on subclass overrides instead. `_xhBindableProperties` metadata is no
+  longer set.
 
 ### 📚 Libraries
 

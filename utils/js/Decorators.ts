@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Exception} from '@xh/hoist/exception';
-import {debounce as lodashDebounce, isFunction} from 'lodash';
-import {getOrCreate, throwIf} from './LangUtils';
+import {debounce} from 'lodash';
+import {getOrCreate} from './LangUtils';
 import {withDebug, withInfo, logWarn} from './LogUtils';
 
 type MethodOrGetterContext = ClassMethodDecoratorContext | ClassGetterDecoratorContext;
@@ -22,14 +22,10 @@ type AnyFn = (...args: any[]) => any;
  */
 export function debounced(duration: number) {
     return function <T extends AnyFn>(baseFn: T, context: ClassMethodDecoratorContext): T {
-        throwIf(
-            context.kind !== 'method' || !isFunction(baseFn),
-            '@debounced must be applied to a class method.'
-        );
-        const key = '_xh_' + String(context.name);
-        return function (this: any, ...args: any[]) {
-            const fn = getOrCreate(this, key, () => lodashDebounce(baseFn as any, duration));
-            fn.apply(this, args);
+        const key = '_xh_' + (context.name as string);
+        return function () {
+            const fn = getOrCreate(this, key, () => debounce(baseFn as any, duration));
+            fn.apply(this, arguments);
         } as any as T;
     };
 }
@@ -39,57 +35,40 @@ export function debounced(duration: number) {
  * Not appropriate for methods that take arguments. Typically useful on immutable objects.
  */
 export function computeOnce<T extends AnyFn>(baseFn: T, context: MethodOrGetterContext): T {
-    throwIf(
-        (context.kind !== 'method' && context.kind !== 'getter') || !isFunction(baseFn),
-        '@computeOnce must be applied to a zero-argument class method or getter.'
-    );
-    const key = '_xh_' + String(context.name);
-    return function (this: any) {
+    const key = '_xh_' + (context.name as string);
+    return function () {
         return getOrCreate(this, key, () => baseFn.call(this));
     } as any as T;
 }
 
 /**
- * Modify a method so that its execution is tracked and timed with a log message on the console.
+ * Modify a method or getter so that its execution is tracked and timed with a log message on the console.
  * @see withInfo
  */
-export function logWithInfo<T extends AnyFn>(baseFn: T, context: ClassMethodDecoratorContext): T {
-    throwIf(
-        context.kind !== 'method' || !isFunction(baseFn),
-        '@logWithInfo must be applied to a class method.'
-    );
-    const key = String(context.name);
-    return function (this: any, ...args: any[]) {
-        return withInfo(key, () => baseFn.apply(this, args), this);
+export function logWithInfo<T extends AnyFn>(baseFn: T, context: MethodOrGetterContext): T {
+    return function () {
+        return withInfo(context.name as string, () => baseFn.apply(this, arguments), this);
     } as any as T;
 }
 
 /**
- * Modify a method so that its execution is tracked and timed with a debug message on the console.
+ * Modify a method or getter so that its execution is tracked and timed with a debug message on the console.
  * @see withDebug
  */
-export function logWithDebug<T extends AnyFn>(baseFn: T, context: ClassMethodDecoratorContext): T {
-    throwIf(
-        context.kind !== 'method' || !isFunction(baseFn),
-        '@logWithDebug must be applied to a class method.'
-    );
-    const key = String(context.name);
-    return function (this: any, ...args: any[]) {
-        return withDebug(key, () => baseFn.apply(this, args), this);
+export function logWithDebug<T extends AnyFn>(baseFn: T, context: MethodOrGetterContext): T {
+    return function () {
+        return withDebug(context.name as string, () => baseFn.apply(this, arguments), this);
     } as any as T;
 }
 
 /**
  * Designate a method or getter as abstract so that it throws if it is called directly.
  */
-export function abstract<T extends AnyFn>(baseFn: T, context: MethodOrGetterContext): T {
-    throwIf(
-        (context.kind !== 'method' && context.kind !== 'getter') || !isFunction(baseFn),
-        '@abstract must be applied to a class method or getter.'
-    );
-    const key = String(context.name);
-    return function (this: any) {
-        throw Exception.create(`${key} must be implemented by ${this.constructor.name}`);
+export function abstract<T extends AnyFn>(_baseFn: T, context: MethodOrGetterContext): T {
+    return function () {
+        throw Exception.create(
+            `${context.name as string} must be implemented by ${this.constructor.name}`
+        );
     } as any as T;
 }
 
@@ -101,19 +80,15 @@ export function sharePendingPromise<T extends AnyFn>(
     fn: T,
     context: ClassMethodDecoratorContext
 ): T {
-    throwIf(
-        context.kind !== 'method' || !isFunction(fn),
-        '@sharePendingPromise must be applied to a class method.'
-    );
-    const key = String(context.name);
-    return function (this: any, ...args: any[]) {
+    const name = context.name as string;
+    return function () {
         try {
-            const cacheKey = '_xh_' + key + JSON.stringify(args);
+            const cacheKey = '_xh_' + name + JSON.stringify(arguments);
             return getOrCreate(this, cacheKey, () => {
-                const ret = fn.apply(this, args);
+                const ret = fn.apply(this, arguments);
                 if (!(ret instanceof Promise)) {
                     logWarn(
-                        `@sharePendingPromise applied to non-Promise-returning method: ${key}`,
+                        `@sharePendingPromise applied to non-Promise-returning method: ${name}`,
                         this.constructor.name
                     );
                     return ret;
@@ -123,12 +98,12 @@ export function sharePendingPromise<T extends AnyFn>(
         } catch (e: any) {
             logWarn(
                 [
-                    `@sharePendingPromise unable to serialize arguments for method: ${key}.`,
+                    `@sharePendingPromise unable to serialize arguments for method: ${name}.`,
                     e.message
                 ],
                 this.constructor.name
             );
-            return fn.apply(this, args);
+            return fn.apply(this, arguments);
         }
     } as any as T;
 }

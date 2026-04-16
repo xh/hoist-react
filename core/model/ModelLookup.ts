@@ -5,6 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
+import {isObservableProp, untracked} from '@xh/hoist/mobx';
+import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
 /**
@@ -41,54 +43,59 @@ export class ModelLookup {
 
         // Try model's direct children. Wildcard not accepted (but would capture model itself above).
         // Scans both own instance properties (plain class fields, e.g. `@managed grid = new GridModel()`)
-        // and accessor-defined fields (e.g. `@observable.ref accessor chartModel: ChartModel`), which
-        // under TC39 decorators live as non-enumerable getter/setter pairs on the prototype chain
-        // rather than own enumerable instance properties.
+        // and accessor-defined fields (e.g. `@observable.ref accessor chartModel: ChartModel`)
         if (modeIsDefault) {
-            const match = findChildModelMatching(model, selector);
+            const match = this.findChildModelMatching(model, selector);
             if (match) return match;
         }
 
         // Try parent
         return parent?.lookupModel(selector) ?? null;
     }
-}
 
-//---------------------
-// Implementation
-//---------------------
-function findChildModelMatching(model: HoistModel, selector: ModelSelector): HoistModel | null {
-    const seen = new Set<string>();
-    const check = (key: string, value: any): HoistModel | null => {
-        if (seen.has(key)) return null;
-        seen.add(key);
-        if (key.startsWith('_') || key === 'constructor') return null;
-        return value?.isHoistModel && value.matchesSelector(selector) ? value : null;
-    };
+    //----------------
+    // Implementation
+    //----------------
+    private findChildModelMatching(model: HoistModel, selector: ModelSelector): HoistModel | null {
+        // 1) Own enumerable properties — covers plain class fields
+        //    (e.g. `@managed grid = new GridModel()`).
+        let ret = null;
+        forOwn(model, (value, key) => {
+            if (this.isMatchingChild(key, value, selector)) {
+                ret = value;
+                return false;
+            }
+        });
+        if (ret) return ret;
 
-    // 1) Own instance properties (enumerable + non-enumerable) — covers plain class-field
-    //    initializers and any framework-set instance props.
-    for (const key of Object.getOwnPropertyNames(model)) {
-        const hit = check(key, (model as any)[key]);
-        if (hit) return hit;
+        // 2) Accessor/getter observables on the prototype chain — covers TC39 accessor fields
+        //    (e.g. `@observable.ref accessor chartModel: ChartModel`) which are non-enumerable
+        //    and invisible to forOwn. Stop at HoistModel to avoid framework-level getters.
+        //    Wrapped in untracked() to avoid creating spurious MobX dependencies.
+        return untracked(() => {
+            for (
+                let proto = Object.getPrototypeOf(model);
+                proto && proto !== HoistModel.prototype && proto !== Object.prototype;
+                proto = Object.getPrototypeOf(proto)
+            ) {
+                for (const key of Object.getOwnPropertyNames(proto)) {
+                    if (
+                        key === 'constructor' ||
+                        !Object.getOwnPropertyDescriptor(proto, key)?.get ||
+                        !isObservableProp(model, key)
+                    )
+                        continue;
+                    const value = (model as any)[key];
+                    if (this.isMatchingChild(key, value, selector)) return value;
+                }
+            }
+            return null;
+        });
     }
 
-    // 2) Accessor/getter properties on the prototype chain — covers `@observable.ref accessor foo`
-    //    style declarations. Stop at HoistModel.prototype: none of the framework-level getters on
-    //    HoistModel/HoistBase hold child models, and invoking them can have side effects (e.g.
-    //    the deprecated `loadModel` getter on HoistModel emits a console warning).
-    let proto = Object.getPrototypeOf(model);
-    while (proto && proto !== HoistModel.prototype && proto !== Object.prototype) {
-        for (const key of Object.getOwnPropertyNames(proto)) {
-            const desc = Object.getOwnPropertyDescriptor(proto, key);
-            if (!desc || !desc.get) continue;
-            const hit = check(key, (model as any)[key]);
-            if (hit) return hit;
-        }
-        proto = Object.getPrototypeOf(proto);
+    private isMatchingChild(key: string, value: any, selector: ModelSelector): boolean {
+        return !key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector);
     }
-
-    return null;
 }
 
 /**

@@ -67,32 +67,19 @@ export function formatSelector(selector: ModelSelector): string {
 export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
     return function (_value: any, context: ClassFieldDecoratorContext) {
-        if (context.kind !== 'field') {
-            throw new Error(
-                `@lookup must be applied to a plain class field (got kind='${context.kind}').`
+        const {name} = context;
+        // Be sure to create list for *this* particular class. Clone and include inherited values.
+        context.addInitializer(function (this: any) {
+            throwIf(
+                !this.isHoistModel,
+                '@lookup decorator should be applied to a subclass of HoistModel'
             );
-        }
-        const property = String(context.name);
-        // The returned initializer runs as part of field initialization — register this property
-        // on the class prototype so `useModelLinker` can resolve it at link time.
-        // (Babel's 2023-05 decorator pass does not reliably invoke addInitializer callbacks for
-        //  field decorators, so we piggyback on the init-return form instead.)
-        return function (this: any, initialValue: any) {
-            if (!this.isHoistModel) {
-                throw new Error('@lookup decorator should be applied to a subclass of HoistModel');
-            }
-            const proto = Object.getPrototypeOf(this),
+            const target = Object.getPrototypeOf(this),
                 key = '_xhInjectedParentProperties';
-            if (!Object.prototype.hasOwnProperty.call(proto, key)) {
-                Object.defineProperty(proto, key, {
-                    value: {...(proto[key] ?? {})},
-                    writable: true,
-                    configurable: true,
-                    enumerable: false
-                });
+            if (!target.hasOwnProperty(key)) {
+                target[key] = {...(target[key] ?? {})};
             }
-            proto[key][property] = selector;
-            return initialValue;
-        };
+            target[key][name] = selector;
+        });
     };
 }
