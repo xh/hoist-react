@@ -54,6 +54,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
+| 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |
 | 83.0 | 37.0 | | 37.0 | OTEL tracing, static defaults, metrics publishing | [Notes](./upgrade-notes/v83-upgrade-notes.md) |
 | 82.0 | -- | 36.3 | 36.3 | Admin Metrics tab | [Notes](./upgrade-notes/v82-upgrade-notes.md) |
 | 81.0 | 36.1 | | 36.2 | Efficient identity init | [Notes](./upgrade-notes/v81-upgrade-notes.md) |
@@ -108,6 +109,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 38.0 | 84.0 | Span sampling, OTEL tag alignment, log level overrides |
 | 37.0 | 83.0 | OTEL tracing, metrics publishing |
 | 36.3 | 82.0 recommended | Admin Metrics tab |
 | 36.1 | 81.0 | Efficient identity init |

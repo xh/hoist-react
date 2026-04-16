@@ -164,6 +164,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
+| [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |
 | [v82](./upgrade-notes/v82-upgrade-notes.md) | 2026-02-25 | 🟢 LOW | `FetchService` static correlation IDs, `xh-popup--framed` removal, DashContainer CSS wrapper |
 | [v81](./upgrade-notes/v81-upgrade-notes.md) | 2026-02-12 | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
 | [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
@@ -187,7 +189,7 @@ breaking changes, before/after code examples, and verification checklists.
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
 - [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
   versions prior to v56
-- [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
-  section headers
+- [`changelog-format.md`](./changelog-format.md) — Conventions for writing and reviewing
+  hoist-react library CHANGELOG entries
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
   patterns and components

@@ -20,28 +20,24 @@
 ### 📚 Libraries
 
 * Requires `@xh/hoist-dev-utils >= 14.0`.
-
-## 84.0.0-SNAPSHOT - unreleased
+## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Requires `hoist-core >= 38.0
+See [`docs/upgrade-notes/v84-upgrade-notes.md`](docs/upgrade-notes/v84-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Requires `hoist-core >= 38.0`.
 * Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
   remaining usages in the framework — the `className` spec field on `hoistCmp.factory()` /
   `hoistCmp.withFactory()` handles base class merging automatically.
 
 ### 🎁 New Features
 
-* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
-  override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
-  prop values (instance props take precedence), but may hold other app-overridable settings.
-  Added initial defaults to `Panel`, `Button`, and `Toolbar`.
 * Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
-  themeable, and consistent with the rest of the icon system. The rotation animation is applied
-  via Hoist-owned CSS rather than FA's animation props, ensuring the spinner remains functional
-  when the OS-level `prefers-reduced-motion` preference is enabled. The icon and weight can be
+  themeable, and consistent with the rest of the icon system. The icon and weight can be
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
   available to preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
@@ -51,12 +47,6 @@
 * `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
   When a string or config is provided, `FetchService` creates and manages the parent span
   internally, simplifying a common tracing pattern for fetch calls.
-
-### 🐞 Bug Fixes
-
-* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
-  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
-  app-level customization of background, border, border-radius, padding, and max-width.
 
 ### 🤖 AI Docs + Tooling
 
@@ -71,17 +61,30 @@
 
 ### ⚙️ Technical
 
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps
+  can override at bootstrap (e.g. `Button.defaults.minimal = false`). Instance props take
+  precedence. Added initial defaults to `Button`, `Panel`, `Spinner`, and `Toolbar`.
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
   supporting the new hoist-core per-logger logging behavior overrides.
 * Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
   `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+* Added hardcoded `xh-` prefixed `testId` props to all desktop and mobile appcontainer components
+  for Playwright testing support.
+* Namespaced auto-installed `TraceService` span and metric tags with an `xh.` prefix, aligning
+  with OTEL semantic conventions.
+
+### ✨ Styles
+
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
+  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
+  app-level customization of background, border, border-radius, padding, and max-width.
 
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.17 → 2.19`
-* dompurify `3.3 → 3.4`
 * @fortawesome/* `6.0 → 7.2`
 * @fortawesome/react-fontawesome `0.2 → 3.2`
+* dompurify `3.3 → 3.4`
 * lodash `4.17 → 4.18`
 
 ## 83.1.0 - 2026-04-07
