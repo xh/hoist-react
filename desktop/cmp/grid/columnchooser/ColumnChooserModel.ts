@@ -5,7 +5,12 @@ import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import type {RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
+import type {
+    IsRowValidDropPositionParams,
+    IsRowValidDropPositionResult,
+    RowDragEndEvent,
+    RowDropTargetPosition
+} from '@xh/hoist/kit/ag-grid';
 import {withDefault} from '@xh/hoist/utils/js';
 
 /** Shape of record data in the ColumnChooser's internal grid. */
@@ -32,7 +37,7 @@ export class ColumnChooserModel extends HoistModel {
 
     /** True to display columns grouped under their column group headers. */
     @bindable showGroups: boolean = true;
-    setShowGroups: (v: boolean) => void;
+    declare setShowGroups: (v: boolean) => void;
 
     /** Current quick-filter text. */
     @bindable filterText: string = '';
@@ -120,7 +125,7 @@ export class ColumnChooserModel extends HoistModel {
                     resizable: false,
                     renderer: () => null,
                     agOptions: {
-                        rowDrag: true
+                        rowDrag: params => !this.filterText
                     }
                 },
                 {
@@ -170,38 +175,77 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     /**
-     * Handle row drag end. With rowDragManaged, AG Grid has already moved the rows visually.
-     * Read the new display order from AG Grid and push the reordered columnState to the
-     * target GridModel.
+     * Validate a proposed drop position during unmanaged row dragging.
+     * Returns highlight/position info to control the ag-grid drop indicator line,
+     * or disallows the drop entirely.
      */
-    handleRowDragEnd(event: RowDragEndEvent) {
-        const {gridModel, chooserGridModel} = this;
-        if (!gridModel) return;
+    getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
+        const sourceData = this.getChooserData(params.source),
+            targetData = this.getChooserData(params.target);
 
-        // Read the new leaf column order from AG Grid's display order.
-        // node.data is a StoreRecord — access fields via node.data.data.
-        const reorderedIds: string[] = [];
-        chooserGridModel.agApi?.forEachNodeAfterFilterAndSort(node => {
-            if (node.data && !node.data.data?.isGroup) {
-                reorderedIds.push(node.data.data.id);
-            }
-        });
+        if (!sourceData || !targetData) return {allowed: false};
+        if (sourceData.id === targetData.id) return {allowed: false};
 
-        if (!reorderedIds.length) return;
+        let {position} = params;
 
-        // The chooser may not show all columns (e.g. excludeFromChooser columns).
-        // Append any missing colIds from the current columnState to maintain a
-        // complete list — required for updateColumnState to apply reordering.
-        const reorderedSet = new Set(reorderedIds);
-        for (const cs of gridModel.columnState) {
-            if (!reorderedSet.has(cs.colId)) {
-                reorderedIds.push(cs.colId);
-            }
+        // Can't drop "inside" a leaf — treat as "below"
+        if (position === 'inside' && !targetData.isGroup) {
+            position = 'below';
         }
 
-        // Build full columnState in the new order
-        const newState = reorderedIds.map(colId => ({...gridModel.getStateForColumn(colId)}));
-        gridModel.updateColumnState(newState);
+        // Prevent dropping a group inside itself
+        if (sourceData.isGroup && this.isDescendantOf(targetData.id, sourceData.id)) {
+            return {allowed: false};
+        }
+
+        // Enforce lockColumnGroups constraints
+        if (
+            this.gridModel.lockColumnGroups &&
+            !this.isValidLockedDrop(sourceData, targetData, position)
+        ) {
+            return {allowed: false};
+        }
+
+        return {allowed: true, highlight: true, position};
+    }
+
+    /**
+     * Handle row drag end. In unmanaged mode, ag-grid has NOT moved any rows — we compute
+     * the new column order from the drop target info and push it to the target GridModel.
+     */
+    handleRowDragEnd(event: RowDragEndEvent) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const sourceData = this.getChooserData(event.node);
+        if (!sourceData) return;
+
+        // rowsDrop contains the validated position/target from getValidDropPosition
+        const dropInfo = event.rowsDrop;
+        if (!dropInfo) return;
+
+        const targetData = this.getChooserData(dropInfo.target);
+        if (!targetData) return;
+
+        const position = dropInfo.position as RowDropTargetPosition;
+        if (position === 'none') return;
+
+        // Collect leaf colIds being moved (works for both leaf and group drags)
+        const movingIds = new Set(sourceData.leafColIds);
+
+        // Split current columnState
+        const currentState = [...gridModel.columnState],
+            remaining = currentState.filter(cs => !movingIds.has(cs.colId)),
+            movingState = currentState.filter(cs => movingIds.has(cs.colId));
+
+        if (!movingState.length) return;
+
+        // Compute insertion index in remaining array
+        const insertionIndex = this.computeInsertionIndex(remaining, targetData, position);
+
+        // Splice and push
+        remaining.splice(insertionIndex, 0, ...movingState);
+        gridModel.updateColumnState(remaining.map(cs => ({...cs})));
     }
 
     async restoreDefaultsAsync() {
@@ -382,5 +426,78 @@ export class ColumnChooserModel extends HoistModel {
             : null;
 
         this.chooserGridModel.store.setFilter(filter);
+    }
+
+    /** Extract our ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
+    private getChooserData(node: any): ColumnChooserData | null {
+        return node?.data?.data ?? null;
+    }
+
+    /** Check if a record is a descendant of a potential ancestor in the chooser tree. */
+    private isDescendantOf(candidateId: string, ancestorId: string): boolean {
+        const store = this.chooserGridModel.store;
+        let current = store.getById(candidateId);
+        while (current?.data.parentId) {
+            if (current.data.parentId === ancestorId) return true;
+            current = store.getById(current.data.parentId);
+        }
+        return false;
+    }
+
+    /**
+     * Validate drop when lockColumnGroups is true.
+     * Columns can only be reordered within their group; groups can only be reordered
+     * among siblings at the same level.
+     */
+    private isValidLockedDrop(
+        source: ColumnChooserData,
+        target: ColumnChooserData,
+        position: RowDropTargetPosition
+    ): boolean {
+        // Dropping above/below: source and target must share the same parent
+        if (position === 'above' || position === 'below') {
+            return source.parentId === target.parentId;
+        }
+
+        // Dropping inside a group: source must already be a child of that group,
+        // or share the same parent as the group (moving into a sibling group — not valid when locked)
+        if (position === 'inside' && target.isGroup) {
+            return source.parentId === target.id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Compute where to insert moved columns in the remaining columnState array.
+     * `remaining` is the columnState with the moved columns already removed.
+     */
+    private computeInsertionIndex(
+        remaining: {colId: string}[],
+        targetData: ColumnChooserData,
+        position: RowDropTargetPosition
+    ): number {
+        const targetLeafIds = new Set(targetData.leafColIds);
+
+        if (targetData.isGroup) {
+            const firstIdx = remaining.findIndex(cs => targetLeafIds.has(cs.colId));
+            const lastIdx = this.findLastIndex(remaining, cs => targetLeafIds.has(cs.colId));
+
+            if (firstIdx === -1) return remaining.length;
+            if (position === 'above') return firstIdx;
+            return lastIdx + 1; // 'below' or 'inside'
+        }
+
+        // Leaf target
+        const targetIdx = remaining.findIndex(cs => cs.colId === targetData.id);
+        if (targetIdx === -1) return remaining.length;
+        return position === 'above' ? targetIdx : targetIdx + 1;
+    }
+
+    private findLastIndex<T>(arr: T[], predicate: (item: T) => boolean): number {
+        for (let i = arr.length - 1; i >= 0; i--) {
+            if (predicate(arr[i])) return i;
+        }
+        return -1;
     }
 }

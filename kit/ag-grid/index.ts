@@ -62,7 +62,10 @@ export type {
     RowDragEnterEvent,
     RowDragLeaveEvent,
     RowDragMoveEvent,
-    RowDragCancelEvent
+    RowDragCancelEvent,
+    IsRowValidDropPositionParams,
+    IsRowValidDropPositionResult,
+    RowDropTargetPosition
 } from 'ag-grid-community';
 
 export type {

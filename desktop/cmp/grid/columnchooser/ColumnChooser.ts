@@ -59,8 +59,8 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                     model: impl.chooserGridModel,
                     flex: 1,
                     agOptions: {
-                        rowDragManaged: true,
-                        animateRows: true,
+                        suppressMoveWhenRowDragging: true,
+                        isRowValidDropPosition: params => impl.getValidDropPosition(params),
                         onRowDragEnd: event => impl.handleRowDragEnd(event),
                         onRowDoubleClicked: () => {}
                     }
