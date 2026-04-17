@@ -120,7 +120,6 @@ export const alert = elementFactory(Alert),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
-    dialog = elementFactory(Dialog),
     datePicker = elementFactory(DatePicker),
     menuDivider = elementFactory(MenuDivider),
     menuItem = elementFactory(MenuItem),
@@ -161,3 +160,15 @@ export const buttonGroup = elementFactory(ButtonGroup),
     tab = elementFactory(Tab),
     tag = elementFactory(Tag),
     text = elementFactory(Text);
+
+/**
+ * Blueprint Dialog wrapped with transitions disabled. This is the standard way to create
+ * custom modal dialogs in Hoist apps - import from `@xh/hoist/kit/blueprint` rather than
+ * from Blueprint directly.
+ *
+ * Pair with a HoistModel that manages an observable `isOpen` property. The parent component
+ * renders the dialog factory alongside its other children - it shows/hides based on `isOpen`.
+ *
+ * See the desktop package README (`desktop/README.md#dialogs`) for the full usage pattern.
+ */
+export const dialog = elementFactory(Dialog);

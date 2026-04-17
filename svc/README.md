@@ -1,5 +1,17 @@
 # Services Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose and principles of Hoist's built-in singleton services |
+| [Architecture](#architecture) | Service hierarchy, installation, and access via XH |
+| [Built-in Services](#built-in-services) | Reference for all 19 built-in services by category |
+| [Configuration Keys Reference](#configuration-keys-reference) | Soft config keys controlling service behavior |
+| [User Preference Keys Reference](#user-preference-keys-reference) | Per-user preference keys used by services |
+| [Creating Custom Services](#creating-custom-services) | How to create and install application services |
+| [Common Patterns](#common-patterns) | FetchService in loads, tracking, debounced search, WebSockets |
+| [Common Pitfalls](#common-pitfalls) | Fetch errors, native fetch, missing loadSpec, and more |
+| [Related Packages](#related-packages) | Links to core, cmp, promise, and admin packages |
+
 ## Overview
 
 The `/svc/` package contains Hoist's built-in singleton services - classes that provide app-wide
@@ -116,15 +128,16 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 **Configuration Options:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`) |
-| `body` | any | Request body |
-| `params` | object | Query string parameters |
-| `headers` | object | Additional headers |
-| `timeout` | number | Timeout in ms (default 30000) |
-| `autoAbortKey` | string | Cancel previous requests with same key |
-| `loadSpec` | LoadSpec | Metadata for tracking |
+| Option | Type | Description                                                                           |
+|--------|------|---------------------------------------------------------------------------------------|
+| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`)                                  |
+| `body` | any | Request body                                                                          |
+| `params` | object | Query string parameters                                                               |
+| `headers` | object | Additional headers                                                                    |
+| `timeout` | number | Timeout in ms (default 30000)                                                         |
+| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
+| `span` | `Span \| string \| SpanConfig` | Parent span for tracing. Accepts an existing `Span`, a `SpanConfig`, or a string name |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
@@ -303,6 +316,12 @@ Client-side distributed tracing — creates spans for user actions and fetch cal
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
 with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
 
+Spans are sampled at creation time using `xhTraceConfig.sampleRules` — an ordered list of
+tag-matching rules with glob pattern support. Child spans inherit their parent's sampling
+decision. Unsampled spans are dropped before export unless they end in error and
+`alwaysSampleErrors` is enabled. The `traceparent` header propagates the sampling flag to
+the server. See the hoist-core tracing documentation for full sampling configuration details.
+
 ```typescript
 // Wrap an async operation in a span (from any HoistBase subclass)
 await this.withSpanAsync({name: 'loadPortfolio', caller: this}, async span => {
@@ -317,6 +336,17 @@ const result = this.withSpan({name: 'computeTotals', caller: this}, span => {
 
 // Simple string-only config
 await this.withSpanAsync('loadData', async span => { ... });
+
+// Nest a fetch call under a parent span without manual span management.
+// FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: 'loadPortfolio'
+});
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
+});
 ```
 
 **SpanConfig:**

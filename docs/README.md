@@ -36,6 +36,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
+| Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
 | Add distributed tracing spans to operations | [`/svc/`](../svc/README.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
@@ -52,6 +53,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md)                                                                                     |
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md)                                                                       |
 | Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md)                                                                                       |
+| Customize the spinner icon or animation | [`/icon/`](../icon/README.md#spinner-component)                                                                     |
 | Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md)                                       |
 | Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md)                                                                             |
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
@@ -70,7 +72,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components
@@ -120,7 +123,7 @@ Cross-cutting documentation that spans multiple packages:
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon |
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
@@ -161,6 +164,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
+| [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |
 | [v82](./upgrade-notes/v82-upgrade-notes.md) | 2026-02-25 | 🟢 LOW | `FetchService` static correlation IDs, `xh-popup--framed` removal, DashContainer CSS wrapper |
 | [v81](./upgrade-notes/v81-upgrade-notes.md) | 2026-02-12 | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
 | [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
@@ -184,7 +189,7 @@ breaking changes, before/after code examples, and verification checklists.
 - [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
 - [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
   versions prior to v56
-- [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
-  section headers
+- [`changelog-format.md`](./changelog-format.md) — Conventions for writing and reviewing
+  hoist-react library CHANGELOG entries
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
   patterns and components

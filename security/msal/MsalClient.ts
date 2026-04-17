@@ -23,6 +23,12 @@ import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TokenMap} from '../Types';
 
+/**
+ * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
+ * Extends {@link BaseOAuthClientConfig} with MSAL-specific options.
+ *
+ * @see MsalClient
+ */
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
      * Authority for your organization's tenant: `https://login.microsoftonline.com/[tenantId]`.

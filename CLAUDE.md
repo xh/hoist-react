@@ -47,9 +47,13 @@ npx hoist-ts symbol GridModel                # Get detailed type info for a symb
 npx hoist-ts members GridModel               # List all members of a class/interface
 ```
 
-**Use `search` for discovery** — it does case-insensitive fuzzy matching across both symbol names
-and class members. Use `symbol` and `members` only when you already know the exact PascalCase name.
-Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
+**Use `search` for discovery** — it matches against both symbol names and JSDoc content.
+Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its JSDoc).
+Also searches public members of key framework classes. Use `symbol` and `members` only when you
+already know the exact PascalCase name. When multiple symbols share a name (e.g. `View` exists
+in both `cmp/viewmanager` and `data/cube`), pass the file path to `symbol` or `members` to
+disambiguate — the tools will hint when this is needed. Run `npx hoist-docs --help` and
+`npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
 to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
@@ -225,6 +229,8 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
+- **Plain ASCII in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
+  comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
 
 **Commit messages, PRs, and comments**: Do not hard-wrap lines at a fixed column width in commit
 message bodies, pull request descriptions, or issue/PR comments — let the viewing tool handle

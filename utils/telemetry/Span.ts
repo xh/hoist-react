@@ -29,7 +29,7 @@ export class Span {
     /** Epoch ms (Date.now()-based). */
     startTime: number;
 
-    /** Epoch ms — set when span ends. */
+    /** Epoch ms - set when span ends. */
     endTime: number;
 
     /** Duration in ms (endTime - startTime). */
@@ -42,6 +42,9 @@ export class Span {
     tags: PlainObject;
     events: SpanEvent[] = [];
 
+    /** Whether this span was selected by client-side sampling rules. */
+    sampled: boolean;
+
     constructor(config: SpanConfig) {
         const parent = config.parent;
         this.traceId = parent?.traceId ?? genTraceId();
@@ -51,6 +54,7 @@ export class Span {
         this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
         this.tags = {...config.tags};
+        this.sampled = config.sampled ?? true;
     }
 
     /** End this span, recording status and computing duration. */
@@ -83,11 +87,19 @@ export class Span {
             duration: this.duration,
             status: this.status,
             tags: this.tags,
-            events: this.events
+            events: this.events,
+            sampled: this.sampled
         };
     }
 }
 
+/**
+ * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
+ * Create via {@link TraceService} rather than directly.
+ *
+ * @see Span
+ * @see TraceService
+ */
 export interface SpanConfig {
     name: string;
     kind?: SpanKind;
@@ -95,6 +107,7 @@ export interface SpanConfig {
     parent?: Span;
     startTime?: number;
     caller?: NameSource;
+    sampled?: boolean;
 }
 
 export interface SpanEvent {
@@ -110,8 +123,12 @@ export type SpanStatus = 'ok' | 'error' | 'unset';
  * Format a W3C traceparent header value.
  * @see https://www.w3.org/TR/trace-context/#traceparent-header
  */
-export function formatTraceparent(traceId: string, spanId: string): string {
-    return `00-${traceId}-${spanId}-01`;
+export function formatTraceparent(
+    traceId: string,
+    spanId: string,
+    sampled: boolean = true
+): string {
+    return `00-${traceId}-${spanId}-${sampled ? '01' : '00'}`;
 }
 
 /** Generate a 32-hex-char (128-bit) trace ID. */

@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {isEmpty, isString} from 'lodash';
+import {every, isEmpty, isString} from 'lodash';
 import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
@@ -18,7 +18,7 @@ import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
  * end-to-end traces from user interaction through server processing and back.
  *
  * Controlled by the `xhTraceConfig` soft config. When disabled (the default), all
- * span-creation methods are no-ops — the wrapped function still executes normally.
+ * span-creation methods are no-ops - the wrapped function still executes normally.
  *
  * Completed spans are batched and exported to the Hoist server endpoint `xh/submitSpans`,
  * which relays them to the configured collector.
@@ -111,7 +111,10 @@ export class TraceService extends HoistService {
      * Create a new span, or return null if tracing is disabled.
      * Inherits the parent's `source` tag if not specified.
      *
-     * Note: sampling is handled server-side when spans are relayed to the collector.
+     * Sampling rules from `xhTraceConfig.sampleRules` are evaluated against the span's tags
+     * at creation time (head-based). Child spans inherit their parent's sampling decision.
+     * Unsampled spans may still be exported if they end in error and `alwaysSampleErrors` is
+     * enabled — see {@link exportSpan}.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
@@ -122,13 +125,16 @@ export class TraceService extends HoistService {
 
         // Apply default tags.
         ret.tags = {
-            clientApp: XH.clientAppCode,
-            loadId: XH.loadId,
-            tabId: XH.tabId,
+            'xh.clientApp': XH.clientAppCode,
+            'xh.loadId': XH.loadId,
+            'xh.tabId': XH.tabId,
             'xh.source': ret.parent?.tags?.['xh.source'] ?? 'app',
             ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
             ...ret.tags
         };
+
+        // Sampling: children inherit parent decision; root spans evaluate rules.
+        ret.sampled = ret.parent ? ret.parent.sampled : this.shouldSample(ret.tags);
 
         return new Span(ret);
     }
@@ -138,8 +144,15 @@ export class TraceService extends HoistService {
     //------------------
     /** Submit a completed span for export. */
     exportSpan(span: Span) {
-        this._pending.push(span);
-        this.pushPendingBuffered();
+        if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
+            this._pending.push(span);
+
+            // Queue the span, but if this is the submitSpans export itself, don't schedule
+            // another flush or we'll loop forever.
+            if (!span.tags['url.path']?.endsWith('xh/submitSpans')) {
+                this.pushPendingBuffered();
+            }
+        }
     }
 
     /**
@@ -169,10 +182,55 @@ export class TraceService extends HoistService {
     //------------------
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        this.pushPendingAsync();
+        void this.pushPendingAsync();
+    }
+
+    /** Evaluate sampling rules against a span's tags. */
+    private shouldSample(tags: PlainObject): boolean {
+        try {
+            return Math.random() < this.getSampleRate(tags);
+        } catch (e) {
+            this.logError('Failed to compute sample rate', e);
+            return false;
+        }
+    }
+
+    private getSampleRate(tags: PlainObject): number {
+        const {conf} = this;
+        for (const rule of conf.sampleRules ?? []) {
+            if (every(rule.match, (v, k) => this.matchesValue(tags[k], v))) {
+                return rule.sampleRate;
+            }
+        }
+        return conf.sampleRate;
+    }
+
+    /** For strings, simple glob matching: `*` = any, `foo*` = prefix, `*foo` = suffix, `*foo*` = contains. */
+    private matchesValue(actual: any, pattern: any): boolean {
+        if (!isString(actual) || !isString(pattern)) {
+            return actual === pattern;
+        }
+
+        if (pattern === '*') return true;
+        const startsWithWild = pattern.startsWith('*'),
+            endsWithWild = pattern.endsWith('*'),
+            core = pattern.replace(/^\*|\*$/g, '');
+
+        if (startsWithWild && endsWithWild) return actual.includes(core);
+        if (startsWithWild) return actual.endsWith(core);
+        if (endsWithWild) return actual.startsWith(core);
+        return actual === pattern;
     }
 }
 
 interface TraceConfig {
     enabled: boolean;
+    sampleRules?: SamplingRule[];
+    sampleRate?: number;
+    alwaysSampleErrors?: boolean;
+}
+
+interface SamplingRule {
+    match: Record<string, string>;
+    sampleRate: number;
 }

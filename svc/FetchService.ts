@@ -14,7 +14,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {formatTraceparent, Span} from '@xh/hoist/utils/telemetry';
+import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
@@ -34,8 +34,8 @@ export interface FetchServiceDefaults {
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
- * Typically accessed via `XH.fetchService` or the convenience methods on XH — `XH.fetch()`,
- * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` — which delegate here.
+ * Typically accessed via `XH.fetchService` or the convenience methods on XH - `XH.fetch()`,
+ * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` - which delegate here.
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
@@ -197,9 +197,16 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
+        // If a span spec provided create, wrap, and recurse
+        if (opts.span && !(opts.span instanceof Span)) {
+            return XH.traceService.withSpanAsync(opts.span, span =>
+                this.fetchInternalAsync({...opts, span})
+            );
+        }
+
         opts = this.withCorrelationId(opts);
 
-        // Tracing — create span for this request.
+        // Tracing - create span for this request.
         const span = this.startFetchSpan(opts);
         if (span) opts = {...opts, traceId: span.traceId};
 
@@ -219,7 +226,7 @@ export class FetchService extends HoistService {
             ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
         }
 
-        // Tracing — end span on completion or failure.
+        // Tracing - end span on completion or failure.
         if (span) {
             ret = ret.then(
                 value => {
@@ -282,7 +289,9 @@ export class FetchService extends HoistService {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
+            ...(span
+                ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
+                : {}),
             ...opts.headers
         };
 
@@ -418,13 +427,11 @@ export class FetchService extends HoistService {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             url = this.extractUrlPath(opts.url);
 
-        if (url.endsWith('submitSpans')) return null;
-
         return traceService.createSpan({
             name: method,
             kind: 'client',
-            parent: opts.span,
-            tags: {'http.request.method': method, 'url.path': opts.url, 'xh.source': 'hoist'},
+            parent: opts.span as Span,
+            tags: {'http.request.method': method, 'url.path': url, 'xh.source': 'hoist'},
             caller: this
         });
     }
@@ -455,7 +462,7 @@ export class FetchService extends HoistService {
         }
     }
 
-    private qsFilterFn = (prefix, value) => {
+    private qsFilterFn = (_prefix: string, value: any) => {
         if (isDate(value)) return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
@@ -757,10 +764,12 @@ export interface FetchOptions {
     track?: string | TrackOptions;
 
     /**
-     * If set, the fetch span created by TraceService will be parented under this span.
-     * Use to nest fetch calls under a business-level span.
+     * Parent span for this fetch request. Use to nest fetch calls under a business-level span.
+     *
+     * Accepts an existing Span instance, a SpanConfig, or a string span name. When a SpanConfig or
+     * string is provided, FetchService will create and manage the parent span internally.
      */
-    span?: Span;
+    span?: Span | SpanConfig | string;
 
     /**
      * Distributed trace ID for this request. Set automatically by FetchService
@@ -787,7 +796,8 @@ export interface FetchException extends HoistException {
 
     /**
      * True if exception resulted from the fetch being aborted by fetchService, or the application.
-     * @see FetchService.abort and FetchOptions.autoAbortKey.
+     * @see FetchService.abort
+     * @see FetchOptions.autoAbortKey
      */
     isFetchAborted: boolean;
 }

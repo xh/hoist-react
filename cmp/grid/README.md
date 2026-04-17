@@ -1,5 +1,17 @@
 # Grid Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Introduction to Hoist's tabular and hierarchical data grid |
+| [Architecture](#architecture) | Class hierarchy and key classes |
+| [Configuration Pattern](#configuration-pattern) | Spec-to-object transformation for declarative config |
+| [Common Usage Patterns](#common-usage-patterns) | Sorting, grouping, tree mode, selection, filtering, and more |
+| [Column Properties Reference](#column-properties-reference) | Key categories of ColumnSpec properties |
+| [Extension Points](#extension-points) | ag-Grid passthrough, custom comparators, and appData |
+| [App-Level Defaults](#app-level-defaults) | Static defaults for GridModel and GridFilterModel |
+| [Pitfalls](#pitfalls) | Duplicate column IDs and other common issues |
+| [Related Packages](#related-packages) | Links to data, ag-grid, desktop/mobile grid, and svc |
+
 ## Overview
 
 Grid is Hoist React's primary component for displaying tabular and hierarchical data. Built on

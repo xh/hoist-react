@@ -25,6 +25,16 @@ import {
 } from 'lodash';
 import {GridSorter, GridSorterLike} from '../grid/GridSorter';
 
+/**
+ * Configuration for an {@link AgGridModel} - the low-level model backing the Hoist `AgGrid`
+ * component. This interface is only relevant when using `AgGrid` directly for advanced or
+ * minimally-managed ag-Grid use cases. Most applications should use {@link GridConfig} and
+ * the standard {@link GridModel} instead, which extends this with columns, store binding,
+ * selection, filtering, and other managed features.
+ *
+ * @see AgGridModel
+ * @see GridConfig
+ */
 export interface AgGridModelConfig {
     sizingMode?: SizingMode;
 
@@ -79,12 +89,15 @@ export interface AgGridState {
 }
 
 /**
- * Model for an AgGrid, provides reactive support for setting grid styling as well as access to the
- * ag-Grid API and Column API references for interacting with ag-Grid.
+ * Low-level model backing the {@link AgGrid} escape-hatch component - most applications should
+ * use {@link GridModel} instead, which extends this class with columns, store binding,
+ * selection, filtering, and other managed features.
  *
- * Also provides a series of utility methods that are generally useful when managing grid state.
- * This includes the ability to get and set the full state of the grid in a serializable form,
- * allowing applications to save "views" of the grid.
+ * Provides reactive grid styling properties, access to the ag-Grid API, and utility methods
+ * for getting/setting serializable grid state.
+ *
+ * @see AgGridModelConfig
+ * @see GridModel
  */
 export class AgGridModel extends HoistModel {
     static AUTO_GROUP_COL_ID = 'ag-Grid-AutoColumn';

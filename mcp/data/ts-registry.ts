@@ -612,7 +612,10 @@ export async function ensureInitialized(): Promise<void> {
 /**
  * Search the symbol index by query string.
  *
- * Supports case-insensitive substring matching against symbol names.
+ * Supports case-insensitive matching against symbol names and JSDoc. Multi-word queries
+ * are split into tokens — all tokens must match (AND logic) against the combined name +
+ * JSDoc text. Results are scored: name matches rank above JSDoc-only matches.
+ *
  * Optionally filter by kind and/or export status.
  */
 export async function searchSymbols(
@@ -624,39 +627,51 @@ export async function searchSymbols(
     const queryLower = query.toLowerCase().trim();
     if (!queryLower) return [];
 
+    const tokens = queryLower.split(/\s+/);
     const limit = options?.limit ?? 50;
-    const results: SymbolEntry[] = [];
+    const scored: {entry: SymbolEntry; nameMatches: number}[] = [];
 
     for (const [key, entries] of symbolIndex!) {
-        if (!key.includes(queryLower)) continue;
-
         for (const entry of entries) {
             if (options?.kind && entry.kind !== options.kind) continue;
             if (options?.exported !== undefined && entry.isExported !== options.exported) continue;
-            results.push(entry);
+
+            const jsDocLower = entry.jsDoc?.toLowerCase() ?? '';
+            const searchable = key + ' ' + jsDocLower;
+
+            // All tokens must match somewhere in the combined name + JSDoc text.
+            if (!tokens.every(t => searchable.includes(t))) continue;
+
+            // Count how many tokens matched the name specifically (for ranking).
+            const nameMatches = tokens.filter(t => key.includes(t)).length;
+            scored.push({entry, nameMatches});
         }
     }
 
-    // Sort: exact matches first, then exported before non-exported, then alphabetically
-    results.sort((a, b) => {
-        const aExact = a.name.toLowerCase() === queryLower ? 0 : 1;
-        const bExact = b.name.toLowerCase() === queryLower ? 0 : 1;
+    // Sort: most name-token matches first, then exact name match, then exported, then alpha.
+    scored.sort((a, b) => {
+        // Prefer entries where more tokens matched the name itself
+        if (a.nameMatches !== b.nameMatches) return b.nameMatches - a.nameMatches;
+
+        const aExact = a.entry.name.toLowerCase() === queryLower ? 0 : 1;
+        const bExact = b.entry.name.toLowerCase() === queryLower ? 0 : 1;
         if (aExact !== bExact) return aExact - bExact;
 
-        const aExported = a.isExported ? 0 : 1;
-        const bExported = b.isExported ? 0 : 1;
+        const aExported = a.entry.isExported ? 0 : 1;
+        const bExported = b.entry.isExported ? 0 : 1;
         if (aExported !== bExported) return aExported - bExported;
 
-        return a.name.localeCompare(b.name);
+        return a.entry.name.localeCompare(b.entry.name);
     });
 
-    return results.slice(0, limit);
+    return scored.slice(0, limit).map(s => s.entry);
 }
 
 /**
  * Search the member index by query string.
  *
- * Supports case-insensitive substring matching against member names.
+ * Supports case-insensitive substring matching against member names. Multi-word queries
+ * are split into tokens — all tokens must appear in the member name (AND logic).
  * Only searches members of classes in MEMBER_INDEXED_CLASSES.
  */
 export async function searchMembers(
@@ -668,11 +683,12 @@ export async function searchMembers(
     const queryLower = query.toLowerCase().trim();
     if (!queryLower) return [];
 
+    const tokens = queryLower.split(/\s+/);
     const limit = options?.limit ?? 15;
     const results: MemberIndexEntry[] = [];
 
     for (const [key, entries] of memberIndex!) {
-        if (!key.includes(queryLower)) continue;
+        if (!tokens.every(t => key.includes(t))) continue;
         results.push(...entries);
     }
 
@@ -916,6 +932,24 @@ function extractInterfaceMembersWithInheritance(filePath: string, name: string):
 }
 
 /**
+ * Find other exported symbols with the same name as the given entry, excluding
+ * dynamics stubs. Used to surface disambiguation hints when multiple real symbols
+ * share a name (e.g. `View` in both `cmp/viewmanager` and `data/cube`).
+ */
+export function findAlternateEntries(name: string, selectedFilePath: string): SymbolEntry[] {
+    const key = name.toLowerCase();
+    const entries = symbolIndex!.get(key);
+    if (!entries) return [];
+    return entries.filter(
+        e =>
+            e.name === name &&
+            e.isExported &&
+            e.filePath !== selectedFilePath &&
+            !e.sourcePackage.startsWith('dynamics')
+    );
+}
+
+/**
  * Find a symbol in the index by exact name.
  * Prefers exported symbols when multiple matches exist and no filePath filter.
  */
@@ -935,8 +969,14 @@ function findIndexEntry(name: string, filePath?: string): SymbolEntry | null {
         return exact.find(e => e.filePath === resolved) ?? null;
     }
 
-    // Prefer exported symbols
-    return exact.find(e => e.isExported) ?? exact[0];
+    // Prefer exported symbols, and among those prefer class/interface over const/type stubs
+    // (e.g. dynamics/desktop.ts re-exports `export let Foo = null` alongside the real class).
+    const exported = exact.filter(e => e.isExported);
+    if (exported.length > 1) {
+        const preferred = exported.find(e => e.kind === 'class' || e.kind === 'interface');
+        if (preferred) return preferred;
+    }
+    return exported[0] ?? exact[0];
 }
 
 /**
