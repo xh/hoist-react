@@ -17,8 +17,9 @@ import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
  * headers on outgoing requests so server-side spans nest under client spans, producing
  * end-to-end traces from user interaction through server processing and back.
  *
- * Controlled by the `xhTraceConfig` soft config. When disabled (the default), all
- * span-creation methods are no-ops - the wrapped function still executes normally.
+ * Controlled by the `xhTraceConfig` soft config. When disabled (the default), spans are
+ * still created and passed to wrapped functions, but are flagged as unsampled and never
+ * exported - callers can interact with the span without null checks.
  *
  * Completed spans are batched and exported to the Hoist server endpoint `xh/submitSpans`,
  * which relays them to the configured collector.
@@ -65,8 +66,6 @@ export class TraceService extends HoistService {
      */
     override withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
         const span = this.createSpan(config);
-        if (!span) return fn(null);
-
         try {
             const result = fn(span);
             span.end('ok');
@@ -92,8 +91,6 @@ export class TraceService extends HoistService {
         fn: (span: Span) => Promise<T>
     ): Promise<T> {
         const span = this.createSpan(config);
-        if (!span) return fn(null);
-
         try {
             const result = await fn(span);
             span.end('ok');
@@ -108,7 +105,8 @@ export class TraceService extends HoistService {
     }
 
     /**
-     * Create a new span, or return null if tracing is disabled.
+     * Create a new span. Always returns a span - when tracing is disabled the returned span
+     * is flagged unsampled and will never be exported, so callers can interact with it safely.
      * Inherits the parent's `source` tag if not specified.
      *
      * Sampling rules from `xhTraceConfig.sampleRules` are evaluated against the span's tags
@@ -119,9 +117,9 @@ export class TraceService extends HoistService {
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
     createSpan(config: string | SpanConfig): Span {
-        if (!this.enabled) return null;
-
         const ret: SpanConfig = isString(config) ? {name: config} : {...config};
+
+        if (!this.enabled) return new Span({...ret, sampled: false});
 
         // Apply default tags.
         ret.tags = {
@@ -129,6 +127,7 @@ export class TraceService extends HoistService {
             'xh.loadId': XH.loadId,
             'xh.tabId': XH.tabId,
             'xh.source': ret.parent?.tags?.['xh.source'] ?? 'app',
+            'user.name': XH.getUsername(),
             ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
             ...ret.tags
         };
@@ -144,6 +143,7 @@ export class TraceService extends HoistService {
     //------------------
     /** Submit a completed span for export. */
     exportSpan(span: Span) {
+        if (!this.enabled) return;
         if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
             this._pending.push(span);
 
