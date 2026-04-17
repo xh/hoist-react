@@ -13,6 +13,11 @@
   convention.
 * `HoistBase.withSpan`/`withSpanAsync` now auto-populate `caller` with `this`, so emitted spans
   correctly stamp `code.namespace`.
+* `DashContainerModel` no longer persists per-view `icon` in its layout state. Icons are now sourced
+  exclusively from the `DashViewSpec`, matching `DashCanvasModel` behavior and avoiding stale icons
+  when a viewSpec is updated in code. Apps that set `DashViewModel.icon` at runtime can still do so,
+  but the override is no longer written to persisted state - drive dynamic icons from a reaction on
+  observable state instead.
 
 ### 🤖 AI Docs + Tooling
 

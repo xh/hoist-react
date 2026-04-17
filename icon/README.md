@@ -28,8 +28,7 @@ curated set of FA Pro icons and provides:
   automatically, ensuring consistent spacing in menus, buttons, and toolbars
 - **HTML mode** — Render as raw SVG strings for non-React contexts (e.g. Highcharts tooltips)
 - **File-type icons** — `Icon.fileIcon({filename})` maps extensions to appropriate icons
-- **Serialization** — `serializeIcon()`/`deserializeIcon()` for persisting icon config (used by
-  DashContainer to save/restore widget icons in layout state)
+- **Serialization** — `serializeIcon()`/`deserializeIcon()` for persisting icon config as JSON
 
 ## Architecture
 
@@ -243,8 +242,8 @@ else that accepts an icon element.
 
 ## Serialization
 
-`serializeIcon()` and `deserializeIcon()` support persisting icon configuration as JSON. This is
-used by DashContainerModel to save/restore widget icons as part of persisted layout state:
+`serializeIcon()` and `deserializeIcon()` support persisting icon configuration as JSON, for apps
+that need to save and restore an icon selection:
 
 ```typescript
 import {serializeIcon, deserializeIcon} from '@xh/hoist/icon';
@@ -318,5 +317,3 @@ with Hoist by default.
   via static defaults on the `Spinner` class
 - [`/desktop/`](../desktop/README.md) — Desktop components use icons extensively in buttons,
   toolbars, menus, and grid columns
-- [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — DashContainer uses icon serialization
-  to persist widget icons in saved layout state

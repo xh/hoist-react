@@ -17,7 +17,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
-import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
+import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -665,8 +665,6 @@ export class DashContainerModel
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, data => {
                 const {viewModelId, title, viewState} = data;
-                let icon = data.icon;
-                if (icon) icon = deserializeIcon(icon);
 
                 let model = this.viewModels.find(it => it.id === viewModelId);
                 if (model) {
@@ -675,7 +673,6 @@ export class DashContainerModel
                     model = new DashContainerViewModel({
                         id: viewModelId,
                         viewSpec,
-                        icon,
                         title,
                         viewState,
                         containerModel: this
