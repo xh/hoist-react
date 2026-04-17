@@ -68,18 +68,20 @@ export function lookup(selector: ModelSelector) {
     ensureIsSelector(selector);
     return function (_value: any, context: ClassFieldDecoratorContext) {
         const {name} = context;
-        // Be sure to create list for *this* particular class. Clone and include inherited values.
-        context.addInitializer(function (this: any) {
+        // Babel's addInitializer callback fails for fields, so register in initial return.
+        return function (this: any, initialValue: any) {
             throwIf(
                 !this.isHoistModel,
                 '@lookup decorator should be applied to a subclass of HoistModel'
             );
             const target = Object.getPrototypeOf(this),
                 key = '_xhInjectedParentProperties';
+            // Be sure to create list for *this* particular class. Clone and include inherited values.
             if (!target.hasOwnProperty(key)) {
                 target[key] = {...(target[key] ?? {})};
             }
             target[key][name] = selector;
-        });
+            return initialValue;
+        };
     };
 }

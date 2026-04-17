@@ -22,26 +22,19 @@ type FieldOrAccessorOrGetterContext =
  * @see HoistBase.markManaged
  */
 export function managed(_value: any, context: FieldOrAccessorOrGetterContext): any {
-    const {name} = context,
-        key = '_xhManagedProperties';
+    const {name, kind} = context;
 
-    context.addInitializer(function (this: any) {
-        const target = Object.getPrototypeOf(this);
-
-        // Early out on instances after 1st...
-        if (target[key]?.includes(name)) return;
-
-        // Install the property name on the class prototype
-        // Be sure to create list for *this* particular class. Clone and include inherited values.
-        throwIf(
-            !this.isHoistBase,
-            '@managed decorator should be applied to a subclass of HoistBase'
-        );
-        if (!target.hasOwnProperty(key)) {
-            target[key] = [...(target[key] ?? [])];
-        }
-        target[key].push(name);
-    });
+    // Babel's addInitializer callback fails for fields, so register in initial return.
+    if (kind === 'field') {
+        return function (initialValue: any) {
+            registerManaged(this, name as string);
+            return initialValue;
+        };
+    } else {
+        context.addInitializer(function () {
+            registerManaged(this, name as string);
+        });
+    }
 }
 
 /**
@@ -73,6 +66,25 @@ persist.with = function (options: PersistOptions): any {
 //---------------------
 // Implementation
 //---------------------
+function registerManaged(instance: any, name: string) {
+    const target = Object.getPrototypeOf(instance),
+        key = '_xhManagedProperties';
+
+    // Early out on instances after 1st...
+    if (target[key]?.includes(name)) return;
+
+    // Install the property name on the class prototype
+    // Be sure to create list for *this* particular class. Clone and include inherited values.
+    throwIf(
+        !instance.isHoistBase,
+        '@managed decorator should be applied to a subclass of HoistBase'
+    );
+    if (!target.hasOwnProperty(key)) {
+        target[key] = [...(target[key] ?? [])];
+    }
+    target[key].push(name);
+}
+
 function createPersistResult(
     context: ClassAccessorDecoratorContext,
     options: PersistOptions
