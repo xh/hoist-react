@@ -198,7 +198,7 @@ export class FetchService extends HoistService {
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         // If a span spec provided create, wrap, and recurse
-        if (XH.traceService.enabled && opts.span && !(opts.span instanceof Span)) {
+        if (XH.traceService?.enabled && opts.span && !(opts.span instanceof Span)) {
             return XH.traceService.withSpanAsync(opts.span, span =>
                 this.fetchInternalAsync({...opts, span})
             );
