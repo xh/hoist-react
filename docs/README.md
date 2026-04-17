@@ -123,7 +123,7 @@ Cross-cutting documentation that spans multiple packages:
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon, Spinner, SpinnerProps |
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |

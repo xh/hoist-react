@@ -28,7 +28,6 @@ curated set of FA Pro icons and provides:
   automatically, ensuring consistent spacing in menus, buttons, and toolbars
 - **HTML mode** — Render as raw SVG strings for non-React contexts (e.g. Highcharts tooltips)
 - **File-type icons** — `Icon.fileIcon({filename})` maps extensions to appropriate icons
-- **Serialization** — `serializeIcon()`/`deserializeIcon()` for persisting icon config as JSON
 
 ## Architecture
 
@@ -239,22 +238,6 @@ else that accepts an icon element.
 | `asHtml`    | `boolean`            | Return raw SVG string instead of React element                                                                 |
 | `className` | `string`             | Additional CSS class(es)                                                                                       |
 | `omit`      | `Thunkable<boolean>` | Skip rendering this icon when true                                                                             |
-
-## Serialization
-
-`serializeIcon()` and `deserializeIcon()` support persisting icon configuration as JSON, for apps
-that need to save and restore an icon selection:
-
-```typescript
-import {serializeIcon, deserializeIcon} from '@xh/hoist/icon';
-
-const iconEl = Icon.check({intent: 'success'});
-const json = serializeIcon(iconEl);  // {iconName: 'check', prefix: 'far', ...}
-const restored = deserializeIcon(json);  // equivalent React element
-```
-
-Both functions require that the icon element was created by Hoist's `Icon` factories — they will
-throw if passed an arbitrary React element.
 
 ## Common Pitfalls
 
