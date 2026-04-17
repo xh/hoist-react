@@ -2,6 +2,18 @@
 
 ## 85.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
+  server-side API. Added `Span.setTag()`/`setTags()`.
+
+### 🐞 Bug Fixes
+
+* `TraceService` now includes the `user.name` tag on all spans, matching the server-side
+  convention.
+* `HoistBase.withSpan`/`withSpanAsync` now auto-populate `caller` with `this`, so emitted spans
+  correctly stamp `code.namespace`.
+
 ## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)

@@ -63,6 +63,16 @@ export class Span {
         this.status = status;
     }
 
+    /** Set a single tag on this span. */
+    setTag(key: string, value: any) {
+        this.tags[key] = value;
+    }
+
+    /** Merge the given tags onto this span. */
+    setTags(tags: PlainObject) {
+        Object.assign(this.tags, tags);
+    }
+
     /** Record an error event on this span and stamp traceId onto the error if not already set. */
     recordError(error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
