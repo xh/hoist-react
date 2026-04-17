@@ -5,15 +5,12 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
-  `DashCanvasModel`. Icons are now sourced exclusively from the `DashViewSpec` on every load,
-  avoiding stale icons when a viewSpec is updated in code. Apps that set `DashViewModel.icon` at
-  runtime can still do so - the override still drives tab header rendering via the existing
-  reaction, it just no longer round-trips through persisted state. For dynamic icons, drive them
-  from a reaction on observable state (see the "Dynamic Titles" pattern in the dash README).
-* Removed the `serializeIcon()` and `deserializeIcon()` helpers from `@xh/hoist/icon`. These were
-  used internally by the previous `DashContainer` icon persistence path and had no other
-  framework consumers. Apps that reference them directly should inline the equivalent logic
-  (`pickBy(iconEl.props)` to serialize, `Icon.icon(json)` to restore).
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved -
+  drive dynamic icons from a reaction on observable state.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above. Apps still needing this can use `pickBy(iconEl.props)` and
+  `Icon.icon(json)` respectively.
 
 ### 🎁 New Features
 
