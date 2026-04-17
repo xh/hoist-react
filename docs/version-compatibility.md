@@ -54,16 +54,18 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 82.x | -- | | 36.2 | In development (SNAPSHOT) | |
+| 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |
+| 83.0 | 37.0 | | 37.0 | OTEL tracing, static defaults, metrics publishing | [Notes](./upgrade-notes/v83-upgrade-notes.md) |
+| 82.0 | -- | 36.3 | 36.3 | Admin Metrics tab | [Notes](./upgrade-notes/v82-upgrade-notes.md) |
 | 81.0 | 36.1 | | 36.2 | Efficient identity init | [Notes](./upgrade-notes/v81-upgrade-notes.md) |
 | 80.0 | -- | | 36.0 | | [Notes](./upgrade-notes/v80-upgrade-notes.md) |
 | 79.0 | -- | 35.0 | 35.0 | `clientAppCode` tracking, log file deletion | [Notes](./upgrade-notes/v79-upgrade-notes.md) |
 | 78.0 | -- | | 34.x | | [Notes](./upgrade-notes/v78-upgrade-notes.md) |
-| 77.x | -- | | 33.x | Highcharts v12 (client-only) | |
-| 76.0 | -- | 32.0 | 32.0 | View visibility editing, basic view state | |
-| 75.0 | -- | | 31.x | WebSockets enabled by default | |
-| 74.x | -- | | 31.x | ViewManager improvements | |
-| 73.0 | 31.0 | | 31.0 | Consolidated Admin Clients tab, TrackLog properties | |
+| 77.x | -- | | 33.x | Highcharts v12 (client-only) | [Notes](./upgrade-notes/v77-upgrade-notes.md) |
+| 76.0 | -- | 32.0 | 32.0 | View visibility editing, basic view state | [Notes](./upgrade-notes/v76-upgrade-notes.md) |
+| 75.0 | -- | | 31.x | WebSockets enabled by default | [Notes](./upgrade-notes/v75-upgrade-notes.md) |
+| 74.x | -- | | 31.x | ViewManager improvements | [Notes](./upgrade-notes/v74-upgrade-notes.md) |
+| 73.0 | 31.0 | | 31.0 | Consolidated Admin Clients tab, TrackLog properties | [Notes](./upgrade-notes/v73-upgrade-notes.md) |
 | 72.1 | -- | 28.1 | 28.1 | JSON Search in Admin Console | |
 | 72.0 | -- | | 28.0 | Mobile Navigator rebuild | |
 | 71.0 | 27.0 | | 27.0 | ViewManager, cluster state monitoring | |
@@ -107,6 +109,9 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 38.0 | 84.0 | Span sampling, OTEL tag alignment, log level overrides |
+| 37.0 | 83.0 | OTEL tracing, metrics publishing |
+| 36.3 | 82.0 recommended | Admin Metrics tab |
 | 36.1 | 81.0 | Efficient identity init |
 | 35.0 | 79.0 recommended | clientAppCode, log file deletion |
 | 32.0 | 76.0 recommended | View state, visibility editing |

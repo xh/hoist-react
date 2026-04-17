@@ -151,7 +151,7 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
      * Receives an array of selected option objects, the full list of option objects, and the
      * configured `displayNoun` (if any). Return a ReactNode for display. Overrides the default
      * button text, including any `displayNoun`-based summary. Does not replace the button
-     * itself — use `buttonProps` to customize the button's icon, intent, or other properties.
+     * itself - use `buttonProps` to customize the button's icon, intent, or other properties.
      */
     buttonTextRenderer?: (
         selectedOpts: SelectOption[],
@@ -440,7 +440,7 @@ const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
         useVirtual =
             enableVirtual != null ? executeIfFunction(enableVirtual) : filteredOptions.length > 100;
 
-    // Read selection state so observer re-renders on changes — needed for virtual mode
+    // Read selection state so observer re-renders on changes - needed for virtual mode
     // where option rows are not individually observed.
     if (useVirtual) model.getSelectedValues();
 

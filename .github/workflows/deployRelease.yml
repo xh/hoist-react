@@ -1,0 +1,95 @@
+# Deploy Release — Publishes a numbered release to npm.
+#
+# Manually triggered. Standard releases run from master; hotfixes run from a dedicated
+# branch. Validates the version input, publishes to npm, tags the commit, and creates a
+# GitHub release with auto-generated notes. For snapshot builds, see Deploy Snapshot.
+
+name: Deploy Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Release Version'
+                required: true
+                type: string
+            is-hotfix:
+                description: 'Check when releasing a hotfix to a version *other than* the latest.'
+                required: true
+                default: false
+                type: boolean
+
+# Run all release builds one-by-one, but never cancel a release build due to another one.
+concurrency:
+    group: deploy-release
+    cancel-in-progress: false
+
+jobs:
+    build:
+        # Guards against accidental release from develop. Requires master for standard
+        # releases and a branch other than master (or develop) when is-hotfix is set.
+        if: github.ref != 'refs/heads/develop' && ((github.ref == 'refs/heads/master') != inputs.is-hotfix)
+
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+        - uses: actions/checkout@v6
+          with:
+              fetch-depth: 0
+              fetch-tags: true
+
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
+        - name: Validate release version
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@master
+          with:
+              version: ${{ inputs.version }}
+              is-hotfix: ${{ inputs.is-hotfix }}
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v6
+          with:
+              node-version-file: '.nvmrc'
+              registry-url: 'https://registry.npmjs.org'
+              cache: 'yarn'
+
+        - name: Configure Font Awesome registry auth
+          env:
+              FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+          run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
+
+        - name: Install dependencies
+          run: yarn install --frozen-lockfile
+
+        - name: Yarn lint
+          run: yarn lint:all
+
+        - name: Set release version in package.json
+          env:
+              VERSION: ${{ inputs.version }}
+          run: npm version --no-git-tag-version --new-version "$VERSION"
+
+        - name: Publish release to npm
+          env:
+              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              IS_HOTFIX: ${{ inputs.is-hotfix }}
+          run: |
+              TAG_FLAG=""
+              if [ "$IS_HOTFIX" = "true" ]; then
+                  TAG_FLAG="--tag hotfix"
+              fi
+              npm publish $TAG_FLAG
+
+        # Note: The tag intentionally points to a commit where package.json still has the
+        # SNAPSHOT version. We chose not to commit the version change back to the repo to
+        # avoid paired set/reset commits on every release. The published npm artifact has
+        # the correct release version — the tag is just a pointer to the source commit.
+        # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
+        - name: Create tag and GitHub release
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@master
+          with:
+              version: ${{ inputs.version }}
+              is-hotfix: ${{ inputs.is-hotfix }}
+          env:
+              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

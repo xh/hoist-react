@@ -13,18 +13,23 @@ import {
 } from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
     FilterLike,
-    flattenFilter,
-    withFilterByField,
-    withFilterByTypes
+    flattenFilter
 } from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
+import {ReactElement} from 'react';
 import {GridModel} from '../GridModel';
+
+export interface GridFilterModelDefaults {
+    activeFilterIcon?: ReactElement;
+}
 
 /**
  * Model for managing a Grid's column filters.
@@ -33,10 +38,16 @@ import {GridModel} from '../GridModel';
 export class GridFilterModel extends HoistModel {
     override xhImpl = true;
 
+    /** App-level defaults for GridFilterModel. Instance config takes precedence. */
+    static defaults: GridFilterModelDefaults = {
+        activeFilterIcon: Icon.filter()
+    };
+
     gridModel: GridModel;
     bind: GridFilterBindTarget;
     @bindable commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
+    activeFilterIcon: ReactElement;
 
     get filter(): Filter {
         return this.bind.filter;
@@ -49,7 +60,13 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor(
-        {bind, commitOnChange = false, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        {
+            bind,
+            commitOnChange = false,
+            fieldSpecs,
+            fieldSpecDefaults,
+            activeFilterIcon
+        }: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
@@ -57,6 +74,7 @@ export class GridFilterModel extends HoistModel {
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;
+        this.activeFilterIcon = activeFilterIcon ?? GridFilterModel.defaults.activeFilterIcon;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 
@@ -67,14 +85,7 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field: string, filter: FilterLike) {
-        // If current bound filter is a CompoundFilter for a single column, wrap it
-        // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
-        let currFilter: FilterLike = this.filter;
-        if (currFilter instanceof CompoundFilter && currFilter.field) {
-            currFilter = {filters: [currFilter], op: 'AND'};
-        }
-
-        const ret = withFilterByField(currFilter, filter, field);
+        const ret = appendFilter(this.filter?.removeFieldFilters(field), filter);
         this.setFilter(ret);
     }
 
@@ -101,8 +112,7 @@ export class GridFilterModel extends HoistModel {
 
     @action
     clear() {
-        const ret = withFilterByTypes(this.filter, null, ['FieldFilter', 'CompoundFilter']);
-        this.setFilter(ret);
+        this.setFilter(this.filter?.removeFieldFilters());
     }
 
     getColumnFilters(field: string): FieldFilter[] {

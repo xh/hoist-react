@@ -31,7 +31,7 @@ export interface FormFieldSetProps
     /** The title to display. */
     title?: ReactNode;
     /** Additional props to pass to the inner content box. */
-    innerBoxProps?: BoxProps;
+    contentBoxProps?: BoxProps;
 }
 
 /**

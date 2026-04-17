@@ -1,7 +1,7 @@
+# Inspector
+
 > **Status: DRAFT** — This document is awaiting review by an XH developer. Content may be
 > incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
-# Inspector
 
 The Inspector is a built-in developer and admin tool for real-time inspection of a running Hoist
 application's `HoistModel`, `HoistService`, and `Store` instances, along with memory and

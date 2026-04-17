@@ -36,6 +36,9 @@ export interface FieldSpec {
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
 
+    /** True if this field is intended to be used for grouping.  Defaults to false. */
+    isDimension?: boolean;
+
     /** Rules to apply to this field. */
     rules?: RuleLike[];
 
@@ -71,6 +74,7 @@ export class Field {
     readonly displayName: string;
     readonly description: string;
     readonly defaultValue: any;
+    readonly isDimension: boolean;
     readonly rules: Rule[];
     readonly enableXssProtection: boolean;
 
@@ -80,6 +84,7 @@ export class Field {
         displayName,
         description,
         defaultValue = null,
+        isDimension = false,
         rules = [],
         enableXssProtection = XH.appSpec.enableXssProtection
     }: FieldSpec) {
@@ -88,6 +93,7 @@ export class Field {
         this.displayName = withDefault(displayName, genDisplayName(name));
         this.description = description;
         this.defaultValue = defaultValue;
+        this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
     }

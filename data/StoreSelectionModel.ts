@@ -11,15 +11,31 @@ import {castArray, compact, remove, isEqual, union, map} from 'lodash';
 import {Store} from './Store';
 import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 
+/**
+ * Configuration for a {@link StoreSelectionModel}. Typically passed via the `selModel` config
+ * on {@link GridConfig} rather than constructed directly.
+ *
+ * @see StoreSelectionModel
+ */
 export interface StoreSelectionConfig {
     store?: Store;
     mode?: 'single' | 'multiple' | 'disabled';
+    /** @internal */
     xhImpl?: boolean;
 }
 
 /**
- * Model for managing store selections.
- * Typically accessed from a GridModel to observe/control Grid selection.
+ * Model for managing record selection within a {@link Store}. Supports `single`, `multiple`,
+ * and `disabled` modes.
+ *
+ * Typically accessed via `gridModel.selModel` rather than created directly - configure via
+ * the `selModel` property on {@link GridConfig}.
+ *
+ * Key observables for reacting to selection state: `selectedRecord` / `selectedRecords`
+ * (reactive to both identity and data changes), `selectedId` / `selectedIds` (identity only),
+ * `isEmpty`, `count`. Use `select()` and `clear()` for programmatic control.
+ *
+ * @see StoreSelectionConfig
  */
 export class StoreSelectionModel extends HoistModel {
     readonly store: Store;

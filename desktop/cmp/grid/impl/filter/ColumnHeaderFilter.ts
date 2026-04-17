@@ -39,7 +39,7 @@ export const columnHeaderFilter = hoistCmp.factory({
                 if (!open) model.close();
             },
             item: div({
-                item: hasFilter ? Icon.filter() : Icon.columnMenu(),
+                item: hasFilter ? model.activeFilterIcon : Icon.columnMenu(),
                 onClick: e => {
                     e.stopPropagation();
                     model.open();

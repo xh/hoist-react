@@ -1,5 +1,17 @@
 # Services Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose and principles of Hoist's built-in singleton services |
+| [Architecture](#architecture) | Service hierarchy, installation, and access via XH |
+| [Built-in Services](#built-in-services) | Reference for all 19 built-in services by category |
+| [Configuration Keys Reference](#configuration-keys-reference) | Soft config keys controlling service behavior |
+| [User Preference Keys Reference](#user-preference-keys-reference) | Per-user preference keys used by services |
+| [Creating Custom Services](#creating-custom-services) | How to create and install application services |
+| [Common Patterns](#common-patterns) | FetchService in loads, tracking, debounced search, WebSockets |
+| [Common Pitfalls](#common-pitfalls) | Fetch errors, native fetch, missing loadSpec, and more |
+| [Related Packages](#related-packages) | Links to core, cmp, promise, and admin packages |
+
 ## Overview
 
 The `/svc/` package contains Hoist's built-in singleton services - classes that provide app-wide
@@ -23,8 +35,9 @@ HoistBase
     ├── IdentityService     - Current user info
     ├── EnvironmentService  - App environment metadata
     ├── TrackService        - Activity tracking
+    ├── TraceService        - Distributed tracing
     ├── WebSocketService    - Bidirectional messaging
-    └── ... (18 built-in services total)
+    └── ... (19 built-in services total)
 ```
 
 ### Service Installation
@@ -90,7 +103,7 @@ Managed HTTP requests with enhancements over the native Fetch API.
 - Configurable timeouts (default 30 seconds)
 - Auto-abort of duplicate requests via `autoAbortKey`
 - Request/response interceptors
-- Rich exception handling with HTTP status and server details
+- Rich exception handling with HTTP status, server details, and trace IDs
 
 ```typescript
 // Basic JSON request
@@ -115,15 +128,32 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 **Configuration Options:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`) |
-| `body` | any | Request body |
-| `params` | object | Query string parameters |
-| `headers` | object | Additional headers |
-| `timeout` | number | Timeout in ms (default 30000) |
-| `autoAbortKey` | string | Cancel previous requests with same key |
-| `loadSpec` | LoadSpec | Metadata for tracking |
+| Option | Type | Description                                                                           |
+|--------|------|---------------------------------------------------------------------------------------|
+| `url` | string | Request URL (relative URLs appended to `XH.baseUrl`)                                  |
+| `body` | any | Request body                                                                          |
+| `params` | object | Query string parameters                                                               |
+| `headers` | object | Additional headers                                                                    |
+| `timeout` | number | Timeout in ms (default 30000)                                                         |
+| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
+| `span` | `Span \| string \| SpanConfig` | Parent span for tracing. Accepts an existing `Span`, a `SpanConfig`, or a string name |
+
+**App-Level Defaults (`FetchService.defaults`):**
+
+FetchService exposes a `static defaults` object for correlation ID configuration. Best configured
+in the app's `Bootstrap` module to ensure settings are active from the very first request.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `autoGenCorrelationIds` | `boolean \| function` | `false` | Auto-generate correlation IDs. Set `true` or a `(opts) => boolean` function for per-request control |
+| `genCorrelationId` | `() => string` | 16-char random string | Custom ID generator function |
+| `correlationIdHeaderKey` | `string` | `'X-Correlation-ID'` | HTTP header name for correlation IDs |
+
+```typescript
+// In Bootstrap module
+FetchService.defaults.autoGenCorrelationIds = true;
+```
 
 #### ConfigService
 **File**: `ConfigService.ts` | **Access**: `XH.configService` or `XH.getConf()`
@@ -277,6 +307,61 @@ Rules can also target specific users or categories:
 Rules are evaluated in order — the first match wins. Entries that don't match any rule default to an
 INFO threshold, so the example above enables DEBUG+ persistence for user `jsmith` and the `Data`
 category while all other entries continue to require INFO or above.
+
+#### TraceService
+**File**: `TraceService.ts` | **Access**: `XH.traceService`
+
+Client-side distributed tracing — creates spans for user actions and fetch calls, injects
+`traceparent` headers on outgoing requests, and batches completed spans for export to the
+Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
+with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
+
+Spans are sampled at creation time using `xhTraceConfig.sampleRules` — an ordered list of
+tag-matching rules with glob pattern support. Child spans inherit their parent's sampling
+decision. Unsampled spans are dropped before export unless they end in error and
+`alwaysSampleErrors` is enabled. The `traceparent` header propagates the sampling flag to
+the server. See the hoist-core tracing documentation for full sampling configuration details.
+
+```typescript
+// Wrap an async operation in a span (from any HoistBase subclass)
+await this.withSpanAsync({name: 'loadPortfolio', caller: this}, async span => {
+    const positions = await this.loadPositionsAsync();
+    this.setPositions(positions);
+});
+
+// Wrap a sync operation
+const result = this.withSpan({name: 'computeTotals', caller: this}, span => {
+    return this.computeTotals();
+});
+
+// Simple string-only config
+await this.withSpanAsync('loadData', async span => { ... });
+
+// Nest a fetch call under a parent span without manual span management.
+// FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: 'loadPortfolio'
+});
+const data = await XH.fetchJson({
+    url: 'api/portfolio',
+    span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
+});
+```
+
+**SpanConfig:**
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `name` | string | Span name (required) |
+| `kind` | SpanKind | `'internal'` \| `'client'` \| `'server'` \| `'producer'` \| `'consumer'` |
+| `tags` | PlainObject | Key-value attributes on the span |
+| `parent` | Span | Explicit parent span for concurrent async nesting |
+| `caller` | NameSource | Object or string — auto-sets `code.namespace` attribute |
+
+The `caller` property mirrors hoist-core's server-side `caller` parameter. Pass `this` from a
+model or service to automatically tag the span with the class name, or pass a string for
+standalone functions.
 
 #### ClientHealthService
 **File**: `ClientHealthService.ts` | **Access**: `XH.clientHealthService`

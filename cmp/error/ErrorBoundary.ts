@@ -18,6 +18,8 @@ import {ErrorBoundaryModel} from './ErrorBoundaryModel';
  * This wrapper will automatically only catch and handle exceptions that occur during the React
  * lifecycle, but applications that wish to use this component to display other caught exceptions
  * may explicitly use it to handle those exceptions.
+ *
+ * @see ErrorBoundaryModel
  */
 export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundaryModel>({
     displayName: 'ErrorBoundary',

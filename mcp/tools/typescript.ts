@@ -9,54 +9,14 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {
-    ensureInitialized,
     searchSymbols,
+    searchMembers,
     getSymbolDetail,
     getMembers,
-    type MemberInfo
+    getCompanionSymbols,
+    findAlternateEntries
 } from '../data/ts-registry.js';
-import {resolveRepoRoot} from '../util/paths.js';
-
-/** Maximum length for type strings before truncation. */
-const MAX_TYPE_LENGTH = 200;
-
-/** Truncate a type string if it exceeds MAX_TYPE_LENGTH. */
-function truncateType(typeStr: string): string {
-    return typeStr.length > MAX_TYPE_LENGTH ? typeStr.slice(0, MAX_TYPE_LENGTH) + '...' : typeStr;
-}
-
-/** Convert an absolute file path to a repo-relative path. */
-function toRelativePath(filePath: string): string {
-    const root = resolveRepoRoot();
-    return filePath.startsWith(root) ? filePath.slice(root.length + 1) : filePath;
-}
-
-/**
- * Format a member as a readable line with optional decorator prefix and JSDoc description.
- * e.g. `\@observable columns: ColumnOrGroup[]`
- *      `    Columns displayed in the grid.`
- */
-function formatMember(member: MemberInfo): string {
-    const lines: string[] = [];
-    const decoratorPrefix =
-        member.decorators.length > 0 ? member.decorators.map(d => `@${d}`).join(' ') + ' ' : '';
-
-    if (member.kind === 'method') {
-        const params = (member.parameters ?? [])
-            .map(p => `${p.name}: ${truncateType(p.type)}`)
-            .join(', ');
-        const ret = member.returnType ? truncateType(member.returnType) : 'void';
-        lines.push(`- ${decoratorPrefix}${member.name}(${params}): ${ret}`);
-    } else {
-        lines.push(`- ${decoratorPrefix}${member.name}: ${truncateType(member.type)}`);
-    }
-
-    if (member.jsDoc) {
-        lines.push(`    ${member.jsDoc.split('\n')[0]}`);
-    }
-
-    return lines.join('\n');
-}
+import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
 
 /**
  * Register all TypeScript symbol exploration tools on the given MCP server.
@@ -74,12 +34,12 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name. Returns matching symbols with their kind, source file, and package. Use this to find symbols before getting detailed information.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name and JSDoc content. Multi-word queries match all terms (AND logic) against symbol names and their documentation — e.g. "panel modal" finds ModalSupportModel via its JSDoc. Also searches public members of key framework classes. Results are ranked: name matches above JSDoc-only matches.',
             inputSchema: z.object({
                 query: z
                     .string()
                     .describe(
-                        'Symbol name or partial name to search for (e.g. "GridModel", "Store", "Panel")'
+                        'Search query — a symbol name (e.g. "GridModel"), a keyword (e.g. "tooltip"), or multiple terms (e.g. "panel modal", "cube view store")'
                     ),
                 kind: z
                     .enum(['class', 'interface', 'type', 'function', 'const', 'enum'])
@@ -99,24 +59,19 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({query, kind, exported, limit}) => {
-            ensureInitialized();
-            const results = searchSymbols(query, {
+            const symbolLimit = limit ?? 20;
+            const symbolResults = await searchSymbols(query, {
                 kind,
                 exported: exported ?? true,
-                limit: limit ?? 20
+                limit: symbolLimit
             });
 
-            let text: string;
-            if (results.length === 0) {
-                text = `No symbols found matching '${query}'. Try a broader search term.`;
-            } else {
-                const lines = [`Found ${results.length} symbols matching '${query}':\n`];
-                results.forEach((result, i) => {
-                    lines.push(
-                        `${i + 1}. [${result.kind}] ${result.name} (package: ${result.sourcePackage}, file: ${toRelativePath(result.filePath)}, exported: ${result.isExported ? 'yes' : 'no'})`
-                    );
-                });
-                text = lines.join('\n');
+            const memberLimit = symbolResults.length === 0 ? symbolLimit : 15;
+            const memberResults = await searchMembers(query, {limit: memberLimit});
+
+            let text = formatSymbolSearch(symbolResults, memberResults, query);
+            if (symbolResults.length > 0 || memberResults.length > 0) {
+                text += '\n\nTip: Use hoist-get-members to see all members of a specific class.';
             }
 
             return {content: [{type: 'text' as const, text}]};
@@ -151,46 +106,25 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({name, filePath}) => {
-            ensureInitialized();
-            const detail = getSymbolDetail(name, filePath);
+            const detail = await getSymbolDetail(name, filePath);
+            const companions = detail ? await getCompanionSymbols(detail) : [];
+            let text = formatSymbolDetail(detail, name, companions);
 
-            let text: string;
-            if (!detail) {
-                text = `Symbol '${name}' not found. Use hoist-search-symbols to find available symbols.`;
-            } else {
-                const lines: string[] = [
-                    `# ${detail.name} (${detail.kind})`,
-                    `Package: ${detail.sourcePackage}`,
-                    `File: ${toRelativePath(detail.filePath)}`,
-                    `Exported: ${detail.isExported ? 'yes' : 'no'}`
-                ];
+            if (detail && (detail.kind === 'class' || detail.kind === 'interface')) {
+                text += '\n\nUse hoist-get-members to see all properties and methods.';
+            }
 
-                if (detail.extends) {
-                    lines.push(`Extends: ${detail.extends}`);
+            if (detail && !filePath) {
+                const alternates = findAlternateEntries(name, detail.filePath);
+                if (alternates.length > 0) {
+                    const altList = alternates
+                        .map(
+                            a =>
+                                `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                        )
+                        .join('\n');
+                    text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
                 }
-                if (detail.implements && detail.implements.length > 0) {
-                    lines.push(`Implements: ${detail.implements.join(', ')}`);
-                }
-                if (detail.decorators && detail.decorators.length > 0) {
-                    lines.push(`Decorators: ${detail.decorators.map(d => `@${d}`).join(', ')}`);
-                }
-
-                lines.push('');
-                lines.push('## Signature');
-                lines.push(detail.signature);
-
-                if (detail.jsDoc) {
-                    lines.push('');
-                    lines.push('## Documentation');
-                    lines.push(detail.jsDoc);
-                }
-
-                if (detail.kind === 'class' || detail.kind === 'interface') {
-                    lines.push('');
-                    lines.push('Use hoist-get-members to see all properties and methods.');
-                }
-
-                text = lines.join('\n');
             }
 
             return {content: [{type: 'text' as const, text}]};
@@ -225,64 +159,20 @@ export function registerTsTools(server: McpServer): void {
             }
         },
         async ({name, filePath}) => {
-            ensureInitialized();
-            const result = getMembers(name, filePath);
+            const result = await getMembers(name, filePath);
+            let text = formatMembers(result, name);
 
-            let text: string;
-            if (!result) {
-                text = `Symbol '${name}' not found or is not a class/interface. Use hoist-search-symbols to find the correct symbol name.`;
-            } else {
-                const {members} = result;
-
-                // Group members by category
-                const instanceProps = members.filter(
-                    m => !m.isStatic && (m.kind === 'property' || m.kind === 'accessor')
-                );
-                const instanceMethods = members.filter(m => !m.isStatic && m.kind === 'method');
-                const staticProps = members.filter(
-                    m => m.isStatic && (m.kind === 'property' || m.kind === 'accessor')
-                );
-                const staticMethods = members.filter(m => m.isStatic && m.kind === 'method');
-
-                const lines: string[] = [`# ${name} Members\n`];
-
-                if (instanceProps.length > 0) {
-                    lines.push(`## Properties (${instanceProps.length})`);
-                    for (const prop of instanceProps) {
-                        lines.push(formatMember(prop));
-                    }
-                    lines.push('');
+            if (result && !filePath) {
+                const alternates = findAlternateEntries(name, result.symbol.filePath);
+                if (alternates.length > 0) {
+                    const altList = alternates
+                        .map(
+                            a =>
+                                `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                        )
+                        .join('\n');
+                    text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
                 }
-
-                if (instanceMethods.length > 0) {
-                    lines.push(`## Methods (${instanceMethods.length})`);
-                    for (const method of instanceMethods) {
-                        lines.push(formatMember(method));
-                    }
-                    lines.push('');
-                }
-
-                if (staticProps.length > 0) {
-                    lines.push(`## Static Properties (${staticProps.length})`);
-                    for (const prop of staticProps) {
-                        lines.push(formatMember(prop));
-                    }
-                    lines.push('');
-                }
-
-                if (staticMethods.length > 0) {
-                    lines.push(`## Static Methods (${staticMethods.length})`);
-                    for (const method of staticMethods) {
-                        lines.push(formatMember(method));
-                    }
-                    lines.push('');
-                }
-
-                if (members.length === 0) {
-                    lines.push('No members found.');
-                }
-
-                text = lines.join('\n');
             }
 
             return {content: [{type: 'text' as const, text}]};

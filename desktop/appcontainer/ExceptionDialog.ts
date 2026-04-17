@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
-import {filler, fragment} from '@xh/hoist/cmp/layout';
+import {div, filler, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -38,7 +38,15 @@ export const exceptionDialog = hoistCmp.factory({
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),
-                items: [dialogBody(options.message), bbar()]
+                items: [
+                    dialogBody(options.message),
+                    div({
+                        omit: !exception.traceId,
+                        className: 'xh-exception-dialog__trace-id',
+                        item: `Trace ID: ${exception.traceId}`
+                    }),
+                    bbar()
+                ]
             }),
             exceptionDialogDetails()
         );
@@ -54,12 +62,14 @@ const bbar = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
             omit: !XH.identityService?.isImpersonating,
             icon: Icon.impersonate(),
             text: 'End Impersonation',
+            testId: 'xh-exception-end-impersonation-btn',
             onClick: () => XH.identityService.endImpersonateAsync()
         }),
         filler(),
         button({
             icon: Icon.search(),
             text: 'Show/Report Details',
+            testId: 'xh-exception-details-btn',
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
         }),
@@ -78,11 +88,13 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
         ? button({
               icon: Icon.refresh(),
               text: 'Reload App',
+              testId: 'xh-exception-dismiss-btn',
               autoFocus: true,
               onClick: () => XH.reloadApp({removeQueryParams: true})
           })
         : button({
               text: 'Close',
+              testId: 'xh-exception-dismiss-btn',
               autoFocus: true,
               onClick: () => model.close()
           });

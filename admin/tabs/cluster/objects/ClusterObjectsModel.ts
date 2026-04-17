@@ -89,7 +89,7 @@ export class ClusterObjectsModel extends HoistModel {
             {field: 'name', headerName: 'Full Name', hidden: true},
             {field: 'parentName', hidden: true}
         ],
-        contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaultContextMenu]
+        contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaults.contextMenu]
     });
 
     get selectedRecord(): StoreRecord {

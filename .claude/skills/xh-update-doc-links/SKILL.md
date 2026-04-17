@@ -1,6 +1,6 @@
 ---
 name: xh-update-doc-links
-description: Pre-commit documentation consistency check. Ensures docs/README.md index, docs/planning/docs-roadmap.md, and the MCP server's hardcoded document registry stay in sync with documentation files on disk. Validates inter-doc links and enhances cross-references when new docs are added. Invoke after editing READMEs or concept docs, before committing.
+description: Pre-commit documentation consistency check. Ensures docs/README.md index, docs/planning/docs-roadmap.md, and the MCP server's document registry (docs/doc-registry.json) stay in sync with documentation files on disk. Validates inter-doc links and enhances cross-references when new docs are added. Use this skill whenever adding, renaming, moving, or deleting any README or concept doc — and before committing documentation changes. Also use when asked to "update the docs index", "check doc links", or "sync the doc registry".
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -8,6 +8,9 @@ tools: Read, Glob, Grep, Bash, Edit, Write
 
 Pre-commit skill to ensure documentation index files, the MCP document registry, inter-doc links,
 and cross-references stay consistent after editing READMEs or concept docs.
+
+This skill syncs indexes and links — it does not write or rewrite documentation content. See
+`xh-update-docs` for creating or updating doc content.
 
 ## Step 1: Discover Documentation Files
 
@@ -61,8 +64,10 @@ For each README on disk:
 - **Status updates:** Change `Planned` → `[Done](../../path/README.md)` for newly completed docs.
   Change `Drafted` → `[Done](../../path/README.md)` if appropriate.
 - **Missing entries:** Add entries for docs not yet on the roadmap.
-- **Progress notes:** Append a progress note entry for the current date to
-  `docs/planning/docs-roadmap-log.md`. Follow the existing chronological format.
+- **Progress notes:** When meaningful changes occur (new docs indexed, status promotions,
+  registry additions — not minor link fixes or cosmetic cleanups), append a progress note
+  entry for the current date to `docs/planning/docs-roadmap-log.md`. Follow the existing
+  chronological format.
 
 ## Step 4: Validate Inter-Doc Links
 
@@ -93,40 +98,36 @@ When new or recently changed docs are detected, look for cross-linking opportuni
    ```
 
 3. **Be conservative:** Only add links where the existing text already discusses the topic.
-   Do not restructure existing content or add new sections just to create links.
+   Do not restructure existing content or add new sections just to create links. Do not rewrite
+   or rephrase existing prose — only insert link references.
 
-## Step 6: Reconcile MCP Document Registry
+## Step 6: Reconcile Document Registry
 
-Ensure the MCP server's hardcoded document registry reflects the current documentation on disk.
+Ensure `docs/doc-registry.json` reflects the current documentation on disk. This JSON file is
+the single source of truth for both the MCP server (which loads it at startup via
+`mcp/data/doc-registry.ts`) and the toolbox documentation viewer.
 
-For background on the registry format, entry structure, and maintenance expectations, see the
-[Maintaining the MCP Server](../../mcp/README.md#maintaining-the-mcp-server) section of the MCP
-README — specifically the **Doc Registry Entries** subsection.
+1. **Read and parse** `docs/doc-registry.json`. Each entry in the `entries` array is a JSON
+   object. The entry's `id` field is also the file path relative to the repo root (e.g.
+   `cmp/grid/README.md`, `docs/lifecycle-app.md`).
 
-1. **Read and parse** `mcp/data/doc-registry.ts`, extracting all `RawEntry` objects from the
-   `getRawEntries()` function. Note the file path in each entry's `file` field.
-
-2. **Detect missing entries** — compare the Step 1 documentation inventory against registry file
-   paths. For each unregistered doc, add a new `RawEntry` with these fields:
-   - `id`: package path for READMEs (e.g. `cmp/grid`), filename stem for concept docs
-     (e.g. `element-factories`), `upgrade-vNN` for upgrade notes.
+2. **Detect missing entries** — compare the Step 1 documentation inventory against registry
+   entry `id` fields. For each unregistered doc, add a new entry with these fields:
+   - `id`: file path relative to repo root (e.g. `cmp/grid/README.md`,
+     `docs/upgrade-notes/v82-upgrade-notes.md`). This doubles as the unique identifier.
    - `title`: derived from the doc's top-level `# heading`.
-   - `file`: path relative to repo root (e.g. `cmp/grid/README.md`).
-   - `category`: `package` for package READMEs, `concept` for docs under `docs/`, `devops` for
-     build/deploy docs, `conventions` for AGENTS.md, `index` for docs/README.md.
-   - `packageName`: set for `package` category entries only (e.g. `@xh/hoist/cmp/grid`).
+   - `mcpCategory`: MCP category — one of `package`, `concept`, `devops`, `conventions`, or `index`.
+   - `viewerCategory`: toolbox viewer category — one of `overview`, `concepts`, `core`,
+     `components`, `desktop`, `mobile`, `utilities`, `supporting`, `devops`, or `upgrade`.
    - `description`: concise one-sentence summary matching existing entry style.
-   - `keywords`: 5–12 key terms via `splitKeywords()` — include API names, class names, and
-     topic terms.
+   - `keywords`: 5–12 key terms as a JSON array of strings — include API names, class names,
+     and topic terms.
 
-3. **Place entries correctly** in the right section of `getRawEntries()`, which is organized by
-   comment dividers: Index & Conventions, Package READMEs, Developer Tools, Concept docs, DevOps
-   docs, Upgrade Notes.
+3. **Place entries** in logical order within the `entries` array (grouped by category).
 
-4. **Remove stale entries** whose `file` paths no longer exist on disk.
+4. **Remove stale entries** whose `id` (file path) no longer exists on disk.
 
-5. **Update moved/renamed docs** — fix `file` paths (and `id`/`title` if the change is
-   structural, not just a path correction).
+5. **Update moved/renamed docs** — fix `id` values (and `title` if the change is structural).
 
 6. **Verify existing entries** — spot-check that metadata (title, description, keywords) is still
    accurate for recently changed docs. Only fix entries that are clearly stale or incorrect; do not
@@ -140,7 +141,7 @@ Output a summary organized into these sections:
 2. **Roadmap Updates** — Status changes and new entries in `docs-roadmap.md`, progress notes appended to `docs-roadmap-log.md`.
 3. **Broken Links Fixed** — Source file, broken target, and fix applied.
 4. **New Cross-Links Added** — Source file, target doc, and surrounding context.
-5. **MCP Registry Updates** — Entries added, removed, or updated in `mcp/data/doc-registry.ts`, with `id` and `file` for each change.
+5. **Registry Updates** — Entries added, removed, or updated in `docs/doc-registry.json`, with `id` for each change.
 6. **Items Needing Review** — Ambiguities or items requiring human judgment.
 
 If no changes were needed in a category, note "None" for that section.

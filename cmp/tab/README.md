@@ -20,7 +20,7 @@ TabContainerModel
 ├── refreshMode: RefreshMode      # Default refresh strategy for tabs
 ├── refreshContextModel           # RefreshContext for coordinated refresh
 ├── dynamicTabSwitcherModel       # For user-configurable tabs
-└── Methods: activateTab(), addTab(), removeTab(), setTabs()
+└── Methods: setActiveTabId(), activateTab(), addTab(), removeTab(), setTabs()
 
 TabModel
 ├── id: string                    # Unique identifier
@@ -159,9 +159,8 @@ const tabModel = new TabContainerModel({
 ### Tab Navigation
 
 ```typescript
-// Activate by ID or TabModel
-tabModel.activateTab('details');
-tabModel.activateTab(tabModel.tabs[1]);
+// Activate by ID
+tabModel.setActiveTabId('details');
 
 // Sequential navigation
 tabModel.activateNextTab();
@@ -410,12 +409,13 @@ this.addReaction({
 // ❌ Don't: Setting activeTabId directly won't trigger proper tab activation
 tabModel.activeTabId = 'details';
 
-// ✅ Do: Use the activateTab API
-tabModel.activateTab('details');
+// ✅ Do: Use setActiveTabId()
+tabModel.setActiveTabId('details');
 ```
 
-The `activateTab()` method handles routing updates, refresh triggers, and other side effects that
-direct property assignment would bypass.
+`setActiveTabId()` handles routing updates, refresh triggers, and other side effects that direct
+property assignment would bypass. It can also be used as a bind target for UI controls (e.g.,
+SegmentedControl) that need to switch tabs.
 
 ### Missing Route Definitions
 

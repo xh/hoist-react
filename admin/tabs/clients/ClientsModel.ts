@@ -158,7 +158,7 @@ export class ClientsModel extends BaseAdminTabModel {
                 this.forceSuspendAction,
                 this.reqHealthReportAction,
                 '-',
-                ...GridModel.defaultContextMenu
+                ...GridModel.defaults.contextMenu
             ],
             store: {
                 idSpec: 'key',

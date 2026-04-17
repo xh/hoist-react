@@ -15,6 +15,9 @@ export interface HoistException extends Error {
     /** Correlation ID associated with this exception, if any. */
     correlationId?: string;
 
+    /** Distributed trace ID associated with this exception, if any. */
+    traceId?: string;
+
     /**
      * Is the exception an expected, normal behavior of the app?
      *

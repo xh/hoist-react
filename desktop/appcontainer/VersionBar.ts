@@ -26,6 +26,7 @@ export const versionBar = hoistCmp.factory({
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
+            testId: 'xh-version-bar',
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 span({

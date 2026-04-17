@@ -20,6 +20,13 @@ import {addAction, deleteAction, editAction, viewAction} from './Actions';
 import {RestStore, RestStoreConfig} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
+/**
+ * Configuration for a {@link RestGridModel} - extends {@link GridConfig} with CRUD support
+ * for editing records via a built-in form backed by a hoist-core `RestController`.
+ *
+ * @see RestGridModel
+ * @see RestGrid
+ */
 export interface RestGridConfig extends GridConfig {
     store?: RestStore | RestStoreConfig;
 
@@ -87,10 +94,22 @@ export interface RestGridEditor {
     omit?: boolean | ((fieldValue: unknown, model: RestFormModel) => boolean);
 }
 
+export interface RestGridModelDefaults {
+    showRefreshButton?: boolean;
+    unit?: string;
+}
+
 /**
- * Core Model for a RestGrid.
+ * Core Model for a {@link RestGrid}. Configures the grid's columns, editors, toolbar and
+ * context menu actions, and its backing {@link RestStore} for server-side CRUD operations.
  */
 export class RestGridModel extends HoistModel {
+    /** App-level defaults for RestGridModel. Instance config takes precedence. */
+    static defaults: RestGridModelDefaults = {
+        showRefreshButton: false,
+        unit: 'record'
+    };
+
     declare config: RestGridConfig;
 
     //----------------
@@ -134,10 +153,10 @@ export class RestGridModel extends HoistModel {
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
-        showRefreshButton = false,
+        showRefreshButton = RestGridModel.defaults.showRefreshButton,
         actionWarning,
         prepareCloneFn,
-        unit = 'record',
+        unit = RestGridModel.defaults.unit,
         filterFields,
         editors = [],
         onRowDoubleClicked,
@@ -167,7 +186,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
+            contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
             enableExport: true,

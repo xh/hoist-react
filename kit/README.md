@@ -1,7 +1,7 @@
+# Kit
+
 > **Status: DRAFT** — This document is awaiting review by an XH developer. Content may be
 > incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
-# Kit
 
 The `/kit/` package provides centralized wrappers for all third-party UI and charting libraries
 used by Hoist. It serves two purposes:
@@ -177,8 +177,14 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/kit/blueprint';
 ```
 
-The exception is if you need a Blueprint or other library component that Hoist does not wrap (e.g.
-`Tree`, `EditableText`).
+The notable exception is **Blueprint's `dialog`** — Hoist does not yet provide its own Dialog
+component wrapper ([#861](https://github.com/xh/hoist-react/issues/861)), so applications import
+`dialog` directly from `@xh/hoist/kit/blueprint` for custom modal dialogs. This is the
+established pattern used throughout the framework and applications. See the
+[Dialogs section](../desktop/README.md#dialogs) of the desktop README for usage guidance.
+
+Other Blueprint or library components that Hoist does not wrap (e.g. `Tree`, `EditableText`)
+can also be imported from Kit when needed.
 
 ## Common Pitfalls
 

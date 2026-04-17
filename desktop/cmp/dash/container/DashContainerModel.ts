@@ -50,6 +50,15 @@ import {
 } from './impl/DashContainerUtils';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
+/**
+ * Configuration for a {@link DashContainerModel} - a tab-and-stack based dashboard layout
+ * with draggable, resizable views powered by GoldenLayout.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashContainerModel
+ * @see DashViewSpec
+ */
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
     DashContainerViewState
@@ -71,6 +80,11 @@ export interface DashContainerConfig extends DashConfig<
      * @see http://golden-layout.com/docs/Config.html
      */
     goldenLayoutSettings?: PlainObject;
+}
+
+export interface DashContainerModelDefaults {
+    margin?: number;
+    showMenuButton?: boolean;
 }
 
 // TODO - review other state inserted by library, determine if we want to model here
@@ -144,6 +158,12 @@ export class DashContainerModel
     extends DashModel<DashContainerViewSpec, DashContainerViewState, DashContainerViewModel>
     implements Persistable<{state: DashContainerViewState[]}>
 {
+    /** App-level defaults for DashContainerModel. Instance config takes precedence. */
+    static defaults: DashContainerModelDefaults = {
+        margin: 6,
+        showMenuButton: false
+    };
+
     //---------------------
     // Settable State
     //----------------------
@@ -179,8 +199,8 @@ export class DashContainerModel
         layoutLocked = false,
         contentLocked = false,
         renameLocked = false,
-        showMenuButton = false,
-        margin = 6,
+        showMenuButton = DashContainerModel.defaults.showMenuButton,
+        margin = DashContainerModel.defaults.margin,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
@@ -400,9 +420,13 @@ export class DashContainerModel
         const {goldenLayout} = this;
         if (!goldenLayout) return;
 
-        const newState = convertGLToState(goldenLayout, this);
-        if (!isEqual(this.state, newState)) {
-            runInAction(() => (this.state = newState));
+        try {
+            const newState = convertGLToState(goldenLayout, this);
+            if (!isEqual(this.state, newState)) {
+                runInAction(() => (this.state = newState));
+            }
+        } catch (e) {
+            this.logWarn('Failed to convert GL to state', e);
         }
     }
 

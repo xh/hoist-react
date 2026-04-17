@@ -24,6 +24,13 @@
       font-size: var(--xh-font-size-px);
     }
 
+    &__trace-id {
+      display: block;
+      margin-top: var(--xh-pad-half-px);
+      font-size: var(--xh-font-size-small-px);
+      opacity: 0.7;
+    }
+
     &__icon {
       align-self: center;
       margin: 0 0 0 var(--xh-pad-half-px);

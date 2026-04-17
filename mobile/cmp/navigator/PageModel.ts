@@ -19,6 +19,13 @@ import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {NavigatorModel} from './NavigatorModel';
 
+/**
+ * Configuration for a {@link PageModel} - a single page within a {@link NavigatorModel}.
+ * Passed as entries in the `pages` array of a {@link NavigatorConfig}.
+ *
+ * @see PageModel
+ * @see NavigatorConfig
+ */
 export interface PageConfig {
     /** Unique ID. Must match a configured Router5 route name. */
     id: string;

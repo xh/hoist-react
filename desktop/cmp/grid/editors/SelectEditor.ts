@@ -14,6 +14,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type SelectEditorProps = EditorProps<SelectProps>;
 
+/** Dropdown select inline cell editor for choice fields in a Grid. */
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorProps>({
     displayName: 'SelectEditor',
     className: 'xh-select-editor',

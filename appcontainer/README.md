@@ -1,5 +1,25 @@
 # AppContainer Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | App shell purpose and AppContainerModel coordination |
+| [Architecture](#architecture) | Directory structure and sub-model ownership |
+| [Messages](#messages) | Modal dialogs: alert, confirm, prompt, and message API |
+| [Toasts](#toasts) | Non-modal notifications with auto-dismiss and actions |
+| [Banners](#banners) | Persistent app-wide messages across the viewport |
+| [Exception Handling](#exception-handling) | Centralized error logging, reporting, and display |
+| [App Options Dialog](#app-options-dialog) | User-configurable preferences UI |
+| [Theme](#theme) | Light, dark, and system-matching theme management |
+| [Sizing Mode](#sizing-mode) | UI density control: compact, standard, large |
+| [Viewport & Device Detection](#viewport--device-detection) | Browser dimensions, orientation, and device classification |
+| [About Dialog & Changelog](#about-dialog--changelog) | App info display and release notes |
+| [Feedback Dialog](#feedback-dialog) | User feedback collection via TrackService |
+| [Impersonation](#impersonation) | Admin impersonation bar for debugging and support |
+| [Routing](#routing) | Client-side routing via Router5 with observable state |
+| [Login Panel](#login-panel) | Username/password authentication for non-SSO apps |
+| [Version Bar](#version-bar) | Desktop footer with app info and quick-access icons |
+| [Related Packages](#related-packages) | Links to related hoist-react packages and docs |
+
 ## Overview
 
 The `/appcontainer/` package is the framework's application shell — it orchestrates the app
@@ -425,7 +445,8 @@ XH.darkTheme;              // Observable boolean — true when dark theme is act
 
 `setTheme('system')` listens for OS preference changes and updates automatically.
 
-Theme is applied by adding `xh-dark` and `bp6-dark` CSS classes to the document body.
+Theme is applied by adding `xh-dark` and `bp6-dark` CSS classes to the document body. See
+[`/styles/`](../styles/README.md) for the full CSS custom property system that powers theming.
 
 ## Sizing Mode
 

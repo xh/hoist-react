@@ -48,7 +48,7 @@ export function tabContainerImpl({model, className, testId, ...props}: TabContai
             impl.setSwiper(ref);
             return tabs.map(tabModel => renderTabModel(tabModel, testId));
         },
-        onPreChange: e => model.activateTab(tabs[e.index].id),
+        onPreChange: e => model.setActiveTabId(tabs[e.index].id),
         hideTabs: !switcherProps,
         ...switcherProps
     });

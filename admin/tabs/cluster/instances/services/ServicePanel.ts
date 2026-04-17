@@ -9,8 +9,8 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {creates, hoistCmp, uses} from '@xh/hoist/core';
-import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import {exportButton} from '@xh/hoist/desktop/cmp/button';
+import {segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
@@ -52,15 +52,15 @@ const bbar = hoistCmp.factory({
             filler(),
             gridCountLabel({unit: 'service'}),
             '-',
-            buttonGroupInput({
+            segmentedControl({
                 bind: 'typeFilter',
-                outlined: true,
-                items: [
-                    button({value: 'all', text: 'All'}),
-                    button({value: 'app', text: 'App'}),
-                    button({value: 'hoist', text: 'Hoist'})
+                options: [
+                    {value: 'all', label: 'All'},
+                    {value: 'app', label: 'App'},
+                    {value: 'hoist', label: 'Hoist'}
                 ]
             }),
+            '-',
             storeFilterField({
                 matchMode: 'any',
                 autoApply: false,

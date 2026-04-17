@@ -32,6 +32,15 @@ import {
     compact
 } from 'lodash';
 
+/**
+ * Configuration for a {@link DashCanvasModel} - a grid-based dashboard layout with
+ * drag-and-drop positioning and resizing of views.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashCanvasModel
+ * @see DashCanvasViewSpec
+ */
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
     /**
      * Total number of columns (x coordinates for views correspond with column numbers).
@@ -46,7 +55,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     rowHeight?: number;
 
     /**
-     * Compaction strategy for condensing empty space. Use `'wrap'` with caution — it only
+     * Compaction strategy for condensing empty space. Use `'wrap'` with caution - it only
      * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
@@ -78,6 +87,15 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 
     /** Show an Add View button overlay when the canvas is empty. Default `true`. */
     showAddViewButtonWhenEmpty?: boolean;
+}
+
+export interface DashCanvasModelDefaults {
+    columns?: number;
+    containerPadding?: [number, number] | null;
+    margin?: [number, number];
+    maxRows?: number;
+    rowHeight?: number;
+    showGridBackground?: boolean;
 }
 
 /** Serializable state for a single widget on a DashCanvas, including its layout and view config. */
@@ -115,6 +133,16 @@ export class DashCanvasModel
     extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel>
     implements Persistable<{state: DashCanvasItemState[]}>
 {
+    /** App-level defaults for DashCanvasModel. Instance config takes precedence. */
+    static defaults: DashCanvasModelDefaults = {
+        columns: 12,
+        containerPadding: null,
+        margin: [10, 10],
+        maxRows: Infinity,
+        rowHeight: 50,
+        showGridBackground: false
+    };
+
     //-----------------------------
     // Settable State
     //------------------------------
@@ -189,14 +217,14 @@ export class DashCanvasModel
         persistWith = null,
         emptyText = 'No widgets have been added.',
         addViewButtonText = 'Add Widget',
-        columns = 12,
-        rowHeight = 50,
+        columns = DashCanvasModel.defaults.columns,
+        rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
-        margin = [10, 10],
-        maxRows = Infinity,
-        containerPadding = margin,
+        margin = DashCanvasModel.defaults.margin,
+        maxRows = DashCanvasModel.defaults.maxRows,
+        containerPadding = DashCanvasModel.defaults.containerPadding ?? margin,
         extraMenuItems,
-        showGridBackground = false,
+        showGridBackground = DashCanvasModel.defaults.showGridBackground,
         showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,
@@ -269,7 +297,8 @@ export class DashCanvasModel
 
         this.addReaction({
             track: () => this.viewState,
-            run: () => (this.state = this.buildState())
+            run: () => (this.state = this.buildState()),
+            fireImmediately: true
         });
 
         // Used to make the height of RGL available to the gridBackground component
@@ -316,7 +345,7 @@ export class DashCanvasModel
      * Add a view to the canvas.
      * @param specId - ID of the DashCanvasViewSpec to add.
      * @param opts - optional title, state, dimensions, and position. `position` accepts a view
-     *      ID in addition to the enumerated values — the new view will take that view's position.
+     *      ID in addition to the enumerated values - the new view will take that view's position.
      */
     @action
     addView(
@@ -391,7 +420,7 @@ export class DashCanvasModel
 
     /**
      * Handle a completed drop from react-grid-layout. Creates the new view from `draggedInView`
-     * and places it at the drop location. Called by the DashCanvas component — not typically
+     * and places it at the drop location. Called by the DashCanvas component - not typically
      * called directly by application code.
      */
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
@@ -453,6 +482,57 @@ export class DashCanvasModel
     /** Return all current view models matching the given view spec ID. */
     getViewsBySpecId(id: string): DashCanvasViewModel[] {
         return this.viewModels.filter(it => it.viewSpec.id === id);
+    }
+
+    /**
+     * Load the given state array into the canvas, replacing the current set of views and layout.
+     * Applications can call this directly when they already hold a `DashCanvasItemState[]` and
+     * want to avoid constructing a `PersistableState` wrapper.
+     */
+    @action
+    loadState(state: DashCanvasItemState[]) {
+        const ids = new Set<string>(),
+            stateWithIds = state.map(it => {
+                const id = this.genViewId(it.viewSpecId, ids);
+                ids.add(id);
+                return {id, ...it};
+            });
+        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
+            existingViewModelsById = keyBy(keep, 'id');
+
+        XH.safeDestroy(remove);
+
+        this.viewModels = compact(
+            stateWithIds.map(it => {
+                const existingViewModel = existingViewModelsById[it.id];
+                if (existingViewModel) {
+                    existingViewModel.setViewState(it.state);
+                    existingViewModel.title = it.title;
+                    return existingViewModel;
+                }
+
+                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
+                if (!this.hasSpec(it.viewSpecId)) {
+                    this.logWarn(
+                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
+                    );
+                    return null;
+                }
+
+                return new DashCanvasViewModel({
+                    id: it.id,
+                    viewSpec: this.getSpec(it.viewSpecId),
+                    title: it.title,
+                    viewState: it.state,
+                    containerModel: this
+                });
+            })
+        );
+
+        this.setLayout(
+            stateWithIds.map(it => ({i: it.id, ...it.layout})),
+            false
+        );
     }
 
     //------------------------
@@ -548,52 +628,6 @@ export class DashCanvasModel
 
         this.layout = layout;
         if (buildAndSetState) this.state = this.buildState();
-    }
-
-    @action
-    private loadState(state: DashCanvasItemState[]) {
-        const ids = new Set<string>(),
-            stateWithIds = state.map(it => {
-                const id = this.genViewId(it.viewSpecId, ids);
-                ids.add(id);
-                return {id, ...it};
-            });
-        const [keep, remove] = partition(this.viewModels, viewModel => ids.has(viewModel.id)),
-            existingViewModelsById = keyBy(keep, 'id');
-
-        XH.safeDestroy(remove);
-
-        this.viewModels = compact(
-            stateWithIds.map(it => {
-                const existingViewModel = existingViewModelsById[it.id];
-                if (existingViewModel) {
-                    existingViewModel.setViewState(it.state);
-                    existingViewModel.title = it.title;
-                    return existingViewModel;
-                }
-
-                // Fail gracefully on unknown viewSpecId - persisted state could ref. an obsolete widget.
-                if (!this.hasSpec(it.viewSpecId)) {
-                    this.logWarn(
-                        `Unknown viewSpecId [${it.viewSpecId}] found in state - skipping.`
-                    );
-                    return null;
-                }
-
-                return new DashCanvasViewModel({
-                    id: it.id,
-                    viewSpec: this.getSpec(it.viewSpecId),
-                    title: it.title,
-                    viewState: it.state,
-                    containerModel: this
-                });
-            })
-        );
-
-        this.setLayout(
-            stateWithIds.map(it => ({i: it.id, ...it.layout})),
-            false
-        );
     }
 
     private buildState(): DashCanvasItemState[] {

@@ -6,9 +6,9 @@
  */
 import type {Some} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {castArray, isString, isUndefined} from 'lodash';
+import {castArray, isUndefined} from 'lodash';
 import store from 'store2';
-import {intersperse} from './LangUtils';
+import {intersperse, type NameSource, parseNameSource} from './LangUtils';
 
 /**
  * Utility functions providing managed, structured logging to Hoist apps.
@@ -27,8 +27,8 @@ import {intersperse} from './LangUtils';
 /** Severity Level for log statement */
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
-/** Object identifying the source of log statement.  Typically, a javascript class */
-export type LogSource = string | {displayName: string} | {constructor: {name: string}};
+/** @deprecated Use {@link NameSource} from LangUtils. */
+export type LogSource = NameSource;
 
 export interface APIWarnOptions {
     /**
@@ -44,7 +44,7 @@ export interface APIWarnOptions {
     msg?: string;
 
     /** Source of message for labelling log message.  */
-    source?: LogSource;
+    source?: NameSource;
 }
 
 /**
@@ -100,7 +100,7 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
+export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: NameSource): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
@@ -108,7 +108,7 @@ export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource
  * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
+export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: NameSource): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
@@ -117,7 +117,7 @@ export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSourc
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: Some<unknown>, source?: LogSource) {
+export function logInfo(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'info');
 }
 
@@ -126,7 +126,7 @@ export function logInfo(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: Some<unknown>, source?: LogSource) {
+export function logDebug(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
@@ -135,7 +135,7 @@ export function logDebug(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logError(msgs: Some<unknown>, source?: LogSource) {
+export function logError(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'error');
 }
 
@@ -144,7 +144,7 @@ export function logError(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logWarn(msgs: Some<unknown>, source?: LogSource) {
+export function logWarn(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'warn');
 }
 
@@ -199,7 +199,7 @@ export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel): T {
+function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: NameSource, level: LogLevel): T {
     if (_severity[level] < _severity[_logLevel]) {
         return fn?.();
     }
@@ -266,13 +266,9 @@ function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     }
 }
 
-/** Parse a LogSource in to a canonical string label. */
-function parseSource(source: LogSource): string {
-    if (!source) return null;
-    if (isString(source)) return source;
-    if (source['displayName']) return source['displayName'];
-    if (source.constructor) return source.constructor.name;
-    return null;
+/** Parse a LogSource into a canonical string label. */
+function parseSource(source: NameSource): string {
+    return parseNameSource(source);
 }
 
 //----------------------------------------------------------------

@@ -12,7 +12,8 @@ import {
     DefaultHoistProps,
     elementFactory,
     ElementFactory,
-    TestSupportProps
+    TestSupportProps,
+    PlainObject
 } from './';
 import {
     useModelLinker,
@@ -67,7 +68,7 @@ export type RenderPropsOf<P extends HoistProps> = P & {
  * Configuration for creating a Component.  May be specified either as a render function,
  * or an object containing a render function and associated metadata.
  */
-export type ComponentConfig<P extends HoistProps> =
+export type ComponentConfig<P extends HoistProps, D extends PlainObject = never> =
     | ((props: RenderPropsOf<P>, ref?: ForwardedRef<any>) => ReactNode)
     | {
           /** Render function defining the component. */
@@ -103,43 +104,60 @@ export type ComponentConfig<P extends HoistProps> =
            *  state may set this to `false`, but this is not typically done by application code.
            */
           observer?: boolean;
+
+          /**
+           * Static, app-wide configuration for the component, attached to the returned component
+           * as a typed `defaults` object that applications can modify at bootstrap to customize
+           * behavior for all instances (e.g. `Button.defaults.minimal = false` in Bootstrap.ts).
+           *
+           * Most commonly used to supply default values for selected props. May also be used for
+           * other app-overridable settings that are not exposed as props.
+           */
+          defaults?: D;
       };
 
 let cmpIndex = 0; // index for anonymous component dispay names
 
 /**
- * Hoist utility for defining functional components. This is the primary method for creating
- * components for use in Hoist applications. Accepts either a render function (directly) or a
- * configuration object to specify that function and additional options, as described below.
+ * The primary entry point for defining Hoist components - functional React components enhanced
+ * with MobX reactivity and integrated model support.
  *
- * The primary additional config option is `model`. It specifies how a backing HoistModel will be
- * provided to / created by this component and if the component should publish its model to any
- * subcomponents via context.
+ * Accepts a configuration object (or a bare render function) and returns a React functional
+ * component. The `model` config is the key option: use {@link creates} to have the component
+ * create and own its backing model, {@link uses} to source a model from props or context, or
+ * `false` for simple components with no model. Defaults to `uses('*')` if not specified.
  *
- * By default, this utility wraps the returned component in the MobX 'observer' HOC, enabling
- * MobX-powered reactivity and auto-re-rendering of observable properties read from models and
- * any other sources of observable state.
+ * Components are wrapped in the MobX `observer` HOC by default, enabling automatic re-rendering
+ * when observable state read during render changes.
  *
- * Forward refs {@link https://reactjs.org/docs/forwarding-refs.html} are supported by specifying a
- * render function that accepts two arguments. In that case, the second arg will be considered a
- * ref, and this utility will apply `React.forwardRef` as required.
+ * Forward refs ({@link https://reactjs.org/docs/forwarding-refs.html}) are supported by
+ * specifying a render function with two arguments - the second is treated as a ref, and
+ * `React.forwardRef` is applied automatically.
+ *
+ * Most components should be defined via one of two convenience methods rather than calling
+ * this function directly:
+ * - `hoistCmp.factory()` - returns an element factory (the standard pattern for app components).
+ * - `hoistCmp.withFactory()` - returns a `[Component, factory]` pair (the standard pattern for
+ *    library components that need to export both).
+ *
+ * See the core package README (`core/README.md`) for full documentation on component
+ * configuration, model specs, and context lookup behavior.
+ *
+ * Components can also declare a typed `defaults` object in their config to expose static,
+ * app-wide configuration - most typically default values for selected props, but also other
+ * settings designed to be overridden by applications at bootstrap (e.g.
+ * `Button.defaults.minimal = false` in Bootstrap.ts). When specified, the returned component
+ * exposes a typed `defaults` property.
  *
  * @param config - specification object, or a render function defining the component.
  * @returns a functional React Component for use within Hoist apps.
- *
- * @see hoistCmp - a shorthand alias to this function.
- *
- * This function also has several related functions
- *
- *   - `hoistCmp.factory` - return an elementFactory for a newly defined Component.
- *           instead of the Component itself.
- *
- *   - `hoistCmp.withFactory` - return a 2-element list containing both the newly
- *          defined Component and an elementFactory for it.
  */
 export function hoistCmp<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): FC<DefaultHoistProps<M>>;
+export function hoistCmp<P extends HoistProps, D extends PlainObject>(
+    config: ComponentConfig<P, D>
+): FC<P> & {defaults: D};
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P>;
 export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P> {
     // 0) Pre-process/parse args.
@@ -159,7 +177,8 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
             isMemo: withDefault(config.memo, true),
             isObserver: withDefault(config.observer, true),
             isForwardRef: render.length === 2,
-            modelSpec: modelSpec ? modelSpec : null
+            modelSpec: modelSpec ? modelSpec : null,
+            defaults: config.defaults ?? null
         };
 
     warnIf(
@@ -178,16 +197,16 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
         render = wrapWithClonedProps(render);
     }
 
-    // 4) Wrap with standard react HOCs, mark, and return.
+    // 4) Wrap with standard react HOCs, mark, install defaults if specified, and return.
     let ret = render as any;
     ret.displayName = cfg.displayName;
     if (cfg.isForwardRef) ret = forwardRef(ret);
     if (cfg.isObserver) ret = observer(ret);
     if (cfg.isMemo && !cfg.isObserver) ret = memo(ret);
 
-    // 4) Mark and return.
     ret.displayName = cfg.displayName;
     ret.isHoistComponent = true;
+    if (cfg.defaults) ret.defaults = cfg.defaults;
 
     return ret;
 }
@@ -222,6 +241,9 @@ hoistCmp.factory = hoistCmpFactory;
 export function hoistCmpWithFactory<M extends HoistModel>(
     config: ComponentConfig<DefaultHoistProps<M>>
 ): [FC<DefaultHoistProps<M>>, ElementFactory<DefaultHoistProps<M>>];
+export function hoistCmpWithFactory<P extends HoistProps, D extends PlainObject>(
+    config: ComponentConfig<P, D>
+): [FC<P> & {defaults: D}, ElementFactory<P>];
 export function hoistCmpWithFactory<P extends HoistProps>(
     config: ComponentConfig<P>
 ): [FC<P>, ElementFactory<P>];
@@ -247,6 +269,7 @@ interface Config {
     isForwardRef: boolean;
     isMemo: boolean;
     modelSpec: ModelSpec;
+    defaults: PlainObject;
 }
 
 interface ResolvedModel {

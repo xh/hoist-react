@@ -189,7 +189,7 @@ export class InstancesTabModel extends HoistModel {
                 recordsRequired: 1
             },
             '-',
-            ...GridModel.defaultContextMenu
+            ...GridModel.defaults.contextMenu
         ];
     }
 

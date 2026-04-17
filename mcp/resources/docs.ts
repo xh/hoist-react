@@ -15,14 +15,14 @@ import {resolveRepoRoot} from '../util/paths.js';
  * Register all documentation resources on the given MCP server.
  *
  * - `doc-index` (static): The docs/README.md index -- start here.
- * - `conventions` (static): The AGENTS.md coding conventions.
+ * - `conventions` (static): The coding conventions doc.
  * - `hoist-doc` (template): Read any doc by ID via `hoist://docs/{+docId}`.
  */
 export function registerDocResources(server: McpServer): void {
-    const registry = buildRegistry(resolveRepoRoot());
+    const {entries: registry} = buildRegistry(resolveRepoRoot());
 
-    const indexEntry = registry.find(e => e.id === 'index');
-    const conventionsEntry = registry.find(e => e.id === 'conventions');
+    const indexEntry = registry.find(e => e.id === 'docs/README.md');
+    const conventionsEntry = registry.find(e => e.id === 'docs/coding-conventions.md');
 
     //------------------------------------------------------------------
     // Static resource: doc-index
@@ -30,7 +30,7 @@ export function registerDocResources(server: McpServer): void {
     if (indexEntry) {
         server.registerResource(
             'doc-index',
-            'hoist://docs/index',
+            `hoist://docs/${indexEntry.id}`,
             {
                 title: 'Hoist Documentation Index',
                 description:
@@ -44,7 +44,7 @@ export function registerDocResources(server: McpServer): void {
             })
         );
     } else {
-        log.warn('No "index" entry in registry -- skipping doc-index resource');
+        log.warn('No "docs/README.md" entry in registry -- skipping doc-index resource');
     }
 
     //------------------------------------------------------------------
@@ -53,9 +53,9 @@ export function registerDocResources(server: McpServer): void {
     if (conventionsEntry) {
         server.registerResource(
             'conventions',
-            'hoist://docs/conventions',
+            `hoist://docs/${conventionsEntry.id}`,
             {
-                title: 'Hoist Coding Conventions (AGENTS.md)',
+                title: 'Hoist Coding Conventions',
                 description:
                     'Architecture patterns, code style, key dependencies, and AI assistant guidance for hoist-react development.',
                 mimeType: 'text/markdown'
@@ -71,14 +71,16 @@ export function registerDocResources(server: McpServer): void {
             })
         );
     } else {
-        log.warn('No "conventions" entry in registry -- skipping conventions resource');
+        log.warn(
+            'No "docs/coding-conventions.md" entry in registry -- skipping conventions resource'
+        );
     }
 
     //------------------------------------------------------------------
     // Resource template: hoist-doc
     //------------------------------------------------------------------
     // Uses {+docId} (RFC 6570 reserved expansion) so slashes in doc IDs
-    // (e.g. "cmp/grid") are preserved rather than percent-encoded.
+    // (e.g. "cmp/grid/README.md") are preserved rather than percent-encoded.
     const template = new ResourceTemplate('hoist://docs/{+docId}', {
         list: async () => ({
             resources: registry.map(entry => ({

@@ -20,6 +20,13 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, flatten, isEmpty, isEqual, isFunction, isNil, isString} from 'lodash';
 import {FormModel} from '../FormModel';
 
+/**
+ * Configuration for a {@link BaseFieldModel} - defines a single field within a
+ * {@link FormModel} including its name, initial value, and validation rules.
+ *
+ * @see FieldModel
+ * @see FormConfig
+ */
 export interface BaseFieldConfig {
     /** Unique name for this field within its parent FormModel. */
     name: string;

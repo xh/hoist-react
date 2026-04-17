@@ -262,7 +262,7 @@ needs to verify behavior after a complex form is filled out can call `FormModel.
 bulk-load field values in a single step, then use interactive selectors only for the specific
 action it actually wants to test. Similarly, test code can call `GridModel.selectAsync()` to
 select a record, read `GridModel.selectedRecord` to assert on selection state, or use
-`TabContainerModel.activateTab()` to navigate — all without clicking through the UI.
+`TabContainerModel.setActiveTabId()` to navigate — all without clicking through the UI.
 
 This "model as test API" pattern lets tests skip expensive setup interactions and focus on the
 behavior under test, making test suites both faster to execute and easier to maintain.

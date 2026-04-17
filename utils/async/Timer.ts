@@ -172,6 +172,12 @@ export class Timer {
     }
 }
 
+/**
+ * Configuration for a {@link Timer} - a managed interval that runs a function repeatedly
+ * with configurable delay, timeout, and app-config-driven intervals.
+ *
+ * @see Timer
+ */
 export interface TimerSpec {
     /**
      * Function to run.

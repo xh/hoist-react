@@ -15,14 +15,14 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
     FilterBindTarget,
     FilterValueSource,
     isFilterValueSource,
-    parseFilter,
-    withFilterByTypes
+    parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -55,6 +55,12 @@ import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChoo
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
+/**
+ * Configuration for a {@link FilterChooserModel} - an interactive, tokenized filter builder
+ * that binds to a {@link Store} or Cube {@link View}.
+ *
+ * @see FilterChooserModel
+ */
 export interface FilterChooserConfig {
     /**
      * Specifies the fields this model supports for filtering and customizes how their available values
@@ -131,6 +137,24 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
+/**
+ * Model for a Select-based filter control that allows users to search for and compose filters
+ * across multiple data fields.
+ *
+ * Manages the current filter value, user-managed favorites, and available field specs. Supports
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
+ * are automatically applied to the target as they change, and external filter changes on the
+ * target are reflected back into this model.
+ *
+ * Field specs define which fields are available for filtering and how their values are parsed
+ * and displayed. If a `valueSource` is provided, field specs can be auto-populated from the
+ * source's fields.
+ *
+ * Supports persistence of both the current filter value and favorites via `persistWith`.
+ *
+ * @see FilterChooser
+ * @see FilterChooserFieldSpec
+ */
 export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
@@ -201,11 +225,13 @@ export class FilterChooserModel extends HoistModel {
         this.updateSelectValueAndBind();
 
         if (bind) {
+            // Inbound sync: when the bind target's filter changes externally (e.g. via
+            // Grid column filters on the same Store), update this model's value to match.
+            // FunctionFilters are stripped as they are unsupported by FilterChooser.
             this.addReaction({
                 track: () => bind.filter,
                 run: filter => {
-                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
-                    this.setValue(value);
+                    this.setValue(filter?.removeFunctionFilters());
                 }
             });
         }
@@ -604,12 +630,11 @@ export class FilterChooserModel extends HoistModel {
                     }
                 );
 
-                // Round-trip value to bound filter
+                // Outbound sync: replace the FieldFilter portion of the bind target's
+                // filter with this model's value, preserving any FunctionFilters
+                // installed by other components (e.g. StoreFilterField).
                 if (bind) {
-                    const filter = withFilterByTypes(bind.filter, value, [
-                        'FieldFilter',
-                        'CompoundFilter'
-                    ]);
+                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
                     bind.setFilter(filter);
                 }
             })

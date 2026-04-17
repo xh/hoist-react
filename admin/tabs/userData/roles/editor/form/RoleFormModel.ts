@@ -233,7 +233,7 @@ export class RoleFormModel extends HoistModel {
                     actions: [this.createRemoveAssignmentAction()]
                 }
             ],
-            contextMenu: [...this.ACTIONS, '-', ...GridModel.defaultContextMenu]
+            contextMenu: [...this.ACTIONS, '-', ...GridModel.defaults.contextMenu]
         });
     }
 

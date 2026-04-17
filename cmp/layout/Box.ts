@@ -9,17 +9,21 @@ import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {div} from './Tags';
 
+/**
+ * Props for {@link Box}, {@link VBox}, and {@link HBox} layout containers.
+ * Combines {@link HoistProps} with {@link BoxProps} (layout attributes resolved to CSS styles).
+ */
 export interface BoxComponentProps extends HoistProps, BoxProps {}
 
 /**
- * A Component that supports flexbox-based layout of its contents.
+ * Base flexbox container that merges all {@link LayoutProps} - margin, padding, dimensions,
+ * flex, alignment, and overflow - onto a rendered `div`. This is the terminal component where
+ * layout props are resolved to CSS; higher-level components pass layout props through to a
+ * Box (or {@link Frame}) at the bottom of their render tree.
  *
- * Box is the component that provides the core implementation of the LayoutSupport mixin.
- * It renders a div and merges all layout props to that div's `style` property.
- *
- * Access to the internal div is provided via a ref argument.
- *
- * VBox and HBox variants support internal vertical (column) and horizontal (row) flex layouts.
+ * **Application code should generally prefer {@link VBox} or {@link HBox}**, which make layout
+ * direction explicit. Bare `box()` applies `display: flex` with the CSS default direction (row)
+ * but does not communicate that intent clearly.
  */
 export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'Box',
@@ -48,6 +52,10 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
+/**
+ * A {@link Box} with vertical (column) flex layout. Does not stretch to fill its parent -
+ * use {@link VFrame} instead when the container should grow to consume available space.
+ */
 export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'VBox',
     model: false,
@@ -64,6 +72,10 @@ export const [VBox, vbox] = hoistCmp.withFactory<BoxComponentProps>({
     }
 });
 
+/**
+ * A {@link Box} with horizontal (row) flex layout. Does not stretch to fill its parent -
+ * use {@link HFrame} instead when the container should grow to consume available space.
+ */
 export const [HBox, hbox] = hoistCmp.withFactory<BoxComponentProps>({
     displayName: 'HBox',
     model: false,

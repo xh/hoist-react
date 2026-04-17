@@ -1,0 +1,172 @@
+# Unpublish Snapshots — Removes old SNAPSHOT pre-release versions from npm.
+#
+# Triggered manually via workflow_dispatch. Defaults to DRY RUN mode — select "execute"
+# to actually unpublish. Filters to SNAPSHOT versions at or below a configurable major version.
+
+name: Unpublish Snapshots
+
+on:
+    workflow_dispatch:
+        inputs:
+            mode:
+                description: 'Dry run previews what would be unpublished. Execute actually unpublishes.'
+                required: true
+                type: choice
+                options:
+                    - dry-run
+                    - execute
+                default: 'dry-run'
+            maxVersion:
+                description: 'Unpublish SNAPSHOTs with major version <= this value'
+                required: true
+                type: number
+            delay:
+                description: 'Seconds to wait between unpublish calls (rate limiting)'
+                required: false
+                type: number
+                default: 1
+            package:
+                description: 'Package name'
+                required: true
+                type: string
+                default: '@xh/hoist'
+
+jobs:
+    unpublish:
+
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+        - uses: actions/checkout@v6
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v6
+          with:
+              node-version-file: '.nvmrc'
+              registry-url: 'https://registry.npmjs.org'
+
+        - name: Unpublish SNAPSHOT versions
+          env:
+              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              PACKAGE: ${{ inputs.package }}
+              MAX_MAJOR_VERSION: ${{ inputs.maxVersion }}
+              DELAY_SECONDS: ${{ inputs.delay }}
+              DRY_RUN: ${{ inputs.mode == 'dry-run' && 'true' || 'false' }}
+          run: |
+              set -euo pipefail
+
+              echo "============================================="
+              echo " npm SNAPSHOT Unpublisher"
+              echo "============================================="
+              echo ""
+              echo "Package:           $PACKAGE"
+              echo "Max major version: $MAX_MAJOR_VERSION"
+              echo "Delay:             ${DELAY_SECONDS}s"
+              if [[ "$DRY_RUN" == "true" ]]; then
+                echo "Mode:              DRY RUN"
+              else
+                echo "Mode:              *** LIVE — WILL UNPUBLISH ***"
+              fi
+              echo ""
+
+              # Verify npm auth
+              if ! npm whoami 2>/dev/null; then
+                  echo "ERROR: Not authenticated to npm. Check that NPM_TOKEN secret is configured."
+                  exit 1
+              fi
+              echo "Authenticated as: $(npm whoami)"
+              echo ""
+
+              # Fetch all versions and filter to matching SNAPSHOTs
+              echo "Fetching all versions of $PACKAGE..."
+              ALL_VERSIONS_JSON=$(npm view "$PACKAGE" versions --json 2>/dev/null)
+
+              TARGETS=$(echo "$ALL_VERSIONS_JSON" | python3 -c "
+              import json, sys, os
+              max_ver = int(os.environ['MAX_MAJOR_VERSION'])
+              versions = json.load(sys.stdin)
+              for v in versions:
+                  if 'SNAPSHOT' not in v.upper():
+                      continue
+                  try:
+                      major = int(v.split('.')[0])
+                  except ValueError:
+                      continue
+                  if major <= max_ver:
+                      print(v)
+              ")
+
+              TOTAL=$(echo "$TARGETS" | grep -c . || true)
+
+              if [[ "$TOTAL" -eq 0 ]]; then
+                  echo "No SNAPSHOT versions found matching criteria. Nothing to do."
+                  exit 0
+              fi
+
+              echo "Found $TOTAL SNAPSHOT versions to unpublish."
+              echo ""
+
+              # Summary by major version
+              echo "$TARGETS" | python3 -c "
+              import sys
+              from collections import Counter
+              lines = [l.strip() for l in sys.stdin if l.strip()]
+              counts = Counter(int(v.split('.')[0]) for v in lines)
+              for k in sorted(counts):
+                  print(f'  v{k}: {counts[k]} versions')
+              "
+              echo ""
+
+              # Unpublish loop
+              SUCCESS=0
+              FAILED=0
+              SKIPPED=0
+              COUNT=0
+
+              while IFS= read -r VERSION; do
+                  [[ -z "$VERSION" ]] && continue
+                  COUNT=$((COUNT + 1))
+                  FULL="${PACKAGE}@${VERSION}"
+
+                  if [[ "$DRY_RUN" == "true" ]]; then
+                      echo "[$COUNT/$TOTAL] DRY RUN: would unpublish $FULL"
+                      SUCCESS=$((SUCCESS + 1))
+                  else
+                      printf "[%d/%d] Unpublishing %s ... " "$COUNT" "$TOTAL" "$FULL"
+
+                      if OUTPUT=$(npm unpublish "$FULL" --force 2>&1); then
+                          echo "OK"
+                          SUCCESS=$((SUCCESS + 1))
+                      else
+                          if echo "$OUTPUT" | grep -qi "404\|not found\|not in.* registry"; then
+                              echo "SKIP (already gone)"
+                              SKIPPED=$((SKIPPED + 1))
+                          else
+                              echo "FAILED — $OUTPUT"
+                              FAILED=$((FAILED + 1))
+                          fi
+                      fi
+
+                      # Rate limiting
+                      if [[ $COUNT -lt $TOTAL ]]; then
+                          sleep "$DELAY_SECONDS"
+                      fi
+                  fi
+              done <<< "$TARGETS"
+
+              # Summary
+              echo ""
+              echo "============================================="
+              echo " Complete"
+              echo "============================================="
+              echo "  Total:   $TOTAL"
+              echo "  Success: $SUCCESS"
+              echo "  Skipped: $SKIPPED"
+              echo "  Failed:  $FAILED"
+              echo "============================================="
+
+              if [[ $FAILED -gt 0 ]]; then
+                  exit 1
+              fi

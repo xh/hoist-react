@@ -278,6 +278,9 @@ export const Icon = {
     circle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'circle'});
     },
+    circleNotch(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'circle-notch'});
+    },
     clipboard(p?: IconProps) {
         return Icon.icon({...p, iconName: 'clipboard'});
     },
@@ -657,8 +660,17 @@ export const Icon = {
     slashedCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'ban'});
     },
+    sparkles(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sparkles'});
+    },
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
+    },
+    spinnerScale(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-scale'});
+    },
+    spinnerThird(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-third'});
     },
     square(p?: IconProps) {
         return Icon.icon({...p, iconName: 'square'});
@@ -783,6 +795,9 @@ export const Icon = {
     },
     add(p?: IconProps) {
         return Icon.plus(p);
+    },
+    ai(p?: IconProps) {
+        return Icon.sparkles(p);
     },
     analytics(p?: IconProps) {
         return Icon.mixedChart(p);

@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Returns the maximum value across rows, skipping nulls. */
 export class MaxAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         return rows.reduce((ret, it) => {

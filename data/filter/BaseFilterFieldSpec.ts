@@ -9,6 +9,15 @@ import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '
 import {compact, isArray, isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
+/**
+ * Base configuration for field-level filtering options - defines available operators, value
+ * enumeration, and display metadata. Not used directly by applications; extended by
+ * {@link GridFilterFieldSpecConfig} (for column-header filters via {@link GridFilterModelConfig})
+ * and {@link FilterChooserFieldSpecConfig} (for {@link FilterChooserModel}).
+ *
+ * @see GridFilterFieldSpec
+ * @see FilterChooserFieldSpec
+ */
 export interface BaseFilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;

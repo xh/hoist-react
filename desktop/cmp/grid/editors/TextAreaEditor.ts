@@ -13,6 +13,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type TextAreaEditorProps = EditorProps<TextAreaProps>;
 
+/** Multi-line text input inline cell editor for long-form string values in a Grid. */
 export const [TextAreaEditor, textAreaEditor] = hoistCmp.withFactory<TextAreaEditorProps>({
     displayName: 'TextAreaEditor',
     className: 'xh-textarea-editor',

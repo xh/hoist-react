@@ -14,6 +14,11 @@ import {times} from 'lodash';
 // safe to use with the desktop kit.
 import FastClick from '@onsenui/fastclick';
 
+/**
+ * Configuration for a {@link PinPadModel} - a numeric keypad for collecting a PIN.
+ *
+ * @see PinPadModel
+ */
 export interface PinPadConfig {
     /** The length of the PIN to get from the user, default 4. */
     pinLength?: number;
@@ -21,6 +26,14 @@ export interface PinPadConfig {
     subHeaderText?: string;
 }
 
+/**
+ * Model for a PinPad - a numeric keypad prompt for collecting a PIN from the user.
+ *
+ * Tracks entered digits, validates PIN completion, and provides observable `value` and
+ * `isComplete` getters. Supports configurable PIN length and custom header/subheader text.
+ *
+ * @see PinPad
+ */
 export class PinPadModel extends HoistModel {
     @bindable disabled: boolean;
     @bindable headerText: string;

@@ -37,12 +37,14 @@ export const feedbackDialog = hoistCmp.factory({
                     height: 250,
                     style: {marginBottom: 2},
                     commitOnChange: true,
-                    bind: 'message'
+                    bind: 'message',
+                    testId: 'xh-feedback-message'
                 }),
                 toolbar(
                     filler(),
                     button({
                         text: 'Cancel',
+                        testId: 'xh-feedback-cancel-btn',
                         onClick: () => model.hide()
                     }),
                     button({
@@ -50,6 +52,7 @@ export const feedbackDialog = hoistCmp.factory({
                         intent: 'success',
                         minimal: false,
                         disabled: !model.message,
+                        testId: 'xh-feedback-send-btn',
                         onClick: () => model.submitAsync()
                     })
                 )

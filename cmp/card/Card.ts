@@ -40,10 +40,15 @@ export interface CardProps<M extends CardModel = CardModel>
 }
 
 /**
- * A bordered container for grouping related content with optional inline header and collapsibility.
- * Children are arranged vertically in a flexbox container by default. innerBoxProps can be
- * passed to control the flex direction and other layout aspects of the inner container.
- * This component leverages an HTML fieldset and legend to provide base styling.
+ * A bordered container for grouping related content, rendered as an HTML fieldset/legend.
+ * Supports an optional inline header (`title`, `icon`, `intent`) and user-driven
+ * collapse/expand via its backing {@link CardModel}.
+ *
+ * Children are arranged vertically in a flexbox container by default - pass
+ * `contentBoxProps` to customize the content layout.
+ *
+ * @see CardModel
+ * @see FormFieldSet
  */
 export const [Card, card] = hoistCmp.withFactory<CardProps>({
     displayName: 'Card',

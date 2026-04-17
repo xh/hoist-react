@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
-import {CompoundFilter, FilterLike, Store, withFilterByKey} from '@xh/hoist/data';
+import {appendFilter, Store} from '@xh/hoist/data';
 import {action, comparer, makeObservable} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
@@ -107,14 +107,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
             testFn = this.filter,
             filter = testFn ? {key, testFn} : null;
 
-        // If current Store filter is an 'OR' CompoundFilter, wrap it in an 'AND'
-        // CompoundFilter so this FunctionFilter gets 'ANDed' alongside it.
-        let currFilter = store.filter as FilterLike;
-        if (currFilter instanceof CompoundFilter && currFilter.op === 'OR') {
-            currFilter = {filters: [currFilter], op: 'AND'};
-        }
-
-        const ret = withFilterByKey(currFilter, filter, key);
+        const ret = appendFilter(store.filter?.removeFunctionFilters(key), filter);
         store.setFilter(ret);
     }
 

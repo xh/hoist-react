@@ -156,7 +156,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId as string)
+                        onChange: tabId => model.setActiveTabId(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
@@ -182,7 +182,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 icon,
                 text,
                 disabled,
-                onClick: () => model.activateTab(id),
+                onClick: () => model.setActiveTabId(id),
                 labelElement: button({
                     omit: !showRemoveAction,
                     icon: Icon.x(),

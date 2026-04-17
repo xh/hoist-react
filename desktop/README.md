@@ -1,5 +1,17 @@
 # Desktop Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Desktop platform, Blueprint foundation |
+| [Architecture](#architecture) | Directory structure and key sub-packages |
+| [Relationship to /cmp/](#relationship-to-cmp) | Platform-specific vs. cross-platform components |
+| [AppContainer](#appcontainer) | Desktop app shell and lifecycle |
+| [Component Sub-Packages](#component-sub-packages) | Panel, Toolbar, Button, Grid, Dashboard, Tabs, Inputs, and more |
+| [Dialogs](#dialogs) | Custom modal dialogs via Blueprint Kit export |
+| [Desktop Hooks](#desktop-hooks) | useContextMenu |
+| [Common Patterns](#common-patterns) | Blueprint wrappers, Popover, ContextMenu |
+| [Related Packages](#related-packages) | Links to cross-platform and utility packages |
+
 ## Overview
 
 The `/desktop/` package provides Hoist's desktop-specific UI components, incorporating the
@@ -100,6 +112,7 @@ Desktop form inputs with Blueprint styling:
 | `RadioInput` | Radio button group |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
+| `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
 | `CodeInput` | Code editor with syntax highlighting |
 | `JsonInput` | JSON editor with validation |
 
@@ -168,19 +181,33 @@ covering toolbars, masks, collapse/resize, persistence, and modal support.
 
 ### Toolbar (`/cmp/toolbar/`)
 
-Container for action buttons and controls:
+Horizontal (or vertical) container for action buttons and controls. Toolbars are typically
+placed in a Panel's `tbar` (top) or `bbar` (bottom) slots. Use `filler()` to push items to
+the right side, and `'-'` (shortcut for `toolbarSep()`) for visual dividers.
 
 ```typescript
-import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {filler} from '@xh/hoist/cmp/layout';
 
-toolbar(
-    button({text: 'Add', icon: Icon.add()}),
-    button({text: 'Edit', icon: Icon.edit()}),
-    toolbarSep(),
-    filler(),
-    searchField()
-)
+toolbar({
+    items: [
+        button({text: 'Add', icon: Icon.add()}),
+        button({text: 'Edit', icon: Icon.edit()}),
+        '-',        // separator token — shorthand for toolbarSep()
+        filler(),
+        searchField()
+    ]
+})
 ```
+
+Key props:
+- `compact` - reduced height and font size (useful in dense UIs)
+- `vertical` - stack items vertically instead of horizontally
+- `enableOverflowMenu` - collapse items that don't fit into a dropdown menu
+- `collapseFrom` - `'start'` or `'end'` (default) for overflow direction
+- `minVisibleItems` - minimum items to keep visible before overflowing
+
+`Toolbar.defaults.compact` can be set at bootstrap for app-wide compact toolbars.
 
 ### Button (`/cmp/button/`)
 
@@ -238,7 +265,7 @@ const gridModel = new GridModel({
             actionFn: ({selectedRecords}) => createInvoice(selectedRecords)
         },
         '-',
-        ...GridModel.defaultContextMenu
+        ...GridModel.defaults.contextMenu
     ],
     columns: [...]
 });
@@ -338,6 +365,102 @@ leftRightChooser({model})
 | `/store/` | Store filter field component |
 | `/viewmanager/` | View save/load UI |
 | `/zoneGrid/` | Zone mapper for ZoneGrid columns |
+
+## Dialogs
+
+For simple alerts and confirmations, use the built-in `XH.message()` and `XH.confirm()` methods
+(see the [appcontainer README](../appcontainer/README.md#messages)).
+
+For custom dialogs with rich content (forms, grids, etc.), use the Blueprint `dialog` element
+factory from `@xh/hoist/kit/blueprint`. This is the standard Hoist pattern for modal dialogs -
+Blueprint's Dialog is re-exported through Kit with transitions disabled for snappy rendering.
+
+The typical pattern uses a dedicated model to manage the dialog's open/closed state and content,
+with the parent component always rendering the dialog component alongside its other children.
+The dialog renders as a Blueprint portal overlay when open and returns null when closed, so it
+can be included unconditionally in the parent's item list.
+
+```typescript
+// TaskDialogModel.ts - manages dialog open/closed state and form data
+export class TaskDialogModel extends HoistModel {
+    @observable isOpen = false;
+
+    @managed formModel = new FormModel({
+        fields: [{name: 'description', rules: [required]}]
+    });
+
+    @action
+    open(initialValues?) {
+        this.isOpen = true;
+        this.formModel.init(initialValues);
+    }
+
+    @action
+    close() { this.isOpen = false; }
+}
+
+// TaskDialog.ts - the dialog component, rendered by the parent
+export const taskDialog = hoistCmp.factory({
+    model: uses(TaskDialogModel),
+    render({model}) {
+        if (!model.isOpen) return null;
+        return dialog({
+            title: 'Edit Task',
+            style: {width: 500},
+            isOpen: true,
+            onClose: () => model.close(),
+            item: panel({
+                item: form(
+                    formField({field: 'description', item: textInput()})
+                ),
+                bbar: toolbar({
+                    items: [filler(), button({text: 'Save', intent: 'primary'})]
+                })
+            })
+        });
+    }
+});
+
+// TodoPanel.ts - the parent component that owns and renders the dialog
+export class TodoPanelModel extends HoistModel {
+    @managed taskDialogModel = new TaskDialogModel();
+    @managed gridModel = new GridModel({...});
+}
+
+export const todoPanel = hoistCmp.factory({
+    model: creates(TodoPanelModel),
+    render({model}) {
+        return panel({
+            tbar: toolbar({
+                items: [
+                    button({
+                        text: 'New Task',
+                        icon: Icon.add(),
+                        onClick: () => model.taskDialogModel.open()
+                    })
+                ]
+            }),
+            items: [
+                grid(),
+                taskDialog()   // Always rendered - shows/hides based on isOpen
+            ]
+        });
+    }
+});
+```
+
+Key points:
+- Import `dialog` from `@xh/hoist/kit/blueprint` (not from Blueprint directly) to get
+  Hoist's transition-disabled wrapper.
+- The parent model owns the dialog model as a `@managed` property and calls `open()`/`close()`.
+- The parent component renders the dialog factory in its `items` alongside other children -
+  the dialog shows/hides itself based on its model's `isOpen` state.
+- Use `onClose` to handle the dialog's close button and outside-click-to-close.
+- Wrap dialog content in a `panel()` when you need toolbars, masks, or standard layout.
+
+Note: Hoist does not yet provide its own first-class Dialog component wrapper
+([#861](https://github.com/xh/hoist-react/issues/861)) - the Blueprint Kit re-export is the
+established pattern used throughout the framework and applications.
 
 ## Desktop Hooks
 

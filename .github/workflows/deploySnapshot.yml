@@ -1,0 +1,68 @@
+# Deploy Snapshot — Publishes a SNAPSHOT build to npm on every push to develop.
+#
+# Snapshots are mutable development builds (version from package.json, e.g. 82.0.0-SNAPSHOT).
+# They are published with the `next` dist-tag so they don't affect `latest`. For numbered
+# releases, see Deploy Release.
+
+name: Deploy Snapshot
+
+on:
+    push:
+        branches: [ "develop" ]
+    workflow_dispatch:
+        inputs:
+            version:
+                description: '(Optional) Snapshot version to override default in package.json. Note that the suffix "-SNAPSHOT" will be automatically appended if not present.'
+                required: false
+                default: ''
+                type: string
+
+# Debounce builds by branch. Newer runs from a branch will cancel the current run and start over.
+concurrency:
+    group: deploy-snapshot-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+        - uses: actions/checkout@v6
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v6
+          with:
+              node-version-file: '.nvmrc'
+              registry-url: 'https://registry.npmjs.org'
+              cache: 'yarn'
+
+        - name: Configure Font Awesome registry auth
+          env:
+              FONTAWESOME_PACKAGE_TOKEN: ${{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+          run: echo "//npm.fontawesome.com/:_authToken=$FONTAWESOME_PACKAGE_TOKEN" >> .npmrc
+
+        - name: Install dependencies
+          run: yarn install --frozen-lockfile
+
+        - name: Yarn lint
+          run: yarn lint:all
+
+        - name: Prepare snapshot version
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@master
+          with:
+              version: ${{ inputs.version }}
+
+        - name: Publish snapshot to npm
+          env:
+              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          run: npm publish --tag next
+
+        - name: Trigger Toolbox snapshot build
+          env:
+              GH_TOKEN: ${{ secrets.TOOLBOX_DISPATCH_TOKEN }}
+          run: |
+              gh api repos/xh/toolbox/dispatches \
+                  -f event_type=hoist-react-snapshot

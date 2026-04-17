@@ -1,6 +1,6 @@
 # Hoist React v78 Upgrade Notes
 
-> **From:** v77.x → v78.0.0 | **Released:** 2025-11-21 | **Difficulty:** 🎉 TRIVIAL
+> **From:** v77.x → v78.1.4 | **Released:** 2025-11-21 | **Difficulty:** 🎉 TRIVIAL
 
 ## Overview
 
@@ -67,7 +67,7 @@ Note: `GridModel.cleanColumnState` is now private. This is not expected to impac
 
 After completing all steps:
 
-- [ ] `yarn install` completes without errors
+- [ ] `yarn install` / `npm install` completes without errors
 - [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
 - [ ] Grids with persisted or programmatically managed column state function correctly

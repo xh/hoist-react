@@ -1,5 +1,17 @@
 # Grid Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Introduction to Hoist's tabular and hierarchical data grid |
+| [Architecture](#architecture) | Class hierarchy and key classes |
+| [Configuration Pattern](#configuration-pattern) | Spec-to-object transformation for declarative config |
+| [Common Usage Patterns](#common-usage-patterns) | Sorting, grouping, tree mode, selection, filtering, and more |
+| [Column Properties Reference](#column-properties-reference) | Key categories of ColumnSpec properties |
+| [Extension Points](#extension-points) | ag-Grid passthrough, custom comparators, and appData |
+| [App-Level Defaults](#app-level-defaults) | Static defaults for GridModel and GridFilterModel |
+| [Pitfalls](#pitfalls) | Duplicate column IDs and other common issues |
+| [Related Packages](#related-packages) | Links to data, ag-grid, desktop/mobile grid, and svc |
+
 ## Overview
 
 Grid is Hoist React's primary component for displaying tabular and hierarchical data. Built on
@@ -319,6 +331,41 @@ new GridModel({
     appData: {source: 'user-list'},
     columns: [{field: 'name', appData: {searchable: true}}]
 });
+```
+
+## App-Level Defaults
+
+GridModel and GridFilterModel expose a `static defaults` object for app-wide configuration
+overrides. Set these at app startup (e.g. in your `AppModel` constructor) to change framework
+defaults for all grids. Instance-level config always takes precedence.
+
+`GridModel.defaults` covers a wide range of visual, behavioral, and structural properties —
+including `enableExport`, `showHover`, `rowBorders`, `stripeRows`, `cellBorders`,
+`headerMenuDisplay`, `colDefaults`, `exportOptions`, and more. See the `GridModelDefaults`
+interface for the full typed list with all available properties.
+
+`GridFilterModel.defaults` provides `activeFilterIcon` to customize the icon displayed in
+column headers when a filter is active.
+
+### Example
+
+```typescript
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {GridFilterModel} from '@xh/hoist/cmp/grid';
+import {Icon} from '@xh/hoist/icon';
+
+// In AppModel constructor — set app-wide grid preferences
+GridModel.defaults.enableExport = true;
+GridModel.defaults.showHover = true;
+GridModel.defaults.rowBorders = true;
+GridModel.defaults.headerMenuDisplay = 'hover';
+GridModel.defaults.colDefaults = {sortable: false};
+GridModel.defaults.contextMenu = [
+    ...GridModel.defaults.contextMenu,
+    '-',
+    'myCustomAction'
+];
+GridFilterModel.defaults.activeFilterIcon = Icon.filter({prefix: 'fas', intent: 'warning'});
 ```
 
 ## Pitfalls

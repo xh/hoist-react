@@ -360,7 +360,7 @@ export class RoleModel extends HoistModel {
 
     private getContextMenuItems() {
         return this.readonly
-            ? [this.groupByAction(), '-', ...GridModel.defaultContextMenu]
+            ? [this.groupByAction(), '-', ...GridModel.defaults.contextMenu]
             : [
                   this.addAction(),
                   this.editAction(),
@@ -371,7 +371,7 @@ export class RoleModel extends HoistModel {
                   '-',
                   this.groupByAction(),
                   '-',
-                  ...GridModel.defaultContextMenu
+                  ...GridModel.defaults.contextMenu
               ];
     }
 

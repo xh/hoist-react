@@ -28,6 +28,14 @@ import {difference, find, findLast, isObject, isString, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
 
+/**
+ * Configuration for a {@link TabContainerModel} - the primary tabbed navigation container
+ * in Hoist. Supports routing, lazy rendering/refresh strategies, and optional persistence
+ * of the active tab.
+ *
+ * @see TabContainerModel
+ * @see TabConfig
+ */
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
     tabs: TabConfig[];
@@ -93,6 +101,9 @@ export interface TabContainerConfig {
  * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContextModel.
  *
  * Note: Routing is currently enabled for desktop applications only.
+ *
+ * See the tab package README (`cmp/tab/README.md`) for render/refresh mode options, routing
+ * configuration, and usage patterns.
  */
 export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;
@@ -225,7 +236,7 @@ export class TabContainerModel extends HoistModel {
             {index = tabs.length, activateImmediately = false} = opts ?? {};
         this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
         if (activateImmediately) {
-            this.activateTab(tab.id);
+            this.setActiveTabId(tab.id);
         }
         return this.findTab(tab.id);
     }
@@ -248,7 +259,7 @@ export class TabContainerModel extends HoistModel {
                 toActivate = this.nextTab ?? this.prevTab;
             }
             if (toActivate) {
-                this.activateTab(toActivate);
+                this.setActiveTabId(toActivate.id);
             }
         }
 
@@ -291,19 +302,16 @@ export class TabContainerModel extends HoistModel {
     }
 
     /**
-     * Set the currently active Tab.
+     * Set the currently active Tab by ID.
      *
-     * If using routing, this method will navigate to the new tab via the router and the active Tab
-     * will only be updated once the router state changes. Otherwise, the active Tab will be updated
-     * immediately.
+     * This method may be bound directly to a UI control (e.g., a SegmentedControl). It handles
+     * routing-aware navigation: if this container is route-enabled, the tab will only be updated
+     * once the router state changes. Otherwise, the active Tab will be updated immediately.
      *
-     * Supported for tabs that are immediate children of this container.
-     *
-     * @param tab - TabModel or id of TabModel to be activated.
+     * @param id - ID of TabModel to be activated.
      */
-    activateTab(tab: TabModel | string) {
-        tab = this.findTab(tab instanceof TabModel ? tab.id : tab);
-
+    setActiveTabId(id: string) {
+        const tab = this.findTab(id);
         if (!tab || tab.disabled || tab.isActive) return;
 
         const {route} = this;
@@ -316,6 +324,16 @@ export class TabContainerModel extends HoistModel {
     }
 
     /**
+     * Set the currently active Tab. Convenience for {@link setActiveTabId} that also accepts a
+     * TabModel instance directly.
+     *
+     * @param tab - TabModel or id of TabModel to be activated.
+     */
+    activateTab(tab: TabModel | string) {
+        this.setActiveTabId(tab instanceof TabModel ? tab.id : tab);
+    }
+
+    /**
      * Navigate to the first enabled tab before the currently active tab, if any.
      * @param cycle - true to loop back to last tab if necessary.
      */
@@ -324,7 +342,7 @@ export class TabContainerModel extends HoistModel {
             idx = tabs.indexOf(this.activeTab);
         let target = findLast(tabs, f => !f.disabled, idx - 1);
         if (cycle && !target) target = findLast(tabs, f => !f.disabled);
-        if (target) this.activateTab(target);
+        if (target) this.setActiveTabId(target.id);
     }
 
     /**
@@ -336,7 +354,7 @@ export class TabContainerModel extends HoistModel {
             idx = tabs.indexOf(this.activeTab);
         let target = find(tabs, f => !f.disabled, idx + 1);
         if (cycle && !target) target = find(tabs, f => !f.disabled);
-        if (target) this.activateTab(target);
+        if (target) this.setActiveTabId(target.id);
     }
 
     //-------------------------
@@ -421,7 +439,7 @@ export class TabContainerModel extends HoistModel {
                     },
                     target: {
                         getPersistableState: () => new PersistableState(this.activeTabId),
-                        setPersistableState: ({value}) => this.activateTab(value)
+                        setPersistableState: ({value}) => this.setActiveTabId(value)
                     },
                     owner: this
                 });
