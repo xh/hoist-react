@@ -306,15 +306,17 @@ Verify the MCP server is running and responsive. Takes no parameters.
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name and JSDoc content.
-Multi-word queries split into tokens matched with AND logic against the combined symbol name +
-JSDoc text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel in
-its JSDoc). Results are ranked with name matches above JSDoc-only matches. Also searches public
-members (properties, methods, accessors) of key framework classes.
+Search for TypeScript classes, interfaces, types, and functions by name, JSDoc content, and own
+member names. Multi-word queries split into tokens matched with AND logic against the combined
+searchable text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel
+in its JSDoc) and `"StoreRecord raw"` finds the `StoreRecord` class (which has a `raw` property).
+Results are ranked with name matches above JSDoc/member-only matches. Also searches public members
+(properties, methods, accessors) of key framework classes, matching against the combined owner
+class name, member name, and member JSDoc.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
+| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), a class + member name (e.g. `"StoreRecord raw"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
 | `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
 | `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |

@@ -14,6 +14,12 @@
 * `HoistBase.withSpan`/`withSpanAsync` now auto-populate `caller` with `this`, so emitted spans
   correctly stamp `code.namespace`.
 
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
+  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
+  Previously these queries returned no results.
+
 ## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)

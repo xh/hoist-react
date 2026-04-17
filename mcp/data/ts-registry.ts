@@ -37,6 +37,14 @@ export interface SymbolEntry {
     sourcePackage: string;
     /** JSDoc, if available. Populated at index time; displayed in search results. */
     jsDoc: string;
+    /**
+     * Space-separated own member names for member-indexed classes, used to expand
+     * the searchable text in symbol search. Only includes members directly declared
+     * on the class - inherited HoistBase/HoistModel members are excluded to avoid
+     * noise from ubiquitous framework plumbing (destroy, addReaction, etc.).
+     * Populated at index time for classes in MEMBER_INDEXED_CLASSES; empty for others.
+     */
+    memberNames?: string;
 }
 
 /** Detailed symbol information extracted on-demand. */
@@ -258,6 +266,12 @@ function buildSymbolIndex(proj: Project): {
     const counts = {total: 0, exported: 0, byKind: {} as Record<string, number>};
     let memberCount = 0;
 
+    // Collect member names per member-indexed class during indexing. After all
+    // files are processed, these are used to populate `memberNames` on the
+    // corresponding symbol entries (excluding inherited HoistBase/HoistModel
+    // members to avoid noise from ubiquitous framework plumbing).
+    const memberNamesByClass = new Map<string, string[]>();
+
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
 
@@ -300,8 +314,10 @@ function buildSymbolIndex(proj: Project): {
             if (ownerDescription) {
                 try {
                     const members = extractClassMembers(sourceFile, name);
+                    const classPublicNames: string[] = [];
                     for (const m of members) {
                         if (isPrivateMember(m, cls)) continue;
+                        classPublicNames.push(m.name);
                         const mEntry: MemberIndexEntry = {
                             name: m.name,
                             memberKind: m.kind,
@@ -317,6 +333,7 @@ function buildSymbolIndex(proj: Project): {
                         addToMemberIndex(mIndex, mEntry);
                         memberCount++;
                     }
+                    memberNamesByClass.set(name, classPublicNames);
                 } catch (e) {
                     log.warn(`Failed to index members for ${name}: ${e}`);
                 }
@@ -446,6 +463,30 @@ function buildSymbolIndex(proj: Project): {
     const promiseFile = proj.getSourceFile(sf => sf.getFilePath().endsWith('/promise/Promise.ts'));
     if (promiseFile) {
         indexPromiseExtensions(promiseFile, index, mIndex, resolveRepoRoot());
+    }
+
+    // Populate `memberNames` on symbol entries for member-indexed classes.
+    // Excludes inherited HoistBase/HoistModel members so that queries like
+    // "StoreRecord raw" surface StoreRecord, but generic terms like "destroy"
+    // or "addReaction" don't match every class in the index.
+    const baseMemberNames = new Set(
+        [
+            ...(memberNamesByClass.get('HoistBase') ?? []),
+            ...(memberNamesByClass.get('HoistModel') ?? [])
+        ].map(n => n.toLowerCase())
+    );
+
+    for (const [className, allNames] of memberNamesByClass) {
+        if (className === 'HoistBase' || className === 'HoistModel') continue;
+        const ownNames = allNames.filter(n => !baseMemberNames.has(n.toLowerCase()));
+        if (ownNames.length === 0) continue;
+        const key = className.toLowerCase();
+        const entries = index.get(key);
+        if (entries) {
+            for (const entry of entries) {
+                if (entry.name === className) entry.memberNames = ownNames.join(' ');
+            }
+        }
     }
 
     const kindSummary = Object.entries(counts.byKind)
@@ -612,9 +653,10 @@ export async function ensureInitialized(): Promise<void> {
 /**
  * Search the symbol index by query string.
  *
- * Supports case-insensitive matching against symbol names and JSDoc. Multi-word queries
- * are split into tokens — all tokens must match (AND logic) against the combined name +
- * JSDoc text. Results are scored: name matches rank above JSDoc-only matches.
+ * Supports case-insensitive matching against symbol names, JSDoc, and own member names
+ * (for member-indexed classes). Multi-word queries are split into tokens - all tokens
+ * must match (AND logic) against the combined searchable text. Results are scored: name
+ * matches rank above JSDoc/member-only matches.
  *
  * Optionally filter by kind and/or export status.
  */
@@ -637,9 +679,10 @@ export async function searchSymbols(
             if (options?.exported !== undefined && entry.isExported !== options.exported) continue;
 
             const jsDocLower = entry.jsDoc?.toLowerCase() ?? '';
-            const searchable = key + ' ' + jsDocLower;
+            const memberNamesLower = entry.memberNames?.toLowerCase() ?? '';
+            const searchable = key + ' ' + jsDocLower + ' ' + memberNamesLower;
 
-            // All tokens must match somewhere in the combined name + JSDoc text.
+            // All tokens must match somewhere in the combined searchable text.
             if (!tokens.every(t => searchable.includes(t))) continue;
 
             // Count how many tokens matched the name specifically (for ranking).
@@ -670,9 +713,11 @@ export async function searchSymbols(
 /**
  * Search the member index by query string.
  *
- * Supports case-insensitive substring matching against member names. Multi-word queries
- * are split into tokens — all tokens must appear in the member name (AND logic).
- * Only searches members of classes in MEMBER_INDEXED_CLASSES.
+ * Supports case-insensitive matching against the combined owner class name, member name,
+ * and member JSDoc. Multi-word queries are split into tokens - all tokens must match (AND
+ * logic) against the combined text. This allows queries like "StoreRecord raw" to find
+ * the `raw` property on `StoreRecord`. Results are scored: member-name matches rank above
+ * owner/JSDoc-only matches. Only searches members of classes in MEMBER_INDEXED_CLASSES.
  */
 export async function searchMembers(
     query: string,
@@ -685,26 +730,37 @@ export async function searchMembers(
 
     const tokens = queryLower.split(/\s+/);
     const limit = options?.limit ?? 15;
-    const results: MemberIndexEntry[] = [];
+    const scored: {entry: MemberIndexEntry; nameMatches: number}[] = [];
 
     for (const [key, entries] of memberIndex!) {
-        if (!tokens.every(t => key.includes(t))) continue;
-        results.push(...entries);
+        for (const entry of entries) {
+            const ownerLower = entry.ownerName.toLowerCase();
+            const jsDocLower = entry.jsDoc?.toLowerCase() ?? '';
+            const searchable = ownerLower + ' ' + key + ' ' + jsDocLower;
+
+            if (!tokens.every(t => searchable.includes(t))) continue;
+
+            // Count how many tokens matched the member name for ranking.
+            const nameMatches = tokens.filter(t => key.includes(t)).length;
+            scored.push({entry, nameMatches});
+        }
     }
 
-    // Sort: exact matches first, then alphabetically by member name, then by owner
-    results.sort((a, b) => {
-        const aExact = a.name.toLowerCase() === queryLower ? 0 : 1;
-        const bExact = b.name.toLowerCase() === queryLower ? 0 : 1;
+    // Sort: most member-name matches first, then exact name, then alpha by name, then owner.
+    scored.sort((a, b) => {
+        if (a.nameMatches !== b.nameMatches) return b.nameMatches - a.nameMatches;
+
+        const aExact = a.entry.name.toLowerCase() === queryLower ? 0 : 1;
+        const bExact = b.entry.name.toLowerCase() === queryLower ? 0 : 1;
         if (aExact !== bExact) return aExact - bExact;
 
-        const nameCompare = a.name.localeCompare(b.name);
+        const nameCompare = a.entry.name.localeCompare(b.entry.name);
         if (nameCompare !== 0) return nameCompare;
 
-        return a.ownerName.localeCompare(b.ownerName);
+        return a.entry.ownerName.localeCompare(b.entry.ownerName);
     });
 
-    return results.slice(0, limit);
+    return scored.slice(0, limit).map(s => s.entry);
 }
 
 /**
