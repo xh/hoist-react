@@ -12,6 +12,9 @@
 * Added the `user.name` tag to all spans, matching the server-side convention.
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
+  not reachable from consumer tsconfigs with narrower `include` patterns.
 
 ### 🤖 AI Docs + Tooling
 
