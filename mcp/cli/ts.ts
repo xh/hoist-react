@@ -14,7 +14,14 @@ import {
     getCompanionSymbols,
     findAlternateEntries
 } from '../data/ts-registry.js';
-import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
+import {
+    formatSymbolSearch,
+    formatSymbolDetail,
+    formatMembers,
+    toSearchSymbolsOutput,
+    toGetSymbolOutput,
+    toGetMembersOutput
+} from '../formatters/typescript.js';
 
 const VALID_KINDS = ['class', 'interface', 'type', 'function', 'const', 'enum'] as const;
 
@@ -69,7 +76,11 @@ program
         'Filter symbols by kind: class, interface, type, function, const, enum'
     )
     .option('-l, --limit <n>', 'Maximum results (1-50)', '20')
-    .action(async (query: string, opts: {kind?: string; limit: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (query: string, opts: {kind?: string; limit: string; json?: boolean}) => {
         validateKind(opts.kind);
         validateLimit(opts.limit, 1, 50);
         const symbolLimit = parseInt(opts.limit, 10);
@@ -89,6 +100,12 @@ program
         const memberLimit = symbolResults.length === 0 ? symbolLimit : 15;
         const memberResults = await searchMembers(query, {limit: memberLimit});
 
+        if (opts.json) {
+            const structured = toSearchSymbolsOutput(query, symbolResults, memberResults);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
+
         let text = formatSymbolSearch(symbolResults, memberResults, query);
         if (symbolResults.length > 0 || memberResults.length > 0) {
             text += '\n\nTip: Use `hoist-ts members <ClassName>` to see all members of a class.';
@@ -106,8 +123,23 @@ program
     )
     .argument('<name>', 'Exact symbol name (e.g. "GridModel", "Store")')
     .option('-f, --file <path>', 'Source file path to disambiguate duplicate names')
-    .action(async (name: string, opts: {file?: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const detail = await getSymbolDetail(name, opts.file);
+
+        if (opts.json) {
+            const companions = detail ? await getCompanionSymbols(detail) : [];
+            const alternates =
+                detail && !opts.file ? findAlternateEntries(name, detail.filePath) : [];
+            const structured = toGetSymbolOutput(name, detail, companions, alternates);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            if (!detail) process.exit(1);
+            return;
+        }
+
         if (!detail) {
             console.error(formatSymbolDetail(detail, name));
             process.exit(1);
@@ -146,8 +178,22 @@ program
     )
     .argument('<name>', 'Class or interface name (e.g. "GridModel", "HoistModel")')
     .option('-f, --file <path>', 'Source file path to disambiguate duplicate names')
-    .action(async (name: string, opts: {file?: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const result = await getMembers(name, opts.file);
+
+        if (opts.json) {
+            const alternates =
+                result && !opts.file ? findAlternateEntries(name, result.symbol.filePath) : [];
+            const structured = toGetMembersOutput(name, result, alternates);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            if (!result) process.exit(1);
+            return;
+        }
+
         if (!result) {
             console.error(formatMembers(result, name));
             process.exit(1);

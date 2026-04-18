@@ -8,7 +8,14 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {buildRegistry, searchDocs} from '../data/doc-registry.js';
-import {formatSearchResults, formatDocList} from '../formatters/docs.js';
+import {
+    formatSearchResults,
+    formatDocList,
+    searchDocsOutputSchema,
+    toSearchDocsOutput,
+    listDocsOutputSchema,
+    toListDocsOutput
+} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
 /**
@@ -51,6 +58,7 @@ export function registerDocTools(server: McpServer): void {
                     .optional()
                     .describe('Maximum number of results. Default: 10')
             }),
+            outputSchema: searchDocsOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -65,7 +73,11 @@ export function registerDocTools(server: McpServer): void {
             });
 
             const text = formatSearchResults(results, query);
-            return {content: [{type: 'text' as const, text}]};
+            const structuredContent = toSearchDocsOutput(query, results);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 
@@ -81,6 +93,7 @@ export function registerDocTools(server: McpServer): void {
             inputSchema: z.object({
                 category: categoryEnum
             }),
+            outputSchema: listDocsOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -91,7 +104,11 @@ export function registerDocTools(server: McpServer): void {
         async ({category}) => {
             let text = formatDocList(registry, mcpCategories, category ?? undefined);
             text += 'Read any document using its ID with the hoist://docs/{id} resource.';
-            return {content: [{type: 'text' as const, text}]};
+            const structuredContent = toListDocsOutput(registry, mcpCategories, category);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 
