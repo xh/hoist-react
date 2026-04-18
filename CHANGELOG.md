@@ -2,6 +2,18 @@
 
 ## 85.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Replaced the mobile `DateInput`'s underlying picker with the browser's native
+  `<input type="date">`, dropping the abandoned `react-dates` dependency (last released January
+  2020, unmaintained, incompatible peer deps with React 18). The picker now uses the OS-native
+  date UI - a wheel/drum on iOS, a Material dialog on Android, and a popover on desktop. Removed
+  the now-obsolete `formatString`, `initialMonth`, `placeholder`, and `singleDatePickerProps`
+  props from `DateInputProps`; display format follows the user's OS locale. Deleted the
+  `kit/react-dates/` sub-package. Applications with custom SCSS targeting the former
+  `react-dates`-generated class names (`.SingleDatePicker`, `.DayPicker*`, `.CalendarMonth*`,
+  etc.) should remove or adapt those rules - they no longer match any rendered elements.
+
 ### 🎁 New Features
 
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the

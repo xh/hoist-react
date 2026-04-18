@@ -402,8 +402,8 @@ propagation at the primary element level.
 **Platform-specific differences:**
 
 -   **DateInput sub-testIds** — Desktop generates `${testId}-clear` and `${testId}-picker` for
-    clear/picker buttons. Mobile DateInput uses the react-dates library which handles these
-    controls internally, so these sub-testIds are not available on mobile.
+    clear/picker buttons. Mobile generates `${testId}-clear-btn` for the clear button; no picker
+    sub-testId is provided as the mobile DateInput uses the OS-native date picker.
 -   **Select sub-testIds** — Desktop generates `${testId}-menu` and `${testId}-clear-btn` for the
     dropdown menu and clear indicator. Mobile Select uses the react-select library which manages
     these elements, so these sub-testIds are not available on mobile.
