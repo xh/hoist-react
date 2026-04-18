@@ -86,7 +86,7 @@ export interface DimensionValue {
  * @see QueryConfig
  * @see Cube
  *
- * @mcpRole live or snapshot view of aggregated Cube data
+ * @mcpHint live or snapshot view of aggregated Cube data
  */
 export class View
     extends HoistBase

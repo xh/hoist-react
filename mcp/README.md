@@ -331,8 +331,8 @@ and the corresponding config-interface field. Only public members are indexed (m
 A small curated list of framework classes (`HoistBase`, `HoistModel`, `HoistService`, `XHApi`,
 `GridModel`, `Column`, `Store`, `StoreRecord`, `StoreSelectionModel`, `Field`, `RecordAction`,
 `Cube`, `CubeField`, `View`, `ViewRowData`, `Query`, `FormModel`, `BaseFieldModel`, `FieldModel`,
-`TabContainerModel`) also carry a short role description that is shown alongside search results.
-Owners outside this list are still searchable; their results just display without the extra hint.
+`TabContainerModel`) also carry a short hint that is shown alongside search results. Owners
+outside this list are still searchable; their results just display without the extra hint.
 
 **Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
 `catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
@@ -502,7 +502,7 @@ const TOP_LEVEL_PACKAGES = [
 ### Member-Indexed Owners
 
 **File:** `mcp/data/ts-registry.ts` (functions `shouldIndexClassMembers`,
-`shouldIndexInterfaceMembers`, and `extractMcpRole`)
+`shouldIndexInterfaceMembers`, and `extractMcpHint`)
 
 Which owners have their public members indexed is determined by rule, not a hand-maintained list:
 
@@ -515,27 +515,27 @@ class property and its corresponding config-interface field for the same query. 
 kinds (`*Props`, `*Spec`) are intentionally excluded -- indexing them floods generic queries like
 `"label"`, `"title"`, `"disabled"` with component-prop hits that dilute more specific results.
 
-**Role descriptions via the `@mcpRole` JSDoc tag.** Framework authors attach an optional
-`@mcpRole` tag to the class or interface JSDoc block to give a short role description shown
-alongside the owner name in member search results. Example:
+**Owner hints via the `@mcpHint` JSDoc tag.** Framework authors attach an optional `@mcpHint`
+tag to the class or interface JSDoc block to give a short hint shown alongside the owner name in
+member search results. Example:
 
 ```ts
 /**
  * Core Model for a Grid, specifying the grid's data store and column definitions.
  *
- * @mcpRole model backing all grid components
+ * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel { ... }
 ```
 
-Collocating the description with the declaration avoids the name-collision and maintenance-drift
-problems of a separate hand-curated registry, and lets framework authors add or revise the hint
-right where they're writing the class. Owners without an `@mcpRole` tag still appear in search
-results -- they just display without the extra hint. The `@mcpRole` tag is declared in the
-project-root `tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
+Collocating the hint with the declaration avoids the name-collision and maintenance-drift problems
+of a separate hand-curated registry, and lets framework authors add or revise the hint right where
+they're writing the class. Owners without an `@mcpHint` tag still appear in search results -- they
+just display without the extra hint. The `@mcpHint` tag is declared in the project-root
+`tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
 
 **When to update:**
-- Add or revise `@mcpRole` on the class/interface JSDoc block directly in its source file. No
+- Add or revise `@mcpHint` on the class/interface JSDoc block directly in its source file. No
   edit to `ts-registry.ts` is required.
 - Edit `shouldIndexClassMembers` / `shouldIndexInterfaceMembers` only if the indexing rule itself
   needs to change (e.g. adding `*Spec` interfaces, or scoping out a noisy subtree).
@@ -547,7 +547,7 @@ project-root `tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
 | Add/rename/remove a documentation file | `docs/doc-registry.json`, `docs/README.md` |
 | Add upgrade notes for a new major version | `docs/doc-registry.json`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
-| Add or revise the role hint for a key framework class | `@mcpRole` tag on the class/interface JSDoc (in its source file) |
+| Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
 | Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
 
 ## Extending the Developer Tools

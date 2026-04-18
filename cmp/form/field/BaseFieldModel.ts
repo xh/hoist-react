@@ -56,7 +56,7 @@ export interface BaseFieldConfig {
  * @see FieldModel
  * @see SubformsFieldModel
  *
- * @mcpRole base class for FieldModel - holds value, validation, and dirty tracking
+ * @mcpHint base class for FieldModel - holds value, validation, and dirty tracking
  */
 export abstract class BaseFieldModel extends HoistModel {
     get isFieldModel() {

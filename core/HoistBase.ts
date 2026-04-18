@@ -55,7 +55,7 @@ export interface HoistBaseClass {
  * @see HoistService
  * @see Store
  *
- * @mcpRole base class for all Hoist objects (models, services, stores)
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {

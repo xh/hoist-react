@@ -43,12 +43,12 @@ export interface SymbolEntry {
     /** JSDoc, if available. Populated at index time; displayed in search results. */
     jsDoc: string;
     /**
-     * Short role description for member-indexed owners, sourced from an `@mcpRole`
-     * JSDoc tag on the declaration. Shown alongside member search results to
-     * clarify how the owner fits into the framework (e.g. "model backing all grid
-     * components"). Omitted when the declaration has no `@mcpRole` tag.
+     * Short hint for member-indexed owners, sourced from an `@mcpHint` JSDoc tag
+     * on the declaration. Shown alongside member search results to clarify how
+     * the owner fits into the framework (e.g. "model backing all grid
+     * components"). Omitted when the declaration has no `@mcpHint` tag.
      */
-    mcpRole?: string;
+    mcpHint?: string;
     /**
      * Space-separated own member names for member-indexed owners (classes and `*Config`
      * interfaces), used to expand the searchable text in symbol search. Only includes
@@ -93,7 +93,7 @@ export interface MemberIndexEntry {
     name: string;
     memberKind: 'property' | 'method' | 'accessor';
     ownerName: string;
-    ownerDescription: string;
+    ownerHint: string;
     filePath: string;
     sourcePackage: string;
     isStatic: boolean;
@@ -144,10 +144,10 @@ const TOP_LEVEL_PACKAGES = [
  *   - every exported interface whose name ends in `Config` (the Hoist convention for
  *     configuration-object shapes consumed by class constructors)
  *
- * Each indexed owner can carry an optional short role description via an `@mcpRole`
- * JSDoc tag on its declaration (e.g. `@mcpRole model backing all grid components`).
- * The tag text is extracted by `extractMcpRole` and shown alongside the owner name in
- * member search results. Collocating the description with the declaration avoids the
+ * Each indexed owner can carry an optional short hint via an `@mcpHint` JSDoc tag
+ * on its declaration (e.g. `@mcpHint model backing all grid components`). The tag
+ * text is extracted by `extractMcpHint` and shown alongside the owner name in
+ * member search results. Collocating the hint with the declaration avoids the
  * name-collision and maintenance-drift problems of a separate hand-curated registry.
  */
 
@@ -306,7 +306,7 @@ function buildSymbolIndex(proj: Project): {
         for (const cls of sourceFile.getClasses()) {
             const name = cls.getName();
             if (!name) continue;
-            const mcpRole = extractMcpRole(cls);
+            const mcpHint = extractMcpHint(cls);
             const entry: SymbolEntry = {
                 name,
                 kind: 'class',
@@ -314,7 +314,7 @@ function buildSymbolIndex(proj: Project): {
                 isExported: cls.isExported(),
                 sourcePackage: pkg,
                 jsDoc: extractJsDoc(cls),
-                mcpRole
+                mcpHint
             };
             addToIndex(index, entry);
             counts.total++;
@@ -323,7 +323,7 @@ function buildSymbolIndex(proj: Project): {
 
             // Index public members for every exported class.
             if (shouldIndexClassMembers(cls)) {
-                const ownerDescription = mcpRole;
+                const ownerHint = mcpHint;
                 try {
                     const members = extractClassMembers(sourceFile, name);
                     const classPublicNames: string[] = [];
@@ -334,7 +334,7 @@ function buildSymbolIndex(proj: Project): {
                             name: m.name,
                             memberKind: m.kind,
                             ownerName: name,
-                            ownerDescription,
+                            ownerHint,
                             filePath,
                             sourcePackage: pkg,
                             isStatic: m.isStatic,
@@ -363,7 +363,7 @@ function buildSymbolIndex(proj: Project): {
             let jsDoc = extractJsDoc(iface);
             if (!jsDoc) jsDoc = extractCompanionJsDoc(sourceFile, name);
             const isExported = iface.isExported();
-            const mcpRole = extractMcpRole(iface);
+            const mcpHint = extractMcpHint(iface);
             const entry: SymbolEntry = {
                 name,
                 kind: 'interface',
@@ -371,7 +371,7 @@ function buildSymbolIndex(proj: Project): {
                 isExported,
                 sourcePackage: pkg,
                 jsDoc,
-                mcpRole
+                mcpHint
             };
             addToIndex(index, entry);
             counts.total++;
@@ -381,7 +381,7 @@ function buildSymbolIndex(proj: Project): {
             // Index public members for exported `*Config` interfaces, which describe the
             // configuration surface of the classes that accept them as constructor arg.
             if (shouldIndexInterfaceMembers(name, isExported)) {
-                const ownerDescription = mcpRole;
+                const ownerHint = mcpHint;
                 try {
                     const members = extractInterfaceMembers(sourceFile, name);
                     const publicNames: string[] = [];
@@ -392,7 +392,7 @@ function buildSymbolIndex(proj: Project): {
                             name: m.name,
                             memberKind: m.kind,
                             ownerName: name,
-                            ownerDescription,
+                            ownerHint,
                             filePath,
                             sourcePackage: pkg,
                             isStatic: m.isStatic,
@@ -619,7 +619,7 @@ function indexPromiseExtensions(
                     name,
                     memberKind: 'method',
                     ownerName: 'Promise',
-                    ownerDescription: 'Promise prototype extension (Hoist async utility)',
+                    ownerHint: 'Promise prototype extension (Hoist async utility)',
                     filePath,
                     sourcePackage: pkg,
                     isStatic: false,
@@ -1152,19 +1152,19 @@ function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => stri
 }
 
 /**
- * Extract the `@mcpRole` tag text, if present. This is a Hoist-specific JSDoc tag
+ * Extract the `@mcpHint` tag text, if present. This is a Hoist-specific JSDoc tag
  * that framework authors can attach to a class or interface to provide a short
- * role description used in MCP search results (e.g. "model backing all grid
- * components"). Collocating this with the declaration avoids the name collisions
- * and maintenance drift of a separate hand-curated lookup table.
+ * hint used in MCP search results (e.g. "model backing all grid components").
+ * Collocating this with the declaration avoids the name collisions and
+ * maintenance drift of a separate hand-curated lookup table.
  *
  * Returns empty string if no tag is present or the comment is empty.
  */
-function extractMcpRole(node: ClassDeclaration | InterfaceDeclaration): string {
+function extractMcpHint(node: ClassDeclaration | InterfaceDeclaration): string {
     try {
         for (const doc of node.getJsDocs() ?? []) {
             for (const tag of doc.getTags() ?? []) {
-                if (tag.getTagName() !== 'mcpRole') continue;
+                if (tag.getTagName() !== 'mcpHint') continue;
                 const text = tag.getCommentText();
                 if (typeof text === 'string') return text.trim();
             }

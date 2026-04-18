@@ -12,7 +12,7 @@ import {JsonBlob} from '@xh/hoist/svc';
 /**
  * A named saved bundle of state for components.
  *
- * @mcpRole user-saved state bundle managed by ViewManagerModel
+ * @mcpHint user-saved state bundle managed by ViewManagerModel
  */
 export class View<T extends PlainObject = PlainObject> {
     /**

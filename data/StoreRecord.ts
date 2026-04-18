@@ -27,7 +27,7 @@ import equal from 'fast-deep-equal';
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
  *
- * @mcpRole individual record within a Store
+ * @mcpHint individual record within a Store
  */
 export class StoreRecord {
     readonly id: StoreRecordId;

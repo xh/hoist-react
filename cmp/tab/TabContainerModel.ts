@@ -105,7 +105,7 @@ export interface TabContainerConfig {
  * See the tab package README (`cmp/tab/README.md`) for render/refresh mode options, routing
  * configuration, and usage patterns.
  *
- * @mcpRole model for tabbed container with routing and refresh support
+ * @mcpHint model for tabbed container with routing and refresh support
  */
 export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;

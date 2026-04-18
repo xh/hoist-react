@@ -133,7 +133,7 @@ export interface QueryConfig {
 /**
  * {@inheritDoc QueryConfig}
  *
- * @mcpRole query spec against a Cube, produced by executeQuery / createView
+ * @mcpHint query spec against a Cube, produced by executeQuery / createView
  */
 export class Query {
     readonly fields: CubeField[];

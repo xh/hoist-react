@@ -76,8 +76,8 @@ export function formatMemberIndexEntry(entry: MemberIndexEntry, index: number): 
     const lines: string[] = [];
     const staticPrefix = entry.isStatic ? 'static ' : '';
     const typeStr = truncateType(entry.type);
-    const ownerSuffix = entry.ownerDescription
-        ? `${entry.ownerName} \u2014 ${entry.ownerDescription}`
+    const ownerSuffix = entry.ownerHint
+        ? `${entry.ownerName} \u2014 ${entry.ownerHint}`
         : entry.ownerName;
     lines.push(
         `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${ownerSuffix})`
@@ -361,10 +361,10 @@ export const searchSymbolsOutputSchema = z.object({
     symbols: z.array(
         symbolRefSchema.extend({
             jsDoc: z.string(),
-            role: z
+            hint: z
                 .string()
                 .optional()
-                .describe('Short role description from the @mcpRole JSDoc tag, if present.')
+                .describe('Short hint from the @mcpHint JSDoc tag, if present.')
         })
     ),
     members: z.array(
@@ -372,7 +372,7 @@ export const searchSymbolsOutputSchema = z.object({
             name: z.string(),
             memberKind: z.enum(['property', 'method', 'accessor']),
             ownerName: z.string(),
-            ownerRole: z.string().optional().describe('Owner @mcpRole description, if present.'),
+            ownerHint: z.string().optional().describe('Owner @mcpHint text, if present.'),
             sourcePackage: z.string(),
             filePath: z.string().describe('Repo-relative source file path.'),
             isStatic: z.boolean(),
@@ -398,13 +398,13 @@ export function toSearchSymbolsOutput(
         symbols: symbolResults.map(s => ({
             ...toSymbolRef(s),
             jsDoc: s.jsDoc,
-            ...(s.mcpRole ? {role: s.mcpRole} : {})
+            ...(s.mcpHint ? {hint: s.mcpHint} : {})
         })),
         members: memberResults.map(m => ({
             name: m.name,
             memberKind: m.memberKind,
             ownerName: m.ownerName,
-            ...(m.ownerDescription ? {ownerRole: m.ownerDescription} : {}),
+            ...(m.ownerHint ? {ownerHint: m.ownerHint} : {}),
             sourcePackage: m.sourcePackage,
             filePath: toRelativePath(m.filePath),
             isStatic: m.isStatic,

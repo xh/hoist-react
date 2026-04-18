@@ -115,7 +115,7 @@ export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
  * @see View
  * @see Query
  *
- * @mcpRole multi-dimensional data store with aggregation and views
+ * @mcpHint multi-dimensional data store with aggregation and views
  */
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';

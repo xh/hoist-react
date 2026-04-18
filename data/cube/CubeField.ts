@@ -75,7 +75,7 @@ export type CanAggregateFn = (
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
  * it to extract the data from the source objects and how to aggregate or filter on that data.
  *
- * @mcpRole field with aggregation metadata for use within a Cube
+ * @mcpHint field with aggregation metadata for use within a Cube
  */
 export class CubeField extends Field {
     aggregator: Aggregator;

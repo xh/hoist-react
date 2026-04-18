@@ -66,7 +66,7 @@ export interface FieldSpec {
 /**
  * Metadata for an individual data field within a {@link StoreRecord}.
  *
- * @mcpRole metadata for a data field within a Store or Cube
+ * @mcpHint metadata for a data field within a Store or Cube
  */
 export class Field {
     get isField() {

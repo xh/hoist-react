@@ -239,7 +239,7 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  * @see StoreRecord
  * @see Field
  *
- * @mcpRole in-memory data store used by grids and other data components
+ * @mcpHint in-memory data store used by grids and other data components
  */
 export class Store
     extends HoistBase

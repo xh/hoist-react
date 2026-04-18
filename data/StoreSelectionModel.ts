@@ -37,7 +37,7 @@ export interface StoreSelectionConfig {
  *
  * @see StoreSelectionConfig
  *
- * @mcpRole selection state manager for Store, used by grids
+ * @mcpHint selection state manager for Store, used by grids
  */
 export class StoreSelectionModel extends HoistModel {
     readonly store: Store;

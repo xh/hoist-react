@@ -19,8 +19,8 @@
   name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
 * Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
   every exported class plus every exported `*Config` interface.
-* Added an `@mcpRole` JSDoc tag for framework authors to attach a short role description to a
-  class or interface. The tag is shown alongside owner names in MCP/CLI member search results.
+* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
+  interface. The tag is shown alongside owner names in MCP/CLI member search results.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
 

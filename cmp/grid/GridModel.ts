@@ -440,7 +440,7 @@ export interface GridModelDefaults {
  * @see Grid
  * @see DataView
  *
- * @mcpRole model backing all grid components
+ * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
