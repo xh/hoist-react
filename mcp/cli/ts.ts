@@ -58,7 +58,7 @@ Examples:
 program
     .command('search')
     .description(
-        'Search for TypeScript symbols and class members by name, JSDoc content, and own member names. Multi-word queries match all terms against the combined text — e.g. "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of key framework classes by owner name, member name, and member JSDoc.'
+        'Search for TypeScript symbols and class members by name, JSDoc content, and own member names. Multi-word queries match all terms against the combined text — e.g. "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc.'
     )
     .argument(
         '<query>',

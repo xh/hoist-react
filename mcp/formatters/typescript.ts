@@ -70,8 +70,11 @@ export function formatMemberIndexEntry(entry: MemberIndexEntry, index: number): 
     const lines: string[] = [];
     const staticPrefix = entry.isStatic ? 'static ' : '';
     const typeStr = truncateType(entry.type);
+    const ownerSuffix = entry.ownerDescription
+        ? `${entry.ownerName} \u2014 ${entry.ownerDescription}`
+        : entry.ownerName;
     lines.push(
-        `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${entry.ownerName} \u2014 ${entry.ownerDescription})`
+        `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${ownerSuffix})`
     );
     if (entry.jsDoc) {
         const indented = collapseJsDoc(entry.jsDoc)
@@ -109,7 +112,7 @@ export function formatSymbolSearch(
 
     if (memberResults.length > 0) {
         if (lines.length > 0) lines.push('');
-        lines.push(`Members of key classes (${memberResults.length} matches):\n`);
+        lines.push(`Members (${memberResults.length} matches):\n`);
         memberResults.forEach((m, i) => {
             lines.push(formatMemberIndexEntry(m, i + 1));
         });

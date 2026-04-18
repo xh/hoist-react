@@ -34,7 +34,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name, JSDoc content, and own member names. Multi-word queries match all terms (AND logic) — e.g. "panel modal" finds ModalSupportModel via its JSDoc, "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of key framework classes by owner name, member name, and member JSDoc. Results are ranked: name matches above JSDoc/member-only matches.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name, JSDoc content, and own member names. Multi-word queries match all terms (AND logic) — e.g. "panel modal" finds ModalSupportModel via its JSDoc, "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc. Results are ranked: name matches above JSDoc/member-only matches.',
             inputSchema: z.object({
                 query: z
                     .string()
