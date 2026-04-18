@@ -93,7 +93,8 @@ export interface MemberIndexEntry {
     name: string;
     memberKind: 'property' | 'method' | 'accessor';
     ownerName: string;
-    ownerHint: string;
+    /** Short hint for the owner, from its `@mcpHint` JSDoc tag. Undefined if the owner has no tag. */
+    ownerHint?: string;
     filePath: string;
     sourcePackage: string;
     isStatic: boolean;
@@ -1158,20 +1159,23 @@ function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => stri
  * Collocating this with the declaration avoids the name collisions and
  * maintenance drift of a separate hand-curated lookup table.
  *
- * Returns empty string if no tag is present or the comment is empty.
+ * Returns `undefined` if no tag is present or the comment is empty.
  */
-function extractMcpHint(node: ClassDeclaration | InterfaceDeclaration): string {
+function extractMcpHint(node: ClassDeclaration | InterfaceDeclaration): string | undefined {
     try {
         for (const doc of node.getJsDocs() ?? []) {
             for (const tag of doc.getTags() ?? []) {
                 if (tag.getTagName() !== 'mcpHint') continue;
                 const text = tag.getCommentText();
-                if (typeof text === 'string') return text.trim();
+                if (typeof text === 'string') {
+                    const trimmed = text.trim();
+                    if (trimmed) return trimmed;
+                }
             }
         }
-        return '';
+        return undefined;
     } catch {
-        return '';
+        return undefined;
     }
 }
 

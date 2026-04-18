@@ -129,14 +129,14 @@ program
     )
     .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const detail = await getSymbolDetail(name, opts.file);
+        const companions = detail ? await getCompanionSymbols(detail) : [];
+        const alternates = detail && !opts.file ? findAlternateEntries(name, detail.filePath) : [];
 
         if (opts.json) {
-            const companions = detail ? await getCompanionSymbols(detail) : [];
-            const alternates =
-                detail && !opts.file ? findAlternateEntries(name, detail.filePath) : [];
+            // Not-found still emits a valid payload (symbol: null + any alternates) and exits 0,
+            // matching the MCP tool's behavior so CLI and MCP are equivalent for JSON consumers.
             const structured = toGetSymbolOutput(name, detail, companions, alternates);
             process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
-            if (!detail) process.exit(1);
             return;
         }
 
@@ -145,24 +145,20 @@ program
             process.exit(1);
         }
 
-        const companions = await getCompanionSymbols(detail);
         let text = formatSymbolDetail(detail, name, companions);
         if (detail.kind === 'class' || detail.kind === 'interface') {
             text +=
                 '\n\nTip: Use `hoist-ts members ' + name + '` to see all properties and methods.';
         }
 
-        if (!opts.file) {
-            const alternates = findAlternateEntries(name, detail.filePath);
-            if (alternates.length > 0) {
-                const altList = alternates
-                    .map(
-                        a =>
-                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
-                    )
-                    .join('\n');
-                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
-            }
+        if (alternates.length > 0) {
+            const altList = alternates
+                .map(
+                    a =>
+                        `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                )
+                .join('\n');
+            text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
         }
 
         process.stdout.write(text + '\n');
@@ -184,13 +180,14 @@ program
     )
     .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const result = await getMembers(name, opts.file);
+        const alternates =
+            result && !opts.file ? findAlternateEntries(name, result.symbol.filePath) : [];
 
         if (opts.json) {
-            const alternates =
-                result && !opts.file ? findAlternateEntries(name, result.symbol.filePath) : [];
+            // Not-found still emits a valid payload (owner: null + any alternates) and exits 0,
+            // matching the MCP tool's behavior so CLI and MCP are equivalent for JSON consumers.
             const structured = toGetMembersOutput(name, result, alternates);
             process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
-            if (!result) process.exit(1);
             return;
         }
 
@@ -201,17 +198,14 @@ program
 
         let text = formatMembers(result, name);
 
-        if (!opts.file) {
-            const alternates = findAlternateEntries(name, result.symbol.filePath);
-            if (alternates.length > 0) {
-                const altList = alternates
-                    .map(
-                        a =>
-                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
-                    )
-                    .join('\n');
-                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
-            }
+        if (alternates.length > 0) {
+            const altList = alternates
+                .map(
+                    a =>
+                        `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                )
+                .join('\n');
+            text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
         }
 
         process.stdout.write(text + '\n');

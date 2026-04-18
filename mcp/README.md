@@ -328,11 +328,11 @@ class constructors, so queries like `"groupSortFn"` or `"omitFn"` reach both the
 and the corresponding config-interface field. Only public members are indexed (members with
 `private` scope or names starting with `_` are excluded).
 
-A small curated list of framework classes (`HoistBase`, `HoistModel`, `HoistService`, `XHApi`,
-`GridModel`, `Column`, `Store`, `StoreRecord`, `StoreSelectionModel`, `Field`, `RecordAction`,
-`Cube`, `CubeField`, `View`, `ViewRowData`, `Query`, `FormModel`, `BaseFieldModel`, `FieldModel`,
-`TabContainerModel`) also carry a short hint that is shown alongside search results. Owners
-outside this list are still searchable; their results just display without the extra hint.
+Key framework classes and interfaces carry a short hint shown alongside their name in member
+search results, sourced from an optional `@mcpHint` JSDoc tag on the declaration (e.g.
+`@mcpHint model backing all grid components` on `GridModel`). Owners without the tag are still
+searchable; their results just display without the extra hint. See
+[Member-Indexed Owners](#member-indexed-owners) for how to add or revise a hint.
 
 **Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
 `catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
