@@ -21,12 +21,9 @@
   every exported class plus every exported `*Config` interface.
 * Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
   interface. The tag is shown alongside owner names in MCP/CLI member search results.
-* Added server `instructions` and sibling-disambiguating language to each MCP tool's description,
-  giving Claude a clearer map of which tool to use and how each relates to its neighbors.
+* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
 * Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
-  `--json` flag on every matching CLI subcommand (`hoist-docs search|list`, `hoist-ts
-  search|symbol|members`). One zod schema per tool is shared between the MCP and CLI surfaces,
-  giving CLI-only consumers machine-readable output equivalent to what MCP hosts receive.
+  `--json` flag on every matching CLI subcommand.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
 
