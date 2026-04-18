@@ -610,11 +610,23 @@ export class FilterChooserModel extends HoistModel {
     }
 
     /**
-     * Update the select value and bind the filter to the bound model. Runs asynchronously after
-     * selectOptions are set to ensure the component is ready to render the tags correctly.
+     * Update the select value and bind the filter to the bound model. The outbound sync to the
+     * bind target runs synchronously to avoid race conditions during persistence restoration
+     * (e.g. ViewManager). The selectValue update is deferred to ensure selectOptions are set
+     * and the component is ready to render the tags correctly.
      */
     private updateSelectValueAndBind(displayFilters = this.toDisplayFilters(this.value)) {
         const {bind, value} = this;
+
+        // Outbound sync: replace the FieldFilter portion of the bind target's filter with
+        // this model's value, preserving any FunctionFilters installed by other components
+        // (e.g. StoreFilterField). Done synchronously to ensure the bind target is updated
+        // before any deferred reactions (e.g. inbound sync) can observe stale state.
+        if (bind) {
+            const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
+            bind.setFilter(filter);
+        }
+
         wait()
             .thenAction(() => {
                 // No-op if we've already re-entered this method by the time this async routine runs.
@@ -629,14 +641,6 @@ export class FilterChooserModel extends HoistModel {
                         return isFinite(idx) && idx > -1 ? idx : displayFilters.length;
                     }
                 );
-
-                // Outbound sync: replace the FieldFilter portion of the bind target's
-                // filter with this model's value, preserving any FunctionFilters
-                // installed by other components (e.g. StoreFilterField).
-                if (bind) {
-                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
-                    bind.setFilter(filter);
-                }
             })
             .linkTo(this.filterTask);
     }
