@@ -130,7 +130,11 @@ export interface QueryConfig {
     omitFn?: OmitFn;
 }
 
-/** {@inheritDoc QueryConfig} */
+/**
+ * {@inheritDoc QueryConfig}
+ *
+ * @mcpRole query spec against a Cube, produced by executeQuery / createView
+ */
 export class Query {
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];

@@ -101,6 +101,8 @@ export interface ActionFnData {
  *
  * @see RecordActionBar
  * @see GridContextMenuSpec
+ *
+ * @mcpRole reusable action for grid context menus and action columns
  */
 export class RecordAction {
     text: ReactNode;

@@ -99,6 +99,8 @@ export interface FormValidateOptions {
  *
  * See the form package README (`cmp/form/README.md`) for full documentation including field
  * configuration, validation patterns, and FormField component binding.
+ *
+ * @mcpRole model for form state, field values, and validation
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/

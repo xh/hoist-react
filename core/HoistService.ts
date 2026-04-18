@@ -30,6 +30,8 @@ import {apiDeprecated} from '@xh/hoist/utils/js';
  * Services extend `HoistBase` and can therefore leverage MobX-powered observables and reactions if
  * so desired. And while components should typically source their state from backing models, they
  * can also read and react to service state and call service APIs.
+ *
+ * @mcpRole base class for all application services
  */
 export class HoistService extends HoistBase implements Loadable {
     // Internal State

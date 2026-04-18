@@ -36,6 +36,8 @@ export interface StoreSelectionConfig {
  * `isEmpty`, `count`. Use `select()` and `clear()` for programmatic control.
  *
  * @see StoreSelectionConfig
+ *
+ * @mcpRole selection state manager for Store, used by grids
  */
 export class StoreSelectionModel extends HoistModel {
     readonly store: Store;
