@@ -1,12 +1,16 @@
 /**
  * Ambient type declarations for non-code asset imports (images, markdown).
  *
- * These allow TypeScript to understand `import img from './foo.png'` without @ts-ignore.
+ * These allow TypeScript to understand `import img from './foo.png'` without `@ts-ignore`.
  * Webpack's asset loaders resolve these imports to string URLs at build time.
  *
- * Note: as ambient declarations, these are visible to downstream apps that resolve into
- * hoist-react's source directory via path mapping. This is intentional — all Hoist apps
- * share the same Webpack build tooling and loader configuration.
+ * Downstream apps compile hoist-react source via the `@xh/hoist/*` path mapping, but their
+ * tsconfig `include` patterns typically do not reach this file. Any hoist-react source file
+ * that imports an asset must therefore pull these declarations in explicitly with a
+ * triple-slash reference, e.g.:
+ *
+ *     /// <reference path="../../assets.d.ts" />
+ *     import spinnerImg from './spinner-50px.png';
  */
 declare module '*.png' {
     const src: string;
