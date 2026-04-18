@@ -34,7 +34,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name, JSDoc content, and own member names. Multi-word queries match all terms (AND logic) — e.g. "panel modal" finds ModalSupportModel via its JSDoc, "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc. Results are ranked: name matches above JSDoc/member-only matches.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name, JSDoc content, and own member names. Multi-word queries match all terms (AND logic) — e.g. "panel modal" finds ModalSupportModel via its JSDoc, "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc. Results are ranked: name matches above JSDoc/member-only matches. Returns matches with short context snippets only — for full type information on a match, call hoist-get-symbol; for a complete property/method list, call hoist-get-members. Use hoist-search-docs for narrative documentation rather than type info.',
             inputSchema: z.object({
                 query: z
                     .string()
@@ -86,7 +86,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Get Hoist Symbol Details',
             description:
-                'Get detailed type information for a specific TypeScript symbol including its full signature, JSDoc documentation, inheritance, and source location. Use hoist-search-symbols first to find the symbol name.',
+                'Get detailed type information for a specific TypeScript symbol: full signature, JSDoc documentation, inheritance chain, decorators, and source location. Returns the declaration and doc-block only — for the full property/method list of a class or interface (including inherited members), call hoist-get-members instead. Use hoist-search-symbols first if you do not already have the exact symbol name.',
             inputSchema: z.object({
                 name: z
                     .string()
@@ -139,7 +139,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Get Hoist Class/Interface Members',
             description:
-                'List all properties and methods of a class or interface with their types, decorators, and documentation. Use hoist-search-symbols or hoist-get-symbol first to identify the target symbol.',
+                'List all properties and methods of a class or interface with types, decorators, and JSDoc. Walks the full inheritance chain (extends / implements) and tags inherited members with their declaring type — essential for framework classes with deep hierarchies (e.g. DashContainerModel inherits from DashModel) and for Props interfaces that compose multiple parents. For just the declaration signature and top-level JSDoc without the member list, call hoist-get-symbol instead. Use hoist-search-symbols first if you do not already have the exact name.',
             inputSchema: z.object({
                 name: z
                     .string()
