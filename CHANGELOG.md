@@ -9,33 +9,20 @@
 
 ### 🐞 Bug Fixes
 
-* `TraceService` now includes the `user.name` tag on all spans, matching the server-side
-  convention.
-* `HoistBase.withSpan`/`withSpanAsync` now auto-populate `caller` with `this`, so emitted spans
-  correctly stamp `code.namespace`.
+* Added the `user.name` tag to all spans, matching the server-side convention.
+* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+  emitted spans correctly stamp `code.namespace`.
 
 ### 🤖 AI Docs + Tooling
 
 * Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
   name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
-  Previously these queries returned no results.
 * Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
-  every exported class plus every exported `*Config` interface. Queries like `"cubeLabel"`,
-  `"viewSpecs"`, `"layoutLocked"`, and config-option names like `"groupSortFn"` / `"omitFn"` now
-  return hits that were previously missed.
+  every exported class plus every exported `*Config` interface.
 * Added an `@mcpRole` JSDoc tag for framework authors to attach a short role description to a
-  class or interface (e.g. `@mcpRole model backing all grid components`). The tag is shown
-  alongside owner names in MCP/CLI member search results. Replaces the prior hand-maintained
-  description map in `ts-registry.ts`, collocating metadata with the declarations it describes
-  and avoiding name collisions between same-named owners (e.g. Cube `View` vs. ViewManager
-  `View`).
+  class or interface. The tag is shown alongside owner names in MCP/CLI member search results.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
-  (e.g. Cube `View` / ViewManager `View`, or `ColChooserModel` across desktop and mobile) would
-  clobber each other's `memberNames` augmentation, causing spurious symbol-search hits. Entries
-  are now keyed by file path in addition to name.
-* Fixed `bin/hoist-ts.mjs` and `bin/hoist-docs.mjs` file modes: both are now executable
-  (`755`), matching `bin/hoist-mcp.mjs`. The previous non-executable mode caused `npx hoist-ts`
-  / `npx hoist-docs` to fail with "Permission denied" on fresh installs.
+  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
 
 ## 84.0.0 - 2026-04-15
 
