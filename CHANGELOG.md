@@ -9,16 +9,23 @@
 
 ### 🐞 Bug Fixes
 
-* `TraceService` now includes the `user.name` tag on all spans, matching the server-side
-  convention.
-* `HoistBase.withSpan`/`withSpanAsync` now auto-populate `caller` with `this`, so emitted spans
-  correctly stamp `code.namespace`.
+* Added the `user.name` tag to all spans, matching the server-side convention.
+* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+  emitted spans correctly stamp `code.namespace`.
 
 ### 🤖 AI Docs + Tooling
 
 * Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
   name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
-  Previously these queries returned no results.
+* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
+  every exported class plus every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
+  interface. The tag is shown alongside owner names in MCP/CLI member search results.
+* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
+* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
+  `--json` flag on every matching CLI subcommand.
+* Fixed a latent member-index collision bug where two exported owners sharing a simple name
+  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
 
 ## 84.0.0 - 2026-04-15
 

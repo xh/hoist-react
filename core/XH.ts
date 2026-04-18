@@ -86,6 +86,8 @@ declare const xhIsDevelopmentMode: boolean;
  * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
+ *
+ * @mcpHint singleton (XH) providing global framework services
  */
 export class XHApi {
     /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
