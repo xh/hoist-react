@@ -101,7 +101,8 @@ export class IdentityService extends HoistService {
             url: 'xh/impersonate',
             params: {
                 username: username
-            }
+            },
+            span: {name: 'impersonate', source: 'hoist', caller: this}
         });
         XH.reloadApp();
     }
@@ -110,7 +111,10 @@ export class IdentityService extends HoistService {
     async endImpersonateAsync() {
         try {
             await XH.prefService?.pushPendingAsync();
-            await XH.fetchJson({url: 'xh/endImpersonate'});
+            await XH.fetchJson({
+                url: 'xh/endImpersonate',
+                span: {name: 'endImpersonate', source: 'hoist', caller: this}
+            });
             XH.reloadApp();
         } catch (e) {
             XH.handleException(e, {message: 'Failed to end impersonation'});

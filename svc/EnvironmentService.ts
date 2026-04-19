@@ -51,7 +51,8 @@ export class EnvironmentService extends HoistService {
 
     override async initAsync() {
         const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
-                url: 'xh/environment'
+                url: 'xh/environment',
+                span: {name: 'getEnvironment', source: 'hoist', caller: this}
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
@@ -114,9 +115,12 @@ export class EnvironmentService extends HoistService {
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        let data;
+        let data: any;
         try {
-            data = await XH.fetchJson({url: 'xh/environmentPoll'});
+            data = await XH.fetchJson({
+                url: 'xh/environmentPoll',
+                span: {name: 'envPoll', source: 'hoist', caller: this}
+            });
         } catch (e) {
             this.logError('Error polling server environment', e);
             return;

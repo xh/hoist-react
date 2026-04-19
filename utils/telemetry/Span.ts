@@ -118,6 +118,12 @@ export interface SpanConfig {
     startTime?: number;
     caller?: NameSource;
     sampled?: boolean;
+
+    /**
+     * Origin of this span - recorded as the `xh.source` tag. When omitted, inherits from the
+     * parent span, defaulting to `'app'` for roots.
+     */
+    source?: string;
 }
 
 export interface SpanEvent {

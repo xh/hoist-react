@@ -126,7 +126,8 @@ export class PrefService extends HoistService {
             body: updates,
             params: {
                 clientUsername: XH.getUsername()
-            }
+            },
+            span: {name: 'setPrefs', source: 'hoist', caller: this}
         });
     }
 
@@ -141,7 +142,8 @@ export class PrefService extends HoistService {
     private async loadPrefsAsync() {
         const data = await XH.fetchJson({
             url: 'xh/getPrefs',
-            params: {clientUsername: XH.getUsername()}
+            params: {clientUsername: XH.getUsername()},
+            span: {name: 'getPrefs', source: 'hoist', caller: this}
         });
         forEach(data, v => {
             deepFreeze(v.value);

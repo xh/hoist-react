@@ -102,7 +102,8 @@ export class TrackService extends HoistService {
         await XH.fetchService.postJson({
             url: 'xh/track',
             body: {entries: pending},
-            params: {clientUsername: XH.getUsername()}
+            params: {clientUsername: XH.getUsername()},
+            span: {name: 'trackPush', source: 'hoist', caller: this}
         });
     }
 

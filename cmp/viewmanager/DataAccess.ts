@@ -33,7 +33,8 @@ export class DataAccess<T> {
         try {
             const ret = await XH.fetchJson({
                 url: 'xhView/allData',
-                params: {type, viewInstance: instance}
+                params: {type, viewInstance: instance},
+                span: {name: 'getAllViews', source: 'hoist', caller: this}
             });
             return {
                 views: ret.views.map(v => new ViewInfo(v, this.model)),
@@ -52,7 +53,11 @@ export class DataAccess<T> {
         const {model} = this;
         if (!token) return View.createDefault(model);
         try {
-            const raw = await XH.fetchJson({url: 'xhView/get', params: {token}});
+            const raw = await XH.fetchJson({
+                url: 'xhView/get',
+                params: {token},
+                span: {name: 'getView', source: 'hoist', caller: this}
+            });
             return View.fromBlob(raw, model);
         } catch (e) {
             throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
@@ -65,7 +70,8 @@ export class DataAccess<T> {
         try {
             const raw = await XH.postJson({
                 url: 'xhView/create',
-                body: {type: model.type, ...spec}
+                body: {type: model.type, ...spec},
+                span: {name: 'createView', source: 'hoist', caller: this}
             });
             return View.fromBlob(raw, model);
         } catch (e) {
@@ -80,7 +86,8 @@ export class DataAccess<T> {
             const raw = await XH.postJson({
                 url: 'xhView/updateInfo',
                 params: {token: view.token},
-                body: updates
+                body: updates,
+                span: {name: 'updateViewInfo', source: 'hoist', caller: this}
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -95,7 +102,8 @@ export class DataAccess<T> {
             const raw = await XH.postJson({
                 url: 'xhView/updateValue',
                 params: {token: view.token},
-                body: value
+                body: value,
+                span: {name: 'updateViewValue', source: 'hoist', caller: this}
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -111,7 +119,8 @@ export class DataAccess<T> {
         try {
             await XH.postJson({
                 url: 'xhView/delete',
-                params: {tokens: map(views, 'token').join(',')}
+                params: {tokens: map(views, 'token').join(',')},
+                span: {name: 'deleteViews', source: 'hoist', caller: this}
             });
         } catch (e) {
             throw XH.exception({
@@ -129,7 +138,8 @@ export class DataAccess<T> {
         return XH.postJson({
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
-            body: update
+            body: update,
+            span: {name: 'updateViewState', source: 'hoist', caller: this}
         });
     }
 

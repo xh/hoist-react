@@ -6,9 +6,12 @@
 
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
   server-side API. Added `Span.setTag()`/`setTags()`.
+* Added `SpanConfig.source` for declaring a span's origin (recorded as the `xh.source` tag).
 
 ### 🐞 Bug Fixes
 
+* Fixed `FetchService` blanket-tagging every fetch span `'xh.source': 'hoist'` — spans now
+  inherit source from their parent. Hoist-internal fetches declare `source: 'hoist'` explicitly.
 * Added the `user.name` tag to all spans, matching the server-side convention.
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
