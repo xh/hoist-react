@@ -2,16 +2,31 @@
 
 ## 85.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
+  array of service classes plus the current phase's `span`:
+  ```ts
+  // before
+  await XH.installServicesAsync(MyServiceA, MyServiceB);
+  // after
+  await XH.installServicesAsync([MyServiceA, MyServiceB], span);
+  ```
+  The `span` is the one passed to your `AppModel.initAsync(span)` override. Forwarding it
+  ensures service-init spans nest under the `app-init` root.
+
 ### 🎁 New Features
 
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
   server-side API. Added `Span.setTag()`/`setTags()`.
-* Added `SpanConfig.source` for declaring a span's origin (recorded as the `xh.source` tag).
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive a `span: Span` argument
+  so service-init spans nest under the caller's span.
+* `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
+  `name` key (glob-capable, same syntax as tag-value patterns). Matches addition in
+  hoist-core.
 
 ### 🐞 Bug Fixes
 
-* Fixed `FetchService` blanket-tagging every fetch span `'xh.source': 'hoist'` — spans now
-  inherit source from their parent. Hoist-internal fetches declare `source: 'hoist'` explicitly.
 * Added the `user.name` tag to all spans, matching the server-side convention.
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
@@ -32,6 +47,11 @@
   `--json` flag on every matching CLI subcommand.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+
+### ⚙️ Technical
+
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
+  and easier tag-based sampling.
 
 ## 84.0.0 - 2026-04-15
 

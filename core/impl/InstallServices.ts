@@ -7,12 +7,14 @@
 import {HoistService, HoistServiceClass, Some, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {camelCase, castArray} from 'lodash';
 
 /**
  * Install HoistServices on XH.
  *
  * @param serviceClasses - Classes extending HoistService
+ * @param span - root span for the current init phase.
  *
  * This method will create, initialize, and install the services classes listed on XH.
  * All services will be initialized concurrently. To guarantee execution order of service
@@ -25,13 +27,13 @@ import {camelCase, castArray} from 'lodash';
  *
  * @internal - apps should use {@link XH.installServicesAsync} instead.
  */
-export async function installServicesAsync(serviceClasses: Some<HoistServiceClass>) {
+export async function installServicesAsync(serviceClasses: Some<HoistServiceClass>, span: Span) {
     serviceClasses = castArray(serviceClasses);
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
     throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
     const svcs = serviceClasses.map(c => createSingleton(c));
-    await initServicesInternalAsync(svcs);
+    await initServicesInternalAsync(svcs, span);
 
     svcs.forEach(svc => {
         const clazz = svc.constructor,
@@ -47,9 +49,9 @@ export async function installServicesAsync(serviceClasses: Some<HoistServiceClas
     });
 }
 
-async function initServicesInternalAsync(svcs: HoistService[]) {
+async function initServicesInternalAsync(svcs: HoistService[], span: Span) {
     const promises = svcs.map(it => {
-        return it.withDebug(`Initializing`, () => it.initAsync());
+        return it.withDebug(`Initializing`, () => it.initAsync(span));
     });
 
     const results: any[] = await Promise.allSettled(promises),

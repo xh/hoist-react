@@ -6,6 +6,7 @@
  */
 import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from './';
 import {apiDeprecated} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -55,8 +56,12 @@ export class HoistService extends HoistBase implements Loadable {
      * Called by framework or application to initialize before application startup.
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
+     *
+     * @param span - root span for the current init phase (e.g. `hoist-init`, `app-init`).
+     *      Pass as the `parent` of any spans created by this method so init activity nests
+     *      under the phase root in the resulting trace.
      */
-    async initAsync(): Promise<void> {}
+    async initAsync(span: Span): Promise<void> {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.

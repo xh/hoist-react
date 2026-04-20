@@ -8,6 +8,7 @@ import {HoistService, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/
 import {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {pick, round} from 'lodash';
 
@@ -24,7 +25,7 @@ export class ClientHealthService extends HoistService {
 
     private sources: Map<string, () => any> = new Map();
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         const {clientHealthReport} = XH.trackService.conf;
         Timer.create({
             runFn: () => this.sendReportInternal(),

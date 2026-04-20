@@ -11,6 +11,7 @@ import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {Span} from '@xh/hoist/utils/telemetry';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
@@ -68,7 +69,7 @@ export class InspectorService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();

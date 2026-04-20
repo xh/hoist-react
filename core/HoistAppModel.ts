@@ -6,6 +6,7 @@
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
 import {AppOptionSpec, HoistModel, Thunkable} from './';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
@@ -31,9 +32,13 @@ export class HoistAppModel extends HoistModel {
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
      * Applications will typically use this method to install and initialize app-specific
-     * services using one or more phased calls to XH.installServicesAsync().
+     * services using one or more phased calls to XH.installServicesAsync(). Pass `span`
+     * along to those calls to nest service init under the `app-init` root span.
+     *
+     * @param span - the `app-init` root span. Use as the `parent` of any spans created
+     *      directly here, and pass to `XH.installServicesAsync()` to nest service inits.
      */
-    async initAsync() {}
+    async initAsync(span: Span) {}
 
     /**
      * Should the version bar be shown in this application?.

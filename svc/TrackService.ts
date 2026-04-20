@@ -8,6 +8,7 @@ import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {isEmpty, isNil, isString} from 'lodash';
 
 /**
@@ -21,7 +22,7 @@ export class TrackService extends HoistService {
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
@@ -103,7 +104,7 @@ export class TrackService extends HoistService {
             url: 'xh/track',
             body: {entries: pending},
             params: {clientUsername: XH.getUsername()},
-            span: {name: 'trackPush', source: 'hoist', caller: this}
+            span: {name: 'xh.trackPush', caller: this}
         });
     }
 

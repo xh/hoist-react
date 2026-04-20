@@ -60,6 +60,7 @@ import {
     PlainObject,
     ReloadAppOptions,
     SizingMode,
+    Some,
     TaskObserver,
     Theme,
     ToastSpec,
@@ -67,6 +68,7 @@ import {
 } from './';
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
 export const MIN_HOIST_CORE_VERSION = '31.2';
@@ -770,10 +772,13 @@ export class XHApi {
      * Applications must choose a unique name of the form xxxService to avoid naming collisions.
      * If naming collisions are detected, an error will be thrown.
      *
-     * @param serviceClasses - classes extending HoistService
+     * @param serviceClasses - one or more classes extending HoistService.
+     * @param span - root span for the current init phase (typically the `span` passed to
+     *      `AppModel.initAsync()`). Forwarded to each service's `initAsync()` so spans created
+     *      during init nest under this phase root.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    async installServicesAsync(serviceClasses: Some<HoistServiceClass>, span: Span): Promise<void> {
+        return installServicesAsync(serviceClasses, span);
     }
 
     /**

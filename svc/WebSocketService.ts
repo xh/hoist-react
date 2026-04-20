@@ -10,6 +10,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {find, pull} from 'lodash';
 
 /**
@@ -84,7 +85,7 @@ export class WebSocketService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         if (!this.enabled) return;
 
         const {environmentService} = XH;

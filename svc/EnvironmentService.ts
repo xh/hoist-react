@@ -12,6 +12,7 @@ import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {defaults, isFinite} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
@@ -49,10 +50,10 @@ export class EnvironmentService extends HoistService {
     private pollConfig: PollConfig;
     private pollTimer: Timer;
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
                 url: 'xh/environment',
-                span: {name: 'getEnvironment', source: 'hoist', caller: this}
+                span
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
@@ -119,7 +120,7 @@ export class EnvironmentService extends HoistService {
         try {
             data = await XH.fetchJson({
                 url: 'xh/environmentPoll',
-                span: {name: 'envPoll', source: 'hoist', caller: this}
+                span: {name: 'xh.envPoll', caller: this}
             });
         } catch (e) {
             this.logError('Error polling server environment', e);

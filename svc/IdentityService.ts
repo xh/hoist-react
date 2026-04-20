@@ -102,7 +102,7 @@ export class IdentityService extends HoistService {
             params: {
                 username: username
             },
-            span: {name: 'impersonate', source: 'hoist', caller: this}
+            span: {name: 'xh.impersonate', caller: this}
         });
         XH.reloadApp();
     }
@@ -113,7 +113,7 @@ export class IdentityService extends HoistService {
             await XH.prefService?.pushPendingAsync();
             await XH.fetchJson({
                 url: 'xh/endImpersonate',
-                span: {name: 'endImpersonate', source: 'hoist', caller: this}
+                span: {name: 'xh.endImpersonate', caller: this}
             });
             XH.reloadApp();
         } catch (e) {

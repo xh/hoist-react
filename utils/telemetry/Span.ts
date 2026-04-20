@@ -42,8 +42,15 @@ export class Span {
     tags: PlainObject;
     events: SpanEvent[] = [];
 
-    /** Whether this span was selected by client-side sampling rules. */
-    sampled: boolean;
+    /**
+     * Tri-state sampling decision:
+     * - `true`: span is sampled and will be exported.
+     * - `false`: span is not sampled and will be dropped (unless `alwaysSampleErrors` and error).
+     * - `null`: decision deferred (e.g. created before {@link TraceService} sampling config is
+     *   loaded). Resolved later by {@link TraceService}; outbound `traceparent` headers send `00`
+     *   while undecided so server-side spans don't sample without a client decision.
+     */
+    sampled: boolean | null;
 
     constructor(config: SpanConfig) {
         const parent = config.parent;
@@ -54,7 +61,7 @@ export class Span {
         this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
         this.tags = {...config.tags};
-        this.sampled = config.sampled ?? true;
+        this.sampled = config.sampled ?? null;
     }
 
     /** End this span, recording status and computing duration. */
@@ -118,12 +125,6 @@ export interface SpanConfig {
     startTime?: number;
     caller?: NameSource;
     sampled?: boolean;
-
-    /**
-     * Origin of this span - recorded as the `xh.source` tag. When omitted, inherits from the
-     * parent span, defaulting to `'app'` for roots.
-     */
-    source?: string;
 }
 
 export interface SpanEvent {
@@ -136,15 +137,17 @@ export type SpanKind = 'internal' | 'client' | 'server' | 'producer' | 'consumer
 export type SpanStatus = 'ok' | 'error' | 'unset';
 
 /**
- * Format a W3C traceparent header value.
+ * Format a W3C traceparent header value. An undecided sampling state (`null`) is sent as `00`
+ * (not sampled) so the server doesn't make its own sampling decision in the absence of a client
+ * one - those server-side spans would be unparented from the client's perspective.
  * @see https://www.w3.org/TR/trace-context/#traceparent-header
  */
 export function formatTraceparent(
     traceId: string,
     spanId: string,
-    sampled: boolean = true
+    sampled: boolean | null = true
 ): string {
-    return `00-${traceId}-${spanId}-${sampled ? '01' : '00'}`;
+    return `00-${traceId}-${spanId}-${sampled === true ? '01' : '00'}`;
 }
 
 /** Generate a 32-hex-char (128-bit) trace ID. */

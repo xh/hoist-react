@@ -7,6 +7,7 @@
 import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
 
 /**
@@ -31,9 +32,9 @@ export class PrefService extends HoistService {
     private _data = {};
     private _updates = {};
 
-    override async initAsync() {
+    override async initAsync(span: Span) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        return this.loadPrefsAsync();
+        return this.loadPrefsAsync(span);
     }
 
     /**
@@ -127,7 +128,7 @@ export class PrefService extends HoistService {
             params: {
                 clientUsername: XH.getUsername()
             },
-            span: {name: 'setPrefs', source: 'hoist', caller: this}
+            span: {name: 'xh.setPrefs', caller: this}
         });
     }
 
@@ -139,11 +140,11 @@ export class PrefService extends HoistService {
         this.pushPendingAsync();
     }
 
-    private async loadPrefsAsync() {
+    private async loadPrefsAsync(span: Span) {
         const data = await XH.fetchJson({
             url: 'xh/getPrefs',
             params: {clientUsername: XH.getUsername()},
-            span: {name: 'getPrefs', source: 'hoist', caller: this}
+            span
         });
         forEach(data, v => {
             deepFreeze(v.value);
