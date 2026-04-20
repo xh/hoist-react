@@ -13,7 +13,6 @@ export * from './load';
 
 export * from './model';
 export * from './HoistService';
-export * from './InitContext';
 
 export * from './AppSpec';
 export * from './HoistProps';
