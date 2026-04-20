@@ -30,6 +30,15 @@
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
 
+## 84.0.1 - 2026-04-20
+
+### 🐞 Bug Fixes
+
+* Fixed an unrecoverable crash when calling `XH.prompt()` (and any other `FormField` rendered
+  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a
+  null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
+  built-in appcontainer components.
+
 ## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
