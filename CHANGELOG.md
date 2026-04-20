@@ -5,22 +5,24 @@
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 * `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
-  array of service classes plus the current phase's `span`:
+  array of service classes plus the current phase's `InitContext`:
   ```ts
   // before
   await XH.installServicesAsync(MyServiceA, MyServiceB);
   // after
-  await XH.installServicesAsync([MyServiceA, MyServiceB], span);
+  await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
   ```
-  The `span` is the one passed to your `AppModel.initAsync(span)` override. Forwarding it
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
   ensures service-init spans nest under the `app-init` root.
 
 ### 🎁 New Features
 
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
   server-side API. Added `Span.setTag()`/`setTags()`.
-* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive a `span: Span` argument
-  so service-init spans nest under the caller's span.
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
+  argument carrying the current phase's `span`, so service-init spans nest under the caller's
+  span. `InitContext` is a small wrapper (`{span}`) designed to accept additional init-time
+  context in the future without further signature churn.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (glob-capable, same syntax as tag-value patterns). Matches addition in
   hoist-core.
