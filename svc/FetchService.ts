@@ -197,50 +197,39 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        // If a span spec provided create, wrap, and recurse
-        if (XH.traceService?.enabled && opts.span && !(opts.span instanceof Span)) {
+        // 1) If a convenience span spec provided, resolve to an outer Span and recurse.
+        if (opts.span && !(opts.span instanceof Span)) {
+            // Use the global withSpanAsync -- don't want to tag with this as the caller.
             return XH.traceService.withSpanAsync(opts.span, span =>
                 this.fetchInternalAsync({...opts, span})
             );
         }
 
+        // 2) Apply appropriate tracing and correlation to the core work.
         opts = this.withCorrelationId(opts);
+        let ret = this.withSpanAsync(this.createSpanConfig(opts), span => {
+            opts = {...opts, traceId: span.traceId};
+            return this.withResolvedHeadersAsync(opts, span).then(opts =>
+                this.managedFetchAsync(opts, span)
+            );
+        });
 
-        // Tracing - create span for this request.
-        const span = this.startFetchSpan(opts);
-        if (span) opts = {...opts, traceId: span.traceId};
-
-        // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
-        let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
-            this.managedFetchAsync(opts)
-        );
-
-        // Apply tracking
-        const {correlationId, loadSpec, track} = opts;
-        if (track) {
+        // 3) Apply tracking
+        if (opts.track) {
+            const {correlationId, loadSpec, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
                 trackOptions.correlationId || trackOptions.loadSpec,
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
             );
-            ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+            ret = ret.track({
+                ...trackOptions,
+                correlationId: correlationId as string,
+                loadSpec
+            });
         }
 
-        // Tracing - end span on completion or failure.
-        if (span) {
-            ret = ret.then(
-                value => {
-                    this.endFetchSpan(span, value);
-                    return value;
-                },
-                cause => {
-                    this.endFetchSpan(span, null, cause);
-                    throw cause;
-                }
-            );
-        }
-
-        // Apply interceptors
+        // 4) Apply interceptors - run after span has ended and exported.
         for (const interceptor of this._interceptors) {
             ret = ret.then(
                 value => interceptor.onFulfilled(opts, value),
@@ -309,7 +298,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions): Promise<any> {
+    private async managedFetchAsync(opts: FetchOptions, span: Span): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -323,7 +312,10 @@ export class FetchService extends HoistService {
 
         try {
             return await this.abortableFetchAsync(opts, aborter)
-                .then(opts.asJson ? r => this.parseJsonAsync(opts, r) : null)
+                .then(r => {
+                    span.setTag('http.response.status_code', r.status);
+                    return opts.asJson ? this.parseJsonAsync(opts, r) : r;
+                })
                 .timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
@@ -417,39 +409,18 @@ export class FetchService extends HoistService {
         }
     }
 
-    //------------------
-    // Tracing
-    //------------------
-    private startFetchSpan(opts: FetchOptions): Span {
-        const traceService = XH.traceService;
-        if (!traceService?.enabled) return null;
-
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            url = this.extractUrlPath(opts.url);
-
-        return traceService.createSpan({
+    private createSpanConfig(opts: FetchOptions): SpanConfig {
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET');
+        return {
             name: method,
             kind: 'client',
             parent: opts.span as Span,
-            tags: {'xh.source': 'hoist', 'http.request.method': method, 'url.path': url},
-            caller: this
-        });
-    }
-
-    private endFetchSpan(span: Span, value?: any, error?: unknown) {
-        if (!span) return;
-
-        if (value?.status != null) {
-            span.tags['http.response.status_code'] = value.status;
-        }
-
-        if (error) {
-            span.recordError(error);
-            span.end('error');
-        } else {
-            span.end('ok');
-        }
-        XH.traceService.exportSpan(span);
+            tags: {
+                'xh.source': 'hoist',
+                'http.request.method': method,
+                'url.path': this.extractUrlPath(opts.url)
+            }
+        };
     }
 
     private extractUrlPath(url: string): string {

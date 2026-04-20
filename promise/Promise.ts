@@ -258,24 +258,7 @@ const enhancePromise = promisePrototype => {
         },
 
         span<T>(config: SpanConfig | string): Promise<T> {
-            const svc = XH.traceService,
-                span = svc?.createSpan(config);
-
-            if (!span) return this;
-
-            return this.then(
-                (v: T) => {
-                    span.end('ok');
-                    return v;
-                },
-                (e: unknown) => {
-                    span.recordError(e);
-                    span.end('error');
-                    throw e;
-                }
-            ).finally(() => {
-                svc.exportSpan(span);
-            });
+            return XH.traceService.withSpanAsync(config, () => this) as Promise<T>;
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {

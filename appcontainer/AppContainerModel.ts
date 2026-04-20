@@ -279,6 +279,7 @@ export class AppContainerModel extends HoistModel {
                         [EnvironmentService, ConfigService, PrefService, JsonBlobService],
                         hoistInitSpan
                     );
+                    XH.traceService.noteConfigAvailable();
 
                     await installServicesAsync([TrackService], hoistInitSpan);
                     await installServicesAsync(

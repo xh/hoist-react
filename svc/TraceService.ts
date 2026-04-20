@@ -43,6 +43,7 @@ export class TraceService extends HoistService {
      * its "deferred" branch.
      */
     private _pendingConfig: Span[] = [];
+    private conf: TraceConfig = {enabled: false};
 
     //------------------
     // Initialization
@@ -54,14 +55,6 @@ export class TraceService extends HoistService {
     //------------------
     // Configuration
     //------------------
-    /** Parsed tracing config from server soft-config */
-    get conf(): TraceConfig {
-        return {
-            enabled: false,
-            ...(XH.configService?.get('xhTraceConfig', {}) ?? {})
-        };
-    }
-
     /** Is tracing currently enabled? */
     get enabled(): boolean {
         return this.conf.enabled;
@@ -117,6 +110,9 @@ export class TraceService extends HoistService {
         }
     }
 
+    //------------------
+    // Implementation
+    //------------------
     /**
      * Create a new span. Always returns a span - when tracing is disabled the returned span
      * is flagged unsampled and will never be exported, so callers can interact with it safely.
@@ -133,7 +129,7 @@ export class TraceService extends HoistService {
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
-    createSpan(config: string | SpanConfig): Span {
+    private createSpan(config: string | SpanConfig): Span {
         const ret: SpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
@@ -162,7 +158,7 @@ export class TraceService extends HoistService {
      * Submit a completed span for export. Spans whose sampling is still undecided are held
      * for {@link noteConfigAvailable}; sampled spans are queued and flushed on a debounced timer.
      */
-    exportSpan(span: Span) {
+    private exportSpan(span: Span) {
         // Defer - decision will be made once xhTraceConfig is loaded.
         if (span.sampled === null) return;
         if (!this.enabled) return;
@@ -181,7 +177,7 @@ export class TraceService extends HoistService {
      * Push all pending spans to the server.
      * Called on debounced interval and on page unload.
      */
-    async pushPendingAsync() {
+    private async pushPendingAsync() {
         const spans = this._pending;
         if (isEmpty(spans)) return;
 
@@ -199,9 +195,6 @@ export class TraceService extends HoistService {
         }
     }
 
-    //------------------
-    // Implementation
-    //------------------
     /**
      * Called by {@link ConfigService} once `xhTraceConfig` has loaded. Applies sampling
      * decisions to all spans created during early startup and held in the pendingConfig
@@ -214,6 +207,7 @@ export class TraceService extends HoistService {
      * @internal - for framework use only.
      */
     noteConfigAvailable() {
+        this.conf = {enabled: false, ...XH.configService.get('xhTraceConfig', {})};
         const pending = this._pendingConfig;
         this._pendingConfig = null;
 
