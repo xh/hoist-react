@@ -282,12 +282,12 @@ export class TraceService extends HoistService {
 
 interface TraceConfig {
     enabled: boolean;
-    sampleRules?: SamplingRule[];
+    sampleRules?: SampleRule[];
     sampleRate?: number;
     alwaysSampleErrors?: boolean;
 }
 
-interface SamplingRule {
+interface SampleRule {
     match: Record<string, string>;
     sampleRate: number;
 }
