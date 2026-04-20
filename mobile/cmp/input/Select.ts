@@ -6,7 +6,14 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {
+    Awaitable,
+    hoistCmp,
+    HoistProps,
+    LayoutProps,
+    PlainObject,
+    SelectOption
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -22,7 +29,7 @@ import {wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import debouncePromise from 'debounce-promise';
-import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
@@ -158,6 +165,18 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 
     /** Field on provided options for sourcing each option's value (default `value`). */
     valueField?: string;
+
+    /**
+     * Function to resolve an option for a value not present in the current options list.
+     * Called when the Select needs to display a selected value but cannot find a
+     * matching option. Returns a single option in the same format as elements of the
+     * `options` and `queryFn` props — a SelectOption object, plain object (processed
+     * via labelField/valueField), or primitive.
+     *
+     * Useful with queryFn-based selects, readonly forms, or any case where options
+     * may not be loaded when a value is set.
+     */
+    lookupFn?: (value: any) => Awaitable<SelectOption | any>;
 }
 
 /**
@@ -192,6 +211,7 @@ class SelectInputModel extends HoistInputModel {
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
+    @observable.ref _lookupCache: SelectOption[] = [];
     @bindable fullscreen = false;
 
     // Prop-backed convenience getters
@@ -239,7 +259,14 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
+                this.cleanLookupCache();
             },
+            fireImmediately: true
+        });
+
+        this.addReaction({
+            track: () => this.renderValue,
+            run: () => this.triggerLookupIfNeeded(),
             fireImmediately: true
         });
 
@@ -394,6 +421,13 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
+        // Search lookup cache when searching primary options
+        if (options === this.internalOptions) {
+            for (const option of this._lookupCache) {
+                if (isEqual(option.value, value)) return option;
+            }
+        }
+
         return createIfNotFound ? this.valueToOption(value) : null;
     }
 
@@ -454,12 +488,11 @@ class SelectInputModel extends HoistInputModel {
 
                 // Carry forward and add to any existing internalOpts to allow our value
                 // converters to continue all selected values in multiMode.
-                const matchesByVal = keyBy(matchOpts, 'value'),
-                    newOpts = [...matchOpts];
-
+                const newOpts = [...matchOpts];
                 this.internalOptions.forEach(currOpt => {
-                    const matchOpt = matchesByVal[currOpt.value];
-                    if (!matchOpt) newOpts.push(currOpt); // avoiding dupes
+                    if (!matchOpts.some(matchOpt => isEqual(matchOpt.value, currOpt.value))) {
+                        newOpts.push(currOpt);
+                    }
                 });
 
                 this.internalOptions = newOpts;
@@ -481,12 +514,46 @@ class SelectInputModel extends HoistInputModel {
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     };
 
+    //------------------------
+    // Value Lookup
+    //------------------------
+    private async triggerLookupIfNeeded() {
+        const {lookupFn} = this.componentProps;
+        if (!lookupFn) return;
+
+        const ext = this.externalValue;
+        if (isNil(ext)) return;
+
+        if (this.findOption(ext, false)) return;
+
+        try {
+            const raw = await lookupFn(ext);
+            const resolved = !isNil(raw) ? this.toOption(raw, 0) : this.valueToOption(ext);
+            this.setLookupCache([...this._lookupCache, resolved]);
+        } catch (e) {
+            this.logError(e);
+        }
+    }
+
+    @action
+    private setLookupCache(cache: SelectOption[]) {
+        this._lookupCache = cache;
+    }
+
+    @action
+    private cleanLookupCache() {
+        if (this._lookupCache.length === 0) return;
+        const ext = this.externalValue;
+        this._lookupCache = isNil(ext)
+            ? []
+            : this._lookupCache.filter(opt => isEqual(opt.value, ext));
+    }
+
     //----------------------
     // Option Rendering
     //----------------------
     formatOptionLabel = (opt, params) => {
-        // Always display the standard label string in the value container (context == 'value').
-        // If we need to expose customization here, we could consider a dedicated prop.
+        // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
             return opt.label;
         }
@@ -502,7 +569,7 @@ class SelectInputModel extends HoistInputModel {
             return div(opt.label);
         }
 
-        return this.externalValue === opt.value
+        return isEqual(this.externalValue, opt.value)
             ? hbox({
                   items: [
                       div({
