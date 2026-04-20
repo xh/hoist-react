@@ -120,7 +120,7 @@ export class EnvironmentService extends HoistService {
         try {
             data = await XH.fetchJson({
                 url: 'xh/environmentPoll',
-                span: {name: 'xh.envPoll', caller: this}
+                span: {name: 'xh.client.envPoll', caller: this}
             });
         } catch (e) {
             this.logError('Error polling server environment', e);

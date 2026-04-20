@@ -156,7 +156,7 @@ export class AppContainerModel extends HoistModel {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
             await installServicesAsync([TraceService], null);
 
-            await this.withSpanAsync({name: 'xh.app-load'}, async appLoadSpan => {
+            await this.withSpanAsync({name: 'xh.client.app-load'}, async appLoadSpan => {
                 this.addGlobalListenersAndCss();
                 await installServicesAsync([FetchService], appLoadSpan);
 
@@ -164,7 +164,7 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('AUTHENTICATING');
                 XH.authModel = createSingleton(this.appSpec.authModelClass);
                 let identity = await this.withSpanAsync(
-                    {name: 'xh.auth', parent: appLoadSpan},
+                    {name: 'xh.client.auth', parent: appLoadSpan},
                     () => XH.authModel.completeAuthAsync()
                 );
                 if (!identity) {
@@ -174,7 +174,7 @@ export class AppContainerModel extends HoistModel {
                     );
                     this.setAppState('LOGIN_REQUIRED');
                     identity = await this.withSpanAsync(
-                        {name: 'xh.login', parent: appLoadSpan},
+                        {name: 'xh.client.login', parent: appLoadSpan},
                         () => this.awaitInteractiveLoginAsync()
                     );
                 }
@@ -269,7 +269,7 @@ export class AppContainerModel extends HoistModel {
             // installs, etc.) is resolved mid-phase, immediately after ConfigService init.
             this.setAppState('INITIALIZING_HOIST');
             await this.withSpanAsync(
-                {name: 'xh.hoist-init', parent: appLoadSpan},
+                {name: 'xh.client.hoist-init', parent: appLoadSpan},
                 async hoistInitSpan => {
                     await installServicesAsync(
                         [LocalStorageService, SessionStorageService],
@@ -331,7 +331,7 @@ export class AppContainerModel extends HoistModel {
             // App init phase
             this.setAppState('INITIALIZING_APP');
             this.appModel = createSingleton(this.appSpec.modelClass);
-            await this.withSpanAsync({name: 'xh.app-init', parent: appLoadSpan}, span =>
+            await this.withSpanAsync({name: 'xh.client.app-init', parent: appLoadSpan}, span =>
                 this.appModel.initAsync(span)
             );
 

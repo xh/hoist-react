@@ -128,7 +128,7 @@ export class PrefService extends HoistService {
             params: {
                 clientUsername: XH.getUsername()
             },
-            span: {name: 'xh.setPrefs', caller: this}
+            span: {name: 'xh.client.setPrefs', caller: this}
         });
     }
 
