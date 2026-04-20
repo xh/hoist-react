@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, managed, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 
 /**
  * Service to triggers an app-wide auto-refresh (if enabled, on a configurable interval) via the
@@ -45,7 +44,7 @@ export class AutoRefreshService extends HoistService {
         return withDefault(conf[XH.clientAppCode], -1);
     }
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         this.initTime = Date.now();
 
         this.timer = Timer.create({

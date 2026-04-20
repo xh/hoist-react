@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {Span} from '@xh/hoist/utils/telemetry';
@@ -32,9 +32,9 @@ export class PrefService extends HoistService {
     private _data = {};
     private _updates = {};
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        return this.loadPrefsAsync(span);
+        return this.loadPrefsAsync(ctx.span);
     }
 
     /**

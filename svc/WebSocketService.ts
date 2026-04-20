@@ -4,13 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {find, pull} from 'lodash';
 
 /**
@@ -85,7 +84,7 @@ export class WebSocketService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         if (!this.enabled) return;
 
         const {environmentService} = XH;

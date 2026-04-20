@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {pick, round} from 'lodash';
 
@@ -25,7 +24,7 @@ export class ClientHealthService extends HoistService {
 
     private sources: Map<string, () => any> = new Map();
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         const {clientHealthReport} = XH.trackService.conf;
         Timer.create({
             runFn: () => this.sendReportInternal(),

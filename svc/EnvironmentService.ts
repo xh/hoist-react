@@ -5,14 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import bpPkg from '@blueprintjs/core/package.json';
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {checkMinVersion, deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {defaults, isFinite} from 'lodash';
 import mobxPkg from 'mobx/package.json';
 import {version as reactVersion} from 'react';
@@ -50,10 +49,10 @@ export class EnvironmentService extends HoistService {
     private pollConfig: PollConfig;
     private pollTimer: Timer;
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
                 url: 'xh/environment',
-                span
+                span: ctx.span
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;

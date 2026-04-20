@@ -4,14 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, managed, persist, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, managed, persist, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {Span} from '@xh/hoist/utils/telemetry';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
@@ -69,7 +68,7 @@ export class InspectorService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();

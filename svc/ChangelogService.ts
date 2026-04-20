@@ -4,12 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {isEmpty, forOwn, includes} from 'lodash';
 
 /**
@@ -83,7 +82,7 @@ export class ChangelogService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         this.changelog = !isEmpty(jsonFromMarkdown?.versions)
             ? jsonFromMarkdown
             : {title: null, versions: []};

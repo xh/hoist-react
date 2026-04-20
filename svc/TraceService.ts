@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString} from 'lodash';
@@ -48,7 +48,7 @@ export class TraceService extends HoistService {
     //------------------
     // Initialization
     //------------------
-    override async initAsync(span: Span) {
+    override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
