@@ -29,7 +29,10 @@ export class ConfigService extends HoistService {
     private _data = {};
 
     override async initAsync(ctx: InitContext) {
-        this._data = await XH.fetchJson({url: 'xh/getConfig', span: ctx.span});
+        this._data = await XH.fetchJson({
+            url: 'xh/getConfig',
+            span: {name: 'xh.client.config.get', parent: ctx.span, caller: this}
+        });
         deepFreeze(this._data);
     }
 

@@ -98,7 +98,7 @@ declare global {
          * Wrap this promise in a tracing span. The span starts when `.span()` is called
          * and ends when the promise settles (resolves or rejects).
          *
-         * @param config - span name string, or a SpanConfig.
+         * @param config - SpanConfig, or simply a span name.
          */
         span(config: SpanConfig | string): Promise<T>;
     }

@@ -32,11 +32,9 @@ export class HoistAppModel extends HoistModel {
      *
      * Applications will typically use this method to install and initialize app-specific
      * services using one or more phased calls to XH.installServicesAsync(). Pass `ctx`
-     * along to those calls to nest service init under the `app-init` root span.
+     * along to those calls to nest service init appropriately within the app loading telemetry.
      *
-     * @param ctx - init context for the `app-init` phase. Use `ctx.span` as the `parent`
-     *      of any spans created directly here, and forward `ctx` to `XH.installServicesAsync()`
-     *      to nest service inits.
+     * @param ctx - init context
      */
     async initAsync(ctx: InitContext) {}
 

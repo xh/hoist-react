@@ -34,7 +34,7 @@ export class DataAccess<T> {
             const ret = await XH.fetchJson({
                 url: 'xhView/allData',
                 params: {type, viewInstance: instance},
-                span: {name: 'xh.client.getAllViews', caller: this}
+                span: {name: 'xh.client.view.getAll', caller: this}
             });
             return {
                 views: ret.views.map(v => new ViewInfo(v, this.model)),
@@ -56,7 +56,7 @@ export class DataAccess<T> {
             const raw = await XH.fetchJson({
                 url: 'xhView/get',
                 params: {token},
-                span: {name: 'xh.client.getView', caller: this}
+                span: {name: 'xh.client.view.get', caller: this}
             });
             return View.fromBlob(raw, model);
         } catch (e) {
@@ -71,7 +71,7 @@ export class DataAccess<T> {
             const raw = await XH.postJson({
                 url: 'xhView/create',
                 body: {type: model.type, ...spec},
-                span: {name: 'xh.client.createView', caller: this}
+                span: {name: 'xh.client.view.create', caller: this}
             });
             return View.fromBlob(raw, model);
         } catch (e) {
@@ -87,7 +87,7 @@ export class DataAccess<T> {
                 url: 'xhView/updateInfo',
                 params: {token: view.token},
                 body: updates,
-                span: {name: 'xh.client.updateViewInfo', caller: this}
+                span: {name: 'xh.client.view.updateInfo', caller: this}
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -103,7 +103,7 @@ export class DataAccess<T> {
                 url: 'xhView/updateValue',
                 params: {token: view.token},
                 body: value,
-                span: {name: 'xh.client.updateViewValue', caller: this}
+                span: {name: 'xh.client.view.updateValue', caller: this}
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -120,7 +120,7 @@ export class DataAccess<T> {
             await XH.postJson({
                 url: 'xhView/delete',
                 params: {tokens: map(views, 'token').join(',')},
-                span: {name: 'xh.client.deleteViews', caller: this}
+                span: {name: 'xh.client.view.delete', caller: this}
             });
         } catch (e) {
             throw XH.exception({
@@ -139,7 +139,7 @@ export class DataAccess<T> {
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
             body: update,
-            span: {name: 'xh.client.updateViewState', caller: this}
+            span: {name: 'xh.client.view.updateState', caller: this}
         });
     }
 

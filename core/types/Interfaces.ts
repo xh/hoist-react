@@ -14,18 +14,6 @@ import {LoadSpec, LoadSpecConfig} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
 /**
- * Context passed to `HoistService.initAsync()` and `HoistAppModel.initAsync()`, and forwarded
- * via `XH.installServicesAsync()` to nest service-init activity under the current phase.
- *
- * Apps should pass `ctx` through unchanged to `XH.installServicesAsync()` calls, and use
- * `ctx.span` as the `parent` for any new spans created during init.
- */
-export interface InitContext {
-    /** Root span for the current init phase (e.g. `xh.client.hoist-init`, `xh.client.app-init`). */
-    span: Span;
-}
-
-/**
  * A user of the application, as loaded from the server.
  *
  * Note that instances of this class may contain other custom properties serialize by an
@@ -58,6 +46,18 @@ export interface IdentityInfo {
      * will be different during impersonation.
      */
     apparentUser: HoistUser;
+}
+
+/**
+ * Context passed to `HoistService.initAsync()` and `HoistAppModel.initAsync()`, and forwarded
+ * via `XH.installServicesAsync()` to nest service-init activity under the current phase.
+ *
+ * Apps should pass `ctx` through unchanged to `XH.installServicesAsync()` calls, and use
+ * `ctx.span` as the `parent` for any new spans created during init.
+ */
+export interface InitContext {
+    /** Root span for the current init phase (e.g. `xh.client.appLoad`). */
+    span: Span;
 }
 
 /**

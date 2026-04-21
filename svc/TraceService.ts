@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString} from 'lodash';
@@ -18,15 +18,15 @@ import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
  * end-to-end traces from user interaction through server processing and back.
  *
  * Controlled by the `xhTraceConfig` soft config. When disabled (the default), spans are
- * still created and passed to wrapped functions, but are flagged as unsampled and never
+ * still created and passed to wrapped functions but are flagged as unsampled and never
  * exported - callers can interact with the span without null checks.
  *
- * To support tracing from the earliest moments of app startup, this service is installed
+ * To support tracing from the earliest moments of app startup this service is installed
  * before any other, well before Config can be loaded. Spans created during that
  * window are marked with `sampled === null` (decision deferred) and held in a pending bucket.
- * Once config arrives, {@link noteConfigAvailable} walks the bucket, and applies sampling rules
- * per-trace.  Outbound `traceparent` headers send `00` while undecided so server-side spans don't
- * sample without a client decision.
+ * Once config arrives, {@link noteConfigAvailable} the service walks the bucket, and applies
+ * sampling rules per-trace.  Outbound `traceparent` headers send `00` in the undetermined state
+ * so server-side spans don't sample without a client decision.
  *
  * Completed spans are batched and exported to the Hoist server endpoint `xh/submitSpans`,
  * which relays them to the configured collector.
@@ -37,13 +37,11 @@ export class TraceService extends HoistService {
     /** Spans whose sampling has been decided and are queued for export. */
     private _pending: Span[] = [];
 
-    /**
-     * Spans created before sampling config is loaded - held here until {@link noteConfigAvailable}
-     * resolves them. Nulled out once config is available, which also gates `shouldSample` out of
-     * its "deferred" branch.
-     */
-    private _pendingConfig: Span[] = [];
-    private conf: TraceConfig = {enabled: false};
+    /** Config. Will be loaded when available. */
+    private conf: TraceConfig = null;
+
+    /** Spans created before config available. */
+    private _preConfigSpans: Span[] = [];
 
     //------------------
     // Initialization
@@ -57,7 +55,7 @@ export class TraceService extends HoistService {
     //------------------
     /** Is tracing currently enabled? */
     get enabled(): boolean {
-        return this.conf.enabled;
+        return this.conf?.enabled ?? false;
     }
 
     //------------------
@@ -143,11 +141,17 @@ export class TraceService extends HoistService {
             ...ret.tags
         };
 
-        // Sampling: children inherit; roots evaluate rules.
-        ret.sampled = ret.parent ? ret.parent.sampled : this.shouldSample(ret.name, ret.tags);
-
         const span = new Span(ret);
-        if (span.sampled === null) this._pendingConfig?.push(span);
+
+        // Handle sampling for roots. If config available compute, otherwise defer
+        if (span.sampled === null) {
+            if (this.conf) {
+                span.sampled = this.shouldSample(span);
+            } else {
+                this._preConfigSpans.push(span);
+            }
+        }
+
         return span;
     }
 
@@ -159,14 +163,12 @@ export class TraceService extends HoistService {
      * for {@link noteConfigAvailable}; sampled spans are queued and flushed on a debounced timer.
      */
     private exportSpan(span: Span) {
-        // Defer - decision will be made once xhTraceConfig is loaded.
-        if (span.sampled === null) return;
-        if (!this.enabled) return;
+        if (!this.enabled || span.sampled === null) return; // defer until config is loaded.
+
         if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
             this._pending.push(span);
 
-            // Queue the span, but if this is the submitSpans export itself, don't schedule
-            // another flush or we'll loop forever.
+            // Queue the push unless its submitSpans export itself (avoid looping).
             if (!span.tags['url.path']?.endsWith('xh/submitSpans')) {
                 this.pushPendingBuffered();
             }
@@ -208,20 +210,19 @@ export class TraceService extends HoistService {
      */
     noteConfigAvailable() {
         this.conf = {enabled: false, ...XH.configService.get('xhTraceConfig', {})};
-        const pending = this._pendingConfig;
-        this._pendingConfig = null;
 
         // Group by traceId so we can resolve sampling once at root. Re-export any spans that
         // have already ended - their own finally-block `exportSpan` early-returned on null.
         // Spans still in flight will export correctly when they end.
-        forEach(groupBy(pending, 'traceId'), spans => {
-            const root = spans.find(s => !s.parentSpanId) ?? spans[0],
-                decision = this.shouldSample(root.name, root.tags);
+        forEach(groupBy(this._preConfigSpans, 'traceId'), spans => {
+            const rootSampled = this.shouldSample(spans.find(s => !s.parent) ?? spans[0]);
             spans.forEach(s => {
-                s.sampled = decision;
+                s.sampled = rootSampled;
                 if (s.endTime) this.exportSpan(s);
             });
         });
+
+        this._preConfigSpans = null;
     }
 
     @debounced(5 * SECONDS)
@@ -230,26 +231,28 @@ export class TraceService extends HoistService {
     }
 
     /**
-     * Resolve a root-span sampling decision: returns `null` to defer until config is loaded,
-     * `false` when tracing is disabled, or a probabilistic decision from `sampleRules`. Rules
+     * Resolve a root-span sampling decision: a probabilistic decision from `sampleRules`. Rules
      * match on tag keys; the reserved key `name` matches the span's name (glob-capable, same
      * syntax as tag-value patterns).
      */
-    private shouldSample(name: string, tags: PlainObject): boolean | null {
-        if (this._pendingConfig) return null;
+    private shouldSample(span: Span): boolean {
         if (!this.enabled) return false;
         try {
-            return Math.random() < this.getSampleRate(name, tags);
+            return Math.random() < this.getSampleRate(span);
         } catch (e) {
             this.logError('Failed to compute sample rate', e);
             return false;
         }
     }
 
-    private getSampleRate(name: string, tags: PlainObject): number {
+    private getSampleRate(span: Span): number {
         const {conf} = this;
         for (const rule of conf.sampleRules ?? []) {
-            if (every(rule.match, (v, k) => this.matchesValue(k === 'name' ? name : tags[k], v))) {
+            if (
+                every(rule.match, (v, k) =>
+                    this.matchesValue(k === 'name' ? span.name : span.tags[k], v)
+                )
+            ) {
                 return rule.sampleRate;
             }
         }

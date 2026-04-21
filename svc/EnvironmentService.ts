@@ -109,7 +109,7 @@ export class EnvironmentService extends HoistService {
     }
 
     /**
-     * Update critical environment information from server, including current app version + build,
+     * Update critical environment information from the server, including current app version + build,
      * upgrade prompt mode, and alert banner.
      *
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.

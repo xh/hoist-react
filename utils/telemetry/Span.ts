@@ -13,6 +13,8 @@ import {NameSource} from '@xh/hoist/utils/js';
  * Produces W3C-compatible trace and span IDs without requiring the full
  * OpenTelemetry SDK. Completed spans are exported to the Hoist server,
  * which relays them to the configured collector.
+ *
+ * @internal
  */
 export class Span {
     /** 32 hex chars (128-bit). */
@@ -21,8 +23,8 @@ export class Span {
     /** 16 hex chars (64-bit). */
     spanId: string;
 
-    /** 16 hex chars, or null for root spans. */
-    parentSpanId: string;
+    /** Parent span, or null for root spans. */
+    parent: Span;
 
     name: string;
 
@@ -53,15 +55,15 @@ export class Span {
     sampled: boolean | null;
 
     constructor(config: SpanConfig) {
-        const parent = config.parent;
-        this.traceId = parent?.traceId ?? genTraceId();
+        const {parent} = config;
+        this.parent = config.parent;
         this.spanId = genSpanId();
-        this.parentSpanId = parent?.spanId ?? null;
         this.name = config.name;
         this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
-        this.tags = {...config.tags};
-        this.sampled = config.sampled ?? null;
+        this.tags = config.tags;
+        this.traceId = parent?.traceId ?? genTraceId();
+        this.sampled = config.sampled ?? parent?.sampled ?? null;
     }
 
     /** End this span, recording status and computing duration. */
@@ -96,7 +98,7 @@ export class Span {
         return {
             traceId: this.traceId,
             spanId: this.spanId,
-            parentSpanId: this.parentSpanId,
+            parentSpanId: this.parent?.spanId ?? null,
             name: this.name,
             kind: this.kind,
             startTime: this.startTime,

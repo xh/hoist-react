@@ -65,9 +65,7 @@ export class HoistService extends HoistBase implements Loadable {
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
      *
-     * @param ctx - init context for the current phase. Use `ctx.span` as the `parent` of any
-     *      spans created here so init activity nests under the phase root in the resulting trace.
-     *      Forward `ctx` to any `XH.installServicesAsync()` calls.
+     * @param ctx - init context
      */
     async initAsync(ctx: InitContext): Promise<void> {}
 

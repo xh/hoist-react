@@ -103,7 +103,7 @@ export class TrackService extends HoistService {
             url: 'xh/track',
             body: {entries: pending},
             params: {clientUsername: XH.getUsername()},
-            span: {name: 'xh.client.trackPush', caller: this}
+            span: {name: 'xh.client.track.push', caller: this}
         });
     }
 
