@@ -21,18 +21,20 @@
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
   server-side API. Added `Span.setTag()`/`setTags()`.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
-  argument carrying the current phase's `span`, so service-init spans nest under the caller's
-  span. `InitContext` is a small wrapper (`{span}`) designed to accept additional init-time
-  context in the future without further signature churn.
+  argument carrying the current phase's `span`, so service init spans can nest under the caller's
+  span.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
-  `name` key (glob-capable, same syntax as tag-value patterns). Matches addition in
-  hoist-core.
+  `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
+* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+  user, if any.
+* Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
+  `xh.client.appInit`.
 
 ### 🐞 Bug Fixes
 
-* Added the `user.name` tag to all spans, matching the server-side convention.
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
+* Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
   references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
   not reachable from consumer tsconfigs with narrower `include` patterns.
