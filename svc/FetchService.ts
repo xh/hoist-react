@@ -349,11 +349,8 @@ export class FetchService extends HoistService {
         aborter: AbortController
     ): Promise<Response> {
         // 1) Prepare URL
-        let {url, method, headers, body, params} = opts,
-            isRelativeUrl = !url.startsWith('/') && !url.includes('//');
-        if (isRelativeUrl) {
-            url = XH.baseUrl + url;
-        }
+        let {url, method, headers, body, params} = opts;
+        url = this.resolveUrl(url);
 
         // 2) Prepare options for fetch API
         const fetchOpts: RequestInit = {
@@ -420,18 +417,33 @@ export class FetchService extends HoistService {
             tags: {
                 'xh.source': 'hoist',
                 'http.request.method': method,
-                'url.path': this.extractUrlPath(opts.url)
+                'url.full': this.buildFullUrl(opts.url)
             }
         };
     }
 
-    private extractUrlPath(url: string): string {
+    /** Prefix relative URLs with {@link XH.baseUrl}; leave absolute/root-relative URLs as-is. */
+    private resolveUrl(url: string): string {
         if (!url) return '';
+        const isRelative = !url.startsWith('/') && !url.includes('//');
+        return isRelative ? XH.baseUrl + url : url;
+    }
+
+    private buildFullUrl(url: string): string {
+        const raw = this.resolveUrl(url);
+        if (!raw) return '';
+
         try {
-            if (url.includes('//')) return new URL(url).pathname;
-            return url.split('?')[0];
-        } catch (e) {
-            return url.split('?')[0];
+            const parsed = new URL(raw, window.location.origin);
+            // Redact values of query params that commonly carry secrets.
+            const sensitive =
+                /^(token|access_token|id_token|password|pwd|secret|api[_-]?key|auth|session|sig|signature)$/i;
+            for (const key of Array.from(parsed.searchParams.keys())) {
+                if (sensitive.test(key)) parsed.searchParams.set(key, 'REDACTED');
+            }
+            return parsed.toString();
+        } catch {
+            return raw;
         }
     }
 
