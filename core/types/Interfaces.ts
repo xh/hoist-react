@@ -56,7 +56,7 @@ export interface IdentityInfo {
  * `ctx.span` as the `parent` for any new spans created during init.
  */
 export interface InitContext {
-    /** Root span for the current init phase (e.g. `xh.client.appLoad`). */
+    /** Root span for the current init phase (e.g. `xh.client.hoistInit`, `xh.client.appInit`). */
     span: Span;
 }
 

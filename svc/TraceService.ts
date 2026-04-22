@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString} from 'lodash';
@@ -136,8 +136,8 @@ export class TraceService extends HoistService {
             'xh.loadId': XH.loadId,
             'xh.tabId': XH.tabId,
             'xh.source': ret.name.startsWith('xh.') ? 'hoist' : 'app',
-            'user.name': XH.getUsername(),
             ...(ret.caller ? {'code.namespace': parseNameSource(ret.caller)} : {}),
+            ...this.identityTags(),
             ...ret.tags
         };
 
@@ -146,7 +146,7 @@ export class TraceService extends HoistService {
         // Handle sampling for roots. If config available compute, otherwise defer
         if (span.sampled === null) {
             if (this.conf) {
-                span.sampled = this.shouldSample(span);
+                span.sampled = this.computeSampled(span);
             } else {
                 this._preConfigSpans.push(span);
             }
@@ -215,7 +215,14 @@ export class TraceService extends HoistService {
         // have already ended - their own finally-block `exportSpan` early-returned on null.
         // Spans still in flight will export correctly when they end.
         forEach(groupBy(this._preConfigSpans, 'traceId'), spans => {
-            const rootSampled = this.shouldSample(spans.find(s => !s.parent) ?? spans[0]);
+            // record the now available identity
+            const tags = this.identityTags();
+            spans.forEach(s => {
+                s.setTags(tags);
+            });
+
+            // sample and export as needed
+            const rootSampled = this.computeSampled(spans.find(s => !s.parent) ?? spans[0]);
             spans.forEach(s => {
                 s.sampled = rootSampled;
                 if (s.endTime) this.exportSpan(s);
@@ -235,7 +242,7 @@ export class TraceService extends HoistService {
      * match on tag keys; the reserved key `name` matches the span's name (glob-capable, same
      * syntax as tag-value patterns).
      */
-    private shouldSample(span: Span): boolean {
+    private computeSampled(span: Span): boolean {
         if (!this.enabled) return false;
         try {
             return Math.random() < this.getSampleRate(span);
@@ -274,6 +281,16 @@ export class TraceService extends HoistService {
         if (startsWithWild) return actual.endsWith(core);
         if (endsWithWild) return actual.startsWith(core);
         return actual === pattern;
+    }
+
+    private identityTags(): PlainObject {
+        if (!XH.identityService) return {};
+        const {authUsername, username} = XH.identityService,
+            ret: PlainObject = {'user.name': authUsername};
+        if (username != authUsername) {
+            ret['xh.impersonating'] = username;
+        }
+        return ret;
     }
 }
 

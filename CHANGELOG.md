@@ -13,7 +13,8 @@
   await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
   ```
   The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
-  ensures service-init spans nest under the `app-init` root.
+  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  for app-level services, `xh.client.hoistInit` for Hoist-internal services).
 
 ### 🎁 New Features
 
