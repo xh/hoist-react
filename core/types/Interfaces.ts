@@ -7,6 +7,7 @@
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
+import {Span} from '@xh/hoist/utils/telemetry';
 import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec, LoadSpecConfig} from '../load';
@@ -45,6 +46,18 @@ export interface IdentityInfo {
      * will be different during impersonation.
      */
     apparentUser: HoistUser;
+}
+
+/**
+ * Context passed to `HoistService.initAsync()` and `HoistAppModel.initAsync()`, and forwarded
+ * via `XH.installServicesAsync()` to nest service-init activity under the current phase.
+ *
+ * Apps should pass `ctx` through unchanged to `XH.installServicesAsync()` calls, and use
+ * `ctx.span` as the `parent` for any new spans created during init.
+ */
+export interface InitContext {
+    /** Root span for the current init phase (e.g. `xh.client.hoistInit`, `xh.client.appInit`). */
+    span: Span;
 }
 
 /**

@@ -4,7 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from './';
+import {
+    HoistBase,
+    InitContext,
+    managed,
+    LoadSupport,
+    LoadSpec,
+    Loadable,
+    PlainObject,
+    TaskObserver
+} from './';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
@@ -55,8 +64,10 @@ export class HoistService extends HoistBase implements Loadable {
      * Called by framework or application to initialize before application startup.
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
+     *
+     * @param ctx - init context
      */
-    async initAsync(): Promise<void> {}
+    async initAsync(ctx: InitContext): Promise<void> {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.

@@ -2,16 +2,39 @@
 
 ## 85.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
+  array of service classes plus the current phase's `InitContext`:
+  ```ts
+  // before
+  await XH.installServicesAsync(MyServiceA, MyServiceB);
+  // after
+  await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
+  ```
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
+  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  for app-level services, `xh.client.hoistInit` for Hoist-internal services).
+
 ### 🎁 New Features
 
 * Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
   server-side API. Added `Span.setTag()`/`setTags()`.
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
+  argument carrying the current phase's `span`, so service init spans can nest under the caller's
+  span.
+* `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
+  `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
+* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+  user, if any.
+* Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
+  `xh.client.appInit`.
 
 ### 🐞 Bug Fixes
 
-* Added the `user.name` tag to all spans, matching the server-side convention.
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
+* Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
   references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
   not reachable from consumer tsconfigs with narrower `include` patterns.
@@ -29,6 +52,11 @@
   `--json` flag on every matching CLI subcommand.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+
+### ⚙️ Technical
+
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
+  and easier tag-based sampling.
 
 ## 84.0.1 - 2026-04-20
 
