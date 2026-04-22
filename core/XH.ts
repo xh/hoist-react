@@ -54,12 +54,14 @@ import {
     HoistAppModel,
     HoistService,
     HoistServiceClass,
+    InitContext,
     HoistUser,
     MessageSpec,
     PageState,
     PlainObject,
     ReloadAppOptions,
     SizingMode,
+    Some,
     TaskObserver,
     Theme,
     ToastSpec,
@@ -770,10 +772,16 @@ export class XHApi {
      * Applications must choose a unique name of the form xxxService to avoid naming collisions.
      * If naming collisions are detected, an error will be thrown.
      *
-     * @param serviceClasses - classes extending HoistService
+     * @param serviceClasses - one or more classes extending HoistService.
+     * @param ctx - init context for the current phase (typically the `ctx` passed to
+     *      `AppModel.initAsync()`). Forwarded to each service's `initAsync()` so spans created
+     *      during init nest under this phase's root span.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    async installServicesAsync(
+        serviceClasses: Some<HoistServiceClass>,
+        ctx: InitContext
+    ): Promise<void> {
+        return installServicesAsync(serviceClasses, ctx);
     }
 
     /**
