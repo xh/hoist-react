@@ -7,7 +7,7 @@
 import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {every, forEach, groupBy, isEmpty, isString} from 'lodash';
+import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
 import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
@@ -116,7 +116,8 @@ export class TraceService extends HoistService {
      * is flagged unsampled and will never be exported, so callers can interact with it safely.
      *
      * The `xh.source` tag defaults to `'hoist'` for spans whose name starts with `'xh.'` and
-     * `'app'` otherwise. Callers may override via `tags`.
+     * `'app'` otherwise. Callers may override all tag values, including setting to null to prevent
+     *  any default tag from being applied.
      *
      * Sampling rules from `xhTraceConfig.sampleRules` are evaluated against the span's tags
      * at creation time (head-based). Child spans inherit their parent's sampling decision.
@@ -131,6 +132,7 @@ export class TraceService extends HoistService {
         const ret: SpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
+        // Remove nulls they are used in this API to just prevent defaults
         ret.tags = {
             'xh.clientApp': XH.clientAppCode,
             'xh.loadId': XH.loadId,
@@ -140,6 +142,7 @@ export class TraceService extends HoistService {
             ...this.identityTags(),
             ...ret.tags
         };
+        ret.tags = omitBy(ret.tags, v => v == null);
 
         const span = new Span(ret);
 
