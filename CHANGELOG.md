@@ -1,5 +1,18 @@
 # Changelog
 
+## 86.0.0-SNAPSHOT
+
+### 💥 Breaking Changes
+
+* Removed client-side span sampling from `TraceService` in favor of server-side sampling
+  available in hoist-core v39.0
+
+### 🎁 New Features
+
+* `FetchService` now sends an `X-Hoist-Client` header on all requests to identify Hoist clients.
+
+### 🐞 Bug Fixes
+
 ## 85.0.0 - 2026-04-23
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
