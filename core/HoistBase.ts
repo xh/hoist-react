@@ -54,6 +54,8 @@ export interface HoistBaseClass {
  * @see HoistModel
  * @see HoistService
  * @see Store
+ *
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {
@@ -115,11 +117,11 @@ export abstract class HoistBase {
     }
 
     withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
-        return XH.traceService.withSpan(config, fn);
+        return XH.traceService.withSpan(this.enhanceSpanConfig(config), fn);
     }
 
     withSpanAsync<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
-        return XH.traceService.withSpanAsync(config, fn);
+        return XH.traceService.withSpanAsync(this.enhanceSpanConfig(config), fn);
     }
 
     /**
@@ -313,6 +315,13 @@ export abstract class HoistBase {
         this.disposers.forEach(f => f());
         this.managedInstances.forEach(i => XH.safeDestroy(i));
         this['_xhManagedProperties']?.forEach(p => XH.safeDestroy(this[p]));
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    private enhanceSpanConfig(config: string | SpanConfig): SpanConfig {
+        return isString(config) ? {name: config, caller: this} : {caller: this, ...config};
     }
 }
 

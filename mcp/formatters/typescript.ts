@@ -1,9 +1,15 @@
 /**
- * Shared formatting functions for TypeScript symbol and member results.
+ * Shared formatting and projection functions for TypeScript symbol and member
+ * results.
  *
  * Used by both the MCP tools (`tools/typescript.ts`) and the CLI (`cli/ts.ts`)
- * to produce identical output from the same data.
+ * to produce identical output from the same data. Offers two projections of
+ * each result set:
+ * - Text -- human-readable block for CLI stdout and MCP text content.
+ * - Structured -- typed JSON shape for MCP `structuredContent` and CLI
+ *   `--json` output. Shape is validated by the exported zod schemas.
  */
+import {z} from 'zod';
 import type {MemberInfo, MemberIndexEntry, SymbolEntry, SymbolDetail} from '../data/ts-registry.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
@@ -70,8 +76,11 @@ export function formatMemberIndexEntry(entry: MemberIndexEntry, index: number): 
     const lines: string[] = [];
     const staticPrefix = entry.isStatic ? 'static ' : '';
     const typeStr = truncateType(entry.type);
+    const ownerSuffix = entry.ownerHint
+        ? `${entry.ownerName} \u2014 ${entry.ownerHint}`
+        : entry.ownerName;
     lines.push(
-        `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${entry.ownerName} \u2014 ${entry.ownerDescription})`
+        `${index}. [${entry.memberKind}] ${staticPrefix}${entry.name}: ${typeStr} (on ${ownerSuffix})`
     );
     if (entry.jsDoc) {
         const indented = collapseJsDoc(entry.jsDoc)
@@ -109,7 +118,7 @@ export function formatSymbolSearch(
 
     if (memberResults.length > 0) {
         if (lines.length > 0) lines.push('');
-        lines.push(`Members of key classes (${memberResults.length} matches):\n`);
+        lines.push(`Members (${memberResults.length} matches):\n`);
         memberResults.forEach((m, i) => {
             lines.push(formatMemberIndexEntry(m, i + 1));
         });
@@ -269,4 +278,284 @@ function formatMembersByCategory(members: MemberInfo[], lines: string[]): void {
         }
         lines.push('');
     }
+}
+
+//------------------------------------------------------------------
+// Shared structured-output fragments
+//------------------------------------------------------------------
+
+const symbolKindSchema = z.enum(['class', 'interface', 'type', 'function', 'const', 'enum']);
+
+/** Lightweight symbol reference used in search results, companions, and alternates. */
+const symbolRefSchema = z.object({
+    name: z.string(),
+    kind: symbolKindSchema,
+    sourcePackage: z.string().describe('Top-level package directory (e.g. "cmp/grid").'),
+    filePath: z.string().describe('Repo-relative source file path.'),
+    exported: z.boolean()
+});
+
+const parameterSchema = z.object({
+    name: z.string(),
+    type: z.string()
+});
+
+/** Full member info as emitted by `hoist-get-members` and member-match results. */
+const memberInfoSchema = z.object({
+    name: z.string(),
+    kind: z.enum(['property', 'method', 'accessor']),
+    type: z.string().describe('Property type, or method return type string.'),
+    isStatic: z.boolean(),
+    isOptional: z.boolean().optional(),
+    decorators: z.array(z.string()),
+    jsDoc: z.string(),
+    parameters: z.array(parameterSchema).optional().describe('Present for methods only.'),
+    returnType: z.string().optional().describe('Present for methods only.'),
+    inheritedFrom: z
+        .string()
+        .optional()
+        .describe('Declaring class/interface name when inherited from a parent.')
+});
+
+function toSymbolRef(
+    entry: Pick<SymbolEntry, 'name' | 'kind' | 'sourcePackage' | 'filePath' | 'isExported'>
+) {
+    return {
+        name: entry.name,
+        kind: entry.kind,
+        sourcePackage: entry.sourcePackage,
+        filePath: toRelativePath(entry.filePath),
+        exported: entry.isExported
+    };
+}
+
+function toMemberInfo(m: MemberInfo) {
+    return {
+        name: m.name,
+        kind: m.kind,
+        type: m.type,
+        isStatic: m.isStatic,
+        ...(m.isOptional !== undefined ? {isOptional: m.isOptional} : {}),
+        decorators: m.decorators,
+        jsDoc: m.jsDoc,
+        ...(m.parameters ? {parameters: m.parameters} : {}),
+        ...(m.returnType ? {returnType: m.returnType} : {}),
+        ...(m.inheritedFrom ? {inheritedFrom: m.inheritedFrom} : {})
+    };
+}
+
+//------------------------------------------------------------------
+// Structured output: hoist-search-symbols
+//------------------------------------------------------------------
+
+/**
+ * Zod schema for the structured output of `hoist-search-symbols` (and the
+ * CLI's `hoist-ts search --json`). Symbol and member hits are returned as
+ * separate arrays so JSON consumers can process each without having to
+ * discriminate on a union type.
+ */
+export const searchSymbolsOutputSchema = z.object({
+    query: z.string().describe('Echoed back from the request for correlation.'),
+    symbolCount: z.number().int(),
+    memberCount: z.number().int(),
+    symbols: z.array(
+        symbolRefSchema.extend({
+            jsDoc: z.string(),
+            hint: z
+                .string()
+                .optional()
+                .describe('Short hint from the @mcpHint JSDoc tag, if present.')
+        })
+    ),
+    members: z.array(
+        z.object({
+            name: z.string(),
+            memberKind: z.enum(['property', 'method', 'accessor']),
+            ownerName: z.string(),
+            ownerHint: z.string().optional().describe('Owner @mcpHint text, if present.'),
+            sourcePackage: z.string(),
+            filePath: z.string().describe('Repo-relative source file path.'),
+            isStatic: z.boolean(),
+            type: z.string(),
+            jsDoc: z.string(),
+            decorators: z.array(z.string())
+        })
+    )
+});
+
+export type SearchSymbolsOutput = z.infer<typeof searchSymbolsOutputSchema>;
+
+/** Project internal symbol + member search results into the public structured shape. */
+export function toSearchSymbolsOutput(
+    query: string,
+    symbolResults: SymbolEntry[],
+    memberResults: MemberIndexEntry[]
+): SearchSymbolsOutput {
+    return {
+        query,
+        symbolCount: symbolResults.length,
+        memberCount: memberResults.length,
+        symbols: symbolResults.map(s => ({
+            ...toSymbolRef(s),
+            jsDoc: s.jsDoc,
+            ...(s.mcpHint ? {hint: s.mcpHint} : {})
+        })),
+        members: memberResults.map(m => ({
+            name: m.name,
+            memberKind: m.memberKind,
+            ownerName: m.ownerName,
+            ...(m.ownerHint ? {ownerHint: m.ownerHint} : {}),
+            sourcePackage: m.sourcePackage,
+            filePath: toRelativePath(m.filePath),
+            isStatic: m.isStatic,
+            type: m.type,
+            jsDoc: m.jsDoc,
+            decorators: m.decorators
+        }))
+    };
+}
+
+//------------------------------------------------------------------
+// Structured output: hoist-get-symbol
+//------------------------------------------------------------------
+
+const symbolDetailSchema = z.object({
+    name: z.string(),
+    kind: symbolKindSchema,
+    sourcePackage: z.string(),
+    filePath: z.string().describe('Repo-relative source file path.'),
+    exported: z.boolean(),
+    signature: z.string(),
+    jsDoc: z.string(),
+    extends: z.string().optional(),
+    implements: z.array(z.string()).optional(),
+    decorators: z.array(z.string()).optional(),
+    constructorType: z
+        .string()
+        .optional()
+        .describe(
+            'Name of the config-object interface the constructor accepts, when this class uses the config-object constructor pattern.'
+        )
+});
+
+/**
+ * Zod schema for the structured output of `hoist-get-symbol` (and the CLI's
+ * `hoist-ts symbol --json`). `symbol` is null when the name does not resolve;
+ * `alternates` lists other symbols with the same name so callers can retry
+ * with a disambiguating file path.
+ */
+export const getSymbolOutputSchema = z.object({
+    requestedName: z.string(),
+    symbol: z
+        .union([symbolDetailSchema, z.null()])
+        .describe('The resolved symbol, or null if not found.'),
+    companions: z
+        .array(symbolRefSchema)
+        .describe(
+            'Cross-referenced symbols -- e.g. the Props interface for a component, or the component for a Props interface. Empty if none.'
+        ),
+    alternates: z
+        .array(symbolRefSchema)
+        .describe(
+            'Other exported symbols with the same name (excluding the resolved one). Empty if the name is unique.'
+        )
+});
+
+export type GetSymbolOutput = z.infer<typeof getSymbolOutputSchema>;
+
+/** Project internal symbol detail + cross-references into the public structured shape. */
+export function toGetSymbolOutput(
+    requestedName: string,
+    detail: SymbolDetail | null,
+    companions: SymbolEntry[],
+    alternates: SymbolEntry[]
+): GetSymbolOutput {
+    return {
+        requestedName,
+        symbol: detail
+            ? {
+                  name: detail.name,
+                  kind: detail.kind,
+                  sourcePackage: detail.sourcePackage,
+                  filePath: toRelativePath(detail.filePath),
+                  exported: detail.isExported,
+                  signature: detail.signature,
+                  jsDoc: detail.jsDoc,
+                  ...(detail.extends ? {extends: detail.extends} : {}),
+                  ...(detail.implements && detail.implements.length > 0
+                      ? {implements: detail.implements}
+                      : {}),
+                  ...(detail.decorators && detail.decorators.length > 0
+                      ? {decorators: detail.decorators}
+                      : {}),
+                  ...(detail.constructorType ? {constructorType: detail.constructorType} : {})
+              }
+            : null,
+        companions: companions.map(toSymbolRef),
+        alternates: alternates.map(toSymbolRef)
+    };
+}
+
+//------------------------------------------------------------------
+// Structured output: hoist-get-members
+//------------------------------------------------------------------
+
+/**
+ * Zod schema for the structured output of `hoist-get-members` (and the CLI's
+ * `hoist-ts members --json`). Members are returned as a flat array; inherited
+ * members are tagged via `inheritedFrom`, and JSON consumers can group by that
+ * field if they want the MCP text layout.
+ */
+export const getMembersOutputSchema = z.object({
+    requestedName: z.string(),
+    owner: z
+        .union([symbolDetailSchema, z.null()])
+        .describe(
+            'The class or interface whose members are listed, or null if the name did not resolve to a class/interface.'
+        ),
+    members: z
+        .array(memberInfoSchema)
+        .describe(
+            'All public members including those inherited from parents. Inherited members have `inheritedFrom` set.'
+        ),
+    alternates: z
+        .array(symbolRefSchema)
+        .describe('Other exported symbols with the same name. Empty if unique.')
+});
+
+export type GetMembersOutput = z.infer<typeof getMembersOutputSchema>;
+
+/** Project internal members result + alternates into the public structured shape. */
+export function toGetMembersOutput(
+    requestedName: string,
+    result: {symbol: SymbolDetail; members: MemberInfo[]} | null,
+    alternates: SymbolEntry[]
+): GetMembersOutput {
+    if (!result) {
+        return {requestedName, owner: null, members: [], alternates: alternates.map(toSymbolRef)};
+    }
+    return {
+        requestedName,
+        owner: {
+            name: result.symbol.name,
+            kind: result.symbol.kind,
+            sourcePackage: result.symbol.sourcePackage,
+            filePath: toRelativePath(result.symbol.filePath),
+            exported: result.symbol.isExported,
+            signature: result.symbol.signature,
+            jsDoc: result.symbol.jsDoc,
+            ...(result.symbol.extends ? {extends: result.symbol.extends} : {}),
+            ...(result.symbol.implements && result.symbol.implements.length > 0
+                ? {implements: result.symbol.implements}
+                : {}),
+            ...(result.symbol.decorators && result.symbol.decorators.length > 0
+                ? {decorators: result.symbol.decorators}
+                : {}),
+            ...(result.symbol.constructorType
+                ? {constructorType: result.symbol.constructorType}
+                : {})
+        },
+        members: result.members.map(toMemberInfo),
+        alternates: alternates.map(toSymbolRef)
+    };
 }

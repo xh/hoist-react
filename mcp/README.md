@@ -306,23 +306,33 @@ Verify the MCP server is running and responsive. Takes no parameters.
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name and JSDoc content.
-Multi-word queries split into tokens matched with AND logic against the combined symbol name +
-JSDoc text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel in
-its JSDoc). Results are ranked with name matches above JSDoc-only matches. Also searches public
-members (properties, methods, accessors) of key framework classes.
+Search for TypeScript classes, interfaces, types, and functions by name, JSDoc content, and own
+member names. Multi-word queries split into tokens matched with AND logic against the combined
+searchable text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel
+in its JSDoc) and `"StoreRecord raw"` finds the `StoreRecord` class (which has a `raw` property).
+Results are ranked with name matches above JSDoc/member-only matches. Also searches public members
+(properties, methods, accessors) of every exported class and every exported `*Config` interface,
+matching against the combined owner name, member name, and member JSDoc.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
+| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), a class + member name (e.g. `"StoreRecord raw"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
 | `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
 | `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |
 
-**Member-indexed classes:** HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField, View, FormModel,
-BaseFieldModel, FieldModel, TabContainerModel. Only public members are indexed (private members and
-those prefixed with `_` are excluded).
+**Member-indexed owners:** Public members of every *exported class* and every exported interface
+whose name ends in `Config` (e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`) are
+indexed for search. The `*Config` rule captures the configuration-object shapes consumed by Hoist
+class constructors, so queries like `"groupSortFn"` or `"omitFn"` reach both the class property
+and the corresponding config-interface field. Only public members are indexed (members with
+`private` scope or names starting with `_` are excluded).
+
+Key framework classes and interfaces carry a short hint shown alongside their name in member
+search results, sourced from an optional `@mcpHint` JSDoc tag on the declaration (e.g.
+`@mcpHint model backing all grid components` on `GridModel`). Owners without the tag are still
+searchable; their results just display without the extra hint. See
+[Member-Indexed Owners](#member-indexed-owners) for how to add or revise a hint.
 
 **Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
 `catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
@@ -489,25 +499,46 @@ const TOP_LEVEL_PACKAGES = [
 ];
 ```
 
-### Member-Indexed Classes
+### Member-Indexed Owners
 
-**File:** `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`)
+**File:** `mcp/data/ts-registry.ts` (functions `shouldIndexClassMembers`,
+`shouldIndexInterfaceMembers`, and `extractMcpHint`)
 
-This map lists classes whose public members are indexed for search by member name via
-`hoist-search-symbols` / `hoist-ts search`. Each entry maps a class name to a brief role
-description shown alongside member search results.
+Which owners have their public members indexed is determined by rule, not a hand-maintained list:
+
+- **Every exported class** (`shouldIndexClassMembers` returns `cls.isExported()`)
+- **Every exported interface whose name ends in `Config`** (`shouldIndexInterfaceMembers`)
+
+The `Config` suffix rule captures configuration-object shapes consumed by Hoist class constructors
+(e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`), so member search surfaces both a
+class property and its corresponding config-interface field for the same query. Other interface
+kinds (`*Props`, `*Spec`) are intentionally excluded -- indexing them floods generic queries like
+`"label"`, `"title"`, `"disabled"` with component-prop hits that dilute more specific results.
+
+**Owner hints via the `@mcpHint` JSDoc tag.** Framework authors attach an optional `@mcpHint`
+tag to the class or interface JSDoc block to give a short hint shown alongside the owner name in
+member search results. Example:
+
+```ts
+/**
+ * Core Model for a Grid, specifying the grid's data store and column definitions.
+ *
+ * @mcpHint model backing all grid components
+ */
+export class GridModel extends HoistModel { ... }
+```
+
+Collocating the hint with the declaration avoids the name-collision and maintenance-drift problems
+of a separate hand-curated registry, and lets framework authors add or revise the hint right where
+they're writing the class. Owners without an `@mcpHint` tag still appear in search results -- they
+just display without the extra hint. The `@mcpHint` tag is declared in the project-root
+`tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
 
 **When to update:**
-- A new key base class is added to the framework and should have its members searchable
-- A member-indexed class is renamed or removed
-- The role description of a class should be clarified
-
-**Current value:**
-```
-HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField,
-View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
-```
+- Add or revise `@mcpHint` on the class/interface JSDoc block directly in its source file. No
+  edit to `ts-registry.ts` is required.
+- Edit `shouldIndexClassMembers` / `shouldIndexInterfaceMembers` only if the indexing rule itself
+  needs to change (e.g. adding `*Spec` interfaces, or scoping out a noisy subtree).
 
 ### Summary: Maintenance Checklist
 
@@ -516,7 +547,8 @@ View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
 | Add/rename/remove a documentation file | `docs/doc-registry.json`, `docs/README.md` |
 | Add upgrade notes for a new major version | `docs/doc-registry.json`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
-| Add/rename/remove a member-indexed class | `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`) |
+| Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
+| Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
 
 ## Extending the Developer Tools
 

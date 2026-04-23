@@ -84,17 +84,17 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Promise handlers to be executed before fufilling or rejecting returned Promise.
+     * Promise handlers to be executed before fulfilling or rejecting returned Promise.
      *
      * Use the `onRejected` handler for apps requiring common handling for particular exceptions.
-     * Useful for recognizing 401s (i.e. session end), or wrapping, logging, or enhancing exceptions.
+     * Useful for recognizing 401s (i.e., session end), or wrapping, logging, or enhancing exceptions.
      * The simplest onRejected handler will simply rethrow the passed exception, or a wrapped version of it.
      * Such handlers may also return `never()` to prevent further processing of the request -- this
-     * is useful, i.e. if the handler is going to redirect the entire app, or otherwise end normal
+     * is useful, i.e., if the handler is going to redirect the entire app, or otherwise end normal
      * app processing.  Rejected handlers may also be able to retry and return valid results via
      * another call to fetch.
      *
-     * Use the `onFulfilled` hander for enhancing, tracking, or even rejecting "successful" returns.
+     * Use the `onFulfilled` handler for enhancing, tracking, or even rejecting "successful" returns.
      * For example, a handler of this form could be used to transform a 200 response returned by
      * an API with an "error" flag into a proper client-side exception.
      */
@@ -197,50 +197,41 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        // If a span spec provided create, wrap, and recurse
+        // 1) If a convenience span spec provided, resolve to an outer Span and recurse.
         if (opts.span && !(opts.span instanceof Span)) {
+            // Use the global withSpanAsync -- don't want to tag with this as the caller.
             return XH.traceService.withSpanAsync(opts.span, span =>
                 this.fetchInternalAsync({...opts, span})
             );
         }
 
+        // 2) Apply appropriate tracing and correlation to the core work.
         opts = this.withCorrelationId(opts);
+        let ret = this.withSpanAsync(this.createSpanConfig(opts), span => {
+            opts = {...opts, traceId: span.traceId};
 
-        // Tracing - create span for this request.
-        const span = this.startFetchSpan(opts);
-        if (span) opts = {...opts, traceId: span.traceId};
+            // Core promise - chained with header resolution to ensure that work is included in overall tracked time.
+            return this.withResolvedHeadersAsync(opts, span).then(opts =>
+                this.managedFetchAsync(opts, span)
+            );
+        });
 
-        // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
-        let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
-            this.managedFetchAsync(opts)
-        );
-
-        // Apply tracking
-        const {correlationId, loadSpec, track} = opts;
-        if (track) {
+        // 3) Apply tracking
+        if (opts.track) {
+            const {correlationId, loadSpec, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
                 trackOptions.correlationId || trackOptions.loadSpec,
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
             );
-            ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+            ret = ret.track({
+                ...trackOptions,
+                correlationId: correlationId as string,
+                loadSpec
+            });
         }
 
-        // Tracing - end span on completion or failure.
-        if (span) {
-            ret = ret.then(
-                value => {
-                    this.endFetchSpan(span, value);
-                    return value;
-                },
-                cause => {
-                    this.endFetchSpan(span, null, cause);
-                    throw cause;
-                }
-            );
-        }
-
-        // Apply interceptors
+        // 4) Apply interceptors - run after span has ended and exported.
         for (const interceptor of this._interceptors) {
             ret = ret.then(
                 value => interceptor.onFulfilled(opts, value),
@@ -309,7 +300,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions): Promise<any> {
+    private async managedFetchAsync(opts: FetchOptions, span: Span): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -323,7 +314,10 @@ export class FetchService extends HoistService {
 
         try {
             return await this.abortableFetchAsync(opts, aborter)
-                .then(opts.asJson ? r => this.parseJsonAsync(opts, r) : null)
+                .then(r => {
+                    span.setTag('http.response.status_code', r.status);
+                    return opts.asJson ? this.parseJsonAsync(opts, r) : r;
+                })
                 .timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
@@ -355,11 +349,8 @@ export class FetchService extends HoistService {
         aborter: AbortController
     ): Promise<Response> {
         // 1) Prepare URL
-        let {url, method, headers, body, params} = opts,
-            isRelativeUrl = !url.startsWith('/') && !url.includes('//');
-        if (isRelativeUrl) {
-            url = XH.baseUrl + url;
-        }
+        let {url, method, headers, body, params} = opts;
+        url = this.resolveUrl(url);
 
         // 2) Prepare options for fetch API
         const fetchOpts: RequestInit = {
@@ -417,48 +408,42 @@ export class FetchService extends HoistService {
         }
     }
 
-    //------------------
-    // Tracing
-    //------------------
-    private startFetchSpan(opts: FetchOptions): Span {
-        const traceService = XH.traceService;
-        if (!traceService?.enabled) return null;
-
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            url = this.extractUrlPath(opts.url);
-
-        return traceService.createSpan({
+    private createSpanConfig(opts: FetchOptions): SpanConfig {
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET');
+        return {
             name: method,
             kind: 'client',
             parent: opts.span as Span,
-            tags: {'http.request.method': method, 'url.path': url, 'xh.source': 'hoist'},
-            caller: this
-        });
+            tags: {
+                'xh.source': 'hoist',
+                'http.request.method': method,
+                'url.full': this.buildFullUrl(opts.url)
+            }
+        };
     }
 
-    private endFetchSpan(span: Span, value?: any, error?: unknown) {
-        if (!span) return;
-
-        if (value?.status != null) {
-            span.tags['http.response.status_code'] = value.status;
-        }
-
-        if (error) {
-            span.recordError(error);
-            span.end('error');
-        } else {
-            span.end('ok');
-        }
-        XH.traceService.exportSpan(span);
-    }
-
-    private extractUrlPath(url: string): string {
+    /** Prefix relative URLs with {@link XH.baseUrl}; leave absolute/root-relative URLs as-is. */
+    private resolveUrl(url: string): string {
         if (!url) return '';
+        const isRelative = !url.startsWith('/') && !url.includes('//');
+        return isRelative ? XH.baseUrl + url : url;
+    }
+
+    private buildFullUrl(url: string): string {
+        const raw = this.resolveUrl(url);
+        if (!raw) return '';
+
         try {
-            if (url.includes('//')) return new URL(url).pathname;
-            return url.split('?')[0];
-        } catch (e) {
-            return url.split('?')[0];
+            const parsed = new URL(raw, window.location.origin);
+            // Redact values of query params that commonly carry secrets.
+            const sensitive =
+                /^(token|access_token|id_token|password|pwd|secret|api[_-]?key|auth|session|sig|signature)$/i;
+            for (const key of Array.from(parsed.searchParams.keys())) {
+                if (sensitive.test(key)) parsed.searchParams.set(key, 'REDACTED');
+            }
+            return parsed.toString();
+        } catch {
+            return raw;
         }
     }
 

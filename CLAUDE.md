@@ -47,13 +47,15 @@ npx hoist-ts symbol GridModel                # Get detailed type info for a symb
 npx hoist-ts members GridModel               # List all members of a class/interface
 ```
 
-**Use `search` for discovery** — it matches against both symbol names and JSDoc content.
-Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its JSDoc).
-Also searches public members of key framework classes. Use `symbol` and `members` only when you
-already know the exact PascalCase name. When multiple symbols share a name (e.g. `View` exists
-in both `cmp/viewmanager` and `data/cube`), pass the file path to `symbol` or `members` to
-disambiguate — the tools will hint when this is needed. Run `npx hoist-docs --help` and
-`npx hoist-ts --help` for full usage.
+**Use `search` for discovery** — it matches against symbol names, JSDoc content, and own member
+names. Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its
+JSDoc, `"StoreRecord raw"` finds StoreRecord via its `raw` property). Also searches public members
+of every exported class and every exported `*Config` interface (e.g. `GridConfig`, `StoreConfig`)
+by owner name, member name, and JSDoc — so a query for `"groupSortFn"` reaches both `GridModel`
+and `GridConfig`. Use `symbol` and `members` when you already know the exact PascalCase name.
+When multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
+pass the file path to `symbol` or `members` to disambiguate — the tools will hint when this is
+needed. Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
 to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your

@@ -125,6 +125,8 @@ import {Class} from 'type-fest';
  * - {@link LoadSpec}
  * - {@link creates}
  * - {@link useLocalModel}
+ *
+ * @mcpHint base class for all application models
  */
 export abstract class HoistModel extends HoistBase implements Loadable {
     /** Type for constructing an instance of this model */

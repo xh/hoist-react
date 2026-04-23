@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
@@ -21,7 +21,7 @@ export class TrackService extends HoistService {
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
@@ -102,7 +102,8 @@ export class TrackService extends HoistService {
         await XH.fetchService.postJson({
             url: 'xh/track',
             body: {entries: pending},
-            params: {clientUsername: XH.getUsername()}
+            params: {clientUsername: XH.getUsername()},
+            span: {name: 'xh.client.track.push', caller: this}
         });
     }
 

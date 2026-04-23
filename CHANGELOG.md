@@ -1,6 +1,96 @@
 # Changelog
 
-## 85.0.0-SNAPSHOT - unreleased
+## 85.0.0 - 2026-04-23
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+Note that `hoist-core >= 38.1` is recommended (not required) to pair with the span-sampling and
+app-load span changes in this release.
+
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
+  array of service classes plus the current phase's `InitContext`:
+  ```ts
+  // before
+  await XH.installServicesAsync(MyServiceA, MyServiceB);
+  // after
+  await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
+  ```
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
+  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  for app-level services, `xh.client.hoistInit` for Hoist-internal services).
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` signatures now take an
+  `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
+  the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
+  into init-time fetch and async work.
+
+### 🎁 New Features
+
+* Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
+  server-side API. Added `Span.setTag()`/`setTags()`.
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
+  argument carrying the current phase's `span`, so service init spans can nest under the caller's
+  span.
+* `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
+  `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
+* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+  user, if any.
+* Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
+  `xh.client.appInit`.
+
+### 🐞 Bug Fixes
+
+* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+  emitted spans correctly stamp `code.namespace`.
+* Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
+  not reachable from consumer tsconfigs with narrower `include` patterns.
+* Upgraded Swiper `11 → 12` to resolve CVE-2026-27212, a critical prototype pollution
+  vulnerability in `Swiper.extendDefaults()`. Apps consuming Swiper's own SCSS should update
+  imports from `swiper/scss` to `swiper/css` - Swiper 12 ships CSS sources only.
+
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
+  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
+* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
+  every exported class plus every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
+  interface. The tag is shown alongside owner names in MCP/CLI member search results.
+* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
+* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
+  `--json` flag on every matching CLI subcommand.
+* Fixed a latent member-index collision bug where two exported owners sharing a simple name
+  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+
+### ⚙️ Technical
+
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
+  and easier tag-based sampling.
+
+### 📚 Libraries
+
+* swiper `11.2 → 12.1`
+* @onsenui/fastclick `removed`
+* @popperjs/core `removed`
+* react-transition-group `removed`
+* resize-observer-polyfill `removed`
+
+Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
+expected - none were part of the public API surface. Apps that imported these directly (relying
+on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.1 - 2026-04-20
+
+### 🐞 Bug Fixes
+
+* Fixed an unrecoverable crash when calling `XH.prompt()` (and any other `FormField` rendered
+  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a
+  null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
+  built-in appcontainer components.
 
 ## 84.0.0 - 2026-04-15
 
