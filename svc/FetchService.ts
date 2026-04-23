@@ -278,10 +278,11 @@ export class FetchService extends HoistService {
 
         const headers = {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
-            'X-Hoist-Client': '1',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
+            ...(span
+                ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
+                : {}),
             ...opts.headers
         };
 
