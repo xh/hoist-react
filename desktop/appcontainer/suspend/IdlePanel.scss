@@ -8,6 +8,7 @@
 .xh-idle-panel {
   flex: 0 0 auto !important;
   border: var(--xh-border-solid);
+  max-width: 320px;
 
   img {
     display: block;

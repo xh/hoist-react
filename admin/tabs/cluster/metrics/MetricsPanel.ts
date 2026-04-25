@@ -12,7 +12,7 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {exportButton} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {groupingChooser} from '@xh/hoist/desktop/cmp/grouping';
-import {picker} from '@xh/hoist/desktop/cmp/input';
+import {segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -33,27 +33,21 @@ export const metricsPanel = hoistCmp.factory({
                     minWidth: 200
                 }),
                 '-',
-                picker({
+                segmentedControl({
                     bind: 'sourceFilter',
-                    options: model.sourceOptions,
-                    enableMulti: true,
-                    enableClear: true,
-                    width: 200,
-                    buttonProps: {icon: Icon.tag()},
-                    displayNoun: 'source',
-                    buttonTextRenderer: (selOpts, allOpts) => {
-                        const count = selOpts.length;
-                        if (!count || count === allOpts.length) return 'All sources';
-                        if (count === 1) return `Source: ${selOpts[0].label}`;
-                        return `${count} sources`;
-                    }
+                    options: [
+                        {value: 'all', label: 'All'},
+                        {value: 'app', label: 'App'},
+                        {value: 'hoist', label: 'Hoist'}
+                    ]
                 }),
+                '-',
                 recordActionBar({
                     selModel: model.gridModel.selModel,
                     actions: [model.publishAction, model.unpublishAction]
                 }),
                 filler(),
-                relativeTimestamp({bind: 'lastLoadCompleted'}),
+                relativeTimestamp({bind: 'lastLoadCompleted', prefix: 'Refreshed'}),
                 '-',
                 gridCountLabel({unit: 'metric'}),
                 '-',

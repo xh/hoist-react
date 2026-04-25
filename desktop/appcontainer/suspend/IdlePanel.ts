@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 /// <reference path="../../../assets.d.ts" />
-import {div, filler, img, p, viewport} from '@xh/hoist/cmp/layout';
+import {div, img, p, viewport} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -39,21 +39,24 @@ export const idlePanel = hoistCmp.factory({
                         width: 300,
                         height: 180
                     }),
-                    p('This application is sleeping due to inactivity.'),
-                    p('Please click below to reload it.')
+                    p(
+                        `${XH.clientAppName} is sleeping due to inactivity - this helps conserve resources and reduce load on both your computer and back-end systems.`
+                    ),
+                    p('Please click anywhere to reload.')
                 ),
                 bbar: [
-                    filler(),
                     button({
                         text: "I'm back!",
                         intent: 'primary',
                         minimal: false,
                         autoFocus: true,
+                        width: '100%',
                         testId: 'xh-idle-reactivate-btn',
                         onClick: onReactivate
                     })
                 ]
-            })
+            }),
+            onClick: onReactivate
         });
     }
 });
