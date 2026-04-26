@@ -1,5 +1,16 @@
 # Changelog
 
+## 86.0.0-SNAPSHOT
+
+### 💥 Breaking Changes
+
+* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
+  for head-based sampling. This change is consistent with a similar update in hoist-core v40. Apps
+  requiring full visibility into error spans for a particular set of errors should ensure they
+  are sampled via the existing rules.
+
+### 🐞 Bug Fixes
+
 ## 85.0.0 - 2026-04-23
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
