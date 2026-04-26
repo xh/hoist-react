@@ -47,7 +47,7 @@ export class Span {
     /**
      * Tri-state sampling decision:
      * - `true`: span is sampled and will be exported.
-     * - `false`: span is not sampled and will be dropped (unless `alwaysSampleErrors` and error).
+     * - `false`: span is not sampled and will be dropped.
      * - `null`: decision deferred (e.g. created before {@link TraceService} sampling config is
      *   loaded). Resolved later by {@link TraceService}; outbound `traceparent` headers send `00`
      *   while undecided so server-side spans don't sample without a client decision.

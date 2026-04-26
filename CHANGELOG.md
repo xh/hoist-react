@@ -113,9 +113,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
   available to preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
-  creation, with child spans inheriting their parent's decision. Error spans are always exported
-  when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
-  the server.
+  creation, with child spans inheriting their parent's decision. The `traceparent` header now
+  propagates the sampling flag to the server.
 * `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
   When a string or config is provided, `FetchService` creates and manages the parent span
   internally, simplifying a common tracing pattern for fetch calls.

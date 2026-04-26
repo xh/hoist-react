@@ -123,8 +123,7 @@ export class TraceService extends HoistService {
      * at creation time (head-based). Child spans inherit their parent's sampling decision.
      * Spans created before `xhTraceConfig` is loaded (during early app startup) are marked
      * `sampled === null` and parked in a pending bucket; {@link noteConfigAvailable} decides their
-     * fate once config arrives. Unsampled spans may still be exported if they end in error and
-     * `alwaysSampleErrors` is enabled - see {@link exportSpan}.
+     * fate once config arrives.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
@@ -168,7 +167,7 @@ export class TraceService extends HoistService {
     private exportSpan(span: Span) {
         if (!this.enabled || span.sampled === null) return; // defer until config is loaded.
 
-        if (span.sampled || (this.conf.alwaysSampleErrors && span.status === 'error')) {
+        if (span.sampled) {
             this._pending.push(span);
 
             // Queue the push unless its submitSpans export itself (avoid looping).
@@ -301,7 +300,6 @@ interface TraceConfig {
     enabled: boolean;
     sampleRules?: SampleRule[];
     sampleRate?: number;
-    alwaysSampleErrors?: boolean;
 }
 
 interface SampleRule {
