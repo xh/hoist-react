@@ -1,17 +1,6 @@
 # Changelog
 
-## 86.0.0-SNAPSHOT
-
-### 💥 Breaking Changes
-
-* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
-  for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
-  requiring full visibility into error spans for a particular set of errors should ensure they
-  are sampled via the existing rules.
-
-### 🐞 Bug Fixes
-
-## 85.0.0 - 2026-04-23
+## 85.0.0-SNAPSOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
@@ -36,6 +25,11 @@ app-load span changes in this release.
   `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
+
+* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
+  for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
+  requiring full visibility into error spans for a particular set of errors should ensure they
+  are sampled via the existing rules.
 
 ### 🎁 New Features
 
