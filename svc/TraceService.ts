@@ -171,7 +171,7 @@ export class TraceService extends HoistService {
             this._pending.push(span);
 
             // Queue the push unless its submitSpans export itself (avoid looping).
-            if (!span.tags['url.path']?.endsWith('xh/submitSpans')) {
+            if (!span.tags['url.full']?.endsWith('xh/submitSpans')) {
                 this.pushPendingBuffered();
             }
         }
