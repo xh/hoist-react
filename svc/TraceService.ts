@@ -62,38 +62,13 @@ export class TraceService extends HoistService {
     // Span Lifecycle
     //------------------
     /**
-     * Create a span wrapping a synchronous operation.
-     * Automatically handles timing, error recording, and export.
-     *
-     * @param config - span name string, or a SpanConfig with name and optional tags.
-     * @param fn - the function to wrap.
-     */
-    override withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
-        const span = this.createSpan(config);
-        try {
-            const result = fn(span);
-            span.end();
-            return result;
-        } catch (e) {
-            span.recordException(e);
-            span.end();
-            throw e;
-        } finally {
-            this.exportSpan(span);
-        }
-    }
-
-    /**
      * Create a span wrapping an async operation.
      * Automatically handles timing, error recording, and export.
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      * @param fn - the async function to wrap.
      */
-    override async withSpanAsync<T>(
-        config: string | SpanConfig,
-        fn: (span: Span) => Promise<T>
-    ): Promise<T> {
+    async withSpan<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
         const span = this.createSpan(config);
         try {
             const result = await fn(span);

@@ -199,15 +199,15 @@ export class FetchService extends HoistService {
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
         // 1) If a convenience span spec provided, resolve to an outer Span and recurse.
         if (opts.span && !(opts.span instanceof Span)) {
-            // Use the global withSpanAsync -- don't want to tag with this as the caller.
-            return XH.traceService.withSpanAsync(opts.span, span =>
+            // Use the global withSpan -- don't want to tag with this as the caller.
+            return XH.traceService.withSpan(opts.span, span =>
                 this.fetchInternalAsync({...opts, span})
             );
         }
 
         // 2) Apply appropriate tracing and correlation to the core work.
         opts = this.withCorrelationId(opts);
-        let ret = this.withSpanAsync(this.createSpanConfig(opts), span => {
+        let ret = this.span(this.createSpanConfig(opts)).run(span => {
             opts = {...opts, traceId: span.traceId};
 
             // Core promise - chained with header resolution to ensure that work is included in overall tracked time.

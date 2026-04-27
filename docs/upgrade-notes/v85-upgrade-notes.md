@@ -207,16 +207,16 @@ override async initAsync(ctx: InitContext) {
 After (named child span wrapping a group of calls):
 ```typescript
 override async initAsync(ctx: InitContext) {
-    await this.withSpanAsync({name: 'loadPortfolioRefData', parent: ctx.span}, async () => {
+    await this.span({name: 'loadPortfolioRefData', parent: ctx.span}).run(async () => {
         this.lookups = await XH.fetchJson({url: 'portfolio/lookups'});
         this.symbols = await XH.fetchJson({url: 'portfolio/symbols'});
     });
 }
 ```
 
-The `withSpanAsync` form is useful when init does several related calls — the wrapper span
+The `span().run()` form is useful when init does several related calls — the wrapper span
 rolls them up into one phase in the timeline, and individual fetches nest beneath it
-automatically via the `FetchService` span. `HoistBase.withSpanAsync()` auto-populates `caller`
+automatically via the `FetchService` span. `HoistBase.span()` auto-populates `caller`
 with `this`, so the emitted span correctly carries `code.namespace`.
 
 #### 5b. Pass `ctx.span` through to `AppModel` initialization work
@@ -230,7 +230,7 @@ override async initAsync(ctx: InitContext) {
     await super.initAsync(ctx);
     await XH.installServicesAsync([LookupService, EventService], ctx);
 
-    await this.withSpanAsync({name: 'loadInitialClientData', parent: ctx.span}, async () => {
+    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async () => {
         await this.lookupService.loadAsync();
     });
 }
@@ -302,4 +302,4 @@ After completing all steps:
 - [`/svc/README.md`](../../svc/README.md) — reference for `TraceService`, `FetchService`, and the
   `FetchOptions.span` API used in Step 5.
 - [`/core/README.md`](../../core/README.md) — reference for `HoistService`, `HoistAppModel`, and
-  the `HoistBase.withSpanAsync()` helper used in Step 5.
+  the `HoistBase.span()` builder used in Step 5.

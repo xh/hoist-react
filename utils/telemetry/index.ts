@@ -4,4 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+export * from './ObservedRun';
 export * from './Span';
