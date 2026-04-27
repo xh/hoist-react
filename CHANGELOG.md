@@ -1,6 +1,6 @@
 # Changelog
 
-## 85.0.0 - 2026-04-23
+## 85.0.0-SNAPSOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
@@ -25,6 +25,11 @@ app-load span changes in this release.
   `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
+
+* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
+  for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
+  requiring full visibility into error spans for a particular set of errors should ensure they
+  are sampled via the existing rules.
 
 ### 🎁 New Features
 
@@ -113,9 +118,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
   available to preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
-  creation, with child spans inheriting their parent's decision. Error spans are always exported
-  when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
-  the server.
+  creation, with child spans inheriting their parent's decision. The `traceparent` header now
+  propagates the sampling flag to the server.
 * `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
   When a string or config is provided, `FetchService` creates and manages the parent span
   internally, simplifying a common tracing pattern for fetch calls.
