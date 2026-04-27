@@ -26,6 +26,11 @@ app-load span changes in this release.
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
 
+* `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
+  `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
+  `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
+  advanced use - now a single async method (the prior sync `withSpan` and async
+  `withSpanAsync` on `TraceService` have been merged).
 * `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
   for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
   requiring full visibility into error spans for a particular set of errors should ensure they
@@ -33,8 +38,12 @@ app-load span changes in this release.
 
 ### 🎁 New Features
 
-* Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
-  server-side API. Added `Span.setTag()`/`setTags()`.
+* Added `HoistBase.observe()` / `HoistBase.span()` - a composable builder
+  ({@link ObservedRun}) that wraps a function with a span and/or `withInfo`/`withDebug`
+  logging in a single call, e.g. `this.span('loadPortfolio').logInfo('Loading').run(fn)`.
+  Replaces the prior `withSpan`/`withSpanAsync` helpers on `HoistBase` (see Breaking Changes).
+* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+  matching the server-side API.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
   span.

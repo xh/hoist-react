@@ -258,7 +258,7 @@ const enhancePromise = promisePrototype => {
         },
 
         span<T>(config: SpanConfig | string): Promise<T> {
-            return XH.traceService.withSpanAsync(config, () => this) as Promise<T>;
+            return XH.traceService.withSpan(config, () => this) as Promise<T>;
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {
