@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {isHoistException} from '@xh/hoist/exception';
 import {NameSource} from '@xh/hoist/utils/js';
 
 /**
@@ -41,13 +42,14 @@ export class Span {
 
     kind: SpanKind;
     status: SpanStatus = 'unset';
+    statusDescription: string;
     tags: PlainObject;
     events: SpanEvent[] = [];
 
     /**
      * Tri-state sampling decision:
      * - `true`: span is sampled and will be exported.
-     * - `false`: span is not sampled and will be dropped (unless `alwaysSampleErrors` and error).
+     * - `false`: span is not sampled and will be dropped.
      * - `null`: decision deferred (e.g. created before {@link TraceService} sampling config is
      *   loaded). Resolved later by {@link TraceService}; outbound `traceparent` headers send `00`
      *   while undecided so server-side spans don't sample without a client decision.
@@ -66,10 +68,9 @@ export class Span {
         this.sampled = config.sampled ?? parent?.sampled ?? null;
     }
 
-    /** End this span, recording status and computing duration. */
-    end(status: SpanStatus = 'ok') {
+    /** End this span, computing duration. */
+    end() {
         this.endTime = Date.now();
-        this.status = status;
     }
 
     /** Set a single tag on this span. */
@@ -82,15 +83,40 @@ export class Span {
         Object.assign(this.tags, tags);
     }
 
-    /** Record an error event on this span and stamp traceId onto the error if not already set. */
-    recordError(error: unknown) {
+    /**
+     * Set the HTTP response status code tag and mark the span as 'error' when appropriate per
+     * OTel HTTP semantic conventions: client spans error on status >= 400, server spans on >= 500.
+     */
+    setHttpStatus(statusCode: number) {
+        this.setTag('http.response.status_code', statusCode);
+        const errorThreshold = this.kind === 'client' ? 400 : 500;
+        if (statusCode >= errorThreshold) this.setError();
+    }
+
+    /**
+     * Record an exception event on this span, stamp traceId onto the error if not already set,
+     * and mark the span as 'error' (with the exception message as description) unless an error
+     * status has already been set (e.g. via {@link setHttpStatus}).
+     *
+     * Skips routine HoistExceptions entirely - Datadog's OTLP intake maps any exception event
+     * onto error.* tags, which would mask the routine nature of the failure.
+     */
+    recordException(error: unknown) {
+        if (error && !error['traceId']) error['traceId'] = this.traceId;
+        if (isHoistException(error) && error.isRoutine) return;
         const message = error instanceof Error ? error.message : String(error);
         this.events.push({
             name: 'exception',
             timestamp: Date.now(),
             attributes: {message}
         });
-        if (error && !error['traceId']) error['traceId'] = this.traceId;
+        this.setError(message);
+    }
+
+    /** Mark the span status as 'error', with an optional description. */
+    private setError(description?: string) {
+        this.status = 'error';
+        if (description) this.statusDescription = description;
     }
 
     /** Serialize for export to the server. */
@@ -105,6 +131,7 @@ export class Span {
             endTime: this.endTime,
             duration: this.duration,
             status: this.status,
+            statusDescription: this.statusDescription,
             tags: this.tags,
             events: this.events,
             sampled: this.sampled

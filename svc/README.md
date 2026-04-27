@@ -318,9 +318,8 @@ with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires
 
 Spans are sampled at creation time using `xhTraceConfig.sampleRules` — an ordered list of
 tag-matching rules with glob pattern support. Child spans inherit their parent's sampling
-decision. Unsampled spans are dropped before export unless they end in error and
-`alwaysSampleErrors` is enabled. The `traceparent` header propagates the sampling flag to
-the server. See the hoist-core tracing documentation for full sampling configuration details.
+decision. The `traceparent` header propagates the sampling flag to the server. See the
+hoist-core tracing documentation for full sampling configuration details.
 
 ```typescript
 // Wrap an async operation in a span (from any HoistBase subclass)
