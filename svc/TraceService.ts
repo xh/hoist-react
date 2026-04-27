@@ -72,11 +72,11 @@ export class TraceService extends HoistService {
         const span = this.createSpan(config);
         try {
             const result = fn(span);
-            span.end('ok');
+            span.end();
             return result;
         } catch (e) {
-            span.recordError(e);
-            span.end('error');
+            span.recordException(e);
+            span.end();
             throw e;
         } finally {
             this.exportSpan(span);
@@ -97,11 +97,11 @@ export class TraceService extends HoistService {
         const span = this.createSpan(config);
         try {
             const result = await fn(span);
-            span.end('ok');
+            span.end();
             return result;
         } catch (e) {
-            span.recordError(e);
-            span.end('error');
+            span.recordException(e);
+            span.end();
             throw e;
         } finally {
             this.exportSpan(span);

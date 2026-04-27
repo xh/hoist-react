@@ -313,11 +313,8 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await this.abortableFetchAsync(opts, aborter)
-                .then(r => {
-                    span.setTag('http.response.status_code', r.status);
-                    return opts.asJson ? this.parseJsonAsync(opts, r) : r;
-                })
+            return await this.abortableFetchAsync(opts, aborter, span)
+                .then(r => (opts.asJson ? this.parseJsonAsync(opts, r) : r))
                 .timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
@@ -346,7 +343,8 @@ export class FetchService extends HoistService {
 
     private async abortableFetchAsync(
         opts: FetchOptions,
-        aborter: AbortController
+        aborter: AbortController,
+        span: Span
     ): Promise<Response> {
         // 1) Prepare URL
         let {url, method, headers, body, params} = opts;
@@ -386,9 +384,11 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
+        span.setHttpStatus(ret.status);
 
-        if (!ret.ok)
+        if (!ret.ok) {
             throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
+        }
 
         return ret;
     }
@@ -409,16 +409,32 @@ export class FetchService extends HoistService {
     }
 
     private createSpanConfig(opts: FetchOptions): SpanConfig {
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET');
+        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+            fullUrl = this.buildFullUrl(opts.url),
+            tags: PlainObject = {
+                'xh.source': 'hoist',
+                'http.request.method': method,
+                'url.full': fullUrl
+            };
+
+        // Per OTel HTTP semconv, populate server.address (and server.port if non-default).
+        try {
+            const {hostname, port, protocol} = new URL(fullUrl, window.location.origin);
+            if (hostname) tags['server.address'] = hostname;
+            if (port) {
+                tags['server.port'] = parseInt(port, 10);
+            } else if (protocol === 'http:') {
+                tags['server.port'] = 80;
+            } else if (protocol === 'https:') {
+                tags['server.port'] = 443;
+            }
+        } catch {}
+
         return {
             name: method,
             kind: 'client',
             parent: opts.span as Span,
-            tags: {
-                'xh.source': 'hoist',
-                'http.request.method': method,
-                'url.full': this.buildFullUrl(opts.url)
-            }
+            tags
         };
     }
 
