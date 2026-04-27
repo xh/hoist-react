@@ -322,19 +322,20 @@ decision. The `traceparent` header propagates the sampling flag to the server. S
 hoist-core tracing documentation for full sampling configuration details.
 
 ```typescript
-// Wrap an async operation in a span (from any HoistBase subclass)
-await this.withSpanAsync({name: 'loadPortfolio', caller: this}, async span => {
+// Wrap an async operation in a span (from any HoistBase subclass).
+// `caller` is auto-populated from `this`.
+await this.span({name: 'loadPortfolio'}).run(async span => {
     const positions = await this.loadPositionsAsync();
     this.setPositions(positions);
 });
 
-// Wrap a sync operation
-const result = this.withSpan({name: 'computeTotals', caller: this}, span => {
-    return this.computeTotals();
-});
-
 // Simple string-only config
-await this.withSpanAsync('loadData', async span => { ... });
+await this.span('loadData').run(async span => { ... });
+
+// Compose with logging - times completion via withInfo/withDebug as appropriate.
+await this.span('loadPortfolio').logInfo('Loading portfolio').run(async span => {
+    ...
+});
 
 // Nest a fetch call under a parent span without manual span management.
 // FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
