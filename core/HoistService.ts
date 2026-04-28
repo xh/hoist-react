@@ -10,6 +10,7 @@ import {
     managed,
     LoadSupport,
     LoadSpec,
+    LoadSpecConfig,
     Loadable,
     PlainObject,
     TaskObserver
@@ -78,26 +79,72 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
+    /**
+     * For tracking the loading of this object.
+     * Note that this object will *not* track auto-refreshes.
+     */
     get loadObserver(): TaskObserver {
         return this.loadSupport?.loadObserver;
     }
+
+    /** Date when last load was initiated. */
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;
     }
+
+    /** Date when last load was completed. */
     get lastLoadCompleted() {
         return this.loadSupport?.lastLoadCompleted;
     }
+
+    /** Any exception that occurred during last load. */
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+
+    /**
+     * Trigger a managed refresh - equivalent to `loadAsync({isRefresh: true, meta})`. The optional
+     * `meta` argument is passed directly here (not wrapped in a config object) and is exposed as
+     * `loadSpec.meta` in `doLoadAsync()`.
+     */
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
+
+    /**
+     * Trigger a background auto-refresh - equivalent to `loadAsync({isAutoRefresh: true, meta})`.
+     * Skipped if a load is already pending. The optional `meta` argument is passed directly here
+     * (not wrapped in a config object) and is exposed as `loadSpec.meta` in `doLoadAsync()`.
+     */
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
+
+    /**
+     * Template method for subclasses that want managed loading.
+     *
+     * Override this method to opt into Hoist's managed loading (auto-installs {@link LoadSupport}).
+     * Called by the framework via {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync} -
+     * do not call directly. The supplied {@link LoadSpec} carries `isRefresh`, `isAutoRefresh`,
+     * `isStale`, and any app-specific `meta` for branching behavior. Implementations should pass
+     * `loadSpec` to nested `loadAsync()` calls and to {@link FetchService} requests.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+
+    /**
+     * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request via {@link LoadSupport}.
+     *
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 }

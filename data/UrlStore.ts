@@ -8,6 +8,7 @@
 import {
     Loadable,
     LoadSpec,
+    LoadSpecConfig,
     LoadSupport,
     managed,
     PlainObject,
@@ -59,7 +60,7 @@ export class UrlStore extends Store implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport.autoRefreshAsync(meta);
     }
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
     }
 

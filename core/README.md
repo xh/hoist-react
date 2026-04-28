@@ -247,6 +247,28 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 }
 ```
 
+Callers can also pass arbitrary application data through `LoadSpec.meta` to communicate
+context-specific information into `doLoadAsync()` - useful for tagging the source of a load,
+passing parameters through a refresh chain, or branching behavior on a per-call basis. The
+field is always defined (defaults to `{}` when omitted), so consumers can read keys without a
+null check on `meta` itself:
+
+```typescript
+// Caller - supply meta when triggering a load or refresh
+await model.loadAsync({meta: {reason: 'userClickedSync', accountId}});
+await model.refreshAsync({reason: 'pollTick'});
+
+// doLoadAsync - read keys directly off meta
+override async doLoadAsync(loadSpec: LoadSpec) {
+    const {reason, accountId} = loadSpec.meta;
+    if (reason === 'pollTick') { /* lighter-weight path */ }
+}
+```
+
+Note the calling shape: `loadAsync()` accepts a full `LoadSpecConfig` (so `meta` goes inside
+`{meta: {...}}`), while `refreshAsync()` and `autoRefreshAsync()` accept `meta` directly as
+their only argument - their `isRefresh`/`isAutoRefresh` flags are already implied.
+
 ```typescript
 // ✅ Do: Use public entry points which create LoadSpec for you
 await model.loadAsync();        // isRefresh: false
