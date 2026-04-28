@@ -83,6 +83,10 @@ app-load span changes in this release.
   `--json` flag on every matching CLI subcommand.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+* `hoist-get-members` (and `hoist-ts members`) now surface `@param` descriptions via
+  `parameters[].description` and `@returns` via a new `returns: {type, description}` field on
+  each method. JSDoc on class members with no own docs is also inherited from `implements`
+  interfaces, so impl classes can single-source their docs on the interface they implement.
 
 ### ⚙️ Technical
 

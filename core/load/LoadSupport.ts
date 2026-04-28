@@ -72,24 +72,26 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.doLoadAsync(newSpec);
     }
 
-    /**
-     * Trigger a managed refresh - equivalent to `loadAsync({isRefresh: true, meta})`. The optional
-     * `meta` argument is passed directly here (not wrapped in a config object) and is exposed as
-     * `loadSpec.meta` in `doLoadAsync()`.
-     */
     async refreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
-    /**
-     * Trigger a background auto-refresh - equivalent to `loadAsync({isAutoRefresh: true, meta})`.
-     * Skipped if a load is already pending. The optional `meta` argument is passed directly here
-     * (not wrapped in a config object) and is exposed as `loadSpec.meta` in `doLoadAsync()`.
-     */
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
+    /**
+     * Run the managed-load lifecycle for the target: short-circuits redundant
+     * auto-refreshes, links the load to the `loadObserver`, delegates to
+     * `target.doLoadAsync(loadSpec)`, and updates `lastLoadCompleted` /
+     * `lastLoadException` on completion.
+     *
+     * Application code should not override or call this directly - it is the
+     * orchestrator that the public entry points (`loadAsync`/`refreshAsync`/
+     * `autoRefreshAsync`) ultimately invoke. Application templates that opt
+     * into managed loading override `doLoadAsync` on their own model/service
+     * class instead (see {@link Loadable.doLoadAsync}).
+     */
     async doLoadAsync(loadSpec: LoadSpec) {
         let {target, loadObserver} = this;
 
