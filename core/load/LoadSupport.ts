@@ -51,6 +51,16 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
+    /**
+     * Trigger a managed load through the target's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request.
+     *
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
     async loadAsync(loadSpec?: LoadSpecConfig) {
         throwIf(
             loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
@@ -62,10 +72,20 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.doLoadAsync(newSpec);
     }
 
+    /**
+     * Trigger a managed refresh - equivalent to `loadAsync({isRefresh: true, meta})`. The optional
+     * `meta` argument is passed directly here (not wrapped in a config object) and is exposed as
+     * `loadSpec.meta` in `doLoadAsync()`.
+     */
     async refreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isRefresh: true});
     }
 
+    /**
+     * Trigger a background auto-refresh - equivalent to `loadAsync({isAutoRefresh: true, meta})`.
+     * Skipped if a load is already pending. The optional `meta` argument is passed directly here
+     * (not wrapped in a config object) and is exposed as `loadSpec.meta` in `doLoadAsync()`.
+     */
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
