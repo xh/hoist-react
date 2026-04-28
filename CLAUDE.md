@@ -231,8 +231,10 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
-- **Plain ASCII in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
+- **No em dashes in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
   comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
+  Other Unicode characters (arrows, symbols, accented letters, etc.) are fine in code comments
+  when they aid clarity.
 
 **Commit messages, PRs, and comments**: Do not hard-wrap lines at a fixed column width in commit
 message bodies, pull request descriptions, or issue/PR comments — let the viewing tool handle
