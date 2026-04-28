@@ -74,6 +74,8 @@ export type CanAggregateFn = (
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
  * it to extract the data from the source objects and how to aggregate or filter on that data.
+ *
+ * @mcpHint field with aggregation metadata for use within a Cube
  */
 export class CubeField extends Field {
     aggregator: Aggregator;

@@ -4,7 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject, TaskObserver} from './';
+import {
+    HoistBase,
+    InitContext,
+    managed,
+    LoadSupport,
+    LoadSpec,
+    Loadable,
+    PlainObject,
+    TaskObserver
+} from './';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
@@ -30,6 +39,8 @@ import {apiDeprecated} from '@xh/hoist/utils/js';
  * Services extend `HoistBase` and can therefore leverage MobX-powered observables and reactions if
  * so desired. And while components should typically source their state from backing models, they
  * can also read and react to service state and call service APIs.
+ *
+ * @mcpHint base class for all application services
  */
 export class HoistService extends HoistBase implements Loadable {
     // Internal State
@@ -53,8 +64,10 @@ export class HoistService extends HoistBase implements Loadable {
      * Called by framework or application to initialize before application startup.
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
+     *
+     * @param ctx - init context
      */
-    async initAsync(): Promise<void> {}
+    async initAsync(ctx: InitContext): Promise<void> {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.

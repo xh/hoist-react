@@ -23,7 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
+import {ObservedRun, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -54,6 +54,8 @@ export interface HoistBaseClass {
  * @see HoistModel
  * @see HoistService
  * @see Store
+ *
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {
@@ -114,12 +116,14 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
-        return XH.traceService.withSpan(config, fn);
+    /** Create an {@link ObservedRun} builder with this object as the caller. */
+    observe(): ObservedRun {
+        return ObservedRun.observe(this);
     }
 
-    withSpanAsync<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
-        return XH.traceService.withSpanAsync(config, fn);
+    /** Create an {@link ObservedRun} builder with an initial span and this object as the caller. */
+    span(config: string | SpanConfig): ObservedRun {
+        return this.observe().span(config);
     }
 
     /**

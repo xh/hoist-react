@@ -445,6 +445,8 @@ export interface ColumnSpec {
  *
  * @see GridModel
  * @see ColumnGroup
+ *
+ * @mcpHint column configuration for grids
  */
 export class Column {
     static DEFAULT_WIDTH = 60;

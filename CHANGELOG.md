@@ -1,8 +1,118 @@
 # Changelog
 
-## 84.0.0-SNAPSHOT - unreleased
+## 85.0.0-SNAPSOT - unreleased
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+Note that `hoist-core >= 38.1` is recommended (not required) to pair with the span-sampling and
+app-load span changes in this release.
+
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
+  array of service classes plus the current phase's `InitContext`:
+  ```ts
+  // before
+  await XH.installServicesAsync(MyServiceA, MyServiceB);
+  // after
+  await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
+  ```
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
+  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  for app-level services, `xh.client.hoistInit` for Hoist-internal services).
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` signatures now take an
+  `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
+  the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
+  into init-time fetch and async work.
+
+* `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
+  `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
+  `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
+  advanced use - now a single async method (the prior sync `withSpan` and async
+  `withSpanAsync` on `TraceService` have been merged).
+* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
+  for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
+  requiring full visibility into error spans for a particular set of errors should ensure they
+  are sampled via the existing rules.
+
+### 🎁 New Features
+
+* Added `HoistBase.observe()` / `HoistBase.span()` - a composable builder
+  ({@link ObservedRun}) that wraps a function with a span and/or `withInfo`/`withDebug`
+  logging in a single call, e.g. `this.span('loadPortfolio').logInfo('Loading').run(fn)`.
+  Replaces the prior `withSpan`/`withSpanAsync` helpers on `HoistBase` (see Breaking Changes).
+* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+  matching the server-side API.
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
+  argument carrying the current phase's `span`, so service init spans can nest under the caller's
+  span.
+* `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
+  `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
+* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+  user, if any.
+* Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
+  `xh.client.appInit`.
+
+### 🐞 Bug Fixes
+
+* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+  emitted spans correctly stamp `code.namespace`.
+* Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
+  not reachable from consumer tsconfigs with narrower `include` patterns.
+* Upgraded Swiper `11 → 12` to resolve CVE-2026-27212, a critical prototype pollution
+  vulnerability in `Swiper.extendDefaults()`. Apps consuming Swiper's own SCSS should update
+  imports from `swiper/scss` to `swiper/css` - Swiper 12 ships CSS sources only.
+
+### 🤖 AI Docs + Tooling
+
+* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
+  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
+* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
+  every exported class plus every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
+  interface. The tag is shown alongside owner names in MCP/CLI member search results.
+* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
+* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
+  `--json` flag on every matching CLI subcommand.
+* Fixed a latent member-index collision bug where two exported owners sharing a simple name
+  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+
+### ⚙️ Technical
+
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
+  and easier tag-based sampling.
+* Suppressed `Trace ID` display in exception dialogs/toasts for routine or unsampled exceptions.
+
+### 📚 Libraries
+
+* swiper `11.2 → 12.1`
+* @onsenui/fastclick `removed`
+* @popperjs/core `removed`
+* react-transition-group `removed`
+* resize-observer-polyfill `removed`
+
+Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
+expected - none were part of the public API surface. Apps that imported these directly (relying
+on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.1 - 2026-04-20
+
+### 🐞 Bug Fixes
+
+* Fixed an unrecoverable crash when calling `XH.prompt()` (and any other `FormField` rendered
+  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a
+  null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
+  built-in appcontainer components.
+
+## 84.0.0 - 2026-04-15
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v84-upgrade-notes.md`](docs/upgrade-notes/v84-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Requires `hoist-core >= 38.0`.
 * Removed the `getClassName()` utility from `@xh/hoist/utils/react`. This function had no
@@ -11,31 +121,18 @@
 
 ### 🎁 New Features
 
-* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps can
-  override at bootstrap (e.g. `Button.defaults.minimal = false`). Typically used for default
-  prop values (instance props take precedence), but may hold other app-overridable settings.
-  Added initial defaults to `Panel`, `Button`, and `Toolbar`.
 * Updated FontAwesome to v7, bringing subtle visual tweaks and performance optimizations to Hoist's
   icon library. All previously supported icons remain and no app changes should be required.
 * Replaced animated PNG `Spinner` with a FontAwesome icon-based spinner, making it scalable,
-  themeable, and consistent with the rest of the icon system. The rotation animation is applied
-  via Hoist-owned CSS rather than FA's animation props, ensuring the spinner remains functional
-  when the OS-level `prefers-reduced-motion` preference is enabled. The icon and weight can be
+  themeable, and consistent with the rest of the icon system. The icon and weight can be
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
   available to preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
-  creation, with child spans inheriting their parent's decision. Error spans are always exported
-  when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
-  the server.
+  creation, with child spans inheriting their parent's decision. The `traceparent` header now
+  propagates the sampling flag to the server.
 * `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
   When a string or config is provided, `FetchService` creates and manages the parent span
   internally, simplifying a common tracing pattern for fetch calls.
-
-### 🐞 Bug Fixes
-
-* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
-  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
-  app-level customization of background, border, border-radius, padding, and max-width.
 
 ### 🤖 AI Docs + Tooling
 
@@ -50,17 +147,30 @@
 
 ### ⚙️ Technical
 
+* Added support for a typed `defaults` object on `hoistCmp` components — static config that apps
+  can override at bootstrap (e.g. `Button.defaults.minimal = false`). Instance props take
+  precedence. Added initial defaults to `Button`, `Panel`, `Spinner`, and `Toolbar`.
 * Added `suppressStackTrace` and `includeStartMessages` fields to the Log Levels admin panel,
   supporting the new hoist-core per-logger logging behavior overrides.
 * Added `assets.d.ts` type declarations for image and markdown imports (`*.png`, `*.gif`, `*.jpg`,
   `*.svg`, `*.md`), removing the need for `@ts-ignore` on asset imports.
+* Added hardcoded `xh-` prefixed `testId` props to all desktop and mobile appcontainer components
+  for Playwright testing support.
+* Namespaced auto-installed `TraceService` span and metric tags with an `xh.` prefix, aligning
+  with OTEL semantic conventions.
+
+### ✨ Styles
+
+* Improved default grid tooltip styling — long strings now wrap at a configurable max-width
+  (`400px` default) using `pre-wrap`. New `--xh-grid-tooltip-*` CSS variables added for
+  app-level customization of background, border, border-radius, padding, and max-width.
 
 ### 📚 Libraries
 
 * @auth0/auth0-spa-js `2.17 → 2.19`
-* dompurify `3.3 → 3.4`
 * @fortawesome/* `6.0 → 7.2`
 * @fortawesome/react-fontawesome `0.2 → 3.2`
+* dompurify `3.3 → 3.4`
 * lodash `4.17 → 4.18`
 
 ## 83.1.0 - 2026-04-07

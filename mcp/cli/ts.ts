@@ -14,7 +14,14 @@ import {
     getCompanionSymbols,
     findAlternateEntries
 } from '../data/ts-registry.js';
-import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
+import {
+    formatSymbolSearch,
+    formatSymbolDetail,
+    formatMembers,
+    toSearchSymbolsOutput,
+    toGetSymbolOutput,
+    toGetMembersOutput
+} from '../formatters/typescript.js';
 
 const VALID_KINDS = ['class', 'interface', 'type', 'function', 'const', 'enum'] as const;
 
@@ -46,6 +53,7 @@ Examples:
   hoist-ts search Store --kind class             Search only classes
   hoist-ts search lastLoadCompleted              Search symbols and class members
   hoist-ts search "panel modal"                  Multi-word search (matches name + JSDoc)
+  hoist-ts search "StoreRecord raw"              Search class + member name
   hoist-ts symbol GridModel                      Get full details for GridModel
   hoist-ts members GridModel                     List all GridModel properties and methods
   hoist-ts members Store                         List all Store members`
@@ -57,18 +65,22 @@ Examples:
 program
     .command('search')
     .description(
-        'Search for TypeScript symbols and class members by name and JSDoc content. Multi-word queries match all terms against names and documentation. Also searches public members of key framework classes.'
+        'Search for TypeScript symbols and class members by name, JSDoc content, and own member names. Multi-word queries match all terms against the combined text — e.g. "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc.'
     )
     .argument(
         '<query>',
-        'Search query — symbol name, keyword, or multiple terms (e.g. "panel modal")'
+        'Search query — symbol name, keyword, class + member name (e.g. "StoreRecord raw"), or multiple terms (e.g. "panel modal")'
     )
     .option(
         '-k, --kind <kind>',
         'Filter symbols by kind: class, interface, type, function, const, enum'
     )
     .option('-l, --limit <n>', 'Maximum results (1-50)', '20')
-    .action(async (query: string, opts: {kind?: string; limit: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (query: string, opts: {kind?: string; limit: string; json?: boolean}) => {
         validateKind(opts.kind);
         validateLimit(opts.limit, 1, 50);
         const symbolLimit = parseInt(opts.limit, 10);
@@ -88,6 +100,12 @@ program
         const memberLimit = symbolResults.length === 0 ? symbolLimit : 15;
         const memberResults = await searchMembers(query, {limit: memberLimit});
 
+        if (opts.json) {
+            const structured = toSearchSymbolsOutput(query, symbolResults, memberResults);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
+
         let text = formatSymbolSearch(symbolResults, memberResults, query);
         if (symbolResults.length > 0 || memberResults.length > 0) {
             text += '\n\nTip: Use `hoist-ts members <ClassName>` to see all members of a class.';
@@ -105,31 +123,42 @@ program
     )
     .argument('<name>', 'Exact symbol name (e.g. "GridModel", "Store")')
     .option('-f, --file <path>', 'Source file path to disambiguate duplicate names')
-    .action(async (name: string, opts: {file?: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const detail = await getSymbolDetail(name, opts.file);
+        const companions = detail ? await getCompanionSymbols(detail) : [];
+        const alternates = detail && !opts.file ? findAlternateEntries(name, detail.filePath) : [];
+
+        if (opts.json) {
+            // Not-found still emits a valid payload (symbol: null + any alternates) and exits 0,
+            // matching the MCP tool's behavior so CLI and MCP are equivalent for JSON consumers.
+            const structured = toGetSymbolOutput(name, detail, companions, alternates);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
+
         if (!detail) {
             console.error(formatSymbolDetail(detail, name));
             process.exit(1);
         }
 
-        const companions = await getCompanionSymbols(detail);
         let text = formatSymbolDetail(detail, name, companions);
         if (detail.kind === 'class' || detail.kind === 'interface') {
             text +=
                 '\n\nTip: Use `hoist-ts members ' + name + '` to see all properties and methods.';
         }
 
-        if (!opts.file) {
-            const alternates = findAlternateEntries(name, detail.filePath);
-            if (alternates.length > 0) {
-                const altList = alternates
-                    .map(
-                        a =>
-                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
-                    )
-                    .join('\n');
-                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
-            }
+        if (alternates.length > 0) {
+            const altList = alternates
+                .map(
+                    a =>
+                        `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                )
+                .join('\n');
+            text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
         }
 
         process.stdout.write(text + '\n');
@@ -145,8 +174,23 @@ program
     )
     .argument('<name>', 'Class or interface name (e.g. "GridModel", "HoistModel")')
     .option('-f, --file <path>', 'Source file path to disambiguate duplicate names')
-    .action(async (name: string, opts: {file?: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action(async (name: string, opts: {file?: string; json?: boolean}) => {
         const result = await getMembers(name, opts.file);
+        const alternates =
+            result && !opts.file ? findAlternateEntries(name, result.symbol.filePath) : [];
+
+        if (opts.json) {
+            // Not-found still emits a valid payload (owner: null + any alternates) and exits 0,
+            // matching the MCP tool's behavior so CLI and MCP are equivalent for JSON consumers.
+            const structured = toGetMembersOutput(name, result, alternates);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
+
         if (!result) {
             console.error(formatMembers(result, name));
             process.exit(1);
@@ -154,17 +198,14 @@ program
 
         let text = formatMembers(result, name);
 
-        if (!opts.file) {
-            const alternates = findAlternateEntries(name, result.symbol.filePath);
-            if (alternates.length > 0) {
-                const altList = alternates
-                    .map(
-                        a =>
-                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
-                    )
-                    .join('\n');
-                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
-            }
+        if (alternates.length > 0) {
+            const altList = alternates
+                .map(
+                    a =>
+                        `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                )
+                .join('\n');
+            text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Use --file to disambiguate:\n${altList}`;
         }
 
         process.stdout.write(text + '\n');

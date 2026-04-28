@@ -368,7 +368,7 @@
             "title": "Changelog Format",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "CHANGELOG entry format conventions and section headers.",
+            "description": "Conventions for writing and reviewing CHANGELOG entries in the hoist-react library CHANGELOG — section headers, voice/tense, difficulty ratings, breaking changes, libraries.",
             "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
         },
         {
@@ -377,7 +377,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v72.x to v73.0.1. Low difficulty — hoist-core >= 31, makeObservable enforcement, ESLint 9.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72", "makeObservable", "eslint", "admin", "commitOnChange"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72"]
         },
         {
             "id": "docs/upgrade-notes/v74-upgrade-notes.md",
@@ -385,7 +385,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v73.x to v74.1.2. Low difficulty — ViewManagerModel.settleTime removal, ChartModel.showContextMenu replaced.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v74", "v73", "settleTime", "showContextMenu", "contextMenu", "ViewManager", "ChartModel"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v74", "v73", "settleTime", "showContextMenu"]
         },
         {
             "id": "docs/upgrade-notes/v75-upgrade-notes.md",
@@ -393,7 +393,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v74.x to v75.0.1. Low difficulty — removed deprecated APIs, Cube View row data changes.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v75", "v74", "deprecation", "ViewRowData", "cube"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v75", "v74", "ViewRowData"]
         },
         {
             "id": "docs/upgrade-notes/v76-upgrade-notes.md",
@@ -401,7 +401,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v75.x to v76.0.0. Medium difficulty — AG Grid v31→v34, new module registration.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v76", "v75", "ag-grid", "ag grid", "module registration", "groupRowRenderer"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v76", "v75", "groupRowRenderer"]
         },
         {
             "id": "docs/upgrade-notes/v77-upgrade-notes.md",
@@ -409,7 +409,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v76.x to v77.1.1. Medium difficulty — Highcharts v12, XSS protection API rename.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v77", "v76", "highcharts", "xss", "enableXssProtection"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v77", "v76", "disableXssProtection"]
         },
         {
             "id": "docs/upgrade-notes/v78-upgrade-notes.md",
@@ -417,7 +417,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v77.x to v78.0.0. Trivial difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v78", "v77", "setColumnState"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v78", "v77"]
         },
         {
             "id": "docs/upgrade-notes/v79-upgrade-notes.md",
@@ -425,7 +425,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v78.x to v79.0.0. Medium difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v79", "v78", "Blueprint 6", "moduleResolution"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v79", "v78"]
         },
         {
             "id": "docs/upgrade-notes/v80-upgrade-notes.md",
@@ -433,7 +433,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v79.x to v80.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v80", "v79", "FormField", "appLoadObserver"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v80", "v79", "appLoadModel"]
         },
         {
             "id": "docs/upgrade-notes/v81-upgrade-notes.md",
@@ -441,7 +441,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v80.x to v81.0.2. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v81", "v80", "Panel CSS", "BpCard"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v81", "v80"]
         },
         {
             "id": "docs/upgrade-notes/v82-upgrade-notes.md",
@@ -449,7 +449,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v81.x to v82.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "Picker", "DashCanvas", "MCP", "Filter"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "xh-popup--framed"]
         },
         {
             "id": "docs/upgrade-notes/v83-upgrade-notes.md",
@@ -457,7 +457,23 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v82.x to v83.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v83", "v82", "TraceService", "tracing", "OTEL", "static defaults", "GridModel", "downloadBlob", "downloadViaUrl", "downloadjs", "SegmentedControl", "CheckboxButton"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v83", "v82", "downloadjs"]
+        },
+        {
+            "id": "docs/upgrade-notes/v84-upgrade-notes.md",
+            "title": "v84 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v83.x to v84.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v84", "v83", "getClassName"]
+        },
+        {
+            "id": "docs/upgrade-notes/v85-upgrade-notes.md",
+            "title": "v85 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
         }
     ]
 }

@@ -124,7 +124,7 @@ export class ExceptionHandler {
                         span({
                             className: 'xh-toast__trace-id',
                             item: `Trace ID: ${e.traceId}`,
-                            omit: !e.traceId
+                            omit: !e.traceId || e.isRoutine
                         })
                     ),
                     actionButtonProps: {

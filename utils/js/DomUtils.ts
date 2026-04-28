@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
-import ResizeObserver from 'resize-observer-polyfill';
 import {SyntheticEvent} from 'react';
 
 /**

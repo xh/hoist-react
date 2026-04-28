@@ -8,7 +8,14 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {buildRegistry, searchDocs} from '../data/doc-registry.js';
-import {formatSearchResults, formatDocList} from '../formatters/docs.js';
+import {
+    formatSearchResults,
+    formatDocList,
+    searchDocsOutputSchema,
+    toSearchDocsOutput,
+    listDocsOutputSchema,
+    toListDocsOutput
+} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
 /**
@@ -36,7 +43,7 @@ export function registerDocTools(server: McpServer): void {
         {
             title: 'Search Hoist Documentation',
             description:
-                'Search across all hoist-react documentation by keyword. Returns matching documents with context snippets showing where terms appear. Use this to find relevant docs when you do not know the exact document name.',
+                'Search across all hoist-react documentation (package READMEs, concept docs, upgrade notes, conventions) by keyword. Returns matching documents with short context snippets showing where terms appear — not full document text. To read a specific doc in full, fetch the hoist://docs/{id} resource using an ID from the results. To browse the catalog without a query, call hoist-list-docs. For TypeScript type information rather than narrative docs, use hoist-search-symbols.',
             inputSchema: z.object({
                 query: z
                     .string()
@@ -51,6 +58,7 @@ export function registerDocTools(server: McpServer): void {
                     .optional()
                     .describe('Maximum number of results. Default: 10')
             }),
+            outputSchema: searchDocsOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -65,7 +73,11 @@ export function registerDocTools(server: McpServer): void {
             });
 
             const text = formatSearchResults(results, query);
-            return {content: [{type: 'text' as const, text}]};
+            const structuredContent = toSearchDocsOutput(query, results);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 
@@ -77,10 +89,11 @@ export function registerDocTools(server: McpServer): void {
         {
             title: 'List Hoist Documentation',
             description:
-                'List all available hoist-react documentation with descriptions and categories. Use this to discover what docs are available before reading specific ones.',
+                'List all available hoist-react documentation grouped by category, with title and description for each entry. Returns the catalog only — not full document text. To read a specific doc, fetch the hoist://docs/{id} resource. For keyword-based discovery across doc content, use hoist-search-docs instead.',
             inputSchema: z.object({
                 category: categoryEnum
             }),
+            outputSchema: listDocsOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -91,7 +104,11 @@ export function registerDocTools(server: McpServer): void {
         async ({category}) => {
             let text = formatDocList(registry, mcpCategories, category ?? undefined);
             text += 'Read any document using its ID with the hoist://docs/{id} resource.';
-            return {content: [{type: 'text' as const, text}]};
+            const structuredContent = toListDocsOutput(registry, mcpCategories, category);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 

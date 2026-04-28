@@ -98,7 +98,7 @@ declare global {
          * Wrap this promise in a tracing span. The span starts when `.span()` is called
          * and ends when the promise settles (resolves or rejects).
          *
-         * @param config - span name string, or a SpanConfig.
+         * @param config - SpanConfig, or simply a span name.
          */
         span(config: SpanConfig | string): Promise<T>;
     }
@@ -258,24 +258,7 @@ const enhancePromise = promisePrototype => {
         },
 
         span<T>(config: SpanConfig | string): Promise<T> {
-            const svc = XH.traceService,
-                span = svc?.createSpan(config);
-
-            if (!span) return this;
-
-            return this.then(
-                (v: T) => {
-                    span.end('ok');
-                    return v;
-                },
-                (e: unknown) => {
-                    span.recordError(e);
-                    span.end('error');
-                    throw e;
-                }
-            ).finally(() => {
-                svc.exportSpan(span);
-            });
+            return XH.traceService.withSpan(config, () => this) as Promise<T>;
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {
