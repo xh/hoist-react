@@ -84,6 +84,7 @@ app-load span changes in this release.
 
 * Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
   and easier tag-based sampling.
+* Suppressed `Trace ID` display in exception dialogs/toasts for routine or unsampled exceptions.
 
 ### 📚 Libraries
 

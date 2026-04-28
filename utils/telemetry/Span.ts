@@ -98,11 +98,17 @@ export class Span {
      * and mark the span as 'error' (with the exception message as description) unless an error
      * status has already been set (e.g. via {@link setHttpStatus}).
      *
+     * Skips stamping when the trace is known not to be sampled - the id would be useless to
+     * any cross-referencing, since the trace itself will never be exported.
+     *
      * Skips routine HoistExceptions entirely - Datadog's OTLP intake maps any exception event
      * onto error.* tags, which would mask the routine nature of the failure.
      */
     recordException(error: unknown) {
-        if (error && !error['traceId']) error['traceId'] = this.traceId;
+        if (!error) return;
+        if (this.sampled !== false && !error['traceId']) {
+            error['traceId'] = this.traceId;
+        }
         if (isHoistException(error) && error.isRoutine) return;
         const message = error instanceof Error ? error.message : String(error);
         this.events.push({
