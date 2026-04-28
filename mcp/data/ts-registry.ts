@@ -74,6 +74,14 @@ export interface SymbolDetail {
     constructorType?: string;
 }
 
+/** A method parameter, with optional description sourced from a `@param` JSDoc tag. */
+export interface MemberParameter {
+    name: string;
+    type: string;
+    /** Description from a matching `@param` JSDoc tag, when present. */
+    description?: string;
+}
+
 /** A member (property or method) of a class or interface. */
 export interface MemberInfo {
     name: string;
@@ -83,9 +91,32 @@ export interface MemberInfo {
     isOptional?: boolean;
     decorators: string[];
     jsDoc: string;
-    parameters?: Array<{name: string; type: string}>;
+    parameters?: MemberParameter[];
     returnType?: string;
+    /**
+     * Return-value info sourced from a `@returns` JSDoc tag. Distinct from
+     * `returnType` (which carries only the static type) — `returns.description`
+     * carries the author's prose explanation. Omitted when no `@returns` tag
+     * is present.
+     */
+    returns?: {type: string; description: string};
+    /**
+     * Parent class name when this member is inherited via the `extends` chain
+     * - both the member and its behavior come from the named ancestor.
+     * Existing behavior from #4284. Orthogonal to {@link jsDocInheritedFrom}:
+     * a subclass member that is inherited from a parent class AND whose docs
+     * the parent itself inherits from an implemented interface will have both
+     * fields populated.
+     */
     inheritedFrom?: string;
+    /**
+     * Interface name when this member's JSDoc was inherited from an
+     * implemented interface because no class in the surfaced extends chain
+     * declares own JSDoc on this member. The member itself is declared on a
+     * class (named via {@link inheritedFrom} when inherited, or the surfaced
+     * class when not) - the interface only contributes documentation.
+     */
+    jsDocInheritedFrom?: string;
 }
 
 /** Lightweight index entry for a class member, enabling search by member name. */
@@ -681,10 +712,81 @@ function doInitialize(): void {
     symbolIndex = result.symbols;
     memberIndex = result.members;
 
+    // Second pass: now that the symbol index is fully populated, fill in
+    // member-index JSDoc from `implements` for class members with no own
+    // JSDoc. Has to run after `symbolIndex`/`memberIndex` are assigned
+    // because the fallback resolves interfaces via `findIndexEntry`.
+    enrichMemberIndexFromImplements(project);
+
     const elapsed = Date.now() - startMs;
     log.info(`TypeScript registry initialized in ${elapsed}ms`);
     if (elapsed > 5000) {
         log.warn(`TypeScript registry initialization exceeded 5s target (${elapsed}ms)`);
+    }
+}
+
+/**
+ * Post-build pass that walks every member-indexed class with an `implements`
+ * clause and, for each public member with empty own JSDoc, copies the
+ * matching interface member's JSDoc into the corresponding `MemberIndexEntry`
+ * (mutating in place). Mirrors the on-demand fallback in
+ * {@link extractClassMembersWithInheritance} so that the member index
+ * surfaces the same JSDoc text the `getMembers` path produces - critical
+ * for `searchMembers` queries that match against JSDoc content.
+ *
+ * Runs once at init, after the main `buildSymbolIndex` pass populates
+ * `symbolIndex` and `memberIndex`. Trivially cheap relative to the main
+ * build (only touches classes with implements clauses + members with empty
+ * JSDoc).
+ */
+function enrichMemberIndexFromImplements(proj: Project): void {
+    const repoRoot = resolveRepoRoot();
+
+    for (const sourceFile of proj.getSourceFiles()) {
+        const filePath = sourceFile.getFilePath();
+        const relPath = filePath.startsWith(repoRoot + '/')
+            ? filePath.slice(repoRoot.length)
+            : null;
+        if (
+            !relPath ||
+            relPath.startsWith('/node_modules/') ||
+            relPath.includes('/build/') ||
+            relPath.includes('/mcp/')
+        ) {
+            continue;
+        }
+
+        for (const cls of sourceFile.getClasses()) {
+            if (!shouldIndexClassMembers(cls)) continue;
+            if (cls.getImplements().length === 0) continue;
+
+            const ownerName = cls.getName();
+            if (!ownerName) continue;
+
+            let members: MemberInfo[];
+            try {
+                members = extractClassMembers(sourceFile, ownerName);
+            } catch {
+                continue;
+            }
+
+            for (const m of members) {
+                if (m.jsDoc) continue;
+                if (isPrivateMember(m, cls)) continue;
+
+                const fallback = findImplementsJsDocFallback(cls, m);
+                if (!fallback) continue;
+
+                const key = m.name.toLowerCase();
+                const entries = memberIndex!.get(key);
+                if (!entries) continue;
+                for (const entry of entries) {
+                    if (entry.ownerName === ownerName && entry.filePath === filePath) {
+                        entry.jsDoc = fallback.jsDoc;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -953,6 +1055,13 @@ export async function getMembers(
  *
  * Deduplicates by member name — if a subclass overrides a parent member, only
  * the subclass version is included.
+ *
+ * Implements-JSDoc fallback: at each level, if a member has no own JSDoc,
+ * walks the class's `implements` clause (declaration order) and inherits the
+ * matching interface member's JSDoc, parameter descriptions, and `@returns`.
+ * Recorded as `jsDocInheritedFrom` rather than `inheritedFrom` because only
+ * the docs cross the boundary - the member itself is declared on the class.
+ * See {@link findImplementsJsDocFallback}.
  */
 function extractClassMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
     const allMembers: MemberInfo[] = [];
@@ -970,7 +1079,7 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
         if (!cls) break;
 
         const members = extractClassMembers(sourceFile, currentName);
-        const inheritedFrom = isFirst ? undefined : currentName;
+        const classChainInheritedFrom = isFirst ? undefined : currentName;
 
         for (const m of members) {
             // Skip private members at this level
@@ -981,7 +1090,34 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
             if (seen.has(key)) continue;
             seen.add(key);
 
-            allMembers.push({...m, inheritedFrom});
+            const enriched: MemberInfo = {...m, inheritedFrom: classChainInheritedFrom};
+
+            // Implements-fallback: when a member declares no own JSDoc, surface
+            // matching JSDoc from the first interface (in declaration order) that
+            // declares it. Recorded separately as `jsDocInheritedFrom` because
+            // the member itself is declared on the class - only the docs are
+            // inherited, not the member or its behavior.
+            if (!enriched.jsDoc) {
+                const fallback = findImplementsJsDocFallback(cls, m);
+                if (fallback) {
+                    enriched.jsDoc = fallback.jsDoc;
+                    enriched.jsDocInheritedFrom = fallback.inheritedFrom;
+                    if (m.kind === 'method' && enriched.parameters) {
+                        enriched.parameters = enriched.parameters.map(p => {
+                            const desc = fallback.paramDescriptions.get(p.name);
+                            return desc ? {...p, description: desc} : p;
+                        });
+                    }
+                    if (m.kind === 'method' && fallback.returns) {
+                        enriched.returns = {
+                            type: enriched.returnType ?? 'void',
+                            description: fallback.returns
+                        };
+                    }
+                }
+            }
+
+            allMembers.push(enriched);
         }
 
         // Walk up to the parent class
@@ -999,6 +1135,87 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
     }
 
     return allMembers;
+}
+
+/**
+ * For a class member with no own JSDoc, walk the class's `implements` clause
+ * (declaration order) and return the JSDoc + tag info from the first interface
+ * that declares a matching member with non-empty JSDoc.
+ *
+ * Only inspects the given class's direct implements clause - does not walk up
+ * the extends chain to inspect ancestor implements (that case is naturally
+ * handled by the outer chain walk, since each level applies its own fallback
+ * before dedup excludes it).
+ *
+ * Interface-side `extends` is also NOT walked - if a class implements `Derived`
+ * where `interface Derived extends Base`, the lookup only finds members
+ * declared on `Derived` itself, not on `Base`. In practice this is rarely a
+ * problem because Hoist classes that need members from a base interface tend
+ * to list both in their `implements` clause directly. Worth knowing if a future
+ * call site silently fails to surface inherited interface members.
+ *
+ * Static class members are skipped entirely - TS interfaces declare only
+ * instance members, so a class static with the same name as an interface
+ * member is unrelated and must not pick up the interface's JSDoc.
+ *
+ * Multi-interface case: a class may `implements A, B`. Resolution is
+ * deterministic by declaration order - the first interface with a JSDoc-bearing
+ * matching member wins.
+ *
+ * Returns null when no match is found, including when interfaces resolve to
+ * something outside our index (e.g. React's HTMLAttributes).
+ */
+function findImplementsJsDocFallback(
+    cls: ClassDeclaration,
+    member: MemberInfo
+): {
+    jsDoc: string;
+    paramDescriptions: Map<string, string>;
+    returns: string;
+    inheritedFrom: string;
+} | null {
+    // Static members never inherit from interfaces (interfaces declare instance
+    // members only). Bail before doing any lookup work.
+    if (member.isStatic) return null;
+
+    for (const impExpr of cls.getImplements()) {
+        const ifaceName = impExpr.getExpression().getText();
+        const ifaceEntry = findIndexEntry(ifaceName);
+        if (!ifaceEntry || ifaceEntry.kind !== 'interface') continue;
+
+        const sf = project!.getSourceFile(ifaceEntry.filePath);
+        if (!sf) continue;
+        const iface = sf.getInterface(ifaceEntry.name);
+        if (!iface) continue;
+
+        if (member.kind === 'method') {
+            const target = iface.getMethod(member.name);
+            if (!target) continue;
+            const jsDoc = extractJsDoc(target);
+            if (!jsDoc) continue;
+            const tags = extractJsDocTags(target);
+            return {
+                jsDoc,
+                paramDescriptions: tags.paramDescriptions,
+                returns: tags.returns,
+                inheritedFrom: ifaceEntry.name
+            };
+        }
+
+        // Properties + accessors both map to interface property declarations
+        // (TS interfaces don't distinguish accessors from properties).
+        const target = iface.getProperty(member.name);
+        if (!target) continue;
+        const jsDoc = extractJsDoc(target);
+        if (!jsDoc) continue;
+        return {
+            jsDoc,
+            paramDescriptions: new Map(),
+            returns: '',
+            inheritedFrom: ifaceEntry.name
+        };
+    }
+    return null;
 }
 
 /**
@@ -1150,6 +1367,82 @@ function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => stri
     } catch {
         return '';
     }
+}
+
+/**
+ * Per-parameter and return-value text sourced from `@param` / `@returns` JSDoc tags.
+ *
+ * The TS compiler's `tag.getCommentText()` handles both simple string comments and
+ * mixed comment + `{@link ...}` NodeArrays uniformly: link-bearing tag bodies come
+ * back as the rendered string `... {@link Foo} ...` (verified empirically across
+ * single-line, multi-line, and link-bearing JSDoc in the repo). Multi-line `@param`
+ * continuations (`*     ...`) are joined with `\n` and the leading indent is dropped
+ * by the parser, so consumers get clean lines without further whitespace handling.
+ *
+ * Each comment is normalized via {@link normalizeTagComment} to strip the leading
+ * TSDoc separator (`- ` after the param name) which is purely a syntactic
+ * convention, not part of the author's intended description.
+ */
+interface JsDocTagInfo {
+    paramDescriptions: Map<string, string>;
+    returns: string;
+}
+
+/**
+ * Extract structured `@param` / `@returns` info from a JSDocable node.
+ *
+ * The base description (preamble before any `@`-tag) is intentionally not returned
+ * here - it's already extracted by {@link extractJsDoc} via `getDescription()`,
+ * which excludes tag content. This helper is a complement, not a replacement.
+ */
+function extractJsDocTags(node: {getJsDocs?: () => unknown[]}): JsDocTagInfo {
+    const paramDescriptions = new Map<string, string>();
+    let returns = '';
+
+    try {
+        const docs = (node.getJsDocs?.() ?? []) as Array<{getTags?: () => unknown[]}>;
+        for (const doc of docs) {
+            const tags = (doc.getTags?.() ?? []) as Array<{
+                getTagName?: () => string;
+                getCommentText?: () => string | undefined;
+                compilerNode?: {name?: {getText?: () => string}};
+            }>;
+            for (const tag of tags) {
+                const tagName = tag.getTagName?.();
+                if (!tagName) continue;
+
+                const raw = tag.getCommentText?.();
+                const text = normalizeTagComment(raw);
+                if (!text) continue;
+
+                if (tagName === 'param') {
+                    const paramName = tag.compilerNode?.name?.getText?.();
+                    if (paramName) paramDescriptions.set(paramName, text);
+                } else if (tagName === 'returns' || tagName === 'return') {
+                    if (!returns) returns = text;
+                }
+            }
+        }
+    } catch {
+        // Best-effort - return whatever was collected before the failure
+    }
+
+    return {paramDescriptions, returns};
+}
+
+/**
+ * Normalize a JSDoc tag comment for surfacing to consumers.
+ *
+ * Trims surrounding whitespace and strips a leading TSDoc-style separator
+ * (`- ` / `– ` / `— ` after the param name). The separator is purely a
+ * syntactic convention - authors who write `@param foo - description.` mean
+ * the description to read "description.", not "- description.". A leading
+ * dash on its own line would also render as a markdown bullet for tools that
+ * interpret the output, which is not what was intended.
+ */
+function normalizeTagComment(text: string | undefined): string {
+    if (!text) return '';
+    return text.trim().replace(/^[-–—]\s+/, '');
 }
 
 /**
@@ -1517,10 +1810,16 @@ function extractInterfaceMembers(sourceFile: SourceFile, name: string): MemberIn
     // Methods
     for (const method of iface.getMethods()) {
         try {
-            const params = method.getParameters().map(p => ({
-                name: p.getName(),
-                type: fastGetTypeText(p, p)
-            }));
+            const tags = extractJsDocTags(method);
+            const params: MemberParameter[] = method.getParameters().map(p => {
+                const pName = p.getName();
+                const desc = tags.paramDescriptions.get(pName);
+                return {
+                    name: pName,
+                    type: fastGetTypeText(p, p),
+                    ...(desc ? {description: desc} : {})
+                };
+            });
 
             // Prefer the declared return-type annotation (cheap AST lookup) and only
             // fall through to the checker's `getReturnType()` when unavailable.
@@ -1544,7 +1843,8 @@ function extractInterfaceMembers(sourceFile: SourceFile, name: string): MemberIn
                 decorators: [],
                 jsDoc: extractJsDoc(method),
                 parameters: params,
-                returnType
+                returnType,
+                ...(tags.returns ? {returns: {type: returnType, description: tags.returns}} : {})
             });
         } catch (e) {
             log.warn(`Failed to extract interface method from ${name}: ${e}`);
@@ -1559,10 +1859,16 @@ function extractMethodInfo(
     method: ReturnType<ClassDeclaration['getInstanceMethods']>[number],
     isStatic: boolean
 ): MemberInfo {
-    const params = method.getParameters().map(p => ({
-        name: p.getName(),
-        type: fastGetTypeText(p, p)
-    }));
+    const tags = extractJsDocTags(method);
+    const params: MemberParameter[] = method.getParameters().map(p => {
+        const pName = p.getName();
+        const desc = tags.paramDescriptions.get(pName);
+        return {
+            name: pName,
+            type: fastGetTypeText(p, p),
+            ...(desc ? {description: desc} : {})
+        };
+    });
 
     // Prefer the declared return-type annotation. Falling back to the checker's
     // `getReturnType()` is ~order-of-magnitude slower and drives most of the
@@ -1587,7 +1893,8 @@ function extractMethodInfo(
         decorators: getNodeDecorators(method),
         jsDoc: extractJsDoc(method),
         parameters: params,
-        returnType
+        returnType,
+        ...(tags.returns ? {returns: {type: returnType, description: tags.returns}} : {})
     };
 }
 
