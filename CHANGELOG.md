@@ -53,6 +53,11 @@ app-load span changes in this release.
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
+* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
+  concatenated through `PersistenceProvider.mergePersistOptions`. Enables hierarchical
+  namespacing of persistence so a parent model can scope all descendants (`@persist` properties,
+  `markPersist` calls, child `GridModel` / `PanelModel` / etc.) under a single shared key in one
+  backing store. See [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
 
 ### 🐞 Bug Fixes
 
