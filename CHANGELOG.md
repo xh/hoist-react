@@ -7,7 +7,7 @@
 See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-Note that `hoist-core >= 38.1` is recommended (not required) to pair with the span-sampling and
+Note that `hoist-core >= 39.0` is recommended (not required) to pair with the span-sampling and
 app-load span changes in this release.
 
 * `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an

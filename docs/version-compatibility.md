@@ -54,7 +54,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 85.0 | -- | 38.1 | 38.1 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
+| 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
 | 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |
 | 83.0 | 37.0 | | 37.0 | OTEL tracing, static defaults, metrics publishing | [Notes](./upgrade-notes/v83-upgrade-notes.md) |
 | 82.0 | -- | 36.3 | 36.3 | Admin Metrics tab | [Notes](./upgrade-notes/v82-upgrade-notes.md) |
@@ -110,7 +110,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
-| 38.1 | 85.0 recommended | Nested app-load spans, name-based `sampleRules` |
+| 39.0 | 85.0 recommended | Telemetry package restructuring, typed `ConfigSpec`/`PreferenceSpec`/`RoleSpec`, JDK 25 toolchain. No hard hoist-react bump from 38.0; v85 is the natural pairing. |
 | 38.0 | 84.0 | Span sampling, OTEL tag alignment, log level overrides |
 | 37.0 | 83.0 | OTEL tracing, metrics publishing |
 | 36.3 | 82.0 recommended | Admin Metrics tab |
