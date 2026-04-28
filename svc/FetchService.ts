@@ -17,7 +17,7 @@ import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -644,36 +644,6 @@ export class FetchService extends HoistService {
 
         // Fallback to statusText if we have nothing else.
         return ret || statusText;
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `FetchService.defaults.autoGenCorrelationIds` */
-    static set autoGenCorrelationIds(v: boolean | ((opts: FetchOptions) => boolean)) {
-        apiDeprecated('FetchService.autoGenCorrelationIds', {
-            msg: 'Use FetchService.defaults.autoGenCorrelationIds instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.autoGenCorrelationIds = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.genCorrelationId` */
-    static set genCorrelationId(v: () => string) {
-        apiDeprecated('FetchService.genCorrelationId', {
-            msg: 'Use FetchService.defaults.genCorrelationId instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.genCorrelationId = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.correlationIdHeaderKey` */
-    static set correlationIdHeaderKey(v: string) {
-        apiDeprecated('FetchService.correlationIdHeaderKey', {
-            msg: 'Use FetchService.defaults.correlationIdHeaderKey instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.correlationIdHeaderKey = v;
     }
 }
 

@@ -27,6 +27,10 @@ The most significant app-level impacts are:
   application load timing clearly visible in OTEL.
 - **Swiper upgraded v11 → v12** — resolves a critical prototype pollution CVE. Apps consuming
   Swiper directly should confirm the upgrade.
+- **Long-deprecated APIs removed** — `loadModel` getters, several `GridModel`/`ChartModel`/
+  `ExceptionHandler`/`FetchService` static setters, and the `withFilterByField`/`withFilterByKey`/
+  `replaceFilterByKey`/`withFilterByTypes` filter helpers. Replacements have all shipped
+  previously, but agents performing the upgrade should grep for residual call sites — see Step 6.
 
 ## Prerequisites
 
@@ -271,6 +275,40 @@ The built-in services are the canonical examples. A few patterns worth noting:
 For application spans, prefer plain descriptive names (e.g. `loadPortfolioRefData`) — the
 `xh.*` naming convention is reserved for framework-owned spans.
 
+### 6. Remove Usage of Long-Deprecated APIs
+
+Several APIs deprecated in earlier Hoist versions (most since v82) are now removed. The
+replacements have all shipped previously, so most apps will already be off them — but agents
+performing the upgrade should sweep for any residual call sites. `tsc --noEmit` is the primary
+safety net: any remaining usages will surface as missing-property or unknown-import errors.
+
+**Find affected files:**
+```bash
+grep -rnE "\.loadModel\b|\.appLoadModel\b|applyColumnStateChanges|GridModel\.(DEFAULT_RESTORE_DEFAULTS_WARNING|DEFAULT_AUTOSIZE_MODE|defaultContextMenu)|ChartModel\.defaultContextMenu|ExceptionHandler\.(REDACT_PATHS|ALERT_TYPE|TOAST_PROPS)|FetchService\.(autoGenCorrelationIds|genCorrelationId|correlationIdHeaderKey)|withFilterByField|withFilterByKey|replaceFilterByKey|withFilterByTypes" client-app/src/
+```
+
+Replace each match per the table below:
+
+| Removed | Replacement |
+|---|---|
+| `model.loadModel` (on `HoistModel`, `HoistService`, `UrlStore`, `RestFormModel`) | `model.loadObserver` |
+| `XH.appLoadModel` | `XH.appLoadObserver` |
+| `gridModel.applyColumnStateChanges(state)` | `gridModel.updateColumnState(state)` |
+| `GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING = v` | `GridModel.defaults.restoreDefaultsWarning = v` |
+| `GridModel.DEFAULT_AUTOSIZE_MODE = v` | `GridModel.defaults.autosizeMode = v` |
+| `GridModel.defaultContextMenu` (get/set) | `GridModel.defaults.contextMenu` |
+| `ChartModel.defaultContextMenu` (get/set) | `ChartModel.defaults.contextMenu` |
+| `ExceptionHandler.REDACT_PATHS = v` | `ExceptionHandler.defaults.redactPaths = v` |
+| `ExceptionHandler.ALERT_TYPE = v` | `ExceptionHandler.defaults.alertType = v` |
+| `ExceptionHandler.TOAST_PROPS = v` | `ExceptionHandler.defaults.toastProps = v` |
+| `FetchService.autoGenCorrelationIds = v` | `FetchService.defaults.autoGenCorrelationIds = v` |
+| `FetchService.genCorrelationId = v` | `FetchService.defaults.genCorrelationId = v` |
+| `FetchService.correlationIdHeaderKey = v` | `FetchService.defaults.correlationIdHeaderKey = v` |
+| `withFilterByField(filter, newFilter, field)` | `appendFilter(filter.removeFieldFilters(field), newFilter)` |
+| `withFilterByKey(filter, newFilter, key)` | `appendFilter(filter.removeFunctionFilters(key), newFilter)` |
+| `replaceFilterByKey(filter, replacement, key)` | `appendFilter(filter.removeFunctionFilters(key), replacement)` |
+| `withFilterByTypes(filter, newFilter, types)` | Use `filter.removeFieldFilters()` / `filter.removeFunctionFilters()` combined with `appendFilter()` |
+
 ## Verification Checklist
 
 After completing all steps:
@@ -290,6 +328,8 @@ After completing all steps:
 - [ ] Forms validate and submit correctly
 - [ ] If your app consumes Swiper directly: swiper styles import is `swiper/css` (not
   `swiper/scss`), and carousels/pagers render correctly
+- [ ] No residual usages of removed deprecated APIs remain (Step 6) — the Step 6 grep returns
+  no matches under `client-app/src/`
 - [ ] (If OTEL export is enabled) App load trace in your collector shows nested
   `xh.client.load` → `xh.client.appInit` → per-service spans, with your app's init-time fetches
   appearing as children
