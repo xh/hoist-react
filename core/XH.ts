@@ -32,7 +32,7 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -174,14 +174,6 @@ export class XHApi {
      */
     get appLoadObserver(): TaskObserver {
         return this.acm.appLoadObserver;
-    }
-
-    get appLoadModel(): TaskObserver {
-        apiDeprecated('XH.appLoadModel', {
-            v: 'v82',
-            msg: 'Use XH.appLoadObserver instead.'
-        });
-        return this.appLoadObserver;
     }
 
     /** Root level application model. */

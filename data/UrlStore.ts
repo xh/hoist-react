@@ -14,7 +14,6 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
 import {Store, StoreConfig} from './Store';
 
@@ -43,13 +42,6 @@ export class UrlStore extends Store implements Loadable {
     }
 
     get loadObserver(): TaskObserver {
-        return this.loadSupport.loadObserver;
-    }
-    get loadModel() {
-        apiDeprecated('UrlStore.loadModel', {
-            v: 'v82',
-            msg: 'Use UrlStore.loadObserver instead.'
-        });
         return this.loadSupport.loadObserver;
     }
     get lastLoadRequested() {

@@ -25,7 +25,6 @@ app-load span changes in this release.
   `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
-
 * `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
   `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
   `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
@@ -35,6 +34,11 @@ app-load span changes in this release.
   for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
   requiring full visibility into error spans for a particular set of errors should ensure they
   are sampled via the existing rules.
+* Removed several APIs that had been deprecated for one or more prior versions - including
+  `loadModel` getters across model/service/store classes, static defaults setters on `GridModel`/
+  `ChartModel`/`ExceptionHandler`/`FetchService`, and the legacy `withFilterByField`/
+  `withFilterByKey`/`replaceFilterByKey`/`withFilterByTypes` filter helpers. See the v85 upgrade
+  notes for the full list and replacements.
 
 ### 🎁 New Features
 
