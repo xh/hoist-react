@@ -10,12 +10,14 @@ import {
     managed,
     PlainObject,
     RefreshContextModel,
-    TaskObserver
+    TaskObserver,
+    XH
 } from '../';
 import {LoadSpec, Loadable} from './';
+import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject, pull} from 'lodash';
+import {isPlainObject, isString, pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -81,10 +83,19 @@ export class LoadSupport extends HoistBase implements Loadable {
         }
 
         runInAction(() => (this.lastLoadRequested = new Date()));
+
+        const spanConfig = this.resolveLoadSpanConfig(loadSpec);
+        if (spanConfig) {
+            return XH.traceService.withSpan(spanConfig, span =>
+                this.runLoadAsync(target, loadObserver, loadSpec.withChildSpan(span))
+            );
+        }
+        return this.runLoadAsync(target, loadObserver, loadSpec);
+    }
+
+    private async runLoadAsync(target: Loadable, loadObserver: TaskObserver, loadSpec: LoadSpec) {
         this.lastRequested = loadSpec;
-
         let exception = null;
-
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)
@@ -118,6 +129,24 @@ export class LoadSupport extends HoistBase implements Loadable {
                     logDebug(msg, target);
                 }
             });
+    }
+
+    /** Resolve and enhcance the target's opt-in `loadSpan` */
+    private resolveLoadSpanConfig(loadSpec: LoadSpec): SpanConfig {
+        const {target} = this,
+            cfg = target.loadSpan;
+        if (!cfg) return null;
+
+        const base = isString(cfg) ? {name: cfg} : cfg;
+        return {
+            ...base,
+            parent: loadSpec.span,
+            tags: {
+                'hoist.load.type': loadSpec.typeDisplay,
+                'hoist.load.number': loadSpec.loadNumber,
+                ...base.tags
+            }
+        };
     }
 }
 

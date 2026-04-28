@@ -347,6 +347,18 @@ const data = await XH.fetchJson({
     url: 'api/portfolio',
     span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
 });
+
+// Auto-trace loads on a HoistModel/HoistService - set `loadSpan` to opt in.
+// LoadSupport wraps each doLoadAsync in a span, available on `loadSpec.span` for tagging
+// and propagation to nested fetches/loads.
+class PortfolioModel extends HoistModel {
+    loadSpan = 'loadPortfolio';
+
+    override async doLoadAsync(loadSpec: LoadSpec) {
+        loadSpec.span?.setTags({portfolioId: this.id});
+        await XH.fetchJson({url: 'api/portfolio', loadSpec}); // auto-parented
+    }
+}
 ```
 
 **SpanConfig:**

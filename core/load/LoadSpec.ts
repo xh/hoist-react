@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Span} from '@xh/hoist/utils/telemetry';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -15,6 +16,8 @@ export type LoadSpecConfig = {
     isAutoRefresh?: boolean;
     /** Application-specific information about the load request. */
     meta?: PlainObject;
+    /** Optional caller-provided span to use as the parent for spans within this load. */
+    parentSpan?: Span;
 };
 
 /**
@@ -55,6 +58,9 @@ export class LoadSpec {
     /** Owner of this object. */
     owner: LoadSupport;
 
+    /** Trace span for work within this load - parent for nested fetches and loadAsync calls. */
+    span: Span = null;
+
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
         return this !== this.owner.lastRequested;
@@ -81,16 +87,27 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta} = config;
+        const {isRefresh, isAutoRefresh, meta, parentSpan} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
+        this.span = parentSpan ?? (config instanceof LoadSpec ? config.span : null);
 
         const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.dateCreated = new Date();
 
         Object.freeze(this);
+    }
+
+    /**
+     * Return a clone of this `LoadSpec` with `span` replaced.
+     */
+    withChildSpan(span: Span): LoadSpec {
+        const ret = Object.create(Object.getPrototypeOf(this)) as LoadSpec;
+        Object.assign(ret, this, {span});
+        Object.freeze(ret);
+        return ret;
     }
 }

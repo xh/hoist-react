@@ -433,7 +433,7 @@ export class FetchService extends HoistService {
         return {
             name: method,
             kind: 'client',
-            parent: opts.span as Span,
+            parent: (opts.span as Span) ?? (opts.loadSpec as LoadSpec)?.span,
             tags
         };
     }
