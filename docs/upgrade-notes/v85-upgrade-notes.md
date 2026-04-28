@@ -38,7 +38,7 @@ Before starting, ensure:
 
 - [ ] Running hoist-react v84.x
 - [ ] Your package manager (**yarn** or **npm**) is available and working
-- [ ] **hoist-core** — no new minimum is required. **hoist-core >= 38.1 is recommended** to pair
+- [ ] **hoist-core** — no new minimum is required. **hoist-core >= 39.0 is recommended** to pair
   with this release's span sampling and app-load span changes, including the new
   `xhTraceConfig.sampleRules` name-based matching. See
   [Version Compatibility](../version-compatibility.md) for details.
