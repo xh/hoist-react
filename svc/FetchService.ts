@@ -205,16 +205,17 @@ export class FetchService extends HoistService {
             );
         }
 
-        // 2) Apply appropriate tracing and correlation to the core work.
-        opts = this.withCorrelationId(opts);
-        let ret = this.span(this.createSpanConfig(opts)).run(span => {
-            opts = {...opts, traceId: span.traceId};
-
-            // Core promise - chained with header resolution to ensure that work is included in overall tracked time.
+        // 2) Apply optional span and correlation to the core work
+        const fn = span => {
+            opts = this.withCorrelationId(opts);
+            opts = this.withTraceId(opts, span);
             return this.withResolvedHeadersAsync(opts, span).then(opts =>
                 this.managedFetchAsync(opts, span)
             );
-        });
+        };
+
+        const spanConfig = this.createSpanConfig(opts);
+        let ret = spanConfig ? this.span(spanConfig).run(fn) : fn(null);
 
         // 3) Apply tracking
         if (opts.track) {
@@ -267,7 +268,11 @@ export class FetchService extends HoistService {
         return opts;
     }
 
-    private async withResolvedHeadersAsync(opts: FetchOptions, span?: Span): Promise<FetchOptions> {
+    private withTraceId(opts: FetchOptions, span: Span): FetchOptions {
+        return span ? {...opts, traceId: span.traceId} : opts;
+    }
+
+    private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -384,7 +389,7 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
-        span.setHttpStatus(ret.status);
+        span?.setHttpStatus(ret.status);
 
         if (!ret.ok) {
             throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
@@ -409,6 +414,8 @@ export class FetchService extends HoistService {
     }
 
     private createSpanConfig(opts: FetchOptions): SpanConfig {
+        if (!XH.traceService.enabled) return null;
+
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             fullUrl = this.buildFullUrl(opts.url),
             tags: PlainObject = {
