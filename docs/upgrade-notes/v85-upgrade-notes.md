@@ -231,36 +231,29 @@ with `this`, so the emitted span correctly carries `code.namespace`.
 
 If your `AppModel.initAsync()` does substantial setup beyond installing services — loading
 reference data, bootstrapping caches, preparing router state — give that work a named child span
-so it shows up distinctly in OTEL:
+so it shows up distinctly in OTEL.
+
+`Loadable.loadAsync()` now accepts a {@link LoadSpecConfig} - a plain config object with
+`isRefresh`, `isAutoRefresh`, `meta`, and a new `span` field (replaces the prior
+`LoadSpec | Partial<LoadSpec>` signature). Pass `ctx.span` (or a derived child span) so the
+load's `doLoadAsync` work nests correctly. The supplied span is exposed inside `doLoadAsync` as
+`loadSpec.span`; forward `loadSpec` to `FetchService` calls and any nested `loadAsync()` calls
+as before so fetches and child loads nest under it automatically.
 
 ```typescript
 override async initAsync(ctx: InitContext) {
     await super.initAsync(ctx);
     await XH.installServicesAsync([LookupService, EventService], ctx);
 
-    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async () => {
-        await this.lookupService.loadAsync();
+    // Direct: parent the load under ctx.span
+    await this.lookupService.loadAsync({span: ctx.span});
+
+    // Or wrap several related calls in a named child span
+    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async span => {
+        await this.eventService.loadAsync({span});
     });
 }
 ```
-
-#### 5c. Pass `ctx.span` into init-time `loadAsync()` calls
-
-`Loadable.loadAsync()` now accepts a {@link LoadSpecConfig} - a plain config object with
-`isRefresh`, `isAutoRefresh`, `meta`, and a new `span` field (replaces the prior
-`LoadSpec | Partial<LoadSpec>` signature). When kicking off a load during init, pass `ctx.span`
-(or any `Span` you want as the parent) so the load's `doLoadAsync` work nests correctly:
-
-```typescript
-override async initAsync(ctx: InitContext) {
-    await super.initAsync(ctx);
-    await this.lookupService.loadAsync({span: ctx.span});
-}
-```
-
-The supplied span is exposed inside `doLoadAsync` as `loadSpec.span`. Implementations should
-forward `loadSpec` to `FetchService` calls and to nested `loadAsync()` calls as before - any
-fetches and child loads will then nest under the caller-supplied span automatically.
 
 #### Reference: how built-in Hoist services use `InitContext`
 
