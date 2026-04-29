@@ -6,6 +6,7 @@
  */
 import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
 import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {isFunction} from 'lodash';
 import {
     DefaultHoistProps,
@@ -192,9 +193,6 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
-    get loadSpan() {
-        return this.loadSupport?.loadSpan;
-    }
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
@@ -209,6 +207,18 @@ export abstract class HoistModel extends HoistBase implements Loadable {
      * Do not call this method directly - call {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync}.
      */
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    /**
+     * Template method for subclasses that want managed loading.
+     *
+     * Override to auto-generate spans covering the loads on this object.
+     * The managed span will be placed on the LoadSpec passed to doLoadAsync and available for
+     * tagging, sub-spanning, and passing through to other models and fetch calls.
+     */
+    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
+        return this.loadSupport?.getLoadSpan();
+    }
+
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }

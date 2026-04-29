@@ -27,12 +27,8 @@ export interface Loadable {
     /** Any exception that occurred during last load. */
     lastLoadException: any;
 
-    /**
-     * Set to auto-generate spans covering the loads on this object.
-     * The managed span will be placed on the LoadSpec passed to doLoadAsync and available for
-     * tagging, sub-spanning, and passing through to other models and fetch calls.
-     */
-    loadSpan?: Omit<SpanConfig, 'parent'> | string;
+    /** Return a config for an auto-generated span covering the loads on this object. */
+    getLoadSpan(): Omit<SpanConfig, 'parent'> | string;
 
     /**
      * Load the target.

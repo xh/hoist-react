@@ -15,6 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {apiDeprecated} from '@xh/hoist/utils/js';
+import {SpanConfig} from '@xh/hoist/utils/telemetry';
 
 import {Store, StoreConfig} from './Store';
 
@@ -70,7 +71,9 @@ export class UrlStore extends Store implements Loadable {
     async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
         return this.loadSupport.loadAsync(loadSpec);
     }
-
+    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
+        return this.loadSupport.getLoadSpan();
+    }
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;

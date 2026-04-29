@@ -53,7 +53,7 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    get loadSpan(): Omit<SpanConfig, 'parent'> | string {
+    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
         return null;
     }
 
@@ -138,7 +138,7 @@ export class LoadSupport extends HoistBase implements Loadable {
     /** Resolve and enhcance the target's opt-in `loadSpan` */
     private resolveLoadSpanConfig(loadSpec: LoadSpec): SpanConfig {
         const {target} = this,
-            cfg = target.loadSpan;
+            cfg = target.getLoadSpan();
         if (!cfg) return null;
 
         const base = isString(cfg) ? {name: cfg} : cfg;
