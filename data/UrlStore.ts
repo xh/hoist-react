@@ -63,6 +63,7 @@ export class UrlStore extends Store implements Loadable {
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
     }
+
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;

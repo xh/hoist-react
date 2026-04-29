@@ -347,16 +347,6 @@ const data = await XH.fetchJson({
     url: 'api/portfolio',
     span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
 });
-
-// Within a load, use `spanLoad()` to wrap work in a span parented to `loadSpec.span`.
-// The user fn receives a `LoadSpec` clone carrying the new span - thread it into nested
-// fetches and `loadAsync` calls for automatic propagation.
-class PortfolioModel extends HoistModel {
-    override async doLoadAsync(loadSpec: LoadSpec) {
-        await this.spanLoad({name: 'loadPortfolio', tags: {portfolioId: this.id}}, loadSpec)
-            .run(loadSpec => XH.fetchJson({url: 'api/portfolio', loadSpec}));
-    }
-}
 ```
 
 **SpanConfig:**

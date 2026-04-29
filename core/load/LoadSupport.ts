@@ -103,13 +103,10 @@ export class LoadSupport extends HoistBase implements Loadable {
         }
 
         runInAction(() => (this.lastLoadRequested = new Date()));
-
-        return this.runLoadAsync(target, loadObserver, loadSpec);
-    }
-
-    private async runLoadAsync(target: Loadable, loadObserver: TaskObserver, loadSpec: LoadSpec) {
         this.lastRequested = loadSpec;
+
         let exception = null;
+
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)

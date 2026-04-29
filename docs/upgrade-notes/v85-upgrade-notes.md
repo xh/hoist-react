@@ -25,6 +25,10 @@ The most significant app-level impacts are:
 - **Propagate `ctx.span` into fetch and async work during init (recommended)** — doing so gives
   you per-service and per-request child spans under the `xh.client.appInit` root, making
   application load timing clearly visible in OTEL.
+- **`LoadSpecConfig` replaces `LoadSpec | Partial<LoadSpec>` as the `loadAsync()` argument** — a
+  new exported type defining the inputs callers may supply (`isRefresh`, `isAutoRefresh`, `meta`,
+  and the new `span`). Pass `span` to seed the parent trace context for spans and fetches issued
+  within the load.
 - **Swiper upgraded v11 → v12** — resolves a critical prototype pollution CVE. Apps consuming
   Swiper directly should confirm the upgrade.
 - **Long-deprecated APIs removed** — `loadModel` getters, several `GridModel`/`ChartModel`/
@@ -239,6 +243,24 @@ override async initAsync(ctx: InitContext) {
     });
 }
 ```
+
+#### 5c. Pass `ctx.span` into init-time `loadAsync()` calls
+
+`Loadable.loadAsync()` now accepts a {@link LoadSpecConfig} - a plain config object with
+`isRefresh`, `isAutoRefresh`, `meta`, and a new `span` field (replaces the prior
+`LoadSpec | Partial<LoadSpec>` signature). When kicking off a load during init, pass `ctx.span`
+(or any `Span` you want as the parent) so the load's `doLoadAsync` work nests correctly:
+
+```typescript
+override async initAsync(ctx: InitContext) {
+    await super.initAsync(ctx);
+    await this.lookupService.loadAsync({span: ctx.span});
+}
+```
+
+The supplied span is exposed inside `doLoadAsync` as `loadSpec.span`. Implementations should
+forward `loadSpec` to `FetchService` calls and to nested `loadAsync()` calls as before - any
+fetches and child loads will then nest under the caller-supplied span automatically.
 
 #### Reference: how built-in Hoist services use `InitContext`
 
