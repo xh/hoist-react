@@ -192,12 +192,16 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+    get loadSpan() {
+        return this.loadSupport?.loadSpan;
+    }
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
+
     /**
      * Template method for subclasses that want managed loading.
      *

@@ -98,6 +98,9 @@ export class HoistService extends HoistBase implements Loadable {
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+    get loadSpan() {
+        return this.loadSupport?.loadSpan;
+    }
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }

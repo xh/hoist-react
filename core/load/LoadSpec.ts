@@ -17,7 +17,7 @@ export type LoadSpecConfig = {
     /** Application-specific information about the load request. */
     meta?: PlainObject;
     /** Optional caller-provided span to use as the parent for spans within this load. */
-    parentSpan?: Span;
+    span?: Span;
 };
 
 /**
@@ -58,8 +58,15 @@ export class LoadSpec {
     /** Owner of this object. */
     owner: LoadSupport;
 
-    /** Trace span for work within this load - parent for nested fetches and loadAsync calls. */
-    span: Span = null;
+    /**
+     * Current trace span for work happening within this load. Used as parent by nested
+     * `FetchService` calls (via `loadSpec` propagation) and any nested `loadAsync` calls.
+     *
+     * Populated by `LoadSupport` from `LoadSpecConfig.span` and/or the target's
+     * `loadSpan`. May be `null` if no caller context is provided and the target does
+     * not opt in to auto-tracing.
+     */
+    span: Span;
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
@@ -87,12 +94,12 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta, parentSpan} = config;
+        const {isRefresh, isAutoRefresh, meta, span} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
-        this.span = parentSpan ?? (config instanceof LoadSpec ? config.span : null);
+        this.span = span ?? (config instanceof LoadSpec ? config.span : null);
 
         const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;

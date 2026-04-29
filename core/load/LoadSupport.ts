@@ -53,6 +53,10 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
+    get loadSpan(): Omit<SpanConfig, 'parent'> | string {
+        return null;
+    }
+
     async loadAsync(loadSpec?: LoadSpecConfig) {
         throwIf(
             loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
