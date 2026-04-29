@@ -37,11 +37,20 @@ export function toRelativePath(filePath: string): string {
 
 /**
  * Format a member as a readable line with optional decorator prefix and JSDoc description.
+ *
+ * For methods, surfaces `@param` descriptions inline beneath each parameter
+ * and `@returns` description on a Returns line - both populated from JSDoc
+ * tags by the registry layer. See {@link MemberInfo} for the data shape.
  */
 export function formatMember(member: MemberInfo): string {
     const lines: string[] = [];
     const decoratorPrefix =
         member.decorators.length > 0 ? member.decorators.map(d => `@${d}`).join(' ') + ' ' : '';
+    // Annotate extends-chain inheritance only - knowing the member came from a
+    // parent class is useful context. Docs-only inheritance via `implements`
+    // (carried structurally on `jsDocInheritedFrom`) is provenance metadata
+    // that does not change how the API is used, so we omit it from the text
+    // rendering and just show the inherited JSDoc inline.
     const inheritedSuffix = member.inheritedFrom
         ? `  (inherited from ${member.inheritedFrom})`
         : '';
@@ -64,6 +73,22 @@ export function formatMember(member: MemberInfo): string {
             .map(l => `    ${l}`)
             .join('\n');
         lines.push(indented);
+    }
+
+    // Per-parameter descriptions from `@param` tags
+    const describedParams = (member.parameters ?? []).filter(p => p.description);
+    if (describedParams.length > 0) {
+        lines.push('    Parameters:');
+        for (const p of describedParams) {
+            const desc = p.description!.split('\n').join('\n        ');
+            lines.push(`      ${p.name}: ${desc}`);
+        }
+    }
+
+    // Return-value description from `@returns` tag
+    if (member.returns?.description) {
+        const desc = member.returns.description.split('\n').join('\n      ');
+        lines.push(`    Returns: ${desc}`);
     }
 
     return lines.join('\n');
@@ -297,7 +322,11 @@ const symbolRefSchema = z.object({
 
 const parameterSchema = z.object({
     name: z.string(),
-    type: z.string()
+    type: z.string(),
+    description: z
+        .string()
+        .optional()
+        .describe('Description from a matching `@param` JSDoc tag, when present.')
 });
 
 /** Full member info as emitted by `hoist-get-members` and member-match results. */
@@ -311,10 +340,24 @@ const memberInfoSchema = z.object({
     jsDoc: z.string(),
     parameters: z.array(parameterSchema).optional().describe('Present for methods only.'),
     returnType: z.string().optional().describe('Present for methods only.'),
+    returns: z
+        .object({type: z.string(), description: z.string()})
+        .optional()
+        .describe(
+            'Return-value info from a `@returns` JSDoc tag, when present. `type` mirrors `returnType`; `description` carries the author prose.'
+        ),
     inheritedFrom: z
         .string()
         .optional()
-        .describe('Declaring class/interface name when inherited from a parent.')
+        .describe(
+            'Parent class name when this member is inherited via `extends` - both the member and its behavior come from the named ancestor.'
+        ),
+    jsDocInheritedFrom: z
+        .string()
+        .optional()
+        .describe(
+            "Interface name when this member's JSDoc came from an implemented interface (because no class in the extends chain declares own JSDoc on this member). Orthogonal to `inheritedFrom`: when both are present, the member is inherited from `inheritedFrom` and its docs come from `jsDocInheritedFrom`."
+        )
 });
 
 function toSymbolRef(
@@ -338,9 +381,19 @@ function toMemberInfo(m: MemberInfo) {
         ...(m.isOptional !== undefined ? {isOptional: m.isOptional} : {}),
         decorators: m.decorators,
         jsDoc: m.jsDoc,
-        ...(m.parameters ? {parameters: m.parameters} : {}),
+        ...(m.parameters
+            ? {
+                  parameters: m.parameters.map(p => ({
+                      name: p.name,
+                      type: p.type,
+                      ...(p.description ? {description: p.description} : {})
+                  }))
+              }
+            : {}),
         ...(m.returnType ? {returnType: m.returnType} : {}),
-        ...(m.inheritedFrom ? {inheritedFrom: m.inheritedFrom} : {})
+        ...(m.returns ? {returns: m.returns} : {}),
+        ...(m.inheritedFrom ? {inheritedFrom: m.inheritedFrom} : {}),
+        ...(m.jsDocInheritedFrom ? {jsDocInheritedFrom: m.jsDocInheritedFrom} : {})
     };
 }
 

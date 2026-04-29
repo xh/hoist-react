@@ -7,7 +7,7 @@
 See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-Note that `hoist-core >= 38.1` is recommended (not required) to pair with the span-sampling and
+Note that `hoist-core >= 39.0` is recommended (not required) to pair with the span-sampling and
 app-load span changes in this release.
 
 * `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
@@ -25,7 +25,6 @@ app-load span changes in this release.
   `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
-
 * `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
   `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
   `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
@@ -35,6 +34,11 @@ app-load span changes in this release.
   for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
   requiring full visibility into error spans for a particular set of errors should ensure they
   are sampled via the existing rules.
+* Removed several APIs that had been deprecated for one or more prior versions - including
+  `loadModel` getters across model/service/store classes, static defaults setters on `GridModel`/
+  `ChartModel`/`ExceptionHandler`/`FetchService`, and the legacy `withFilterByField`/
+  `withFilterByKey`/`replaceFilterByKey`/`withFilterByTypes` filter helpers. See the v85 upgrade
+  notes for the full list and replacements.
 
 ### 🎁 New Features
 
@@ -83,6 +87,10 @@ app-load span changes in this release.
   `--json` flag on every matching CLI subcommand.
 * Fixed a latent member-index collision bug where two exported owners sharing a simple name
   would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+* `hoist-get-members` (and `hoist-ts members`) now surface `@param` descriptions via
+  `parameters[].description` and `@returns` via a new `returns: {type, description}` field on
+  each method. JSDoc on class members with no own docs is also inherited from `implements`
+  interfaces, so impl classes can single-source their docs on the interface they implement.
 
 ### ⚙️ Technical
 

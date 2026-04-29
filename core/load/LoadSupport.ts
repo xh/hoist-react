@@ -53,10 +53,16 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
-        return null;
-    }
-
+    /**
+     * Trigger a managed load through the target's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request.
+     *
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
     async loadAsync(loadSpec?: LoadSpecConfig) {
         throwIf(
             loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
@@ -76,6 +82,22 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
+    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
+        return null;
+    }
+
+    /**
+     * Run the managed-load lifecycle for the target: short-circuits redundant
+     * auto-refreshes, links the load to the `loadObserver`, delegates to
+     * `target.doLoadAsync(loadSpec)`, and updates `lastLoadCompleted` /
+     * `lastLoadException` on completion.
+     *
+     * Application code should not override or call this directly - it is the
+     * orchestrator that the public entry points (`loadAsync`/`refreshAsync`/
+     * `autoRefreshAsync`) ultimately invoke. Application templates that opt
+     * into managed loading override `doLoadAsync` on their own model/service
+     * class instead (see {@link Loadable.doLoadAsync}).
+     */
     async doLoadAsync(loadSpec: LoadSpec) {
         let {target, loadObserver} = this;
 

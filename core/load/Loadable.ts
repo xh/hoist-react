@@ -6,7 +6,7 @@
  */
 import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {TaskObserver} from '../';
-import {LoadSpec} from './';
+import {LoadSpec, LoadSpecConfig} from './';
 
 /**
  * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.
@@ -31,36 +31,42 @@ export interface Loadable {
     getLoadSpan(): Omit<SpanConfig, 'parent'> | string;
 
     /**
-     * Load the target.
+     * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request via {@link LoadSupport}.
      *
-     * This method is the main public entry point for this interface and is responsible for
-     * calling the objects `doLoadAsync()` implementation.  See also `refreshAsync()` and
-     * `autoRefreshAsync()` for convenience variants of this method.
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
      *
-     * @param loadSpec - a {@link LoadSpec}, or an object containing properties to create one.
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
      */
-    loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>): Promise<void>;
+    loadAsync(loadSpec?: LoadSpecConfig): Promise<void>;
 
     /**
-     * Refresh the target.
-     * @param meta - optional metadata for the request.
+     * Trigger a managed refresh - equivalent to `loadAsync({isRefresh: true, meta})`. The optional
+     * `meta` argument is passed directly here (not wrapped in a config object) and is exposed as
+     * `loadSpec.meta` in `doLoadAsync()`.
      */
     refreshAsync(meta?: object): Promise<void>;
 
     /**
-     * Auto-refresh the target.
-     * @param meta - optional metadata for the request.
+     * Trigger a background auto-refresh - equivalent to `loadAsync({isAutoRefresh: true, meta})`.
+     * Skipped if a load is already pending. The optional `meta` argument is passed directly here
+     * (not wrapped in a config object) and is exposed as `loadSpec.meta` in `doLoadAsync()`.
      */
     autoRefreshAsync(meta?: object): Promise<void>;
 
     /**
-     * Implement this method to load data or other state from external data sources or services.
-     * This is a template method - callers should call `loadAsync()` or `refreshAsync()` instead.
+     * Template method for subclasses that want managed loading.
      *
-     * @param loadSpec - metadata about the underlying request. Implementations should
-     *      take care to pass this parameter in calls to any delegates that support it, e.g.
-     *      when calling the `loadAsync()` method of other services or child models with
-     *      `loadSupport` or when making calls to {@link FetchService} APIs.
+     * Override this method to opt into Hoist's managed loading (auto-installs {@link LoadSupport}).
+     * Called by the framework via {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync} -
+     * do not call directly. The supplied {@link LoadSpec} carries `isRefresh`, `isAutoRefresh`,
+     * `isStale`, and any app-specific `meta` for branching behavior. Implementations should pass
+     * `loadSpec` to nested `loadAsync()` calls and to {@link FetchService} requests.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
 }

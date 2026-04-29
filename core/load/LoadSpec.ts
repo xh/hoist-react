@@ -9,12 +9,22 @@ import {Span} from '@xh/hoist/utils/telemetry';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
+/**
+ * Configuration for a {@link LoadSpec} - the inputs callers may supply via
+ * {@link LoadSupport.loadAsync} when triggering a managed load.
+ *
+ * @see LoadSpec
+ * @see LoadSupport
+ */
 export type LoadSpecConfig = {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application-specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Optional on input - the
+     * resulting `LoadSpec.meta` will default to an empty object when omitted.
+     */
     meta?: PlainObject;
     /** Optional caller-provided span to use as the parent for spans within this load. */
     span?: Span;
@@ -46,7 +56,11 @@ export class LoadSpec {
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
 
-    /** Application specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Always defined - defaults to an
+     * empty object when not provided by the caller, so consumers can read keys without a null
+     * check on `meta` itself.
+     */
     meta: PlainObject;
 
     /** Time the load started. */

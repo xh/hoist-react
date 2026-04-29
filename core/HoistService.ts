@@ -11,11 +11,11 @@ import {
     managed,
     LoadSupport,
     LoadSpec,
+    LoadSpecConfig,
     Loadable,
     PlainObject,
     TaskObserver
 } from './';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -83,33 +83,34 @@ export class HoistService extends HoistBase implements Loadable {
     get loadObserver(): TaskObserver {
         return this.loadSupport?.loadObserver;
     }
-    get loadModel() {
-        apiDeprecated('HoistService.loadModel', {
-            v: 'v82',
-            msg: 'Use HoistService.loadObserver instead.'
-        });
-        return this.loadSupport?.loadObserver;
-    }
+
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;
     }
+
     get lastLoadCompleted() {
         return this.loadSupport?.lastLoadCompleted;
     }
+
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
+
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
+
     getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
         return this.loadSupport?.getLoadSpan();
     }
+
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 }

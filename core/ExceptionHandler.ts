@@ -6,7 +6,7 @@
  */
 import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {apiDeprecated, logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {LoadSpec, PlainObject, XH} from './';
@@ -387,42 +387,5 @@ export class ExceptionHandler {
         });
 
         return ret;
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `ExceptionHandler.defaults.redactPaths` */
-    static get REDACT_PATHS(): string[] {
-        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
-            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
-            v: '85.0'
-        });
-        return ExceptionHandler.defaults.redactPaths;
-    }
-    static set REDACT_PATHS(v: string[]) {
-        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
-            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.redactPaths = v;
-    }
-
-    /** @deprecated - use `ExceptionHandler.defaults.alertType` */
-    static set ALERT_TYPE(v: 'dialog' | 'toast') {
-        apiDeprecated('ExceptionHandler.ALERT_TYPE', {
-            msg: 'Use ExceptionHandler.defaults.alertType instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.alertType = v;
-    }
-
-    /** @deprecated - use `ExceptionHandler.defaults.toastProps` */
-    static set TOAST_PROPS(v: object) {
-        apiDeprecated('ExceptionHandler.TOAST_PROPS', {
-            msg: 'Use ExceptionHandler.defaults.toastProps instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.toastProps = v;
     }
 }
