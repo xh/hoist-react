@@ -389,7 +389,7 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
-        span.setHttpStatus(ret.status);
+        span?.setHttpStatus(ret.status);
 
         if (!ret.ok) {
             throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
