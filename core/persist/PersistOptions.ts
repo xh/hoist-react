@@ -25,6 +25,23 @@ export interface PersistOptions {
     /** Dot delimited path to store state. */
     path?: string;
 
+    /**
+     * Inheritable, dot-delimited path prefix prepended to the resolved `path`. Concatenates
+     * (rather than replaces) when merged through parent → child `persistWith` chains via
+     * {@link PersistenceProvider.mergePersistOptions}, allowing a parent model to namespace
+     * all descendant persistence under a shared key in a single backing store.
+     *
+     * Use `pathPrefix` when configuring a `persistWith` that will be passed down to child
+     * models or shared by multiple `@persist` / `markPersist` properties. Use `path` to
+     * specify (or override) the leaf segment for a single persisted target.
+     *
+     * Note: plain object spread does NOT concatenate `pathPrefix` - it replaces, like any
+     * other key. To extend an inherited prefix, either build the new value manually from
+     * the existing one or route through `PersistenceProvider.mergePersistOptions`, which
+     * applies the concatenation rule.
+     */
+    pathPrefix?: string;
+
     /** Debounce interval in ms, or a lodash debounce config. */
     debounce?: DebounceSpec;
 

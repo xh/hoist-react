@@ -121,6 +121,7 @@ All persistence configuration flows through `PersistOptions`:
 | Property | Type | Description |
 |----------|------|-------------|
 | `path` | `string` | Dot-delimited key within the backing store object |
+| `pathPrefix` | `string` | Inheritable prefix prepended to `path`. Concatenates through merges. |
 | `prefKey` | `string` | Hoist Preference key (implies `PrefProvider`) |
 | `localStorageKey` | `string` | localStorage key (implies `LocalStorageProvider`) |
 | `sessionStorageKey` | `string` | sessionStorage key (implies `SessionStorageProvider`) |
@@ -333,6 +334,8 @@ the parent defaults with the child overrides using this rule:
 
 - **Type-related keys** (`prefKey`, `localStorageKey`, `viewManagerModel`, etc.) — child values
   **replace** the parent entirely. You can't inherit a `localStorageKey` and add a `prefKey`.
+- **`pathPrefix`** — child values **concatenate** with parent values, joined by `.`. This
+  enables hierarchical namespacing through a chain of merges (see below).
 - **Other keys** (`path`, `debounce`, `settleTime`) — child values **merge** with parent values.
 
 This means a model can set `persistWith` once and all its child models inherit the same backing
@@ -380,6 +383,66 @@ view, the grid columns/sort, filter selections, and grouping dimensions are all 
 Favorites are stored separately in preferences (server-side), since they should persist across
 views. Note the custom `path` on `detailFilterModel` — without it, both filter models would
 default to the same `filterChooser.value` path and overwrite each other.
+
+### Hierarchical Namespacing with `pathPrefix`
+
+`pathPrefix` is an inheritable prefix prepended to the resolved `path`. Use it on a parent
+model's `persistWith` to namespace all descendants — child models, `@persist` / `markPersist`
+properties, and built-in models like `GridModel` — under a shared key in a single backing store.
+
+```typescript
+class ReportsModel extends HoistModel {
+    override persistWith = {prefKey: 'reportsModel', pathPrefix: 'reports'};
+
+    // Resolves to 'reports.showAdvanced'
+    @bindable @persist showAdvanced = false;
+
+    // Resolves to 'reports.grid.columns', 'reports.grid.sortBy', etc.
+    @managed gridModel = new GridModel({persistWith: this.persistWith, columns: [...]});
+
+    // Sibling grid: pathPrefix carries through, `path` distinguishes the leaf
+    // -> 'reports.gridB.columns', etc.
+    @managed gridB = new GridModel({
+        persistWith: {...this.persistWith, path: 'gridB'},
+        columns: [...]
+    });
+}
+```
+
+`path` retains its existing "exact leaf" semantics — when set, it replaces any natural default
+the consumer would otherwise use (the property name for `@persist` / `markPersist`, the internal
+default for built-in models). Combine the two when you need both a parent-supplied namespace
+and a per-instance leaf to disambiguate sibling components.
+
+### Handing `persistWith` to a Child Model
+
+When a parent passes its `persistWith` down to a child custom `HoistModel`, prefer
+`pathPrefix` — the child should own a sub-namespace, not occupy a single leaf slot. A model
+typically has (or grows) more than one persisted target, and a leaf-level `path` on its
+`persistWith` would force all of them to collide at the same key. Reserve `path` for
+single-target consumers: a specific `@persist` / `markPersist` call, or a built-in like
+`GridModel` where you need to disambiguate siblings.
+
+```typescript
+class ReportsModel extends HoistModel {
+    override persistWith = {prefKey: 'reportsModel', pathPrefix: 'reports'};
+
+    // Child owns a sub-namespace: 'reports.detail.foo', 'reports.detail.bar', ...
+    @managed detailModel = new DetailModel({
+        persistWith: PersistenceProvider.mergePersistOptions(
+            this.persistWith,
+            {pathPrefix: 'detail'}
+        )
+    });
+}
+```
+
+**Plain spread does not concatenate `pathPrefix`.** The concatenation rule applies only when
+options flow through `PersistenceProvider.mergePersistOptions` — which the framework itself
+calls internally for `@persist`, `markPersist`, and built-in model aspect setup. For `path`,
+plain spread is fine (it has always had replace-semantics). For `pathPrefix`, route through
+`mergePersistOptions` (or build the new prefix manually from the parent's existing one) so
+the parent's prefix is preserved.
 
 ## Timing and Construction Order
 

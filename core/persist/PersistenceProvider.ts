@@ -102,6 +102,13 @@ export abstract class PersistenceProvider<S = any> {
 
     /**
      * Merge PersistOptions, respecting provider types, with later options overriding earlier ones.
+     *
+     * Most keys follow standard override semantics (later replaces earlier). Two exceptions:
+     *   - Type-related keys (`prefKey`, `localStorageKey`, `viewManagerModel`, etc.) - if any are
+     *     present in an override, ALL type-related keys are replaced together (you cannot inherit
+     *     a `localStorageKey` and add a `prefKey`).
+     *   - `pathPrefix` - concatenates parent + override with `.` rather than replacing, allowing
+     *     hierarchical namespacing through a chain of merges.
      */
     static mergePersistOptions(
         defaults: PersistOptions,
@@ -117,16 +124,15 @@ export abstract class PersistenceProvider<S = any> {
             'getData',
             'setData'
         ];
-        return compact(overrides).reduce(
-            (ret, override) =>
-                TYPE_RELATED_KEYS.some(key => override[key])
-                    ? {
-                          ...omit(ret, ...TYPE_RELATED_KEYS),
-                          ...override
-                      }
-                    : {...ret, ...override},
-            defaults
-        );
+        return compact(overrides).reduce((ret, override) => {
+            const merged = TYPE_RELATED_KEYS.some(key => override[key])
+                ? {...omit(ret, ...TYPE_RELATED_KEYS), ...override}
+                : {...ret, ...override};
+            if (ret?.pathPrefix && override.pathPrefix) {
+                merged.pathPrefix = `${ret.pathPrefix}.${override.pathPrefix}`;
+            }
+            return merged;
+        }, defaults);
     }
 
     /** Read persisted state at this provider's path. */
@@ -177,10 +183,10 @@ export abstract class PersistenceProvider<S = any> {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
 
-        const {path, debounce = 250, settleTime} = persistOptions;
+        const {path, pathPrefix, debounce = 250, settleTime} = persistOptions;
         throwIf(!path, 'Path not specified in PersistenceProvider.');
 
-        this.path = path;
+        this.path = pathPrefix ? `${pathPrefix}.${path}` : path;
         this.debounce = debounce;
         this.settleTime = settleTime;
         this.owner.markManaged(this);
