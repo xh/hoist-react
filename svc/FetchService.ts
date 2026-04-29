@@ -11,10 +11,12 @@ import {
     LoadSpecConfig,
     PlainObject,
     TrackOptions,
-    XH
+    XH,
+    formatTraceparent,
+    Span,
+    SpanConfig
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {warnIf} from '@xh/hoist/utils/js';
@@ -207,14 +209,16 @@ export class FetchService extends HoistService {
 
         // 2) Apply appropriate tracing and correlation to the core work.
         opts = this.withCorrelationId(opts);
-        let ret = this.span(this.createSpanConfig(opts)).run(span => {
-            opts = {...opts, traceId: span.traceId};
+        let ret = this.runner()
+            .withSpan(this.createSpanConfig(opts))
+            .run(ctx => {
+                opts = {...opts, traceId: ctx.span.traceId};
 
-            // Core promise - chained with header resolution to ensure that work is included in overall tracked time.
-            return this.withResolvedHeadersAsync(opts, span).then(opts =>
-                this.managedFetchAsync(opts, span)
-            );
-        });
+                // Core promise - chained with header resolution to ensure that work is included in overall tracked time.
+                return this.withResolvedHeadersAsync(opts, ctx.span).then(opts =>
+                    this.managedFetchAsync(opts, ctx.span)
+                );
+            });
 
         // 3) Apply tracking
         if (opts.track) {

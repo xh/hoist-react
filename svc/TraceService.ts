@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH, Span, SpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
-import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
  * Client-side distributed tracing service for Hoist applications.

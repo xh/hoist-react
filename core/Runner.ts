@@ -4,19 +4,43 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {LoadSpec, Some, TrackOptions, XH} from '@xh/hoist/core';
+import {LoadSpec, Some, TrackOptions, XH, Span, SpanConfig, SpanSpec} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
-import {Span, SpanConfig, SpanSpec} from './Span';
 
-export interface RunContext {
+export interface RunnerConfig {
     caller: NameSource;
     loadSpec?: LoadSpec;
     span?: Span;
 }
 
-export type RunFunction<T> = (ctx: RunContext, childRes) => Promise<T>;
+export type RunFunction<T> = (ctx: RunContext) => Promise<T>;
+
+export class RunContext {
+    readonly caller: NameSource;
+    readonly span: Span;
+    readonly loadSpec: LoadSpec;
+
+    /** @internal */
+    constructor(caller: NameSource, span: Span, loadSpec: LoadSpec) {
+        this.caller = caller;
+        this.span = span;
+        this.loadSpec = loadSpec;
+    }
+
+    child(): Runner {
+        return Runner.create({caller: this.caller, span: this.span, loadSpec: this.loadSpec});
+    }
+
+    withSpan(spec: SpanSpec): Runner {
+        return this.child().withSpan(spec);
+    }
+
+    fetchJson(opts: FetchOptions): Promise<any> {
+        return this.child().fetchJson(opts);
+    }
+}
 
 /**
  * Composable builder for wrapping a function with tracing and logging.
@@ -31,27 +55,26 @@ export type RunFunction<T> = (ctx: RunContext, childRes) => Promise<T>;
  *
  * @see HoistBase#observe - convenience factory for service/model callers.
  */
-export class ObservedRun {
-    private ctx: RunContext
+export class Runner {
+    private ctx: RunContext;
     private spanConfig: SpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
-    private children: Array<(child: ObservedRun) => any>;
 
-    static observe(context: RunContext): ObservedRun {
-        return new ObservedRun(context);
+    static create(cfg: RunnerConfig): Runner {
+        return new Runner(cfg);
     }
 
-    private constructor(context: RunContext) {
-        this.ctx = {...context};
+    private constructor(cfg: RunnerConfig) {
+        this.ctx = new RunContext(cfg.caller, cfg.span, cfg.loadSpec);
     }
 
     //---------------------------
     // Span configuration
     //---------------------------
     /** Configure a trace span within this context. */
-    span(spec: SpanSpec): this {
+    withSpan(spec: SpanSpec): this {
         this.spanConfig = isString(spec) ? {name: spec} : spec;
         return this;
     }
@@ -79,33 +102,19 @@ export class ObservedRun {
         return this;
     }
 
-
-    /**
-     * Add a child object to be run before terminating this span.
-     * All children added to this object will be run in parallel before
-     * calling the closure passed to the terminal method (typically run).
-     * @param fn
-     */
-    withChild(fn: (child: ObservedRun) => Promise<any>) {
-        this.children.push(fn);
-        return this;
-    }
-
     //---------------------------
     // Terminal
     //---------------------------
     /** Execute an async fn with all configured observability. */
     run<T>(fn: RunFunction<T>): Promise<T> {
-        fn = this.wrapWithChildren(fn);
         fn = this.wrapTrackAndLog(fn);
         return this.execute(fn);
     }
 
     /** Execute an async fn with all configured observability. */
     fetchJson(options: FetchOptions): Promise<any> {
-        let fn = (ctx) => XH.fetchJson({...options, span: ctx.span, loadSpec: ctx.loadSpec});
-        fn = this.wrapWithChildren(fn);
-        fn = this.wrapTrackAndLog(fn)
+        let fn = ctx => XH.fetchJson({...options, span: ctx.span, loadSpec: ctx.loadSpec});
+        fn = this.wrapTrackAndLog(fn);
         return this.execute(fn);
     }
 
@@ -114,35 +123,25 @@ export class ObservedRun {
     //------------------------------------------------------
     private execute<T>(fn: RunFunction<T>): Promise<T> {
         const {spanConfig, ctx} = this;
-        return spanConfig ?
-            XH.traceService.withSpan({...spanConfig, parent: ctx.span}, (span) => {
-                ctx.span = span;
-                ctx.loadSpec = ctx.loadSpec?.withChildSpan(span);
-                return fn(ctx);
-            }) :
-            fn(ctx);
+
+        return spanConfig
+            ? XH.traceService.withSpan({...spanConfig, parent: ctx.span}, span => {
+                  return fn(new RunContext(ctx.caller, span, ctx.loadSpec?.withChildSpan(span)));
+              })
+            : fn(ctx);
     }
 
-    private wrapTrackAndLog<T>(fn: RunFunction<T>): RunFunction<T>  {
+    private wrapTrackAndLog<T>(fn: RunFunction<T>): RunFunction<T> {
         const {debugMsgs, infoMsgs, trackOptions} = this;
         if (debugMsgs != null && getLogLevel() === 'debug') {
-            fn = (ctx) => withDebug(debugMsgs, () => fn(ctx), ctx.caller)
+            fn = ctx => withDebug(debugMsgs, () => fn(ctx), ctx.caller);
         } else if (this.infoMsgs != null) {
-            fn = (ctx) => withInfo(infoMsgs, () => fn(ctx), ctx.caller);
+            fn = ctx => withInfo(infoMsgs, () => fn(ctx), ctx.caller);
         }
 
         if (trackOptions) {
-            fn = (ctx) => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec})
+            fn = ctx => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec});
         }
         return fn;
-    }
-
-    private wrapWithChildren<T>(fn: RunFunction<T>): RunFunction<T>  {
-        if (children)
-        fn  = (ctx) => {
-                const tasks = this.children.map(child => child(new ObservedRun(ctx)));
-                this.childResults = Promise.all(results);
-            }
-        }
     }
 }

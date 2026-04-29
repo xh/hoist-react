@@ -23,7 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {ObservedRun, SpanConfig} from '@xh/hoist/utils/telemetry';
+import {Runner, RunnerConfig} from './Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -116,14 +116,9 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    /** Create an {@link ObservedRun} builder with this object as the caller. */
-    observe(): ObservedRun {
-        return ObservedRun.observe(this);
-    }
-
-    /** Create an {@link ObservedRun} builder with an initial span and this object as the caller. */
-    span(config: string | SpanConfig): ObservedRun {
-        return this.observe().span(config);
+    /** Create an {@link RunContext} builder with this object as the caller. */
+    runner(ctx: Partial<RunnerConfig> = {}): Runner {
+        return Runner.create({...ctx, caller: this});
     }
 
     /**

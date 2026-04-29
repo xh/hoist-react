@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Span} from '@xh/hoist/utils/telemetry';
+import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
