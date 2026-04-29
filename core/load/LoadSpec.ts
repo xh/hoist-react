@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Span} from '@xh/hoist/utils/telemetry';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -25,6 +26,8 @@ export type LoadSpecConfig = {
      * resulting `LoadSpec.meta` will default to an empty object when omitted.
      */
     meta?: PlainObject;
+    /** Optional caller-provided span to use as the parent for spans within this load. */
+    span?: Span;
 };
 
 /**
@@ -69,6 +72,15 @@ export class LoadSpec {
     /** Owner of this object. */
     owner: LoadSupport;
 
+    /**
+     * Current trace span for work happening within this load. Used as parent by nested
+     * `FetchService` calls (via `loadSpec` propagation) and any nested `loadAsync` calls.
+     *
+     * Populated from `LoadSpecConfig.span` (set by callers). May be `null` if no caller
+     * context is provided.
+     */
+    span: Span;
+
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
         return this !== this.owner.lastRequested;
@@ -95,11 +107,12 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta} = config;
+        const {isRefresh, isAutoRefresh, meta, span} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
+        this.span = span ?? (config instanceof LoadSpec ? config.span : null);
 
         const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;

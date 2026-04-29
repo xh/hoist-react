@@ -48,9 +48,12 @@ app-load span changes in this release.
   Replaces the prior `withSpan`/`withSpanAsync` helpers on `HoistBase` (see Breaking Changes).
 * Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
   matching the server-side API.
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync().
+  This span will be made available on the LoadSpec and  automatically picked up by FetchService for
+  properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
-  span.
+  span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
 * Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
