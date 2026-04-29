@@ -25,6 +25,10 @@ The most significant app-level impacts are:
 - **Propagate `ctx.span` into fetch and async work during init (recommended)** — doing so gives
   you per-service and per-request child spans under the `xh.client.appInit` root, making
   application load timing clearly visible in OTEL.
+- **`LoadSpecConfig` replaces `LoadSpec | Partial<LoadSpec>` as the `loadAsync()` argument** — a
+  new exported type defining the inputs callers may supply (`isRefresh`, `isAutoRefresh`, `meta`,
+  and the new `span`). Pass `span` to seed the parent trace context for spans and fetches issued
+  within the load.
 - **Swiper upgraded v11 → v12** — resolves a critical prototype pollution CVE. Apps consuming
   Swiper directly should confirm the upgrade.
 - **Long-deprecated APIs removed** — `loadModel` getters, several `GridModel`/`ChartModel`/
@@ -227,15 +231,26 @@ with `this`, so the emitted span correctly carries `code.namespace`.
 
 If your `AppModel.initAsync()` does substantial setup beyond installing services — loading
 reference data, bootstrapping caches, preparing router state — give that work a named child span
-so it shows up distinctly in OTEL:
+so it shows up distinctly in OTEL.
+
+`Loadable.loadAsync()` now accepts a {@link LoadSpecConfig} - a plain config object with
+`isRefresh`, `isAutoRefresh`, `meta`, and a new `span` field (replaces the prior
+`LoadSpec | Partial<LoadSpec>` signature). Pass `ctx.span` (or a derived child span) so the
+load's `doLoadAsync` work nests correctly. The supplied span is exposed inside `doLoadAsync` as
+`loadSpec.span`; forward `loadSpec` to `FetchService` calls and any nested `loadAsync()` calls
+as before so fetches and child loads nest under it automatically.
 
 ```typescript
 override async initAsync(ctx: InitContext) {
     await super.initAsync(ctx);
     await XH.installServicesAsync([LookupService, EventService], ctx);
 
-    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async () => {
-        await this.lookupService.loadAsync();
+    // Direct: parent the load under ctx.span
+    await this.lookupService.loadAsync({span: ctx.span});
+
+    // Or wrap several related calls in a named child span
+    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async span => {
+        await this.eventService.loadAsync({span});
     });
 }
 ```
