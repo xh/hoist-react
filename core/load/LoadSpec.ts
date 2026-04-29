@@ -76,9 +76,8 @@ export class LoadSpec {
      * Current trace span for work happening within this load. Used as parent by nested
      * `FetchService` calls (via `loadSpec` propagation) and any nested `loadAsync` calls.
      *
-     * Populated by `LoadSupport` from `LoadSpecConfig.span` and/or the target's
-     * `loadSpan`. May be `null` if no caller context is provided and the target does
-     * not opt in to auto-tracing.
+     * Populated from `LoadSpecConfig.span` (set by callers). May be `null` if no caller
+     * context is provided.
      */
     span: Span;
 

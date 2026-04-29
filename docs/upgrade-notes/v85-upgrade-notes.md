@@ -25,9 +25,6 @@ The most significant app-level impacts are:
 - **Propagate `ctx.span` into fetch and async work during init (recommended)** — doing so gives
   you per-service and per-request child spans under the `xh.client.appInit` root, making
   application load timing clearly visible in OTEL.
-- **Opt in to load tracing with `loadSpan`** — set `loadSpan` on a `HoistModel` or `HoistService`
-  to auto-wrap each `doLoadAsync` in a span. The active span is exposed as `loadSpec.span` for
-  tagging, sub-spanning, and propagation to nested fetches and `loadAsync` calls.
 - **Swiper upgraded v11 → v12** — resolves a critical prototype pollution CVE. Apps consuming
   Swiper directly should confirm the upgrade.
 - **Long-deprecated APIs removed** — `loadModel` getters, several `GridModel`/`ChartModel`/

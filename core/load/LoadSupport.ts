@@ -10,14 +10,12 @@ import {
     managed,
     PlainObject,
     RefreshContextModel,
-    TaskObserver,
-    XH
+    TaskObserver
 } from '../';
 import {LoadSpec, Loadable} from './';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject, isString, pull} from 'lodash';
+import {isPlainObject, pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -82,10 +80,6 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
-        return null;
-    }
-
     /**
      * Run the managed-load lifecycle for the target: short-circuits redundant
      * auto-refreshes, links the load to the `loadObserver`, delegates to
@@ -110,12 +104,6 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         runInAction(() => (this.lastLoadRequested = new Date()));
 
-        const spanConfig = this.resolveLoadSpanConfig(loadSpec);
-        if (spanConfig) {
-            return XH.traceService.withSpan(spanConfig, span =>
-                this.runLoadAsync(target, loadObserver, loadSpec.withChildSpan(span))
-            );
-        }
         return this.runLoadAsync(target, loadObserver, loadSpec);
     }
 
@@ -155,24 +143,6 @@ export class LoadSupport extends HoistBase implements Loadable {
                     logDebug(msg, target);
                 }
             });
-    }
-
-    /** Resolve and enhcance the target's opt-in `loadSpan` */
-    private resolveLoadSpanConfig(loadSpec: LoadSpec): SpanConfig {
-        const {target} = this,
-            cfg = target.getLoadSpan();
-        if (!cfg) return null;
-
-        const base = isString(cfg) ? {name: cfg} : cfg;
-        return {
-            ...base,
-            parent: loadSpec.span,
-            tags: {
-                'hoist.load.type': loadSpec.typeDisplay,
-                'hoist.load.number': loadSpec.loadNumber,
-                ...base.tags
-            }
-        };
     }
 }
 

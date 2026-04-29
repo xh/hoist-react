@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/mobx';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {
@@ -198,9 +197,6 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
-        return this.loadSupport?.getLoadSpan();
-    }
     async doLoadAsync(loadSpec: LoadSpec) {}
 
     async loadAsync(loadSpec?: LoadSpecConfig) {

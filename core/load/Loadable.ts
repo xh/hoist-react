@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {TaskObserver} from '../';
 import {LoadSpec, LoadSpecConfig} from './';
 
@@ -26,9 +25,6 @@ export interface Loadable {
 
     /** Any exception that occurred during last load. */
     lastLoadException: any;
-
-    /** Return a config for an auto-generated span covering the loads on this object. */
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string;
 
     /**
      * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this

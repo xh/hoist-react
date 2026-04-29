@@ -15,7 +15,6 @@ import {
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 
 import {Store, StoreConfig} from './Store';
 
@@ -63,9 +62,6 @@ export class UrlStore extends Store implements Loadable {
     }
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
-    }
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
-        return this.loadSupport.getLoadSpan();
     }
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {

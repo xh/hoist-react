@@ -57,11 +57,8 @@ app-load span changes in this release.
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
-* Added `Loadable.loadSpan` opt-in for auto-tracing of `loadAsync` calls. Set on a `HoistModel`
-  or `HoistService` to wrap each `doLoadAsync` in a span, available on `loadSpec.span` for
-  tagging, sub-spanning, and propagation to nested fetches/loads. `LoadSpecConfig.span`
-  lets callers explicitly seed the parent trace context.
-
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load. Within
+  `doLoadAsync`.
 ### 🐞 Bug Fixes
 
 * Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring

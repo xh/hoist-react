@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {
     HoistBase,
     InitContext,
@@ -102,10 +101,6 @@ export class HoistService extends HoistBase implements Loadable {
 
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
-    }
-
-    getLoadSpan(): Omit<SpanConfig, 'parent'> | string {
-        return this.loadSupport?.getLoadSpan();
     }
 
     async doLoadAsync(loadSpec: LoadSpec) {}
