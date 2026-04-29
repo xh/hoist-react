@@ -4,10 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some, XH} from '@xh/hoist/core';
+import {LoadSpec, Some, TrackOptions, XH} from '@xh/hoist/core';
+import {FetchOptions} from '@xh/hoist/svc';
 import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
-import {Span, SpanConfig} from './Span';
+import {Span, SpanConfig, SpanSpec} from './Span';
+
+export interface RunContext {
+    caller: NameSource;
+    loadSpec?: LoadSpec;
+    span?: Span;
+}
+
+export type RunFunction<T> = (ctx: RunContext, childRes) => Promise<T>;
 
 /**
  * Composable builder for wrapping a function with tracing and logging.
@@ -17,43 +26,38 @@ import {Span, SpanConfig} from './Span';
  * are called in:
  *      span → log → user fn.
  *
- * ```typescript
- * observe(this)
- *     .span({name: 'processOrder', tags: {orderId}})
- *     .logInfo('Processing order')
- *     .run(() => {
- *         // business logic
- *     });
- * ```
- *
  * When both {@link logInfo} and {@link logDebug} are configured, the finer level is selected at
  * run time: debug if the current log level permits, otherwise info.
  *
  * @see HoistBase#observe - convenience factory for service/model callers.
  */
 export class ObservedRun {
-    private caller: NameSource;
+    private ctx: RunContext
+    private spanConfig: SpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
-    private spanConfig: SpanConfig = null;
+    private trackOptions: TrackOptions;
+    private children: Array<(child: ObservedRun) => any>;
 
-    /**
-     * Create an ObservedRun with the given caller.
-     *
-     * @param caller - object owning the observed work, typically a Hoist service or model. Used as
-     *     the logging context for {@link logInfo} / {@link logDebug} and as the span
-     *     `code.namespace` tag. May be omitted for anonymous usage.
-     */
-    static observe(caller?: NameSource): ObservedRun {
-        return new ObservedRun(caller);
+    static observe(context: RunContext): ObservedRun {
+        return new ObservedRun(context);
     }
 
-    private constructor(caller?: NameSource) {
-        this.caller = caller;
+    private constructor(context: RunContext) {
+        this.ctx = {...context};
     }
 
     //---------------------------
-    // Log configuration
+    // Span configuration
+    //---------------------------
+    /** Configure a trace span within this context. */
+    span(spec: SpanSpec): this {
+        this.spanConfig = isString(spec) ? {name: spec} : spec;
+        return this;
+    }
+
+    //---------------------------
+    // Log/Track configuration
     //---------------------------
     /** Time and log completion at info level via {@link withInfo}. */
     logInfo(msgs: Some<unknown>): this {
@@ -67,14 +71,23 @@ export class ObservedRun {
         return this;
     }
 
-    //---------------------------
-    // Span configuration
-    //---------------------------
-    /** Configure a trace span. Caller is auto-populated from the {@link observe} caller. */
-    span(config: string | SpanConfig): this {
-        const cfg: SpanConfig = isString(config) ? {name: config} : {...config};
-        if (this.caller && !cfg.caller) cfg.caller = this.caller;
-        this.spanConfig = cfg;
+    /**
+     * Track via Hoist activity tracking.
+     */
+    track(opts: TrackOptions | string): this {
+        this.trackOptions = isString(opts) ? {message: opts} : opts;
+        return this;
+    }
+
+
+    /**
+     * Add a child object to be run before terminating this span.
+     * All children added to this object will be run in parallel before
+     * calling the closure passed to the terminal method (typically run).
+     * @param fn
+     */
+    withChild(fn: (child: ObservedRun) => Promise<any>) {
+        this.children.push(fn);
         return this;
     }
 
@@ -82,24 +95,54 @@ export class ObservedRun {
     // Terminal
     //---------------------------
     /** Execute an async fn with all configured observability. */
-    run<T>(fn: (span?: Span) => Promise<T>): Promise<T> {
-        return this.wrapSpan(span => Promise.resolve(this.wrapLog(() => fn(span))));
+    run<T>(fn: RunFunction<T>): Promise<T> {
+        fn = this.wrapWithChildren(fn);
+        fn = this.wrapTrackAndLog(fn);
+        return this.execute(fn);
+    }
+
+    /** Execute an async fn with all configured observability. */
+    fetchJson(options: FetchOptions): Promise<any> {
+        let fn = (ctx) => XH.fetchJson({...options, span: ctx.span, loadSpec: ctx.loadSpec});
+        fn = this.wrapWithChildren(fn);
+        fn = this.wrapTrackAndLog(fn)
+        return this.execute(fn);
     }
 
     //------------------------------------------------------
     // Implementation
     //------------------------------------------------------
-    private wrapSpan<T>(fn: (span?: Span) => Promise<T>): Promise<T> {
-        return this.spanConfig ? XH.traceService.withSpan(this.spanConfig, fn) : fn(undefined);
+    private execute<T>(fn: RunFunction<T>): Promise<T> {
+        const {spanConfig, ctx} = this;
+        return spanConfig ?
+            XH.traceService.withSpan({...spanConfig, parent: ctx.span}, (span) => {
+                ctx.span = span;
+                ctx.loadSpec = ctx.loadSpec?.withChildSpan(span);
+                return fn(ctx);
+            }) :
+            fn(ctx);
     }
 
-    private wrapLog<T>(fn: () => T): T {
-        if (this.debugMsgs != null && getLogLevel() === 'debug') {
-            return withDebug<T>(this.debugMsgs, fn, this.caller);
+    private wrapTrackAndLog<T>(fn: RunFunction<T>): RunFunction<T>  {
+        const {debugMsgs, infoMsgs, trackOptions} = this;
+        if (debugMsgs != null && getLogLevel() === 'debug') {
+            fn = (ctx) => withDebug(debugMsgs, () => fn(ctx), ctx.caller)
+        } else if (this.infoMsgs != null) {
+            fn = (ctx) => withInfo(infoMsgs, () => fn(ctx), ctx.caller);
         }
-        if (this.infoMsgs != null) {
-            return withInfo<T>(this.infoMsgs, fn, this.caller);
+
+        if (trackOptions) {
+            fn = (ctx) => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec})
         }
-        return fn();
+        return fn;
+    }
+
+    private wrapWithChildren<T>(fn: RunFunction<T>): RunFunction<T>  {
+        if (children)
+        fn  = (ctx) => {
+                const tasks = this.children.map(child => child(new ObservedRun(ctx)));
+                this.childResults = Promise.all(results);
+            }
+        }
     }
 }

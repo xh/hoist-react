@@ -120,4 +120,15 @@ export class LoadSpec {
 
         Object.freeze(this);
     }
+
+    /**
+     * Return a clone of this `LoadSpec` with `span` replaced.
+     * @internal
+     */
+    withChildSpan(span: Span): LoadSpec {
+        const ret = Object.create(Object.getPrototypeOf(this)) as LoadSpec;
+        Object.assign(ret, this, {span});
+        Object.freeze(ret);
+        return ret;
+    }
 }

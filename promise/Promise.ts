@@ -17,7 +17,6 @@ import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
 
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
 
 /**
@@ -93,14 +92,6 @@ declare global {
          * @param options - TrackOptions, or simply a message string.
          */
         track(options: TrackOptions | string): Promise<T>;
-
-        /**
-         * Wrap this promise in a tracing span. The span starts when `.span()` is called
-         * and ends when the promise settles (resolves or rejects).
-         *
-         * @param config - SpanConfig, or simply a span name.
-         */
-        span(config: SpanConfig | string): Promise<T>;
     }
 }
 
@@ -255,10 +246,6 @@ const enhancePromise = promisePrototype => {
                     throw t;
                 }
             );
-        },
-
-        span<T>(config: SpanConfig | string): Promise<T> {
-            return XH.traceService.withSpan(config, () => this) as Promise<T>;
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {
