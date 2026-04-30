@@ -25,6 +25,7 @@ import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
 import {resolveRepoRoot} from '../util/paths.js';
+import {computeFingerprint, loadCache, writeCache} from './index-cache.js';
 
 //------------------------------------------------------------------
 // Types
@@ -696,33 +697,91 @@ function indexPromiseExtensions(
 /** Promise for in-flight initialization, used to coordinate eager and on-demand init. */
 let initPromise: Promise<void> | null = null;
 
-/** Synchronous init — heavy lifting, runs on a microtask when kicked off eagerly. */
-function doInitialize(): void {
-    if (project) return;
+/**
+ * Populate the symbol/member indexes - via the on-disk cache when source files
+ * haven't changed, otherwise via a fresh ts-morph build. The live `Project` is
+ * NOT built here on cache hit; detail extraction calls (`getSymbolDetail`,
+ * `getMembers`) construct it lazily via `ensureProject` when AST access is
+ * actually needed.
+ */
+function loadOrBuildIndexes(): void {
+    if (symbolIndex) return;
 
+    const repoRoot = resolveRepoRoot();
+    const cacheStart = Date.now();
+    const cached = loadCache(repoRoot);
+    if (cached) {
+        symbolIndex = cached.symbols;
+        memberIndex = cached.members;
+        promiseExtensionDetails = cached.promiseExtensions;
+        log.info(
+            `TypeScript registry loaded from cache in ${Date.now() - cacheStart}ms ` +
+                `(${cached.symbols.size} symbol keys, ${cached.members.size} member keys)`
+        );
+        return;
+    }
+
+    buildIndexesFresh(repoRoot);
+}
+
+/**
+ * Build the symbol/member indexes from scratch via ts-morph and persist the
+ * result to disk. Called when no valid cache exists.
+ */
+function buildIndexesFresh(repoRoot: string): void {
     const startMs = Date.now();
+    const proj = ensureProject();
+    const projectMs = Date.now() - startMs;
 
-    project = new Project({
-        tsConfigFilePath: resolve(resolveRepoRoot(), 'tsconfig.json'),
-        skipFileDependencyResolution: true
-    });
-    project.resolveSourceFileDependencies();
-
-    const result = buildSymbolIndex(project);
+    const buildStart = Date.now();
+    const result = buildSymbolIndex(proj);
     symbolIndex = result.symbols;
     memberIndex = result.members;
+    const buildMs = Date.now() - buildStart;
 
     // Second pass: now that the symbol index is fully populated, fill in
     // member-index JSDoc from `implements` for class members with no own
     // JSDoc. Has to run after `symbolIndex`/`memberIndex` are assigned
     // because the fallback resolves interfaces via `findIndexEntry`.
-    enrichMemberIndexFromImplements(project);
+    const enrichStart = Date.now();
+    enrichMemberIndexFromImplements(proj);
+    const enrichMs = Date.now() - enrichStart;
 
     const elapsed = Date.now() - startMs;
-    log.info(`TypeScript registry initialized in ${elapsed}ms`);
+    log.info(
+        `TypeScript registry built in ${elapsed}ms ` +
+            `(project=${projectMs}ms build=${buildMs}ms enrich=${enrichMs}ms)`
+    );
     if (elapsed > 5000) {
-        log.warn(`TypeScript registry initialization exceeded 5s target (${elapsed}ms)`);
+        log.warn(`TypeScript registry build exceeded 5s target (${elapsed}ms)`);
     }
+
+    try {
+        writeCache(repoRoot, computeFingerprint(repoRoot), {
+            symbols: symbolIndex,
+            members: memberIndex,
+            promiseExtensions: promiseExtensionDetails ?? new Map()
+        });
+    } catch (e) {
+        log.warn(`Failed to persist registry cache: ${e}`);
+    }
+}
+
+/**
+ * Lazily construct the ts-morph `Project`. Required for any path that needs
+ * live AST access (detail extraction, member walks, the index build itself).
+ * Pure search calls served from the cached index never trigger this.
+ */
+function ensureProject(): Project {
+    if (project) return project;
+    const start = Date.now();
+    project = new Project({
+        tsConfigFilePath: resolve(resolveRepoRoot(), 'tsconfig.json'),
+        skipFileDependencyResolution: true
+    });
+    project.resolveSourceFileDependencies();
+    log.info(`ts-morph Project initialized in ${Date.now() - start}ms`);
+    return project;
 }
 
 /**
@@ -794,27 +853,31 @@ function enrichMemberIndexFromImplements(proj: Project): void {
  * Begin TypeScript registry initialization in the background.
  *
  * Call this after server startup to warm the index asynchronously, so the
- * first tool invocation doesn't pay the full init cost. Safe to call
- * multiple times — subsequent calls are no-ops.
+ * first tool invocation doesn't pay the full init cost. On a cache hit this
+ * completes in ~100ms; on a cache miss it runs the full ts-morph build.
+ * Safe to call multiple times — subsequent calls are no-ops.
  */
 export function beginInitialization(): void {
-    if (project || initPromise) return;
+    if (symbolIndex || initPromise) return;
     initPromise = Promise.resolve().then(() => {
-        doInitialize();
+        loadOrBuildIndexes();
         initPromise = null;
     });
 }
 
 /**
- * Ensure the ts-morph Project and symbol index are initialized.
+ * Ensure the symbol and member indexes are populated (from cache or via a
+ * fresh build). Pure search paths (`searchSymbols`, `searchMembers`) only need
+ * this; detail-extraction paths additionally call {@link ensureProject} to
+ * construct the live ts-morph `Project` on demand.
  *
  * If {@link beginInitialization} was called, awaits the in-flight init.
  * Otherwise initializes synchronously. Safe to call multiple times.
  */
 export async function ensureInitialized(): Promise<void> {
-    if (project) return;
+    if (symbolIndex) return;
     if (initPromise) return initPromise;
-    doInitialize();
+    loadOrBuildIndexes();
 }
 
 /**
@@ -947,6 +1010,12 @@ export async function getSymbolDetail(
     const entry = findIndexEntry(name, filePath);
     if (!entry) return null;
 
+    // Pre-computed Promise prototype extensions don't need the live Project;
+    // skip the AST construction in that case.
+    if (!promiseExtensionDetails?.has(entry.name)) {
+        ensureProject();
+    }
+
     try {
         return extractSymbolDetail(entry);
     } catch (e) {
@@ -1022,6 +1091,8 @@ export async function getMembers(
     const entry = findIndexEntry(name, filePath);
     if (!entry) return null;
     if (entry.kind !== 'class' && entry.kind !== 'interface') return null;
+
+    ensureProject();
 
     try {
         const detail = extractSymbolDetail(entry);

@@ -75,21 +75,17 @@ app-load span changes in this release.
 
 ### 🤖 AI Docs + Tooling
 
-* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
-  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
-* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
-  every exported class plus every exported `*Config` interface.
-* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
-  interface. The tag is shown alongside owner names in MCP/CLI member search results.
-* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
-* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
-  `--json` flag on every matching CLI subcommand.
-* Fixed a latent member-index collision bug where two exported owners sharing a simple name
-  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
-* `hoist-get-members` (and `hoist-ts members`) now surface `@param` descriptions via
-  `parameters[].description` and `@returns` via a new `returns: {type, description}` field on
-  each method. JSDoc on class members with no own docs is also inherited from `implements`
-  interfaces, so impl classes can single-source their docs on the interface they implement.
+* MCP/CLI symbol and member search now support multi-word queries combining class and member names
+  (e.g. `"StoreRecord raw"`).
+* Expanded member-index coverage to every exported class and every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for attaching short hints to indexed classes/interfaces.
+* All MCP tools now expose structured output via `outputSchema` / `structuredContent`; matching
+  CLI subcommands gained a `--json` flag.
+* `hoist-get-members` surfaces `@param` and `@returns` JSDoc, including via `implements` fallback.
+* Added a disk-persisted index cache at `node_modules/.cache/hoist-mcp/`, dropping cold CLI search
+  invocations from multi-second builds to sub-second loads. `HOIST_MCP_NO_CACHE=1` to bypass.
+* Added MCP server `instructions` and disambiguating language to tool descriptions.
+* Fixed a member-index collision where same-named owners clobbered each other's `memberNames`.
 
 ### ⚙️ Technical
 
