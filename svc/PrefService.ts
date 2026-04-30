@@ -121,7 +121,7 @@ export class PrefService extends HoistService {
 
         this._updates = {};
 
-        await this.newSpan('xh.client.prefs.set').fetchJson({
+        await this.newSpan('xh.client.prefs.set').postJson({
             url: 'xh/setPrefs',
             body: updates,
             params: {

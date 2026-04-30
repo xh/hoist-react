@@ -69,9 +69,8 @@ export class DataAccess<T> {
     async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
         const {model} = this;
         try {
-            const raw = await this.newSpan('xh.client.view.create').fetchJson({
+            const raw = await this.newSpan('xh.client.view.create').postJson({
                 url: 'xhView/create',
-                method: 'POST',
                 body: {type: model.type, ...spec}
             });
             return View.fromBlob(raw, model);
@@ -84,7 +83,7 @@ export class DataAccess<T> {
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
             this.ensureEditable(view);
-            const raw = await this.newSpan('xh.client.view.updateInfo').fetchJson({
+            const raw = await this.newSpan('xh.client.view.updateInfo').postJson({
                 url: 'xhView/updateInfo',
                 params: {token: view.token},
                 body: updates
@@ -99,7 +98,7 @@ export class DataAccess<T> {
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
             this.ensureEditable(view.info);
-            const raw = await this.newSpan('xh.client.view.updateValue').fetchJson({
+            const raw = await this.newSpan('xh.client.view.updateValue').postJson({
                 url: 'xhView/updateValue',
                 params: {token: view.token},
                 body: value
@@ -116,7 +115,7 @@ export class DataAccess<T> {
     async deleteViewsAsync(views: ViewInfo[]) {
         views.forEach(v => this.ensureEditable(v));
         try {
-            await this.newSpan('xh.client.view.delete').fetchJson({
+            await this.newSpan('xh.client.view.delete').postJson({
                 url: 'xhView/delete',
                 params: {tokens: map(views, 'token').join(',')}
             });
@@ -133,7 +132,7 @@ export class DataAccess<T> {
     //--------------------------
     async updateStateAsync(update: Partial<ViewUserState>): Promise<ViewUserState> {
         const {type, instance} = this.model;
-        return this.newSpan('xh.client.view.updateState').fetchJson({
+        return this.newSpan('xh.client.view.updateState').postJson({
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
             body: update

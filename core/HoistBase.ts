@@ -23,7 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Runner} from './runner/Runner';
+import {Runner} from '../utils/telemetry/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,

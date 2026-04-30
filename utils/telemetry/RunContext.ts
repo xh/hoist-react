@@ -5,11 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {LoadSpecConfig, Span, SpanConfigLike} from '@xh/hoist/core';
+import {LoadSpec, LoadSpecConfig, Span, SpanConfigLike} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {Runner} from './Runner';
 import {NameSource} from '@xh/hoist/utils/js';
-import {LoadSpec} from '../load';
 
 export class RunContext {
     private readonly ctx: LoadSpec | Span;
@@ -51,6 +50,11 @@ export class RunContext {
         return this.runner().fetchJson(opts);
     }
 
+    /** Run additional fetch calls in this context. */
+    postJson(opts: FetchOptions): Promise<any> {
+        return this.runner().postJson(opts);
+    }
+
     //-------------------------
     // Implementation
     //--------------------------
@@ -64,7 +68,7 @@ export class RunContext {
     /** @internal -- used by Runner.*/
     cloneWithSpan(span: Span) {
         const {ctx} = this,
-            newCtx = ctx instanceof LoadSpec ? ctx.cloneWithSpan(span) : ctx;
+            newCtx = ctx instanceof LoadSpec ? ctx.cloneWithSpan(span) : span;
         return new RunContext(newCtx, this.caller);
     }
 }

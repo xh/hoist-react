@@ -208,9 +208,9 @@ export class FetchService extends HoistService {
                 this.managedFetchAsync(opts, ctx?.span)
             );
         };
-
-        const spanConfig = this.createSpanConfig(opts);
-        let ret = spanConfig ? this.newSpan(spanConfig).run(fn) : fn(null);
+        const spanConfig = this.createSpanConfig(opts),
+            parent = opts.span ?? opts.loadSpec?.span;
+        let ret = spanConfig ? this.runner(parent).newSpan(spanConfig).run(fn) : fn(null);
 
         // 2) Apply tracking
         if (opts.track) {
@@ -435,7 +435,6 @@ export class FetchService extends HoistService {
         return {
             name: method,
             kind: 'client',
-            parent: (opts.span as Span) ?? (opts.loadSpec as LoadSpec)?.span,
             tags
         };
     }

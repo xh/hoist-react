@@ -64,13 +64,18 @@ export class Runner {
     //---------------------------
     /** Execute an async fn with all configured observability. */
     run<T>(fn: RunFunction<T>): Promise<T> {
-        fn = this.wrapTrackAndLog(fn);
         return this.execute(fn);
     }
 
     fetchJson(options: FetchOptions): Promise<any> {
-        let fn = ctx => XH.fetchJson({...options, loadSpec: ctx.loadSpec});
-        fn = this.wrapTrackAndLog(fn);
+        let fn = ctx =>
+            XH.fetchService.fetchJson({...options, span: ctx.span, loadSpec: ctx.loadSpec});
+        return this.execute(fn);
+    }
+
+    postJson(options: FetchOptions): Promise<any> {
+        let fn = ctx =>
+            XH.fetchService.postJson({...options, span: ctx.span, loadSpec: ctx.loadSpec});
         return this.execute(fn);
     }
 
@@ -78,6 +83,9 @@ export class Runner {
     // Implementation
     //--------------------------
     private execute<T>(fn: RunFunction<T>): Promise<T> {
+        fn = this.wrapTrack(fn);
+        fn = this.wrapLog(fn);
+
         const {spanConfig, ctx} = this;
 
         return spanConfig
@@ -87,18 +95,20 @@ export class Runner {
             : fn(ctx);
     }
 
-    private wrapTrackAndLog<S>(fn: RunFunction<S>): RunFunction<S> {
-        const {debugMsgs, infoMsgs, trackOptions, caller} = this;
+    private wrapLog<S>(fn: RunFunction<S>): RunFunction<S> {
+        const {debugMsgs, infoMsgs, caller} = this;
 
         if (debugMsgs != null && getLogLevel() === 'debug') {
-            fn = ctx => withDebug(debugMsgs, () => fn(ctx), caller);
+            return ctx => withDebug(debugMsgs, () => fn(ctx), caller);
         } else if (this.infoMsgs != null) {
-            fn = ctx => withInfo(infoMsgs, () => fn(ctx), caller);
-        }
-
-        if (trackOptions) {
-            fn = ctx => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec});
+            return ctx => withInfo(infoMsgs, () => fn(ctx), caller);
         }
         return fn;
+    }
+
+    private wrapTrack<S>(fn: RunFunction<S>): RunFunction<S> {
+        const {trackOptions} = this;
+        if (!trackOptions) return fn;
+        return ctx => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec});
     }
 }
