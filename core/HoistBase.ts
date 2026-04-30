@@ -133,7 +133,7 @@ export abstract class HoistBase {
     /**
      * Create an {@link Runner} builder with this object as the caller.
      *
-     * @internal.  Runner is an experimental beta feature.
+     * @internal  - runner is an experimental beta feature.
      **/
     runner(ctx: LoadSpec | Span = null): Runner {
         return Runner.create(ctx, this);
@@ -142,7 +142,7 @@ export abstract class HoistBase {
     /**
      * Create an {@link Runner} builder with an initial span and this object as the caller.
      *
-     * @internal.  Runner is an experimental beta feature.
+     * @internal - runner is an experimental beta feature.
      */
     newSpan(span: SpanConfigLike): Runner {
         return this.runner().newSpan(span);
