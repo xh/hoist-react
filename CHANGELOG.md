@@ -60,6 +60,10 @@ app-load span changes in this release.
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
+* Added `Picker` props for richer multi-select trigger rendering: `multiSelectButtonStyle: 'values'`
+  shows comma-separated selected labels (overflow-ellipsed) instead of the default summary count,
+  and `multiSelectShowCount` adds a small selection-count badge to the left of the text. Both are
+  app-wide overridable via `Picker.defaults`.
 
 ### 🐞 Bug Fixes
 
