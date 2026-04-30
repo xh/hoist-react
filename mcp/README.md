@@ -114,9 +114,17 @@ lookup.
 
 **Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
 is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
-in the background while the client sets up. The CLI pays this cost on each invocation -- acceptable
-for a 2-3s cold start. In both cases, `ensureInitialized()` awaits in-flight work if a query arrives
-before init completes.
+in the background while the client sets up. In both cases, `ensureInitialized()` awaits in-flight
+work if a query arrives before init completes.
+
+**Disk-persisted index cache.** A serialized snapshot of the symbol and member indexes is written
+to `node_modules/.cache/hoist-mcp/index-v1.json` after each fresh build. Subsequent invocations
+load it in ~10-20ms when the file set hasn't changed, making CLI search calls sub-second on
+remote/slow workstations where ts-morph builds otherwise dominate. Invalidation is automatic: a
+fingerprint over every indexable file's path/mtime/size (plus `package.json`) is recomputed at
+startup and any drift triggers a rebuild. The live ts-morph `Project` is constructed lazily via
+`ensureProject()` only when detail/member extraction needs AST access -- pure search calls served
+from the cache skip it entirely. Set `HOIST_MCP_NO_CACHE=1` to bypass for debugging.
 
 **Resources for nouns, tools for verbs.** Following MCP protocol design guidance: resources serve
 passive, addressable content (individual docs by URI), while tools handle dynamic computation

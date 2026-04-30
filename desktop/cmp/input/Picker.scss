@@ -30,6 +30,50 @@
     }
   }
 
+  // Multi-select trigger text wrapper used when rendering an inline count badge.
+  // Required because Blueprint's `.bp6-button-text` ellipsis applies to bare text only — once we
+  // nest a flex container inside, overflow handling has to move to our inner label span.
+  &__multi-text {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__multi-text-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-right: var(--xh-pad-half-px);
+    border-radius: 9px;
+    background-color: var(--xh-intent-primary-trans2);
+    color: var(--xh-intent-primary);
+    font-size: var(--xh-font-size-small-px);
+    font-weight: 500;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  &--compact &__count {
+    min-width: 14px;
+    height: 14px;
+    padding: 0 4px;
+    margin-right: 3px;
+    border-radius: 7px;
+    font-size: 10px;
+  }
+
   // Selector needs parent .xh-picker class for specificity (0,3,0)
   // to beat Blueprint's `.bp6-dark .bp6-button.bp6-minimal { box-shadow: none }`.
   .xh-picker__trigger--as-input.xh-button {
