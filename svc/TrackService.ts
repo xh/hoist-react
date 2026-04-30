@@ -99,11 +99,10 @@ export class TrackService extends HoistService {
         if (isEmpty(pending)) return;
 
         this.pending = [];
-        await XH.fetchService.postJson({
+        await this.newSpan('xh.client.track.push').postJson({
             url: 'xh/track',
             body: {entries: pending},
-            params: {clientUsername: XH.getUsername()},
-            span: {name: 'xh.client.track.push', caller: this}
+            params: {clientUsername: XH.getUsername()}
         });
     }
 

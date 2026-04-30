@@ -23,7 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {ObservedRun, SpanConfig} from '@xh/hoist/utils/telemetry';
+import {Runner} from '../utils/telemetry/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -35,7 +35,17 @@ import {
 } from 'lodash';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
-import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
+import {
+    DebounceSpec,
+    LoadSpec,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    Some,
+    Span,
+    SpanConfigLike,
+    XH
+} from './';
 import {wait} from '@xh/hoist/promise';
 
 declare const xhIsDevelopmentMode: boolean;
@@ -116,14 +126,26 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    /** Create an {@link ObservedRun} builder with this object as the caller. */
-    observe(): ObservedRun {
-        return ObservedRun.observe(this);
+    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+        return XH.traceService.withSpan(config, fn);
     }
 
-    /** Create an {@link ObservedRun} builder with an initial span and this object as the caller. */
-    span(config: string | SpanConfig): ObservedRun {
-        return this.observe().span(config);
+    /**
+     * Create an {@link Runner} builder with this object as the caller.
+     *
+     * @internal.  Runner is an experimental beta feature.
+     **/
+    runner(ctx: LoadSpec | Span = null): Runner {
+        return Runner.create(ctx, this);
+    }
+
+    /**
+     * Create an {@link Runner} builder with an initial span and this object as the caller.
+     *
+     * @internal.  Runner is an experimental beta feature.
+     */
+    newSpan(span: SpanConfigLike): Runner {
+        return this.runner().newSpan(span);
     }
 
     /**

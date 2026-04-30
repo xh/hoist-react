@@ -4,11 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
+import {
+    HoistService,
+    InitContext,
+    PlainObject,
+    XH,
+    Span,
+    SpanConfig,
+    SpanConfigLike
+} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
-import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 
 /**
  * Client-side distributed tracing service for Hoist applications.
@@ -68,7 +75,7 @@ export class TraceService extends HoistService {
      * @param config - span name string, or a SpanConfig with name and optional tags.
      * @param fn - the async function to wrap.
      */
-    async withSpan<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
+    override async withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
         const span = this.createSpan(config);
         try {
             const result = await fn(span);

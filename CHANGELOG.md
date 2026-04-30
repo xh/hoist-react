@@ -1,6 +1,6 @@
 # Changelog
 
-## 85.0.0-SNAPSOT - unreleased
+## 85.0.0 - 2020-04-30
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
@@ -41,11 +41,6 @@ app-load span changes in this release.
   notes for the full list and replacements.
 
 ### 🎁 New Features
-
-* Added `HoistBase.observe()` / `HoistBase.span()` - a composable builder
-  ({@link ObservedRun}) that wraps a function with a span and/or `withInfo`/`withDebug`
-  logging in a single call, e.g. `this.span('loadPortfolio').logInfo('Loading').run(fn)`.
-  Replaces the prior `withSpan`/`withSpanAsync` helpers on `HoistBase` (see Breaking Changes).
 * Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
   matching the server-side API.
 * `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync().
@@ -67,7 +62,7 @@ app-load span changes in this release.
 
 ### 🐞 Bug Fixes
 
-* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+* Updated `HoistBase.withSpan` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
 * Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash

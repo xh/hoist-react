@@ -7,7 +7,7 @@
 
 import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
-import {Span} from '@xh/hoist/utils/telemetry';
+import {Span} from '@xh/hoist/core';
 import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec, LoadSpecConfig} from '../load';

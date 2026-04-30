@@ -117,10 +117,7 @@ export class EnvironmentService extends HoistService {
     async pollServerAsync() {
         let data: any;
         try {
-            data = await XH.fetchJson({
-                url: 'xh/environmentPoll',
-                span: {name: 'xh.client.envPoll', caller: this}
-            });
+            data = await this.newSpan('xh.client.envPoll').fetchJson({url: 'xh/environmentPoll'});
         } catch (e) {
             this.logError('Error polling server environment', e);
             return;
