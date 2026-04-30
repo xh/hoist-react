@@ -71,6 +71,7 @@ export class DataAccess<T> {
         try {
             const raw = await this.newSpan('xh.client.view.create').fetchJson({
                 url: 'xhView/create',
+                method: 'POST',
                 body: {type: model.type, ...spec}
             });
             return View.fromBlob(raw, model);
