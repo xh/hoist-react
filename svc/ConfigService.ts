@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import {HoistService, InitContext} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {keys} from 'lodash';
 
@@ -29,10 +29,9 @@ export class ConfigService extends HoistService {
     private _data = {};
 
     override async initAsync(ctx: InitContext) {
-        this._data = await XH.fetchJson({
-            url: 'xh/getConfig',
-            span: {name: 'xh.client.config.get', parent: ctx.span, caller: this}
-        });
+        this._data = await this.runner(ctx.span)
+            .newSpan('xh.client.config.get')
+            .fetchJson({url: 'xh/getConfig'});
         deepFreeze(this._data);
     }
 

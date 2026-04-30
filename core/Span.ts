@@ -145,7 +145,7 @@ export class Span {
     }
 }
 
-export type SpanSpec = SpanConfig | string;
+export type SpanConfigLike = SpanConfig | string;
 
 /**
  * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.

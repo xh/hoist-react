@@ -23,7 +23,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Runner, RunnerConfig} from './Runner';
+import {Runner} from './runner/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -35,7 +35,17 @@ import {
 } from 'lodash';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
-import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
+import {
+    DebounceSpec,
+    LoadSpec,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    Some,
+    Span,
+    SpanConfigLike,
+    XH
+} from './';
 import {wait} from '@xh/hoist/promise';
 
 declare const xhIsDevelopmentMode: boolean;
@@ -116,9 +126,16 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    /** Create an {@link RunContext} builder with this object as the caller. */
-    runner(ctx: Partial<RunnerConfig> = {}): Runner {
-        return Runner.create({...ctx, caller: this});
+    //** Create an {@link Runner} builder with this object as the caller. */
+    runner(ctx: LoadSpec | Span = null): Runner {
+        return Runner.create(ctx, this);
+    }
+
+    /**
+     * Create an {@link Runner} builder with an initial span and this object as the caller.
+     */
+    newSpan(span: SpanConfigLike): Runner {
+        return this.runner().newSpan(span);
     }
 
     /**
