@@ -10,6 +10,13 @@ import {FetchOptions} from '@xh/hoist/svc';
 import {Runner} from './Runner';
 import {NameSource} from '@xh/hoist/utils/js';
 
+/**
+ * Context object provided to functions executed via {@link Runner}, exposing the active
+ * {@link LoadSpec} or {@link Span} along with caller metadata for logging and tracing.
+ *
+ * @internal - This is an experimental API used by Hoist's telemetry/run infrastructure.
+ *      Not yet intended for direct construction or extension by application code.
+ */
 export class RunContext {
     private readonly ctx: LoadSpec | Span;
 

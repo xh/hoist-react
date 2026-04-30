@@ -12,6 +12,14 @@ import {RunContext} from './RunContext';
 
 export type RunFunction<T> = (ctx: RunContext) => Promise<T>;
 
+/**
+ * Builder used internally by Hoist to execute a function within a {@link LoadSpec} or {@link Span},
+ * with optional logging, tracking, and span configuration. Produces a {@link RunContext} for the
+ * wrapped function.
+ *
+ * @internal - This is an experimental API used by Hoist's telemetry/run infrastructure.
+ *      Not yet intended for direct construction or extension by application code.
+ */
 export class Runner {
     private readonly ctx: RunContext;
     private readonly caller: NameSource;
