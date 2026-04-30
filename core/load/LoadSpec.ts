@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Span} from '@xh/hoist/utils/telemetry';
+import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
@@ -119,5 +119,16 @@ export class LoadSpec {
         this.dateCreated = new Date();
 
         Object.freeze(this);
+    }
+
+    /**
+     * Return a clone of this `LoadSpec` with `span` replaced.
+     * @internal
+     */
+    cloneWithSpan(span: Span): LoadSpec {
+        const ret = Object.create(Object.getPrototypeOf(this)) as LoadSpec;
+        Object.assign(ret, this, {span});
+        Object.freeze(ret);
+        return ret;
     }
 }

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {Runner, SpanConfigLike, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {map} from 'lodash';
 import {ViewInfo} from './ViewInfo';
@@ -24,6 +24,9 @@ export class DataAccess<T> {
         this.model = model;
     }
 
+    private newSpan(span: SpanConfigLike): Runner {
+        return Runner.create(null, this).newSpan(span);
+    }
     //---------------
     // Load/search.
     //---------------
@@ -31,10 +34,9 @@ export class DataAccess<T> {
     async fetchDataAsync(): Promise<{views: ViewInfo[]; state: ViewUserState}> {
         const {typeDisplayName, type, instance} = this.model;
         try {
-            const ret = await XH.fetchJson({
+            const ret = await this.newSpan('xh.client.view.getAll').fetchJson({
                 url: 'xhView/allData',
-                params: {type, viewInstance: instance},
-                span: {name: 'xh.client.view.getAll', caller: this}
+                params: {type, viewInstance: instance}
             });
             return {
                 views: ret.views.map(v => new ViewInfo(v, this.model)),
@@ -53,10 +55,9 @@ export class DataAccess<T> {
         const {model} = this;
         if (!token) return View.createDefault(model);
         try {
-            const raw = await XH.fetchJson({
+            const raw = await this.newSpan('xh.client.view.get').fetchJson({
                 url: 'xhView/get',
-                params: {token},
-                span: {name: 'xh.client.view.get', caller: this}
+                params: {token}
             });
             return View.fromBlob(raw, model);
         } catch (e) {
@@ -68,10 +69,9 @@ export class DataAccess<T> {
     async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
         const {model} = this;
         try {
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.create').postJson({
                 url: 'xhView/create',
-                body: {type: model.type, ...spec},
-                span: {name: 'xh.client.view.create', caller: this}
+                body: {type: model.type, ...spec}
             });
             return View.fromBlob(raw, model);
         } catch (e) {
@@ -83,11 +83,10 @@ export class DataAccess<T> {
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
             this.ensureEditable(view);
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.updateInfo').postJson({
                 url: 'xhView/updateInfo',
                 params: {token: view.token},
-                body: updates,
-                span: {name: 'xh.client.view.updateInfo', caller: this}
+                body: updates
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -99,11 +98,10 @@ export class DataAccess<T> {
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
             this.ensureEditable(view.info);
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.updateValue').postJson({
                 url: 'xhView/updateValue',
                 params: {token: view.token},
-                body: value,
-                span: {name: 'xh.client.view.updateValue', caller: this}
+                body: value
             });
             return View.fromBlob(raw, this.model);
         } catch (e) {
@@ -117,10 +115,9 @@ export class DataAccess<T> {
     async deleteViewsAsync(views: ViewInfo[]) {
         views.forEach(v => this.ensureEditable(v));
         try {
-            await XH.postJson({
+            await this.newSpan('xh.client.view.delete').postJson({
                 url: 'xhView/delete',
-                params: {tokens: map(views, 'token').join(',')},
-                span: {name: 'xh.client.view.delete', caller: this}
+                params: {tokens: map(views, 'token').join(',')}
             });
         } catch (e) {
             throw XH.exception({
@@ -135,11 +132,10 @@ export class DataAccess<T> {
     //--------------------------
     async updateStateAsync(update: Partial<ViewUserState>): Promise<ViewUserState> {
         const {type, instance} = this.model;
-        return XH.postJson({
+        return this.newSpan('xh.client.view.updateState').postJson({
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
-            body: update,
-            span: {name: 'xh.client.view.updateState', caller: this}
+            body: update
         });
     }
 
