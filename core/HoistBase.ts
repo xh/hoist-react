@@ -126,13 +126,23 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    //** Create an {@link Runner} builder with this object as the caller. */
+    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+        return XH.traceService.withSpan(config, fn);
+    }
+
+    /**
+     * Create an {@link Runner} builder with this object as the caller.
+     *
+     * @internal.  Runner is an experimental beta feature.
+     **/
     runner(ctx: LoadSpec | Span = null): Runner {
         return Runner.create(ctx, this);
     }
 
     /**
      * Create an {@link Runner} builder with an initial span and this object as the caller.
+     *
+     * @internal.  Runner is an experimental beta feature.
      */
     newSpan(span: SpanConfigLike): Runner {
         return this.runner().newSpan(span);
