@@ -2,6 +2,10 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
+  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+
 ## 85.0.0 - 2020-04-30
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
