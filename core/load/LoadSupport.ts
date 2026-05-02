@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    CallContext,
     HoistBase,
     LoadSpecConfig,
     managed,
@@ -14,8 +15,8 @@ import {
 } from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject, pull} from 'lodash';
+import {logDebug, logError} from '@xh/hoist/utils/js';
+import {pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -61,13 +62,10 @@ export class LoadSupport extends HoistBase implements Loadable {
      * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
      * full load/refresh lifecycle.
      */
-    async loadAsync(loadSpec?: LoadSpecConfig) {
-        throwIf(
-            loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
-            'Unexpected param passed to loadAsync().  If triggered via a reaction ' +
-                'ensure call is wrapped in a closure.'
-        );
-        const newSpec = new LoadSpec(loadSpec ?? {}, this);
+    async loadAsync(loadSpec: LoadSpecConfig | CallContext) {
+        // Favor any concrete loadSpec from a call context (passed along RunContext is a common case)
+        const config: LoadSpecConfig = loadSpec?.['loadSpec'] ?? loadSpec,
+            newSpec = new LoadSpec(config ?? {}, this);
 
         return this.doLoadAsync(newSpec);
     }

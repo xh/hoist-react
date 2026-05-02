@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {TaskObserver} from '../';
+import {CallContext, TaskObserver} from '../';
 import {LoadSpec, LoadSpecConfig} from './';
 
 /**
@@ -36,7 +36,7 @@ export interface Loadable {
      * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
      * full load/refresh lifecycle.
      */
-    loadAsync(loadSpec?: LoadSpecConfig): Promise<void>;
+    loadAsync(loadSpec?: LoadSpecConfig | CallContext): Promise<void>;
 
     /**
      * Trigger a managed refresh - equivalent to `loadAsync({isRefresh: true, meta})`. The optional

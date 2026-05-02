@@ -14,12 +14,11 @@ import {
     managed,
     RootRefreshContextModel,
     RunContext,
-    Span,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
+import {bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
 import {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -157,7 +156,7 @@ export class AppContainerModel extends HoistModel {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
             await installServicesAsync([TraceService], {span: null});
 
-            await this.newSpan('xh.client.load').run(async ctx => {
+            await this.rootSpan('xh.client.load').run(async ctx => {
                 this.addGlobalListenersAndCss();
                 await installServicesAsync([FetchService], ctx);
 
@@ -178,7 +177,7 @@ export class AppContainerModel extends HoistModel {
                         .newSpan('xh.client.interactiveLogin')
                         .run(() => this.awaitInteractiveLoginAsync());
                 }
-                await this.completeInitAsync(identity, ctx.span);
+                await this.completeInitAsync(identity, ctx);
             });
         } catch (e) {
             this.setAppState('LOAD_FAILED');
@@ -257,89 +256,79 @@ export class AppContainerModel extends HoistModel {
      * Complete initialization. Called after the client has confirmed that the user is generally
      * authenticated and known to the server (regardless of application roles at this point).
      */
-    @action
-    private async completeInitAsync(identity: IdentityInfo, span: Span) {
-        try {
-            // Install identity and check roles
-            await installServicesAsync(IdentityService, {span});
-            XH.identityService.initIdentity(identity);
-            if (!this.appStateModel.checkAccess()) {
-                this.setAppState('ACCESS_DENIED');
-                return;
-            }
-
-            // Hoist init phase
-            this.setAppState('INITIALIZING_HOIST');
-            await this.runner(span)
-                .newSpan('xh.client.hoistInit')
-                .run(async (ctx: RunContext) => {
-                    await installServicesAsync([LocalStorageService, SessionStorageService], ctx);
-                    await installServicesAsync(
-                        [EnvironmentService, ConfigService, PrefService, JsonBlobService],
-                        ctx
-                    );
-                    XH.traceService.noteConfigAvailable();
-
-                    await installServicesAsync([TrackService], ctx);
-                    await installServicesAsync(
-                        [
-                            AlertBannerService,
-                            AutoRefreshService,
-                            ChangelogService,
-                            ClientHealthService,
-                            IdleService,
-                            InspectorService,
-                            GridAutosizeService,
-                            GridExportService,
-                            WebSocketService
-                        ],
-                        ctx
-                    );
-
-                    // init all models other than Router
-                    const models = [
-                        this.appLoadObserver,
-                        this.appStateModel,
-                        this.pageStateModel,
-                        this.routerModel,
-                        this.aboutDialogModel,
-                        this.changelogDialogModel,
-                        this.exceptionDialogModel,
-                        this.feedbackDialogModel,
-                        this.impersonationBarModel,
-                        this.optionsDialogModel,
-                        this.bannerSourceModel,
-                        this.messageSourceModel,
-                        this.toastSourceModel,
-                        this.refreshContextModel,
-                        this.sizingModeModel,
-                        this.viewportSizeModel,
-                        this.themeModel,
-                        this.userAgentModel
-                    ];
-                    models.forEach((m: any) => m.init?.());
-
-                    this.bindInitSequenceToAppLoadObserver();
-                    this.setDocTitle();
-
-                    // Delay to workaround hot-reload styling issues in dev.
-                    await wait(XH.isDevelopmentMode ? 300 : 1);
-                });
-
-            // App init phase
-            this.setAppState('INITIALIZING_APP');
-            this.appModel = createSingleton(this.appSpec.modelClass);
-            await this.runner()
-                .newSpan('xh.client.appInit')
-                .run(ctx => this.appModel.initAsync(ctx));
-
-            this.startRouter();
-            this.startOptionsDialog();
-            this.setAppState('RUNNING');
-        } catch (e) {
-            this.setAppState('LOAD_FAILED');
-            XH.handleException(e, {requireReload: true});
+    private async completeInitAsync(identity: IdentityInfo, ctx: RunContext) {
+        // Install identity and check roles
+        await installServicesAsync(IdentityService, ctx);
+        XH.identityService.initIdentity(identity);
+        if (!this.appStateModel.checkAccess()) {
+            this.setAppState('ACCESS_DENIED');
+            return;
         }
+
+        // Hoist init phase
+        this.setAppState('INITIALIZING_HOIST');
+        await ctx.newSpan('xh.client.hoistInit').run(async (ctx: RunContext) => {
+            await installServicesAsync([LocalStorageService, SessionStorageService], ctx);
+            await installServicesAsync(
+                [EnvironmentService, ConfigService, PrefService, JsonBlobService],
+                ctx
+            );
+            XH.traceService.noteConfigAvailable();
+
+            await installServicesAsync([TrackService], ctx);
+            await installServicesAsync(
+                [
+                    AlertBannerService,
+                    AutoRefreshService,
+                    ChangelogService,
+                    ClientHealthService,
+                    IdleService,
+                    InspectorService,
+                    GridAutosizeService,
+                    GridExportService,
+                    WebSocketService
+                ],
+                ctx
+            );
+
+            // init all models other than Router
+            const models = [
+                this.appLoadObserver,
+                this.appStateModel,
+                this.pageStateModel,
+                this.routerModel,
+                this.aboutDialogModel,
+                this.changelogDialogModel,
+                this.exceptionDialogModel,
+                this.feedbackDialogModel,
+                this.impersonationBarModel,
+                this.optionsDialogModel,
+                this.bannerSourceModel,
+                this.messageSourceModel,
+                this.toastSourceModel,
+                this.refreshContextModel,
+                this.sizingModeModel,
+                this.viewportSizeModel,
+                this.themeModel,
+                this.userAgentModel
+            ];
+            models.forEach((m: any) => m.init?.());
+
+            this.bindInitSequenceToAppLoadObserver();
+            this.setDocTitle();
+
+            // Delay to workaround hot-reload styling issues in dev.
+            await wait(XH.isDevelopmentMode ? 300 : 1);
+        });
+
+        // App init phase
+        this.setAppState('INITIALIZING_APP');
+        this.appModel = createSingleton(this.appSpec.modelClass);
+        await ctx.newSpan('xh.client.appInit').run(ctx => this.appModel.initAsync(ctx));
+
+        this.startRouter();
+        this.startOptionsDialog();
+        this.setAppState('RUNNING');
     }
 
     private addGlobalListenersAndCss() {

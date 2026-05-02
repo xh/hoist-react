@@ -44,7 +44,11 @@ export class GridExportService extends HoistService {
     /**
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
-    async exportAsync(
+    async exportAsync(gridModel: GridModel, opts: ExportOptions = {}) {
+        return this.rootSpan('xh.client.gridExport').run(() => this.doExportAsync(gridModel, opts));
+    }
+
+    private async doExportAsync(
         gridModel: GridModel,
         {
             filename = 'export',
@@ -52,7 +56,7 @@ export class GridExportService extends HoistService {
             columns = 'VISIBLE',
             track = false,
             timeout = 30 * SECONDS
-        }: ExportOptions = {}
+        }: ExportOptions
     ) {
         if (isFunction(filename)) filename = filename(gridModel);
 

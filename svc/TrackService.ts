@@ -98,11 +98,13 @@ export class TrackService extends HoistService {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
-        this.pending = [];
-        await this.newSpan('xh.client.track.push').postJson({
-            url: 'xh/track',
-            body: {entries: pending},
-            params: {clientUsername: XH.getUsername()}
+        await this.rootSpan('xh.client.track.push').run(async ctx => {
+            this.pending = [];
+            await ctx.postJson({
+                url: 'xh/track',
+                body: {entries: pending},
+                params: {clientUsername: XH.getUsername()}
+            });
         });
     }
 

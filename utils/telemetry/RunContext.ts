@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {LoadSpec, LoadSpecConfig, Span, SpanConfigLike} from '@xh/hoist/core';
+import {CallContext, LoadSpec, Span, SpanConfigLike, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {Runner} from './Runner';
 import {NameSource} from '@xh/hoist/utils/js';
@@ -14,68 +14,61 @@ import {NameSource} from '@xh/hoist/utils/js';
  * Context object provided to functions executed via {@link Runner}, exposing the active
  * {@link LoadSpec} or {@link Span} along with caller metadata for logging and tracing.
  *
- * @internal - This is an experimental API used by Hoist's telemetry/run infrastructure.
- *      Not yet intended for direct construction or extension by application code.
+ * This class implements CallContext and may be passed directly to methods
+ * requiring/accepting one (e.g. HoistModel.loadAsync(), service calls).
  */
 export class RunContext {
-    private readonly ctx: LoadSpec | Span;
+    private readonly ctx: CallContext;
 
     /** Object owning this run.  Used primarily for logging and tracing purposes.*/
     readonly caller: NameSource;
 
+    //-------------------------------------------------------
+    // CallContext interface - for passing along to methods
+    //-------------------------------------------------------
     /** The span in context or null.*/
     get span(): Span {
-        return this.loadSpec.span;
-    }
-
-    /**
-     * The LoadSpec in context, or an appropriate configuration to start a new one.
-     *
-     * If the runner producing this object is in doLoadAsync, this will be
-     * a concrete LoadSpec, with full info about the existing loading lifecycle.
-     * Otherwise, it will be an appropriate LoadSpecConfig for starting a new load.
-     */
-    get loadSpec(): LoadSpecConfig {
         const {ctx} = this;
-        return ctx instanceof LoadSpec ? ctx : {span: ctx};
+        return ctx instanceof Span ? ctx : ctx?.span;
     }
 
     /**
-     * Create a new runner for doing additional work in this context.
+     * The LoadSpec in context, or null.
      */
+    get loadSpec(): LoadSpec {
+        const {ctx} = this;
+        return ctx instanceof LoadSpec ? ctx : !(ctx instanceof Span) ? ctx?.loadSpec : null;
+    }
+
+    //-------------------------------------------------------
+    // Extensions for fluent use within run() implementations
+    //--------------------------------------------------------
+    /** Create a new runner for doing an addition work chain in *this* context.*/
     runner(): Runner {
         return Runner.create(this.ctx, this.caller);
     }
 
-    /** Create a new runner for doing addition work in a nested context.*/
+    /** Create a new runner for doing an additional work chain in a *nested* context.*/
     newSpan(spec: SpanConfigLike): Runner {
         return this.runner().newSpan(spec);
     }
 
     /** Run additional fetch calls in this context. */
     fetchJson(opts: FetchOptions): Promise<any> {
-        return this.runner().fetchJson(opts);
+        return XH.fetchJson({...opts, span: this.span, loadSpec: this.loadSpec});
     }
 
     /** Run additional fetch calls in this context. */
     postJson(opts: FetchOptions): Promise<any> {
-        return this.runner().postJson(opts);
+        return XH.postJson({...opts, span: this.span, loadSpec: this.loadSpec});
     }
 
     //-------------------------
     // Implementation
     //--------------------------
-
     /** @internal -- used by Runner.*/
-    constructor(ctx: LoadSpec | Span, caller: NameSource) {
+    constructor(ctx: CallContext, caller: NameSource) {
         this.ctx = ctx;
         this.caller = caller;
-    }
-
-    /** @internal -- used by Runner.*/
-    cloneWithSpan(span: Span) {
-        const {ctx} = this,
-            newCtx = ctx instanceof LoadSpec ? ctx.cloneWithSpan(span) : span;
-        return new RunContext(newCtx, this.caller);
     }
 }

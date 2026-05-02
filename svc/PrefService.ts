@@ -116,17 +116,15 @@ export class PrefService extends HoistService {
      */
     async pushPendingAsync() {
         const updates = this._updates;
-
         if (isEmpty(updates)) return;
 
-        this._updates = {};
-
-        await this.newSpan('xh.client.prefs.set').postJson({
-            url: 'xh/setPrefs',
-            body: updates,
-            params: {
-                clientUsername: XH.getUsername()
-            }
+        await this.rootSpan('xh.client.prefs.set').run(async ctx => {
+            this._updates = {};
+            await ctx.postJson({
+                url: 'xh/setPrefs',
+                body: updates,
+                params: {clientUsername: XH.getUsername()}
+            });
         });
     }
 
@@ -139,17 +137,19 @@ export class PrefService extends HoistService {
     }
 
     private async loadPrefsAsync(span: Span) {
-        const data = await this.runner(span)
+        await this.runOn(span)
             .newSpan('xh.client.prefs.get')
-            .fetchJson({
-                url: 'xh/getPrefs',
-                params: {clientUsername: XH.getUsername()}
+            .run(async ctx => {
+                const data = await ctx.fetchJson({
+                    url: 'xh/getPrefs',
+                    params: {clientUsername: XH.getUsername()}
+                });
+                forEach(data, v => {
+                    deepFreeze(v.value);
+                    deepFreeze(v.defaultValue);
+                });
+                this._data = data;
             });
-        forEach(data, v => {
-            deepFreeze(v.value);
-            deepFreeze(v.defaultValue);
-        });
-        this._data = data;
     }
 
     private validateBeforeSet(key, value) {

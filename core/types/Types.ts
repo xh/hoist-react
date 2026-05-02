@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementFactory} from '@xh/hoist/core';
+import {ElementFactory, LoadSpec, Span} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {MomentInput} from 'moment';
 import {Component, FunctionComponent, ReactElement} from 'react';
@@ -102,3 +102,6 @@ export type PageState =
      * The page is in the process of being unloaded by the browser (this is a terminal state x_x).
      */
     | 'terminated';
+
+/** Standard Context to be passed across call boundaries.  */
+export type CallContext = Span | LoadSpec | {span?: Span; loadSpec?: LoadSpec};

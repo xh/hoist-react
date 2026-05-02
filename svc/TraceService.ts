@@ -163,7 +163,7 @@ export class TraceService extends HoistService {
      * Push all pending spans to the server.
      * Called on debounced interval and on page unload.
      */
-    private async pushPendingAsync() {
+    async pushPendingAsync() {
         const spans = this._pending;
         if (isEmpty(spans)) return;
 

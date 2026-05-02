@@ -50,10 +50,8 @@ export class EnvironmentService extends HoistService {
     private pollTimer: Timer;
 
     override async initAsync(ctx: InitContext) {
-        const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
-                url: 'xh/environment',
-                span: ctx.span
-            }),
+        const env = await this.runOn(ctx).fetchJson({url: 'xh/environment'}),
+            {pollConfig, instanceName, alertBanner, ...serverEnv} = env,
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
@@ -115,42 +113,40 @@ export class EnvironmentService extends HoistService {
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        let data: any;
-        try {
-            data = await this.newSpan('xh.client.envPoll').fetchJson({url: 'xh/environmentPoll'});
-        } catch (e) {
-            this.logError('Error polling server environment', e);
-            return;
-        }
+        await this.rootSpan('xh.client.envPoll')
+            .run(async ctx => {
+                const data = await ctx.fetchJson({url: 'xh/environmentPoll'});
 
-        // Update config/interval, server info, and alert banner.
-        const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
-        this.pollConfig = pollConfig;
-        this.pollTimer.setInterval(this.pollIntervalMs);
-        this.setServerInfo(instanceName, appVersion, appBuild);
-        XH.alertBannerService.updateBanner(alertBanner);
+                // Update config/interval, server info, and alert banner.
+                const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
+                this.pollConfig = pollConfig;
+                this.pollTimer.setInterval(this.pollIntervalMs);
+                this.setServerInfo(instanceName, appVersion, appBuild);
+                XH.alertBannerService.updateBanner(alertBanner);
 
-        // Handle version change - compare to constants baked into client build.
-        if (appVersion != XH.appVersion || appBuild != XH.appBuild) {
-            // force the user to refresh or prompt the user to refresh via the banner according to config
-            // build checked to trigger refresh across SNAPSHOT updates in lower environments
-            const {onVersionChange} = pollConfig;
-            switch (onVersionChange) {
-                case 'promptReload':
-                    XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
-                    return;
-                case 'forceReload':
-                    XH.suspendApp({
-                        reason: 'APP_UPDATE',
-                        message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
-                    });
-                    return;
-                default:
-                    this.logWarn(
-                        `New version ${appVersion} reported by server, onVersionChange is ${onVersionChange} - ignoring.`
-                    );
-            }
-        }
+                // Handle version change - compare to constants baked into client build.
+                if (appVersion != XH.appVersion || appBuild != XH.appBuild) {
+                    // force the user to refresh or prompt the user to refresh via the banner according to config
+                    // build checked to trigger refresh across SNAPSHOT updates in lower environments
+                    const {onVersionChange} = pollConfig;
+                    switch (onVersionChange) {
+                        case 'promptReload':
+                            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+                            return;
+                        case 'forceReload':
+                            XH.suspendApp({
+                                reason: 'APP_UPDATE',
+                                message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
+                            });
+                            return;
+                        default:
+                            this.logWarn(
+                                `New version ${appVersion} reported by server, onVersionChange is ${onVersionChange} - ignoring.`
+                            );
+                    }
+                }
+            })
+            .catch(e => this.logError('Error polling server environment', e));
     }
 
     //------------------------------

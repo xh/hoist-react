@@ -7,6 +7,7 @@
 
 import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
 import {
+    CallContext,
     ExceptionHandlerOptions,
     HoistModel,
     LoadSpec,
@@ -186,9 +187,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * Note that this method may throw if the ViewManager cannot be initialized successfully,
      * but should generally fail quietly due to the early instantiation.
      */
-    static async createAsync(config: ViewManagerConfig): Promise<ViewManagerModel> {
+    static async createAsync(
+        config: ViewManagerConfig,
+        ctx?: CallContext
+    ): Promise<ViewManagerModel> {
         const ret = new ViewManagerModel(config);
-        await ret.initAsync();
+        await ret.initAsync(ctx);
         return ret;
     }
 
@@ -357,27 +361,30 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {dataAccess, view} = this;
-        try {
-            // 1) Update views and related state
-            const {views, state} = await dataAccess.fetchDataAsync();
-            if (loadSpec.isStale) return;
-            runInAction(() => {
-                this.views = views;
-                this.userPinned = state.userPinned;
-                this.autoSave = state.autoSave;
-            });
+        await this.runOn(loadSpec)
+            .newSpan('xh.client.viewManager.refresh')
+            .run(async ctx => {
+                // 1) Update views and related state
+                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                if (loadSpec.isStale) return;
+                runInAction(() => {
+                    this.views = views;
+                    this.userPinned = state.userPinned;
+                    this.autoSave = state.autoSave;
+                });
 
-            // potentially fast-forward current view.
-            if (!view.isDefault) {
-                const latestInfo = find(views, {token: view.token});
-                if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
-                    this.loadViewAsync(view.token, this.pendingValue);
+                // potentially fast-forward current view.
+                if (!view.isDefault) {
+                    const latestInfo = find(views, {token: view.token});
+                    if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
+                        this.loadViewAsync(view.token, this.pendingValue, ctx);
+                    }
                 }
-            }
-        } catch (e) {
-            if (loadSpec.isStale) return;
-            this.handleException(e, {showAlert: false});
-        }
+            })
+            .catch(e => {
+                if (loadSpec.isStale) return;
+                this.handleException(e, {showAlert: false});
+            });
     }
 
     async selectViewAsync(
@@ -386,12 +393,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     ): Promise<void> {
         const token = isObject(view) ? view.token : view;
 
-        // ensure any pending auto-save gets completed
+        // ensure any pending auto-save gets completed (spanned via its own root)
         if (this.isValueDirty && this.isViewAutoSavable) {
             await this.maybeAutoSaveAsync();
         }
 
-        // if still dirty, require confirm
+        // if still dirty, require confirm (kept outside the span - waits on user)
         if (
             opts.alertUnsavedChanges &&
             this.isValueDirty &&
@@ -401,13 +408,19 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
 
-        return this.loadViewAsync(token);
+        return this.rootSpan('xh.client.viewManager.selectView').run(ctx =>
+            this.loadViewAsync(token, null, ctx)
+        );
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
-        const view = await this.dataAccess.createViewAsync(spec);
-        this.noteSuccess(`Created ${view.typedName}`);
-        this.setAsView(view);
+        await this.runOnRoot()
+            .newSpan('xh.client.viewManager.saveAs')
+            .run(async ctx => {
+                const view = await this.dataAccess.createViewAsync(spec, ctx);
+                this.noteSuccess(`Created ${view.typedName}`);
+                this.setAsView(view);
+            });
     }
 
     //------------------------
@@ -419,22 +432,26 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
         const {pendingValue, view, dataAccess} = this;
-
         if (!(await this.maybeConfirmSaveAsync(view, pendingValue))) {
             return;
         }
-        const updated = await dataAccess
-            .updateViewValueAsync(view, pendingValue.value)
-            .linkTo(this.saveTask);
 
-        this.setAsView(updated);
-        this.noteSuccess(`Saved ${view.typedName}`);
+        await this.rootSpan('xh.client.viewManager.save').run(async ctx => {
+            const updated = await dataAccess
+                .updateViewValueAsync(view, pendingValue.value, ctx)
+                .linkTo(this.saveTask);
 
-        this.refreshAsync();
+            this.setAsView(updated);
+            this.noteSuccess(`Saved ${view.typedName}`);
+
+            this.refreshAsync();
+        });
     }
 
     async resetAsync(): Promise<void> {
-        return this.loadViewAsync(this.view.token);
+        return this.rootSpan('xh.client.viewManager.reset').run(ctx =>
+            this.loadViewAsync(this.view.token, null, ctx)
+        );
     }
 
     //--------------------------------
@@ -506,25 +523,32 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
-        return this.dataAccess.updateViewInfoAsync(view, updates);
+        return this.rootSpan('xh.client.viewManager.updateInfo').run(ctx =>
+            this.dataAccess.updateViewInfoAsync(view, updates, ctx)
+        );
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
-        let exception;
-        try {
-            await this.dataAccess.deleteViewsAsync(toDelete);
-        } catch (e) {
-            exception = e;
-        }
+        await this.rootSpan('xh.client.viewManager.delete').run(async ctx => {
+            let exception;
+            try {
+                await this.dataAccess.deleteViewsAsync(toDelete, ctx);
+            } catch (e) {
+                exception = e;
+            }
 
-        await this.refreshAsync();
-        const {views} = this;
+            await this.refreshAsync();
+            const {views} = this;
 
-        if (toDelete.some(view => view.isCurrentView) && !views.some(view => view.isCurrentView)) {
-            await this.loadViewAsync(this.initialViewSpec?.(views)?.token);
-        }
+            if (
+                toDelete.some(view => view.isCurrentView) &&
+                !views.some(view => view.isCurrentView)
+            ) {
+                await this.loadViewAsync(this.initialViewSpec?.(views)?.token, null, ctx);
+            }
 
-        if (exception) throw exception;
+            if (exception) throw exception;
+        });
     }
 
     //------------------
@@ -549,46 +573,51 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private async initAsync() {
+    private async initAsync(ctx?: CallContext) {
         let {dataAccess, pendingValueStorageKey, enableDefault} = this,
             initialState: ViewUserState;
 
-        try {
-            // 1) Initialize views and related state
-            const {views, state} = await dataAccess.fetchDataAsync();
-            initialState = state;
-            runInAction(() => {
-                this.views = views;
-                this.userPinned = state.userPinned;
-                this.autoSave = state.autoSave;
-                if (this.preserveUnsavedChanges) {
-                    this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+        await this.runOnOptional(ctx)
+            .newSpan('xh.client.viewManager.init')
+            .run(async spanCtx => {
+                // 1) Initialize views and related state
+                const {views, state} = await dataAccess.fetchDataAsync(spanCtx);
+                initialState = state;
+                runInAction(() => {
+                    this.views = views;
+                    this.userPinned = state.userPinned;
+                    this.autoSave = state.autoSave;
+                    if (this.preserveUnsavedChanges) {
+                        this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
+                    }
+                });
+
+                // 2) Select the initial view.
+                let initialView: ViewInfo,
+                    initialTkn: string = initialState.currentView;
+                if (isUndefined(initialTkn) || (isNull(initialTkn) && !enableDefault)) {
+                    // Token undefined (no prior view) or null (in-code default *had* been loaded)
+                    // but default no longer enabled - call initialViewSpec.
+                    initialView = this.initialViewSpec?.(views);
+                } else if (!isNull(initialTkn)) {
+                    // Token provided - find the view, falling back to initialViewSpec if not found.
+                    initialView = find(views, {token: initialTkn}) ?? this.initialViewSpec?.(views);
+                } else {
+                    // Token null - active signal to load in-code default.
+                    initialView = null;
                 }
+
+                // Note that the above routine failed to resolve a view, we will pass undefined here
+                // and load the in-code default, even if not enabled. We have no other choice!
+                await this.loadViewAsync(initialView?.token, this.pendingValue, spanCtx);
+            })
+            .catch(e => {
+                // Always ensure at least default view is installed (other state defaults are fine)
+                this.rootSpan('xh.client.viewManager.fallbackLoad').run(fallbackCtx =>
+                    this.loadViewAsync(null, this.pendingValue, fallbackCtx)
+                );
+                this.handleException(e, {showAlert: false, logOnServer: true});
             });
-
-            // 2) Select the initial view.
-            let initialView: ViewInfo,
-                initialTkn: string = initialState.currentView;
-            if (isUndefined(initialTkn) || (isNull(initialTkn) && !enableDefault)) {
-                // Token undefined (no prior view) or null (in-code default *had* been loaded) but
-                // default no longer enabled - call initialViewSpec.
-                initialView = this.initialViewSpec?.(views);
-            } else if (!isNull(initialTkn)) {
-                // Token provided - find the view, falling back to initialViewSpec if not found.
-                initialView = find(views, {token: initialTkn}) ?? this.initialViewSpec?.(views);
-            } else {
-                // Token null - active signal to load in-code default.
-                initialView = null;
-            }
-
-            // Note that the above routine failed to resolve a view, we will pass undefined here
-            // and load the in-code default, even if not enabled. We have no other choice!
-            await this.loadViewAsync(initialView?.token, this.pendingValue);
-        } catch (e) {
-            // Always ensure at least default view is installed (other state defaults are fine)
-            this.loadViewAsync(null, this.pendingValue);
-            this.handleException(e, {showAlert: false, logOnServer: true});
-        }
 
         this.addReaction(
             this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
@@ -613,21 +642,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const {dataAccess} = this;
+        const updateState = (update: Partial<ViewUserState>) =>
+            this.rootSpan('xh.client.viewManager.updateState').run(ctx =>
+                this.dataAccess.updateStateAsync(update, ctx)
+            );
         return [
             {
                 track: () => this.userPinned,
-                run: userPinned => dataAccess.updateStateAsync({userPinned}),
+                run: userPinned => updateState({userPinned}),
                 equals: comparer.structural,
                 debounce: ONE_SECOND
             },
             {
                 track: () => this.autoSave,
-                run: autoSave => dataAccess.updateStateAsync({autoSave})
+                run: autoSave => updateState({autoSave})
             },
             {
                 track: () => this.view?.token,
-                run: tkn => dataAccess.updateStateAsync({currentView: tkn}),
+                run: tkn => updateState({currentView: tkn}),
                 fireImmediately: this.view?.token !== initialState?.currentView
             }
         ];
@@ -635,10 +667,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async loadViewAsync(
         token: string,
-        pendingValue: PendingValue<T> = null
+        pendingValue: PendingValue<T> = null,
+        ctx: CallContext
     ): Promise<void> {
         return this.dataAccess
-            .fetchViewAsync(token)
+            .fetchViewAsync(token, ctx)
             .thenAction(latest => {
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
@@ -648,10 +681,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async maybeAutoSaveAsync() {
         const {pendingValue, isViewAutoSavable, view, dataAccess} = this;
-        if (isViewAutoSavable && pendingValue) {
+        if (!isViewAutoSavable || !pendingValue) return;
+
+        await this.rootSpan('xh.client.viewManager.autoSave').run(async ctx => {
             try {
                 const updated = await dataAccess
-                    .updateViewValueAsync(view, pendingValue.value)
+                    .updateViewValueAsync(view, pendingValue.value, ctx)
                     .linkTo(this.saveTask);
 
                 this.setAsView(updated);
@@ -664,7 +699,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     logOnServer: false
                 });
             }
-        }
+        });
     }
 
     @action
@@ -715,8 +750,10 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private async maybeConfirmSaveAsync(view: View, pendingValue: PendingValue<T>) {
-        // Get latest from server for reference
-        const latest = await this.dataAccess.fetchViewAsync(view.token),
+        // Get latest from server for reference (spanned independently of any user prompt below)
+        const latest = await this.rootSpan('xh.client.viewManager.confirmSavePrep').run(ctx =>
+                this.dataAccess.fetchViewAsync(view.token, ctx)
+            ),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;

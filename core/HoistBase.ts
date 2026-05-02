@@ -36,8 +36,8 @@ import {
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {
+    CallContext,
     DebounceSpec,
-    LoadSpec,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
@@ -131,21 +131,42 @@ export abstract class HoistBase {
     }
 
     /**
-     * Create an {@link Runner} builder with this object as the caller.
-     *
-     * @internal  - runner is an experimental beta feature.
-     **/
-    runner(ctx: LoadSpec | Span = null): Runner {
+     * Create an {@link Runner} with an initial root span and this object
+     * as the caller.
+     */
+    runOnRoot(): Runner {
+        return Runner.create(null, this);
+    }
+
+    /**
+     * Create an {@link Runner} with an initial call context and this object as the caller.
+     * Use this method in implementation methods that are passed CallContext or LoadSpec,
+     * e.g. doLoadAsync, initAsync, or other methods.
+     */
+    runOn(ctx: CallContext): Runner {
+        throwIf(
+            ctx == null,
+            'runOn() requires a non-null CallContext - use runOnRoot() for a fresh root context.'
+        );
         return Runner.create(ctx, this);
     }
 
     /**
-     * Create an {@link Runner} builder with an initial span and this object as the caller.
+     * Create an {@link Runner} on the given call context if provided, otherwise on a fresh root.
+     * Convenient when a method receives an optional context but should always produce a Runner.
+     */
+    runOnOptional(ctx: CallContext | null | undefined): Runner {
+        return ctx ? this.runOn(ctx) : this.runOnRoot();
+    }
+
+    /**
+     * Create an {@link Runner} with an initial root span and this object
+     * as the caller.
      *
      * @internal - runner is an experimental beta feature.
      */
-    newSpan(span: SpanConfigLike): Runner {
-        return this.runner().newSpan(span);
+    rootSpan(span: SpanConfigLike): Runner {
+        return this.runOnRoot().newSpan(span);
     }
 
     /**
