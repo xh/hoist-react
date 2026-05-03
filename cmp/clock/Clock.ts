@@ -96,26 +96,28 @@ class ClockLocalModel extends HoistModel {
     async loadTimezoneOffsetAsync() {
         const {timezone} = this.componentProps;
 
-        try {
-            if (!timezone) {
-                this.offset = null;
-                this.offsetException = null;
-                return;
-            }
-
-            const offsetResp = await XH.fetchJson({
-                url: 'xh/getTimeZoneOffset',
-                params: {timeZoneId: timezone}
-            });
-            this.offset = offsetResp.offset;
-            this.offsetException = null;
-        } catch (e) {
-            XH.handleException(e, {showAlert: false, logOnServer: false});
+        if (!timezone) {
             this.offset = null;
-            this.offsetException = e;
-        } finally {
+            this.offsetException = null;
             this.refreshDisplay();
+            return;
         }
+
+        await this.rootSpan('xh.client.clock.getTimeZoneOffset')
+            .run(async ctx => {
+                const offsetResp = await ctx.fetchJson({
+                    url: 'xh/getTimeZoneOffset',
+                    params: {timeZoneId: timezone}
+                });
+                this.offset = offsetResp.offset;
+                this.offsetException = null;
+            })
+            .catch(e => {
+                XH.handleException(e, {showAlert: false, logOnServer: false});
+                this.offset = null;
+                this.offsetException = e;
+            })
+            .finally(() => this.refreshDisplay());
     }
 
     @action

@@ -54,6 +54,11 @@ export class RunContext {
     }
 
     /** Run additional fetch calls in this context. */
+    fetch(opts: FetchOptions): Promise<any> {
+        return XH.fetch({...opts, span: this.span, loadSpec: this.loadSpec});
+    }
+
+    /** Run additional fetch calls in this context. */
     fetchJson(opts: FetchOptions): Promise<any> {
         return XH.fetchJson({...opts, span: this.span, loadSpec: this.loadSpec});
     }
@@ -61,6 +66,16 @@ export class RunContext {
     /** Run additional fetch calls in this context. */
     postJson(opts: FetchOptions): Promise<any> {
         return XH.postJson({...opts, span: this.span, loadSpec: this.loadSpec});
+    }
+
+    /** Run additional fetch calls in this context. */
+    putJson(opts: FetchOptions): Promise<any> {
+        return XH.fetchService.putJson({...opts, span: this.span, loadSpec: this.loadSpec});
+    }
+
+    /** Run additional fetch calls in this context. */
+    deleteJson(opts: FetchOptions): Promise<any> {
+        return XH.fetchService.deleteJson({...opts, span: this.span, loadSpec: this.loadSpec});
     }
 
     //-------------------------

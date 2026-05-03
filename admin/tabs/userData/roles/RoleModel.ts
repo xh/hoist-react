@@ -9,7 +9,7 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {fmtDate} from '@xh/hoist/format';
@@ -71,23 +71,26 @@ export class RoleModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            await this.ensureInitializedAsync();
-            if (!this.moduleConfig.enabled) return;
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.roles.list')
+            .run(async ctx => {
+                await this.ensureInitializedAsync(ctx);
+                if (!this.moduleConfig.enabled) return;
 
-            const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
-            if (loadSpec.isStale) return;
+                const {data} = await ctx.fetchJson({url: 'roleAdmin/list'});
+                if (loadSpec.isStale) return;
 
-            runInAction(() => {
-                this.allRoles = this.processRolesFromServer(data);
+                runInAction(() => {
+                    this.allRoles = this.processRolesFromServer(data);
+                });
+                this.displayRoles(loadSpec.isRefresh);
+                await this.gridModel.preSelectFirstAsync();
+            })
+            .catch(e => {
+                if (loadSpec.isStale) return;
+                XH.handleException(e);
+                this.clear();
             });
-            this.displayRoles(loadSpec.isRefresh);
-            await this.gridModel.preSelectFirstAsync();
-        } catch (e) {
-            if (loadSpec.isStale) return;
-            XH.handleException(e);
-            this.clear();
-        }
     }
 
     async selectRoleAsync(name: string) {
@@ -140,7 +143,7 @@ export class RoleModel extends HoistModel {
         });
         if (!confirm) return false;
 
-        await XH.fetchService.deleteJson({
+        await this.rootSpan('xh.client.admin.roles.delete').deleteJson({
             url: `roleAdmin/delete`,
             body: {name: role.name}
         });
@@ -228,17 +231,17 @@ export class RoleModel extends HoistModel {
         gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
-    private async ensureInitializedAsync() {
-        if (!this.moduleConfig) {
-            const config = await XH.fetchJson({url: 'roleAdmin/config'});
-            runInAction(() => {
-                this.moduleConfig = config;
-                if (config.enabled) {
-                    this.gridModel = this.createGridModel();
-                    this.filterChooserModel = this.createFilterChooserModel();
-                }
-            });
-        }
+    private async ensureInitializedAsync(ctx: CallContext) {
+        if (this.moduleConfig) return;
+
+        const config = await this.runOn(ctx).fetchJson({url: 'roleAdmin/config'});
+        runInAction(() => {
+            this.moduleConfig = config;
+            if (config.enabled) {
+                this.gridModel = this.createGridModel();
+                this.filterChooserModel = this.createFilterChooserModel();
+            }
+        });
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {

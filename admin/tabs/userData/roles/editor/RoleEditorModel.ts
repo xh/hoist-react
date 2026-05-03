@@ -48,20 +48,19 @@ export class RoleEditorModel extends HoistModel {
         const isValid = this.roleFormModel.validateAsync();
         if (!isValid) return;
 
-        try {
-            const method = this.role ? 'update' : 'create',
-                {data} = await XH.fetchService
+        const method = this.role ? 'update' : 'create';
+        return this.rootSpan(`xh.client.admin.roles.${method}`)
+            .run(async ctx => {
+                const {data} = await ctx
                     .postJson({
                         body: this.roleFormModel.getData(),
                         url: `roleAdmin/${method}`
                     })
                     .linkTo(this.savingTask);
-
-            this.resolve(data);
-            this.close();
-        } catch (e) {
-            XH.handleException(e);
-        }
+                this.resolve(data);
+                this.close();
+            })
+            .catchDefault();
     }
 
     async deleteAsync(): Promise<void> {

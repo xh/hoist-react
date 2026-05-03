@@ -165,7 +165,7 @@ export class AppContainerModel extends HoistModel {
                 XH.authModel = createSingleton(this.appSpec.authModelClass);
                 let identity = await ctx
                     .newSpan('xh.client.auth')
-                    .run(() => XH.authModel.completeAuthAsync());
+                    .run(ctx => XH.authModel.completeAuthAsync(ctx));
 
                 if (!identity) {
                     throwIf(

@@ -118,37 +118,38 @@ export class ServiceModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        try {
-            await XH.fetchJson({
+        await this.rootSpan('xh.client.admin.services.clearCaches')
+            .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            }).linkTo(loadObserver);
-            await this.refreshAsync();
-            XH.successToast('Service caches cleared.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('Service caches cleared.');
+            })
+            .catchDefault();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, instanceName: instance} = this;
-        try {
-            const data = await XH.fetchJson({
-                url: 'serviceManagerAdmin/listServices',
-                params: {instance},
-                loadSpec
-            });
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.services.list')
+            .run(async ctx => {
+                const data = await ctx.fetchJson({
+                    url: 'serviceManagerAdmin/listServices',
+                    params: {instance}
+                });
 
-            if (!loadSpec.isStale) {
-                gridModel.loadData(data);
-                gridModel.preSelectFirstAsync();
-            }
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+                if (!loadSpec.isStale) {
+                    gridModel.loadData(data);
+                    await gridModel.preSelectFirstAsync();
+                }
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 
     private processRawData(r: PlainObject) {

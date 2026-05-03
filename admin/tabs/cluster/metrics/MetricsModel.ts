@@ -165,29 +165,29 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            const data = await XH.fetchJson({
-                url: 'metricsAdmin/listMetrics',
-                loadSpec
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.metrics.load')
+            .run(async ctx => {
+                const data = await ctx.fetchJson({url: 'metricsAdmin/listMetrics'});
+
+                if (loadSpec.isStale) return;
+
+                const enriched = data.map(it => {
+                    const instance = it.tags.find(t => t.key === 'xh.instance')?.value,
+                        source = it.tags.find(t => t.key === 'xh.source')?.value,
+                        tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
+                    return {...it, instance, source, tags};
+                });
+
+                runInAction(() => (this.allMetrics = enriched));
+                this.loadMasterGrid(enriched);
+                this.loadDetailGrid();
+            })
+            .catch(e => {
+                if (!loadSpec.isAutoRefresh && !loadSpec.isStale) {
+                    XH.handleException(e, {alertType: 'toast'});
+                }
             });
-
-            if (loadSpec.isStale) return;
-
-            const enriched = data.map(it => {
-                const instance = it.tags.find(t => t.key === 'xh.instance')?.value,
-                    source = it.tags.find(t => t.key === 'xh.source')?.value,
-                    tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
-                return {...it, instance, source, tags};
-            });
-
-            runInAction(() => (this.allMetrics = enriched));
-            this.loadMasterGrid(enriched);
-            this.loadDetailGrid();
-        } catch (e) {
-            if (!loadSpec.isAutoRefresh && !loadSpec.isStale) {
-                XH.handleException(e, {alertType: 'toast'});
-            }
-        }
     }
 
     //------------------
@@ -226,14 +226,16 @@ export class MetricsModel extends BaseAdminTabModel {
     };
 
     private async setPublishedAsync(names: string[], published: boolean) {
-        await XH.postJson({
-            url: 'metricsAdmin/setPublished',
-            body: {names, published}
-        }).track({
-            category: 'Audit',
-            message: 'Edited Metric Publishing',
-            data: {published, names}
-        });
+        await this.rootSpan('xh.client.admin.metrics.setPublished')
+            .track({
+                category: 'Audit',
+                message: 'Edited Metric Publishing',
+                data: {published, names}
+            })
+            .postJson({
+                url: 'metricsAdmin/setPublished',
+                body: {names, published}
+            });
 
         await this.refreshAsync();
     }

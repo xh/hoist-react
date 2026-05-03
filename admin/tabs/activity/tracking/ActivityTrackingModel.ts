@@ -146,22 +146,24 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         const {enabled, cube, query} = this;
         if (!enabled) return;
 
-        try {
-            const data: PlainObject[] = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: query,
-                loadSpec
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.tracking.load')
+            .run(async ctx => {
+                const data: PlainObject[] = await ctx.postJson({
+                    url: 'trackLogAdmin',
+                    body: query
+                });
+
+                if (loadSpec.isStale) return;
+
+                data.forEach(it => this.processRawTrackLog(it));
+                await cube.loadDataAsync(data);
+            })
+            .catch(async e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                await cube.clearAsync();
+                XH.handleException(e);
             });
-
-            if (loadSpec.isStale) return;
-
-            data.forEach(it => this.processRawTrackLog(it));
-            await cube.loadDataAsync(data);
-        } catch (e) {
-            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-            await cube.clearAsync();
-            XH.handleException(e);
-        }
     }
 
     @action
@@ -353,8 +355,9 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        try {
-            XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
+        this.rootSpan('xh.client.admin.tracking.lookups')
+            .run(async ctx => {
+                const lookups = await ctx.fetchJson({url: 'trackLogAdmin/lookups'});
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
                     const {field} = spec,
@@ -366,10 +369,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                         spec.hasExplicitValues = true;
                     }
                 });
-            });
-        } catch (e) {
-            XH.handleException(e, {title: 'Error loading lookups for filtering'});
-        }
+            })
+            .catchDefault({title: 'Error loading lookups for filtering'});
 
         return ret;
     }

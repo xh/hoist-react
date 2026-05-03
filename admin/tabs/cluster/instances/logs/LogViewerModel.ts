@@ -85,72 +85,72 @@ export class LogViewerModel extends BaseInstanceModel {
         const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
-        try {
-            const data = await XH.fetchJson({
-                url: 'logViewerAdmin/listFiles',
-                params: {instance: instanceName},
-                loadSpec
-            });
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.log.listFiles')
+            .run(async ctx => {
+                const data = await ctx.fetchJson({
+                    url: 'logViewerAdmin/listFiles',
+                    params: {instance: instanceName}
+                });
 
-            const files = instanceOnly
-                ? data.files.filter(f => f.filename.includes(instanceName))
-                : data.files;
+                const files = instanceOnly
+                    ? data.files.filter(f => f.filename.includes(instanceName))
+                    : data.files;
 
-            this.logDisplayModel.logRootPath = data.logRootPath;
+                this.logDisplayModel.logRootPath = data.logRootPath;
 
-            store.loadData(files);
-            if (selModel.isEmpty) {
-                const latestAppLog = store.records.find(
-                    rec => rec.data.filename === `${XH.appCode}-${instanceName}-app.log`
-                );
-                if (latestAppLog) {
-                    selModel.select(latestAppLog);
+                store.loadData(files);
+                if (selModel.isEmpty) {
+                    const latestAppLog = store.records.find(
+                        rec => rec.data.filename === `${XH.appCode}-${instanceName}-app.log`
+                    );
+                    if (latestAppLog) {
+                        selModel.select(latestAppLog);
+                    }
                 }
-            }
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 
     async deleteSelectedAsync() {
-        try {
-            const recs = this.filesGridModel.selectedRecords,
-                count = recs.length;
-            if (!count) return;
+        const recs = this.filesGridModel.selectedRecords,
+            count = recs.length;
+        if (!count) return;
 
-            const confirmed = await XH.confirm({
-                message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
-                confirmProps: {
-                    text: `Yes, delete the ${pluralize('file', count)}`,
-                    intent: 'danger',
-                    outlined: true,
-                    autoFocus: false
-                }
-            });
-            if (!confirmed) return;
+        const confirmed = await XH.confirm({
+            message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
+            confirmProps: {
+                text: `Yes, delete the ${pluralize('file', count)}`,
+                intent: 'danger',
+                outlined: true,
+                autoFocus: false
+            }
+        });
+        if (!confirmed) return;
 
-            const filenames = recs.map(r => r.data.filename);
-            await XH.postJson({
-                url: 'logViewerAdmin/deleteFiles',
-                body: filenames,
-                params: {
-                    filenames,
-                    instance: this.instanceName
-                }
-            }).linkTo({observer: this.loadObserver, message: 'Deleting files'});
-            await this.refreshAsync();
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.rootSpan('xh.client.admin.log.deleteFiles')
+            .run(async ctx => {
+                const filenames = recs.map(r => r.data.filename);
+                await ctx
+                    .postJson({
+                        url: 'logViewerAdmin/deleteFiles',
+                        body: filenames,
+                        params: {filenames, instance: this.instanceName}
+                    })
+                    .linkTo({observer: this.loadObserver, message: 'Deleting files'});
+            })
+            .then(() => this.refreshAsync())
+            .catchDefault();
     }
 
     async downloadSelectedAsync() {
-        try {
-            const {selectedRecord} = this;
-            if (!selectedRecord) return;
+        const {selectedRecord} = this;
+        if (!selectedRecord) return;
 
-            const {filename} = selectedRecord.data,
-                response = await XH.fetch({
+        const {filename} = selectedRecord.data;
+        return this.rootSpan('xh.client.admin.log.download')
+            .run(async ctx => {
+                const response = await ctx.fetch({
                     url: 'logViewerAdmin/download',
                     params: {
                         filename,
@@ -158,16 +158,15 @@ export class LogViewerModel extends BaseInstanceModel {
                     }
                 });
 
-            const blob = await response.blob();
-            downloadBlob(blob, filename);
+                const blob = await response.blob();
+                downloadBlob(blob, filename);
 
-            XH.toast({
-                icon: Icon.download(),
-                message: 'Download complete.'
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+                XH.toast({
+                    icon: Icon.download(),
+                    message: 'Download complete.'
+                });
+            })
+            .catchDefault();
     }
 
     //---------------------------------

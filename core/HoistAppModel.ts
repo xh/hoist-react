@@ -103,13 +103,15 @@ export class HoistAppModel extends HoistModel {
      * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
-        const XH = window['XH'];
-        await XH.fetchJson({
-            url: 'xh/clearUserState',
-            params: {clientUsername: XH.getUsername()}
+        await this.rootSpan('xh.client.app.restoreDefaults').run(async ctx => {
+            const XH = window['XH'];
+            await ctx.fetchJson({
+                url: 'xh/clearUserState',
+                params: {clientUsername: XH.getUsername()}
+            });
+            XH.localStorageService.clear();
+            XH.sessionStorageService.clear();
         });
-        XH.localStorageService.clear();
-        XH.sessionStorageService.clear();
     }
 }
 

@@ -72,18 +72,20 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
             return;
         }
 
-        try {
-            this.trackLogs = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: {
-                    filters: {field: 'tabId', op: '=', value: tabId}
-                }
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.clients.detail')
+            .run(async ctx => {
+                this.trackLogs = await ctx.postJson({
+                    url: 'trackLogAdmin',
+                    body: {
+                        filters: {field: 'tabId', op: '=', value: tabId}
+                    }
+                });
+            })
+            .catch(e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                XH.handleException(e, {alertType: 'toast'});
+                this.trackLogs = [];
             });
-        } catch (e) {
-            if (loadSpec.isStale || !loadSpec.isAutoRefresh) return;
-
-            XH.handleException(e, {alertType: 'toast'});
-            this.trackLogs = [];
-        }
     }
 }

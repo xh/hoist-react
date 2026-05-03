@@ -147,33 +147,36 @@ export class DifferModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
-        const remoteHost = trimEnd(this.remoteHost, '/'),
-            // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
-            apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
-            remoteBaseUrl = remoteHost + apiAffix,
-            {entityName, url} = this;
+        await this.runOn(loadSpec)
+            .newSpan('xh.client.admin.differ.load')
+            .run(async ctx => {
+                const remoteHost = trimEnd(this.remoteHost, '/'),
+                    // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
+                    apiAffix = XH.isDevelopmentMode ? '/api/' : XH.baseUrl,
+                    remoteBaseUrl = remoteHost + apiAffix,
+                    {entityName, url} = this;
 
-        try {
-            const resp = await Promise.all([
-                XH.fetchJson({url: `${url}/${entityName}s`, loadSpec}),
-                this.clipboardContent
-                    ? Promise.resolve(cloneDeep(this.clipboardContent))
-                    : XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`, loadSpec})
-            ]);
-            this.processResponse(resp);
-        } catch (e) {
-            this.processFailedLoad();
-            if (e.httpStatus === 401) {
-                XH.alert({
-                    title: 'Access Denied',
-                    icon: Icon.accessDenied(),
-                    message:
-                        'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
-                });
-            } else {
-                XH.handleException(e, {showAsError: false, logOnServer: false});
-            }
-        }
+                const resp = await Promise.all([
+                    ctx.fetchJson({url: `${url}/${entityName}s`}),
+                    this.clipboardContent
+                        ? Promise.resolve(cloneDeep(this.clipboardContent))
+                        : ctx.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`})
+                ]);
+                this.processResponse(resp);
+            })
+            .catch(e => {
+                this.processFailedLoad();
+                if (e.httpStatus === 401) {
+                    XH.alert({
+                        title: 'Access Denied',
+                        icon: Icon.accessDenied(),
+                        message:
+                            'Access denied when querying records. Are you logged in to an account with admin rights on the remote instance?'
+                    });
+                } else {
+                    XH.handleException(e, {showAsError: false, logOnServer: false});
+                }
+            });
     }
 
     diffFromRemote() {
@@ -340,18 +343,22 @@ export class DifferModel extends HoistModel {
     }
 
     doApplyRemote(records) {
-        const recsForPost = records.map(rec => {
-            const ret = {remoteValue: omit(rec.data.remoteValue, 'lastUpdated', 'lastUpdatedBy')};
-            this.matchFields.forEach(field => {
-                ret[field] = rec.data[field];
-            });
-            return ret;
-        });
-
-        XH.fetchJson({
-            url: `${this.url}/applyRemoteValues`,
-            params: {records: JSON.stringify(recsForPost)}
-        })
+        this.rootSpan('xh.client.admin.differ.applyRemote')
+            .run(async ctx => {
+                const recsForPost = records.map(rec => {
+                    const ret = {
+                        remoteValue: omit(rec.data.remoteValue, 'lastUpdated', 'lastUpdatedBy')
+                    };
+                    this.matchFields.forEach(field => {
+                        ret[field] = rec.data[field];
+                    });
+                    return ret;
+                });
+                await ctx.fetchJson({
+                    url: `${this.url}/applyRemoteValues`,
+                    params: {records: JSON.stringify(recsForPost)}
+                });
+            })
             .finally(() => {
                 this.loadAsync();
                 this.parentModel.gridModel.loadAsync();
@@ -380,9 +387,11 @@ export class DifferModel extends HoistModel {
     }
 
     async fetchLocalConfigsAsync() {
-        const {entityName, url} = this,
-            resp = await XH.fetchJson({url: `${url}/${entityName}s`});
-        return JSON.stringify(resp);
+        return this.rootSpan('xh.client.admin.differ.copyToClipboard').run(async ctx => {
+            const {entityName, url} = this,
+                resp = await ctx.fetchJson({url: `${url}/${entityName}s`});
+            return JSON.stringify(resp);
+        });
     }
 
     private async readConfigFromClipboardAsync() {

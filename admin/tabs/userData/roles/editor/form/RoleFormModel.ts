@@ -291,25 +291,29 @@ export class RoleFormModel extends HoistModel {
     }
 
     private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
-        try {
-            const {data} = await XH.fetchJson({
-                autoAbortKey: `roleAdmin/usersForDirectoryGroup-${recordId}`,
-                url: 'roleAdmin/usersForDirectoryGroup',
-                params: {name: directoryGroup}
-            }).linkTo(this.directoryGroupLookupTask);
-            if (isString(data)) {
+        return this.rootSpan('xh.client.admin.roles.usersForDirectoryGroup')
+            .run(async ctx => {
+                const {data} = await ctx
+                    .fetchJson({
+                        autoAbortKey: `roleAdmin/usersForDirectoryGroup-${recordId}`,
+                        url: 'roleAdmin/usersForDirectoryGroup',
+                        params: {name: directoryGroup}
+                    })
+                    .linkTo(this.directoryGroupLookupTask);
+                if (isString(data)) {
+                    this.directoryGroupsGridModel.store.modifyRecords({
+                        id: recordId,
+                        error: data
+                    });
+                }
+            })
+            .catch(e => {
+                const errorMsg = 'Error looking up directory group';
+                XH.handleException(e, {alertType: 'toast', title: errorMsg});
                 this.directoryGroupsGridModel.store.modifyRecords({
                     id: recordId,
-                    error: data
+                    error: errorMsg
                 });
-            }
-        } catch (e) {
-            const errorMsg = 'Error looking up directory group';
-            XH.handleException(e, {alertType: 'toast', title: errorMsg});
-            this.directoryGroupsGridModel.store.modifyRecords({
-                id: recordId,
-                error: errorMsg
             });
-        }
     }
 }

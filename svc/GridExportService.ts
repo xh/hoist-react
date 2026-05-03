@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, RunContext, TrackOptions, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -45,7 +45,9 @@ export class GridExportService extends HoistService {
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
     async exportAsync(gridModel: GridModel, opts: ExportOptions = {}) {
-        return this.rootSpan('xh.client.gridExport').run(() => this.doExportAsync(gridModel, opts));
+        return this.rootSpan('xh.client.gridExport').run(ctx =>
+            this.doExportAsync(gridModel, opts, ctx)
+        );
     }
 
     private async doExportAsync(
@@ -56,7 +58,8 @@ export class GridExportService extends HoistService {
             columns = 'VISIBLE',
             track = false,
             timeout = 30 * SECONDS
-        }: ExportOptions
+        }: ExportOptions,
+        ctx: RunContext
     ) {
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -119,7 +122,7 @@ export class GridExportService extends HoistService {
         formData.append('params', JSON.stringify(params));
 
         try {
-            const response = await XH.fetch({
+            const response = await ctx.fetch({
                 url: 'xh/export',
                 method: 'POST',
                 body: formData,

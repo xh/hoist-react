@@ -84,6 +84,11 @@ export class Runner {
         return this.executeWrapped(fn);
     }
 
+    fetch(options: FetchOptions): Promise<any> {
+        const fn = (ctx: RunContext) => ctx.fetch(options);
+        return this.executeWrapped(fn);
+    }
+
     fetchJson(options: FetchOptions): Promise<any> {
         const fn = (ctx: RunContext) => ctx.fetchJson(options);
         return this.executeWrapped(fn);
@@ -91,6 +96,16 @@ export class Runner {
 
     postJson(options: FetchOptions): Promise<any> {
         const fn = (ctx: RunContext) => ctx.postJson(options);
+        return this.executeWrapped(fn);
+    }
+
+    putJson(options: FetchOptions): Promise<any> {
+        const fn = (ctx: RunContext) => ctx.putJson(options);
+        return this.executeWrapped(fn);
+    }
+
+    deleteJson(options: FetchOptions): Promise<any> {
+        const fn = (ctx: RunContext) => ctx.deleteJson(options);
         return this.executeWrapped(fn);
     }
 

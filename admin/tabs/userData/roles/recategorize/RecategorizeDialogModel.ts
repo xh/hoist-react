@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
-import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, TaskObserver} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
@@ -50,26 +50,29 @@ export class RecategorizeDialogModel extends HoistModel {
 
     async saveAsync() {
         if (this.parent.readonly) return;
-        const roleSpec = filter(
-            this.selectedRecords.map(it => it.data),
-            it => !it.isGroupRow
-        );
-        const roles: string[] = map(roleSpec, it => it.name);
-        try {
-            await XH.fetchService
-                .postJson({
-                    url: 'roleAdmin/bulkCategoryUpdate',
-                    body: {
-                        roles,
-                        category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
-                    }
-                })
-                .linkTo(this.savingTask);
-            this.close();
-            await this.parent.refreshAsync();
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.rootSpan('xh.client.admin.roles.bulkCategoryUpdate')
+            .run(async ctx => {
+                const roleSpec = filter(
+                        this.selectedRecords.map(it => it.data),
+                        it => !it.isGroupRow
+                    ),
+                    roles: string[] = map(roleSpec, it => it.name);
+                await ctx
+                    .postJson({
+                        url: 'roleAdmin/bulkCategoryUpdate',
+                        body: {
+                            roles,
+                            category:
+                                this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
+                        }
+                    })
+                    .linkTo(this.savingTask);
+            })
+            .then(() => {
+                this.close();
+                return this.parent.refreshAsync();
+            })
+            .catchDefault();
     }
 
     //-----------------

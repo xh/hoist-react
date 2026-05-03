@@ -76,22 +76,25 @@ export class MonitorTabModel extends BaseAdminTabModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!this.isVisible) return;
 
-        try {
-            const results = await XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec});
-            this.installResults(results);
-        } catch (e) {
-            this.installResults([]);
-            throw e;
-        }
+        return this.runOn(loadSpec)
+            .newSpan('xh.client.admin.monitor.load')
+            .run(async ctx => {
+                const results = await ctx.fetchJson({url: 'monitorResultsAdmin/results'});
+                this.installResults(results);
+            })
+            .catch(e => {
+                this.installResults([]);
+                throw e;
+            });
     }
 
     async forceRunAllMonitorsAsync() {
-        try {
-            await XH.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
-            XH.toast('Request received - results will be generated shortly.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+        return this.rootSpan('xh.client.admin.monitor.forceRunAll')
+            .run(async ctx => {
+                await ctx.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
+                XH.toast('Request received - results will be generated shortly.');
+            })
+            .catchDefault();
     }
 
     //-------------------
