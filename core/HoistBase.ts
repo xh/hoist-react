@@ -14,6 +14,7 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {
+    apiDeprecated,
     getOrCreate,
     logDebug,
     logError,
@@ -23,7 +24,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Runner} from '../utils/telemetry/Runner';
+import {Runner} from './runner/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -126,7 +127,13 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
+    /** @deprecated - use {@link rootSpan} or {@link runOn} to start a {@link Runner} chain. */
     withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+        apiDeprecated('HoistBase.withSpan', {
+            v: 'v87',
+            msg: 'Use rootSpan() or runOnXXX() to start a Runner chain instead.',
+            source: this
+        });
         return XH.traceService.withSpan(config, fn);
     }
 
@@ -145,8 +152,8 @@ export abstract class HoistBase {
      */
     runOn(ctx: CallContext): Runner {
         throwIf(
-            ctx == null,
-            'runOn() requires a non-null CallContext - use runOnRoot() for a fresh root context.'
+            !ctx,
+            'runOn() requires a CallContext. Use runOnOptional(), or runOnRoot() as needed.'
         );
         return Runner.create(ctx, this);
     }
@@ -162,8 +169,6 @@ export abstract class HoistBase {
     /**
      * Create an {@link Runner} with an initial root span and this object
      * as the caller.
-     *
-     * @internal - runner is an experimental beta feature.
      */
     rootSpan(span: SpanConfigLike): Runner {
         return this.runOnRoot().newSpan(span);

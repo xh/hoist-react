@@ -2,6 +2,14 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+* Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
+  can accept and forward across call boundaries to propagate trace/load context into nested
+  loads and fetches.
+* Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
+  or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
+  fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+
 ## 85.0.0 - 2020-04-30
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
