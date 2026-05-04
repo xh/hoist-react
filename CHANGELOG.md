@@ -3,25 +3,24 @@
 ## 86.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
-* Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
-  can accept and forward across call boundaries to propagate trace/load context into nested
-  loads and fetches.
-* Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`,
-  `runOnRoot()`, or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware
-  async work in a fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
-* Eliminated the boilerplate `if (loadSpec.isStale) return` and
-  `if (loadSpec.isAutoRefresh) return` guards in `doLoadAsync()` implementations. New
-  `Loadable.abortMode` (`'never' | 'onStale' | 'onObsolete'`, default `'onStale'`) controls
-  when `FetchService` aborts a superseded load: it throws a new `LoadAbortedException`,
-  which is recognized by `ExceptionHandler` and silently dropped from all user-visible
-  surfaces (no alert, no server log, no error log; one debug-level console line). New helper
-  `LoadSpec.abortIfNeeded()` for non-fetch async code that should also abort when superseded.
-* Added `Loadable.handleLoadException(e, loadSpec)` as the primary customization hook for
-  load failures. `LoadSupport` filters out quiet exceptions (`isAborted`,
-  `loadSpec.isAutoRefresh`) and only invokes this method for genuine, surface-worthy
-  failures - so overrides can focus on app-specific cleanup (e.g. clearing a grid) without
-  re-implementing the standard error-handling path. Default implementation calls
-  `XH.handleException(e)`.
+* Improved support for span management and nested span generation by applications:
+  * New `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) - accept and forward
+    across call boundaries to propagate trace/load context into nested loads and fetches.
+  * New `Runner` / `RunContext` API - use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
+    or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in
+    a fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+  * New `HoistBase.spanPrefix` property - automatically namespaces spans created by an
+    artifact (e.g. `'xh.client.config'` on `ConfigService`).
+* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
+  obsolete, and auto-refresh errors:
+  * New `LoadAbortedException` thrown when a load is superseded. Raised automatically by
+    `FetchService` (and on demand via `LoadSpec.abortIfNeeded()` for non-fetch async code)
+    based on the new `Loadable.abortMode` flag (`'never' | 'onStale' | 'onObsolete'`,
+    default `'onStale'`). Recognized by `ExceptionHandler` and silently dropped from all
+    user-visible surfaces (no alert, no server log, no error log).
+  * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+    failures (abort exceptions and auto-refresh errors are filtered out), so overrides can
+    focus on app-specific cleanup. Default delegates to `XH.handleException(e)`.
 
 ## 85.0.0 - 2020-04-30
 
