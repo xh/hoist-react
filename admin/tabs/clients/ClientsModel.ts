@@ -21,6 +21,8 @@ import {isEmpty} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
+    override spanPrefix = 'xh.client.admin.clients';
+
     @observable
     lastRefresh: number;
 
@@ -76,7 +78,7 @@ export class ClientsModel extends BaseAdminTabModel {
         const {gridModel} = this;
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.clients.load')
+            .newSpan('load')
             .run(async ctx => {
                 const data = await ctx.fetchJson({url: 'clientAdmin/allClients'});
                 if (loadSpec.isStale) return;
@@ -225,7 +227,7 @@ export class ClientsModel extends BaseAdminTabModel {
     }) {
         if (isEmpty(toRecs)) return;
 
-        await this.rootSpan('xh.client.admin.clients.bulkPush')
+        await this.rootSpan('bulkPush')
             .track({
                 category: 'Audit',
                 message: trackMessage,

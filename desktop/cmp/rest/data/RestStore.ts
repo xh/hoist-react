@@ -23,6 +23,8 @@ export interface RestStoreConfig extends UrlStoreConfig {
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
+    override spanPrefix = 'xh.client.restStore';
+
     declare fields: RestField[];
     reloadLookupsOnLoad: boolean;
     private lookupsLoaded = false;
@@ -38,7 +40,7 @@ export class RestStore extends UrlStore {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         return this.runOn(loadSpec)
-            .newSpan('xh.client.restStore.load')
+            .newSpan('load')
             .run(async ctx => {
                 await this.ensureLookupsLoadedAsync(ctx);
                 return super.doLoadAsync(ctx.loadSpec);
@@ -46,7 +48,7 @@ export class RestStore extends UrlStore {
     }
 
     async deleteRecordAsync(rec: StoreRecord) {
-        return this.rootSpan('xh.client.restStore.delete')
+        return this.rootSpan('delete')
             .run(async ctx => {
                 const {url} = this;
                 await ctx.fetchJson({url: `${url}/${rec.id}`, method: 'DELETE'});
@@ -56,7 +58,7 @@ export class RestStore extends UrlStore {
     }
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
-        return this.rootSpan('xh.client.restStore.bulkDelete')
+        return this.rootSpan('bulkDelete')
             .run(ctx => {
                 const {url} = this,
                     ids = records.map(it => it.id);
@@ -75,7 +77,7 @@ export class RestStore extends UrlStore {
     }
 
     async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
-        return this.rootSpan('xh.client.restStore.bulkUpdate')
+        return this.rootSpan('bulkUpdate')
             .run(ctx => {
                 const {url} = this;
                 return ctx.putJson({url: `${url}/bulkUpdate`, body: {ids, newParams}});
@@ -107,9 +109,7 @@ export class RestStore extends UrlStore {
         const data = this.editableDataForRecord(rec);
         if (!isNil(id)) data.id = id;
 
-        return this.rootSpan(
-            isAdd ? 'xh.client.restStore.create' : 'xh.client.restStore.update'
-        ).run(async ctx => {
+        return this.rootSpan(isAdd ? 'create' : 'update').run(async ctx => {
             const fetchMethod = isAdd ? 'postJson' : 'putJson',
                 response = await ctx[fetchMethod]({url, body: {data}}),
                 responseData = dataRoot ? response[dataRoot] : response;
@@ -132,7 +132,7 @@ export class RestStore extends UrlStore {
         }
 
         await this.runOn(ctx)
-            .newSpan('xh.client.restStore.loadLookups')
+            .newSpan('loadLookups')
             .run(async ctx => {
                 const lookupData = await ctx.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {

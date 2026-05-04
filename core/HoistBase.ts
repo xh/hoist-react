@@ -100,6 +100,12 @@ export abstract class HoistBase {
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
 
+    /**
+     * Optional prefix applied to span names produced for this object.
+     * When non-null, the string "[prefix]." is pre-pended to the supplied span name.
+     */
+    spanPrefix: string = null;
+
     //--------------------------------------------------
     // Logging Delegates
     //--------------------------------------------------
@@ -134,7 +140,10 @@ export abstract class HoistBase {
             msg: 'Use rootSpan() or runOnXXX() to start a Runner chain instead.',
             source: this
         });
-        return XH.traceService.withSpan(config, fn);
+        let {spanPrefix} = this,
+            cfg = isString(config) ? {name: config} : config;
+        if (spanPrefix) cfg = {...cfg, name: `${spanPrefix}.${cfg.name}`};
+        return XH.traceService.withSpan(cfg, fn);
     }
 
     /**

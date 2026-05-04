@@ -26,6 +26,8 @@ import {ReactNode} from 'react';
  * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
+    override spanPrefix = 'xh.client.app';
+
     /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
@@ -103,7 +105,7 @@ export class HoistAppModel extends HoistModel {
      * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
-        await this.rootSpan('xh.client.app.restoreDefaults').run(async ctx => {
+        await this.rootSpan('restoreDefaults').run(async ctx => {
             const XH = window['XH'];
             await ctx.fetchJson({
                 url: 'xh/clearUserState',

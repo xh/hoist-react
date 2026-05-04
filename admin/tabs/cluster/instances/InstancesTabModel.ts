@@ -28,6 +28,8 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class InstancesTabModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.instances';
+
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 
     @lookup(TabModel) private tabModel: TabModel;
@@ -56,7 +58,7 @@ export class InstancesTabModel extends HoistModel {
         const {gridModel} = this;
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.instances.load')
+            .newSpan('load')
             .run(async ctx => {
                 let data = await ctx.fetchJson({
                     url: 'clusterAdmin/allInstances',
@@ -233,7 +235,7 @@ export class InstancesTabModel extends HoistModel {
         )
             return;
 
-        await this.rootSpan('xh.client.admin.instances.shutdown')
+        await this.rootSpan('shutdown')
             .fetchJson({
                 url: 'clusterAdmin/shutdownInstance',
                 params: {instance: instance.name}

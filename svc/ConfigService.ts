@@ -24,13 +24,15 @@ import {keys} from 'lodash';
  * application has loaded. A refresh of the application is required to load new entries.
  */
 export class ConfigService extends HoistService {
+    override spanPrefix = 'xh.client.config';
+
     static instance: ConfigService;
 
     private _data = {};
 
     override async initAsync(ctx: InitContext) {
         await this.runOn(ctx)
-            .newSpan('xh.client.config.get')
+            .newSpan('init')
             .run(async ctx => {
                 this._data = await ctx.fetchJson({url: 'xh/getConfig'});
                 deepFreeze(this._data);

@@ -15,6 +15,8 @@ import {filter, isEqual, minBy, sortBy} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class MonitorTabModel extends BaseAdminTabModel {
+    override spanPrefix = 'xh.client.admin.monitor';
+
     override persistWith = {localStorageKey: 'xhAdminClientMonitorState'};
 
     @observable.ref results: MonitorResults[] = [];
@@ -77,7 +79,7 @@ export class MonitorTabModel extends BaseAdminTabModel {
         if (!this.isVisible) return;
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.monitor.load')
+            .newSpan('load')
             .run(async ctx => {
                 const results = await ctx.fetchJson({url: 'monitorResultsAdmin/results'});
                 this.installResults(results);
@@ -89,7 +91,7 @@ export class MonitorTabModel extends BaseAdminTabModel {
     }
 
     async forceRunAllMonitorsAsync() {
-        return this.rootSpan('xh.client.admin.monitor.forceRunAll')
+        return this.rootSpan('forceRunAll')
             .run(async ctx => {
                 await ctx.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
                 XH.toast('Request received - results will be generated shortly.');

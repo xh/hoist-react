@@ -25,6 +25,8 @@ import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
+    override spanPrefix = 'xh.client.admin.tracking';
+
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -147,7 +149,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         if (!enabled) return;
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.tracking.load')
+            .newSpan('load')
             .run(async ctx => {
                 const data: PlainObject[] = await ctx.postJson({
                     url: 'trackLogAdmin',
@@ -355,7 +357,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        this.rootSpan('xh.client.admin.tracking.lookups')
+        this.rootSpan('lookups')
             .run(async ctx => {
                 const lookups = await ctx.fetchJson({url: 'trackLogAdmin/lookups'});
                 if (ret !== this.filterChooserModel) return;

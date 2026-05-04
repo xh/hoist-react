@@ -20,6 +20,8 @@ import {LogDisplayModel} from './LogDisplayModel';
  * @internal
  */
 export class LogViewerModel extends BaseInstanceModel {
+    override spanPrefix = 'xh.client.admin.log';
+
     @observable file: string = null;
 
     @managed
@@ -86,7 +88,7 @@ export class LogViewerModel extends BaseInstanceModel {
             selModel = filesGridModel.selModel;
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.log.listFiles')
+            .newSpan('listFiles')
             .run(async ctx => {
                 const data = await ctx.fetchJson({
                     url: 'logViewerAdmin/listFiles',
@@ -128,7 +130,7 @@ export class LogViewerModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        await this.rootSpan('xh.client.admin.log.deleteFiles')
+        await this.rootSpan('deleteFiles')
             .run(async ctx => {
                 const filenames = recs.map(r => r.data.filename);
                 await ctx
@@ -148,7 +150,7 @@ export class LogViewerModel extends BaseInstanceModel {
         if (!selectedRecord) return;
 
         const {filename} = selectedRecord.data;
-        return this.rootSpan('xh.client.admin.log.download')
+        return this.rootSpan('download')
             .run(async ctx => {
                 const response = await ctx.fetch({
                     url: 'logViewerAdmin/download',

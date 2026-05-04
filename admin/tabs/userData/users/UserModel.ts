@@ -12,6 +12,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.users';
+
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
@@ -51,7 +53,7 @@ export class UserModel extends HoistModel {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.users.load')
+            .newSpan('load')
             .run(async ctx => {
                 const userLoad = ctx.fetchJson({
                     url: 'userAdmin/users',

@@ -26,6 +26,8 @@ import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
  * across workstations.
  */
 export class PrefService extends HoistService {
+    override spanPrefix = 'xh.client.prefs';
+
     static instance: PrefService;
 
     private _data = {};
@@ -118,7 +120,7 @@ export class PrefService extends HoistService {
         const updates = this._updates;
         if (isEmpty(updates)) return;
 
-        await this.rootSpan('xh.client.prefs.set').run(async ctx => {
+        await this.rootSpan('set').run(async ctx => {
             this._updates = {};
             await ctx.postJson({
                 url: 'xh/setPrefs',
@@ -138,7 +140,7 @@ export class PrefService extends HoistService {
 
     private async loadPrefsAsync(span: Span) {
         await this.runOn(span)
-            .newSpan('xh.client.prefs.get')
+            .newSpan('get')
             .run(async ctx => {
                 const data = await ctx.fetchJson({
                     url: 'xh/getPrefs',

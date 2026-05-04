@@ -14,6 +14,8 @@ import {createRef} from 'react';
  *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
+    override spanPrefix = 'xh.client.identity';
+
     override xhImpl = true;
 
     @observable showRequested: boolean = false;
@@ -93,7 +95,7 @@ export class ImpersonationBarModel extends HoistModel {
     private ensureTargetsLoaded() {
         if (this.targets.length) return;
 
-        this.rootSpan('xh.client.identity.impersonationTargets')
+        this.rootSpan('impersonationTargets')
             .run(async ctx => {
                 const targets = await ctx.fetchJson({url: 'xh/impersonationTargets'});
                 this.setTargets(targets);

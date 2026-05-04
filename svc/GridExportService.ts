@@ -37,6 +37,8 @@ import {StoreRecord} from '@xh/hoist/data';
  * See the Column API for options to control exported values and formats.
  */
 export class GridExportService extends HoistService {
+    override spanPrefix = 'xh.client';
+
     override xhImpl = true;
 
     static instance: GridExportService;
@@ -45,9 +47,7 @@ export class GridExportService extends HoistService {
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
     async exportAsync(gridModel: GridModel, opts: ExportOptions = {}) {
-        return this.rootSpan('xh.client.gridExport').run(ctx =>
-            this.doExportAsync(gridModel, opts, ctx)
-        );
+        return this.rootSpan('gridExport').run(ctx => this.doExportAsync(gridModel, opts, ctx));
     }
 
     private async doExportAsync(

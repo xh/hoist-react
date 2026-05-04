@@ -15,6 +15,8 @@ import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.alertBanner';
+
     savedValue: AlertBannerSpec;
     @bindable.ref savedPresets: PlainObject[] = [];
 
@@ -96,7 +98,7 @@ export class AlertBannerModel extends HoistModel {
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.alertBanner.loadSpec')
+            .newSpan('loadSpec')
             .run(async ctx => {
                 const value = await ctx.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
                     initialValues = {
@@ -173,7 +175,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async loadPresetsAsync() {
-        await this.rootSpan('xh.client.admin.alertBanner.loadPresets')
+        await this.rootSpan('loadPresets')
             .run(async ctx => {
                 this.savedPresets = await ctx.fetchJson({
                     url: 'alertBannerAdmin/alertPresets'
@@ -183,7 +185,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async savePresetsAsync() {
-        await this.rootSpan('xh.client.admin.alertBanner.savePresets')
+        await this.rootSpan('savePresets')
             .postJson({
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
@@ -290,7 +292,7 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        await this.rootSpan('xh.client.admin.alertBanner.saveSpec')
+        await this.rootSpan('saveSpec')
             .postJson({
                 url: 'alertBannerAdmin/setAlertSpec',
                 body: spec,

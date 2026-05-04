@@ -15,6 +15,8 @@ import {isEmpty, zipWith} from 'lodash';
  * @internal
  */
 export class JsonSearchImplModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.jsonSearch';
+
     override xhImpl = true;
 
     private matchingNodesUrl = 'jsonSearch/getMatchingNodes';
@@ -104,7 +106,7 @@ export class JsonSearchImplModel extends HoistModel {
             return;
         }
 
-        return this.rootSpan('xh.client.admin.jsonSearch.docs')
+        return this.rootSpan('docs')
             .run(async ctx => {
                 const data = await ctx
                     .fetchJson({
@@ -137,7 +139,7 @@ export class JsonSearchImplModel extends HoistModel {
             return;
         }
 
-        await this.rootSpan('xh.client.admin.jsonSearch.nodes').run(async ctx => {
+        await this.rootSpan('nodes').run(async ctx => {
             let nodes = await ctx
                 .fetchJson({
                     url: this.matchingNodesUrl,

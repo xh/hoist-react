@@ -85,7 +85,7 @@ const tbar = hoistCmp.factory<DifferModel>(({model}) => {
         clipboardButton({
             text: `Copy ${startCase(model.displayName)}s`,
             icon: Icon.copy(),
-            getCopyText: () => model.fetchLocalConfigsAsync(),
+            getCopyText: () => model.fetchLocalAsync(),
             successMessage: `${startCase(
                 model.displayName
             )}s copied to clipboard - ready to paste into the diff tool on another instance for comparison.`

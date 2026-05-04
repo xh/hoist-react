@@ -17,6 +17,8 @@ import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
 
 export class RoleFormModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.roles';
+
     readonly ADD_ASSIGNMENT_ACTION: RecordActionSpec = this.createAddAssigmentAction();
     readonly ACTIONS: RecordActionSpec[] = [
         this.ADD_ASSIGNMENT_ACTION,
@@ -291,7 +293,7 @@ export class RoleFormModel extends HoistModel {
     }
 
     private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
-        return this.rootSpan('xh.client.admin.roles.usersForDirectoryGroup')
+        return this.rootSpan('usersForDirectoryGroup')
             .run(async ctx => {
                 const {data} = await ctx
                     .fetchJson({

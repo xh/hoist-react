@@ -68,6 +68,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
 
 class ClockLocalModel extends HoistModel {
     override xhImpl = true;
+    override spanPrefix = 'xh.client.clock';
 
     offset;
     offsetException;
@@ -103,7 +104,7 @@ class ClockLocalModel extends HoistModel {
             return;
         }
 
-        await this.rootSpan('xh.client.clock.getTimeZoneOffset')
+        await this.rootSpan('getTimeZoneOffset')
             .run(async ctx => {
                 const offsetResp = await ctx.fetchJson({
                     url: 'xh/getTimeZoneOffset',

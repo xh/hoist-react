@@ -22,6 +22,8 @@ import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.roles';
+
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
     static fmtDirectoryGroup(name: string): string {
@@ -72,7 +74,7 @@ export class RoleModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.roles.list')
+            .newSpan('list')
             .run(async ctx => {
                 await this.ensureInitializedAsync(ctx);
                 if (!this.moduleConfig.enabled) return;
@@ -143,7 +145,7 @@ export class RoleModel extends HoistModel {
         });
         if (!confirm) return false;
 
-        await this.rootSpan('xh.client.admin.roles.delete').deleteJson({
+        await this.rootSpan('delete').deleteJson({
             url: `roleAdmin/delete`,
             body: {name: role.name}
         });

@@ -16,6 +16,8 @@ import {isEmpty, isNil, isString} from 'lodash';
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {
+    override spanPrefix = 'xh.client.track';
+
     static instance: TrackService;
 
     private oncePerSessionSent = new Map();
@@ -98,7 +100,7 @@ export class TrackService extends HoistService {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
-        await this.rootSpan('xh.client.track.push').run(async ctx => {
+        await this.rootSpan('push').run(async ctx => {
             this.pending = [];
             await ctx.postJson({
                 url: 'xh/track',

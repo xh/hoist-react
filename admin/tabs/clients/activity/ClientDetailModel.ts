@@ -13,6 +13,8 @@ import {ReactNode} from 'react';
 import {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
 
 export class ClientDetailModel extends HoistModel implements ActivityDetailProvider {
+    override spanPrefix = 'xh.client.admin.clients';
+
     @lookup(ClientsModel) clientsModel: ClientsModel;
 
     readonly isActivityDetailProvider = true;
@@ -73,7 +75,7 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
         }
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.clients.detail')
+            .newSpan('detail')
             .run(async ctx => {
                 this.trackLogs = await ctx.postJson({
                     url: 'trackLogAdmin',

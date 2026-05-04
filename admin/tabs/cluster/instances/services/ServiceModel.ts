@@ -18,6 +18,8 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
+    override spanPrefix = 'xh.client.admin.services';
+
     @bindable
     typeFilter: 'hoist' | 'app' | 'all' = 'all';
 
@@ -118,7 +120,7 @@ export class ServiceModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        await this.rootSpan('xh.client.admin.services.clearCaches')
+        await this.rootSpan('clearCaches')
             .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
@@ -137,7 +139,7 @@ export class ServiceModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, instanceName: instance} = this;
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.services.list')
+            .newSpan('list')
             .run(async ctx => {
                 const data = await ctx.fetchJson({
                     url: 'serviceManagerAdmin/listServices',

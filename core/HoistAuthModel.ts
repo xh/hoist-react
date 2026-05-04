@@ -20,6 +20,8 @@ import {CallContext, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from 
  *  {@link XHApi#renderApp}.
  */
 export class HoistAuthModel extends HoistModel {
+    override spanPrefix = 'xh.client.auth';
+
     /**
      * Main Entry Point.
      *
@@ -47,7 +49,7 @@ export class HoistAuthModel extends HoistModel {
      */
     async getAuthStatusFromServerAsync(ctx: CallContext): Promise<IdentityInfo> {
         return this.runOn(ctx)
-            .newSpan('xh.client.auth.status')
+            .newSpan('status')
             .run(async ctx => {
                 const {authenticated, identity} = await ctx.fetchJson({url: 'xh/authStatus'});
                 return authenticated ? this.parseIdentityInfo(identity) : null;
@@ -63,7 +65,7 @@ export class HoistAuthModel extends HoistModel {
      * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
     async loginWithCredentialsAsync(username: string, password: string): Promise<IdentityInfo> {
-        return this.rootSpan('xh.client.auth.login').run(async ctx => {
+        return this.rootSpan('login').run(async ctx => {
             const {success, identity} = await ctx.fetchJson({
                 url: 'xh/login',
                 params: {username, password}
@@ -79,7 +81,7 @@ export class HoistAuthModel extends HoistModel {
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
     async logoutAsync(): Promise<void> {
-        await this.rootSpan('xh.client.auth.logout').fetchJson({url: 'xh/logout'});
+        await this.rootSpan('logout').fetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -89,7 +91,7 @@ export class HoistAuthModel extends HoistModel {
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
      */
     async loadConfigAsync(): Promise<PlainObject> {
-        return this.rootSpan('xh.client.auth.config').fetchJson({url: 'xh/authConfig'});
+        return this.rootSpan('config').fetchJson({url: 'xh/authConfig'});
     }
 
     /**

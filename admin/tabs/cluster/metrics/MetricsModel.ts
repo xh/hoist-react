@@ -23,6 +23,8 @@ import {groupBy} from 'lodash';
 type SourceFilter = 'all' | 'hoist' | 'app';
 
 export class MetricsModel extends BaseAdminTabModel {
+    override spanPrefix = 'xh.client.admin.metrics';
+
     override persistWith = {localStorageKey: 'xhAdminMetricsState'};
 
     @managed gridModel: GridModel;
@@ -166,7 +168,7 @@ export class MetricsModel extends BaseAdminTabModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.metrics.load')
+            .newSpan('load')
             .run(async ctx => {
                 const data = await ctx.fetchJson({url: 'metricsAdmin/listMetrics'});
 
@@ -226,7 +228,7 @@ export class MetricsModel extends BaseAdminTabModel {
     };
 
     private async setPublishedAsync(names: string[], published: boolean) {
-        await this.rootSpan('xh.client.admin.metrics.setPublished')
+        await this.rootSpan('setPublished')
             .track({
                 category: 'Audit',
                 message: 'Edited Metric Publishing',

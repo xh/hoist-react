@@ -22,6 +22,8 @@ import {MIN_HOIST_CORE_VERSION} from '../core/XH';
  * other technical information.
  */
 export class EnvironmentService extends HoistService {
+    override spanPrefix = 'xh.client';
+
     static instance: EnvironmentService;
 
     /**
@@ -113,7 +115,7 @@ export class EnvironmentService extends HoistService {
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        await this.rootSpan('xh.client.envPoll')
+        await this.rootSpan('envPoll')
             .run(async ctx => {
                 const data = await ctx.fetchJson({url: 'xh/environmentPoll'});
 

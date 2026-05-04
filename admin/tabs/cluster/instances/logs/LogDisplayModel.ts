@@ -19,6 +19,8 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.log';
+
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
@@ -106,7 +108,7 @@ export class LogDisplayModel extends HoistModel {
         }
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.log.getFile')
+            .newSpan('getFile')
             .run(async ctx => {
                 const response = await ctx.fetchJson({
                     url: 'logViewerAdmin/getFile',

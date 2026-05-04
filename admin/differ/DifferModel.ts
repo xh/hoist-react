@@ -22,6 +22,8 @@ import {DifferDetailModel} from './DifferDetailModel';
  * @internal
  */
 export class DifferModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.differ';
+
     parentModel: HoistModel & {gridModel: RestGridModel; closeDiffer: () => void};
     entityName: string;
     displayName: string;
@@ -148,7 +150,7 @@ export class DifferModel extends HoistModel {
         if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.differ.load')
+            .newSpan('load')
             .run(async ctx => {
                 const remoteHost = trimEnd(this.remoteHost, '/'),
                     // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
@@ -343,7 +345,7 @@ export class DifferModel extends HoistModel {
     }
 
     doApplyRemote(records) {
-        this.rootSpan('xh.client.admin.differ.applyRemote')
+        this.rootSpan('applyRemote')
             .run(async ctx => {
                 const recsForPost = records.map(rec => {
                     const ret = {
@@ -386,8 +388,8 @@ export class DifferModel extends HoistModel {
         return local ? localVal : remoteVal;
     }
 
-    async fetchLocalConfigsAsync() {
-        return this.rootSpan('xh.client.admin.differ.copyToClipboard').run(async ctx => {
+    async fetchLocalAsync() {
+        return this.rootSpan('fetchLocal').run(async ctx => {
             const {entityName, url} = this,
                 resp = await ctx.fetchJson({url: `${url}/${entityName}s`});
             return JSON.stringify(resp);

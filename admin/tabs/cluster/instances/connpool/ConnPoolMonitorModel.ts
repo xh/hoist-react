@@ -15,6 +15,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
+    override spanPrefix = 'xh.client.admin.connPool';
+
     @bindable enabled: boolean = true;
     @bindable.ref poolConfiguration: PlainObject = {};
 
@@ -85,7 +87,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
         const {gridModel, chartModel} = this;
 
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.connPool.load')
+            .newSpan('load')
             .run(async ctx => {
                 const resp = await ctx.fetchJson({
                     url: 'connectionPoolMonitorAdmin/snapshots',
@@ -136,7 +138,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     }
 
     async takeSnapshotAsync() {
-        await this.rootSpan('xh.client.admin.connPool.takeSnapshot')
+        await this.rootSpan('takeSnapshot')
             .fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
@@ -150,7 +152,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     }
 
     async resetStatsAsync() {
-        await this.rootSpan('xh.client.admin.connPool.resetStats')
+        await this.rootSpan('resetStats')
             .fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}

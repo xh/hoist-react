@@ -9,6 +9,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.services';
+
     @lookup(ServiceModel)
     parent: ServiceModel;
 
@@ -46,7 +48,7 @@ export class DetailsModel extends HoistModel {
         if (!selected) return;
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.services.getStats')
+            .newSpan('getStats')
             .run(async ctx => {
                 const resp = await ctx.fetchJson({
                     url: 'serviceManagerAdmin/getStats',

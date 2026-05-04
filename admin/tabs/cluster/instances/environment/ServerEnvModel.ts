@@ -15,6 +15,8 @@ import {forOwn} from 'lodash';
  * a dedicated admin-only endpoint.
  */
 export class ServerEnvModel extends BaseInstanceModel {
+    override spanPrefix = 'xh.client.admin.serverEnv';
+
     @managed gridModel: GridModel;
 
     constructor() {
@@ -48,7 +50,7 @@ export class ServerEnvModel extends BaseInstanceModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         return this.runOn(loadSpec)
-            .newSpan('xh.client.admin.serverEnv.load')
+            .newSpan('load')
             .run(async ctx => {
                 const resp = await ctx.fetchJson({
                         url: 'envAdmin',

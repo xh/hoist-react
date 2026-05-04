@@ -22,6 +22,8 @@ export interface PastInstance {
 }
 
 export class MemoryMonitorModel extends BaseInstanceModel {
+    override spanPrefix = 'xh.client.admin.memory';
+
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
@@ -57,7 +59,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     async takeSnapshotAsync() {
-        await this.rootSpan('xh.client.admin.memory.takeSnapshot')
+        await this.rootSpan('takeSnapshot')
             .fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
@@ -71,7 +73,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     async requestGcAsync() {
-        await this.rootSpan('xh.client.admin.memory.requestGc')
+        await this.rootSpan('requestGc')
             .fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
@@ -97,7 +99,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             });
         if (!filename) return;
 
-        await this.rootSpan('xh.client.admin.memory.dumpHeap')
+        await this.rootSpan('dumpHeap')
             .fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
                 params: {
@@ -190,7 +192,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             instance = pastInstance ? pastInstance.name : this.instanceName;
 
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.memory.loadSnapshots')
+            .newSpan('loadSnapshots')
             .run(async ctx => {
                 const snapsByTimestamp = await ctx.fetchJson({
                     url: 'memoryMonitorAdmin/' + action,
@@ -255,7 +257,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
     private async loadPastInstancesAsync(loadSpec: LoadSpec) {
         await this.runOn(loadSpec)
-            .newSpan('xh.client.admin.memory.loadPastInstances')
+            .newSpan('loadPastInstances')
             .run(async ctx => {
                 const instances = await ctx.fetchJson({
                     url: 'memoryMonitorAdmin/availablePastInstances'

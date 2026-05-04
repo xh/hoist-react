@@ -12,6 +12,8 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';
 
 export class RecategorizeDialogModel extends HoistModel {
+    override spanPrefix = 'xh.client.admin.roles';
+
     private parent: RoleModel;
     selectedRecords: StoreRecord[];
 
@@ -50,7 +52,7 @@ export class RecategorizeDialogModel extends HoistModel {
 
     async saveAsync() {
         if (this.parent.readonly) return;
-        await this.rootSpan('xh.client.admin.roles.bulkCategoryUpdate')
+        await this.rootSpan('bulkCategoryUpdate')
             .run(async ctx => {
                 const roleSpec = filter(
                         this.selectedRecords.map(it => it.data),

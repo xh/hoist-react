@@ -47,11 +47,13 @@ export interface JsonBlob {
  * persisted back to the database.
  */
 export class JsonBlobService extends HoistService {
+    override spanPrefix = 'xh.client.jsonBlob';
+
     static instance: JsonBlobService;
 
     /** Retrieve a single JSONBlob by its unique token. */
     async getAsync(token: string): Promise<JsonBlob> {
-        return this.rootSpan('xh.client.jsonBlob.get').fetchJson({
+        return this.rootSpan('get').fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
         });
@@ -65,7 +67,7 @@ export class JsonBlobService extends HoistService {
     }): Promise<JsonBlob[]> {
         const {type, includeValue, ctx} = spec;
         return this.runOn(ctx)
-            .newSpan('xh.client.jsonBlob.list')
+            .newSpan('list')
             .fetchJson({url: 'xh/listJsonBlobs', params: {type, includeValue}});
     }
 
@@ -78,7 +80,7 @@ export class JsonBlobService extends HoistService {
         name,
         value
     }: Partial<JsonBlob>): Promise<JsonBlob> {
-        return this.rootSpan('xh.client.jsonBlob.create').fetchJson({
+        return this.rootSpan('create').fetchJson({
             url: 'xh/createJsonBlob',
             params: {
                 data: JSON.stringify({type, name, acl, value, meta, description})
@@ -89,7 +91,7 @@ export class JsonBlobService extends HoistService {
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
     async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
         update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
-        return this.rootSpan('xh.client.jsonBlob.update').fetchJson({
+        return this.rootSpan('update').fetchJson({
             url: 'xh/updateJsonBlob',
             params: {token, update: JSON.stringify(update)}
         });
@@ -102,7 +104,7 @@ export class JsonBlobService extends HoistService {
         data: Partial<JsonBlob>
     ): Promise<JsonBlob> {
         const update = pick(data, ['acl', 'description', 'meta', 'value']);
-        return this.rootSpan('xh.client.jsonBlob.createOrUpdate').fetchJson({
+        return this.rootSpan('createOrUpdate').fetchJson({
             url: 'xh/createOrUpdateJsonBlob',
             params: {type, name, update: JSON.stringify(update)}
         });
@@ -110,7 +112,7 @@ export class JsonBlobService extends HoistService {
 
     /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
     async findAsync(type: string, name: string): Promise<JsonBlob> {
-        return this.rootSpan('xh.client.jsonBlob.find').fetchJson({
+        return this.rootSpan('find').fetchJson({
             url: 'xh/findJsonBlob',
             params: {type, name}
         });
@@ -118,7 +120,7 @@ export class JsonBlobService extends HoistService {
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
     async archiveAsync(token: string): Promise<JsonBlob> {
-        return this.rootSpan('xh.client.jsonBlob.archive').fetchJson({
+        return this.rootSpan('archive').fetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}
         });

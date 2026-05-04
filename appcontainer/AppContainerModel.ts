@@ -68,6 +68,8 @@ import {installServicesAsync} from '../core/impl/InstallServices';
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
+    override spanPrefix = 'xh.client';
+
     private initCalled = false;
 
     //---------------------------------
@@ -156,7 +158,7 @@ export class AppContainerModel extends HoistModel {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
             await installServicesAsync([TraceService], {span: null});
 
-            await this.rootSpan('xh.client.load').run(async ctx => {
+            await this.rootSpan('load').run(async ctx => {
                 this.addGlobalListenersAndCss();
                 await installServicesAsync([FetchService], ctx);
 
@@ -164,7 +166,7 @@ export class AppContainerModel extends HoistModel {
                 this.setAppState('AUTHENTICATING');
                 XH.authModel = createSingleton(this.appSpec.authModelClass);
                 let identity = await ctx
-                    .newSpan('xh.client.auth')
+                    .newSpan('auth')
                     .run(ctx => XH.authModel.completeAuthAsync(ctx));
 
                 if (!identity) {
@@ -174,7 +176,7 @@ export class AppContainerModel extends HoistModel {
                     );
                     this.setAppState('LOGIN_REQUIRED');
                     identity = await ctx
-                        .newSpan('xh.client.interactiveLogin')
+                        .newSpan('interactiveLogin')
                         .run(() => this.awaitInteractiveLoginAsync());
                 }
                 await this.completeInitAsync(identity, ctx);
@@ -267,7 +269,7 @@ export class AppContainerModel extends HoistModel {
 
         // Hoist init phase
         this.setAppState('INITIALIZING_HOIST');
-        await ctx.newSpan('xh.client.hoistInit').run(async (ctx: RunContext) => {
+        await ctx.newSpan('hoistInit').run(async (ctx: RunContext) => {
             await installServicesAsync([LocalStorageService, SessionStorageService], ctx);
             await installServicesAsync(
                 [EnvironmentService, ConfigService, PrefService, JsonBlobService],
@@ -324,7 +326,7 @@ export class AppContainerModel extends HoistModel {
         // App init phase
         this.setAppState('INITIALIZING_APP');
         this.appModel = createSingleton(this.appSpec.modelClass);
-        await ctx.newSpan('xh.client.appInit').run(ctx => this.appModel.initAsync(ctx));
+        await ctx.newSpan('appInit').run(ctx => this.appModel.initAsync(ctx));
 
         this.startRouter();
         this.startOptionsDialog();
