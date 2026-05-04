@@ -80,19 +80,18 @@ export class RoleModel extends HoistModel {
                 if (!this.moduleConfig.enabled) return;
 
                 const {data} = await ctx.fetchJson({url: 'roleAdmin/list'});
-                if (loadSpec.isStale) return;
 
                 runInAction(() => {
                     this.allRoles = this.processRolesFromServer(data);
                 });
                 this.displayRoles(loadSpec.isRefresh);
                 await this.gridModel.preSelectFirstAsync();
-            })
-            .catch(e => {
-                if (loadSpec.isStale) return;
-                XH.handleException(e);
-                this.clear();
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        XH.handleException(e);
+        this.clear();
     }
 
     async selectRoleAsync(name: string) {

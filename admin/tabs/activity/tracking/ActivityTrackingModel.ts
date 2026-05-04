@@ -156,16 +156,14 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                     body: query
                 });
 
-                if (loadSpec.isStale) return;
-
                 data.forEach(it => this.processRawTrackLog(it));
                 await cube.loadDataAsync(data);
-            })
-            .catch(async e => {
-                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-                await cube.clearAsync();
-                XH.handleException(e);
             });
+    }
+
+    override async handleLoadException(e: unknown) {
+        await this.cube.clearAsync();
+        XH.handleException(e);
     }
 
     @action

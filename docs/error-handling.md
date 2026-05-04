@@ -126,7 +126,7 @@ options in most cases:
 | Standard exception | `true` | `true` | `true` | `false` |
 | `isRoutine: true` | `false` | `false` | `true` | `false` |
 | Auto-refresh failure (`fetchOptions.loadSpec.isAutoRefresh`) | (unchanged) | `false` | `false` | `false` |
-| Aborted fetch (`isFetchAborted`) | (unchanged) | (unchanged) | `false` | `false` |
+| Aborted fetch / load (`isAborted`) | (unchanged) | (unchanged) | `false` | `false` |
 | Session mismatch (`SessionMismatchException`) | (unchanged) | (unchanged) | (unchanged) | `true` |
 
 These defaults mean that most code can simply call `XH.handleException(e)` without options and
@@ -200,7 +200,7 @@ Selectively apply default handling only for exceptions matching a predicate:
 
 ```typescript
 this.submitOrderAsync()
-    .catchDefaultWhen(e => e.isFetchAborted, {showAlert: false});
+    .catchDefaultWhen(e => e.isAborted, {showAlert: false});
 ```
 
 ### catchWhen + catchDefault
@@ -522,8 +522,8 @@ when present.
 `FetchService` produces richly structured `HoistException` objects that carry HTTP metadata
 the handler can use for smart defaults:
 
-| Exception Type | `isRoutine` | `isFetchAborted` | Handler Behavior |
-|----------------|-------------|-------------------|------------------|
+| Exception Type | `isRoutine` | `isAborted` | Handler Behavior |
+|----------------|-------------|-------------|------------------|
 | HTTP 4xx/5xx error | `false` (unless server sets `isRoutine`) | `false` | Standard error dialog + server log |
 | Server-returned routine error | `true` | `false` | "Alert" dialog (not "Error"), no server log |
 | Aborted fetch (via `autoAbortKey` or manual abort) | `true` | `true` | No alert, no server log |

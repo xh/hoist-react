@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    AbortMode,
     CallContext,
     HoistBase,
     InitContext,
@@ -104,7 +105,13 @@ export class HoistService extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
+    abortMode: AbortMode = 'onStale';
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        return this.loadSupport?.handleLoadException(e, loadSpec);
+    }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);

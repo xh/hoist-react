@@ -32,7 +32,7 @@ export interface ExceptionHandlerOptions {
 
     /**
      * Display an alert dialog to the user.
-     * Default true, excepting 'isAutoRefresh' and 'isFetchAborted' exceptions.
+     * Default true, excepting 'isAutoRefresh' and 'isAborted' exceptions.
      */
     showAlert?: boolean;
 
@@ -335,11 +335,11 @@ export class ExceptionHandler {
         const ret = {...opts},
             isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
             isRoutine = e.isRoutine ?? false,
-            isFetchAborted = e.isFetchAborted ?? false;
+            isAborted = e.isAborted ?? false;
 
         ret.showAsError = ret.showAsError ?? !isRoutine;
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
-        ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
+        ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isAborted);
         ret.requireReload = ret.requireReload ?? !!e.requireReload;
         ret.alertType = ret.alertType ?? ExceptionHandler.defaults.alertType;
 

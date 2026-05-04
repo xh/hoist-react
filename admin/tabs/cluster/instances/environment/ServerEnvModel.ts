@@ -67,7 +67,6 @@ export class ServerEnvModel extends BaseInstanceModel {
                 });
 
                 this.gridModel.loadData(data);
-            })
-            .catch(e => this.handleLoadException(e, loadSpec));
+            });
     }
 }

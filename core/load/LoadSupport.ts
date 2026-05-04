@@ -11,7 +11,8 @@ import {
     managed,
     PlainObject,
     RefreshContextModel,
-    TaskObserver
+    TaskObserver,
+    XH
 } from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -105,17 +106,22 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         let exception = null;
 
+        const isQuiet = (e: any) =>
+            !!e?.isAborted || loadSpec.isAutoRefresh || loadSpec.shouldAbort;
+
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)
-            .catch(e => {
+            .catch(async e => {
                 exception = e;
-                throw e;
+                // Skip app-level handler for quiet outcomes; await for async cleanup.
+                if (!isQuiet(e)) await target.handleLoadException?.(e, loadSpec);
             })
             .finally(() => {
                 runInAction(() => {
+                    // Don't surface quiet outcomes as "last load failed" - load was abandoned
+                    this.lastLoadException = isQuiet(exception) ? null : exception;
                     this.lastLoadCompleted = new Date();
-                    this.lastLoadException = exception;
                 });
 
                 if (!exception) {
@@ -138,6 +144,10 @@ export class LoadSupport extends HoistBase implements Loadable {
                     logDebug(msg, target);
                 }
             });
+    }
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void {
+        XH.handleException(e);
     }
 }
 

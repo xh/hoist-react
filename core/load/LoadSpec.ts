@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Exception} from '@xh/hoist/exception';
 import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
@@ -83,7 +84,7 @@ export class LoadSpec {
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
-        return this !== this.owner.lastRequested;
+        return this.owner.lastRequested?.loadNumber > this.loadNumber;
     }
 
     /** True if a more recent request to load this object's owner has *successfully completed*. */
@@ -100,6 +101,29 @@ export class LoadSpec {
 
     get isFirstLoad(): boolean {
         return this.loadNumber === 0;
+    }
+
+    /**
+     * True if this load has been superseded per the owning `Loadable`'s `abortMode`:
+     * - `'never'`: always false.
+     * - `'onStale'` (default): true once a newer load has *started*.
+     * - `'onObsolete'`: true once a newer load has *successfully completed*.
+     */
+    get shouldAbort(): boolean {
+        const mode = this.owner.target.abortMode ?? 'onStale';
+        if (mode === 'never') return false;
+        return mode === 'onStale' ? this.isStale : this.isObsolete;
+    }
+
+    /**
+     * Throw a {@link LoadAbortedException} if {@link shouldAbort} is true.
+     *
+     * Called automatically by {@link FetchService} after each fetch carrying this spec.
+     * Application code may call directly for non-fetch async work that should also abort
+     * when the load is superseded.
+     */
+    abortIfNeeded(): void {
+        if (this.shouldAbort) throw Exception.loadAborted();
     }
 
     /**

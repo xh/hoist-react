@@ -8,6 +8,16 @@ import {CallContext, TaskObserver} from '../';
 import {LoadSpec, LoadSpecConfig} from './';
 
 /**
+ * Controls how {@link FetchService} aborts a fetch whose load has been superseded.
+ *
+ * - `never`: never auto-abort - the fetch always resolves, even if a newer load has started.
+ * - `onStale`: abort once a newer load request has been *started*. Default.
+ * - `onObsolete`: abort once a newer load has *successfully completed*. More conservative -
+ *   the in-flight load still applies its data unless a newer load actually wins.
+ */
+export type AbortMode = 'never' | 'onStale' | 'onObsolete';
+
+/**
  * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.
  */
 export interface Loadable {
@@ -25,6 +35,14 @@ export interface Loadable {
 
     /** Any exception that occurred during last load. */
     lastLoadException: any;
+
+    /**
+     * Controls when {@link FetchService} should abort a fetch carrying this object's
+     * `LoadSpec` because the load has been superseded. Defaults to `'onStale'` - aborted
+     * fetches throw {@link LoadAbortedException}, which the central exception handler
+     * silently drops.
+     */
+    abortMode?: AbortMode;
 
     /**
      * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this
@@ -65,4 +83,18 @@ export interface Loadable {
      * full load/refresh lifecycle.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
+
+    /**
+     * Called by {@link LoadSupport} when {@link doLoadAsync} throws. Override to add
+     * app-specific cleanup (e.g. clearing a grid, resetting state) without re-implementing
+     * the standard error-handling path.
+     *
+     * The framework filters out *quiet* exceptions before invoking this method - aborted
+     * loads/fetches (`isAborted`) and any error raised during an auto-refresh
+     * (`loadSpec.isAutoRefresh`) - so overrides can assume any exception they see is a
+     * genuine, surface-worthy failure.
+     *
+     * Default implementation calls `XH.handleException(e)`.
+     */
+    handleLoadException?(e: unknown, loadSpec: LoadSpec): void | Promise<void>;
 }
