@@ -209,7 +209,6 @@ export class FetchService extends HoistService {
                 .then(opts => this.managedFetchAsync(opts, ctx?.span))
                 .tap(() => {
                     if (opts.loadSpec instanceof LoadSpec) {
-                        console.log(opts.loadSpec);
                         opts.loadSpec.abortIfNeeded();
                     }
                 });
