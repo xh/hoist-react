@@ -24,6 +24,8 @@ export class Runner {
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
+    private counterMetric: {name: string; tags?: Record<string, string>} = null;
+    private timerMetric: {name: string; tags?: Record<string, string>} = null;
 
     static create(ctx: CallContext, caller: NameSource) {
         return new Runner(ctx, caller);
@@ -68,6 +70,27 @@ export class Runner {
     }
 
     //---------------------------
+    // Metrics configuration
+    //---------------------------
+    /**
+     * Increment a counter metric. Fires before the wrapped fn runs - counts attempts
+     * (success + failure both count). Mirrors server-side `ObservedRun.counter`.
+     */
+    counter(name: string, tags?: Record<string, string>): this {
+        this.counterMetric = {name, tags};
+        return this;
+    }
+
+    /**
+     * Record elapsed time for the wrapped fn. Recorded regardless of success or failure.
+     * Mirrors server-side `ObservedRun.timer`.
+     */
+    timer(name: string, tags?: Record<string, string>): this {
+        this.timerMetric = {name, tags};
+        return this;
+    }
+
+    //---------------------------
     // Terminal
     //---------------------------
     /** Execute an async fn with all configured observability. */
@@ -104,6 +127,8 @@ export class Runner {
     // Implementation
     //--------------------------
     private executeWrapped<T>(fn: RunFunction<T>): Promise<T> {
+        fn = this.wrapTimer(fn);
+        fn = this.wrapCounter(fn);
         fn = this.wrapTrack(fn);
         fn = this.wrapLog(fn);
 
@@ -111,6 +136,28 @@ export class Runner {
         return spanConfig
             ? XH.traceService.withSpan(spanConfig, span => fn(this.getNestedCtx(span)))
             : fn(ctx);
+    }
+
+    private wrapCounter<S>(fn: RunFunction<S>): RunFunction<S> {
+        const m = this.counterMetric;
+        if (!m) return fn;
+        return ctx => {
+            XH.metricsService.recordCount(m.name, 1, m.tags);
+            return fn(ctx);
+        };
+    }
+
+    private wrapTimer<S>(fn: RunFunction<S>): RunFunction<S> {
+        const m = this.timerMetric;
+        if (!m) return fn;
+        return async ctx => {
+            const start = performance.now();
+            try {
+                return await fn(ctx);
+            } finally {
+                XH.metricsService.recordTimer(m.name, performance.now() - start, m.tags);
+            }
+        };
     }
 
     private wrapLog<S>(fn: RunFunction<S>): RunFunction<S> {
