@@ -6,6 +6,9 @@
 * Improved support for span management and nested span generation by applications:
   * New `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) - accept and forward
     across call boundaries to propagate trace/load context into nested loads and fetches.
+  * Span parents now accept a W3C `traceparent` string in addition to a `Span`, for chaining
+    client work into a remote trace context received off-channel (WebSocket / SSE / queue
+    messages).
   * New `Runner` / `RunContext` API - use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
     or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in
     a fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.

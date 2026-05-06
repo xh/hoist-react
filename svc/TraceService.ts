@@ -4,15 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    HoistService,
-    InitContext,
-    PlainObject,
-    XH,
-    Span,
-    SpanConfig,
-    SpanConfigLike
-} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH, Span, RawSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
@@ -75,7 +67,10 @@ export class TraceService extends HoistService {
      * @param config - span name string, or a SpanConfig with name and optional tags.
      * @param fn - the async function to wrap.
      */
-    override async withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+    override async withSpan<T>(
+        config: string | RawSpanConfig,
+        fn: (span: Span) => Promise<T>
+    ): Promise<T> {
         const span = this.createSpan(config);
         try {
             const result = await fn(span);
@@ -109,8 +104,8 @@ export class TraceService extends HoistService {
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
-    private createSpan(config: string | SpanConfig): Span {
-        const ret: SpanConfig = isString(config) ? {name: config} : {...config};
+    private createSpan(config: string | RawSpanConfig): Span {
+        const ret: RawSpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
         // Remove nulls they are used in this API to just prevent defaults
@@ -195,20 +190,21 @@ export class TraceService extends HoistService {
     noteConfigAvailable() {
         this.conf = {enabled: false, ...XH.configService.get('xhTraceConfig', {})};
 
-        // Group by traceId so we can resolve sampling once at root. Re-export any spans that
-        // have already ended - their own finally-block `exportSpan` early-returned on null.
-        // Spans still in flight will export correctly when they end.
+        // Group by traceId so we can resolve sampling once at root.
         forEach(groupBy(this._preConfigSpans, 'traceId'), spans => {
             // record the now available identity
             const tags = this.identityTags();
-            spans.forEach(s => {
-                s.setTags(tags);
-            });
+            spans.forEach(s => s.setTags(tags));
 
-            // sample and export as needed
-            const rootSampled = this.computeSampled(spans.find(s => !s.parent) ?? spans[0]);
+            // delayed sample of root, as needed
+            const localIndeterminateRoot = spans.find(s => !s.parent && s.sampled == null);
+            if (localIndeterminateRoot) {
+                const sampled = this.computeSampled(localIndeterminateRoot);
+                spans.forEach(s => (s.sampled = sampled));
+            }
+
+            // Re-export spans that have ended - In-flight spans will export when they end.
             spans.forEach(s => {
-                s.sampled = rootSampled;
                 if (s.endTime) this.exportSpan(s);
             });
         });

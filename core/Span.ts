@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
+import {PlainObject, RawSpanConfig, SpanKind} from '@xh/hoist/core';
 import {isHoistException} from '@xh/hoist/exception';
-import {NameSource} from '@xh/hoist/utils/js';
+import {isString} from 'lodash';
 
 /**
  * Lightweight client-side span representation for distributed tracing.
@@ -15,7 +15,8 @@ import {NameSource} from '@xh/hoist/utils/js';
  * OpenTelemetry SDK. Completed spans are exported to the Hoist server,
  * which relays them to the configured collector.
  *
- * @internal
+ * Not created directly by applications. See {@link TraceService} and
+ * {@link Runner} for more information on how to instrument code with spans.
  */
 export class Span {
     /** 32 hex chars (128-bit). */
@@ -24,12 +25,15 @@ export class Span {
     /** 16 hex chars (64-bit). */
     spanId: string;
 
-    /** Parent span, or null for root spans. */
+    /** Parent span. Null for root spans and spans with a foreign root. */
     parent: Span;
+
+    /** Parent span id.  Null for root spans. */
+    parentSpanId: string;
 
     name: string;
 
-    /** Epoch ms (Date.now()-based). */
+    /** Epoch ms - set when span starts. */
     startTime: number;
 
     /** Epoch ms - set when span ends. */
@@ -56,16 +60,28 @@ export class Span {
      */
     sampled: boolean | null;
 
-    constructor(config: SpanConfig) {
+    constructor(config: RawSpanConfig) {
         const {parent} = config;
-        this.parent = config.parent;
         this.spanId = genSpanId();
         this.name = config.name;
         this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
         this.tags = config.tags;
-        this.traceId = parent?.traceId ?? genTraceId();
-        this.sampled = config.sampled ?? parent?.sampled ?? null;
+
+        // Resolve parenting from either a Span or a W3C traceparent string. Malformed or
+        // all-zero traceparents are silently dropped - this span becomes a root.
+        if (parent instanceof Span) {
+            this.parent = parent;
+            this.parentSpanId = parent.spanId;
+            this.traceId = parent.traceId;
+            this.sampled = parent.sampled ?? null;
+        } else {
+            const remote = isString(parent) ? parseTraceparent(parent) : null;
+            this.parent = null;
+            this.parentSpanId = remote?.spanId ?? null;
+            this.traceId = remote?.traceId ?? genTraceId();
+            this.sampled = remote?.sampled ?? null;
+        }
     }
 
     /** End this span, computing duration. */
@@ -130,12 +146,11 @@ export class Span {
         return {
             traceId: this.traceId,
             spanId: this.spanId,
-            parentSpanId: this.parent?.spanId ?? null,
+            parentSpanId: this.parentSpanId,
             name: this.name,
             kind: this.kind,
             startTime: this.startTime,
             endTime: this.endTime,
-            duration: this.duration,
             status: this.status,
             statusDescription: this.statusDescription,
             tags: this.tags,
@@ -144,34 +159,6 @@ export class Span {
         };
     }
 }
-
-export type SpanConfigLike = SpanConfig | string;
-
-/**
- * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
- * Create via {@link TraceService} rather than directly.
- *
- * @see Span
- * @see TraceService
- */
-export interface SpanConfig {
-    name: string;
-    kind?: SpanKind;
-    tags?: PlainObject;
-    parent?: Span;
-    startTime?: number;
-    caller?: NameSource;
-    sampled?: boolean;
-}
-
-export interface SpanEvent {
-    name: string;
-    timestamp: number;
-    attributes?: PlainObject;
-}
-
-export type SpanKind = 'internal' | 'client' | 'server' | 'producer' | 'consumer';
-export type SpanStatus = 'ok' | 'error' | 'unset';
 
 /**
  * Format a W3C traceparent header value. An undecided sampling state (`null`) is sent as `00`
@@ -187,19 +174,46 @@ export function formatTraceparent(
     return `00-${traceId}-${spanId}-${sampled === true ? '01' : '00'}`;
 }
 
-/** Generate a 32-hex-char (128-bit) trace ID. */
-export function genTraceId(): string {
-    return genHexId(16);
-}
-
-/** Generate a 16-hex-char (64-bit) span ID. */
-export function genSpanId(): string {
-    return genHexId(8);
+/**
+ * Parse a W3C traceparent header value into its component parts. Returns `null` for malformed
+ * input, unsupported versions, or all-zero `traceId` / `spanId` (per spec, those are invalid).
+ * Honors the `sampled` bit (`0x01`) of the trace flags.
+ * @see https://www.w3.org/TR/trace-context/#traceparent-header
+ */
+export function parseTraceparent(
+    value: string
+): {traceId: string; spanId: string; sampled: boolean} | null {
+    if (!value) return null;
+    const parts = value.split('-');
+    if (parts.length !== 4 || parts[0] !== '00') return null;
+    const [, traceId, spanId, flags] = parts;
+    if (!/^[0-9a-f]{32}$/.test(traceId) || traceId === '0'.repeat(32)) return null;
+    if (!/^[0-9a-f]{16}$/.test(spanId) || spanId === '0'.repeat(16)) return null;
+    if (!/^[0-9a-f]{2}$/.test(flags)) return null;
+    return {traceId, spanId, sampled: (parseInt(flags, 16) & 0x01) === 0x01};
 }
 
 //------------------
 // Implementation
 //------------------
+type SpanStatus = 'ok' | 'error' | 'unset';
+
+interface SpanEvent {
+    name: string;
+    timestamp: number;
+    attributes?: PlainObject;
+}
+
+/** Generate a 32-hex-char (128-bit) trace ID. */
+function genTraceId(): string {
+    return genHexId(16);
+}
+
+/** Generate a 16-hex-char (64-bit) span ID. */
+function genSpanId(): string {
+    return genHexId(8);
+}
+
 function genHexId(byteLength: number): string {
     const bytes = new Uint8Array(byteLength);
     crypto.getRandomValues(bytes);
