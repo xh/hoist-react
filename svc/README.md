@@ -137,7 +137,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
 | `autoAbortKey` | string | Cancel previous requests with same key                                                |
 | `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
-| `span` | `Span \| string \| SpanConfig` | Parent span for tracing. Accepts an existing `Span`, a `SpanConfig`, or a string name |
+| `span` | Span | Parent span for tracing. Typically supplied via a `Runner` chain (`runner.fetchJson(...)`) rather than set directly |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
@@ -321,47 +321,49 @@ tag-matching rules with glob pattern support. Child spans inherit their parent's
 decision. The `traceparent` header propagates the sampling flag to the server. See the
 hoist-core tracing documentation for full sampling configuration details.
 
+Applications instrument code via the `Runner` chain on `HoistBase`: `rootSpan(name)` starts
+a chain rooted at a fresh span, while `runOn(ctx)` / `runOnOptional(ctx)` continues the
+caller's existing context (typically a `LoadSpec` or parent `Span` received as a
+`CallContext`). The chain's terminal methods — `run(fn)`, `fetch()`, `fetchJson()`,
+`postJson()`, etc. — execute the work inside the configured span, with optional
+`logInfo()` / `logDebug()` / `track()` middleware composed in.
+
 ```typescript
-// Wrap an async operation in a span (from any HoistBase subclass).
-// `caller` is auto-populated from `this`.
-await this.span({name: 'loadPortfolio'}).run(async span => {
-    const positions = await this.loadPositionsAsync();
+// Start a fresh root span and run an async fn. `caller` is auto-set to `this`.
+await this.rootSpan('loadPortfolio').run(async ctx => {
+    const positions = await this.loadPositionsAsync(ctx);
     this.setPositions(positions);
 });
 
-// Simple string-only config
-await this.span('loadData').run(async span => { ... });
+// Issue a fetch under a span, no manual span management.
+const data = await this.rootSpan('loadPortfolio').fetchJson({url: 'api/portfolio'});
+
+// Add another span under one already in context (e.g. from a doLoadAsync ctx).
+async doLoadAsync(loadSpec) {
+    const data = await this.runOn(loadSpec).newSpan('refData').fetchJson({url: 'api/ref'});
+}
 
 // Compose with logging - times completion via withInfo/withDebug as appropriate.
-await this.span('loadPortfolio').logInfo('Loading portfolio').run(async span => {
-    ...
-});
+await this.rootSpan('loadPortfolio').logInfo('Loading portfolio').run(async ctx => { ... });
 
-// Nest a fetch call under a parent span without manual span management.
-// FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
-const data = await XH.fetchJson({
-    url: 'api/portfolio',
-    span: 'loadPortfolio'
-});
-const data = await XH.fetchJson({
-    url: 'api/portfolio',
-    span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
-});
+// Configure tags / kind via SpanConfig instead of a bare string.
+await this.rootSpan({name: 'loadPortfolio', tags: {portfolioId: id}}).run(async ctx => { ... });
 ```
 
-**SpanConfig:**
+**SpanConfig** (passed to `rootSpan()` / `newSpan()`):
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `name` | string | Span name (required) |
-| `kind` | SpanKind | `'internal'` \| `'client'` \| `'server'` \| `'producer'` \| `'consumer'` |
-| `tags` | PlainObject | Key-value attributes on the span |
-| `parent` | Span | Explicit parent span for concurrent async nesting |
-| `caller` | NameSource | Object or string — auto-sets `code.namespace` attribute |
+| Option | Type      | Description                                                                  |
+|--------|-----------|------------------------------------------------------------------------------|
+| `name` | string    | Span name (required)                                                         |
+| `kind` | SpanKind  | `'internal'` \| `'client'` \| `'server'` \| `'producer'` \| `'consumer'`     |
+| `tags` | PlainObject | Key-value attributes on the span                                           |
 
-The `caller` property mirrors hoist-core's server-side `caller` parameter. Pass `this` from a
-model or service to automatically tag the span with the class name, or pass a string for
-standalone functions.
+The framework wires `parent` and `caller` automatically from the `Runner` chain — `parent`
+comes from the chain's `CallContext`, `caller` defaults to the `HoistBase` that started the
+chain (driving the `code.namespace` tag). To join a trace started upstream (e.g. a
+`traceparent` propagated via WebSocket / SSE / queue messages), pass the string to a span
+created directly via `XH.traceService.withSpan({name, parent: traceparent}, fn)` — the new
+span adopts the remote `traceId`, `parentSpanId`, and `sampled` decision.
 
 #### ClientHealthService
 **File**: `ClientHealthService.ts` | **Access**: `XH.clientHealthService`
