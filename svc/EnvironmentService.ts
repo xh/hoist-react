@@ -52,44 +52,49 @@ export class EnvironmentService extends HoistService {
     private pollTimer: Timer;
 
     override async initAsync(ctx: InitContext) {
-        const env = await this.runOn(ctx).fetchJson({url: 'xh/environment'}),
-            {pollConfig, instanceName, alertBanner, ...serverEnv} = env,
-            clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
-            clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
+        await this.runOn(ctx)
+            .newSpan('init')
+            .run(async ctx => {
+                const env = await ctx.fetchJson({url: 'xh/environment'}),
+                    {pollConfig, instanceName, alertBanner, ...serverEnv} = env,
+                    clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
+                    clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
-        // Favor client-side data injected via Webpack build or otherwise determined locally,
-        // then apply all other env data sourced from the server.
-        this.data = deepFreeze(
-            defaults(
-                {
-                    appCode: XH.appCode,
-                    appName: XH.appName,
-                    clientVersion: XH.appVersion,
-                    clientBuild: XH.appBuild,
-                    reactVersion,
-                    hoistReactVersion: hoistPkg.version,
-                    agGridVersion,
-                    mobxVersion: mobxPkg.version,
-                    blueprintCoreVersion: bpPkg.version,
-                    clientTimeZone,
-                    clientTimeZoneOffset
-                },
-                serverEnv
-            )
-        );
+                // Favor client-side data injected via Webpack build or otherwise determined locally,
+                // then apply all other env data sourced from the server.
+                this.data = deepFreeze(
+                    defaults(
+                        {
+                            appCode: XH.appCode,
+                            appName: XH.appName,
+                            clientVersion: XH.appVersion,
+                            clientBuild: XH.appBuild,
+                            reactVersion,
+                            hoistReactVersion: hoistPkg.version,
+                            agGridVersion,
+                            mobxVersion: mobxPkg.version,
+                            blueprintCoreVersion: bpPkg.version,
+                            clientTimeZone,
+                            clientTimeZoneOffset
+                        },
+                        serverEnv
+                    )
+                );
 
-        this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
+                this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
-        this.ensureVersionRunnable();
+                this.ensureVersionRunnable();
 
-        this.pollConfig = pollConfig;
-        this.addReaction({
-            when: () => XH.appIsRunning,
-            run: () => {
-                XH.alertBannerService.updateBanner(alertBanner);
-                this.startPolling();
-            }
-        });
+                this.pollConfig = pollConfig;
+
+                this.addReaction({
+                    when: () => XH.appIsRunning,
+                    run: () => {
+                        XH.alertBannerService.updateBanner(alertBanner);
+                        this.startPolling();
+                    }
+                });
+            });
     }
 
     get(key: string): any {
