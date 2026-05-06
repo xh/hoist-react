@@ -90,10 +90,12 @@ export class JsonBlobService extends HoistService {
 
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
     async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
-        update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
-        return this.rootSpan('update').fetchJson({
-            url: 'xh/updateJsonBlob',
-            params: {token, update: JSON.stringify(update)}
+        return this.rootSpan('update').run(async ctx => {
+            update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
+            return ctx.fetchJson({
+                url: 'xh/updateJsonBlob',
+                params: {token, update: JSON.stringify(update)}
+            });
         });
     }
 
@@ -103,10 +105,12 @@ export class JsonBlobService extends HoistService {
         name: string,
         data: Partial<JsonBlob>
     ): Promise<JsonBlob> {
-        const update = pick(data, ['acl', 'description', 'meta', 'value']);
-        return this.rootSpan('createOrUpdate').fetchJson({
-            url: 'xh/createOrUpdateJsonBlob',
-            params: {type, name, update: JSON.stringify(update)}
+        return this.rootSpan('createOrUpdate').run(async ctx => {
+            const update = pick(data, ['acl', 'description', 'meta', 'value']);
+            return ctx.fetchJson({
+                url: 'xh/createOrUpdateJsonBlob',
+                params: {type, name, update: JSON.stringify(update)}
+            });
         });
     }
 

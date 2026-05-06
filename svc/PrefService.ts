@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH, Span} from '@xh/hoist/core';
+import {HoistService, InitContext, XH, CallContext} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
@@ -35,7 +35,7 @@ export class PrefService extends HoistService {
 
     override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        return this.loadPrefsAsync(ctx.span);
+        return this.loadPrefsAsync(ctx);
     }
 
     /**
@@ -138,8 +138,8 @@ export class PrefService extends HoistService {
         this.pushPendingAsync();
     }
 
-    private async loadPrefsAsync(span: Span) {
-        await this.runOn(span)
+    private async loadPrefsAsync(ctx: CallContext) {
+        await this.runOn(ctx)
             .newSpan('get')
             .run(async ctx => {
                 const data = await ctx.fetchJson({
