@@ -639,22 +639,22 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const updateState = (update: Partial<ViewUserState>) =>
-            this.rootSpan('updateState').run(ctx => this.dataAccess.updateStateAsync(update, ctx));
+        const updateState = (spanName: string, update: Partial<ViewUserState>) =>
+            this.rootSpan(spanName).run(ctx => this.dataAccess.updateStateAsync(update, ctx));
         return [
             {
                 track: () => this.userPinned,
-                run: userPinned => updateState({userPinned}),
+                run: userPinned => updateState('updateUserPinned', {userPinned}),
                 equals: comparer.structural,
                 debounce: ONE_SECOND
             },
             {
                 track: () => this.autoSave,
-                run: autoSave => updateState({autoSave})
+                run: autoSave => updateState('updateAutoSave', {autoSave})
             },
             {
                 track: () => this.view?.token,
-                run: tkn => updateState({currentView: tkn}),
+                run: tkn => updateState('updateCurrentView', {currentView: tkn}),
                 fireImmediately: this.view?.token !== initialState?.currentView
             }
         ];

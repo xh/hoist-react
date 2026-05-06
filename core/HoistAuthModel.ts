@@ -47,8 +47,8 @@ export class HoistAuthModel extends HoistModel {
     /**
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async getAuthStatusFromServerAsync(ctx: CallContext): Promise<IdentityInfo> {
-        return this.runOn(ctx)
+    async getAuthStatusFromServerAsync(ctx?: CallContext): Promise<IdentityInfo> {
+        return this.runOnOptional(ctx)
             .newSpan('status')
             .run(async ctx => {
                 const {authenticated, identity} = await ctx.fetchJson({url: 'xh/authStatus'});
