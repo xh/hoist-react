@@ -3,6 +3,9 @@
 ## 86.0.0-SNAPSHOT - unreleased
 
 ### 🎁 New Features
+* New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
+  optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
+  flow into the Micrometer registry. Requires hoist-core >= 40.0.
 * Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
   can accept and forward across call boundaries to propagate trace/load context into nested
   loads and fetches.
@@ -12,6 +15,9 @@
 * Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
   or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+* `Runner.timer(name)` and `Runner.counter(name)` now record on completion of the wrapped fn
+  and automatically attach an `xh.outcome` tag with value `success` or `failure` based on
+  whether the fn threw. `counter()` previously fired before the fn ran.
 
 ## 85.0.0 - 2020-04-30
 

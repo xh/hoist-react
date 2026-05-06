@@ -73,8 +73,8 @@ export class Runner {
     // Metrics configuration
     //---------------------------
     /**
-     * Increment a counter metric. Fires before the wrapped fn runs - counts attempts
-     * (success + failure both count). Mirrors server-side `ObservedRun.counter`.
+     * Increment a counter metric on completion of the wrapped fn. An `xh.outcome` tag is
+     * added with value `success` or `failure` based on whether the fn threw.
      */
     counter(name: string, tags?: Record<string, string>): this {
         this.counterMetric = {name, tags};
@@ -82,8 +82,8 @@ export class Runner {
     }
 
     /**
-     * Record elapsed time for the wrapped fn. Recorded regardless of success or failure.
-     * Mirrors server-side `ObservedRun.timer`.
+     * Record elapsed time for the wrapped fn. Recorded regardless of success or failure;
+     * an `xh.outcome` tag is added with value `success` or `failure`.
      */
     timer(name: string, tags?: Record<string, string>): this {
         this.timerMetric = {name, tags};
@@ -127,8 +127,7 @@ export class Runner {
     // Implementation
     //--------------------------
     private executeWrapped<T>(fn: RunFunction<T>): Promise<T> {
-        fn = this.wrapTimer(fn);
-        fn = this.wrapCounter(fn);
+        fn = this.wrapMetrics(fn);
         fn = this.wrapTrack(fn);
         fn = this.wrapLog(fn);
 
@@ -138,24 +137,25 @@ export class Runner {
             : fn(ctx);
     }
 
-    private wrapCounter<S>(fn: RunFunction<S>): RunFunction<S> {
-        const m = this.counterMetric;
-        if (!m) return fn;
-        return ctx => {
-            XH.metricsService.recordCount(m.name, 1, m.tags);
-            return fn(ctx);
-        };
-    }
-
-    private wrapTimer<S>(fn: RunFunction<S>): RunFunction<S> {
-        const m = this.timerMetric;
-        if (!m) return fn;
+    private wrapMetrics<S>(fn: RunFunction<S>): RunFunction<S> {
+        const {timerMetric: t, counterMetric: c} = this,
+            svc = XH.metricsService;
+        if (!t && !c) return fn;
         return async ctx => {
             const start = performance.now();
+            let outcome = 'failure';
             try {
-                return await fn(ctx);
+                const result = await fn(ctx);
+                outcome = 'success';
+                return result;
             } finally {
-                XH.metricsService.recordTimer(m.name, performance.now() - start, m.tags);
+                if (t) {
+                    const elapsed = performance.now() - start;
+                    svc.recordTimer(t.name, elapsed, {...t.tags, 'xh.outcome': outcome});
+                }
+                if (c) {
+                    svc.recordCount(c.name, 1, {...c.tags, 'xh.outcome': outcome});
+                }
             }
         };
     }
