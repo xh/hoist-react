@@ -4,15 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    Some,
-    TrackOptions,
-    XH,
-    Span,
-    SpanConfig,
-    SpanConfigLike,
-    CallContext
-} from '@xh/hoist/core';
+import {Some, TrackOptions, XH, Span, SpanConfig, RawSpanConfig, CallContext} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
@@ -28,7 +20,7 @@ export type RunFunction<T> = (ctx: RunContext) => Promise<T>;
 export class Runner {
     private readonly ctx: RunContext;
 
-    private spanConfig: SpanConfig = null;
+    private spanConfig: RawSpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
@@ -45,7 +37,7 @@ export class Runner {
     // Span configuration
     //---------------------------
     /** Configure a new trace span within this context. */
-    newSpan(config: SpanConfigLike): this {
+    newSpan(config: string | SpanConfig): this {
         config = isString(config) ? {name: config} : config;
         const {ctx} = this,
             prefix = (ctx.caller as any)?.spanPrefix,

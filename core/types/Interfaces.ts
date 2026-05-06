@@ -12,6 +12,7 @@ import {isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
 import {LoadSpec, LoadSpecConfig} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
+import {NameSource} from '@xh/hoist/utils/js';
 
 /**
  * A user of the application, as loaded from the server.
@@ -403,3 +404,40 @@ export interface SelectOption {
     label?: string;
     options?: (SelectOption | any)[];
 }
+
+/**
+ * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
+ *
+ * See {@link Runner} for more information on how to instrument code with tracing context.
+ */
+export interface SpanConfig {
+    /** Span name - typically a short, dotted identifier (e.g. `app.userAction`). */
+    name: string;
+
+    /** OTel span kind. Defaults to `internal`. */
+    kind?: SpanKind;
+
+    /** Tags attached to the span as key/value attributes. */
+    tags?: PlainObject;
+}
+
+/**
+ * Configuration for generating a raw {@link Span} - a lightweight trace span for distributed tracing.
+ *
+ * See {@link TraceService} for more info and a public API that creates a span using this type.
+ */
+export interface RawSpanConfig extends SpanConfig {
+    /** Parent to this span, if any. May be a {@link Span} created locally, or a W3C `traceparent`. */
+    parent?: Span | string;
+
+    /**
+     * Override the span's start time (epoch ms). Use when the work being traced began before
+     * the span was constructed - e.g. timing an event whose timestamp is known.
+     */
+    startTime?: number;
+
+    /** Source for the `code.namespace` tag - usually the calling object/function. */
+    caller?: NameSource;
+}
+
+export type SpanKind = 'internal' | 'client' | 'server' | 'producer' | 'consumer';

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {CallContext, LoadSpec, Span, SpanConfigLike, XH} from '@xh/hoist/core';
+import {CallContext, LoadSpec, Span, SpanConfig, XH} from '@xh/hoist/core';
 import {FetchOptions} from '@xh/hoist/svc';
 import {NameSource} from '@xh/hoist/utils/js';
 import {Runner} from './Runner';
@@ -49,7 +49,7 @@ export class RunContext {
     }
 
     /** Create a new runner for doing an additional work chain in a *nested* context.*/
-    newSpan(spec: SpanConfigLike): Runner {
+    newSpan(spec: string | SpanConfig): Runner {
         return this.runner().newSpan(spec);
     }
 

@@ -42,9 +42,10 @@ import {
     PersistableState,
     PersistenceProvider,
     PersistOptions,
+    RawSpanConfig,
     Some,
     Span,
-    SpanConfigLike,
+    SpanConfig,
     XH
 } from './';
 import {wait} from '@xh/hoist/promise';
@@ -134,15 +135,16 @@ export abstract class HoistBase {
     }
 
     /** @deprecated - use {@link rootSpan} or {@link runOn} to start a {@link Runner} chain. */
-    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+    withSpan<T>(config: string | RawSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
         apiDeprecated('HoistBase.withSpan', {
             v: 'v87',
             msg: 'Use rootSpan() or runOnXXX() to start a Runner chain instead.',
             source: this
         });
-        let {spanPrefix} = this,
-            cfg = isString(config) ? {name: config} : config;
-        if (spanPrefix) cfg = {...cfg, name: `${spanPrefix}.${cfg.name}`};
+        let cfg = isString(config) ? {name: config} : config,
+            {spanPrefix} = this,
+            name = spanPrefix ? spanPrefix + '.' + cfg.name : cfg.name;
+        cfg = {caller: this, ...cfg, name};
         return XH.traceService.withSpan(cfg, fn);
     }
 
@@ -179,7 +181,7 @@ export abstract class HoistBase {
      * Create an {@link Runner} with an initial root span and this object
      * as the caller.
      */
-    rootSpan(span: SpanConfigLike): Runner {
+    rootSpan(span: string | SpanConfig): Runner {
         return this.runOnRoot().newSpan(span);
     }
 
