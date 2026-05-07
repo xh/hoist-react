@@ -1,12 +1,13 @@
 import {lm} from '../ns.js';
 
 lm.controls.DropTargetIndicator = function() {
+	// CSS .lm_dropTargetIndicator defaults to display:none, so the indicator
+	// starts hidden without needing an inline style.
 	this.element = document.createElement( 'div' );
 	this.element.className = 'lm_dropTargetIndicator';
 	var inner = document.createElement( 'div' );
 	inner.className = 'lm_inner';
 	this.element.appendChild( inner );
-	this.element.style.display = 'none';
 	document.body.appendChild( this.element );
 };
 
@@ -25,7 +26,8 @@ lm.utils.copy( lm.controls.DropTargetIndicator.prototype, {
 		s.top = area.y1 + 'px';
 		s.width = ( area.x2 - area.x1 ) + 'px';
 		s.height = ( area.y2 - area.y1 ) + 'px';
-		s.display = '';
+		// Override the CSS default of display:none. (jQuery.show() handled this implicitly.)
+		s.display = 'block';
 	},
 
 	hide: function() {
