@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import GoldenLayout from './impl/js/index.js';
-import jquery from 'jquery';
 import './impl/css/goldenlayout-base.css';
 import './impl/css/goldenlayout-light-theme.css';
 import React from 'react';
@@ -61,86 +60,6 @@ class ReactComponentHandlerPatched extends ReactComponentHandler {
 }
 GoldenLayout['__lm'].utils.ReactComponentHandler = ReactComponentHandlerPatched;
 
-// GoldenLayout (v1.5.9) has an issue with touch events, where dragging views on
-// a touch device requires 2 touches. This is because the original target of
-// the touchstart event is removed. See: https://www.w3.org/TR/touch-events/#the-touchmove-event
-//
-// Below we patch the DragListener to ensure that the original touch target remains
-// until the drag is completed.
-const DragListener = GoldenLayout['__lm'].utils.DragListener;
-class DragListenerPatched extends DragListener {
-    onMouseDown(oEvent) {
-        // PATCH BEGINS
-        if (oEvent.cancelable) oEvent.preventDefault();
-
-        if (oEvent.type === 'touchstart') {
-            this._touchTarget = oEvent.target;
-
-            const parent = this._touchTarget.parentNode,
-                idx = Array.from(parent.children).indexOf(this._touchTarget),
-                clone = this._touchTarget.cloneNode(true);
-
-            // Add clone of target to parent
-            parent.insertBefore(clone, idx < parent.children.length - 1 ? parent.childNodes[idx + 1] : null);
-
-            // Move target to body, and hide
-            document.body.appendChild(this._touchTarget);
-            this._touchTarget.style.display = 'none';
-        }
-        // PATCH ENDS
-
-        if (oEvent.button == 0 || oEvent.type === 'touchstart') {
-            const coordinates = this._getCoordinates(oEvent);
-
-            this._nOriginalX = coordinates.x;
-            this._nOriginalY = coordinates.y;
-
-            this._oDocument.on('mousemove touchmove', this._fMove);
-            this._oDocument.one('mouseup touchend', this._fUp);
-
-            // PATCH BEGINS
-            // Extend time held to begin drag for stationary touch events. Note that this should be
-            // quite long to allow for showing the context menu on a shorter hold. The user can
-            // initiate a drag at any time in the interim by moving their touch.
-            const ms = oEvent.type === 'touchstart' ? 3000 : this._nDelay;
-            this._touchStart = Date.now();
-            this._timeout = setTimeout(GoldenLayout['__lm'].utils.fnBind(this._startDrag, this), ms);
-            // PATCH ENDS
-        }
-    }
-
-    onMouseUp(oEvent) {
-        // PATCH BEGINS
-        if (this._touchTarget) {
-            document.body.removeChild(this._touchTarget);
-            this._touchTarget = null;
-        }
-        // PATCH ENDS
-
-        if (this._timeout != null) {
-            clearTimeout(this._timeout);
-            this._eBody.removeClass('lm_dragging');
-            this._eElement.removeClass('lm_dragging');
-            this._oDocument.find('iframe').css('pointer-events', '');
-            this._oDocument.unbind('mousemove touchmove', this._fMove);
-            this._oDocument.unbind('mouseup touchend', this._fUp);
-
-            if (this._bDragging === true) {
-                this._bDragging = false;
-                this.emit('dragStop', oEvent, this._nOriginalX + this._nX);
-            // PATCH BEGINS
-            // If the touch is released *before* dragging has started, trigger the context menu
-            // event. We still require a minimum about of time to pass, to differentiate from
-            // taps to change the selected tab.
-            } else if (oEvent.type === 'touchend' && Date.now() - this._touchStart > 800) {
-                this._eElement.trigger('contextmenu');
-            }
-            // PATCH ENDS
-        }
-    }
-}
-GoldenLayout['__lm'].utils.DragListener = DragListenerPatched;
-
 // When creating drop zones in the root component, GoldenLayout (v1.5.9) assumes
 // that the root component is full screen (i.e. the origin is 0,0).
 //
@@ -166,14 +85,6 @@ GoldenLayout['__lm'].LayoutManager.prototype._$createRootItemAreas = function() 
         }
         area.surface = (area.x2 - area.x1) * (area.y2 - area.y1);
         this._itemAreas.push(area);
-    }
-};
-
-// Overwrite jquery's 'touchmove' handler wiring, to ensure 'touchmove' handlers are non-passive.
-// This is required to suppress an error thrown by trying to preventDefault() a passive event.
-jquery.event.special.touchmove = {
-    setup: function(_, ns, handle) {
-        this.addEventListener('touchmove', handle, {passive: false});
     }
 };
 
