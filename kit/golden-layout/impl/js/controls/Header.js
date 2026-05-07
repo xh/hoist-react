@@ -11,25 +11,44 @@ lm.controls.Header = function( layoutManager, parent ) {
 	lm.utils.EventEmitter.call( this );
 
 	this.layoutManager = layoutManager;
-	this.element = $( lm.controls.Header._template );
+
+	// Build header DOM, then expose top-level wrappers as jQuery for downstream
+	// consumers (Stack drives header.element.toggle/.offset/.height; HeaderButton
+	// appends into controlsContainer).
+	var template = document.createElement( 'template' );
+	template.innerHTML = lm.controls.Header._template;
+	var node = template.content.firstElementChild;
+	this._node = node;
+	this.element = $( node );
+
+	this._abort = new AbortController();
+	var signal = this._abort.signal;
 
 	if( this.layoutManager.config.settings.selectionEnabled === true ) {
-		this.element.addClass( 'lm_selectable' );
-		this.element.on( 'click touchstart', lm.utils.fnBind( this._onHeaderClick, this ) );
+		node.classList.add( 'lm_selectable' );
+		var onHeaderClick = lm.utils.fnBind( this._onHeaderClick, this );
+		node.addEventListener( 'click', onHeaderClick, { signal: signal } );
+		node.addEventListener( 'touchstart', onHeaderClick, { signal: signal } );
 	}
 
-	this.tabsContainer = this.element.find( '.lm_tabs' );
-	this.tabDropdownContainer = this.element.find( '.lm_tabdropdown_list' );
-	this.tabDropdownContainer.hide();
-	this.controlsContainer = this.element.find( '.lm_controls' );
+	this._tabsNode = node.querySelector( '.lm_tabs' );
+	this._tabDropdownNode = node.querySelector( '.lm_tabdropdown_list' );
+	this._tabDropdownNode.style.display = 'none';
+	this._controlsNode = node.querySelector( '.lm_controls' );
+
+	// Wrappers retained for jQuery-shaped consumers.
+	this.tabsContainer = $( this._tabsNode );
+	this.tabDropdownContainer = $( this._tabDropdownNode );
+	this.controlsContainer = $( this._controlsNode );
+
 	this.parent = parent;
 	this.parent.on( 'resize', this._updateTabSizes, this );
 	this.tabs = [];
 	this.activeContentItem = null;
 	this.closeButton = null;
 	this.tabDropdownButton = null;
-	this.hideAdditionalTabsDropdown = lm.utils.fnBind(this._hideAdditionalTabsDropdown, this);
-	$( document ).mouseup(this.hideAdditionalTabsDropdown);
+	this.hideAdditionalTabsDropdown = lm.utils.fnBind( this._hideAdditionalTabsDropdown, this );
+	document.addEventListener( 'mouseup', this.hideAdditionalTabsDropdown, { signal: signal } );
 
 	this._lastVisibleTabIndex = -1;
 	this._tabControlOffset = this.layoutManager.config.settings.tabControlOffset;
@@ -190,8 +209,8 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		for( var i = 0; i < this.tabs.length; i++ ) {
 			this.tabs[ i ]._$destroy();
 		}
-		$( document ).off('mouseup', this.hideAdditionalTabsDropdown);
-		this.element.remove();
+		this._abort.abort();
+		this._node.remove();
 	},
 
 	/**
@@ -260,7 +279,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 * @returns {void}
 	 */
 	_showAdditionalTabsDropdown: function() {
-		this.tabDropdownContainer.show();
+		this._tabDropdownNode.style.display = 'block';
 	},
 
 	/**
@@ -268,8 +287,8 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 *
 	 * @returns {void}
 	 */
-	_hideAdditionalTabsDropdown: function( e ) {
-		this.tabDropdownContainer.hide();
+	_hideAdditionalTabsDropdown: function() {
+		this._tabDropdownNode.style.display = 'none';
 	},
 
 	/**
