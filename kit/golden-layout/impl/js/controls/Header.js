@@ -335,8 +335,12 @@ lm.utils.copy( lm.controls.Header.prototype, {
 			tabDropdownNode = this._tabDropdownNode;
 
 		// Clear the cross-axis dimension before reading the long-axis dimension.
-		headerNode.style[ sided ? 'width' : 'height' ] = '';
-		headerNode.style[ sided ? 'height' : 'width' ] = headerHeight + 'px';
+		// Original used size(!sided) to clear and size(sided) to set, where
+		// size(true)='width' and size(false)='height'. So for non-sided (top
+		// header) we clear width and set height to headerHeight; for sided
+		// (left/right header) we clear height and set width.
+		headerNode.style[ sided ? 'height' : 'width' ] = '';
+		headerNode.style[ sided ? 'width' : 'height' ] = headerHeight + 'px';
 
 		var availableWidth = sided
 				? ( headerNode.offsetHeight - controlsNode.offsetHeight - this._tabControlOffset )
