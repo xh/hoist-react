@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.utils.F = function() {
 };
@@ -196,5 +195,5 @@ lm.utils.filterXss = function( input, keepTags ) {
  * @returns {String} input without tags
  */
 lm.utils.stripTags = function( input ) {
-	return $.trim( input.replace( /(<([^>]+)>)/ig, '' ) );
+	return input.replace( /(<([^>]+)>)/ig, '' ).trim();
 };
