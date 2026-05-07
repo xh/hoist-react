@@ -1,18 +1,14 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.items.Root = function( layoutManager, config, containerElement ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, null );
 	this.isRoot = true;
 	this.type = 'root';
-	this._node = document.createElement( 'div' );
-	this._node.className = 'lm_goldenlayout lm_item lm_root';
-	this.element = $( this._node );
+	this.element = document.createElement( 'div' );
+	this.element.className = 'lm_goldenlayout lm_item lm_root';
 	this.childElementContainer = this.element;
 	this._containerElement = containerElement;
-	// containerElement may be a jQuery wrapper (LayoutManager._setContainer
-	// stores it as such). Native Element.append accepts Nodes, so unwrap.
-	this._containerElement[ 0 ].appendChild( this._node );
+	this._containerElement.appendChild( this.element );
 };
 
 lm.utils.extend( lm.items.Root, lm.items.AbstractContentItem );
@@ -24,7 +20,7 @@ lm.utils.copy( lm.items.Root.prototype, {
 		}
 
 		contentItem = this.layoutManager._$normalizeContentItem( contentItem, this );
-		this._node.appendChild( contentItem.element[ 0 ] );
+		this.element.appendChild( contentItem.element );
 		lm.items.AbstractContentItem.prototype.addChild.call( this, contentItem );
 
 		this.callDownwards( 'setSize' );
@@ -32,18 +28,18 @@ lm.utils.copy( lm.items.Root.prototype, {
 	},
 
 	setSize: function( width, height ) {
-		var containerNode = this._containerElement[ 0 ];
+		var containerNode = this._containerElement;
 		width = ( typeof width === 'undefined' ) ? containerNode.clientWidth : width;
 		height = ( typeof height === 'undefined' ) ? containerNode.clientHeight : height;
 
-		this._node.style.width = width + 'px';
-		this._node.style.height = height + 'px';
+		this.element.style.width = width + 'px';
+		this.element.style.height = height + 'px';
 
 		/*
 		 * Root can be empty
 		 */
 		if( this.contentItems[ 0 ] ) {
-			var childNode = this.contentItems[ 0 ].element[ 0 ];
+			var childNode = this.contentItems[ 0 ].element;
 			childNode.style.width = width + 'px';
 			childNode.style.height = height + 'px';
 		}

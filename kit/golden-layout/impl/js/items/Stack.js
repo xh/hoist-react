@@ -1,12 +1,10 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.items.Stack = function( layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
 
-	this._node = document.createElement( 'div' );
-	this._node.className = 'lm_item lm_stack';
-	this.element = $( this._node );
+	this.element = document.createElement( 'div' );
+	this.element.className = 'lm_item lm_stack';
 
 	this._activeContentItem = null;
 	var cfg = layoutManager.config;
@@ -30,14 +28,13 @@ lm.items.Stack = function( layoutManager, config, parent ) {
 
 	this.isStack = true;
 
-	this._childItemsNode = document.createElement( 'div' );
-	this._childItemsNode.className = 'lm_items';
-	this.childElementContainer = $( this._childItemsNode );
+	this.childElementContainer = document.createElement( 'div' );
+	this.childElementContainer.className = 'lm_items';
 
 	this.header = new lm.controls.Header( layoutManager, this );
 
-	this._node.appendChild( this.header.element[ 0 ] );
-	this._node.appendChild( this._childItemsNode );
+	this.element.appendChild( this.header.element );
+	this.element.appendChild( this.childElementContainer );
 	this._setupHeaderPosition();
 	this._$validateClosability();
 };
@@ -49,14 +46,14 @@ lm.utils.copy( lm.items.Stack.prototype, {
 	setSize: function() {
 		var i,
 			headerSize = this._header.show ? this.layoutManager.config.dimensions.headerHeight : 0,
-			contentWidth = this._node.clientWidth - ( this._sided ? headerSize : 0 ),
-			contentHeight = this._node.clientHeight - ( !this._sided ? headerSize : 0 );
+			contentWidth = this.element.clientWidth - ( this._sided ? headerSize : 0 ),
+			contentHeight = this.element.clientHeight - ( !this._sided ? headerSize : 0 );
 
-		this._childItemsNode.style.width = contentWidth + 'px';
-		this._childItemsNode.style.height = contentHeight + 'px';
+		this.childElementContainer.style.width = contentWidth + 'px';
+		this.childElementContainer.style.height = contentHeight + 'px';
 
 		for( i = 0; i < this.contentItems.length; i++ ) {
-			var itemNode = this.contentItems[ i ].element[ 0 ];
+			var itemNode = this.contentItems[ i ].element;
 			itemNode.style.width = contentWidth + 'px';
 			itemNode.style.height = contentHeight + 'px';
 		}
@@ -111,7 +108,7 @@ lm.utils.copy( lm.items.Stack.prototype, {
 	addChild: function( contentItem, index ) {
 		contentItem = this.layoutManager._$normalizeContentItem( contentItem, this );
 		lm.items.AbstractContentItem.prototype.addChild.call( this, contentItem, index );
-		this._childItemsNode.appendChild( contentItem.element[ 0 ] );
+		this.childElementContainer.appendChild( contentItem.element );
 		this.header.createTab( contentItem, index );
 		this.setActiveContentItem( contentItem );
 		this.callDownwards( 'setSize' );
@@ -295,7 +292,7 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 	_$getArea: function() {
 		// Approximates jQuery :visible (zero dims when display:none or detached).
-		if( this._node.offsetWidth === 0 && this._node.offsetHeight === 0 ) {
+		if( this.element.offsetWidth === 0 && this.element.offsetHeight === 0 ) {
 			return null;
 		}
 
@@ -428,11 +425,11 @@ lm.utils.copy( lm.items.Stack.prototype, {
 			placeHolderLeft,
 			tabWidth,
 			halfX,
-			placeholderNode = this.layoutManager.tabDropPlaceholder[ 0 ];
+			placeholderNode = this.layoutManager.tabDropPlaceholder;
 
 		// Empty stack
 		if( tabsLength === 0 ) {
-			var headerNode = this.header.element[ 0 ],
+			var headerNode = this.header.element,
 				headerRect = headerNode.getBoundingClientRect(),
 				headerLeft = headerRect.left + window.scrollX,
 				headerTop = headerRect.top + window.scrollY;
@@ -448,7 +445,7 @@ lm.utils.copy( lm.items.Stack.prototype, {
 		}
 
 		for( i = 0; i < tabsLength; i++ ) {
-			tabNode = this.header.tabs[ i ].element[ 0 ];
+			tabNode = this.header.tabs[ i ].element;
 			tabRect = tabNode.getBoundingClientRect();
 			var tabPageLeft = tabRect.left + window.scrollX,
 				tabPageTop = tabRect.top + window.scrollY;
@@ -510,18 +507,18 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 	_setupHeaderPosition: function() {
 		var side = [ 'right', 'left', 'bottom' ].indexOf( this._header.show ) >= 0 && this._header.show;
-		var headerNode = this.header.element[ 0 ];
+		var headerNode = this.header.element;
 		headerNode.style.display = this._header.show ? '' : 'none';
 		this._side = side;
 		this._sided = [ 'right', 'left' ].indexOf( this._side ) >= 0;
-		this._node.classList.remove( 'lm_left', 'lm_right', 'lm_bottom' );
+		this.element.classList.remove( 'lm_left', 'lm_right', 'lm_bottom' );
 		if( this._side )
-			this._node.classList.add( 'lm_' + this._side );
-		if( this._node.querySelector( '.lm_header' ) && this._childItemsNode ) {
+			this.element.classList.add( 'lm_' + this._side );
+		if( this.element.querySelector( '.lm_header' ) && this.childElementContainer ) {
 			if( [ 'right', 'bottom' ].indexOf( this._side ) >= 0 ) {
-				headerNode.before( this._childItemsNode );
+				headerNode.before( this.childElementContainer );
 			} else {
-				headerNode.after( this._childItemsNode );
+				headerNode.after( this.childElementContainer );
 			}
 			this.callDownwards( 'setSize' );
 		}

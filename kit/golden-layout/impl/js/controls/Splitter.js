@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.controls.Splitter = function( isVertical, size, grabSize ) {
 	this._isVertical = isVertical;
@@ -41,7 +40,6 @@ lm.utils.copy( lm.controls.Splitter.prototype, {
 			element.style.width = this._size + 'px';
 		}
 
-		// Wrap so RowOrColumn (still jQuery) can drive splitter.element.css(...).
-		return $( element );
+		return element;
 	}
 } );

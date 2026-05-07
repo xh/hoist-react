@@ -33,7 +33,10 @@ impl/
 - **Phase 0 (vendored):** copied `src/js`, `dist/goldenlayout.js`, types, CSS into `impl/`.
 - **Phase 1 (deleted dead code):** removed `BrowserPopout`, `ConfigMinifier`, popout/sub-window
   plumbing, cross-window event propagation, related config and labels (~933 LOC).
-- **`golden-layout` npm dep dropped** from `package.json`. `jquery` remains until Phase 2 finishes.
-- **Phase 2 (in progress):** porting ~230 jQuery call sites to DOM APIs, then dropping `jquery`.
+- **Phase 2 (jQuery removal):** every jQuery call site ported to native DOM APIs across the
+  forked source, the lone Hoist consumer (`DashContainerModel.ts`), and the inlined kit-level
+  patches. The three monkey-patches (touch drag, root-area drop offset, React 18 `createRoot`)
+  are folded into the source files. `jquery` and `golden-layout` are both removed from
+  `dependencies` and `resolutions`.
 
 The three monkey-patches in `index.js` will be folded into the source files as Phase 2 progresses.

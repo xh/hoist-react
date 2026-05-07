@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 import {merge} from 'lodash';
 
 lm.container.ItemContainer = function( config, parent, layoutManager ) {
@@ -14,19 +13,11 @@ lm.container.ItemContainer = function( config, parent, layoutManager ) {
 
 	this._config = config;
 
-	var elementNode = document.createElement( 'div' );
-	elementNode.className = 'lm_item_container';
-	var contentNode = document.createElement( 'div' );
-	contentNode.className = 'lm_content';
-	elementNode.appendChild( contentNode );
-	this._elementNode = elementNode;
-	this._contentNode = contentNode;
-
-	// Wrappers retained for jQuery-shaped consumers: Component reads
-	// container._element via this.element and calls .is(':visible')/.width()/.height();
-	// ReactComponentHandler reads getElement()[0].
-	this._element = $( elementNode );
-	this._contentElement = $( contentNode );
+	this._element = document.createElement( 'div' );
+	this._element.className = 'lm_item_container';
+	this._contentElement = document.createElement( 'div' );
+	this._contentElement.className = 'lm_content';
+	this._element.appendChild( this._contentElement );
 };
 
 lm.utils.copy( lm.container.ItemContainer.prototype, {
@@ -51,7 +42,7 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 	hide: function() {
 		this.emit( 'hide' );
 		this.isHidden = true;
-		this._elementNode.style.display = 'none';
+		this._element.style.display = 'none';
 	},
 
 	/**
@@ -66,7 +57,7 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 		this.isHidden = false;
 		// .lm_item_container has no display rule, so reverting to UA default
 		// (block for div) by clearing the inline value matches jQuery .show().
-		this._elementNode.style.display = '';
+		this._element.style.display = '';
 		// call shown only if the container has a valid size
 		if( this.height != 0 || this.width != 0 ) {
 			this.emit( 'shown' );
@@ -196,7 +187,7 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 		if( width !== this.width || height !== this.height ) {
 			this.width = width;
 			this.height = height;
-			var cl = this._contentNode;
+			var cl = this._contentElement;
 			var hdelta = cl.offsetWidth - cl.clientWidth;
 			var vdelta = cl.offsetHeight - cl.clientHeight;
 			cl.style.width = ( this.width - hdelta ) + 'px';

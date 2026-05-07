@@ -371,7 +371,7 @@ export class DashContainerModel
     renameView(id: string) {
         const view = this.getItemByViewModel(id);
         if (!view) return;
-        this.showTitleForm(view.tab.element[0], this.getViewModel(id));
+        this.showTitleForm(view.tab.element, this.getViewModel(id));
     }
 
     onResize() {
@@ -487,7 +487,7 @@ export class DashContainerModel
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
         // Add menu button to stack header, being sure to preserve any controls that GL has installed
-        const controlsContainerEl = stack.header.controlsContainer[0],
+        const controlsContainerEl = stack.header.controlsContainer,
             menuContainerEl = document.createElement('div');
 
         controlsContainerEl.appendChild(menuContainerEl);
@@ -497,7 +497,7 @@ export class DashContainerModel
 
         // Add context menu listener for adding components.
         // Replace any handler set by a previous render so we never stack handlers.
-        const headerEl = stack.header.element[0] as HTMLElement & {
+        const headerEl = stack.header.element as HTMLElement & {
             _xhContextMenuHandler?: EventListener;
         };
         if (headerEl._xhContextMenuHandler) {
@@ -577,7 +577,7 @@ export class DashContainerModel
             const viewModel = this.getViewModel(getViewModelId(item));
             if (!viewModel) return;
 
-            const tabEl = item.tab.element[0] as HTMLElement & {
+            const tabEl = item.tab.element as HTMLElement & {
                     _xhContextMenuHandler?: EventListener;
                 },
                 stack = item.parent,
@@ -720,7 +720,7 @@ export class DashContainerModel
                         track: () => model.fullTitle,
                         run: () => {
                             const item = this.getItemByViewModel(viewModelId),
-                                titleEl = this.getTitleElement(item.tab.element[0]);
+                                titleEl = this.getTitleElement(item.tab.element);
 
                             titleEl.textContent = model.fullTitle;
                         }

@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 /**
  * This class creates a temporary container
@@ -33,44 +32,40 @@ lm.controls.DragProxy = function( x, y, dragListener, layoutManager, contentItem
 
 	var template = document.createElement( 'template' );
 	template.innerHTML = lm.controls.DragProxy._template;
-	this._node = template.content.firstElementChild;
-	this.element = $( this._node );
+	this.element = template.content.firstElementChild;
 
 	if( originalParent && originalParent._side ) {
 		this._sided = originalParent._sided;
-		this._node.classList.add( 'lm_' + originalParent._side );
+		this.element.classList.add( 'lm_' + originalParent._side );
 		if( [ 'right', 'bottom' ].indexOf( originalParent._side ) >= 0 ) {
-			var contentNode = this._node.querySelector( '.lm_content' ),
-				headerNode = this._node.querySelector( '.lm_header' );
+			var contentNode = this.element.querySelector( '.lm_content' ),
+				headerNode = this.element.querySelector( '.lm_header' );
 			contentNode.after( headerNode );
 		}
 	}
-	this._node.style.left = x + 'px';
-	this._node.style.top = y + 'px';
+	this.element.style.left = x + 'px';
+	this.element.style.top = y + 'px';
 
-	this._node.querySelector( '.lm_tab' ).title = lm.utils.stripTags( this._contentItem.config.title );
-	this._node.querySelector( '.lm_title' ).innerHTML = this._contentItem.config.title;
-	this._childContentNode = this._node.querySelector( '.lm_content' );
-	this.childElementContainer = $( this._childContentNode );
-	this._childContentNode.appendChild( contentItem.element[ 0 ] );
+	this.element.querySelector( '.lm_tab' ).title = lm.utils.stripTags( this._contentItem.config.title );
+	this.element.querySelector( '.lm_title' ).innerHTML = this._contentItem.config.title;
+	this._childContentNode = this.element.querySelector( '.lm_content' );
+	this._childContentNode.appendChild( contentItem.element );
 
 	this._updateTree();
 	this._layoutManager._$calculateItemAreas();
 	this._setDimensions();
 
-	document.body.appendChild( this._node );
+	document.body.appendChild( this.element );
 
-	// layoutManager.container is still a jQuery wrapper from
-	// LayoutManager._setContainer; unwrap for raw measurement.
-	var containerNode = this._layoutManager.container[ 0 ],
+	var containerNode = this._layoutManager.container,
 		containerRect = containerNode.getBoundingClientRect();
 
 	this._minX = containerRect.left + window.scrollX;
 	this._minY = containerRect.top + window.scrollY;
 	this._maxX = containerNode.clientWidth + this._minX;
 	this._maxY = containerNode.clientHeight + this._minY;
-	this._width = this._node.clientWidth;
-	this._height = this._node.clientHeight;
+	this._width = this.element.clientWidth;
+	this._height = this.element.clientHeight;
 
 	this._setDropPosition( x, y );
 };
@@ -128,8 +123,8 @@ lm.utils.copy( lm.controls.DragProxy.prototype, {
 	 * @returns {void}
 	 */
 	_setDropPosition: function( x, y ) {
-		this._node.style.left = x + 'px';
-		this._node.style.top = y + 'px';
+		this.element.style.left = x + 'px';
+		this.element.style.top = y + 'px';
 		this._area = this._layoutManager._$getArea( x, y );
 
 		if( this._area !== null ) {
@@ -179,7 +174,7 @@ lm.utils.copy( lm.controls.DragProxy.prototype, {
 			this._contentItem._$destroy();
 		}
 
-		this._node.remove();
+		this.element.remove();
 
 		this._layoutManager.emit( 'itemDropped', this._contentItem );
 	},
@@ -215,13 +210,13 @@ lm.utils.copy( lm.controls.DragProxy.prototype, {
 			width = dimensions.dragProxyWidth,
 			height = dimensions.dragProxyHeight;
 
-		this._node.style.width = width + 'px';
-		this._node.style.height = height + 'px';
+		this.element.style.width = width + 'px';
+		this.element.style.height = height + 'px';
 		width -= ( this._sided ? dimensions.headerHeight : 0 );
 		height -= ( !this._sided ? dimensions.headerHeight : 0 );
 		this._childContentNode.style.width = width + 'px';
 		this._childContentNode.style.height = height + 'px';
-		var contentItemNode = this._contentItem.element[ 0 ];
+		var contentItemNode = this._contentItem.element;
 		contentItemNode.style.width = width + 'px';
 		contentItemNode.style.height = height + 'px';
 		this._contentItem.callDownwards( '_$show' );

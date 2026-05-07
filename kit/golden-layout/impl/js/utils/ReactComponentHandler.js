@@ -1,8 +1,18 @@
 import {lm} from '../ns.js';
+import React from 'react';
+import {createRoot} from 'react-dom/client';
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
- * lifecycle events to react components
+ * lifecycle events to React components.
+ *
+ * Hoist patches folded in (#4336):
+ *  - The legacy ReactDOM.render / unmountComponentAtNode API is replaced with
+ *    React 18's createRoot.render / root.unmount, so the handler works with
+ *    functional components.
+ *  - _getReactComponent passes viewModelId / icon / title / state through to
+ *    the underlying component so DashContainerView instances can be wired to
+ *    DashViewModels by id and re-hydrated from saved state.
  *
  * @constructor
  *
@@ -11,7 +21,7 @@ import {lm} from '../ns.js';
  */
 lm.utils.ReactComponentHandler = function( container, state ) {
 	this._reactComponent = null;
-	this._originalComponentWillUpdate = null;
+	this._root = null;
 	this._container = container;
 	this._initialState = state;
 	this._reactClass = this._getReactClass();
@@ -22,50 +32,31 @@ lm.utils.ReactComponentHandler = function( container, state ) {
 lm.utils.copy( lm.utils.ReactComponentHandler.prototype, {
 
 	/**
-	 * Creates the react class and component and hydrates it with
-	 * the initial state - if one is present
-	 *
-	 * By default, react's getInitialState will be used
+	 * Creates the React component and mounts it into the container's element.
 	 *
 	 * @private
 	 * @returns {void}
 	 */
 	_render: function() {
-		this._reactComponent = ReactDOM.render( this._getReactComponent(), this._container.getElement()[ 0 ] );
-		this._originalComponentWillUpdate = this._reactComponent.componentWillUpdate || function() {
-			};
-		this._reactComponent.componentWillUpdate = this._onUpdate.bind( this );
-		if( this._container.getState() ) {
-			this._reactComponent.setState( this._container.getState() );
-		}
+		this._reactComponent = this._getReactComponent();
+		if( !this._root ) this._root = createRoot( this._container.getElement() );
+		this._root.render( this._reactComponent );
 	},
 
 	/**
-	 * Removes the component from the DOM and thus invokes React's unmount lifecycle
+	 * Unmounts the React root, cleaning up after the component.
 	 *
 	 * @private
 	 * @returns {void}
 	 */
 	_destroy: function() {
-		ReactDOM.unmountComponentAtNode( this._container.getElement()[ 0 ] );
+		this._root.unmount();
 		this._container.off( 'open', this._render, this );
 		this._container.off( 'destroy', this._destroy, this );
 	},
 
 	/**
-	 * Hooks into React's state management and applies the componentstate
-	 * to GoldenLayout
-	 *
-	 * @private
-	 * @returns {void}
-	 */
-	_onUpdate: function( nextProps, nextState ) {
-		this._container.setState( nextState );
-		this._originalComponentWillUpdate.call( this._reactComponent, nextProps, nextState );
-	},
-
-	/**
-	 * Retrieves the react class from GoldenLayout's registry
+	 * Retrieves the react class from GoldenLayout's registry.
 	 *
 	 * @private
 	 * @returns {React.Class}
@@ -89,19 +80,23 @@ lm.utils.copy( lm.utils.ReactComponentHandler.prototype, {
 	},
 
 	/**
-	 * Copies and extends the properties array and returns the React element
+	 * Builds the props for the React component, exposing GL container/event-hub
+	 * plus the Hoist-specific keys (viewModelId, icon, title, viewState) that
+	 * DashContainerView relies on to look up its DashViewModel.
 	 *
 	 * @private
 	 * @returns {React.Element}
 	 */
 	_getReactComponent: function() {
-		var props = Object.assign(
-			{
-				glEventHub: this._container.layoutManager.eventHub,
-				glContainer: this._container
-			},
-			this._container._config.props
-		);
+		var cfg = this._container._config;
+		var props = {
+			viewModelId: cfg.viewModelId,
+			icon: cfg.icon,
+			title: cfg.title,
+			viewState: cfg.state,
+			glEventHub: this._container.layoutManager.eventHub,
+			glContainer: this._container
+		};
 		return React.createElement( this._reactClass, props );
 	}
 } );

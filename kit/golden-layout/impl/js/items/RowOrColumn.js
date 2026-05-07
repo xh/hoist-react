@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.items.RowOrColumn = function( isColumn, layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
@@ -7,9 +6,8 @@ lm.items.RowOrColumn = function( isColumn, layoutManager, config, parent ) {
 	this.isRow = !isColumn;
 	this.isColumn = isColumn;
 
-	this._node = document.createElement( 'div' );
-	this._node.className = 'lm_item lm_' + ( isColumn ? 'column' : 'row' );
-	this.element = $( this._node );
+	this.element = document.createElement( 'div' );
+	this.element.className = 'lm_item lm_' + ( isColumn ? 'column' : 'row' );
 	this.childElementContainer = this.element;
 	this._splitterSize = layoutManager.config.dimensions.borderWidth;
 	this._splitterGrabSize = layoutManager.config.dimensions.borderGrabWidth;
@@ -48,18 +46,18 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 		}
 
 		if( this.contentItems.length > 0 ) {
-			var splitterNode = this._createSplitter( Math.max( 0, index - 1 ) ).element[ 0 ];
-			var contentItemNode = contentItem.element[ 0 ];
+			var splitterNode = this._createSplitter( Math.max( 0, index - 1 ) ).element;
+			var contentItemNode = contentItem.element;
 
 			if( index > 0 ) {
-				this.contentItems[ index - 1 ].element[ 0 ].after( splitterNode );
+				this.contentItems[ index - 1 ].element.after( splitterNode );
 				splitterNode.after( contentItemNode );
 			} else {
-				this.contentItems[ 0 ].element[ 0 ].before( splitterNode );
+				this.contentItems[ 0 ].element.before( splitterNode );
 				splitterNode.before( contentItemNode );
 			}
 		} else {
-			this._node.appendChild( contentItem.element[ 0 ] );
+			this.element.appendChild( contentItem.element );
 		}
 
 		lm.items.AbstractContentItem.prototype.addChild.call( this, contentItem, index );
@@ -180,7 +178,7 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 		lm.items.AbstractContentItem.prototype._$init.call( this );
 
 		for( i = 0; i < this.contentItems.length - 1; i++ ) {
-			this.contentItems[ i ].element[ 0 ].after( this._createSplitter( i ).element[ 0 ] );
+			this.contentItems[ i ].element.after( this._createSplitter( i ).element );
 		}
 	},
 
@@ -202,7 +200,7 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 				sizeData.itemSizes[ i ]++;
 			}
 
-			var itemStyle = this.contentItems[ i ].element[ 0 ].style;
+			var itemStyle = this.contentItems[ i ].element.style;
 			if( this._isColumn ) {
 				itemStyle.width = sizeData.totalWidth + 'px';
 				itemStyle.height = sizeData.itemSizes[ i ] + 'px';
@@ -220,8 +218,8 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 	_calculateAbsoluteSizes: function() {
 		var i,
 			totalSplitterSize = (this.contentItems.length - 1) * this._splitterSize,
-			totalWidth = this._node.clientWidth,
-			totalHeight = this._node.clientHeight,
+			totalWidth = this.element.clientWidth,
+			totalHeight = this.element.clientHeight,
 			totalAssigned = 0,
 			additionalPixel,
 			itemSize,
@@ -487,8 +485,8 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 
 		var sizeProp = this._isColumn ? 'clientHeight' : 'clientWidth';
 		this._splitterPosition = 0;
-		this._splitterMinPosition = -1 * ( items.before.element[ 0 ][ sizeProp ] - ( beforeMinSize || minSize ) );
-		this._splitterMaxPosition = items.after.element[ 0 ][ sizeProp ] - ( afterMinSize || minSize );
+		this._splitterMinPosition = -1 * ( items.before.element[ sizeProp ] - ( beforeMinSize || minSize ) );
+		this._splitterMaxPosition = items.after.element[ sizeProp ] - ( afterMinSize || minSize );
 	},
 
 	/**
@@ -506,7 +504,7 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 
 		if( offset > this._splitterMinPosition && offset < this._splitterMaxPosition ) {
 			this._splitterPosition = offset;
-			splitter.element[ 0 ].style[ this._isColumn ? 'top' : 'left' ] = offset + 'px';
+			splitter.element.style[ this._isColumn ? 'top' : 'left' ] = offset + 'px';
 		}
 	},
 
@@ -523,15 +521,15 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 
 		var items = this._getItemsForSplitter( splitter ),
 			sizeProp = this._isColumn ? 'clientHeight' : 'clientWidth',
-			sizeBefore = items.before.element[ 0 ][ sizeProp ],
-			sizeAfter = items.after.element[ 0 ][ sizeProp ],
+			sizeBefore = items.before.element[ sizeProp ],
+			sizeAfter = items.after.element[ sizeProp ],
 			splitterPositionInRange = ( this._splitterPosition + sizeBefore ) / ( sizeBefore + sizeAfter ),
 			totalRelativeSize = items.before.config[ this._dimension ] + items.after.config[ this._dimension ];
 
 		items.before.config[ this._dimension ] = splitterPositionInRange * totalRelativeSize;
 		items.after.config[ this._dimension ] = ( 1 - splitterPositionInRange ) * totalRelativeSize;
 
-		var splitterStyle = splitter.element[ 0 ].style;
+		var splitterStyle = splitter.element.style;
 		splitterStyle.top = '0';
 		splitterStyle.left = '0';
 

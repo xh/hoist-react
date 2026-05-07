@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 /**
  * Represents an individual tab within a Stack's header
@@ -13,15 +12,11 @@ lm.controls.Tab = function( header, contentItem ) {
 	this.header = header;
 	this.contentItem = contentItem;
 
-	// Build the tab element from the template via DOMParser, then expose it as
-	// a jQuery wrapper since Header still drives tab.element.css(...).
 	var template = document.createElement( 'template' );
 	template.innerHTML = lm.controls.Tab._template;
-	var node = template.content.firstElementChild;
-	this.element = $( node );
-	this._node = node;
-	this._titleNode = node.querySelector( '.lm_title' );
-	this._closeNode = node.querySelector( '.lm_close_tab' );
+	this.element = template.content.firstElementChild;
+	this._titleNode = this.element.querySelector( '.lm_title' );
+	this._closeNode = this.element.querySelector( '.lm_close_tab' );
 	if( !contentItem.config.isClosable ) {
 		this._closeNode.style.display = 'none';
 	}
@@ -46,8 +41,8 @@ lm.controls.Tab = function( header, contentItem ) {
 	this._onTabClickFn = lm.utils.fnBind( this._onTabClick, this );
 	this._onCloseClickFn = lm.utils.fnBind( this._onCloseClick, this );
 
-	node.addEventListener( 'mousedown', this._onTabClickFn, { signal: signal } );
-	node.addEventListener( 'touchstart', this._onTabClickFn, { signal: signal } );
+	this.element.addEventListener( 'mousedown', this._onTabClickFn, { signal: signal } );
+	this.element.addEventListener( 'touchstart', this._onTabClickFn, { signal: signal } );
 
 	if( this.contentItem.config.isClosable ) {
 		this._closeNode.addEventListener( 'click', this._onCloseClickFn, { signal: signal } );
@@ -88,7 +83,7 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 	 * @param {String} title can contain html
 	 */
 	setTitle: function( title ) {
-		this._node.title = lm.utils.stripTags( title );
+		this.element.title = lm.utils.stripTags( title );
 		this._titleNode.innerHTML = title;
 	},
 
@@ -106,9 +101,9 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 		this.isActive = isActive;
 
 		if( isActive ) {
-			this._node.classList.add( 'lm_active' );
+			this.element.classList.add( 'lm_active' );
 		} else {
-			this._node.classList.remove( 'lm_active' );
+			this.element.classList.remove( 'lm_active' );
 		}
 	},
 
@@ -125,7 +120,7 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 			this._dragListener.off( 'dragStart', this._onDragStart );
 			this._dragListener = null;
 		}
-		this._node.remove();
+		this.element.remove();
 	},
 
 	/**

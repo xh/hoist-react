@@ -1,5 +1,4 @@
 import {lm} from './ns.js';
-import $ from 'jquery';
 import {merge, isPlainObject} from 'lodash';
 
 /**
@@ -23,9 +22,8 @@ lm.LayoutManager = function( config, container ) {
 	this._itemAreas = [];
 	this._resizeFunction = lm.utils.fnBind( this._onResize, this );
 	this._maximisedItem = null;
-	var maxPlaceholder = document.createElement( 'div' );
-	maxPlaceholder.className = 'lm_maximise_place';
-	this._maximisePlaceholder = $( maxPlaceholder );
+	this._maximisePlaceholder = document.createElement( 'div' );
+	this._maximisePlaceholder.className = 'lm_maximise_place';
 	this._dragSources = [];
 	this._updatingColumnsResponsive = false;
 	this._firstLoad = true;
@@ -39,9 +37,8 @@ lm.LayoutManager = function( config, container ) {
 	this.container = container;
 	this.dropTargetIndicator = null;
 	this.transitionIndicator = null;
-	var tabPlaceholder = document.createElement( 'div' );
-	tabPlaceholder.className = 'lm_drop_tab_placeholder';
-	this.tabDropPlaceholder = $( tabPlaceholder );
+	this.tabDropPlaceholder = document.createElement( 'div' );
+	this.tabDropPlaceholder.className = 'lm_drop_tab_placeholder';
 
 	this._typeToItem = {
 		'column': lm.utils.fnBind( lm.items.RowOrColumn, this, [ true ] ),
@@ -208,7 +205,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 * @returns {void}
 	 */
 	updateSize: function( width, height ) {
-		var containerNode = this.container[ 0 ];
+		var containerNode = this.container;
 		if( arguments.length === 2 ) {
 			this.width = width;
 			this.height = height;
@@ -221,7 +218,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 			this.root.callDownwards( 'setSize', [ this.width, this.height ] );
 
 			if( this._maximisedItem ) {
-				var maxNode = this._maximisedItem.element[ 0 ];
+				var maxNode = this._maximisedItem.element;
 				maxNode.style.width = containerNode.clientWidth + 'px';
 				maxNode.style.height = containerNode.clientHeight + 'px';
 				this._maximisedItem.callDownwards( 'setSize' );
@@ -326,7 +323,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 */
 	createDragSource: function( element, itemConfig ) {
 		this.config.settings.constrainDragToContainer = false;
-		var dragSource = new lm.controls.DragSource( $( element ), itemConfig, this );
+		var dragSource = new lm.controls.DragSource( element, itemConfig, this );
 		this._dragSources.push( dragSource );
 
 		return dragSource;
@@ -375,10 +372,10 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}
 		this._maximisedItem = contentItem;
 		this._maximisedItem.addId( '__glMaximised' );
-		var itemNode = contentItem.element[ 0 ],
-			rootNode = this.root.element[ 0 ],
-			containerNode = this.container[ 0 ],
-			placeholderNode = this._maximisePlaceholder[ 0 ];
+		var itemNode = contentItem.element,
+			rootNode = this.root.element,
+			containerNode = this.container,
+			placeholderNode = this._maximisePlaceholder;
 		itemNode.classList.add( 'lm_maximised' );
 		itemNode.after( placeholderNode );
 		rootNode.prepend( itemNode );
@@ -390,8 +387,8 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	},
 
 	_$minimiseItem: function( contentItem ) {
-		var itemNode = contentItem.element[ 0 ],
-			placeholderNode = this._maximisePlaceholder[ 0 ];
+		var itemNode = contentItem.element,
+			placeholderNode = this._maximisePlaceholder;
 		itemNode.classList.remove( 'lm_maximised' );
 		contentItem.removeId( '__glMaximised' );
 		placeholderNode.after( itemNode );
@@ -423,16 +420,23 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		return mathingArea;
 	},
 
+	// Hoist patch folded in (#4336): GL 1.5.9 assumes the root component is at
+	// document origin (0, 0). When a dashboard is positioned elsewhere, the
+	// upstream version produces wrong left/top drop areas. We replace the
+	// absolute coords with offsets relative to the root element's actual
+	// bounds. See upstream PR #457 (never merged) and issue #459.
 	_$createRootItemAreas: function() {
+		var sides = { y2: 'y1', x2: 'x1', y1: 'y2', x1: 'x2' };
 		var areaSize = 50;
-		var sides = { y2: 0, x2: 0, y1: 'y2', x1: 'x2' };
+
 		for( var side in sides ) {
 			var area = this.root._$getArea();
 			area.side = side;
-			if( sides [ side ] )
-				area[ side ] = area[ sides [ side ] ] - areaSize;
-			else
-				area[ side ] = areaSize;			
+			if( sides[ side ][ 1 ] === '2' ) {
+				area[ side ] = area[ sides[ side ] ] - areaSize;
+			} else {
+				area[ side ] = area[ sides[ side ] ] + areaSize;
+			}
 			area.surface = ( area.x2 - area.x1 ) * ( area.y2 - area.y1 );
 			this._itemAreas.push( area );
 		}
@@ -607,17 +611,15 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 * @returns {void}
 	 */
 	_setContainer: function() {
-		var container = $( this.container || 'body' );
-
-		if( container.length === 0 ) {
-			throw new Error( 'GoldenLayout container not found' );
+		var container = this.container;
+		if( typeof container === 'string' ) {
+			container = document.querySelector( container );
+		}
+		if( !container ) {
+			container = document.body;
 		}
 
-		if( container.length > 1 ) {
-			throw new Error( 'GoldenLayout more than one container element specified' );
-		}
-
-		if( container[ 0 ] === document.body ) {
+		if( container === document.body ) {
 			this._isFullPage = true;
 
 			[ document.documentElement, document.body ].forEach( function( el ) {

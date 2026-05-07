@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 /**
  * This class represents a header above a Stack ContentItem.
@@ -12,34 +11,24 @@ lm.controls.Header = function( layoutManager, parent ) {
 
 	this.layoutManager = layoutManager;
 
-	// Build header DOM, then expose top-level wrappers as jQuery for downstream
-	// consumers (Stack drives header.element.toggle/.offset/.height; HeaderButton
-	// appends into controlsContainer).
 	var template = document.createElement( 'template' );
 	template.innerHTML = lm.controls.Header._template;
-	var node = template.content.firstElementChild;
-	this._node = node;
-	this.element = $( node );
+	this.element = template.content.firstElementChild;
 
 	this._abort = new AbortController();
 	var signal = this._abort.signal;
 
 	if( this.layoutManager.config.settings.selectionEnabled === true ) {
-		node.classList.add( 'lm_selectable' );
+		this.element.classList.add( 'lm_selectable' );
 		var onHeaderClick = lm.utils.fnBind( this._onHeaderClick, this );
-		node.addEventListener( 'click', onHeaderClick, { signal: signal } );
-		node.addEventListener( 'touchstart', onHeaderClick, { signal: signal } );
+		this.element.addEventListener( 'click', onHeaderClick, { signal: signal } );
+		this.element.addEventListener( 'touchstart', onHeaderClick, { signal: signal } );
 	}
 
-	this._tabsNode = node.querySelector( '.lm_tabs' );
-	this._tabDropdownNode = node.querySelector( '.lm_tabdropdown_list' );
-	this._tabDropdownNode.style.display = 'none';
-	this._controlsNode = node.querySelector( '.lm_controls' );
-
-	// Wrappers retained for jQuery-shaped consumers.
-	this.tabsContainer = $( this._tabsNode );
-	this.tabDropdownContainer = $( this._tabDropdownNode );
-	this.controlsContainer = $( this._controlsNode );
+	this.tabsContainer = this.element.querySelector( '.lm_tabs' );
+	this.tabDropdownContainer = this.element.querySelector( '.lm_tabdropdown_list' );
+	this.tabDropdownContainer.style.display = 'none';
+	this.controlsContainer = this.element.querySelector( '.lm_controls' );
 
 	this.parent = parent;
 	this.parent.on( 'resize', this._updateTabSizes, this );
@@ -97,9 +86,9 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		}
 
 		if( index > 0 ) {
-			this.tabs[ index - 1 ].element[ 0 ].after( tab.element[ 0 ] );
+			this.tabs[ index - 1 ].element.after( tab.element );
 		} else {
-			this.tabs[ 0 ].element[ 0 ].before( tab.element[ 0 ] );
+			this.tabs[ 0 ].element.before( tab.element );
 		}
 
 		this.tabs.splice( index, 0, tab );
@@ -189,7 +178,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 */
 	_$setClosable: function( isClosable ) {
 		if( this.closeButton && this._isClosable() ) {
-			this.closeButton.element[ isClosable ? "show" : "hide" ]();
+			this.closeButton.element.style.display = isClosable ? '' : 'none';
 			return true;
 		}
 
@@ -210,7 +199,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 			this.tabs[ i ]._$destroy();
 		}
 		this._abort.abort();
-		this._node.remove();
+		this.element.remove();
 	},
 
 	/**
@@ -243,7 +232,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		showTabDropdown = lm.utils.fnBind( this._showAdditionalTabsDropdown, this );
 		tabDropdownLabel = this.layoutManager.config.labels.tabDropdown;
 		this.tabDropdownButton = new lm.controls.HeaderButton( this, tabDropdownLabel, 'lm_tabdropdown', showTabDropdown );
-		this.tabDropdownButton.element[ 0 ].style.display = 'none';
+		this.tabDropdownButton.element.style.display = 'none';
 
 		/**
 		 * Maximise control - set the component to the full size of the layout
@@ -255,11 +244,11 @@ lm.utils.copy( lm.controls.Header.prototype, {
 			maximiseButton = new lm.controls.HeaderButton( this, maximiseLabel, 'lm_maximise', maximise );
 
 			this.parent.on( 'maximised', function() {
-				maximiseButton.element[ 0 ].title = minimiseLabel;
+				maximiseButton.element.title = minimiseLabel;
 			} );
 
 			this.parent.on( 'minimised', function() {
-				maximiseButton.element[ 0 ].title = maximiseLabel;
+				maximiseButton.element.title = maximiseLabel;
 			} );
 		}
 
@@ -279,7 +268,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 * @returns {void}
 	 */
 	_showAdditionalTabsDropdown: function() {
-		this._tabDropdownNode.style.display = 'block';
+		this.tabDropdownContainer.style.display = 'block';
 	},
 
 	/**
@@ -288,7 +277,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 * @returns {void}
 	 */
 	_hideAdditionalTabsDropdown: function() {
-		this._tabDropdownNode.style.display = 'none';
+		this.tabDropdownContainer.style.display = 'none';
 	},
 
 	/**
@@ -309,7 +298,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	 * @returns {void}
 	 */
 	_onHeaderClick: function( event ) {
-		if( event.target === this.element[ 0 ] ) {
+		if( event.target === this.element ) {
 			this.parent.select();
 		}
 	},
@@ -325,14 +314,14 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		}
 
 		// Show the menu based on function argument
-		this.tabDropdownButton.element[ 0 ].style.display = showTabMenu === true ? '' : 'none';
+		this.tabDropdownButton.element.style.display = showTabMenu === true ? '' : 'none';
 
 		var sided = this.parent._sided,
 			headerHeight = this.layoutManager.config.dimensions.headerHeight,
-			headerNode = this._node,
-			controlsNode = this._controlsNode,
-			tabsNode = this._tabsNode,
-			tabDropdownNode = this._tabDropdownNode;
+			headerNode = this.element,
+			controlsNode = this.controlsContainer,
+			tabsNode = this.tabsContainer,
+			tabDropdownNode = this.tabDropdownContainer;
 
 		// Clear the cross-axis dimension before reading the long-axis dimension.
 		// Original used size(!sided) to clear and size(sided) to set, where
@@ -364,7 +353,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		};
 
 		for( i = 0; i < this.tabs.length; i++ ) {
-			tabNode = this.tabs[ i ].element[ 0 ];
+			tabNode = this.tabs[ i ].element;
 
 			// Put the tab in the tabContainer so its true width can be checked
 			tabsNode.appendChild( tabNode );
@@ -375,7 +364,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 			if( activeIndex <= i ) {
 				visibleTabWidth = cumulativeTabWidth;
 			} else {
-				visibleTabWidth = cumulativeTabWidth + measureTabWidth( activeTab.element[ 0 ] );
+				visibleTabWidth = cumulativeTabWidth + measureTabWidth( activeTab.element );
 			}
 
 			if( visibleTabWidth > availableWidth ) {
@@ -391,7 +380,7 @@ lm.utils.copy( lm.controls.Header.prototype, {
 					if( overlap < tabOverlapAllowance ) {
 						for( j = 0; j <= i; j++ ) {
 							marginLeft = ( j !== activeIndex && j !== 0 ) ? '-' + overlap + 'px' : '';
-							var jStyle = this.tabs[ j ].element[ 0 ].style;
+							var jStyle = this.tabs[ j ].element.style;
 							jStyle.zIndex = String( i - j );
 							jStyle.marginLeft = marginLeft;
 						}

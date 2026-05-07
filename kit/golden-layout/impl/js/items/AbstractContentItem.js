@@ -177,13 +177,13 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 		newChild = this.layoutManager._$normalizeContentItem( newChild );
 
 		var index = lm.utils.indexOf( oldChild, this.contentItems ),
-			parentNode = oldChild.element[ 0 ].parentNode;
+			parentNode = oldChild.element.parentNode;
 
 		if( index === -1 ) {
 			throw new Error( 'Can\'t replace child. oldChild is not child of this' );
 		}
 
-		parentNode.replaceChild( newChild.element[ 0 ], oldChild.element[ 0 ] );
+		parentNode.replaceChild( newChild.element, oldChild.element );
 
 		/*
 		 * Optionally destroy the old content item
@@ -249,7 +249,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	select: function() {
 		if( this.layoutManager.selectedItem !== this ) {
 			this.layoutManager.selectItem( this, true );
-			this.element[ 0 ].classList.add( 'lm_selected' );
+			this.element.classList.add( 'lm_selected' );
 		}
 	},
 
@@ -261,7 +261,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	deselect: function() {
 		if( this.layoutManager.selectedItem === this ) {
 			this.layoutManager.selectedItem = null;
-			this.element[ 0 ].classList.remove( 'lm_selected' );
+			this.element.classList.remove( 'lm_selected' );
 		}
 	},
 
@@ -411,7 +411,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 
 	_$hide: function() {
 		this._callOnActiveComponents( 'hide' );
-		this.element[ 0 ].style.display = 'none';
+		this.element.style.display = 'none';
 		this.layoutManager.updateSize();
 	},
 
@@ -420,7 +420,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 		// .lm_item and friends have no display:none default, so clearing
 		// the inline style reverts to the UA default (block) and matches
 		// what jQuery .show() did.
-		this.element[ 0 ].style.display = '';
+		this.element.style.display = '';
 		this.layoutManager.updateSize();
 	},
 
@@ -466,7 +466,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 
 		// element may be a jQuery wrapper (the existing call sites) or a raw
 		// DOM Element. Normalise via [0].
-		var node = element[ 0 ] || element,
+		var node = element,
 			rect = node.getBoundingClientRect(),
 			left = rect.left + window.scrollX,
 			top = rect.top + window.scrollY,
