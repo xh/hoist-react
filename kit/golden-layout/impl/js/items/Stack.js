@@ -4,7 +4,10 @@ import $ from 'jquery';
 lm.items.Stack = function( layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
 
-	this.element = $( '<div class="lm_item lm_stack"></div>' );
+	this._node = document.createElement( 'div' );
+	this._node.className = 'lm_item lm_stack';
+	this.element = $( this._node );
+
 	this._activeContentItem = null;
 	var cfg = layoutManager.config;
 	this._header = { // defaults' reconstruction from old configuration style
@@ -27,11 +30,14 @@ lm.items.Stack = function( layoutManager, config, parent ) {
 
 	this.isStack = true;
 
-	this.childElementContainer = $( '<div class="lm_items"></div>' );
+	this._childItemsNode = document.createElement( 'div' );
+	this._childItemsNode.className = 'lm_items';
+	this.childElementContainer = $( this._childItemsNode );
+
 	this.header = new lm.controls.Header( layoutManager, this );
 
-	this.element.append( this.header.element );
-	this.element.append( this.childElementContainer );
+	this._node.appendChild( this.header.element[ 0 ] );
+	this._node.appendChild( this._childItemsNode );
 	this._setupHeaderPosition();
 	this._$validateClosability();
 };
@@ -43,14 +49,16 @@ lm.utils.copy( lm.items.Stack.prototype, {
 	setSize: function() {
 		var i,
 			headerSize = this._header.show ? this.layoutManager.config.dimensions.headerHeight : 0,
-			contentWidth = this.element.width() - (this._sided ? headerSize : 0),
-			contentHeight = this.element.height() - (!this._sided ? headerSize : 0);
+			contentWidth = this._node.clientWidth - ( this._sided ? headerSize : 0 ),
+			contentHeight = this._node.clientHeight - ( !this._sided ? headerSize : 0 );
 
-		this.childElementContainer.width( contentWidth );
-		this.childElementContainer.height( contentHeight );
+		this._childItemsNode.style.width = contentWidth + 'px';
+		this._childItemsNode.style.height = contentHeight + 'px';
 
 		for( i = 0; i < this.contentItems.length; i++ ) {
-			this.contentItems[ i ].element.width( contentWidth ).height( contentHeight );
+			var itemNode = this.contentItems[ i ].element[ 0 ];
+			itemNode.style.width = contentWidth + 'px';
+			itemNode.style.height = contentHeight + 'px';
 		}
 		this.emit( 'resize' );
 		this.emitBubblingEvent( 'stateChanged' );
@@ -103,7 +111,7 @@ lm.utils.copy( lm.items.Stack.prototype, {
 	addChild: function( contentItem, index ) {
 		contentItem = this.layoutManager._$normalizeContentItem( contentItem, this );
 		lm.items.AbstractContentItem.prototype.addChild.call( this, contentItem, index );
-		this.childElementContainer.append( contentItem.element );
+		this._childItemsNode.appendChild( contentItem.element[ 0 ] );
 		this.header.createTab( contentItem, index );
 		this.setActiveContentItem( contentItem );
 		this.callDownwards( 'setSize' );
@@ -286,7 +294,8 @@ lm.utils.copy( lm.items.Stack.prototype, {
 	},
 
 	_$getArea: function() {
-		if( this.element.is( ':visible' ) === false ) {
+		// Approximates jQuery :visible (zero dims when display:none or detached).
+		if( this._node.offsetWidth === 0 && this._node.offsetHeight === 0 ) {
 			return null;
 		}
 
@@ -409,42 +418,50 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 	_highlightHeaderDropZone: function( x ) {
 		var i,
-			tabElement,
+			tabNode,
 			tabsLength = this.header.tabs.length,
 			isAboveTab = false,
 			tabTop,
 			tabLeft,
-			offset,
+			rect,
+			placeHolderTop,
 			placeHolderLeft,
-			headerOffset,
+			headerNode,
+			headerRect,
 			tabWidth,
-			halfX;
+			halfX,
+			placeholderNode = this.layoutManager.tabDropPlaceholder[ 0 ];
 
 		// Empty stack
 		if( tabsLength === 0 ) {
-			headerOffset = this.header.element.offset();
+			headerNode = this.header.element[ 0 ];
+			headerRect = headerNode.getBoundingClientRect();
+			var headerLeft = headerRect.left + window.scrollX,
+				headerTop = headerRect.top + window.scrollY;
 
 			this.layoutManager.dropTargetIndicator.highlightArea( {
-				x1: headerOffset.left,
-				x2: headerOffset.left + 100,
-				y1: headerOffset.top + this.header.element.height() - 20,
-				y2: headerOffset.top + this.header.element.height()
+				x1: headerLeft,
+				x2: headerLeft + 100,
+				y1: headerTop + headerNode.clientHeight - 20,
+				y2: headerTop + headerNode.clientHeight
 			} );
 
 			return;
 		}
 
 		for( i = 0; i < tabsLength; i++ ) {
-			tabElement = this.header.tabs[ i ].element;
-			offset = tabElement.offset();
+			tabNode = this.header.tabs[ i ].element[ 0 ];
+			rect = tabNode.getBoundingClientRect();
+			var tabPageLeft = rect.left + window.scrollX,
+				tabPageTop = rect.top + window.scrollY;
 			if( this._sided ) {
-				tabLeft = offset.top;
-				tabTop = offset.left;
-				tabWidth = tabElement.height();
+				tabLeft = tabPageTop;
+				tabTop = tabPageLeft;
+				tabWidth = tabNode.clientHeight;
 			} else {
-				tabLeft = offset.left;
-				tabTop = offset.top;
-				tabWidth = tabElement.width();
+				tabLeft = tabPageLeft;
+				tabTop = tabPageTop;
+				tabWidth = tabNode.clientWidth;
 			}
 
 			if( x > tabLeft && x < tabLeft + tabWidth ) {
@@ -461,30 +478,31 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 		if( x < halfX ) {
 			this._dropIndex = i;
-			tabElement.before( this.layoutManager.tabDropPlaceholder );
+			tabNode.before( placeholderNode );
 		} else {
 			this._dropIndex = Math.min( i + 1, tabsLength );
-			tabElement.after( this.layoutManager.tabDropPlaceholder );
+			tabNode.after( placeholderNode );
 		}
 
+		var placeholderRect = placeholderNode.getBoundingClientRect();
 
 		if( this._sided ) {
-			placeHolderTop = this.layoutManager.tabDropPlaceholder.offset().top;
+			placeHolderTop = placeholderRect.top + window.scrollY;
 			this.layoutManager.dropTargetIndicator.highlightArea( {
 				x1: tabTop,
-				x2: tabTop + tabElement.innerHeight(),
+				x2: tabTop + tabNode.clientHeight,
 				y1: placeHolderTop,
-				y2: placeHolderTop + this.layoutManager.tabDropPlaceholder.width()
+				y2: placeHolderTop + placeholderNode.clientWidth
 			} );
 			return;
 		}
-		placeHolderLeft = this.layoutManager.tabDropPlaceholder.offset().left;
+		placeHolderLeft = placeholderRect.left + window.scrollX;
 
 		this.layoutManager.dropTargetIndicator.highlightArea( {
 			x1: placeHolderLeft,
-			x2: placeHolderLeft + this.layoutManager.tabDropPlaceholder.width(),
+			x2: placeHolderLeft + placeholderNode.clientWidth,
 			y1: tabTop,
-			y2: tabTop + tabElement.innerHeight()
+			y2: tabTop + tabNode.clientHeight
 		} );
 	},
 
@@ -494,15 +512,19 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 	_setupHeaderPosition: function() {
 		var side = [ 'right', 'left', 'bottom' ].indexOf( this._header.show ) >= 0 && this._header.show;
-		this.header.element.toggle( !!this._header.show );
+		var headerNode = this.header.element[ 0 ];
+		headerNode.style.display = this._header.show ? '' : 'none';
 		this._side = side;
 		this._sided = [ 'right', 'left' ].indexOf( this._side ) >= 0;
-		this.element.removeClass( 'lm_left lm_right lm_bottom' );
+		this._node.classList.remove( 'lm_left', 'lm_right', 'lm_bottom' );
 		if( this._side )
-			this.element.addClass( 'lm_' + this._side );
-		if( this.element.find( '.lm_header' ).length && this.childElementContainer ) {
-			var headerPosition = [ 'right', 'bottom' ].indexOf( this._side ) >= 0 ? 'before' : 'after';
-			this.header.element[ headerPosition ]( this.childElementContainer );
+			this._node.classList.add( 'lm_' + this._side );
+		if( this._node.querySelector( '.lm_header' ) && this._childItemsNode ) {
+			if( [ 'right', 'bottom' ].indexOf( this._side ) >= 0 ) {
+				headerNode.before( this._childItemsNode );
+			} else {
+				headerNode.after( this._childItemsNode );
+			}
 			this.callDownwards( 'setSize' );
 		}
 	},
