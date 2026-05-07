@@ -7,7 +7,9 @@ lm.items.RowOrColumn = function( isColumn, layoutManager, config, parent ) {
 	this.isRow = !isColumn;
 	this.isColumn = isColumn;
 
-	this.element = $( '<div class="lm_item lm_' + ( isColumn ? 'column' : 'row' ) + '"></div>' );
+	this._node = document.createElement( 'div' );
+	this._node.className = 'lm_item lm_' + ( isColumn ? 'column' : 'row' );
+	this.element = $( this._node );
 	this.childElementContainer = this.element;
 	this._splitterSize = layoutManager.config.dimensions.borderWidth;
 	this._splitterGrabSize = layoutManager.config.dimensions.borderGrabWidth;
@@ -46,17 +48,18 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 		}
 
 		if( this.contentItems.length > 0 ) {
-			splitterElement = this._createSplitter( Math.max( 0, index - 1 ) ).element;
+			var splitterNode = this._createSplitter( Math.max( 0, index - 1 ) ).element[ 0 ];
+			var contentItemNode = contentItem.element[ 0 ];
 
 			if( index > 0 ) {
-				this.contentItems[ index - 1 ].element.after( splitterElement );
-				splitterElement.after( contentItem.element );
+				this.contentItems[ index - 1 ].element[ 0 ].after( splitterNode );
+				splitterNode.after( contentItemNode );
 			} else {
-				this.contentItems[ 0 ].element.before( splitterElement );
-				splitterElement.before( contentItem.element );
+				this.contentItems[ 0 ].element[ 0 ].before( splitterNode );
+				splitterNode.before( contentItemNode );
 			}
 		} else {
-			this.childElementContainer.append( contentItem.element );
+			this._node.appendChild( contentItem.element[ 0 ] );
 		}
 
 		lm.items.AbstractContentItem.prototype.addChild.call( this, contentItem, index );
@@ -177,7 +180,7 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 		lm.items.AbstractContentItem.prototype._$init.call( this );
 
 		for( i = 0; i < this.contentItems.length - 1; i++ ) {
-			this.contentItems[ i ].element.after( this._createSplitter( i ).element );
+			this.contentItems[ i ].element[ 0 ].after( this._createSplitter( i ).element[ 0 ] );
 		}
 	},
 
@@ -199,12 +202,13 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 				sizeData.itemSizes[ i ]++;
 			}
 
+			var itemStyle = this.contentItems[ i ].element[ 0 ].style;
 			if( this._isColumn ) {
-				this.contentItems[ i ].element.width( sizeData.totalWidth );
-				this.contentItems[ i ].element.height( sizeData.itemSizes[ i ] );
+				itemStyle.width = sizeData.totalWidth + 'px';
+				itemStyle.height = sizeData.itemSizes[ i ] + 'px';
 			} else {
-				this.contentItems[ i ].element.width( sizeData.itemSizes[ i ] );
-				this.contentItems[ i ].element.height( sizeData.totalHeight );
+				itemStyle.width = sizeData.itemSizes[ i ] + 'px';
+				itemStyle.height = sizeData.totalHeight + 'px';
 			}
 		}
 	},
@@ -216,8 +220,8 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 	_calculateAbsoluteSizes: function() {
 		var i,
 			totalSplitterSize = (this.contentItems.length - 1) * this._splitterSize,
-			totalWidth = this.element.width(),
-			totalHeight = this.element.height(),
+			totalWidth = this._node.clientWidth,
+			totalHeight = this._node.clientHeight,
 			totalAssigned = 0,
 			additionalPixel,
 			itemSize,
@@ -481,9 +485,10 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 		var afterMinDim = this._getMinimumDimensions( items.after.config.content );
 		var afterMinSize = this._isColumn ? afterMinDim.vertical : afterMinDim.horizontal;
 
+		var sizeProp = this._isColumn ? 'clientHeight' : 'clientWidth';
 		this._splitterPosition = 0;
-		this._splitterMinPosition = -1 * ( items.before.element[ this._dimension ]() - (beforeMinSize || minSize) );
-		this._splitterMaxPosition = items.after.element[ this._dimension ]() - (afterMinSize || minSize);
+		this._splitterMinPosition = -1 * ( items.before.element[ 0 ][ sizeProp ] - ( beforeMinSize || minSize ) );
+		this._splitterMaxPosition = items.after.element[ 0 ][ sizeProp ] - ( afterMinSize || minSize );
 	},
 
 	/**
@@ -501,7 +506,7 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 
 		if( offset > this._splitterMinPosition && offset < this._splitterMaxPosition ) {
 			this._splitterPosition = offset;
-			splitter.element.css( this._isColumn ? 'top' : 'left', offset );
+			splitter.element[ 0 ].style[ this._isColumn ? 'top' : 'left' ] = offset + 'px';
 		}
 	},
 
@@ -517,18 +522,18 @@ lm.utils.copy( lm.items.RowOrColumn.prototype, {
 	_onSplitterDragStop: function( splitter ) {
 
 		var items = this._getItemsForSplitter( splitter ),
-			sizeBefore = items.before.element[ this._dimension ](),
-			sizeAfter = items.after.element[ this._dimension ](),
+			sizeProp = this._isColumn ? 'clientHeight' : 'clientWidth',
+			sizeBefore = items.before.element[ 0 ][ sizeProp ],
+			sizeAfter = items.after.element[ 0 ][ sizeProp ],
 			splitterPositionInRange = ( this._splitterPosition + sizeBefore ) / ( sizeBefore + sizeAfter ),
 			totalRelativeSize = items.before.config[ this._dimension ] + items.after.config[ this._dimension ];
 
 		items.before.config[ this._dimension ] = splitterPositionInRange * totalRelativeSize;
 		items.after.config[ this._dimension ] = ( 1 - splitterPositionInRange ) * totalRelativeSize;
 
-		splitter.element.css( {
-			'top': 0,
-			'left': 0
-		} );
+		var splitterStyle = splitter.element[ 0 ].style;
+		splitterStyle.top = '0';
+		splitterStyle.left = '0';
 
 		lm.utils.animFrame( lm.utils.fnBind( this.callDownwards, this, [ 'setSize' ] ) );
 	}
