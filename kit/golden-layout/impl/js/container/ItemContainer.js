@@ -1,5 +1,6 @@
 import {lm} from '../ns.js';
 import $ from 'jquery';
+import {merge} from 'lodash';
 
 lm.container.ItemContainer = function( config, parent, layoutManager ) {
 	lm.utils.EventEmitter.call( this );
@@ -12,13 +13,20 @@ lm.container.ItemContainer = function( config, parent, layoutManager ) {
 	this.isHidden = false;
 
 	this._config = config;
-	this._element = $( [
-		'<div class="lm_item_container">',
-		'<div class="lm_content"></div>',
-		'</div>'
-	].join( '' ) );
 
-	this._contentElement = this._element.find( '.lm_content' );
+	var elementNode = document.createElement( 'div' );
+	elementNode.className = 'lm_item_container';
+	var contentNode = document.createElement( 'div' );
+	contentNode.className = 'lm_content';
+	elementNode.appendChild( contentNode );
+	this._elementNode = elementNode;
+	this._contentNode = contentNode;
+
+	// Wrappers retained for jQuery-shaped consumers: Component reads
+	// container._element via this.element and calls .is(':visible')/.width()/.height();
+	// ReactComponentHandler reads getElement()[0].
+	this._element = $( elementNode );
+	this._contentElement = $( contentNode );
 };
 
 lm.utils.copy( lm.container.ItemContainer.prototype, {
@@ -43,7 +51,7 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 	hide: function() {
 		this.emit( 'hide' );
 		this.isHidden = true;
-		this._element.hide();
+		this._elementNode.style.display = 'none';
 	},
 
 	/**
@@ -56,7 +64,9 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 	show: function() {
 		this.emit( 'show' );
 		this.isHidden = false;
-		this._element.show();
+		// .lm_item_container has no display rule, so reverting to UA default
+		// (block for div) by clearing the inline value matches jQuery .show().
+		this._elementNode.style.display = '';
 		// call shown only if the container has a valid size
 		if( this.height != 0 || this.width != 0 ) {
 			this.emit( 'shown' );
@@ -150,7 +160,7 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 	 * @returns {void}
 	 */
 	extendState: function( state ) {
-		this.setState( $.extend( true, this.getState(), state ) );
+		this.setState( merge( this.getState(), state ) );
 	},
 
 	/**
@@ -186,11 +196,11 @@ lm.utils.copy( lm.container.ItemContainer.prototype, {
 		if( width !== this.width || height !== this.height ) {
 			this.width = width;
 			this.height = height;
-			var cl = this._contentElement[0];
+			var cl = this._contentNode;
 			var hdelta = cl.offsetWidth - cl.clientWidth;
 			var vdelta = cl.offsetHeight - cl.clientHeight;
-			this._contentElement.width( this.width-hdelta )
-			     .height( this.height-vdelta );
+			cl.style.width = ( this.width - hdelta ) + 'px';
+			cl.style.height = ( this.height - vdelta ) + 'px';
 			this.emit( 'resize' );
 		}
 	}
