@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * Pops a content item out into a new browser window.
  * This is achieved by

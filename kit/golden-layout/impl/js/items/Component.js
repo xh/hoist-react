@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * @param {[type]} layoutManager [description]
  * @param {[type]} config      [description]

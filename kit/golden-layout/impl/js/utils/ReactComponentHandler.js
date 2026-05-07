@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
  * lifecycle events to react components

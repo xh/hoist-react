@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.utils.DragListener = function( eElement, nButtonCode ) {
 	lm.utils.EventEmitter.call( this );
 

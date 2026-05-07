@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * This class represents a header above a Stack ContentItem.
  *

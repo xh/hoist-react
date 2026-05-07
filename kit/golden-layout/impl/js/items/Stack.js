@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.items.Stack = function( layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
 

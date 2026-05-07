@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import GoldenLayout from './impl/goldenlayout.js';
+import GoldenLayout from './impl/js/index.js';
 import jquery from 'jquery';
 import './impl/css/goldenlayout-base.css';
 import './impl/css/goldenlayout-light-theme.css';

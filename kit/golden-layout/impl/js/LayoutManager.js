@@ -1,3 +1,6 @@
+import {lm} from './ns.js';
+import $ from 'jquery';
+
 /**
  * The main class that will be exposed as GoldenLayout.
  *
@@ -1066,20 +1069,3 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}, this ) );
 	}
 } );
-
-/**
- * Expose the Layoutmanager as the single entrypoint using UMD
- */
-(function() {
-	/* global define */
-	if( typeof define === 'function' && define.amd ) {
-		define( [ 'jquery' ], function( jquery ) {
-			$ = jquery;
-			return lm.LayoutManager;
-		} ); // jshint ignore:line
-	} else if( typeof exports === 'object' ) {
-		module.exports = lm.LayoutManager;
-	} else {
-		window.GoldenLayout = lm.LayoutManager;
-	}
-})();

@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * This class creates a temporary container
  * for the component whilst it is being dragged

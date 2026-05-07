@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.controls.Splitter = function( isVertical, size, grabSize ) {
 	this._isVertical = isVertical;
 	this._size = size;

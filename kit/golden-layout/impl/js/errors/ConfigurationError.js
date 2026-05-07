@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.errors.ConfigurationError = function( message, node ) {
 	Error.call( this );
 

@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.items.RowOrColumn = function( isColumn, layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
 

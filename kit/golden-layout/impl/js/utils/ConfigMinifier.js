@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * Minifies and unminifies configs by replacing frequent keys
  * and values with one letter substitutes. Config options must

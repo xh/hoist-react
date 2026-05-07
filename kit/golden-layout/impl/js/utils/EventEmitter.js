@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * A generic and very fast EventEmitter
  * implementation. On top of emitting the

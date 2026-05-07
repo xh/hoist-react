@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.controls.HeaderButton = function( header, label, cssClass, action ) {
 	this._header = header;
 	this.element = $( '<li class="' + cssClass + '" title="' + label + '"></li>' );

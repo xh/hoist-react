@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.controls.TransitionIndicator = function() {
 	this._element = $( '<div class="lm_transition_indicator"></div>' );
 	$( document.body ).append( this._element );

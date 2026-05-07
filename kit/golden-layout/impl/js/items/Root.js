@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.items.Root = function( layoutManager, config, containerElement ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, null );
 	this.isRoot = true;

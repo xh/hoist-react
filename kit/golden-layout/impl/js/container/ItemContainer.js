@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.container.ItemContainer = function( config, parent, layoutManager ) {
 	lm.utils.EventEmitter.call( this );
 

@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * Allows for any DOM item to create a component on drag
  * start tobe dragged into the Layout

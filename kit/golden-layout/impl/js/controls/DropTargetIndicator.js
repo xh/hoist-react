@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 lm.controls.DropTargetIndicator = function() {
 	this.element = $( lm.controls.DropTargetIndicator._template );
 	$( document.body ).append( this.element );

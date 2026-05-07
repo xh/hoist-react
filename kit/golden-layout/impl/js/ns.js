@@ -1,1 +1,1 @@
-var lm={"config":{},"container":{},"controls":{},"errors":{},"items":{},"utils":{}};
+export const lm = {config: {}, container: {}, controls: {}, errors: {}, items: {}, utils: {}};

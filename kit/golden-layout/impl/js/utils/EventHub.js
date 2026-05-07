@@ -1,3 +1,6 @@
+import {lm} from '../ns.js';
+import $ from 'jquery';
+
 /**
  * An EventEmitter singleton that propagates events
  * across multiple windows. This is a little bit trickier since
