@@ -7,7 +7,7 @@
   `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
 
 ### ⚙️ Technical
-* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed popout code, ported
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
   See [#4336](https://github.com/xh/hoist-react/issues/4336).
 
