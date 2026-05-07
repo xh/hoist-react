@@ -31,7 +31,7 @@ import './DateInput.scss';
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
 
-    /** True to commit eagerly whenever typed input parses to a new valid date, default false. */
+    /** True to commit eagerly whenever typed input parses to a new valid date. Default false. */
     commitOnChange?: boolean;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
