@@ -20,25 +20,28 @@ lm.utils.copy( lm.controls.Splitter.prototype, {
 	},
 
 	_createElement: function() {
-		var dragHandle = $( '<div class="lm_drag_handle"></div>' );
-		var element    = $( '<div class="lm_splitter"></div>' );
-		element.append(dragHandle);
+		var dragHandle = document.createElement( 'div' );
+		dragHandle.className = 'lm_drag_handle';
+		var element = document.createElement( 'div' );
+		element.className = 'lm_splitter';
+		element.appendChild( dragHandle );
 
 		var handleExcessSize = this._grabSize - this._size;
-		var handleExcessPos  = handleExcessSize / 2;
+		var handleExcessPos = handleExcessSize / 2;
 
 		if( this._isVertical ) {
-			dragHandle.css( 'top', -handleExcessPos );
-			dragHandle.css( 'height', this._size + handleExcessSize );
-			element.addClass( 'lm_vertical' );
-			element[ 'height' ]( this._size );
+			dragHandle.style.top = -handleExcessPos + 'px';
+			dragHandle.style.height = ( this._size + handleExcessSize ) + 'px';
+			element.classList.add( 'lm_vertical' );
+			element.style.height = this._size + 'px';
 		} else {
-			dragHandle.css( 'left', -handleExcessPos );
-			dragHandle.css( 'width', this._size + handleExcessSize );
-			element.addClass( 'lm_horizontal' );
-			element[ 'width' ]( this._size );
+			dragHandle.style.left = -handleExcessPos + 'px';
+			dragHandle.style.width = ( this._size + handleExcessSize ) + 'px';
+			element.classList.add( 'lm_horizontal' );
+			element.style.width = this._size + 'px';
 		}
 
-		return element;
+		// Wrap so RowOrColumn (still jQuery) can drive splitter.element.css(...).
+		return $( element );
 	}
 } );
