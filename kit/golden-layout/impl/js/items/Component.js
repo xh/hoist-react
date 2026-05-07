@@ -1,5 +1,5 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
+import {cloneDeep} from 'lodash';
 
 /**
  * @param {[type]} layoutManager [description]
@@ -10,7 +10,7 @@ lm.items.Component = function( layoutManager, config, parent ) {
 	lm.items.AbstractContentItem.call( this, layoutManager, config, parent );
 
 	var ComponentConstructor = layoutManager.getComponent( this.config.componentName ),
-		componentConfig = $.extend( true, {}, this.config.componentState || {} );
+		componentConfig = cloneDeep( this.config.componentState || {} );
 
 	componentConfig.componentName = this.config.componentName;
 	this.componentName = this.config.componentName;
