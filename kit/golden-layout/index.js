@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import GoldenLayout from 'golden-layout';
+import GoldenLayout from './impl/goldenlayout.js';
 import jquery from 'jquery';
-import 'golden-layout/src/css/goldenlayout-base.css';
-import 'golden-layout/src/css/goldenlayout-light-theme.css';
+import './impl/css/goldenlayout-base.css';
+import './impl/css/goldenlayout-light-theme.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {createRoot} from 'react-dom/client';
