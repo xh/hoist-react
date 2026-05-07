@@ -6,7 +6,6 @@
  */
 import {PlainObject} from '@xh/hoist/core';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
-import {serializeIcon} from '@xh/hoist/icon';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
@@ -50,7 +49,6 @@ function convertGLToStateInner(
                 viewModel = dashContainerModel.getViewModel(viewModelId),
                 view = {type: 'view', viewModelId, id: viewSpecId} as PlainObject;
 
-            if (viewModel.icon !== viewSpec.icon) view.icon = serializeIcon(viewModel.icon);
             if (viewModel.title !== viewSpec.title) view.title = viewModel.title;
             if (!isEmpty(viewModel.viewState)) view.state = viewModel.viewState;
 
@@ -130,7 +128,6 @@ function convertStateToGLInner(items = [], viewSpecs = [], containerSize, contai
 
             const ret = goldenLayoutConfig(viewSpec, item.viewModelId);
 
-            if (!isNil(item.icon)) ret.icon = item.icon;
             if (!isNil(item.title)) ret.title = item.title;
             if (isPlainObject(item.state)) ret.state = item.state;
             if (isFinite(width)) ret.width = width;

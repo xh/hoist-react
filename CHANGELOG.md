@@ -50,6 +50,16 @@ app-load span changes in this release.
   `withFilterByKey`/`replaceFilterByKey`/`withFilterByTypes` filter helpers. See the v85 upgrade
   notes for the full list and replacements.
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved -
+  drive dynamic icons from a reaction on observable state.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above. Apps still needing this can use `pickBy(iconEl.props)` and
+  `Icon.icon(json)` respectively.
+
 ### 🎁 New Features
 * Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
   matching the server-side API.
