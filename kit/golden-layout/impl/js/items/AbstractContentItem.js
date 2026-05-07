@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 /**
  * This is the baseclass that all content items inherit from.

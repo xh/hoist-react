@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.utils.BubblingEvent = function( name, origin ) {
 	this.name = name;
