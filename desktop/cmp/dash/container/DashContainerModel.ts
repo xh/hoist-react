@@ -505,7 +505,10 @@ export class DashContainerModel
         }
         const handler: EventListener = e => {
             this.showContextMenu(e as MouseEvent, headerEl, stack);
+            // Match the original `return false` from the jQuery handler:
+            // prevents the browser default menu and stops propagation.
             e.preventDefault();
+            e.stopPropagation();
         };
         headerEl.addEventListener('contextmenu', handler);
         headerEl._xhContextMenuHandler = handler;
@@ -592,7 +595,12 @@ export class DashContainerModel
             const ctxHandler: EventListener = e => {
                 const index = stack.contentItems.indexOf(item);
                 this.showContextMenu(e as MouseEvent, tabEl, stack, viewModel, index);
+                // stopPropagation is critical here: without it, the event
+                // bubbles to the stack header's contextmenu handler which
+                // would replace this tab-specific menu with the stack-level
+                // "Add view" menu and lose the Remove/Rename/Refresh items.
                 e.preventDefault();
+                e.stopPropagation();
             };
             tabEl.addEventListener('contextmenu', ctxHandler);
             tabEl._xhContextMenuHandler = ctxHandler;
