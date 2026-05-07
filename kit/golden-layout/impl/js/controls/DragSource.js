@@ -1,5 +1,5 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
+import {cloneDeep} from 'lodash';
 
 /**
  * Allows for any DOM item to create a component on drag
@@ -50,7 +50,7 @@ lm.utils.copy( lm.controls.DragSource.prototype, {
 		if( lm.utils.isFunction( itemConfig ) ) {
 			itemConfig = itemConfig();
 		}
-		var contentItem = this._layoutManager._$normalizeContentItem( $.extend( true, {}, itemConfig ) ),
+		var contentItem = this._layoutManager._$normalizeContentItem( cloneDeep( itemConfig ) ),
 			dragProxy = new lm.controls.DragProxy( x, y, this._dragListener, this._layoutManager, contentItem, null );
 
 		this._layoutManager.transitionIndicator.transitionElements( this._element, dragProxy.element );
