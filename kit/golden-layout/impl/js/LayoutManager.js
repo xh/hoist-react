@@ -1,5 +1,6 @@
 import {lm} from './ns.js';
 import $ from 'jquery';
+import {merge, isPlainObject} from 'lodash';
 
 /**
  * The main class that will be exposed as GoldenLayout.
@@ -13,12 +14,6 @@ import $ from 'jquery';
  */
 lm.LayoutManager = function( config, container ) {
 
-	if( !$ || typeof $.noConflict !== 'function' ) {
-		var errorMsg = 'jQuery is missing as dependency for GoldenLayout. ';
-		errorMsg += 'Please either expose $ on GoldenLayout\'s scope (e.g. window) or add "jquery" to ';
-		errorMsg += 'your paths when using RequireJS/AMD';
-		throw new Error( errorMsg );
-	}
 	lm.utils.EventEmitter.call( this );
 
 	this.isInitialised = false;
@@ -28,7 +23,9 @@ lm.LayoutManager = function( config, container ) {
 	this._itemAreas = [];
 	this._resizeFunction = lm.utils.fnBind( this._onResize, this );
 	this._maximisedItem = null;
-	this._maximisePlaceholder = $( '<div class="lm_maximise_place"></div>' );
+	var maxPlaceholder = document.createElement( 'div' );
+	maxPlaceholder.className = 'lm_maximise_place';
+	this._maximisePlaceholder = $( maxPlaceholder );
 	this._dragSources = [];
 	this._updatingColumnsResponsive = false;
 	this._firstLoad = true;
@@ -42,7 +39,9 @@ lm.LayoutManager = function( config, container ) {
 	this.container = container;
 	this.dropTargetIndicator = null;
 	this.transitionIndicator = null;
-	this.tabDropPlaceholder = $( '<div class="lm_drop_tab_placeholder"></div>' );
+	var tabPlaceholder = document.createElement( 'div' );
+	tabPlaceholder.className = 'lm_drop_tab_placeholder';
+	this.tabDropPlaceholder = $( tabPlaceholder );
 
 	this._typeToItem = {
 		'column': lm.utils.fnBind( lm.items.RowOrColumn, this, [ true ] ),
@@ -184,7 +183,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		 * If the document isn't ready yet, wait for it.
 		 */
 		if( document.readyState === 'loading' || document.body === null ) {
-			$( document ).ready( lm.utils.fnBind( this.init, this ) );
+			document.addEventListener( 'DOMContentLoaded', lm.utils.fnBind( this.init, this ), { once: true } );
 			return;
 		}
 
@@ -241,7 +240,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		if( this.isInitialised === false ) {
 			return;
 		}
-		$( window ).off( 'resize', this._resizeFunction );
+		window.removeEventListener( 'resize', this._resizeFunction );
 		this.root.callDownwards( '_$destroy', [], true );
 		this.root.contentItems = [];
 		this.tabDropPlaceholder.remove();
@@ -496,7 +495,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 			return contentItemOrConfig;
 		}
 
-		if( $.isPlainObject( contentItemOrConfig ) && contentItemOrConfig.type ) {
+		if( isPlainObject( contentItemOrConfig ) && contentItemOrConfig.type ) {
 			var newContentItem = this.createContentItem( contentItemOrConfig, parent );
 			newContentItem.callDownwards( '_$init' );
 			return newContentItem;
@@ -543,7 +542,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 */
 	_bindEvents: function() {
 		if( this._isFullPage ) {
-			$( window ).resize( this._resizeFunction );
+			window.addEventListener( 'resize', this._resizeFunction );
 		}
 	},
 
@@ -569,7 +568,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 * @returns {Object} config
 	 */
 	_createConfig: function( config ) {
-		config = $.extend( true, {}, lm.config.defaultConfig, config );
+		config = merge( {}, lm.config.defaultConfig, config );
 
 		var nextNode = function( node ) {
 			for( var key in node ) {
@@ -613,11 +612,11 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		if( container[ 0 ] === document.body ) {
 			this._isFullPage = true;
 
-			$( 'html, body' ).css( {
-				height: '100%',
-				margin: 0,
-				padding: 0,
-				overflow: 'hidden'
+			[ document.documentElement, document.body ].forEach( function( el ) {
+				el.style.height = '100%';
+				el.style.margin = '0';
+				el.style.padding = '0';
+				el.style.overflow = 'hidden';
 			} );
 		}
 
