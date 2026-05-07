@@ -33,7 +33,7 @@ impl/
 - **Phase 0 (vendored):** copied `src/js`, `dist/goldenlayout.js`, types, CSS into `impl/`.
 - **Phase 1 (deleted dead code):** removed `BrowserPopout`, `ConfigMinifier`, popout/sub-window
   plumbing, cross-window event propagation, related config and labels (~933 LOC).
-- **Phase 2 (in progress):** porting ~230 jQuery call sites to DOM APIs, then dropping `jquery`
-  from `dependencies`.
+- **`golden-layout` npm dep dropped** from `package.json`. `jquery` remains until Phase 2 finishes.
+- **Phase 2 (in progress):** porting ~230 jQuery call sites to DOM APIs, then dropping `jquery`.
 
 The three monkey-patches in `index.js` will be folded into the source files as Phase 2 progresses.
