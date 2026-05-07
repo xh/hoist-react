@@ -204,13 +204,12 @@ lm.utils.copy( lm.controls.Header.prototype, {
 			return this.parent._header[ name ];
 	},
 	/**
-	 * Creates the popout, maximise and close buttons in the header's top right corner
+	 * Creates the maximise and close buttons in the header's top right corner
 	 *
 	 * @returns {void}
 	 */
 	_createControls: function() {
 		var closeStack,
-			popout,
 			label,
 			maximiseLabel,
 			minimiseLabel,
@@ -226,15 +225,6 @@ lm.utils.copy( lm.controls.Header.prototype, {
 		tabDropdownLabel = this.layoutManager.config.labels.tabDropdown;
 		this.tabDropdownButton = new lm.controls.HeaderButton( this, tabDropdownLabel, 'lm_tabdropdown', showTabDropdown );
 		this.tabDropdownButton.element.hide();
-
-		/**
-		 * Popout control to launch component in new window.
-		 */
-		if( this._getHeaderSetting( 'popout' ) ) {
-			popout = lm.utils.fnBind( this._onPopoutClick, this );
-			label = this._getHeaderSetting( 'popout' );
-			new lm.controls.HeaderButton( this, label, 'lm_popout', popout );
-		}
 
 		/**
 		 * Maximise control - set the component to the full size of the layout
@@ -291,15 +281,6 @@ lm.utils.copy( lm.controls.Header.prototype, {
 	_isClosable: function() {
 		return this.parent.config.isClosable && this.layoutManager.config.settings.showCloseIcon;
 	},
-
-	_onPopoutClick: function() {
-		if( this.layoutManager.config.settings.popoutWholeStack === true ) {
-			this.parent.popout();
-		} else {
-			this.activeContentItem.popout();
-		}
-	},
-
 
 	/**
 	 * Invoked when the header's background is clicked (not it's tabs or controls)

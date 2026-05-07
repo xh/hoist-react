@@ -27,11 +27,8 @@ lm.LayoutManager = function( config, container ) {
 	this._components = { 'lm-react-component': lm.utils.ReactComponentHandler };
 	this._itemAreas = [];
 	this._resizeFunction = lm.utils.fnBind( this._onResize, this );
-	this._unloadFunction = lm.utils.fnBind( this._onUnload, this );
 	this._maximisedItem = null;
 	this._maximisePlaceholder = $( '<div class="lm_maximise_place"></div>' );
-	this._creationTimeoutPassed = false;
-	this._subWindowsCreated = false;
 	this._dragSources = [];
 	this._updatingColumnsResponsive = false;
 	this._firstLoad = true;
@@ -39,19 +36,13 @@ lm.LayoutManager = function( config, container ) {
 	this.width = null;
 	this.height = null;
 	this.root = null;
-	this.openPopouts = [];
 	this.selectedItem = null;
-	this.isSubWindow = false;
 	this.eventHub = new lm.utils.EventHub( this );
 	this.config = this._createConfig( config );
 	this.container = container;
 	this.dropTargetIndicator = null;
 	this.transitionIndicator = null;
 	this.tabDropPlaceholder = $( '<div class="lm_drop_tab_placeholder"></div>' );
-
-	if( this.isSubWindow === true ) {
-		$( 'body' ).css( 'visibility', 'hidden' );
-	}
 
 	this._typeToItem = {
 		'column': lm.utils.fnBind( lm.items.RowOrColumn, this, [ true ] ),
@@ -65,35 +56,6 @@ lm.LayoutManager = function( config, container ) {
  * Hook that allows to access private classes
  */
 lm.LayoutManager.__lm = lm;
-
-/**
- * Takes a GoldenLayout configuration object and
- * replaces its keys and values recursively with
- * one letter codes
- *
- * @static
- * @public
- * @param   {Object} config A GoldenLayout config object
- *
- * @returns {Object} minified config
- */
-lm.LayoutManager.minifyConfig = function( config ) {
-	return ( new lm.utils.ConfigMinifier() ).minifyConfig( config );
-};
-
-/**
- * Takes a configuration Object that was previously minified
- * using minifyConfig and returns its original version
- *
- * @static
- * @public
- * @param   {Object} minifiedConfig
- *
- * @returns {Object} the original configuration
- */
-lm.LayoutManager.unminifyConfig = function( config ) {
-	return ( new lm.utils.ConfigMinifier() ).unminifyConfig( config );
-};
 
 lm.utils.copy( lm.LayoutManager.prototype, {
 
@@ -182,15 +144,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}
 
 		/*
-		 * Retrieve config for subwindows
-		 */
-		this._$reconcilePopoutWindows();
-		config.openPopouts = [];
-		for( i = 0; i < this.openPopouts.length; i++ ) {
-			config.openPopouts.push( this.openPopouts[ i ].toConfig() );
-		}
-
-		/*
 		 * Add maximised item
 		 */
 		config.maximisedItemId = this._maximisedItem ? '__glMaximised' : null;
@@ -228,37 +181,11 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	init: function() {
 
 		/**
-		 * Create the popout windows straight away. If popouts are blocked
-		 * an error is thrown on the same 'thread' rather than a timeout and can
-		 * be caught. This also prevents any further initilisation from taking place.
-		 */
-		if( this._subWindowsCreated === false ) {
-			this._createSubWindows();
-			this._subWindowsCreated = true;
-		}
-
-
-		/**
 		 * If the document isn't ready yet, wait for it.
 		 */
 		if( document.readyState === 'loading' || document.body === null ) {
 			$( document ).ready( lm.utils.fnBind( this.init, this ) );
 			return;
-		}
-
-		/**
-		 * If this is a subwindow, wait a few milliseconds for the original
-		 * page's js calls to be executed, then replace the bodies content
-		 * with GoldenLayout
-		 */
-		if( this.isSubWindow === true && this._creationTimeoutPassed === false ) {
-			setTimeout( lm.utils.fnBind( this.init, this ), 7 );
-			this._creationTimeoutPassed = true;
-			return;
-		}
-
-		if( this.isSubWindow === true ) {
-			this._adjustToWindowMode();
 		}
 
 		this._setContainer();
@@ -314,9 +241,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		if( this.isInitialised === false ) {
 			return;
 		}
-		this._onUnload();
 		$( window ).off( 'resize', this._resizeFunction );
-		$( window ).off( 'unload beforeunload', this._unloadFunction );
 		this.root.callDownwards( '_$destroy', [], true );
 		this.root.contentItems = [];
 		this.tabDropPlaceholder.remove();
@@ -374,10 +299,7 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		!( parent instanceof lm.items.Stack ) &&
 
 		// and we have a parent
-		!!parent &&
-
-		// and it's not the topmost item in a new window
-		!( this.isSubWindow === true && parent instanceof lm.items.Root )
+		!!parent
 		) {
 			config = {
 				type: 'stack',
@@ -389,101 +311,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 
 		contentItem = new this._typeToItem[ config.type ]( this, config, parent );
 		return contentItem;
-	},
-
-	/**
-	 * Creates a popout window with the specified content and dimensions
-	 *
-	 * @param   {Object|lm.itemsAbstractContentItem} configOrContentItem
-	 * @param   {[Object]} dimensions A map with width, height, left and top
-	 * @param    {[String]} parentId the id of the element this item will be appended to
-	 *                             when popIn is called
-	 * @param    {[Number]} indexInParent The position of this item within its parent element
-
-	 * @returns {lm.controls.BrowserPopout}
-	 */
-	createPopout: function( configOrContentItem, dimensions, parentId, indexInParent ) {
-		var config = configOrContentItem,
-			isItem = configOrContentItem instanceof lm.items.AbstractContentItem,
-			self = this,
-			windowLeft,
-			windowTop,
-			offset,
-			parent,
-			child,
-			browserPopout;
-
-		parentId = parentId || null;
-
-		if( isItem ) {
-			config = this.toConfig( configOrContentItem ).content;
-			parentId = lm.utils.getUniqueId();
-
-			/**
-			 * If the item is the only component within a stack or for some
-			 * other reason the only child of its parent the parent will be destroyed
-			 * when the child is removed.
-			 *
-			 * In order to support this we move up the tree until we find something
-			 * that will remain after the item is being popped out
-			 */
-			parent = configOrContentItem.parent;
-			child = configOrContentItem;
-			while( parent.contentItems.length === 1 && !parent.isRoot ) {
-				parent = parent.parent;
-				child = child.parent;
-			}
-
-			parent.addId( parentId );
-			if( isNaN( indexInParent ) ) {
-				indexInParent = lm.utils.indexOf( child, parent.contentItems );
-			}
-		} else {
-			if( !( config instanceof Array ) ) {
-				config = [ config ];
-			}
-		}
-
-
-		if( !dimensions && isItem ) {
-			windowLeft = window.screenX || window.screenLeft;
-			windowTop = window.screenY || window.screenTop;
-			offset = configOrContentItem.element.offset();
-
-			dimensions = {
-				left: windowLeft + offset.left,
-				top: windowTop + offset.top,
-				width: configOrContentItem.element.width(),
-				height: configOrContentItem.element.height()
-			};
-		}
-
-		if( !dimensions && !isItem ) {
-			dimensions = {
-				left: window.screenX || window.screenLeft + 20,
-				top: window.screenY || window.screenTop + 20,
-				width: 500,
-				height: 309
-			};
-		}
-
-		if( isItem ) {
-			configOrContentItem.remove();
-		}
-
-		browserPopout = new lm.controls.BrowserPopout( config, dimensions, parentId, indexInParent, this );
-
-		browserPopout.on( 'initialised', function() {
-			self.emit( 'windowOpened', browserPopout );
-		} );
-
-		browserPopout.on( 'closed', function() {
-			self._$reconcilePopoutWindows();
-		} );
-
-		this.openPopouts.push( browserPopout );
-
-		return browserPopout;
 	},
 
 	/**
@@ -566,26 +393,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		this._maximisedItem = null;
 		contentItem.emit( 'minimised' );
 		this.emit( 'stateChanged' );
-	},
-
-	/**
-	 * This method is used to get around sandboxed iframe restrictions.
-	 * If 'allow-top-navigation' is not specified in the iframe's 'sandbox' attribute
-	 * (as is the case with codepens) the parent window is forbidden from calling certain
-	 * methods on the child, such as window.close() or setting document.location.href.
-	 *
-	 * This prevented GoldenLayout popouts from popping in in codepens. The fix is to call
-	 * _$closeWindow on the child window's gl instance which (after a timeout to disconnect
-	 * the invoking method from the close call) closes itself.
-	 *
-	 * @packagePrivate
-	 *
-	 * @returns {void}
-	 */
-	_$closeWindow: function() {
-		window.setTimeout( function() {
-			window.close();
-		}, 1 );
 	},
 
 	_$getArea: function( x, y ) {
@@ -698,33 +505,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}
 	},
 
-	/**
-	 * Iterates through the array of open popout windows and removes the ones
-	 * that are effectively closed. This is necessary due to the lack of reliably
-	 * listening for window.close / unload events in a cross browser compatible fashion.
-	 *
-	 * @packagePrivate
-	 *
-	 * @returns {void}
-	 */
-	_$reconcilePopoutWindows: function() {
-		var openPopouts = [], i;
-
-		for( i = 0; i < this.openPopouts.length; i++ ) {
-			if( this.openPopouts[ i ].getWindow().closed === false ) {
-				openPopouts.push( this.openPopouts[ i ] );
-			} else {
-				this.emit( 'windowClosed', this.openPopouts[ i ] );
-			}
-		}
-
-		if( this.openPopouts.length !== openPopouts.length ) {
-			this.emit( 'stateChanged' );
-			this.openPopouts = openPopouts;
-		}
-
-	},
-
 	/***************************
 	 * PRIVATE
 	 ***************************/
@@ -765,7 +545,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		if( this._isFullPage ) {
 			$( window ).resize( this._resizeFunction );
 		}
-		$( window ).on( 'unload beforeunload', this._unloadFunction );
 	},
 
 	/**
@@ -790,16 +569,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 * @returns {Object} config
 	 */
 	_createConfig: function( config ) {
-		var windowConfigKey = lm.utils.getQueryStringParam( 'gl-window' );
-
-		if( windowConfigKey ) {
-			this.isSubWindow = true;
-			config = localStorage.getItem( windowConfigKey );
-			config = JSON.parse( config );
-			config = ( new lm.utils.ConfigMinifier() ).unminifyConfig( config );
-			localStorage.removeItem( windowConfigKey );
-		}
-
 		config = $.extend( true, {}, lm.config.defaultConfig, config );
 
 		var nextNode = function( node ) {
@@ -821,68 +590,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}
 
 		return config;
-	},
-
-	/**
-	 * This is executed when GoldenLayout detects that it is run
-	 * within a previously opened popout window.
-	 *
-	 * @private
-	 *
-	 * @returns {void}
-	 */
-	_adjustToWindowMode: function() {
-		var popInButton = $( '<div class="lm_popin" title="' + this.config.labels.popin + '">' +
-			'<div class="lm_icon"></div>' +
-			'<div class="lm_bg"></div>' +
-			'</div>' );
-
-		popInButton.click( lm.utils.fnBind( function() {
-			this.emit( 'popIn' );
-		}, this ) );
-
-		document.title = lm.utils.stripTags( this.config.content[ 0 ].title );
-
-		$( 'head' ).append( $( 'body link, body style, template, .gl_keep' ) );
-
-		this.container = $( 'body' )
-			.html( '' )
-			.css( 'visibility', 'visible' )
-			.append( popInButton );
-
-		/*
-		 * This seems a bit pointless, but actually causes a reflow/re-evaluation getting around
-		 * slickgrid's "Cannot find stylesheet." bug in chrome
-		 */
-		var x = document.body.offsetHeight; // jshint ignore:line
-
-		/*
-		 * Expose this instance on the window object
-		 * to allow the opening window to interact with
-		 * it
-		 */
-		window.__glInstance = this;
-	},
-
-	/**
-	 * Creates Subwindows (if there are any). Throws an error
-	 * if popouts are blocked.
-	 *
-	 * @returns {void}
-	 */
-	_createSubWindows: function() {
-		var i, popout;
-
-		for( i = 0; i < this.config.openPopouts.length; i++ ) {
-			popout = this.config.openPopouts[ i ];
-
-			this.createPopout(
-				popout.content,
-				popout.dimensions,
-				popout.parentId,
-				popout.indexInParent
-			);
-		}
 	},
 
 	/**
@@ -947,20 +654,6 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 
 		if( config.maximisedItemId === '__glMaximised' ) {
 			this.root.getItemsById( config.maximisedItemId )[ 0 ].toggleMaximise();
-		}
-	},
-
-	/**
-	 * Called when the window is closed or the user navigates away
-	 * from the page
-	 *
-	 * @returns {void}
-	 */
-	_onUnload: function() {
-		if( this.config.settings.closePopoutsOnUnload === true ) {
-			for( var i = 0; i < this.openPopouts.length; i++ ) {
-				this.openPopouts[ i ].close();
-			}
 		}
 	},
 

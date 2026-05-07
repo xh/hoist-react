@@ -9,7 +9,6 @@ lm.items.Stack = function( layoutManager, config, parent ) {
 	var cfg = layoutManager.config;
 	this._header = { // defaults' reconstruction from old configuration style
 		show: cfg.settings.hasHeaders === true && config.hasHeaders !== false,
-		popout: cfg.settings.showPopoutIcon && cfg.labels.popout,
 		maximise: cfg.settings.showMaximiseIcon && cfg.labels.maximise,
 		close: cfg.settings.showCloseIcon && cfg.labels.close,
 		minimise: cfg.labels.minimise,

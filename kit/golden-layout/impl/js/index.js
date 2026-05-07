@@ -16,7 +16,6 @@ import './LayoutManager.js';
 import './config/ItemDefaultConfig.js';
 import './config/defaultConfig.js';
 import './container/ItemContainer.js';
-import './controls/BrowserPopout.js';
 import './controls/DragProxy.js';
 import './controls/DragSource.js';
 import './controls/DropTargetIndicator.js';

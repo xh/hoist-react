@@ -226,18 +226,6 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	},
 
 	/**
-	 * Removes the component from the layout and creates a new
-	 * browser window with the component and its children inside
-	 *
-	 * @returns {lm.controls.BrowserPopout}
-	 */
-	popout: function() {
-		var browserPopout = this.layoutManager.createPopout( this );
-		this.emitBubblingEvent( 'stateChanged' );
-		return browserPopout;
-	},
-
-	/**
 	 * Maximises the Item or minimises it if it is already maximised
 	 *
 	 * @returns {void}
