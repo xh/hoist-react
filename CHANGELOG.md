@@ -9,6 +9,8 @@
   defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
   `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
   where the eager default would reformat the user's text mid-typing.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
 
 ## 85.0.0 - 2020-04-30
 
