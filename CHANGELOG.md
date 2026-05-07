@@ -5,10 +5,10 @@
 ### 🐞 Bug Fixes
 * Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
   `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
-* Desktop `DateInput` no longer eagerly commits typed values on the keystroke that completes an
-  exact-format match - it now waits for blur, Enter, or picker selection, consistent with
-  `TextInput` and other Hoist inputs. Adds a new `commitOnChange` prop (default `false`) for
-  callers who want the prior eager behavior.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
 
 ## 85.0.0 - 2020-04-30
 
