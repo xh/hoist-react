@@ -1,12 +1,14 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 lm.controls.DropTargetIndicator = function() {
-	this.element = $( lm.controls.DropTargetIndicator._template );
-	$( document.body ).append( this.element );
+	this.element = document.createElement( 'div' );
+	this.element.className = 'lm_dropTargetIndicator';
+	var inner = document.createElement( 'div' );
+	inner.className = 'lm_inner';
+	this.element.appendChild( inner );
+	this.element.style.display = 'none';
+	document.body.appendChild( this.element );
 };
-
-lm.controls.DropTargetIndicator._template = '<div class="lm_dropTargetIndicator"><div class="lm_inner"></div></div>';
 
 lm.utils.copy( lm.controls.DropTargetIndicator.prototype, {
 	destroy: function() {
@@ -18,15 +20,15 @@ lm.utils.copy( lm.controls.DropTargetIndicator.prototype, {
 	},
 
 	highlightArea: function( area ) {
-		this.element.css( {
-			left: area.x1,
-			top: area.y1,
-			width: area.x2 - area.x1,
-			height: area.y2 - area.y1
-		} ).show();
+		var s = this.element.style;
+		s.left = area.x1 + 'px';
+		s.top = area.y1 + 'px';
+		s.width = ( area.x2 - area.x1 ) + 'px';
+		s.height = ( area.y2 - area.y1 ) + 'px';
+		s.display = '';
 	},
 
 	hide: function() {
-		this.element.hide();
+		this.element.style.display = 'none';
 	}
 } );
