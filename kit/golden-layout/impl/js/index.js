@@ -31,7 +31,6 @@ import './items/Root.js';
 import './items/RowOrColumn.js';
 import './items/Stack.js';
 import './utils/BubblingEvent.js';
-import './utils/ConfigMinifier.js';
 import './utils/EventHub.js';
 import './utils/ReactComponentHandler.js';
 
