@@ -1,5 +1,4 @@
 import {lm} from '../ns.js';
-import $ from 'jquery';
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
@@ -96,11 +95,13 @@ lm.utils.copy( lm.utils.ReactComponentHandler.prototype, {
 	 * @returns {React.Element}
 	 */
 	_getReactComponent: function() {
-		var defaultProps = {
-			glEventHub: this._container.layoutManager.eventHub,
-			glContainer: this._container,
-		};
-		var props = $.extend( defaultProps, this._container._config.props );
+		var props = Object.assign(
+			{
+				glEventHub: this._container.layoutManager.eventHub,
+				glContainer: this._container
+			},
+			this._container._config.props
+		);
 		return React.createElement( this._reactClass, props );
 	}
 } );
