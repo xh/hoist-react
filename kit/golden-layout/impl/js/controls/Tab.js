@@ -12,10 +12,19 @@ import $ from 'jquery';
 lm.controls.Tab = function( header, contentItem ) {
 	this.header = header;
 	this.contentItem = contentItem;
-	this.element = $( lm.controls.Tab._template );
-	this.titleElement = this.element.find( '.lm_title' );
-	this.closeElement = this.element.find( '.lm_close_tab' );
-	this.closeElement[ contentItem.config.isClosable ? 'show' : 'hide' ]();
+
+	// Build the tab element from the template via DOMParser, then expose it as
+	// a jQuery wrapper since Header still drives tab.element.css(...).
+	var template = document.createElement( 'template' );
+	template.innerHTML = lm.controls.Tab._template;
+	var node = template.content.firstElementChild;
+	this.element = $( node );
+	this._node = node;
+	this._titleNode = node.querySelector( '.lm_title' );
+	this._closeNode = node.querySelector( '.lm_close_tab' );
+	if( !contentItem.config.isClosable ) {
+		this._closeNode.style.display = 'none';
+	}
 	this.isActive = false;
 
 	this.setTitle( contentItem.config.title );
@@ -32,16 +41,21 @@ lm.controls.Tab = function( header, contentItem ) {
 		this.contentItem.on( 'destroy', this._dragListener.destroy, this._dragListener );
 	}
 
+	this._abort = new AbortController();
+	var signal = this._abort.signal;
 	this._onTabClickFn = lm.utils.fnBind( this._onTabClick, this );
 	this._onCloseClickFn = lm.utils.fnBind( this._onCloseClick, this );
 
-	this.element.on( 'mousedown touchstart', this._onTabClickFn );
+	node.addEventListener( 'mousedown', this._onTabClickFn, { signal: signal } );
+	node.addEventListener( 'touchstart', this._onTabClickFn, { signal: signal } );
 
 	if( this.contentItem.config.isClosable ) {
-		this.closeElement.on( 'click touchstart', this._onCloseClickFn );
-		this.closeElement.on('mousedown', this._onCloseMousedown);
+		this._closeNode.addEventListener( 'click', this._onCloseClickFn, { signal: signal } );
+		this._closeNode.addEventListener( 'touchstart', this._onCloseClickFn, { signal: signal } );
+		this._closeNode.addEventListener( 'mousedown', this._onCloseMousedown, { signal: signal } );
 	} else {
-		this.closeElement.remove();
+		this._closeNode.remove();
+		this._closeNode = null;
 	}
 
 	this.contentItem.tab = this;
@@ -74,8 +88,8 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 	 * @param {String} title can contain html
 	 */
 	setTitle: function( title ) {
-		this.element.attr( 'title', lm.utils.stripTags( title ) );
-		this.titleElement.html( title );
+		this._node.title = lm.utils.stripTags( title );
+		this._titleNode.innerHTML = title;
 	},
 
 	/**
@@ -92,9 +106,9 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 		this.isActive = isActive;
 
 		if( isActive ) {
-			this.element.addClass( 'lm_active' );
+			this._node.classList.add( 'lm_active' );
 		} else {
-			this.element.removeClass( 'lm_active' );
+			this._node.classList.remove( 'lm_active' );
 		}
 	},
 
@@ -105,14 +119,13 @@ lm.utils.copy( lm.controls.Tab.prototype, {
 	 * @returns {void}
 	 */
 	_$destroy: function() {
-		this.element.off( 'mousedown touchstart', this._onTabClickFn );
-		this.closeElement.off( 'click touchstart', this._onCloseClickFn );
+		this._abort.abort();
 		if( this._dragListener ) {
 			this.contentItem.off( 'destroy', this._dragListener.destroy, this._dragListener );
 			this._dragListener.off( 'dragStart', this._onDragStart );
 			this._dragListener = null;
 		}
-		this.element.remove();
+		this._node.remove();
 	},
 
 	/**
