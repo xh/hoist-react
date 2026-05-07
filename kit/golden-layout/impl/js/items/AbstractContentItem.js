@@ -249,7 +249,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	select: function() {
 		if( this.layoutManager.selectedItem !== this ) {
 			this.layoutManager.selectItem( this, true );
-			this.element.addClass( 'lm_selected' );
+			this.element[ 0 ].classList.add( 'lm_selected' );
 		}
 	},
 
@@ -261,7 +261,7 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	deselect: function() {
 		if( this.layoutManager.selectedItem === this ) {
 			this.layoutManager.selectedItem = null;
-			this.element.removeClass( 'lm_selected' );
+			this.element[ 0 ].classList.remove( 'lm_selected' );
 		}
 	},
 
@@ -411,13 +411,16 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 
 	_$hide: function() {
 		this._callOnActiveComponents( 'hide' );
-		this.element.hide();
+		this.element[ 0 ].style.display = 'none';
 		this.layoutManager.updateSize();
 	},
 
 	_$show: function() {
 		this._callOnActiveComponents( 'show' );
-		this.element.show();
+		// .lm_item and friends have no display:none default, so clearing
+		// the inline style reverts to the UA default (block) and matches
+		// what jQuery .show() did.
+		this.element[ 0 ].style.display = '';
 		this.layoutManager.updateSize();
 	},
 
@@ -461,15 +464,20 @@ lm.utils.copy( lm.items.AbstractContentItem.prototype, {
 	_$getArea: function( element ) {
 		element = element || this.element;
 
-		var offset = element.offset(),
-			width = element.width(),
-			height = element.height();
+		// element may be a jQuery wrapper (the existing call sites) or a raw
+		// DOM Element. Normalise via [0].
+		var node = element[ 0 ] || element,
+			rect = node.getBoundingClientRect(),
+			left = rect.left + window.scrollX,
+			top = rect.top + window.scrollY,
+			width = node.clientWidth,
+			height = node.clientHeight;
 
 		return {
-			x1: offset.left,
-			y1: offset.top,
-			x2: offset.left + width,
-			y2: offset.top + height,
+			x1: left,
+			y1: top,
+			x2: left + width,
+			y2: top + height,
 			surface: width * height,
 			contentItem: this
 		};

@@ -208,20 +208,22 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 	 * @returns {void}
 	 */
 	updateSize: function( width, height ) {
+		var containerNode = this.container[ 0 ];
 		if( arguments.length === 2 ) {
 			this.width = width;
 			this.height = height;
 		} else {
-			this.width = this.container.width();
-			this.height = this.container.height();
+			this.width = containerNode.clientWidth;
+			this.height = containerNode.clientHeight;
 		}
 
 		if( this.isInitialised === true ) {
 			this.root.callDownwards( 'setSize', [ this.width, this.height ] );
 
 			if( this._maximisedItem ) {
-				this._maximisedItem.element.width( this.container.width() );
-				this._maximisedItem.element.height( this.container.height() );
+				var maxNode = this._maximisedItem.element[ 0 ];
+				maxNode.style.width = containerNode.clientWidth + 'px';
+				maxNode.style.height = containerNode.clientHeight + 'px';
 				this._maximisedItem.callDownwards( 'setSize' );
 			}
 
@@ -373,21 +375,27 @@ lm.utils.copy( lm.LayoutManager.prototype, {
 		}
 		this._maximisedItem = contentItem;
 		this._maximisedItem.addId( '__glMaximised' );
-		contentItem.element.addClass( 'lm_maximised' );
-		contentItem.element.after( this._maximisePlaceholder );
-		this.root.element.prepend( contentItem.element );
-		contentItem.element.width( this.container.width() );
-		contentItem.element.height( this.container.height() );
+		var itemNode = contentItem.element[ 0 ],
+			rootNode = this.root.element[ 0 ],
+			containerNode = this.container[ 0 ],
+			placeholderNode = this._maximisePlaceholder[ 0 ];
+		itemNode.classList.add( 'lm_maximised' );
+		itemNode.after( placeholderNode );
+		rootNode.prepend( itemNode );
+		itemNode.style.width = containerNode.clientWidth + 'px';
+		itemNode.style.height = containerNode.clientHeight + 'px';
 		contentItem.callDownwards( 'setSize' );
 		this._maximisedItem.emit( 'maximised' );
 		this.emit( 'stateChanged' );
 	},
 
 	_$minimiseItem: function( contentItem ) {
-		contentItem.element.removeClass( 'lm_maximised' );
+		var itemNode = contentItem.element[ 0 ],
+			placeholderNode = this._maximisePlaceholder[ 0 ];
+		itemNode.classList.remove( 'lm_maximised' );
 		contentItem.removeId( '__glMaximised' );
-		this._maximisePlaceholder.after( contentItem.element );
-		this._maximisePlaceholder.remove();
+		placeholderNode.after( itemNode );
+		placeholderNode.remove();
 		contentItem.parent.callDownwards( 'setSize' );
 		this._maximisedItem = null;
 		contentItem.emit( 'minimised' );

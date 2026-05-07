@@ -34,9 +34,11 @@ lm.utils.copy( lm.items.Component.prototype, {
 	},
 
 	setSize: function() {
-		if( this.element.is( ':visible' ) ) {
+		var node = this.element[ 0 ];
+		// Approximates jQuery :visible (zero dims when display:none or detached).
+		if( node.offsetWidth !== 0 || node.offsetHeight !== 0 ) {
 			// Do not update size of hidden components to prevent unwanted reflows
-			this.container._$setSize( this.element.width(), this.element.height() );
+			this.container._$setSize( node.clientWidth, node.clientHeight );
 		}
 	},
 

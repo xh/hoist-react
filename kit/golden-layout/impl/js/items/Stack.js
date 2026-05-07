@@ -418,42 +418,48 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 	_highlightHeaderDropZone: function( x ) {
 		var i,
-			tabElement,
+			tabNode,
+			tabRect,
 			tabsLength = this.header.tabs.length,
 			isAboveTab = false,
 			tabTop,
 			tabLeft,
-			offset,
+			placeHolderTop,
 			placeHolderLeft,
-			headerOffset,
 			tabWidth,
-			halfX;
+			halfX,
+			placeholderNode = this.layoutManager.tabDropPlaceholder[ 0 ];
 
 		// Empty stack
 		if( tabsLength === 0 ) {
-			headerOffset = this.header.element.offset();
+			var headerNode = this.header.element[ 0 ],
+				headerRect = headerNode.getBoundingClientRect(),
+				headerLeft = headerRect.left + window.scrollX,
+				headerTop = headerRect.top + window.scrollY;
 
 			this.layoutManager.dropTargetIndicator.highlightArea( {
-				x1: headerOffset.left,
-				x2: headerOffset.left + 100,
-				y1: headerOffset.top + this.header.element.height() - 20,
-				y2: headerOffset.top + this.header.element.height()
+				x1: headerLeft,
+				x2: headerLeft + 100,
+				y1: headerTop + headerNode.clientHeight - 20,
+				y2: headerTop + headerNode.clientHeight
 			} );
 
 			return;
 		}
 
 		for( i = 0; i < tabsLength; i++ ) {
-			tabElement = this.header.tabs[ i ].element;
-			offset = tabElement.offset();
+			tabNode = this.header.tabs[ i ].element[ 0 ];
+			tabRect = tabNode.getBoundingClientRect();
+			var tabPageLeft = tabRect.left + window.scrollX,
+				tabPageTop = tabRect.top + window.scrollY;
 			if( this._sided ) {
-				tabLeft = offset.top;
-				tabTop = offset.left;
-				tabWidth = tabElement.height();
+				tabLeft = tabPageTop;
+				tabTop = tabPageLeft;
+				tabWidth = tabRect.height;
 			} else {
-				tabLeft = offset.left;
-				tabTop = offset.top;
-				tabWidth = tabElement.width();
+				tabLeft = tabPageLeft;
+				tabTop = tabPageTop;
+				tabWidth = tabRect.width;
 			}
 
 			if( x > tabLeft && x < tabLeft + tabWidth ) {
@@ -470,30 +476,31 @@ lm.utils.copy( lm.items.Stack.prototype, {
 
 		if( x < halfX ) {
 			this._dropIndex = i;
-			tabElement.before( this.layoutManager.tabDropPlaceholder );
+			tabNode.before( placeholderNode );
 		} else {
 			this._dropIndex = Math.min( i + 1, tabsLength );
-			tabElement.after( this.layoutManager.tabDropPlaceholder );
+			tabNode.after( placeholderNode );
 		}
 
+		var placeholderRect = placeholderNode.getBoundingClientRect();
 
 		if( this._sided ) {
-			placeHolderTop = this.layoutManager.tabDropPlaceholder.offset().top;
+			placeHolderTop = placeholderRect.top + window.scrollY;
 			this.layoutManager.dropTargetIndicator.highlightArea( {
 				x1: tabTop,
-				x2: tabTop + tabElement.innerHeight(),
+				x2: tabTop + tabNode.clientHeight,
 				y1: placeHolderTop,
-				y2: placeHolderTop + this.layoutManager.tabDropPlaceholder.width()
+				y2: placeHolderTop + placeholderNode.clientWidth
 			} );
 			return;
 		}
-		placeHolderLeft = this.layoutManager.tabDropPlaceholder.offset().left;
+		placeHolderLeft = placeholderRect.left + window.scrollX;
 
 		this.layoutManager.dropTargetIndicator.highlightArea( {
 			x1: placeHolderLeft,
-			x2: placeHolderLeft + this.layoutManager.tabDropPlaceholder.width(),
+			x2: placeHolderLeft + placeholderNode.clientWidth,
 			y1: tabTop,
-			y2: tabTop + tabElement.innerHeight()
+			y2: tabTop + tabNode.clientHeight
 		} );
 	},
 
