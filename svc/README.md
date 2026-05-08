@@ -768,6 +768,27 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 }
 ```
 
+### `params` Triggers a POST When Method Is Not Specified
+
+When `params` is passed without an explicit `method`, `FetchService` issues a **POST** and sends
+the params as `application/x-www-form-urlencoded` in the request body -- not as a URL query
+string on a GET. This is rarely what callers intend.
+
+**Always specify `method: 'GET'` (or use `XH.fetchService.getJson()`) when you intend a GET with
+query parameters.** Omitting the method changes the verb, the wire format, and the server-side
+route hit.
+
+```typescript
+// ❌ Surprising: sends POST with form-encoded params in the body
+await XH.fetchJson({url: 'api/users', params: {role: 'admin'}});
+
+// ✅ Explicit GET with query string ?role=admin
+await XH.fetchJson({url: 'api/users', params: {role: 'admin'}, method: 'GET'});
+
+// ✅ Or use the dedicated getJson() helper
+await XH.fetchService.getJson({url: 'api/users', params: {role: 'admin'}});
+```
+
 ### Using Native `fetch` Instead of FetchService
 
 Hoist apps should use `FetchService` (via `XH.fetch()`, `XH.fetchJson()`, `XH.postJson()`) rather
