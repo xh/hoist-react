@@ -13,6 +13,7 @@
   `Icon.icon(json)` respectively.
 
 ### 🎁 New Features
+
 * Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
   can accept and forward across call boundaries to propagate trace/load context into nested
   loads and fetches.
@@ -24,6 +25,7 @@
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
 
 ### 🐞 Bug Fixes
+
 * Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
   `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
 * Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
