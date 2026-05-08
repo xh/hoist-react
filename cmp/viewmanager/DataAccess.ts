@@ -56,10 +56,9 @@ export class DataAccess<T> {
         if (!token) return View.createDefault(model);
         return model
             .runOn(ctx)
-            .run(async ctx => {
-                const raw = await ctx.fetchJson({url: 'xhView/get', params: {token}});
-                return View.fromBlob(raw, model);
-            })
+            .run(async ctx =>
+                View.fromBlob(await ctx.fetchJson({url: 'xhView/get', params: {token}}), model)
+            )
             .catch(e => {
                 throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
             });
@@ -70,13 +69,12 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .run(async ctx => {
-                const raw = await ctx.postJson({
-                    url: 'xhView/create',
-                    body: {type: model.type, ...spec}
-                });
-                return View.fromBlob(raw, model);
-            })
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({url: 'xhView/create', body: {type: model.type, ...spec}}),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({
                     message: `Unable to create ${model.typeDisplayName}`,
@@ -95,14 +93,16 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .run(async ctx => {
-                const raw = await ctx.postJson({
-                    url: 'xhView/updateInfo',
-                    params: {token: view.token},
-                    body: updates
-                });
-                return View.fromBlob(raw, model);
-            })
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateInfo',
+                        params: {token: view.token},
+                        body: updates
+                    }),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
             });
@@ -118,14 +118,16 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .run(async ctx => {
-                const raw = await ctx.postJson({
-                    url: 'xhView/updateValue',
-                    params: {token: view.token},
-                    body: value
-                });
-                return View.fromBlob(raw, model);
-            })
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateValue',
+                        params: {token: view.token},
+                        body: value
+                    }),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({
                     message: `Unable to update value for ${view.typedName}`,
