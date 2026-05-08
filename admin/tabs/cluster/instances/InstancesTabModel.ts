@@ -236,7 +236,7 @@ export class InstancesTabModel extends HoistModel {
             return;
 
         await this.rootSpan('shutdown')
-            .fetchJson({
+            .runFetchJson({
                 url: 'clusterAdmin/shutdownInstance',
                 params: {instance: instance.name}
             })

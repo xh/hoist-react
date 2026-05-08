@@ -53,7 +53,7 @@ export class JsonBlobService extends HoistService {
 
     /** Retrieve a single JSONBlob by its unique token. */
     async getAsync(token: string): Promise<JsonBlob> {
-        return this.rootSpan('get').fetchJson({
+        return this.rootSpan('get').runFetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
         });
@@ -68,7 +68,7 @@ export class JsonBlobService extends HoistService {
         const {type, includeValue, ctx} = spec;
         return this.runOn(ctx)
             .newSpan('list')
-            .fetchJson({url: 'xh/listJsonBlobs', params: {type, includeValue}});
+            .runFetchJson({url: 'xh/listJsonBlobs', params: {type, includeValue}});
     }
 
     /** Persist a new JSONBlob back to the server. */
@@ -80,7 +80,7 @@ export class JsonBlobService extends HoistService {
         name,
         value
     }: Partial<JsonBlob>): Promise<JsonBlob> {
-        return this.rootSpan('create').fetchJson({
+        return this.rootSpan('create').runFetchJson({
             url: 'xh/createJsonBlob',
             params: {
                 data: JSON.stringify({type, name, acl, value, meta, description})
@@ -116,7 +116,7 @@ export class JsonBlobService extends HoistService {
 
     /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
     async findAsync(type: string, name: string): Promise<JsonBlob> {
-        return this.rootSpan('find').fetchJson({
+        return this.rootSpan('find').runFetchJson({
             url: 'xh/findJsonBlob',
             params: {type, name}
         });
@@ -124,7 +124,7 @@ export class JsonBlobService extends HoistService {
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
     async archiveAsync(token: string): Promise<JsonBlob> {
-        return this.rootSpan('archive').fetchJson({
+        return this.rootSpan('archive').runFetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}
         });

@@ -139,7 +139,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
 
     async takeSnapshotAsync() {
         await this.rootSpan('takeSnapshot')
-            .fetchJson({
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
             })
@@ -153,7 +153,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
 
     async resetStatsAsync() {
         await this.rootSpan('resetStats')
-            .fetchJson({
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}
             })

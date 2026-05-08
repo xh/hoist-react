@@ -228,7 +228,7 @@ export class ClientsModel extends BaseAdminTabModel {
         if (isEmpty(toRecs)) return;
 
         await this.rootSpan('bulkPush')
-            .track({
+            .withTrack({
                 category: 'Audit',
                 message: trackMessage,
                 data: {users: toRecs.map(it => it.data.user).sort()},

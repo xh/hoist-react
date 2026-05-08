@@ -229,12 +229,12 @@ export class MetricsModel extends BaseAdminTabModel {
 
     private async setPublishedAsync(names: string[], published: boolean) {
         await this.rootSpan('setPublished')
-            .track({
+            .withTrack({
                 category: 'Audit',
                 message: 'Edited Metric Publishing',
                 data: {published, names}
             })
-            .postJson({
+            .runPostJson({
                 url: 'metricsAdmin/setPublished',
                 body: {names, published}
             });

@@ -81,7 +81,7 @@ export class HoistAuthModel extends HoistModel {
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
     async logoutAsync(): Promise<void> {
-        await this.rootSpan('logout').fetchJson({url: 'xh/logout'});
+        await this.rootSpan('logout').runFetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -91,7 +91,7 @@ export class HoistAuthModel extends HoistModel {
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
      */
     async loadConfigAsync(): Promise<PlainObject> {
-        return this.rootSpan('config').fetchJson({url: 'xh/authConfig'});
+        return this.rootSpan('config').runFetchJson({url: 'xh/authConfig'});
     }
 
     /**

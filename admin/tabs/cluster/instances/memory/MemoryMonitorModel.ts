@@ -60,7 +60,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
     async takeSnapshotAsync() {
         await this.rootSpan('takeSnapshot')
-            .fetchJson({
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
             })
@@ -74,7 +74,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
     async requestGcAsync() {
         await this.rootSpan('requestGc')
-            .fetchJson({
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
             })
@@ -100,7 +100,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
         if (!filename) return;
 
         await this.rootSpan('dumpHeap')
-            .fetchJson({
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
                 params: {
                     instance: this.instanceName,

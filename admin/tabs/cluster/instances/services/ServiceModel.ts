@@ -121,7 +121,7 @@ export class ServiceModel extends BaseInstanceModel {
         if (!confirmed) return;
 
         await this.rootSpan('clearCaches')
-            .fetchJson({
+            .runFetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
                     instance: entireCluster ? null : instanceName,
