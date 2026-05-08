@@ -22,6 +22,14 @@
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
 
+### ⚙️ Technical
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+
+### 📚 Libraries
+* `golden-layout` and `jquery` `removed` (replaced by the forked source above).
+
 ## 85.0.0 - 2020-04-30
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
