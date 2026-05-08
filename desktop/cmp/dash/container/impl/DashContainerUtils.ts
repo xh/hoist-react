@@ -8,8 +8,8 @@ import {PlainObject} from '@xh/hoist/core';
 import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
+import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {DashContainerViewSpec} from '../DashContainerViewSpec';
-import GoldenLayout, {ContentItem} from 'golden-layout';
 
 /**
  * Lookup the DashViewModel id of a rendered view
@@ -34,7 +34,7 @@ export function convertGLToState(
 
 function convertGLToStateInner(
     configItems = [],
-    contentItems: ContentItem[] = [],
+    contentItems: GoldenLayout.ContentItem[] = [],
     dashContainerModel: DashContainerModel
 ) {
     const ret = [];
