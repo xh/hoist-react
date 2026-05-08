@@ -68,7 +68,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
 
 class ClockLocalModel extends HoistModel {
     override xhImpl = true;
-    override spanPrefix = 'xh.client.clock';
+    override telemetryPrefix = 'xh.client.clock';
 
     offset;
     offsetException;

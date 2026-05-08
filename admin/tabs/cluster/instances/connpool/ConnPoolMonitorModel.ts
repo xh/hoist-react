@@ -15,7 +15,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.connPool';
+    override telemetryPrefix = 'xh.client.admin.connPool';
 
     @bindable enabled: boolean = true;
     @bindable.ref poolConfiguration: PlainObject = {};
@@ -138,7 +138,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
 
     async takeSnapshotAsync() {
         await this.rootSpan('takeSnapshot')
-            .fetchJson({
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
             })
@@ -152,7 +152,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
 
     async resetStatsAsync() {
         await this.rootSpan('resetStats')
-            .fetchJson({
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}
             })

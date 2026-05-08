@@ -16,7 +16,7 @@ import {isEmpty, isNil, isString} from 'lodash';
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {
-    override spanPrefix = 'xh.client.track';
+    override telemetryPrefix = 'xh.client.track';
 
     static instance: TrackService;
 

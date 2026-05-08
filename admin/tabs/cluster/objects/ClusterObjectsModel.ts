@@ -17,7 +17,7 @@ import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.clusterObjects';
+    override telemetryPrefix = 'xh.client.admin.clusterObjects';
 
     viewRef = createRef<HTMLElement>();
 
@@ -146,7 +146,7 @@ export class ClusterObjectsModel extends HoistModel {
         if (!confirmed) return;
 
         await this.rootSpan('clearHibernateCachesByName')
-            .postJson({
+            .runPostJson({
                 url: 'clusterObjectsAdmin/clearHibernateCaches',
                 body: {
                     names: cacheRecords.map(it => it.id)
@@ -179,7 +179,7 @@ export class ClusterObjectsModel extends HoistModel {
         if (!confirmed) return;
 
         await this.rootSpan('clearHibernateCaches')
-            .fetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
+            .runFetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
             .linkTo(this.loadObserver)
             .then(async () => {
                 await this.refreshAsync();

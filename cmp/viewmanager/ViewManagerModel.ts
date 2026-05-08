@@ -171,7 +171,7 @@ export interface ViewManagerConfig {
  * integration patterns, and access control configuration.
  */
 export class ViewManagerModel<T = PlainObject> extends HoistModel {
-    override spanPrefix = 'xh.client.viewManager';
+    override telemetryPrefix = 'xh.client.viewManager';
 
     /**
      * Factory to create new instances of this model and await its initial load before binding to

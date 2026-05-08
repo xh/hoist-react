@@ -15,7 +15,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * actual underlying user.
  */
 export class IdentityService extends HoistService {
-    override spanPrefix = 'xh.client.identity';
+    override telemetryPrefix = 'xh.client.identity';
 
     static instance: IdentityService;
 
@@ -99,7 +99,7 @@ export class IdentityService extends HoistService {
             'User does not have right to impersonate or impersonation is disabled.'
         );
         await this.pushPendingUserStateAsync();
-        await this.rootSpan('impersonate').fetchJson({
+        await this.rootSpan('impersonate').runFetchJson({
             url: 'xh/impersonate',
             params: {username}
         });
@@ -111,7 +111,7 @@ export class IdentityService extends HoistService {
     async endImpersonateAsync() {
         await this.pushPendingUserStateAsync();
         try {
-            await this.rootSpan('endImpersonate').fetchJson({
+            await this.rootSpan('endImpersonate').runFetchJson({
                 url: 'xh/endImpersonate'
             });
             XH.reloadApp();

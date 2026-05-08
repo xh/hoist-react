@@ -20,7 +20,7 @@ import {LogDisplayModel} from './LogDisplayModel';
  * @internal
  */
 export class LogViewerModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.log';
+    override telemetryPrefix = 'xh.client.admin.log';
 
     @observable file: string = null;
 

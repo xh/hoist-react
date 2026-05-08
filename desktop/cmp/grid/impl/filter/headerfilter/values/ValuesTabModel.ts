@@ -241,11 +241,12 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => {
-                value = fieldSpec.sourceField.parseVal(value);
-                return gridFilterModel.toDisplayValue(value);
-            });
-            filterValues.push(...newValues); // Todo: Is this safe?
+            // `flatMap` unwraps the array `parseVal` returns for `tags`-typed fields, so
+            // `pendingValues` lines up with the scalar values shown in the values list.
+            const newValues = castArray(filter.value)
+                .flatMap(value => fieldSpec.sourceField.parseVal(value))
+                .map(v => gridFilterModel.toDisplayValue(v));
+            filterValues.push(...newValues);
         });
 
         if (!filterValues.length) return;

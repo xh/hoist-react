@@ -13,7 +13,7 @@ import {ReactNode} from 'react';
 import {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
 
 export class ClientDetailModel extends HoistModel implements ActivityDetailProvider {
-    override spanPrefix = 'xh.client.admin.clients';
+    override telemetryPrefix = 'xh.client.admin.clients';
 
     @lookup(ClientsModel) clientsModel: ClientsModel;
 

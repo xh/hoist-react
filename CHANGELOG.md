@@ -2,28 +2,56 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved -
+  drive dynamic icons from a reaction on observable state.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above. Apps still needing this can use `pickBy(iconEl.props)` and
+  `Icon.icon(json)` respectively.
+
 ### 🎁 New Features
-* Improved support for span management and nested span generation by applications:
-  * New `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) - accept and forward
-    across call boundaries to propagate trace/load context into nested loads and fetches.
-  * Span parents now accept a W3C `traceparent` string in addition to a `Span`, for chaining
-    client work into a remote trace context received off-channel (WebSocket / SSE / queue
-    messages).
-  * New `Runner` / `RunContext` API - use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
-    or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in
-    a fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
-  * New `HoistBase.spanPrefix` property - automatically namespaces spans created by an
-    artifact (e.g. `'xh.client.config'` on `ConfigService`).
+
+* Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
+  can accept and forward across call boundaries to propagate trace/load context into nested
+  loads and fetches.
+* Span parents now accept a W3C `traceparent` string in addition to a `Span`, for chaining
+  client work into a remote trace context received off-channel (WebSocket / SSE / queue
+  messages).
+* Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
+  or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
+  fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
 * `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
   obsolete, and auto-refresh errors:
-  * New `LoadAbortedException` thrown when a load is superseded. Raised automatically by
-    `FetchService` (and on demand via `LoadSpec.abortIfNeeded()` for non-fetch async code)
-    based on the new `Loadable.abortMode` flag (`'never' | 'onStale' | 'onObsolete'`,
-    default `'onStale'`). Recognized by `ExceptionHandler` and silently dropped from all
-    user-visible surfaces (no alert, no server log, no error log).
-  * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
-    failures (abort exceptions and auto-refresh errors are filtered out), so overrides can
-    focus on app-specific cleanup. Default delegates to `XH.handleException(e)`.
+    * New `LoadAbortedException` thrown when a load is superseded. Raised automatically by
+      `FetchService` (and on demand via `LoadSpec.abortIfNeeded()` for non-fetch async code)
+      based on the new `Loadable.abortMode` flag (`'never' | 'onStale' | 'onObsolete'`,
+      default `'onStale'`). Recognized by `ExceptionHandler` and silently dropped from all
+      user-visible surfaces (no alert, no server log, no error log).
+    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+      failures (abort exceptions and auto-refresh errors are filtered out), so overrides can
+      focus on app-specific cleanup. Default delegates to `XH.handleException(e)`.
+
+### 🐞 Bug Fixes
+
+* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
+  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
+
+### ⚙️ Technical
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+
+### 📚 Libraries
+* `golden-layout` and `jquery` `removed` (replaced by the forked source above).
 
 ## 85.0.0 - 2020-04-30
 

@@ -26,7 +26,7 @@ import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
  * across workstations.
  */
 export class PrefService extends HoistService {
-    override spanPrefix = 'xh.client.prefs';
+    override telemetryPrefix = 'xh.client.prefs';
 
     static instance: PrefService;
 

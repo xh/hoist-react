@@ -15,7 +15,7 @@ import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.alertBanner';
+    override telemetryPrefix = 'xh.client.admin.alertBanner';
 
     savedValue: AlertBannerSpec;
     @bindable.ref savedPresets: PlainObject[] = [];
@@ -186,7 +186,7 @@ export class AlertBannerModel extends HoistModel {
 
     async savePresetsAsync() {
         await this.rootSpan('savePresets')
-            .postJson({
+            .runPostJson({
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
             })
@@ -293,7 +293,7 @@ export class AlertBannerModel extends HoistModel {
     private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
         await this.rootSpan('saveSpec')
-            .postJson({
+            .runPostJson({
                 url: 'alertBannerAdmin/setAlertSpec',
                 body: spec,
                 track: {

@@ -14,7 +14,7 @@ import {createRef} from 'react';
  *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
-    override spanPrefix = 'xh.client.identity';
+    override telemetryPrefix = 'xh.client.identity';
 
     override xhImpl = true;
 
