@@ -12,7 +12,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.users';
+    override telemetryPrefix = 'xh.client.admin.users';
 
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 

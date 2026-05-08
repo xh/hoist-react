@@ -15,7 +15,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.connPool';
+    override telemetryPrefix = 'xh.client.admin.connPool';
 
     @bindable enabled: boolean = true;
     @bindable.ref poolConfiguration: PlainObject = {};

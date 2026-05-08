@@ -20,7 +20,7 @@ import {CallContext, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from 
  *  {@link XHApi#renderApp}.
  */
 export class HoistAuthModel extends HoistModel {
-    override spanPrefix = 'xh.client.auth';
+    override telemetryPrefix = 'xh.client.auth';
 
     /**
      * Main Entry Point.

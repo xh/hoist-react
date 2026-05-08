@@ -105,7 +105,7 @@ export abstract class HoistBase {
      * Optional prefix applied to span names produced for this object.
      * When non-null, the string "[prefix]." is pre-pended to the supplied span name.
      */
-    spanPrefix: string = null;
+    telemetryPrefix: string = null;
 
     //--------------------------------------------------
     // Logging Delegates
@@ -142,8 +142,8 @@ export abstract class HoistBase {
             source: this
         });
         let cfg = isString(config) ? {name: config} : config,
-            {spanPrefix} = this,
-            name = spanPrefix ? spanPrefix + '.' + cfg.name : cfg.name;
+            {telemetryPrefix} = this,
+            name = telemetryPrefix ? telemetryPrefix + '.' + cfg.name : cfg.name;
         cfg = {caller: this, ...cfg, name};
         return XH.traceService.withSpan(cfg, fn);
     }

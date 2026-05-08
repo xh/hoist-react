@@ -22,7 +22,7 @@ export interface PastInstance {
 }
 
 export class MemoryMonitorModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.memory';
+    override telemetryPrefix = 'xh.client.admin.memory';
 
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;

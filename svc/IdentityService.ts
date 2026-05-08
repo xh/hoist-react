@@ -15,7 +15,7 @@ import {throwIf} from '@xh/hoist/utils/js';
  * actual underlying user.
  */
 export class IdentityService extends HoistService {
-    override spanPrefix = 'xh.client.identity';
+    override telemetryPrefix = 'xh.client.identity';
 
     static instance: IdentityService;
 

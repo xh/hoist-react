@@ -9,7 +9,7 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.services';
+    override telemetryPrefix = 'xh.client.admin.services';
 
     @lookup(ServiceModel)
     parent: ServiceModel;

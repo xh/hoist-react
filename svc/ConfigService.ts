@@ -24,7 +24,7 @@ import {keys} from 'lodash';
  * application has loaded. A refresh of the application is required to load new entries.
  */
 export class ConfigService extends HoistService {
-    override spanPrefix = 'xh.client.config';
+    override telemetryPrefix = 'xh.client.config';
 
     static instance: ConfigService;
 

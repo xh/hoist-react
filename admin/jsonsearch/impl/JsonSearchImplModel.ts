@@ -15,7 +15,7 @@ import {isEmpty, zipWith} from 'lodash';
  * @internal
  */
 export class JsonSearchImplModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.jsonSearch';
+    override telemetryPrefix = 'xh.client.admin.jsonSearch';
 
     override xhImpl = true;
 

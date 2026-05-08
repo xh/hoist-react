@@ -19,7 +19,7 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.log';
+    override telemetryPrefix = 'xh.client.admin.log';
 
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 

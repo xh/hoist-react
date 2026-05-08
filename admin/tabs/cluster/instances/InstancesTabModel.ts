@@ -28,7 +28,7 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class InstancesTabModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.instances';
+    override telemetryPrefix = 'xh.client.admin.instances';
 
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 

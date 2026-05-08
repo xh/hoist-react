@@ -22,7 +22,7 @@ import {DifferDetailModel} from './DifferDetailModel';
  * @internal
  */
 export class DifferModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.differ';
+    override telemetryPrefix = 'xh.client.admin.differ';
 
     parentModel: HoistModel & {gridModel: RestGridModel; closeDiffer: () => void};
     entityName: string;

@@ -40,7 +40,7 @@ export class Runner {
     newSpan(config: string | SpanConfig): this {
         config = isString(config) ? {name: config} : config;
         const {ctx} = this,
-            prefix = (ctx.caller as any)?.spanPrefix,
+            prefix = (ctx.caller as any)?.telemetryPrefix,
             name = prefix ? `${prefix}.${config.name}` : config.name;
         this.spanConfig = {...config, name, parent: ctx.span, caller: ctx.caller};
         return this;

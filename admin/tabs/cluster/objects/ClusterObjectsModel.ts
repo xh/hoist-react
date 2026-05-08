@@ -17,7 +17,7 @@ import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.clusterObjects';
+    override telemetryPrefix = 'xh.client.admin.clusterObjects';
 
     viewRef = createRef<HTMLElement>();
 

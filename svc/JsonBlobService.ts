@@ -47,7 +47,7 @@ export interface JsonBlob {
  * persisted back to the database.
  */
 export class JsonBlobService extends HoistService {
-    override spanPrefix = 'xh.client.jsonBlob';
+    override telemetryPrefix = 'xh.client.jsonBlob';
 
     static instance: JsonBlobService;
 

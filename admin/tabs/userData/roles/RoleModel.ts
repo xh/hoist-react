@@ -22,7 +22,7 @@ import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.roles';
+    override telemetryPrefix = 'xh.client.admin.roles';
 
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 

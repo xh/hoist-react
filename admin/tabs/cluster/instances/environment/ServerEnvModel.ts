@@ -15,7 +15,7 @@ import {forOwn} from 'lodash';
  * a dedicated admin-only endpoint.
  */
 export class ServerEnvModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.serverEnv';
+    override telemetryPrefix = 'xh.client.admin.serverEnv';
 
     @managed gridModel: GridModel;
 

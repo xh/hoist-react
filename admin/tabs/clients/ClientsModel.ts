@@ -21,7 +21,7 @@ import {isEmpty} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
-    override spanPrefix = 'xh.client.admin.clients';
+    override telemetryPrefix = 'xh.client.admin.clients';
 
     @observable
     lastRefresh: number;

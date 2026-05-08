@@ -15,7 +15,7 @@ import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.alertBanner';
+    override telemetryPrefix = 'xh.client.admin.alertBanner';
 
     savedValue: AlertBannerSpec;
     @bindable.ref savedPresets: PlainObject[] = [];

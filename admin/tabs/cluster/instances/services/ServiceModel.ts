@@ -18,7 +18,7 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
-    override spanPrefix = 'xh.client.admin.services';
+    override telemetryPrefix = 'xh.client.admin.services';
 
     @bindable
     typeFilter: 'hoist' | 'app' | 'all' = 'all';

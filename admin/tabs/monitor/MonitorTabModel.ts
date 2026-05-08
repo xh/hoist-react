@@ -15,7 +15,7 @@ import {filter, isEqual, minBy, sortBy} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class MonitorTabModel extends BaseAdminTabModel {
-    override spanPrefix = 'xh.client.admin.monitor';
+    override telemetryPrefix = 'xh.client.admin.monitor';
 
     override persistWith = {localStorageKey: 'xhAdminClientMonitorState'};
 
