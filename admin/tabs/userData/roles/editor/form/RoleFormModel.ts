@@ -17,7 +17,7 @@ import {RoleModel} from '../../RoleModel';
 import {HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
 
 export class RoleFormModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.roles';
+    override telemetryPrefix = 'xh.client.admin.roles';
 
     readonly ADD_ASSIGNMENT_ACTION: RecordActionSpec = this.createAddAssigmentAction();
     readonly ACTIONS: RecordActionSpec[] = [

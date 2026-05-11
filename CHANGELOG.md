@@ -2,7 +2,18 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved -
+  drive dynamic icons from a reaction on observable state.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above. Apps still needing this can use `pickBy(iconEl.props)` and
+  `Icon.icon(json)` respectively.
+
 ### 🎁 New Features
+
 * New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
   optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
   flow into the Micrometer registry. Requires hoist-core >= 40.0.
@@ -18,6 +29,25 @@
 * `Runner.timer(name)` and `Runner.counter(name)` now record on completion of the wrapped fn
   and automatically attach an `xh.outcome` tag with value `success` or `failure` based on
   whether the fn threw. `counter()` previously fired before the fn ran.
+
+### 🐞 Bug Fixes
+
+* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
+  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
+
+### ⚙️ Technical
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+
+### 📚 Libraries
+* `golden-layout` and `jquery` `removed` (replaced by the forked source above).
 
 ## 85.0.0 - 2020-04-30
 

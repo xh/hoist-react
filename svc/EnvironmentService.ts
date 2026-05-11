@@ -22,7 +22,7 @@ import {MIN_HOIST_CORE_VERSION} from '../core/XH';
  * other technical information.
  */
 export class EnvironmentService extends HoistService {
-    override spanPrefix = 'xh.client';
+    override telemetryPrefix = 'xh.client';
 
     static instance: EnvironmentService;
 

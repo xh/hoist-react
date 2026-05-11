@@ -26,7 +26,7 @@ import {ReactNode} from 'react';
  * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
-    override spanPrefix = 'xh.client.app';
+    override telemetryPrefix = 'xh.client.app';
 
     /**
      * Hoist will call this method after Hoist services have initialized and the application

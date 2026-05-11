@@ -12,7 +12,7 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';
 
 export class RecategorizeDialogModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.roles';
+    override telemetryPrefix = 'xh.client.admin.roles';
 
     private parent: RoleModel;
     selectedRecords: StoreRecord[];

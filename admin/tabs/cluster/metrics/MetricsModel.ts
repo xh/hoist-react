@@ -23,7 +23,7 @@ import {groupBy} from 'lodash';
 type SourceFilter = 'all' | 'hoist' | 'app';
 
 export class MetricsModel extends BaseAdminTabModel {
-    override spanPrefix = 'xh.client.admin.metrics';
+    override telemetryPrefix = 'xh.client.admin.metrics';
 
     override persistWith = {localStorageKey: 'xhAdminMetricsState'};
 
@@ -229,12 +229,12 @@ export class MetricsModel extends BaseAdminTabModel {
 
     private async setPublishedAsync(names: string[], published: boolean) {
         await this.rootSpan('setPublished')
-            .track({
+            .withTrack({
                 category: 'Audit',
                 message: 'Edited Metric Publishing',
                 data: {published, names}
             })
-            .postJson({
+            .runPostJson({
                 url: 'metricsAdmin/setPublished',
                 body: {names, published}
             });

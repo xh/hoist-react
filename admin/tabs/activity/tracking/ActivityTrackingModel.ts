@@ -25,7 +25,7 @@ import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
-    override spanPrefix = 'xh.client.admin.tracking';
+    override telemetryPrefix = 'xh.client.admin.tracking';
 
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
