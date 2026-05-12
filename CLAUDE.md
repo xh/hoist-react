@@ -161,6 +161,15 @@ Factories can take a config object for props, using the key `item`/`items` for c
 form also exists where factories are passed children directly as arguments, when no other props
 are required. Factories all support an `omit` prop for conditional rendering.
 
+**Important — `items` in, `children` out**: `item`/`items` are Hoist's *calling* API. Inside a
+render function, those values arrive as the standard React `children` prop (because the factory
+spreads them as rest args to `React.createElement`). The canonical pattern when authoring a
+container component is therefore to destructure `children` from props and pass them downstream as
+`items` to an inner factory. See
+[Authoring a Container Component](./core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation, examples, and the `$item`/`$items` escape hatch for
+components whose underlying API genuinely has its own `items` prop.
+
 See [`/core/README.md`](./core/README.md) for full element factory API including conditional
 rendering with `omit` and factory creation.
 
