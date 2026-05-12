@@ -25,14 +25,13 @@
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
 * `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
   obsolete, and auto-refresh errors:
-    * New `LoadAbortedException` thrown when a load is superseded. Raised automatically by
-      `FetchService` (and on demand via `LoadSpec.abortIfNeeded()` for non-fetch async code)
-      based on the new `Loadable.abortMode` flag (`'never' | 'onStale' | 'onObsolete'`,
-      default `'onStale'`). Recognized by `ExceptionHandler` and silently dropped from all
-      user-visible surfaces (no alert, no server log, no error log).
+    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
+      by a newer *started* request are aborted and silenced. Loads superseded by a newer
+      *completed* request are always skipped )
+    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
+      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
     * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
-      failures (abort exceptions and auto-refresh errors are filtered out), so overrides can
-      focus on app-specific cleanup. Default delegates to `XH.handleException(e)`.
+      failures not skipped via the flags above.  Default delegates to `XH.handleException(e)`.
 
 ### 🐞 Bug Fixes
 

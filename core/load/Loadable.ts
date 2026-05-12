@@ -8,16 +8,6 @@ import {CallContext, TaskObserver} from '../';
 import {LoadSpec, LoadSpecConfig} from './';
 
 /**
- * Controls how {@link FetchService} aborts a fetch whose load has been superseded.
- *
- * - `never`: never auto-abort - the fetch always resolves, even if a newer load has started.
- * - `onStale`: abort once a newer load request has been *started*. Default.
- * - `onObsolete`: abort once a newer load has *successfully completed*. More conservative -
- *   the in-flight load still applies its data unless a newer load actually wins.
- */
-export type AbortMode = 'never' | 'onStale' | 'onObsolete';
-
-/**
  * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.
  */
 export interface Loadable {
@@ -37,12 +27,27 @@ export interface Loadable {
     lastLoadException: any;
 
     /**
-     * Controls when {@link FetchService} should abort a fetch carrying this object's
-     * `LoadSpec` because the load has been superseded. Defaults to `'onStale'` - aborted
-     * fetches throw {@link LoadAbortedException}, which the central exception handler
-     * silently drops.
+     * Should this loadable skip loads that arrive after a newer load has *started*?
+     * Defaults to true.  Set false to more aggressively handle these intermediate results.
+     *
+     * Loads that arrive after a newer load has *completed* are always skipped.
+     *
+     * Note that this flag is largely implemented via {@link FetchService}, which aborts a fetch
+     * carrying this object's LoadSpec if is noted to be stale. Implementations may also trigger
+     * this behavior via well-placed calls to LoadSpec.abortIfNeeded() in doLoadAsync().
+     *
+     * If true, the framework will also skip passing any exceptions for stale loads to
+     * 'handleException'.  Instead, these exceptions will be logged silently on the server.
      */
-    abortMode?: AbortMode;
+    skipStaleLoads?: boolean;
+
+    /**
+     * Should this loadable skip handling errors that occurred during auto-refresh?
+     * Defaults to true.  Set to false if you wish to handle these errors in your application.
+     *
+     * If true, exceptions will be logged silently on the server.
+     */
+    skipAutoRefreshErrors?: boolean;
 
     /**
      * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this

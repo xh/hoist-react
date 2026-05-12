@@ -17,7 +17,7 @@ import {
     TaskObserver
 } from '../';
 import {instanceManager} from '../impl/InstanceManager';
-import {AbortMode, Loadable, LoadSpec, LoadSupport} from '../load';
+import {Loadable, LoadSpec, LoadSupport} from '../load';
 import {ModelSelector} from './';
 import {Class} from 'type-fest';
 
@@ -198,7 +198,8 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
-    abortMode: AbortMode = 'onStale';
+    skipStaleLoads = true;
+    skipAutoRefreshErrors = true;
 
     async doLoadAsync(loadSpec: LoadSpec) {}
 

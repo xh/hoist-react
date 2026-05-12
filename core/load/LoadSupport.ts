@@ -106,21 +106,30 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         let exception = null;
 
-        const isQuiet = (e: any) =>
-            !!e?.isAborted || loadSpec.isAutoRefresh || loadSpec.shouldAbort;
+        // Silence aborted/superseded loads and (opt-in) auto-refresh errors.
+        const skip = (e: any) =>
+            e?.isAborted ||
+            loadSpec.shouldAbort ||
+            (target.skipAutoRefreshErrors && loadSpec.isAutoRefresh);
 
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)
             .catch(async e => {
-                exception = e;
-                // Skip app-level handler for quiet outcomes; await for async cleanup.
-                if (!isQuiet(e)) await target.handleLoadException?.(e, loadSpec);
+                if (!skip(e)) {
+                    await target.handleLoadException?.(e, loadSpec);
+                    exception = e;
+                } else {
+                    // True timing errors can be skipped. Log real errors on the server.
+                    e.isAborted ?
+                        logError(["Aborted Load", e], target);
+                        XH.handleException(e)
+                }
+
             })
             .finally(() => {
                 runInAction(() => {
-                    // Don't surface quiet outcomes as "last load failed" - load was abandoned
-                    this.lastLoadException = isQuiet(exception) ? null : exception;
+                    this.lastLoadException = exception
                     this.lastLoadCompleted = new Date();
                 });
 
@@ -133,16 +142,7 @@ export class LoadSupport extends HoistBase implements Loadable {
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
                     status = exception ? 'failed' : null,
                     msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
-
-                if (exception) {
-                    if (exception.isRoutine) {
-                        logDebug(msg, target);
-                    } else {
-                        logError(msg, target);
-                    }
-                } else {
-                    logDebug(msg, target);
-                }
+                logDebug(msg, target);
             });
     }
 

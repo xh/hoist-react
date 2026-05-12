@@ -104,15 +104,12 @@ export class LoadSpec {
     }
 
     /**
-     * True if this load has been superseded per the owning `Loadable`'s `abortMode`:
-     * - `'never'`: always false.
-     * - `'onStale'` (default): true once a newer load has *started*.
-     * - `'onObsolete'`: true once a newer load has *successfully completed*.
+     * True if this load has been superseded and should be aborted. Always true once a newer
+     * load has *successfully completed* ({@link isObsolete}); also true once a newer load has
+     * *started* ({@link isStale}) and the target's skipStaleLoads is true.
      */
     get shouldAbort(): boolean {
-        const mode = this.owner.target.abortMode ?? 'onStale';
-        if (mode === 'never') return false;
-        return mode === 'onStale' ? this.isStale : this.isObsolete;
+        return this.isObsolete || (this.isStale && this.owner.target.skipStaleLoads);
     }
 
     /**
