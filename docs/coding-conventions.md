@@ -487,6 +487,13 @@ Factories also accept children as direct arguments when no other props are neede
 hbox(leftPanel(), rightPanel())
 ```
 
+**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
+component, the render function receives those values as the standard React `children` prop, not as
+`items`. The canonical container pattern is to destructure `children` from props and pass them on
+to an inner factory as `items`. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation.
+
 ## Export Patterns
 
 ### Named Exports Only
