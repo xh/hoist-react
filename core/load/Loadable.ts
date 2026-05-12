@@ -27,6 +27,29 @@ export interface Loadable {
     lastLoadException: any;
 
     /**
+     * Should this loadable skip loads that arrive after a newer load has *started*?
+     * Defaults to true.  Set false to more aggressively handle these intermediate results.
+     *
+     * Loads that arrive after a newer load has *completed* are always skipped.
+     *
+     * Note that this flag is largely implemented via {@link FetchService}, which aborts a fetch
+     * carrying this object's LoadSpec if is noted to be stale. Implementations may also trigger
+     * this behavior via well-placed calls to LoadSpec.abortIfNeeded() in doLoadAsync().
+     *
+     * If true, the framework will also skip passing any exceptions for stale loads to
+     * 'handleException'.  Instead, these exceptions will be logged silently on the server.
+     */
+    skipStaleLoads?: boolean;
+
+    /**
+     * Should this loadable skip handling errors that occurred during auto-refresh?
+     * Defaults to true.  Set to false if you wish to handle these errors in your application.
+     *
+     * If true, exceptions will be logged silently on the server.
+     */
+    skipAutoRefreshErrors?: boolean;
+
+    /**
      * Trigger a managed load through this object's {@link doLoadAsync} template method. Use this
      * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
      * so that Hoist creates a fresh {@link LoadSpec} and tracks the request via {@link LoadSupport}.
@@ -65,4 +88,18 @@ export interface Loadable {
      * full load/refresh lifecycle.
      */
     doLoadAsync(loadSpec: LoadSpec): Promise<void>;
+
+    /**
+     * Called by {@link LoadSupport} when {@link doLoadAsync} throws. Override to add
+     * app-specific cleanup (e.g. clearing a grid, resetting state) without re-implementing
+     * the standard error-handling path.
+     *
+     * The framework filters out *quiet* exceptions before invoking this method - aborted
+     * loads/fetches (`isAborted`) and any error raised during an auto-refresh
+     * (`loadSpec.isAutoRefresh`) - so overrides can assume any exception they see is a
+     * genuine, surface-worthy failure.
+     *
+     * Default implementation calls `XH.handleException(e)`.
+     */
+    handleLoadException?(e: unknown, loadSpec: LoadSpec): void | Promise<void>;
 }

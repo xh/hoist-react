@@ -11,7 +11,8 @@ import {
     managed,
     PlainObject,
     RefreshContextModel,
-    TaskObserver
+    TaskObserver,
+    XH
 } from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
@@ -105,17 +106,31 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         let exception = null;
 
+        // Silence aborted/superseded loads and (opt-in) auto-refresh errors.
+        const skip = (e: any) =>
+            e?.isAborted ||
+            loadSpec.shouldAbort ||
+            (target.skipAutoRefreshErrors && loadSpec.isAutoRefresh);
+
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)
-            .catch(e => {
-                exception = e;
-                throw e;
+            .catch(async e => {
+                if (!skip(e)) {
+                    await target.handleLoadException?.(e, loadSpec);
+                    exception = e;
+                } else {
+                    // True timing errors can be skipped. Log real errors on the server.
+                    e.isAborted ?
+                        logError(["Aborted Load", e], target);
+                        XH.handleException(e)
+                }
+
             })
             .finally(() => {
                 runInAction(() => {
+                    this.lastLoadException = exception
                     this.lastLoadCompleted = new Date();
-                    this.lastLoadException = exception;
                 });
 
                 if (!exception) {
@@ -127,17 +142,12 @@ export class LoadSupport extends HoistBase implements Loadable {
                 const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
                     status = exception ? 'failed' : null,
                     msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
-
-                if (exception) {
-                    if (exception.isRoutine) {
-                        logDebug(msg, target);
-                    } else {
-                        logError(msg, target);
-                    }
-                } else {
-                    logDebug(msg, target);
-                }
+                logDebug(msg, target);
             });
+    }
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void {
+        XH.handleException(e);
     }
 }
 

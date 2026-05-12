@@ -708,7 +708,7 @@ async searchAsync() {
         runInAction(() => this.results = results);
     } catch (e) {
         // Silently swallow aborted requests - a newer search has taken over
-        if (e.isFetchAborted) return;
+        if (e.isAborted) return;
         XH.handleException(e);
     }
 }

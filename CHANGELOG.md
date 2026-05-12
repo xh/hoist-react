@@ -23,6 +23,15 @@
 * Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
   or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+* `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
+  obsolete, and auto-refresh errors:
+    * New `Loadable.skipStaleLoads` flag (default `true`) - controls whether loads superseded
+      by a newer *started* request are aborted and silenced. Loads superseded by a newer
+      *completed* request are always skipped )
+    * New `Loadable.skipAutoRefreshErrors` flag (default `true`) - controls whether errors
+      raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
+    * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
+      failures not skipped via the flags above.  Default delegates to `XH.handleException(e)`.
 
 ### 🐞 Bug Fixes
 

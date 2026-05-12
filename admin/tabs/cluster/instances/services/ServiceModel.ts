@@ -145,13 +145,9 @@ export class ServiceModel extends BaseInstanceModel {
                     url: 'serviceManagerAdmin/listServices',
                     params: {instance}
                 });
-
-                if (!loadSpec.isStale) {
-                    gridModel.loadData(data);
-                    await gridModel.preSelectFirstAsync();
-                }
-            })
-            .catch(e => this.handleLoadException(e, loadSpec));
+                gridModel.loadData(data);
+                await gridModel.preSelectFirstAsync();
+            });
     }
 
     private processRawData(r: PlainObject) {

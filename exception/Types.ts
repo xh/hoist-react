@@ -49,3 +49,12 @@ export interface TimeoutException extends HoistException {
 export interface TimeoutExceptionConfig extends PlainObject {
     interval: number;
 }
+
+/**
+ * Exception thrown to abort a load that has been superseded - per the owning `Loadable`'s
+ * `abortStaleLoads`. Produced automatically by `FetchService` and by `LoadSpec.abortIfNeeded()`.
+ * Marked `isRoutine` and `isAborted`, so `ExceptionHandler` drops it silently.
+ */
+export interface LoadAbortedException extends HoistException {
+    isAborted: true;
+}

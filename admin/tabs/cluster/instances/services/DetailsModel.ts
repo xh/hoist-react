@@ -50,13 +50,11 @@ export class DetailsModel extends HoistModel {
         await this.runOn(loadSpec)
             .newSpan('getStats')
             .run(async ctx => {
-                const resp = await ctx.fetchJson({
+                this.stats = await ctx.fetchJson({
                     url: 'serviceManagerAdmin/getStats',
                     params: {instance: parent.instanceName, name: selected.name},
                     autoAbortKey: 'serviceDetails'
                 });
-                if (loadSpec.isStale) return;
-                this.stats = resp;
             });
     }
 }

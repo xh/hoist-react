@@ -104,7 +104,14 @@ export class HoistService extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
+    skipStaleLoads = true;
+    skipAutoRefreshErrors = true;
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        return this.loadSupport?.handleLoadException(e, loadSpec);
+    }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);

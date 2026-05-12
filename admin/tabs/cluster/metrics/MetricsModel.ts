@@ -172,8 +172,6 @@ export class MetricsModel extends BaseAdminTabModel {
             .run(async ctx => {
                 const data = await ctx.fetchJson({url: 'metricsAdmin/listMetrics'});
 
-                if (loadSpec.isStale) return;
-
                 const enriched = data.map(it => {
                     const instance = it.tags.find(t => t.key === 'xh.instance')?.value,
                         source = it.tags.find(t => t.key === 'xh.source')?.value,
@@ -184,12 +182,11 @@ export class MetricsModel extends BaseAdminTabModel {
                 runInAction(() => (this.allMetrics = enriched));
                 this.loadMasterGrid(enriched);
                 this.loadDetailGrid();
-            })
-            .catch(e => {
-                if (!loadSpec.isAutoRefresh && !loadSpec.isStale) {
-                    XH.handleException(e, {alertType: 'toast'});
-                }
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        XH.handleException(e, {alertType: 'toast'});
     }
 
     //------------------

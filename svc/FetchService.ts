@@ -200,13 +200,18 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        // 1) Apply optional span and correlation to the core work
+        // 1) Apply optional span and correlation to the core work.
+        //    Abort superseded loads here matching how a Fetch works
         const fn = (ctx: RunContext) => {
             opts = this.withCorrelationId(opts);
             opts = this.withTraceId(opts, ctx?.span);
-            return this.withResolvedHeadersAsync(opts, ctx?.span).then(opts =>
-                this.managedFetchAsync(opts, ctx?.span)
-            );
+            return this.withResolvedHeadersAsync(opts, ctx?.span)
+                .then(opts => this.managedFetchAsync(opts, ctx?.span))
+                .tap(() => {
+                    if (opts.loadSpec instanceof LoadSpec) {
+                        opts.loadSpec.abortIfNeeded();
+                    }
+                });
         };
         const spanConfig = this.createSpanConfig(opts),
             parent = opts.span ?? opts.loadSpec?.span;
@@ -545,7 +550,7 @@ export class FetchService extends HoistService {
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
-            isFetchAborted: true,
+            isAborted: true,
             fetchOptions,
             cause
         });
@@ -607,7 +612,7 @@ export class FetchService extends HoistService {
         const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
-            isFetchAborted: false,
+            isAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
@@ -764,9 +769,10 @@ export interface FetchException extends HoistException {
     traceId: string;
 
     /**
-     * True if exception resulted from the fetch being aborted by fetchService, or the application.
+     * True if exception resulted from the fetch being aborted by fetchService, or the
+     * application. Also set on `LoadAbortedException` thrown when a load is superseded.
      * @see FetchService.abort
      * @see FetchOptions.autoAbortKey
      */
-    isFetchAborted: boolean;
+    isAborted: boolean;
 }
