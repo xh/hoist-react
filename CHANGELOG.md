@@ -13,6 +13,7 @@
   `Icon.icon(json)` respectively.
 
 ### 🐞 Bug Fixes
+
 * Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
   `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
 * Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
@@ -23,12 +24,16 @@
   for a `tags`-typed field with an active filter.
 
 ### ⚙️ Technical
+
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
   See [#4336](https://github.com/xh/hoist-react/issues/4336).
 
 ### 📚 Libraries
-* `golden-layout` and `jquery` `removed` (replaced by the forked source above).
+
+* Removed `golden-layout` and `jquery` (replaced by the forked source above).
+    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
+      `resolutions` should now be able to remove that pin.
 
 ## 85.0.0 - 2020-04-30
 
@@ -71,17 +76,19 @@ app-load span changes in this release.
   notes for the full list and replacements.
 
 ### 🎁 New Features
-* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
   matching the server-side API.
-* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync().
-  This span will be made available on the LoadSpec and  automatically picked up by FetchService for
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
+  loadAsync().
+  This span will be made available on the LoadSpec and automatically picked up by FetchService for
   properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
   span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
-* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+* Added the `user.name` tag to all spans. New `xh.impersonating` tag on spans shows impersonated
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
