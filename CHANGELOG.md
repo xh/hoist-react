@@ -140,6 +140,15 @@ Removed dependencies were obsolete or no longer used by hoist-react internals. N
 expected - none were part of the public API surface. Apps that imported these directly (relying
 on them as transitive hoist-react dependencies) must add their own direct dependencies.
 
+## 84.0.2 - 2026-05-13
+
+### 🐞 Bug Fixes
+
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
+  originally shipped in v85.0.0.
+
 ## 84.0.1 - 2026-04-20
 
 ### 🐞 Bug Fixes
