@@ -42,6 +42,15 @@ jobs:
         - name: Lint
           run: yarn lint
 
+        # Surfaces known vulnerabilities in production dependencies on every
+        # PR and weekly schedule. Non-blocking (continue-on-error) for now so
+        # this rolls out as visibility without breaking unrelated PRs. Once
+        # the baseline is consistently clean, drop continue-on-error to gate
+        # merges on a clean prod-dep audit.
+        - name: Audit production dependencies
+          run: yarn audit --groups dependencies
+          continue-on-error: true
+
     codeql:
 
         runs-on: ubuntu-latest
