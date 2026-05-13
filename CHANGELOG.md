@@ -34,6 +34,7 @@
 * Removed `golden-layout` and `jquery` (replaced by the forked source above).
     * Note, applications with previously required `"jquery": "3.x"` pin in package.json
       `resolutions` should now be able to remove that pin.
+* semver `7.7 → 7.8`
 
 ## 85.0.0 - 2020-04-30
 
