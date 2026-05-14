@@ -21,7 +21,7 @@ import {isEmpty} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
-    override spanPrefix = 'xh.client.admin.clients';
+    override telemetryPrefix = 'xh.client.admin.clients';
 
     @observable
     lastRefresh: number;
@@ -228,7 +228,7 @@ export class ClientsModel extends BaseAdminTabModel {
         if (isEmpty(toRecs)) return;
 
         await this.rootSpan('bulkPush')
-            .track({
+            .withTrack({
                 category: 'Audit',
                 message: trackMessage,
                 data: {users: toRecs.map(it => it.data.user).sort()},

@@ -23,7 +23,7 @@ export interface RestStoreConfig extends UrlStoreConfig {
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
-    override spanPrefix = 'xh.client.restStore';
+    override telemetryPrefix = 'xh.client.restStore';
 
     declare fields: RestField[];
     reloadLookupsOnLoad: boolean;

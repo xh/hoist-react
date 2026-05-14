@@ -2,7 +2,16 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above.
+
 ### 🎁 New Features
+
 * New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
   optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
   flow into the Micrometer registry. Requires hoist-core >= 40.0.
@@ -13,11 +22,32 @@
   client work into a remote trace context received off-channel (WebSocket / SSE / queue
   messages).
 * Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
-  or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
+  or `runOnOptional()` to compose spanned, logged, metered, tracked, and fetch-aware async work in a
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
-* `Runner.timer(name)` and `Runner.counter(name)` now record on completion of the wrapped fn
-  and automatically attach an `xh.outcome` tag with value `success` or `failure` based on
-  whether the fn threw. `counter()` previously fired before the fn ran.
+
+### 🐞 Bug Fixes
+
+* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
+  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
+
+### ⚙️ Technical
+
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+
+### 📚 Libraries
+
+* Removed `golden-layout` and `jquery` (replaced by the forked source above).
+    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
+      `resolutions` should now be able to remove that pin.
+* semver `7.7 → 7.8`
 
 ## 85.0.0 - 2020-04-30
 
@@ -60,17 +90,19 @@ app-load span changes in this release.
   notes for the full list and replacements.
 
 ### 🎁 New Features
-* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
   matching the server-side API.
-* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync().
-  This span will be made available on the LoadSpec and  automatically picked up by FetchService for
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
+  loadAsync().
+  This span will be made available on the LoadSpec and automatically picked up by FetchService for
   properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
   span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
-* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+* Added the `user.name` tag to all spans. New `xh.impersonating` tag on spans shows impersonated
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
@@ -122,6 +154,15 @@ app-load span changes in this release.
 Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
 expected - none were part of the public API surface. Apps that imported these directly (relying
 on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.2 - 2026-05-13
+
+### 🐞 Bug Fixes
+
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
+  originally shipped in v85.0.0.
 
 ## 84.0.1 - 2026-04-20
 

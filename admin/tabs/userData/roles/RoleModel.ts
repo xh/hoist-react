@@ -22,7 +22,7 @@ import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
-    override spanPrefix = 'xh.client.admin.roles';
+    override telemetryPrefix = 'xh.client.admin.roles';
 
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
@@ -145,10 +145,12 @@ export class RoleModel extends HoistModel {
         });
         if (!confirm) return false;
 
-        await this.rootSpan('delete').deleteJson({
-            url: `roleAdmin/delete`,
-            body: {name: role.name}
-        });
+        await this.rootSpan('delete').run(ctx =>
+            ctx.deleteJson({
+                url: `roleAdmin/delete`,
+                body: {name: role.name}
+            })
+        );
         await this.refreshAsync();
         return true;
     }
@@ -236,7 +238,7 @@ export class RoleModel extends HoistModel {
     private async ensureInitializedAsync(ctx: CallContext) {
         if (this.moduleConfig) return;
 
-        const config = await this.runOn(ctx).fetchJson({url: 'roleAdmin/config'});
+        const config = await this.runOn(ctx).runFetchJson({url: 'roleAdmin/config'});
         runInAction(() => {
             this.moduleConfig = config;
             if (config.enabled) {

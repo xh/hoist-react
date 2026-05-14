@@ -32,14 +32,16 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .fetchJson({
-                url: 'xhView/allData',
-                params: {type: model.type, viewInstance: model.instance}
+            .run(async ctx => {
+                const ret = await ctx.fetchJson({
+                    url: 'xhView/allData',
+                    params: {type: model.type, viewInstance: model.instance}
+                });
+                return {
+                    views: ret.views.map(v => new ViewInfo(v, model)),
+                    state: ret.state
+                };
             })
-            .then(ret => ({
-                views: ret.views.map(v => new ViewInfo(v, model)),
-                state: ret.state
-            }))
             .catch(e => {
                 throw XH.exception({
                     message: `Unable to fetch ${pluralize(model.typeDisplayName)}`,
@@ -54,8 +56,9 @@ export class DataAccess<T> {
         if (!token) return View.createDefault(model);
         return model
             .runOn(ctx)
-            .fetchJson({url: 'xhView/get', params: {token}})
-            .then(raw => View.fromBlob(raw, model))
+            .run(async ctx =>
+                View.fromBlob(await ctx.fetchJson({url: 'xhView/get', params: {token}}), model)
+            )
             .catch(e => {
                 throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
             });
@@ -66,11 +69,12 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .postJson({
-                url: 'xhView/create',
-                body: {type: model.type, ...spec}
-            })
-            .then(raw => View.fromBlob(raw, model))
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({url: 'xhView/create', body: {type: model.type, ...spec}}),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({
                     message: `Unable to create ${model.typeDisplayName}`,
@@ -89,12 +93,16 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .postJson({
-                url: 'xhView/updateInfo',
-                params: {token: view.token},
-                body: updates
-            })
-            .then(raw => View.fromBlob(raw, model))
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateInfo',
+                        params: {token: view.token},
+                        body: updates
+                    }),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
             });
@@ -110,12 +118,16 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .postJson({
-                url: 'xhView/updateValue',
-                params: {token: view.token},
-                body: value
-            })
-            .then(raw => View.fromBlob(raw, model))
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateValue',
+                        params: {token: view.token},
+                        body: value
+                    }),
+                    model
+                )
+            )
             .catch(e => {
                 throw XH.exception({
                     message: `Unable to update value for ${view.typedName}`,
@@ -129,7 +141,7 @@ export class DataAccess<T> {
         const {model} = this;
         return model
             .runOn(ctx)
-            .postJson({
+            .runPostJson({
                 url: 'xhView/delete',
                 params: {tokens: map(views, 'token').join(',')}
             })
@@ -149,7 +161,7 @@ export class DataAccess<T> {
         ctx: CallContext
     ): Promise<ViewUserState> {
         const {model} = this;
-        return model.runOn(ctx).postJson({
+        return model.runOn(ctx).runPostJson({
             url: 'xhView/updateState',
             params: {type: model.type, viewInstance: model.instance},
             body: update

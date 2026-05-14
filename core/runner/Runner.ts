@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Some, TrackOptions, XH, Span, SpanConfig, RawSpanConfig, CallContext} from '@xh/hoist/core';
+import {PromiseLinkSpec} from '@xh/hoist/promise';
 import {FetchOptions} from '@xh/hoist/svc';
 import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
@@ -24,6 +25,7 @@ export class Runner {
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
+    private linkSpec: PromiseLinkSpec;
     private counterMetric: {name: string; tags?: Record<string, string>} = null;
     private timerMetric: {name: string; tags?: Record<string, string>} = null;
 
@@ -42,7 +44,7 @@ export class Runner {
     newSpan(config: string | SpanConfig): this {
         config = isString(config) ? {name: config} : config;
         const {ctx} = this,
-            prefix = (ctx.caller as any)?.spanPrefix,
+            prefix = (ctx.caller as any)?.telemetryPrefix,
             name = prefix ? `${prefix}.${config.name}` : config.name;
         this.spanConfig = {...config, name, parent: ctx.span, caller: ctx.caller};
         return this;
@@ -52,20 +54,26 @@ export class Runner {
     // Log/Track configuration
     //---------------------------
     /** Time and log completion at info level via {@link withInfo}. */
-    logInfo(msgs: Some<unknown>): this {
+    withInfo(msgs: Some<unknown>): this {
         this.infoMsgs = msgs;
         return this;
     }
 
     /** Time and log completion at debug level via {@link withDebug}. */
-    logDebug(msgs: Some<unknown>): this {
+    withDebug(msgs: Some<unknown>): this {
         this.debugMsgs = msgs;
         return this;
     }
 
     /** Track via Hoist activity tracking. */
-    track(opts: TrackOptions | string): this {
+    withTrack(opts: TrackOptions | string): this {
         this.trackOptions = isString(opts) ? {message: opts} : opts;
+        return this;
+    }
+
+    /** Link execution to a {@link TaskObserver} for masking and progress messages. */
+    withObserver(spec: PromiseLinkSpec): this {
+        this.linkSpec = spec;
         return this;
     }
 
@@ -98,28 +106,13 @@ export class Runner {
         return this.executeWrapped(fn);
     }
 
-    fetch(options: FetchOptions): Promise<any> {
-        const fn = (ctx: RunContext) => ctx.fetch(options);
-        return this.executeWrapped(fn);
-    }
-
-    fetchJson(options: FetchOptions): Promise<any> {
+    runFetchJson(options: FetchOptions): Promise<any> {
         const fn = (ctx: RunContext) => ctx.fetchJson(options);
         return this.executeWrapped(fn);
     }
 
-    postJson(options: FetchOptions): Promise<any> {
+    runPostJson(options: FetchOptions): Promise<any> {
         const fn = (ctx: RunContext) => ctx.postJson(options);
-        return this.executeWrapped(fn);
-    }
-
-    putJson(options: FetchOptions): Promise<any> {
-        const fn = (ctx: RunContext) => ctx.putJson(options);
-        return this.executeWrapped(fn);
-    }
-
-    deleteJson(options: FetchOptions): Promise<any> {
-        const fn = (ctx: RunContext) => ctx.deleteJson(options);
         return this.executeWrapped(fn);
     }
 
@@ -128,6 +121,7 @@ export class Runner {
     //--------------------------
     private executeWrapped<T>(fn: RunFunction<T>): Promise<T> {
         fn = this.wrapMetrics(fn);
+        fn = this.wrapLink(fn);
         fn = this.wrapTrack(fn);
         fn = this.wrapLog(fn);
 
@@ -175,6 +169,12 @@ export class Runner {
         const {trackOptions} = this;
         if (!trackOptions) return fn;
         return ctx => fn(ctx).track({...trackOptions, loadSpec: ctx.loadSpec});
+    }
+
+    private wrapLink<S>(fn: RunFunction<S>): RunFunction<S> {
+        const {linkSpec} = this;
+        if (!linkSpec) return fn;
+        return ctx => fn(ctx).linkTo(linkSpec);
     }
 
     private getNestedCtx(span: Span): RunContext {

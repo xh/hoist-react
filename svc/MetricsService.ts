@@ -28,7 +28,7 @@ interface MetricEntry {
  * calling this service directly.
  */
 export class MetricsService extends HoistService {
-    override spanPrefix = 'xh.client.metrics';
+    override telemetryPrefix = 'xh.client.metrics';
 
     static instance: MetricsService;
 

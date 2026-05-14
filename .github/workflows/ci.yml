@@ -42,6 +42,24 @@ jobs:
         - name: Lint
           run: yarn lint
 
+        # Gates merges on a clean production-dependency audit for high and
+        # critical advisories. Low / moderate findings still appear in the
+        # step log but do not fail the build - they accumulate as a known
+        # noise floor rather than blocking unrelated PRs the moment a new
+        # advisory drops.
+        - name: Audit production dependencies
+          run: |
+              set +e
+              yarn audit --groups dependencies
+              EXIT_CODE=$?
+              # yarn audit exit code is a severity bitmask:
+              # 1=info, 2=low, 4=moderate, 8=high, 16=critical
+              if [ $((EXIT_CODE & 24)) -ne 0 ]; then
+                  echo "::error::High or critical vulnerabilities found in production dependencies"
+                  exit 1
+              fi
+              echo "::notice::No high or critical vulnerabilities (raw exit code: $EXIT_CODE)"
+
     codeql:
 
         runs-on: ubuntu-latest
