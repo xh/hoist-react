@@ -29,6 +29,9 @@
 
 ### 📚 Libraries
 
+* ag-Grid `34.x → 35.x`. Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and
+  `ag-grid-react` dependencies to `35.x`. See the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+  no Hoist API changes required.
 * Removed `golden-layout` and `jquery` (replaced by the forked source above).
     * Note, applications with previously required `"jquery": "3.x"` pin in package.json
       `resolutions` should now be able to remove that pin.
