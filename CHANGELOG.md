@@ -4,6 +4,12 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
+* **Migrated to TC39 Stage 3 (2023-05) decorators**, retiring `experimentalDecorators`. Drops
+  `makeObservable(this)` boilerplate and gives Hoist per-property private storage. Apps add
+  `accessor` to `@observable`/`@bindable` fields and run the codemod in
+  `docs/planning/tc39-decorators/`. Main risk: `@observable accessor` fields are now prototype
+  getter/setters, not own enumerable props — affects `Object.keys` / spread (`{...model}`) over
+  model instances. See `docs/upgrade-notes/v86-upgrade-notes.md`.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
@@ -23,6 +29,9 @@
 
 ### ⚙️ Technical
 
+* Model lookup now subscribes only to slots that can affect resolution — the matched slot, or
+  nullish/HoistModel candidates if no match. Primitive observables are excluded. Tighter than
+  the prior walk, which subscribed indiscriminately and triggered needless re-renders.
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
   See [#4336](https://github.com/xh/hoist-react/issues/4336).

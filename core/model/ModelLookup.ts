@@ -6,7 +6,7 @@
  */
 import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
 import {isObservableProp, untracked} from '@xh/hoist/mobx';
-import {forOwn} from 'lodash';
+import {find} from 'lodash';
 import {createContext} from 'react';
 
 /**
@@ -30,72 +30,87 @@ export class ModelLookup {
     }
 
     /**
-     * Lookup a model in the context hierarchy
+     * Lookup a model in the context hierarchy.
      * @returns model, or null if no matching model found.
+     *
+     * All MobX bookkeeping lives here: the recursive walk runs inside `untracked()` and
+     * accumulates slots into `trackKeys`. On a match anywhere in the chain, the walk clears
+     * `trackKeys` and pushes only the matched slot — preventing "closer" nullish slots from
+     * preempting an already-resolved model. With no match anywhere, `trackKeys` ends up with
+     * every nullish accessor we walked past, catching late arrivals.
      */
     lookupModel(selector: ModelSelector): HoistModel {
-        const {model, publishMode, parent} = this,
-            modeIsDefault = publishMode === 'default';
-
-        if (model.matchesSelector(selector, modeIsDefault)) {
-            return model;
-        }
-
-        // Try model's direct children. Wildcard not accepted (but would capture model itself above).
-        // Scans both own instance properties (plain class fields, e.g. `@managed grid = new GridModel()`)
-        // and accessor-defined fields (e.g. `@observable.ref accessor chartModel: ChartModel`)
-        if (modeIsDefault) {
-            const match = this.findChildModelMatching(model, selector);
-            if (match) return match;
-        }
-
-        // Try parent
-        return parent?.lookupModel(selector) ?? null;
+        const trackKeys: TrackKeys = {value: []};
+        const result = untracked(() => this.lookupModelInternal(selector, trackKeys));
+        for (const [model, key] of trackKeys.value) void (model as any)[key];
+        return result;
     }
 
     //----------------
     // Implementation
     //----------------
-    private findChildModelMatching(model: HoistModel, selector: ModelSelector): HoistModel | null {
-        // 1) Own enumerable properties — covers plain class fields
-        //    (e.g. `@managed grid = new GridModel()`).
-        let ret = null;
-        forOwn(model, (value, key) => {
-            if (this.isMatchingChild(key, value, selector)) {
-                ret = value;
-                return false;
-            }
-        });
-        if (ret) return ret;
+    private lookupModelInternal(selector: ModelSelector, trackKeys: TrackKeys): HoistModel {
+        const {model, publishMode, parent} = this,
+            modeIsDefault = publishMode === 'default';
 
-        // 2) Accessor/getter observables on the prototype chain — covers TC39 accessor fields
-        //    (e.g. `@observable.ref accessor chartModel: ChartModel`) which are non-enumerable
-        //    and invisible to forOwn. Stop at HoistModel to avoid framework-level getters.
-        //    Wrapped in untracked() to avoid creating spurious MobX dependencies.
-        return untracked(() => {
-            for (
-                let proto = Object.getPrototypeOf(model);
-                proto && proto !== HoistModel.prototype && proto !== Object.prototype;
-                proto = Object.getPrototypeOf(proto)
-            ) {
-                for (const key of Object.getOwnPropertyNames(proto)) {
-                    if (
-                        key === 'constructor' ||
-                        !Object.getOwnPropertyDescriptor(proto, key)?.get ||
-                        !isObservableProp(model, key)
-                    )
-                        continue;
-                    const value = (model as any)[key];
-                    if (this.isMatchingChild(key, value, selector)) return value;
+        if (model.matchesSelector(selector, modeIsDefault)) {
+            trackKeys.value = [];
+            return model;
+        }
+
+        // Scan this model's own props (plain class fields like `@managed grid = new GridModel()`)
+        // and accessor-defined fields (TC39 `@observable.ref accessor chartModel: ChartModel`).
+        if (modeIsDefault) {
+            const match = this.findChildMatch(model, selector, trackKeys);
+            if (match) return match;
+        }
+
+        return parent?.lookupModelInternal(selector, trackKeys) ?? null;
+    }
+
+    private findChildMatch(
+        model: HoistModel,
+        selector: ModelSelector,
+        track: TrackKeys
+    ): HoistModel {
+        // 1) Own enumerable plain class fields — not observable under TC39, no MobX tracking needed.
+        const match = find(model, (v, k) => this.isMatchingChild(k, v, selector)) as HoistModel;
+        if (match) {
+            track.value = [];
+            return match;
+        }
+
+        // 2) TC39 accessor observables on the prototype chain — invisible to `find` above.
+        for (
+            let proto = Object.getPrototypeOf(model);
+            proto && proto !== HoistModel.prototype && proto !== Object.prototype;
+            proto = Object.getPrototypeOf(proto)
+        ) {
+            for (const key of Object.getOwnPropertyNames(proto)) {
+                if (
+                    key === 'constructor' ||
+                    !Object.getOwnPropertyDescriptor(proto, key)?.get ||
+                    !isObservableProp(model, key)
+                )
+                    continue;
+                const value = (model as any)[key];
+                if (this.isMatchingChild(key, value, selector)) {
+                    track.value = [[model, key]];
+                    return value;
                 }
+                if (value == null) track.value.push([model, key]);
             }
-            return null;
-        });
+        }
+        return null;
     }
 
     private isMatchingChild(key: string, value: any, selector: ModelSelector): boolean {
         return !key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector);
     }
+}
+
+interface TrackKeys {
+    value: Array<[HoistModel, string]>;
 }
 
 /**
