@@ -67,8 +67,8 @@ export type {
 } from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 
-const MIN_VERSION = '34.2.0';
-const MAX_VERSION = '34.*.*';
+const MIN_VERSION = '35.3.0';
+const MAX_VERSION = '35.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.
