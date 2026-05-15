@@ -20,8 +20,6 @@
   where the eager default would reformat the user's text mid-typing.
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
-* Fixed `RoleGraph` admin panel crashing on mount with `Private element is not present on this object`. Caused by a TC39 field-initialization order issue where `RoleGraphModel.chartModel`'s inline initializer read `this.inverted` before that `@bindable accessor`'s private slot was installed. Reordered the affected `@bindable accessor` fields above `chartModel`. Pre-emptively applied the same reorder to `RoleFormModel` to harden against future refactors.
-* Fixed the column header filter `Custom` / `Values` tab-switcher buttons rendering with blank labels. Caused by `switcherButton({...tabModel})` spreading a live `TabModel` — TC39 `accessor` fields are getter/setter pairs on the prototype, so spread no longer copies `id` / `title`. Replaced the spread with an explicit pluck. See `v86-upgrade-notes.md` for the broader gotcha.
 
 ### ⚙️ Technical
 
