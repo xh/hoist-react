@@ -17,6 +17,8 @@ import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.clusterObjects';
+
     viewRef = createRef<HTMLElement>();
 
     @observable.ref startTimestamp: Date = null;
@@ -143,19 +145,19 @@ export class ClusterObjectsModel extends HoistModel {
 
         if (!confirmed) return;
 
-        try {
-            await XH.postJson({
+        await this.rootSpan('clearHibernateCachesByName')
+            .runPostJson({
                 url: 'clusterObjectsAdmin/clearHibernateCaches',
                 body: {
                     names: cacheRecords.map(it => it.id)
                 }
-            }).linkTo(this.loadObserver);
-
-            await this.refreshAsync();
-            XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
+            })
+            .catchDefault();
     }
 
     async clearAllHibernateCachesAsync() {
@@ -176,41 +178,40 @@ export class ClusterObjectsModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        try {
-            await XH.fetchJson({
-                url: 'clusterObjectsAdmin/clearAllHibernateCaches'
-            }).linkTo(this.loadObserver);
-
-            await this.refreshAsync();
-            XH.successToast('All Hibernate Caches cleared.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.rootSpan('clearHibernateCaches')
+            .runFetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('All Hibernate Caches cleared.');
+            })
+            .catchDefault();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            const report = await XH.fetchJson({
-                url: 'clusterObjectsAdmin/getClusterObjectsReport'
-            });
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                const report = await ctx.fetchJson({
+                    url: 'clusterObjectsAdmin/getClusterObjectsReport'
+                });
 
-            this.gridModel.loadData(this.processReport(report));
-            runInAction(() => {
-                this.startTimestamp = report.startTimestamp
-                    ? new Date(report.startTimestamp)
-                    : null;
-                this.runDurationMs =
-                    report.endTimestamp && report.startTimestamp
-                        ? report.endTimestamp - report.startTimestamp
+                this.gridModel.loadData(this.processReport(report));
+                runInAction(() => {
+                    this.startTimestamp = report.startTimestamp
+                        ? new Date(report.startTimestamp)
                         : null;
-            });
-        } catch (e) {
-            XH.handleException(e, {
+                    this.runDurationMs =
+                        report.endTimestamp && report.startTimestamp
+                            ? report.endTimestamp - report.startTimestamp
+                            : null;
+                });
+            })
+            .catchDefault({
                 alertType: 'toast',
                 showAlert: this.isVisible && !loadSpec.isAutoRefresh,
                 logOnServer: this.isVisible && !loadSpec.isAutoRefresh
             });
-        }
     }
 
     get isVisible() {

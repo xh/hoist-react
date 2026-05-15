@@ -24,7 +24,7 @@
       }
     },
     "jetbrains": {
-      "url": "http://localhost:64342/sse",
+      "url": "http://localhost:${JETBRAINS_MCP_PORT:-64342}/sse",
       "type": "sse"
     }
   }

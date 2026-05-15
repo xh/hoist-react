@@ -6,7 +6,7 @@
  */
 
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, zipWith} from 'lodash';
@@ -15,6 +15,8 @@ import {isEmpty, zipWith} from 'lodash';
  * @internal
  */
 export class JsonSearchImplModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.jsonSearch';
+
     override xhImpl = true;
 
     private matchingNodesUrl = 'jsonSearch/getMatchingNodes';
@@ -104,19 +106,23 @@ export class JsonSearchImplModel extends HoistModel {
             return;
         }
 
-        try {
-            const data = await XH.fetchJson({
-                url: this.docSearchUrl,
-                params: {path}
-            }).linkTo(docLoadTask);
+        return this.rootSpan('docs')
+            .run(async ctx => {
+                const data = await ctx
+                    .fetchJson({
+                        url: this.docSearchUrl,
+                        params: {path}
+                    })
+                    .linkTo(docLoadTask);
 
-            this.error = null;
-            gridModel.loadData(data);
-            gridModel.preSelectFirstAsync();
-        } catch (e) {
-            gridModel.clear();
-            this.error = e;
-        }
+                this.error = null;
+                gridModel.loadData(data);
+                await gridModel.preSelectFirstAsync();
+            })
+            .catch(e => {
+                gridModel.clear();
+                this.error = e;
+            });
     }
 
     private async loadReaderContentAsync() {
@@ -133,22 +139,26 @@ export class JsonSearchImplModel extends HoistModel {
             return;
         }
 
-        let nodes = await XH.fetchJson({
-            url: this.matchingNodesUrl,
-            params: {
-                path: this.path,
-                json
-            }
-        }).linkTo(this.nodeLoadTask);
+        await this.rootSpan('nodes').run(async ctx => {
+            let nodes = await ctx
+                .fetchJson({
+                    url: this.matchingNodesUrl,
+                    params: {
+                        path: this.path,
+                        json
+                    }
+                })
+                .linkTo(this.nodeLoadTask);
 
-        this.matchingNodeCount = nodes.paths.length;
-        nodes = zipWith(nodes.paths, nodes.values, (path: string, value) => {
-            return {
-                path: this.pathFormat === 'XPath' ? this.convertToXPath(path) : path,
-                value
-            };
+            this.matchingNodeCount = nodes.paths.length;
+            nodes = zipWith(nodes.paths, nodes.values, (path: string, value) => {
+                return {
+                    path: this.pathFormat === 'XPath' ? this.convertToXPath(path) : path,
+                    value
+                };
+            });
+            this.readerContent = JSON.stringify(nodes, null, 2);
         });
-        this.readerContent = JSON.stringify(nodes, null, 2);
     }
 
     private convertToXPath(JSONPath: string): string {

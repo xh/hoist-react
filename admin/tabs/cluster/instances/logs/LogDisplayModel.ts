@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, persist} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -19,6 +19,8 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.log';
+
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
@@ -105,19 +107,22 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        const response = await XH.fetchJson({
-            url: 'logViewerAdmin/getFile',
-            params: {
-                filename: parent.file,
-                startLine: this.startLine,
-                maxLines: this.maxLines,
-                pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                caseSensitive: this.caseSensitive,
-                instance: parent.instanceName
-            },
-            loadSpec
-        });
-        this.updateGridData(response.content);
+        await this.runOn(loadSpec)
+            .newSpan('getFile')
+            .run(async ctx => {
+                const response = await ctx.fetchJson({
+                    url: 'logViewerAdmin/getFile',
+                    params: {
+                        filename: parent.file,
+                        startLine: this.startLine,
+                        maxLines: this.maxLines,
+                        pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                        caseSensitive: this.caseSensitive,
+                        instance: parent.instanceName
+                    }
+                });
+                this.updateGridData(response.content);
+            });
     }
 
     async scrollToTail() {

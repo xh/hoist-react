@@ -10,6 +10,21 @@
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
   existed only to support the above.
 
+### 🎁 New Features
+
+* New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
+  optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
+  flow into the Micrometer registry. Requires hoist-core >= 40.0.
+* Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
+  can accept and forward across call boundaries to propagate trace/load context into nested
+  loads and fetches.
+* Span parents now accept a W3C `traceparent` string in addition to a `Span`, for chaining
+  client work into a remote trace context received off-channel (WebSocket / SSE / queue
+  messages).
+* Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
+  or `runOnOptional()` to compose spanned, logged, metered, tracked, and fetch-aware async work in a
+  fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+
 ### 🐞 Bug Fixes
 
 * Chart right-to-left "zoom out" gesture now activates for charts configured with the modern

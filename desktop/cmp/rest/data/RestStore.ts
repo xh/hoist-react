@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, XH} from '@xh/hoist/core';
+import {CallContext, LoadSpec, PlainObject} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
@@ -23,6 +23,8 @@ export interface RestStoreConfig extends UrlStoreConfig {
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore extends UrlStore {
+    override telemetryPrefix = 'xh.client.restStore';
+
     declare fields: RestField[];
     reloadLookupsOnLoad: boolean;
     private lookupsLoaded = false;
@@ -36,34 +38,34 @@ export class RestStore extends UrlStore {
         return RestField;
     }
 
-    override async doLoadAsync(loadSpec) {
-        await this.ensureLookupsLoadedAsync();
-        return super.doLoadAsync(loadSpec);
+    override async doLoadAsync(loadSpec: LoadSpec) {
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                await this.ensureLookupsLoadedAsync(ctx);
+                return super.doLoadAsync(ctx.loadSpec);
+            });
     }
 
     async deleteRecordAsync(rec: StoreRecord) {
-        const {url} = this;
-
-        return XH.fetchJson({
-            url: `${url}/${rec.id}`,
-            method: 'DELETE'
-        })
-            .then(() => {
+        return this.rootSpan('delete')
+            .run(async ctx => {
+                const {url} = this;
+                await ctx.fetchJson({url: `${url}/${rec.id}`, method: 'DELETE'});
                 this.updateData({remove: [rec.id]});
             })
             .linkTo(this.loadObserver);
     }
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
-        const {url} = this,
-            ids = records.map(it => it.id),
-            resp = await XH.fetchJson({
-                url: `${url}/bulkDelete`,
-                params: {ids}
-            }).linkTo(this.loadObserver);
-
-        await this.loadAsync();
-        return resp;
+        return this.rootSpan('bulkDelete')
+            .run(ctx => {
+                const {url} = this,
+                    ids = records.map(it => it.id);
+                return ctx.fetchJson({url: `${url}/bulkDelete`, params: {ids}});
+            })
+            .linkTo(this.loadObserver)
+            .tap(() => this.loadAsync());
     }
 
     async addRecordAsync(rec: {id?: StoreRecordId; data: PlainObject}) {
@@ -75,16 +77,13 @@ export class RestStore extends UrlStore {
     }
 
     async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
-        const {url} = this,
-            resp = await XH.fetchService
-                .putJson({
-                    url: `${url}/bulkUpdate`,
-                    body: {ids, newParams}
-                })
-                .linkTo(this.loadObserver);
-
-        await this.loadAsync();
-        return resp;
+        return this.rootSpan('bulkUpdate')
+            .run(ctx => {
+                const {url} = this;
+                return ctx.putJson({url: `${url}/bulkUpdate`, body: {ids, newParams}});
+            })
+            .linkTo(this.loadObserver)
+            .tap(() => this.loadAsync());
     }
 
     editableDataForRecord(record: {data: PlainObject}): PlainObject {
@@ -110,27 +109,36 @@ export class RestStore extends UrlStore {
         const data = this.editableDataForRecord(rec);
         if (!isNil(id)) data.id = id;
 
-        const fetchMethod = isAdd ? 'postJson' : 'putJson',
-            response = await XH.fetchService[fetchMethod]({url, body: {data}}),
-            responseData = dataRoot ? response[dataRoot] : response;
+        return this.rootSpan(isAdd ? 'create' : 'update').run(async ctx => {
+            const fetchMethod = isAdd ? 'postJson' : 'putJson',
+                response = await ctx[fetchMethod]({url, body: {data}}),
+                responseData = dataRoot ? response[dataRoot] : response;
 
-        this.updateData([responseData]);
+            this.updateData([responseData]);
 
-        await this.ensureLookupsLoadedAsync();
+            await this.ensureLookupsLoadedAsync(ctx);
 
-        return this.getById(responseData.id);
+            return this.getById(responseData.id);
+        });
     }
 
-    private async ensureLookupsLoadedAsync() {
-        if (!this.lookupsLoaded || this.reloadLookupsOnLoad) {
-            const lookupFields = this.fields.filter(it => !!it.lookupName);
-            if (lookupFields.length) {
-                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`});
+    private async ensureLookupsLoadedAsync(ctx: CallContext) {
+        if (this.lookupsLoaded && !this.reloadLookupsOnLoad) return;
+
+        const lookupFields = this.fields.filter(it => !!it.lookupName);
+        if (!lookupFields.length) {
+            this.lookupsLoaded = true;
+            return;
+        }
+
+        await this.runOn(ctx)
+            .newSpan('loadLookups')
+            .run(async ctx => {
+                const lookupData = await ctx.fetchJson({url: `${this.url}/lookupData`});
                 lookupFields.forEach(f => {
                     f.lookup = lookupData[f.lookupName];
                 });
-            }
-            this.lookupsLoaded = true;
-        }
+                this.lookupsLoaded = true;
+            });
     }
 }

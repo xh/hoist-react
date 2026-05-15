@@ -24,15 +24,19 @@ import {keys} from 'lodash';
  * application has loaded. A refresh of the application is required to load new entries.
  */
 export class ConfigService extends HoistService {
+    override telemetryPrefix = 'xh.client.config';
+
     static instance: ConfigService;
 
     private _data = {};
 
     override async initAsync(ctx: InitContext) {
-        this._data = await this.runner(ctx.span)
-            .newSpan('xh.client.config.get')
-            .fetchJson({url: 'xh/getConfig'});
-        deepFreeze(this._data);
+        await this.runOn(ctx)
+            .newSpan('init')
+            .run(async ctx => {
+                this._data = await ctx.fetchJson({url: 'xh/getConfig'});
+                deepFreeze(this._data);
+            });
     }
 
     /**

@@ -15,6 +15,8 @@ import {throwIf} from '@xh/hoist/utils/js';
  * actual underlying user.
  */
 export class IdentityService extends HoistService {
+    override telemetryPrefix = 'xh.client.identity';
+
     static instance: IdentityService;
 
     private identity: IdentityInfo;
@@ -96,13 +98,10 @@ export class IdentityService extends HoistService {
             !this.canAuthUserImpersonate,
             'User does not have right to impersonate or impersonation is disabled.'
         );
-        await XH.prefService.pushPendingAsync();
-
-        await this.newSpan('xh.client.identity.impersonate').fetchJson({
+        await this.pushPendingUserStateAsync();
+        await this.rootSpan('impersonate').runFetchJson({
             url: 'xh/impersonate',
-            params: {
-                username: username
-            }
+            params: {username}
         });
 
         XH.reloadApp();
@@ -110,9 +109,9 @@ export class IdentityService extends HoistService {
 
     /** Exit any active impersonation, reloading the app to resume accessing it as yourself. */
     async endImpersonateAsync() {
+        await this.pushPendingUserStateAsync();
         try {
-            await XH.prefService?.pushPendingAsync();
-            await this.newSpan('xh.client.identity.endImpersonate').fetchJson({
+            await this.rootSpan('endImpersonate').runFetchJson({
                 url: 'xh/endImpersonate'
             });
             XH.reloadApp();
@@ -133,5 +132,16 @@ export class IdentityService extends HoistService {
     //-------------------
     private canUserImpersonate(user: HoistUser): boolean {
         return user.hasRole(`HOIST_IMPERSONATOR`) && XH.getConf('xhEnableImpersonation');
+    }
+
+    /**
+     * Flush any buffered user-attributed state to the server before changing identity, so events
+     * are recorded under the correct session. Each call is null-safe in case the relevant service
+     * has not yet been initialized.
+     */
+    private async pushPendingUserStateAsync() {
+        await XH.prefService?.pushPendingAsync();
+        await XH.trackService?.pushPendingAsync();
+        await XH.traceService?.pushPendingAsync();
     }
 }

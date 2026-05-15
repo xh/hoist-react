@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Runner, SpanConfigLike, XH} from '@xh/hoist/core';
+import {CallContext, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {map} from 'lodash';
 import {ViewInfo} from './ViewInfo';
@@ -24,117 +24,146 @@ export class DataAccess<T> {
         this.model = model;
     }
 
-    private newSpan(span: SpanConfigLike): Runner {
-        return Runner.create(null, this).newSpan(span);
-    }
     //---------------
     // Load/search.
     //---------------
     /** Fetch metadata for all views accessible by current user. */
-    async fetchDataAsync(): Promise<{views: ViewInfo[]; state: ViewUserState}> {
-        const {typeDisplayName, type, instance} = this.model;
-        try {
-            const ret = await this.newSpan('xh.client.view.getAll').fetchJson({
-                url: 'xhView/allData',
-                params: {type, viewInstance: instance}
+    async fetchDataAsync(ctx: CallContext): Promise<{views: ViewInfo[]; state: ViewUserState}> {
+        const {model} = this;
+        return model
+            .runOn(ctx)
+            .run(async ctx => {
+                const ret = await ctx.fetchJson({
+                    url: 'xhView/allData',
+                    params: {type: model.type, viewInstance: model.instance}
+                });
+                return {
+                    views: ret.views.map(v => new ViewInfo(v, model)),
+                    state: ret.state
+                };
+            })
+            .catch(e => {
+                throw XH.exception({
+                    message: `Unable to fetch ${pluralize(model.typeDisplayName)}`,
+                    cause: e
+                });
             });
-            return {
-                views: ret.views.map(v => new ViewInfo(v, this.model)),
-                state: ret.state
-            };
-        } catch (e) {
-            throw XH.exception({
-                message: `Unable to fetch ${pluralize(typeDisplayName)}`,
-                cause: e
-            });
-        }
     }
 
     /** Fetch the latest version of a view, or the in-code default if token null/undefined/empty. */
-    async fetchViewAsync(token: string): Promise<View<T>> {
+    async fetchViewAsync(token: string, ctx: CallContext): Promise<View<T>> {
         const {model} = this;
         if (!token) return View.createDefault(model);
-        try {
-            const raw = await this.newSpan('xh.client.view.get').fetchJson({
-                url: 'xhView/get',
-                params: {token}
+        return model
+            .runOn(ctx)
+            .run(async ctx =>
+                View.fromBlob(await ctx.fetchJson({url: 'xhView/get', params: {token}}), model)
+            )
+            .catch(e => {
+                throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
             });
-            return View.fromBlob(raw, model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
-        }
     }
 
     /** Create a new view, owned by the current user.*/
-    async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
+    async createViewAsync(spec: ViewCreateSpec, ctx: CallContext): Promise<View<T>> {
         const {model} = this;
-        try {
-            const raw = await this.newSpan('xh.client.view.create').postJson({
-                url: 'xhView/create',
-                body: {type: model.type, ...spec}
+        return model
+            .runOn(ctx)
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({url: 'xhView/create', body: {type: model.type, ...spec}}),
+                    model
+                )
+            )
+            .catch(e => {
+                throw XH.exception({
+                    message: `Unable to create ${model.typeDisplayName}`,
+                    cause: e
+                });
             });
-            return View.fromBlob(raw, model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to create ${model.typeDisplayName}`, cause: e});
-        }
     }
 
     /** Update all aspects of a view's metadata.*/
-    async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
-        try {
-            this.ensureEditable(view);
-            const raw = await this.newSpan('xh.client.view.updateInfo').postJson({
-                url: 'xhView/updateInfo',
-                params: {token: view.token},
-                body: updates
+    async updateViewInfoAsync(
+        view: ViewInfo,
+        updates: ViewUpdateSpec,
+        ctx: CallContext
+    ): Promise<View<T>> {
+        this.ensureEditable(view);
+        const {model} = this;
+        return model
+            .runOn(ctx)
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateInfo',
+                        params: {token: view.token},
+                        body: updates
+                    }),
+                    model
+                )
+            )
+            .catch(e => {
+                throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
             });
-            return View.fromBlob(raw, this.model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
-        }
     }
 
     /** Update a view's value. */
-    async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
-        try {
-            this.ensureEditable(view.info);
-            const raw = await this.newSpan('xh.client.view.updateValue').postJson({
-                url: 'xhView/updateValue',
-                params: {token: view.token},
-                body: value
+    async updateViewValueAsync(
+        view: View<T>,
+        value: Partial<T>,
+        ctx: CallContext
+    ): Promise<View<T>> {
+        this.ensureEditable(view.info);
+        const {model} = this;
+        return model
+            .runOn(ctx)
+            .run(async ctx =>
+                View.fromBlob(
+                    await ctx.postJson({
+                        url: 'xhView/updateValue',
+                        params: {token: view.token},
+                        body: value
+                    }),
+                    model
+                )
+            )
+            .catch(e => {
+                throw XH.exception({
+                    message: `Unable to update value for ${view.typedName}`,
+                    cause: e
+                });
             });
-            return View.fromBlob(raw, this.model);
-        } catch (e) {
-            throw XH.exception({
-                message: `Unable to update value for ${view.typedName}`,
-                cause: e
-            });
-        }
     }
 
-    async deleteViewsAsync(views: ViewInfo[]) {
+    async deleteViewsAsync(views: ViewInfo[], ctx: CallContext) {
         views.forEach(v => this.ensureEditable(v));
-        try {
-            await this.newSpan('xh.client.view.delete').postJson({
+        const {model} = this;
+        return model
+            .runOn(ctx)
+            .runPostJson({
                 url: 'xhView/delete',
                 params: {tokens: map(views, 'token').join(',')}
+            })
+            .catch(e => {
+                throw XH.exception({
+                    message: `Failed to delete ${pluralize(model.typeDisplayName)}`,
+                    cause: e
+                });
             });
-        } catch (e) {
-            throw XH.exception({
-                message: `Failed to delete ${pluralize(this.model.typeDisplayName)}`,
-                cause: e
-            });
-        }
     }
 
     //--------------------------
     // State related changes
     //--------------------------
-    async updateStateAsync(update: Partial<ViewUserState>): Promise<ViewUserState> {
-        const {type, instance} = this.model;
-        return this.newSpan('xh.client.view.updateState').postJson({
+    async updateStateAsync(
+        update: Partial<ViewUserState>,
+        ctx: CallContext
+    ): Promise<ViewUserState> {
+        const {model} = this;
+        return model.runOn(ctx).runPostJson({
             url: 'xhView/updateState',
-            params: {type, viewInstance: instance},
+            params: {type: model.type, viewInstance: model.instance},
             body: update
         });
     }

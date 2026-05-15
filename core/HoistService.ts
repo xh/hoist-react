@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    CallContext,
     HoistBase,
     InitContext,
     managed,
@@ -105,7 +106,7 @@ export class HoistService extends HoistBase implements Loadable {
 
     async doLoadAsync(loadSpec: LoadSpec) {}
 
-    async loadAsync(loadSpec?: LoadSpecConfig) {
+    async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 }

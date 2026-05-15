@@ -7,7 +7,7 @@
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import {LoadSpec, managed} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 
 /**
@@ -15,6 +15,8 @@ import {forOwn} from 'lodash';
  * a dedicated admin-only endpoint.
  */
 export class ServerEnvModel extends BaseInstanceModel {
+    override telemetryPrefix = 'xh.client.admin.serverEnv';
+
     @managed gridModel: GridModel;
 
     constructor() {
@@ -47,24 +49,25 @@ export class ServerEnvModel extends BaseInstanceModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            const resp = await XH.fetchJson({
-                    url: 'envAdmin',
-                    params: {instance: this.instanceName}
-                }),
-                data = [];
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                const resp = await ctx.fetchJson({
+                        url: 'envAdmin',
+                        params: {instance: this.instanceName}
+                    }),
+                    data = [];
 
-            forOwn(resp.environment, (value, name) => {
-                data.push({type: 'Environment Variables', value, name});
-            });
+                forOwn(resp.environment, (value, name) => {
+                    data.push({type: 'Environment Variables', value, name});
+                });
 
-            forOwn(resp.properties, (value, name) => {
-                data.push({type: 'System Properties', value, name});
-            });
+                forOwn(resp.properties, (value, name) => {
+                    data.push({type: 'System Properties', value, name});
+                });
 
-            this.gridModel.loadData(data);
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+                this.gridModel.loadData(data);
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 }

@@ -15,6 +15,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
 export class ConnPoolMonitorModel extends BaseInstanceModel {
+    override telemetryPrefix = 'xh.client.admin.connPool';
+
     @bindable enabled: boolean = true;
     @bindable.ref poolConfiguration: PlainObject = {};
 
@@ -84,81 +86,83 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, chartModel} = this;
 
-        try {
-            const resp = await XH.fetchJson({
-                url: 'connectionPoolMonitorAdmin/snapshots',
-                params: {instance: this.instanceName},
-                loadSpec
-            });
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                const resp = await ctx.fetchJson({
+                    url: 'connectionPoolMonitorAdmin/snapshots',
+                    params: {instance: this.instanceName}
+                });
 
-            const {enabled, snapshots, poolConfiguration} = resp;
-            this.enabled = enabled;
-            this.poolConfiguration = poolConfiguration;
-            if (!enabled) {
-                this.clear();
-                return;
-            }
-
-            // Server returns map by timestamp - flatted to array and load into grid records.
-            let snaps = [];
-            forOwn(snapshots, (snap, ts) => {
-                snaps.push({timestamp: parseInt(ts), ...snap});
-            });
-            snaps = sortBy(snaps, 'timestamp');
-            gridModel.loadData(snaps);
-
-            // Process further for chart series.
-            const sizeSeries = [],
-                activeSeries = [];
-
-            snaps.forEach(snap => {
-                sizeSeries.push([snap.timestamp, snap.size]);
-                activeSeries.push([snap.timestamp, snap.active]);
-            });
-
-            chartModel.setSeries([
-                {
-                    name: 'Size',
-                    data: sizeSeries,
-                    color: '#1976d2',
-                    step: true
-                },
-                {
-                    name: 'Active',
-                    data: activeSeries,
-                    color: '#ef6c00',
-                    step: true
+                const {enabled, snapshots, poolConfiguration} = resp;
+                this.enabled = enabled;
+                this.poolConfiguration = poolConfiguration;
+                if (!enabled) {
+                    this.clear();
+                    return;
                 }
-            ]);
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+
+                // Server returns map by timestamp - flatted to array and load into grid records.
+                let snaps = [];
+                forOwn(snapshots, (snap, ts) => {
+                    snaps.push({timestamp: parseInt(ts), ...snap});
+                });
+                snaps = sortBy(snaps, 'timestamp');
+                gridModel.loadData(snaps);
+
+                // Process further for chart series.
+                const sizeSeries = [],
+                    activeSeries = [];
+
+                snaps.forEach(snap => {
+                    sizeSeries.push([snap.timestamp, snap.size]);
+                    activeSeries.push([snap.timestamp, snap.active]);
+                });
+
+                chartModel.setSeries([
+                    {
+                        name: 'Size',
+                        data: sizeSeries,
+                        color: '#1976d2',
+                        step: true
+                    },
+                    {
+                        name: 'Active',
+                        data: activeSeries,
+                        color: '#ef6c00',
+                        step: true
+                    }
+                ]);
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 
     async takeSnapshotAsync() {
-        try {
-            await XH.fetchJson({
+        await this.rootSpan('takeSnapshot')
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadObserver);
-            await this.refreshAsync();
-            XH.successToast('Updated snapshot loaded.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('Updated snapshot loaded.');
+            })
+            .catchDefault();
     }
 
     async resetStatsAsync() {
-        try {
-            await XH.fetchJson({
+        await this.rootSpan('resetStats')
+            .runFetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadObserver);
-            await this.refreshAsync();
-            XH.successToast('Connection pool stats reset.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('Connection pool stats reset.');
+            })
+            .catchDefault();
     }
 
     private clear() {

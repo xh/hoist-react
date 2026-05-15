@@ -28,6 +28,8 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class InstancesTabModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.instances';
+
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 
     @lookup(TabModel) private tabModel: TabModel;
@@ -55,26 +57,29 @@ export class InstancesTabModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
-        let data = await XH.fetchJson({
-            url: 'clusterAdmin/allInstances',
-            // Tighter default timeout for background auto-refresh, to ensure we report connectivity
-            // issues promptly. This call should be quick, but still allow full default timeout for
-            // a manual refresh.
-            timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined,
-            loadSpec
-        });
+        await this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                let data = await ctx.fetchJson({
+                    url: 'clusterAdmin/allInstances',
+                    // Tighter default timeout for background auto-refresh, to ensure we report connectivity
+                    // issues promptly. This call should be quick, but still allow full default timeout for
+                    // a manual refresh.
+                    timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined
+                });
 
-        data = data.map(row => ({
-            ...row,
-            isLocal: row.name == XH.environmentService.serverInstance,
-            usedHeapMb: row.memory?.usedHeapMb,
-            usedPctMax: row.memory?.usedPctMax
-        }));
-        gridModel.loadData(data);
-        if (!gridModel.hasSelection) {
-            const primary = gridModel.store.records.find(r => r.data.isPrimary);
-            await (primary ? gridModel.selectAsync(primary) : gridModel.selectFirstAsync());
-        }
+                data = data.map(row => ({
+                    ...row,
+                    isLocal: row.name == XH.environmentService.serverInstance,
+                    usedHeapMb: row.memory?.usedHeapMb,
+                    usedPctMax: row.memory?.usedPctMax
+                }));
+                gridModel.loadData(data);
+                if (!gridModel.hasSelection) {
+                    const primary = gridModel.store.records.find(r => r.data.isPrimary);
+                    await (primary ? gridModel.selectAsync(primary) : gridModel.selectFirstAsync());
+                }
+            });
     }
 
     constructor() {
@@ -230,10 +235,11 @@ export class InstancesTabModel extends HoistModel {
         )
             return;
 
-        await XH.fetchJson({
-            url: 'clusterAdmin/shutdownInstance',
-            params: {instance: instance.name}
-        })
+        await this.rootSpan('shutdown')
+            .runFetchJson({
+                url: 'clusterAdmin/shutdownInstance',
+                params: {instance: instance.name}
+            })
             .finally(() => this.loadAsync())
             .linkTo({observer: this.loadObserver, message: 'Attempting instance shutdown'})
             .catchDefault();

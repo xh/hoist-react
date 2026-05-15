@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH, Span} from '@xh/hoist/core';
+import {HoistService, InitContext, XH, CallContext} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
@@ -26,6 +26,8 @@ import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
  * across workstations.
  */
 export class PrefService extends HoistService {
+    override telemetryPrefix = 'xh.client.prefs';
+
     static instance: PrefService;
 
     private _data = {};
@@ -33,7 +35,7 @@ export class PrefService extends HoistService {
 
     override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
-        return this.loadPrefsAsync(ctx.span);
+        return this.loadPrefsAsync(ctx);
     }
 
     /**
@@ -116,17 +118,15 @@ export class PrefService extends HoistService {
      */
     async pushPendingAsync() {
         const updates = this._updates;
-
         if (isEmpty(updates)) return;
 
-        this._updates = {};
-
-        await this.newSpan('xh.client.prefs.set').postJson({
-            url: 'xh/setPrefs',
-            body: updates,
-            params: {
-                clientUsername: XH.getUsername()
-            }
+        await this.rootSpan('set').run(async ctx => {
+            this._updates = {};
+            await ctx.postJson({
+                url: 'xh/setPrefs',
+                body: updates,
+                params: {clientUsername: XH.getUsername()}
+            });
         });
     }
 
@@ -138,18 +138,20 @@ export class PrefService extends HoistService {
         this.pushPendingAsync();
     }
 
-    private async loadPrefsAsync(span: Span) {
-        const data = await this.runner(span)
-            .newSpan('xh.client.prefs.get')
-            .fetchJson({
-                url: 'xh/getPrefs',
-                params: {clientUsername: XH.getUsername()}
+    private async loadPrefsAsync(ctx: CallContext) {
+        await this.runOn(ctx)
+            .newSpan('get')
+            .run(async ctx => {
+                const data = await ctx.fetchJson({
+                    url: 'xh/getPrefs',
+                    params: {clientUsername: XH.getUsername()}
+                });
+                forEach(data, v => {
+                    deepFreeze(v.value);
+                    deepFreeze(v.defaultValue);
+                });
+                this._data = data;
             });
-        forEach(data, v => {
-            deepFreeze(v.value);
-            deepFreeze(v.defaultValue);
-        });
-        this._data = data;
     }
 
     private validateBeforeSet(key, value) {

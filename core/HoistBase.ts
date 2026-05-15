@@ -14,6 +14,7 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {
+    apiDeprecated,
     getOrCreate,
     logDebug,
     logError,
@@ -23,7 +24,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Runner} from '../utils/telemetry/Runner';
+import {Runner} from './runner/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -36,14 +37,15 @@ import {
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {
+    CallContext,
     DebounceSpec,
-    LoadSpec,
     PersistableState,
     PersistenceProvider,
     PersistOptions,
+    RawSpanConfig,
     Some,
     Span,
-    SpanConfigLike,
+    SpanConfig,
     XH
 } from './';
 import {wait} from '@xh/hoist/promise';
@@ -99,6 +101,12 @@ export abstract class HoistBase {
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
 
+    /**
+     * Optional prefix applied to span names produced for this object.
+     * When non-null, the string "[prefix]." is pre-pended to the supplied span name.
+     */
+    telemetryPrefix: string = null;
+
     //--------------------------------------------------
     // Logging Delegates
     //--------------------------------------------------
@@ -126,26 +134,55 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
-        return XH.traceService.withSpan(config, fn);
+    /** @deprecated - use {@link rootSpan} or {@link runOn} to start a {@link Runner} chain. */
+    withSpan<T>(config: string | RawSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
+        apiDeprecated('HoistBase.withSpan', {
+            v: 'v87',
+            msg: 'Use rootSpan() or runOnXXX() to start a Runner chain instead.',
+            source: this
+        });
+        let cfg = isString(config) ? {name: config} : config,
+            {telemetryPrefix} = this,
+            name = telemetryPrefix ? telemetryPrefix + '.' + cfg.name : cfg.name;
+        cfg = {caller: this, ...cfg, name};
+        return XH.traceService.withSpan(cfg, fn);
     }
 
     /**
-     * Create an {@link Runner} builder with this object as the caller.
-     *
-     * @internal  - runner is an experimental beta feature.
-     **/
-    runner(ctx: LoadSpec | Span = null): Runner {
+     * Create an {@link Runner} with an initial root span and this object
+     * as the caller.
+     */
+    runOnRoot(): Runner {
+        return Runner.create(null, this);
+    }
+
+    /**
+     * Create an {@link Runner} with an initial call context and this object as the caller.
+     * Use this method in implementation methods that are passed CallContext or LoadSpec,
+     * e.g. doLoadAsync, initAsync, or other methods.
+     */
+    runOn(ctx: CallContext): Runner {
+        throwIf(
+            !ctx,
+            'runOn() requires a CallContext. Use runOnOptional(), or runOnRoot() as needed.'
+        );
         return Runner.create(ctx, this);
     }
 
     /**
-     * Create an {@link Runner} builder with an initial span and this object as the caller.
-     *
-     * @internal - runner is an experimental beta feature.
+     * Create an {@link Runner} on the given call context if provided, otherwise on a fresh root.
+     * Convenient when a method receives an optional context but should always produce a Runner.
      */
-    newSpan(span: SpanConfigLike): Runner {
-        return this.runner().newSpan(span);
+    runOnOptional(ctx: CallContext | null | undefined): Runner {
+        return ctx ? this.runOn(ctx) : this.runOnRoot();
+    }
+
+    /**
+     * Create an {@link Runner} with an initial root span and this object
+     * as the caller.
+     */
+    rootSpan(span: string | SpanConfig): Runner {
+        return this.runOnRoot().newSpan(span);
     }
 
     /**

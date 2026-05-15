@@ -25,6 +25,8 @@ import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
+    override telemetryPrefix = 'xh.client.admin.tracking';
+
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -146,22 +148,24 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         const {enabled, cube, query} = this;
         if (!enabled) return;
 
-        try {
-            const data: PlainObject[] = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: query,
-                loadSpec
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                const data: PlainObject[] = await ctx.postJson({
+                    url: 'trackLogAdmin',
+                    body: query
+                });
+
+                if (loadSpec.isStale) return;
+
+                data.forEach(it => this.processRawTrackLog(it));
+                await cube.loadDataAsync(data);
+            })
+            .catch(async e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                await cube.clearAsync();
+                XH.handleException(e);
             });
-
-            if (loadSpec.isStale) return;
-
-            data.forEach(it => this.processRawTrackLog(it));
-            await cube.loadDataAsync(data);
-        } catch (e) {
-            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-            await cube.clearAsync();
-            XH.handleException(e);
-        }
     }
 
     @action
@@ -353,8 +357,9 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        try {
-            XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
+        this.rootSpan('lookups')
+            .run(async ctx => {
+                const lookups = await ctx.fetchJson({url: 'trackLogAdmin/lookups'});
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
                     const {field} = spec,
@@ -366,10 +371,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                         spec.hasExplicitValues = true;
                     }
                 });
-            });
-        } catch (e) {
-            XH.handleException(e, {title: 'Error loading lookups for filtering'});
-        }
+            })
+            .catchDefault({title: 'Error loading lookups for filtering'});
 
         return ret;
     }

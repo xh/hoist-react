@@ -22,6 +22,8 @@ export interface PastInstance {
 }
 
 export class MemoryMonitorModel extends BaseInstanceModel {
+    override telemetryPrefix = 'xh.client.admin.memory';
+
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
@@ -57,56 +59,60 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     async takeSnapshotAsync() {
-        try {
-            await XH.fetchJson({
+        await this.rootSpan('takeSnapshot')
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadObserver);
-            await this.loadAsync();
-            XH.successToast('Updated snapshot loaded');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.loadAsync();
+                XH.successToast('Updated snapshot loaded');
+            })
+            .catchDefault();
     }
 
     async requestGcAsync() {
-        try {
-            await XH.fetchJson({
+        await this.rootSpan('requestGc')
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
-            }).linkTo(this.loadObserver);
-            await this.loadAsync();
-            XH.successToast('GC run complete');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.loadAsync();
+                XH.successToast('GC run complete');
+            })
+            .catchDefault();
     }
 
     async dumpHeapAsync() {
-        try {
-            const appEnv = XH.getEnv('appEnvironment').toLowerCase(),
-                filename = await XH.prompt<string>({
-                    title: 'Dump Heap',
-                    icon: Icon.fileArchive(),
-                    message: `Specify a filename for the heap dump (to be saved in ${this.heapDumpDir})`,
-                    input: {
-                        rules: [required, lengthIs({min: 3, max: 250})],
-                        initialValue: `${XH.appCode}_${appEnv}_${Date.now()}.hprof`
-                    }
-                });
-            if (!filename) return;
-            await XH.fetchJson({
+        const appEnv = XH.getEnv('appEnvironment').toLowerCase(),
+            filename = await XH.prompt<string>({
+                title: 'Dump Heap',
+                icon: Icon.fileArchive(),
+                message: `Specify a filename for the heap dump (to be saved in ${this.heapDumpDir})`,
+                input: {
+                    rules: [required, lengthIs({min: 3, max: 250})],
+                    initialValue: `${XH.appCode}_${appEnv}_${Date.now()}.hprof`
+                }
+            });
+        if (!filename) return;
+
+        await this.rootSpan('dumpHeap')
+            .runFetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
                 params: {
                     instance: this.instanceName,
                     filename
                 }
-            }).linkTo(this.loadObserver);
-            await this.loadAsync();
-            XH.successToast('Heap dumped successfully to ' + filename);
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.loadAsync();
+                XH.successToast('Heap dumped successfully to ' + filename);
+            })
+            .catchDefault();
     }
 
     //-------------------
@@ -184,75 +190,82 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
         const action = pastInstance ? `snapshotsForPastInstance` : 'snapshots',
             instance = pastInstance ? pastInstance.name : this.instanceName;
-        const snapsByTimestamp = await XH.fetchJson({
-            url: 'memoryMonitorAdmin/' + action,
-            params: {instance},
-            loadSpec
-        });
 
-        // Server returns map by timestamp - flatted to array and load into grid records.
-        let snaps = [];
-        forOwn(snapsByTimestamp, (snap, ts) => {
-            snaps.push({timestamp: parseInt(ts), ...snap});
-        });
-        snaps = sortBy(snaps, 'timestamp');
-        gridModel.loadData(snaps);
+        await this.runOn(loadSpec)
+            .newSpan('loadSnapshots')
+            .run(async ctx => {
+                const snapsByTimestamp = await ctx.fetchJson({
+                    url: 'memoryMonitorAdmin/' + action,
+                    params: {instance}
+                });
 
-        // Process further for chart series.
-        const maxSeries = [],
-            totalSeries = [],
-            usedSeries = [],
-            avgGCSeries = [];
+                // Server returns map by timestamp - flatted to array and load into grid records.
+                let snaps = [];
+                forOwn(snapsByTimestamp, (snap, ts) => {
+                    snaps.push({timestamp: parseInt(ts), ...snap});
+                });
+                snaps = sortBy(snaps, 'timestamp');
+                gridModel.loadData(snaps);
 
-        snaps.forEach(snap => {
-            maxSeries.push([snap.timestamp, snap.maxHeapMb]);
-            totalSeries.push([snap.timestamp, snap.totalHeapMb]);
-            usedSeries.push([snap.timestamp, snap.usedHeapMb]);
+                // Process further for chart series.
+                const maxSeries = [],
+                    totalSeries = [],
+                    usedSeries = [],
+                    avgGCSeries = [];
 
-            avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
-        });
+                snaps.forEach(snap => {
+                    maxSeries.push([snap.timestamp, snap.maxHeapMb]);
+                    totalSeries.push([snap.timestamp, snap.totalHeapMb]);
+                    usedSeries.push([snap.timestamp, snap.usedHeapMb]);
 
-        chartModel.setSeries([
-            {
-                name: 'GC Avg',
-                data: avgGCSeries,
-                step: true,
-                yAxis: 0
-            },
-            {
-                name: 'Heap Max',
-                data: maxSeries,
-                color: '#ef6c00',
-                step: true,
-                yAxis: 1
-            },
-            {
-                name: 'Heap Total',
-                data: totalSeries,
-                color: '#1976d2',
-                step: true,
-                yAxis: 1
-            },
-            {
-                name: 'Heap Used',
-                type: 'area',
-                data: usedSeries,
-                color: '#bd7c7c',
-                fillOpacity: 0.3,
-                lineWidth: 1,
-                yAxis: 1
-            }
-        ]);
+                    avgGCSeries.push([snap.timestamp, snap.avgCollectionTime]);
+                });
+
+                chartModel.setSeries([
+                    {
+                        name: 'GC Avg',
+                        data: avgGCSeries,
+                        step: true,
+                        yAxis: 0
+                    },
+                    {
+                        name: 'Heap Max',
+                        data: maxSeries,
+                        color: '#ef6c00',
+                        step: true,
+                        yAxis: 1
+                    },
+                    {
+                        name: 'Heap Total',
+                        data: totalSeries,
+                        color: '#1976d2',
+                        step: true,
+                        yAxis: 1
+                    },
+                    {
+                        name: 'Heap Used',
+                        type: 'area',
+                        data: usedSeries,
+                        color: '#bd7c7c',
+                        fillOpacity: 0.3,
+                        lineWidth: 1,
+                        yAxis: 1
+                    }
+                ]);
+            });
     }
 
     private async loadPastInstancesAsync(loadSpec: LoadSpec) {
-        const instances = await XH.fetchJson({
-            url: 'memoryMonitorAdmin/availablePastInstances',
-            loadSpec
-        });
-        runInAction(() => {
-            this.pastInstances = orderBy(instances, ['lastUpdated'], ['desc']);
-        });
+        await this.runOn(loadSpec)
+            .newSpan('loadPastInstances')
+            .run(async ctx => {
+                const instances = await ctx.fetchJson({
+                    url: 'memoryMonitorAdmin/availablePastInstances'
+                });
+                runInAction(() => {
+                    this.pastInstances = orderBy(instances, ['lastUpdated'], ['desc']);
+                });
+            });
     }
 
     private get conf() {

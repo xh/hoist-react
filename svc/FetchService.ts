@@ -210,7 +210,7 @@ export class FetchService extends HoistService {
         };
         const spanConfig = this.createSpanConfig(opts),
             parent = opts.span ?? opts.loadSpec?.span;
-        let ret = spanConfig ? this.runner(parent).newSpan(spanConfig).run(fn) : fn(null);
+        let ret = spanConfig ? this.runOnOptional(parent).newSpan(spanConfig).run(fn) : fn(null);
 
         // 2) Apply tracking
         if (opts.track) {

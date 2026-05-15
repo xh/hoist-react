@@ -13,6 +13,8 @@ import {ReactNode} from 'react';
 import {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
 
 export class ClientDetailModel extends HoistModel implements ActivityDetailProvider {
+    override telemetryPrefix = 'xh.client.admin.clients';
+
     @lookup(ClientsModel) clientsModel: ClientsModel;
 
     readonly isActivityDetailProvider = true;
@@ -72,18 +74,20 @@ export class ClientDetailModel extends HoistModel implements ActivityDetailProvi
             return;
         }
 
-        try {
-            this.trackLogs = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: {
-                    filters: {field: 'tabId', op: '=', value: tabId}
-                }
+        return this.runOn(loadSpec)
+            .newSpan('detail')
+            .run(async ctx => {
+                this.trackLogs = await ctx.postJson({
+                    url: 'trackLogAdmin',
+                    body: {
+                        filters: {field: 'tabId', op: '=', value: tabId}
+                    }
+                });
+            })
+            .catch(e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                XH.handleException(e, {alertType: 'toast'});
+                this.trackLogs = [];
             });
-        } catch (e) {
-            if (loadSpec.isStale || !loadSpec.isAutoRefresh) return;
-
-            XH.handleException(e, {alertType: 'toast'});
-            this.trackLogs = [];
-        }
     }
 }

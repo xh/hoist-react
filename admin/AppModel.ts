@@ -45,7 +45,7 @@ export class AppModel extends HoistAppModel {
     }
 
     override async initAsync(ctx: InitContext) {
-        await this.initViewManagerModelsAsync();
+        await this.initViewManagerModelsAsync(ctx);
         await super.initAsync(ctx);
     }
 
@@ -210,11 +210,14 @@ export class AppModel extends HoistAppModel {
         return appCodes.find(it => it === 'app') ?? appCodes[0];
     }
 
-    async initViewManagerModelsAsync() {
-        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
-            type: 'xhAdminActivityTrackingView',
-            typeDisplayName: 'View',
-            manageGlobal: XH.getUser().isHoistAdmin
-        });
+    async initViewManagerModelsAsync(ctx: InitContext) {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync(
+            {
+                type: 'xhAdminActivityTrackingView',
+                typeDisplayName: 'View',
+                manageGlobal: XH.getUser().isHoistAdmin
+            },
+            ctx
+        );
     }
 }

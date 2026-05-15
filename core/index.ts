@@ -7,7 +7,7 @@ export * from './types/AppState';
 export * from './elem';
 export * from './persist/';
 export * from './TaskObserver';
-export * from '../utils/telemetry';
+export * from './runner';
 export * from './Span';
 export * from './HoistBase';
 export * from './HoistBaseDecorators';

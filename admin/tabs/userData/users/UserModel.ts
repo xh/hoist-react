@@ -7,11 +7,13 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.users';
+
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
@@ -50,18 +52,16 @@ export class UserModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
-        const userLoad = XH.fetchJson({
-            url: 'userAdmin/users',
-            params: {activeOnly: this.activeOnly},
-            loadSpec
-        });
-        const rolesLoad = XH.fetchJson({
-            url: 'userAdmin/roles',
-            loadSpec
-        });
+        return this.runOn(loadSpec)
+            .newSpan('load')
+            .run(async ctx => {
+                const userLoad = ctx.fetchJson({
+                    url: 'userAdmin/users',
+                    params: {activeOnly: this.activeOnly}
+                });
+                const rolesLoad = ctx.fetchJson({url: 'userAdmin/roles'});
 
-        return Promise.allSettled([userLoad, rolesLoad])
-            .then((results: any) => {
+                const results: any = await Promise.allSettled([userLoad, rolesLoad]);
                 let users = results[0].value,
                     byUsername = keyBy(users, 'username'),
                     roleMappings = results[1].value;
