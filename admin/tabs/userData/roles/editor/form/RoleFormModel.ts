@@ -25,11 +25,6 @@ export class RoleFormModel extends HoistModel {
     readonly directoryGroupLookupTask = TaskObserver.trackLast();
     readonly roleModel: RoleModel;
 
-    @managed readonly formModel: FormModel = this.createFormModel();
-    @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
-    @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
-    @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
-
     @observable accessor isEditingExistingRole = false;
 
     @observable.ref accessor invalidNames: string[] = [];
@@ -37,6 +32,11 @@ export class RoleFormModel extends HoistModel {
     @observable.ref accessor userOptions: string[] = [];
     @observable.ref accessor directoryGroupOptions: string[] = [];
     @observable.ref accessor roleOptions: SelectOption[] = [];
+
+    @managed readonly formModel: FormModel = this.createFormModel();
+    @managed readonly usersGridModel: GridModel = this.createGridModel('USER');
+    @managed readonly directoryGroupsGridModel: GridModel = this.createGridModel('DIRECTORY_GROUP');
+    @managed readonly rolesGridModel: GridModel = this.createGridModel('ROLE');
 
     @computed
     get isDirty(): boolean {

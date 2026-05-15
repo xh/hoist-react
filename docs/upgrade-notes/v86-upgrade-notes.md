@@ -154,6 +154,14 @@ yarn start             # smoke-test interactively
 - **`@enumerable` decorator is removed.** It had zero call sites across hoist-react and toolbox.
   If your app uses it, define a replacement inline using a TC39 getter decorator, or switch to a
   regular enumerable data property.
+- **Object spread (`{...model}`) on class instances no longer copies `accessor` fields.** TC39
+  accessor fields are getter/setter pairs on the *prototype* backed by per-instance private
+  slots — they are never own enumerable properties. Spread copies only own enumerables, so
+  `{...someModel}` silently drops every `@observable accessor` / `@bindable accessor` value.
+  Audit any code that spreads a live model instance (often subtle: `tabs.map(it => fn({...it}))`
+  where `it` is a `TabModel`). Replace with explicit destructure or a property-pluck —
+  `fn({id: it.id, title: it.title})` — or pass the instance through unchanged. Legacy decorators
+  stored the value as an own data property, so spread worked; TC39 does not.
 
 ## Troubleshooting
 
@@ -170,6 +178,48 @@ A subclass overriding a parent's `@observable` / `@bindable` `accessor` field ne
 ### `[MobX] Please use '@observable accessor foo' instead of '@observable foo'`
 The codemod missed this one — usually because `@decorator // comment` or a non-standard
 decorator stack confused the regex. Add `accessor` manually.
+
+### `TypeError: Private element is not present on this object`
+A field initializer reads an `@observable` / `@bindable` `accessor` field declared *below* it.
+Under legacy decorators MobX installed the observable on the prototype, so a default value was
+available before any instance field ran. Under TC39, each `accessor` field is backed by a per-
+instance private slot that exists only after that field's own initializer runs — reading it
+earlier throws this error.
+
+The pattern that breaks:
+```typescript
+// ❌ Breaks: createChartModel() reads `this.inverted`, but the
+//    inverted slot hasn't been installed yet.
+@managed readonly chartModel: ChartModel = this.createChartModel();
+@bindable accessor inverted: boolean = true;
+```
+
+Two fixes, in order of preference:
+
+1. **Reorder fields** — declare the `accessor` fields above the inline-initialized `@managed`
+   fields that depend on them. Cheap, idiomatic, no behavior change.
+   ```typescript
+   // ✅ Fixed
+   @bindable accessor inverted: boolean = true;
+   @managed readonly chartModel: ChartModel = this.createChartModel();
+   ```
+2. **Move construction into the constructor** — useful when there's no clean order (e.g. mutual
+   reads, or the creator wants to call `super` first):
+   ```typescript
+   @bindable accessor inverted: boolean = true;
+   @managed chartModel: ChartModel;
+
+   constructor() {
+       super();
+       this.chartModel = this.createChartModel();
+   }
+   ```
+
+Note that the error can also fire from *deferred* reads (validator callbacks, ag-Grid cell
+editors, MobX reactions) when those callbacks happen to run before all field initializers have
+completed — typically during a synchronous `setSeries` / `loadData` triggered from another
+field's initializer. If you see this stack and the offending property's declaration order looks
+fine, look for a sibling field whose initializer fires a synchronous side-effect.
 
 ### Static class blocks error in Babel
 `@xh/hoist-dev-utils` v14 enables `@babel/plugin-transform-class-static-block` automatically. If

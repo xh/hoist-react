@@ -14,7 +14,6 @@ import {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
     @lookup(RoleModel) readonly roleModel: RoleModel;
-    @managed readonly chartModel: ChartModel = this.createChartModel();
 
     @bindable accessor relationship: 'effective' | 'inherited' = 'inherited';
 
@@ -23,6 +22,8 @@ export class RoleGraphModel extends HoistModel {
     @bindable accessor widthScale: number = 1.0;
 
     @bindable accessor limitToOneLevel: boolean = true;
+
+    @managed readonly chartModel: ChartModel = this.createChartModel();
 
     get relatedRoles(): EffectiveRoleMember[] {
         const {role, relationship} = this;
