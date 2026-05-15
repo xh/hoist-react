@@ -25,7 +25,7 @@ import {
     parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -156,8 +156,8 @@ export interface FilterChooserConfig {
  * @see FilterChooserFieldSpec
  */
 export class FilterChooserModel extends HoistModel {
-    @observable.ref value: FilterChooserFilter = null;
-    @observable.ref favorites: FilterChooserFilter[] = [];
+    @observable.ref accessor value: FilterChooserFilter = null;
+    @observable.ref accessor favorites: FilterChooserFilter[] = [];
     bind: FilterBindTarget;
     valueSource: FilterValueSource;
 
@@ -175,10 +175,10 @@ export class FilterChooserModel extends HoistModel {
 
     // Implementation fields for Control
     @managed queryEngine: QueryEngine;
-    @observable.ref selectOptions: FilterChooserOption[];
-    @observable.ref selectValue: string[];
-    @observable favoritesIsOpen = false;
-    @observable unsupportedFilter = false;
+    @observable.ref accessor selectOptions: FilterChooserOption[];
+    @observable.ref accessor selectValue: string[];
+    @observable accessor favoritesIsOpen = false;
+    @observable accessor unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
 
     get tagCount(): number {
@@ -200,7 +200,6 @@ export class FilterChooserModel extends HoistModel {
         introHelpText
     }: FilterChooserConfig = {}) {
         super();
-        makeObservable(this);
 
         this.bind = bind;
 

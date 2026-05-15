@@ -161,6 +161,25 @@ on them as transitive hoist-react dependencies) must add their own direct depend
   null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
   built-in appcontainer components.
 
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM — mechanical, codemod-assisted)
+
+* Migrated to TC39 Stage 3 modern decorators. `experimentalDecorators` must be removed from app
+  `tsconfig.json`, `@observable` and `@bindable` fields now require the `accessor` keyword, and
+  `makeObservable(this)` calls must be deleted from constructors. Apps must upgrade
+  `@xh/hoist-dev-utils >= 14.0` simultaneously — mixing versions silently breaks reactivity. A
+  codemod is provided in the v85 upgrade notes.
+* Accessor fields are non-enumerable. Code that iterates `@observable` / `@bindable` fields via
+  `Object.keys()` / `JSON.stringify()` / spread / `for...in` will silently lose those fields — see
+  v85 upgrade notes for audit grep commands.
+* `checkMakeObservable`, `makeObservable`, and `override` have been removed from `@xh/hoist/mobx`.
+  Apps that still import any of these will get a compile-time error — delete the imports and any
+  remaining calls. MobX's `@override` is a no-op under TC39 decorators; use `@action` (or
+  `@computed`) directly on subclass overrides instead. `_xhBindableProperties` metadata is no
+  longer set.
+
+### 📚 Libraries
+
+* Requires `@xh/hoist-dev-utils >= 14.0`.
 ## 84.0.0 - 2026-04-15
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)

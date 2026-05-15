@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, ONE_SECOND} from '@xh/hoist/utils/datetime';
 import {isNumber} from 'lodash';
@@ -72,13 +72,8 @@ class ClockLocalModel extends HoistModel {
     offset;
     offsetException;
 
-    @observable display = '';
+    @observable accessor display = '';
     @managed timer;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override onLinked() {
         this.addReaction({

@@ -26,7 +26,7 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -223,7 +223,7 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
+    @bindable.ref accessor internalOptions = [];
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -271,15 +271,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue: string = null;
+    @observable accessor inputValue: string = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue(): boolean {
         return this.filterMode && !this.multiMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -355,7 +350,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -390,7 +385,7 @@ class SelectInputModel extends HoistInputModel {
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);

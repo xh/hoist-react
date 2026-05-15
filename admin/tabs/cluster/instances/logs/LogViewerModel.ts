@@ -12,7 +12,7 @@ import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, observable} from '@xh/hoist/mobx';
 import {downloadBlob, pluralize} from '@xh/hoist/utils/js';
 import {LogDisplayModel} from './LogDisplayModel';
 
@@ -20,7 +20,7 @@ import {LogDisplayModel} from './LogDisplayModel';
  * @internal
  */
 export class LogViewerModel extends BaseInstanceModel {
-    @observable file: string = null;
+    @observable accessor file: string = null;
 
     @managed
     logDisplayModel = new LogDisplayModel(this);
@@ -28,11 +28,9 @@ export class LogViewerModel extends BaseInstanceModel {
     @managed
     filesGridModel: GridModel;
 
-    @bindable
-    instanceOnly: boolean = true;
+    @bindable accessor instanceOnly: boolean = true;
 
-    @bindable
-    showLogLevelDialog: boolean = false;
+    @bindable accessor showLogLevelDialog: boolean = false;
 
     get enabled(): boolean {
         return XH.getConf('xhEnableLogViewer', true);
@@ -60,7 +58,6 @@ export class LogViewerModel extends BaseInstanceModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.filesGridModel = this.createGridModel();
 

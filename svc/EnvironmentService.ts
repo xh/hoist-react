@@ -7,7 +7,7 @@
 import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
@@ -28,22 +28,19 @@ export class EnvironmentService extends HoistService {
      * Version of this application currently running on the Hoist UI server.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverVersion: string;
+    @observable accessor serverVersion: string;
 
     /**
      * Build of this application currently running on the Hoist UI server.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverBuild: string;
+    @observable accessor serverBuild: string;
 
     /**
      * Instance of Hoist UI server currently delivering content to this client.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverInstance: string;
+    @observable accessor serverInstance: string;
 
     private data = {};
     private pollConfig: PollConfig;
@@ -156,11 +153,6 @@ export class EnvironmentService extends HoistService {
     //------------------------------
     // Implementation
     //------------------------------
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     private ensureVersionRunnable() {
         const hcVersion = this.get('hoistCoreVersion'),
             // This app version value is sourced by the network call to 'xh/environment'.

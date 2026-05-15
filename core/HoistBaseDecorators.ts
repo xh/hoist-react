@@ -4,27 +4,38 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {wait} from '@xh/hoist/promise';
-import {observable} from 'mobx';
-import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
+import {throwIf} from '@xh/hoist/utils/js';
+import {PersistableState, PersistenceProvider, PersistOptions} from './';
+
+type FieldOrAccessorOrGetterContext =
+    | ClassFieldDecoratorContext
+    | ClassAccessorDecoratorContext
+    | ClassGetterDecoratorContext;
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
- * are created by the referencing object and that implement a `destroy()` method.
+ * are created by the referencing object and that implement a `destroy()` method. On `destroy()`
+ * of the owner, each managed property is destroyed.
+ *
+ * Applies to plain class fields, `accessor` fields, and getters.
  *
  * @see HoistBase.markManaged
  */
-export const managed: any = (target: HoistBaseClass, property: string, descriptor: any) => {
-    throwIf(!target.isHoistBase, '@managed decorator should be applied to a subclass of HoistBase');
-    // Be sure to create list for *this* particular class. Clone and include inherited values.
-    const key = '_xhManagedProperties';
-    if (!target.hasOwnProperty(key)) {
-        target[key] = [...(target[key] ?? [])];
+export function managed(_value: any, context: FieldOrAccessorOrGetterContext): any {
+    const {name, kind} = context;
+
+    // Babel's addInitializer callback fails for fields, so register in initial return.
+    if (kind === 'field') {
+        return function (initialValue: any) {
+            registerManaged(this, name as string);
+            return initialValue;
+        };
+    } else {
+        context.addInitializer(function () {
+            registerManaged(this, name as string);
+        });
     }
-    target[key].push(property);
-    return descriptor;
-};
+}
 
 /**
  * Decorator to make a class property persistent.
@@ -32,14 +43,14 @@ export const managed: any = (target: HoistBaseClass, property: string, descripto
  * This decorator provides the same functionality as {@link HoistBase.markPersist}. See that method
  * for more details.
  *
- * This decorator should always be applied "before" the mobx decorator, i.e. second in file line
- * order: `@bindable @persist fooBarFlag = true`
+ * This decorator should always be applied "after" the mobx decorator, i.e. second in file line
+ * order: `@bindable @persist accessor fooBarFlag = true`
  *
  * See also `@persist.with`, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
-export const persist: any = (target: HoistBaseClass, property: string, descriptor: any) => {
-    return createPersistDescriptor(target, property, descriptor, null);
+export const persist: any = (_value: any, context: ClassAccessorDecoratorContext) => {
+    return createPersistResult(context, null);
 };
 
 /**
@@ -47,64 +58,62 @@ export const persist: any = (target: HoistBaseClass, property: string, descripto
  * Use this variant as a function to provide custom PersistOptions.
  */
 persist.with = function (options: PersistOptions): any {
-    return function (target, property, descriptor) {
-        return createPersistDescriptor(target, property, descriptor, options);
+    return function (_value: any, context: ClassAccessorDecoratorContext) {
+        return createPersistResult(context, options);
     };
 };
 
 //---------------------
 // Implementation
 //---------------------
-function createPersistDescriptor(
-    target: HoistBaseClass,
-    property: string,
-    descriptor: any,
-    options: PersistOptions
-) {
-    throwIf(
-        !target.isHoistBase,
-        '@persist decorator should be applied to an instance of HoistBase'
-    );
-    if (descriptor.get || descriptor.set) {
-        logError(
-            `Error defining ${property} : @persist or @persistWith should be defined closest ` +
-                `to property, and after mobx annotation e.g. '@bindable @persist ${property}'`,
-            target
-        );
-        return descriptor;
-    }
-    const codeValue = descriptor.initializer,
-        initializer = function () {
-            // codeValue undefined if no initial in-code value provided, otherwise call to get initial value.
-            let ret = codeValue?.call(this);
+function registerManaged(instance: any, name: string) {
+    const target = Object.getPrototypeOf(instance),
+        key = '_xhManagedProperties';
 
-            // Property is not available on the instance until after the next tick.
-            const propertyAvailable = observable.box(false),
-                persistOptions = {
-                    path: property,
-                    ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-                };
+    // Early out on instances after 1st...
+    if (target[key]?.includes(name)) return;
+
+    // Install the property name on the class prototype
+    // Be sure to create list for *this* particular class. Clone and include inherited values.
+    throwIf(
+        !instance.isHoistBase,
+        '@managed decorator should be applied to a subclass of HoistBase'
+    );
+    if (!target.hasOwnProperty(key)) {
+        target[key] = [...(target[key] ?? [])];
+    }
+    target[key].push(name);
+}
+
+function createPersistResult(
+    context: ClassAccessorDecoratorContext,
+    options: PersistOptions
+): ClassAccessorDecoratorResult<any, any> {
+    const {name} = context;
+    return {
+        init(initialValue: any): any {
+            throwIf(
+                !this.isHoistBase,
+                '@persist decorator should be applied to an instance of HoistBase'
+            );
+
+            const persistOptions = {
+                path: name as string,
+                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
+            };
+
             PersistenceProvider.create({
                 persistOptions,
                 owner: this,
                 target: {
-                    getPersistableState: () =>
-                        new PersistableState(propertyAvailable.get() ? this[property] : ret),
+                    getPersistableState: () => new PersistableState(this[name]),
                     setPersistableState: state => {
-                        if (!propertyAvailable.get()) {
-                            ret = state.value;
-                        } else {
-                            this[property] = state.value;
-                        }
+                        this[name] = state.value;
                     }
                 }
             });
 
-            // Wait for next tick to ensure construction has completed and property has been made
-            // observable via makeObservable.
-            wait().thenAction(() => propertyAvailable.set(true));
-
-            return ret;
-        };
-    return {...descriptor, initializer};
+            return initialValue;
+        }
+    };
 }

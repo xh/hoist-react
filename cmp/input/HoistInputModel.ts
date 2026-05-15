@@ -7,7 +7,7 @@
 import {FieldModel} from '@xh/hoist/cmp/form';
 import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
 import {maxSeverity} from '@xh/hoist/data';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEqual} from 'lodash';
@@ -57,7 +57,7 @@ import './HoistInput.scss';
  */
 export class HoistInputModel extends HoistModel {
     /** Does this input have the focus? */
-    @observable hasFocus: boolean = false;
+    @observable accessor hasFocus: boolean = false;
 
     /** Field (if any) associated with this control. */
     getField(): FieldModel {
@@ -101,15 +101,10 @@ export class HoistInputModel extends HoistModel {
     //-----------------------
     // Implementation State
     //------------------------
-    @observable.ref internalValue: any = null; // Cached internal value
+    @observable.ref accessor internalValue: any = null; // Cached internal value
     inputRef = createObservableRef<HTMLElement>(); // ref to internal <input> element, if any
     domRef = createObservableRef<HTMLElement>(); // ref to outermost element, or class Component.
     isDirty: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override afterLinked() {
         this.addReaction(this.externalValueReaction());

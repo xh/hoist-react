@@ -13,16 +13,14 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
-    @bindable
-    typeFilter: 'hoist' | 'app' | 'all' = 'all';
+    @bindable accessor typeFilter: 'hoist' | 'app' | 'all' = 'all';
 
-    @bindable.ref
-    textFilter: FilterTestFn = null;
+    @bindable.ref accessor textFilter: FilterTestFn = null;
 
     clearCachesAction: RecordActionSpec = {
         text: 'Clear Service Caches',
@@ -81,7 +79,6 @@ export class ServiceModel extends BaseInstanceModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.addReaction({
             track: () => [this.textFilter, this.typeFilter],

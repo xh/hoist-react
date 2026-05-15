@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
+import {isObservableProp, untracked} from '@xh/hoist/mobx';
 import {forOwn} from 'lodash';
 import {createContext} from 'react';
 
@@ -40,25 +41,60 @@ export class ModelLookup {
             return model;
         }
 
-        // Try model's direct children. Wildcard not accepted (but would capture model itself above)
+        // Try model's direct children. Wildcard not accepted (but would capture model itself above).
+        // Scans both own instance properties (plain class fields, e.g. `@managed grid = new GridModel()`)
+        // and accessor-defined fields (e.g. `@observable.ref accessor chartModel: ChartModel`)
         if (modeIsDefault) {
-            let ret = null;
-
-            forOwn(model, (value, key) => {
-                if (
-                    !key.startsWith('_') &&
-                    value?.isHoistModel &&
-                    value.matchesSelector(selector)
-                ) {
-                    ret = value;
-                    return false;
-                }
-            });
-            if (ret) return ret;
+            const match = this.findChildModelMatching(model, selector);
+            if (match) return match;
         }
 
         // Try parent
         return parent?.lookupModel(selector) ?? null;
+    }
+
+    //----------------
+    // Implementation
+    //----------------
+    private findChildModelMatching(model: HoistModel, selector: ModelSelector): HoistModel | null {
+        // 1) Own enumerable properties — covers plain class fields
+        //    (e.g. `@managed grid = new GridModel()`).
+        let ret = null;
+        forOwn(model, (value, key) => {
+            if (this.isMatchingChild(key, value, selector)) {
+                ret = value;
+                return false;
+            }
+        });
+        if (ret) return ret;
+
+        // 2) Accessor/getter observables on the prototype chain — covers TC39 accessor fields
+        //    (e.g. `@observable.ref accessor chartModel: ChartModel`) which are non-enumerable
+        //    and invisible to forOwn. Stop at HoistModel to avoid framework-level getters.
+        //    Wrapped in untracked() to avoid creating spurious MobX dependencies.
+        return untracked(() => {
+            for (
+                let proto = Object.getPrototypeOf(model);
+                proto && proto !== HoistModel.prototype && proto !== Object.prototype;
+                proto = Object.getPrototypeOf(proto)
+            ) {
+                for (const key of Object.getOwnPropertyNames(proto)) {
+                    if (
+                        key === 'constructor' ||
+                        !Object.getOwnPropertyDescriptor(proto, key)?.get ||
+                        !isObservableProp(model, key)
+                    )
+                        continue;
+                    const value = (model as any)[key];
+                    if (this.isMatchingChild(key, value, selector)) return value;
+                }
+            }
+            return null;
+        });
+    }
+
+    private isMatchingChild(key: string, value: any, selector: ModelSelector): boolean {
+        return !key.startsWith('_') && value?.isHoistModel && value.matchesSelector(selector);
     }
 }
 

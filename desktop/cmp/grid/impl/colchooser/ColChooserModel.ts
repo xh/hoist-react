@@ -8,7 +8,7 @@ import {ColChooserConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
 import {LeftRightChooserModel} from '@xh/hoist/desktop/cmp/leftrightchooser';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {sortBy} from 'lodash';
 
 /**
@@ -22,10 +22,10 @@ export class ColChooserModel extends HoistModel {
     @managed lrModel: LeftRightChooserModel;
 
     // Show in dialog
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     // Show in popover
-    @observable isPopoverOpen = false;
+    @observable accessor isPopoverOpen = false;
 
     commitOnChange: boolean;
     showRestoreDefaults: boolean;
@@ -44,7 +44,6 @@ export class ColChooserModel extends HoistModel {
         filterMatchMode = 'startWord'
     }: ColChooserConfig) {
         super();
-        makeObservable(this);
 
         this.gridModel = gridModel;
         this.commitOnChange = commitOnChange;

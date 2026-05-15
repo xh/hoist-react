@@ -8,7 +8,7 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
@@ -37,11 +37,11 @@ export class LogDisplayModel extends HoistModel {
     // Form State/Display options
     @bindable
     @persist
-    tail = false;
+    accessor tail = false;
 
-    @bindable startLine = 1;
-    @bindable maxLines = 1000;
-    @bindable pattern = '';
+    @bindable accessor startLine = 1;
+    @bindable accessor maxLines = 1000;
+    @bindable accessor pattern = '';
 
     @managed
     timer: Timer = null;
@@ -51,14 +51,13 @@ export class LogDisplayModel extends HoistModel {
 
     @bindable
     @persist
-    regexOption: boolean = false;
+    accessor regexOption: boolean = false;
 
     @bindable
     @persist
-    caseSensitive: boolean = false;
+    accessor caseSensitive: boolean = false;
 
-    @bindable
-    logRootPath: string;
+    @bindable accessor logRootPath: string;
 
     get tailActive(): boolean {
         return this.tail && !this.gridModel.hasSelection;
@@ -70,7 +69,6 @@ export class LogDisplayModel extends HoistModel {
 
     constructor(parent: LogViewerModel) {
         super();
-        makeObservable(this);
 
         this.gridModel = this.createGridModel();
 

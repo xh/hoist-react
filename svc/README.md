@@ -574,15 +574,10 @@ See `/core/README.md` for the full guide on creating services. Quick example:
 
 ```typescript
 import {HoistService, XH} from '@xh/hoist/core';
-import {makeObservable, observable} from '@xh/hoist/mobx';
+import {observable} from '@xh/hoist/mobx';
 
 export class PortfolioService extends HoistService {
-    @observable.ref portfolios: Portfolio[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable.ref accessor portfolios: Portfolio[] = [];
 
     // Called during app startup
     override async initAsync() {
@@ -679,11 +674,10 @@ or coordinated multi-step workflows where you want timing visibility without a f
 ### Debounced Search with Auto-Abort
 
 ```typescript
-@bindable searchQuery = '';
+@bindable accessor searchQuery = '';
 
 constructor() {
     super();
-    makeObservable(this);
     this.addReaction({
         track: () => this.searchQuery,
         run: () => this.searchAsync(),

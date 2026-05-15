@@ -15,7 +15,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
@@ -151,7 +151,7 @@ class PopoverModel extends HoistModel {
 
     targetRef = createObservableRef<HTMLElement>();
     contentRef = createObservableRef<HTMLElement>();
-    @observable isOpen;
+    @observable accessor isOpen;
 
     _onInteraction;
     _controlledMode = false;
@@ -162,11 +162,6 @@ class PopoverModel extends HoistModel {
 
     get contentEl() {
         return this.contentRef.current;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

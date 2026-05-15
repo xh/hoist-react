@@ -7,14 +7,12 @@ three purposes:
 
 1. **Re-exports** core MobX and mobx-react-lite APIs from a single Hoist import path
 2. **Configures** MobX with `enforceActions: 'observed'` for the entire application
-3. **Provides** the `@bindable` decorator and an enhanced `makeObservable()` for Hoist's
-   model system
+3. **Provides** the `@bindable` decorator for Hoist's model system
 
 ```
 /mobx/
 ├── index.ts        # Re-exports + MobX configuration
-├── decorators.ts   # @bindable decorator
-└── overrides.ts    # Enhanced makeObservable, isObservableProp, checkMakeObservable
+└── decorators.ts   # @bindable decorator (TC39 accessor decorator)
 ```
 
 All Hoist code imports MobX APIs from `@xh/hoist/mobx` rather than directly from `mobx`.
@@ -33,12 +31,12 @@ The following are re-exported from MobX and mobx-react-lite:
 | `autorun` | mobx | Run a side-effect whenever observed values change |
 | `reaction` | mobx | Run a side-effect when a specific data expression changes |
 | `when` | mobx | Run a side-effect once when a condition becomes true |
-| `override` | mobx | Re-declare inherited observable/action annotations in subclasses |
 | `toJS` | mobx | Convert observable data to plain JavaScript |
 | `extendObservable` | mobx | Add observable properties to an existing object |
 | `trace` | mobx | Debugging: log why a computed/reaction re-evaluated |
 | `untracked` | mobx | Read observables without creating a dependency |
 | `comparer` | mobx | Built-in equality comparers for computed values |
+| `isObservableProp` | mobx | Check if a property is observable |
 | `observer` | mobx-react-lite | HOC that makes React components reactive to observable changes |
 
 ## Action Enforcement
@@ -51,27 +49,25 @@ This enforcement prevents accidental state mutations and makes data flow predict
 
 ## @bindable Decorator
 
-The `@bindable` decorator creates an observable property with an automatically generated
+The `@bindable` decorator creates an observable `accessor` field with an automatically generated
 setter method:
 
 ```typescript
 import {HoistModel} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 
 class PortfolioModel extends HoistModel {
-    @bindable selectedFund: string = null;
-    @bindable showInactive: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor selectedFund: string = null;
+    @bindable accessor showInactive: boolean = false;
 }
 ```
 
 This creates:
 - Observable properties `selectedFund` and `showInactive`
 - Setter methods `setSelectedFund(value)` and `setShowInactive(value)` (MobX actions)
+
+The `accessor` keyword is required — it transforms the field into a getter/setter pair that
+TC39 decorators can intercept to add reactivity.
 
 ### @bindable vs @observable
 
@@ -96,10 +92,10 @@ additional logic (validation, side-effects, coordinated updates):
 ```typescript
 class PortfolioModel extends HoistModel {
     // Internal state — updated only by the model's own methods
-    @observable.ref records: StoreRecord[] = [];
+    @observable.ref accessor records: StoreRecord[] = [];
 
     // Custom setter with coordinated side-effects
-    @observable.ref activeFilter: Filter = null;
+    @observable.ref accessor activeFilter: Filter = null;
 
     @action
     setActiveFilter(filter: Filter) {
@@ -120,8 +116,8 @@ Use `@bindable.ref` for properties where only reference changes should trigger r
 deep mutations within the value. This uses `observable.ref` semantics under the hood:
 
 ```typescript
-@bindable.ref selectedRecord: StoreRecord = null;  // track reference only
-@bindable.ref dimensions: {width: number, height: number} = null;
+@bindable.ref accessor selectedRecord: StoreRecord = null;  // track reference only
+@bindable.ref accessor dimensions: {width: number, height: number} = null;
 ```
 
 ### Setter Convention
@@ -173,9 +169,9 @@ This is especially valuable for:
 
 ```typescript
 class TaskListModel extends HoistModel {
-    @observable.ref tasks: Task[] = [];
-    @observable filterText: string = '';
-    @observable showCompleted: boolean = false;
+    @observable.ref accessor tasks: Task[] = [];
+    @observable accessor filterText: string = '';
+    @observable accessor showCompleted: boolean = false;
 
     // ✅ Good: combines three observables. Components that only care about
     // the filtered result won't re-render when an irrelevant filter changes.
@@ -223,42 +219,6 @@ MobX tracking overhead. Prefer plain getters when the output always changes when
 changes (see [Common Pitfalls](#unnecessary-computed-on-simple-transformations) below) or when
 the derivation is trivial and accessed from a single reactive context.
 
-## Enhanced makeObservable
-
-Hoist provides an enhanced `makeObservable()` that must be called in every class constructor
-that introduces observable properties (including `@bindable`):
-
-```typescript
-import {makeObservable} from '@xh/hoist/mobx';
-
-class MyModel extends HoistModel {
-    @bindable query: string = '';
-    @observable.ref results: any[] = [];
-
-    constructor() {
-        super();
-        makeObservable(this);  // required — initializes both @bindable and @observable
-    }
-}
-```
-
-The enhanced version processes `@bindable` properties by wrapping their initial values in
-`observable.box` instances and creating getter/setter property descriptors, then delegates to
-the native MobX `makeObservable()` for standard annotations.
-
-**Avoid:** omitting `makeObservable(this)` in a subclass constructor that declares new
-`@bindable` or `@observable` properties. Each class in the hierarchy that introduces observables
-must call it — the superclass call doesn't cover subclass properties.
-
-## isObservableProp / checkMakeObservable
-
-Two diagnostic utilities:
-
-- `isObservableProp(target, key)` — enhanced version that checks both MobX observables and
-  `@bindable` properties (native MobX version misses bindables)
-- `checkMakeObservable(target)` — logs errors for any `@bindable` or `@observable` properties
-  that weren't properly initialized via `makeObservable()`. Called automatically by HoistBase
-
 ## Common Pitfalls
 
 ### Using `@observable` (deep) for non-primitives
@@ -269,15 +229,15 @@ variant instead:
 
 ```typescript
 // ❌ Don't: deep observation wraps the array and its contents in proxies
-@observable items: Item[] = [];
+@observable accessor items: Item[] = [];
 
 // ✅ Do: ref observation tracks only the reference — no proxy wrapping
-@observable.ref items: Item[] = [];
+@observable.ref accessor items: Item[] = [];
 
 // ✅ Primitives are fine with plain @observable — no proxies involved
-@observable isOpen: boolean = false;
-@observable count: number = 0;
-@observable label: string = '';
+@observable accessor isOpen: boolean = false;
+@observable accessor count: number = 0;
+@observable accessor label: string = '';
 ```
 
 The same applies to `@bindable` vs `@bindable.ref` — use `@bindable.ref` for non-primitives.
@@ -292,7 +252,7 @@ When using `.ref` variants, MobX only tracks *reference changes* to the property
 within the value. To trigger reactions, you must replace the entire value with a new instance:
 
 ```typescript
-@observable.ref filters: Filter[] = [];
+@observable.ref accessor filters: Filter[] = [];
 
 // ❌ Don't: push mutates the existing array — MobX won't detect the change
 @action addFilter(f: Filter) {
@@ -305,24 +265,19 @@ within the value. To trigger reactions, you must replace the entire value with a
 }
 
 // ✅ Do: same pattern for objects — spread into a new object
-@observable.ref settings: {theme: string, compact: boolean} = {theme: 'dark', compact: false};
+@observable.ref accessor settings: {theme: string, compact: boolean} = {theme: 'dark', compact: false};
 
 @action updateTheme(theme: string) {
     this.settings = {...this.settings, theme};
 }
 ```
 
-### Missing `makeObservable(this)` in subclass
+### Accessor fields are non-enumerable
 
-If a subclass adds new `@bindable` or `@observable` properties, its constructor must call
-`makeObservable(this)`. Forgetting this causes the properties to be plain (non-reactive) values,
-leading to silent UI update failures. The `checkMakeObservable` utility will log an error if
-this happens.
-
-### `@bindable` without `makeObservable`
-
-The `@bindable` decorator alone only records metadata on the class prototype. The actual
-observable box and getter/setter are created by `makeObservable()` at construction time.
+TC39 `accessor` fields become getter/setter pairs on the class prototype. Unlike plain class
+fields, they do not appear in `Object.keys()`, `JSON.stringify()`, `{...spread}`, or `for...in`
+loops. Code that iterates model properties to discover observable state must use MobX APIs
+(e.g. `getObservableKeys()`) instead of `Object.keys()`.
 
 ### Unnecessary `@computed` on simple transformations
 
@@ -363,8 +318,7 @@ Always import from `@xh/hoist/mobx`. Importing directly from `mobx` bypasses Hoi
 ## Related Packages
 
 - [`/core/`](../core/README.md) — HoistModel (where `@computed` getters and observable state are
-  defined), HoistBase (calls `checkMakeObservable`), `@managed` decorator,
-  `addAutorun()`/`addReaction()` managed reactive subscriptions
+  defined), `@managed` decorator, `addAutorun()`/`addReaction()` managed reactive subscriptions
 - [`/promise/`](../promise/README.md) — `thenAction()` for modifying observables in promise chains
 - [`/utils/js/`](../utils/README.md#decorators) — Additional decorators (`@debounced`,
   `@computeOnce`, `@logWithInfo`)

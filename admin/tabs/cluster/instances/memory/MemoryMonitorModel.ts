@@ -13,7 +13,7 @@ import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observable, runInAction} from '@xh/hoist/mobx';
 import {forOwn, orderBy, sortBy} from 'lodash';
 
 export interface PastInstance {
@@ -25,8 +25,8 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     @managed gridModel: GridModel;
     @managed chartModel: ChartModel;
 
-    @bindable.ref pastInstance: PastInstance = null;
-    @observable.ref pastInstances: PastInstance[] = [];
+    @bindable.ref accessor pastInstance: PastInstance = null;
+    @observable.ref accessor pastInstances: PastInstance[] = [];
 
     get enabled(): boolean {
         return this.conf.enabled;
@@ -38,7 +38,6 @@ export class MemoryMonitorModel extends BaseInstanceModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.gridModel = this.createGridModel();
         this.chartModel = this.createChartModel();
         this.addReaction({

@@ -11,7 +11,7 @@ import {
     StoreValidationResultsMap,
     ValidationState
 } from '@xh/hoist/data';
-import {computed, makeObservable, runInAction, observable} from '@xh/hoist/mobx';
+import {computed, runInAction, observable} from '@xh/hoist/mobx';
 import {sumBy, chunk} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
 import {RecordValidator} from './RecordValidator';
@@ -71,11 +71,10 @@ export class StoreValidator extends HoistBase {
         return this.mapValidators();
     }
 
-    @observable.ref _validators = new Map<StoreRecordId, RecordValidator>();
+    @observable.ref accessor _validators = new Map<StoreRecordId, RecordValidator>();
 
     constructor(config: {store: Store}) {
         super();
-        makeObservable(this);
         this.store = config.store;
 
         this.addReaction({

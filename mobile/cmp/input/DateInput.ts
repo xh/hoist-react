@@ -11,7 +11,7 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
 import '@xh/hoist/mobile/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -94,7 +94,7 @@ export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
 class DateInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    @observable popoverOpen = false;
+    @observable accessor popoverOpen = false;
 
     @action setPopoverOpen(bool) {
         this.popoverOpen = bool;
@@ -111,11 +111,6 @@ class DateInputModel extends HoistInputModel {
         if (inputEl === document.activeElement) {
             inputEl.blur();
         }
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override blur() {

@@ -8,21 +8,20 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 
-    @bindable activeOnly = true;
-    @bindable withRolesOnly = false;
+    @bindable accessor activeOnly = true;
+    @bindable accessor withRolesOnly = false;
 
     @managed
     gridModel: GridModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = new GridModel({
             emptyText: 'No users found.',

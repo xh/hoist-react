@@ -16,7 +16,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {textArea} from '@xh/hoist/kit/blueprint';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -136,9 +136,9 @@ class CodeInputModel extends HoistInputModel {
 
     // Support for internal search feature.
     cursor = null;
-    @bindable query: string = '';
-    @observable currentMatchIdx: number = -1;
-    @observable.ref matches = [];
+    @bindable accessor query: string = '';
+    @observable accessor currentMatchIdx: number = -1;
+    @observable.ref accessor matches = [];
     get matchCount(): number {
         return this.matches.length;
     }
@@ -228,7 +228,6 @@ class CodeInputModel extends HoistInputModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.modalSupportModel.isModal,
             run: () => this.focus(),

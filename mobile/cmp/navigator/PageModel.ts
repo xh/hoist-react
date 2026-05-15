@@ -14,7 +14,7 @@ import {
     RenderMode
 } from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
 import {NavigatorModel} from './NavigatorModel';
@@ -119,7 +119,6 @@ export class PageModel extends HoistModel {
         disableAppRefreshButton
     }: PageConfig) {
         super();
-        makeObservable(this);
         warnIf(
             renderMode === 'always',
             "RenderMode.ALWAYS is not supported in PageModel. Pages can't exist before being mounted."

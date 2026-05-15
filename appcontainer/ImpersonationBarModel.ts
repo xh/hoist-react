@@ -6,7 +6,7 @@
  */
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
 
@@ -16,17 +16,12 @@ import {createRef} from 'react';
 export class ImpersonationBarModel extends HoistModel {
     override xhImpl = true;
 
-    @observable showRequested: boolean = false;
-    @observable.ref targets: string[] = [];
-    @bindable pendingTarget: string = null;
+    @observable accessor showRequested: boolean = false;
+    @observable.ref accessor targets: string[] = [];
+    @bindable accessor pendingTarget: string = null;
 
     // For managed focus of desktop select.
     inputRef = createRef<HoistInputModel>();
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     init() {
         this.addAutorun(() => {

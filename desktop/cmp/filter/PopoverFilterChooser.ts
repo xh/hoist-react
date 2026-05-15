@@ -6,7 +6,7 @@
  */
 
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {box, hframe} from '@xh/hoist/cmp/layout';
 import '@xh/hoist/desktop/register';
 import {popover} from '@xh/hoist/kit/blueprint';
@@ -72,16 +72,10 @@ class PopoverFilterChooserLocalModel extends HoistModel {
     @lookup(FilterChooserModel)
     model: FilterChooserModel;
 
-    @bindable
-    popoverIsOpen: boolean = false;
+    @bindable accessor popoverIsOpen: boolean = false;
 
     get displaySelectValue() {
         return this.model.selectValue[0];
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     open() {

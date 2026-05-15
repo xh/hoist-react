@@ -13,7 +13,7 @@ import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observable, runInAction} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -21,14 +21,12 @@ import {isEmpty} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
-    @observable
-    lastRefresh: number;
+    @observable accessor lastRefresh: number;
 
     @managed
     gridModel: GridModel;
 
-    @bindable
-    groupBy: 'user' | 'instance' = null;
+    @bindable accessor groupBy: 'user' | 'instance' = null;
 
     @managed
     private _timer: Timer;
@@ -52,7 +50,6 @@ export class ClientsModel extends BaseAdminTabModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = this.createGridModel();
 

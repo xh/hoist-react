@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppState, AppSuspendData, HoistModel, PlainObject, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
 
@@ -17,7 +17,7 @@ import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
 export class AppStateModel extends HoistModel {
     override xhImpl = true;
 
-    @observable state: AppState = 'PRE_AUTH';
+    @observable accessor state: AppState = 'PRE_AUTH';
 
     lastActivityMs: number = Date.now();
     suspendData: AppSuspendData;
@@ -34,7 +34,6 @@ export class AppStateModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.trackLoad();
         this.createActivityListeners();
     }

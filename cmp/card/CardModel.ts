@@ -13,7 +13,6 @@ import {
     PersistOptions,
     RenderMode
 } from '@xh/hoist/core';
-import {makeObservable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {action, observable} from 'mobx';
@@ -66,8 +65,7 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     //---------------------
     // Observable State
     //---------------------
-    @observable
-    collapsed: boolean = false;
+    @observable accessor collapsed: boolean = false;
 
     constructor({
         collapsible = false,
@@ -76,7 +74,6 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
         persistWith = null
     }: CardModelConfig = {}) {
         super();
-        makeObservable(this);
 
         this.collapsible = collapsible;
         this.collapsed = this.defaultCollapsed = collapsible && defaultCollapsed;

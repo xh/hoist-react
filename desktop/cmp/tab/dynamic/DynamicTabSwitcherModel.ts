@@ -13,7 +13,6 @@ import {
 import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
 import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import {compact, find} from 'lodash';
 import {action, computed, observable, when} from 'mobx';
 import React from 'react';
@@ -27,7 +26,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
 
     private readonly extraMenuItems: Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>>;
     private readonly tabContainerModel: TabContainerModel;
-    @observable.ref private visibleTabState: TabState[];
+    @observable.ref private accessor visibleTabState: TabState[];
 
     @computed
     get favoriteTabIds(): string[] {
@@ -49,7 +48,6 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
         tabContainerModel: TabContainerModel
     ) {
         super();
-        makeObservable(this);
 
         this.extraMenuItems = extraMenuItems;
         this.tabContainerModel = tabContainerModel;

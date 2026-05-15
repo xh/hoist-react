@@ -1,0 +1,227 @@
+# Hoist React v86 Upgrade Notes
+
+> **From:** v85.x → v86.0.0 | **Difficulty:** 🟠 MEDIUM (codemod-assisted, mostly mechanical)
+
+## Overview
+
+v86 migrates Hoist from TypeScript's legacy `experimentalDecorators` to the **TC39 Stage 3
+(2022.3 / Babel `2023-05`) modern decorator standard**, aligning with the direction of TypeScript,
+MobX, and the broader ecosystem. The visible payoffs:
+
+- `makeObservable(this)` is no longer needed — observable fields register at class-definition time.
+- Subclass initialization is less error-prone: forgetting `makeObservable(this)` previously caused
+  silent reactivity failures.
+
+The cost is one atomic upgrade: TypeScript, Babel, and app code all have to flip together.
+`@xh/hoist` v86 and `@xh/hoist-dev-utils` v14 **must be upgraded simultaneously**. Mixing a v86
+app bundle with dev-utils v13 (legacy Babel) or vice-versa will silently break every
+`@observable` / `@bindable` field.
+
+## Prerequisites
+
+- [ ] Running hoist-react v85.x and hoist-dev-utils v13.x
+- [ ] TypeScript 5.0+ (v86 requires TS 5.9)
+
+## Upgrade steps
+
+### 1. Update `package.json`
+
+Bump **both** hoist-react and hoist-dev-utils. They release together.
+
+```json
+"@xh/hoist": "~85.0.0",
+"@xh/hoist-dev-utils": "~14.0.0"
+```
+
+### 2. Remove `experimentalDecorators` from `tsconfig.json`
+
+TypeScript 5+ treats decorators as TC39 by default when this flag is absent.
+
+```diff
+  "compilerOptions": {
+-   "experimentalDecorators": true,
+    "useDefineForClassFields": true,
+    ...
+  }
+```
+
+Also remove `emitDecoratorMetadata` if present.
+
+### 3. Run the codemod to add `accessor` keywords
+
+Every `@observable` / `@observable.ref` / `@observable.shallow` / `@observable.deep` /
+`@bindable` / `@bindable.ref` field must now be an `accessor` field:
+
+```typescript
+// Before
+@observable.ref users: User[] = [];
+@bindable selectedFund: string = null;
+
+// After
+@observable.ref accessor users: User[] = [];
+@bindable accessor selectedFund: string = null;
+```
+
+A one-shot codemod is shipped with the framework:
+
+```bash
+# From your app repo root (the repo containing client-app/):
+node ./node_modules/@xh/hoist/docs/planning/tc39-decorators/codemod-add-accessor.mjs \
+    client-app/src
+```
+
+It handles both inline (`@observable foo = 0`) and stacked-decorator forms
+(`@bindable @persist foo = true`, `@managed @observable.ref grid: GridModel`).
+
+`@action`, `@computed`, `@managed`, and `@persist` are **unchanged** — they don't take `accessor`.
+
+### 4. Run the codemod to remove `makeObservable(this)` calls
+
+```bash
+node ./node_modules/@xh/hoist/docs/planning/tc39-decorators/codemod-remove-makeObservable.mjs \
+    client-app/src
+```
+
+This removes every `makeObservable(this);` line, deletes constructors that are now empty
+(contain only `super(...)`), and strips `makeObservable` from imports that no longer reference it.
+
+### 5. Replace any `@override` decorators with `@action`
+
+Under TC39, MobX's `@override` decorator is annotation-only and logs *"'override' cannot be used
+with decorators — this is a no-op"* at runtime. Subclass overrides of base `@action` methods must
+now decorate with `@action` directly.
+
+Grep for instances:
+
+```bash
+rg '^\s*@override' client-app/src
+```
+
+For each hit, replace `@override` with `@action` (or `@computed` / `@flow` if the base member was
+decorated as such). Remove `override` from the corresponding `@xh/hoist/mobx` import if it is no
+longer referenced.
+
+### 6. Audit model-property iteration (risk R1)
+
+**Accessor fields are not enumerable.** `@observable` / `@bindable` fields are now getter/setter
+pairs on the class prototype rather than own enumerable instance properties. Code that introspects
+a model via `Object.keys`, `Object.entries`, `Object.values`, `JSON.stringify`, spread (`{...model}`),
+or `for…in` will **silently miss** those fields.
+
+Run these greps from your app root and inspect each hit — is the target a plain dict, or a
+`HoistModel` / `HoistBase` subclass? Plain dicts are fine; model instances need updating to use an
+explicit property list, `toJS()`, or a dedicated serializer.
+
+```bash
+# Dict/model enumeration — examine each hit's target
+rg 'Object\.(keys|entries|values)' client-app/src
+
+# Serialization of a model
+rg 'JSON\.stringify' client-app/src
+
+# Spread over `this` or a `*Model` variable
+rg '\{\s*\.\.\.(this|\w+Model)\b' client-app/src
+
+# for…in loop over a model
+rg 'for\s*\(.*\bin\s+(this|\w+Model)\b' client-app/src
+
+# Property-descriptor introspection
+rg 'Object\.(getOwnPropertyNames|getOwnPropertyDescriptors)' client-app/src
+```
+
+The hoist-react framework itself does not enumerate model instances this way (a full internal audit
+surfaced five candidate sites, all iterating plain dictionaries rather than models). The risk is
+**app-side only**.
+
+### 7. Verify
+
+```bash
+cd client-app
+yarn tsc --noEmit      # must be clean
+yarn lint
+yarn start             # smoke-test interactively
+```
+
+## Other notable changes
+
+- **`mobx/overrides.ts` is gone.** `makeObservable`, `checkMakeObservable`, and `override` are no
+  longer exported from `@xh/hoist/mobx`. Apps that still import any of these will get a
+  compile-time error — delete the imports and any remaining calls.
+- **`_xhBindableProperties` metadata no longer exists.** Any tooling or app code reading this
+  property off model prototypes must be updated.
+- **Direct assignments to `@bindable` fields still work** in strict mode (`enforceActions:
+  'observed'`) — hoist-react wraps the accessor's setter in `runInAction` internally.
+- **`@enumerable` decorator is removed.** It had zero call sites across hoist-react and toolbox.
+  If your app uses it, define a replacement inline using a TC39 getter decorator, or switch to a
+  regular enumerable data property.
+- **Object spread (`{...model}`) on class instances no longer copies `accessor` fields.** TC39
+  accessor fields are getter/setter pairs on the *prototype* backed by per-instance private
+  slots — they are never own enumerable properties. Spread copies only own enumerables, so
+  `{...someModel}` silently drops every `@observable accessor` / `@bindable accessor` value.
+  Audit any code that spreads a live model instance (often subtle: `tabs.map(it => fn({...it}))`
+  where `it` is a `TabModel`). Replace with explicit destructure or a property-pluck —
+  `fn({id: it.id, title: it.title})` — or pass the instance through unchanged. Legacy decorators
+  stored the value as an own data property, so spread worked; TC39 does not.
+
+## Troubleshooting
+
+### `An 'accessor' property cannot be declared optional`
+Change `@observable accessor foo?: T` → `@observable accessor foo: T | undefined`.
+
+### `Property 'value' will overwrite the base property...`
+A subclass overriding a parent's `@observable` / `@bindable` `accessor` field needs the
+`override` keyword, its own decorator, and an initializer:
+```typescript
+@observable.ref override accessor value: FormModel[] = [];
+```
+
+### `[MobX] Please use '@observable accessor foo' instead of '@observable foo'`
+The codemod missed this one — usually because `@decorator // comment` or a non-standard
+decorator stack confused the regex. Add `accessor` manually.
+
+### `TypeError: Private element is not present on this object`
+A field initializer reads an `@observable` / `@bindable` `accessor` field declared *below* it.
+Under legacy decorators MobX installed the observable on the prototype, so a default value was
+available before any instance field ran. Under TC39, each `accessor` field is backed by a per-
+instance private slot that exists only after that field's own initializer runs — reading it
+earlier throws this error.
+
+The pattern that breaks:
+```typescript
+// ❌ Breaks: createChartModel() reads `this.inverted`, but the
+//    inverted slot hasn't been installed yet.
+@managed readonly chartModel: ChartModel = this.createChartModel();
+@bindable accessor inverted: boolean = true;
+```
+
+Two fixes, in order of preference:
+
+1. **Reorder fields** — declare the `accessor` fields above the inline-initialized `@managed`
+   fields that depend on them. Cheap, idiomatic, no behavior change.
+   ```typescript
+   // ✅ Fixed
+   @bindable accessor inverted: boolean = true;
+   @managed readonly chartModel: ChartModel = this.createChartModel();
+   ```
+2. **Move construction into the constructor** — useful when there's no clean order (e.g. mutual
+   reads, or the creator wants to call `super` first):
+   ```typescript
+   @bindable accessor inverted: boolean = true;
+   @managed chartModel: ChartModel;
+
+   constructor() {
+       super();
+       this.chartModel = this.createChartModel();
+   }
+   ```
+
+Note that the error can also fire from *deferred* reads (validator callbacks, ag-Grid cell
+editors, MobX reactions) when those callbacks happen to run before all field initializers have
+completed — typically during a synchronous `setSeries` / `loadData` triggered from another
+field's initializer. If you see this stack and the offending property's declaration order looks
+fine, look for a sibling field whose initializer fires a synchronous side-effect.
+
+### Static class blocks error in Babel
+`@xh/hoist-dev-utils` v14 enables `@babel/plugin-transform-class-static-block` automatically. If
+you maintain a custom Babel config outside dev-utils, ensure that plugin is enabled alongside
+`@babel/plugin-proposal-decorators` `{version: '2023-05'}`.

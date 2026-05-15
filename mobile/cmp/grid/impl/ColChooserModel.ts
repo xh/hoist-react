@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {bindable, action, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, action, observable} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -24,10 +24,10 @@ export class ColChooserModel extends HoistModel {
     showRestoreDefaults: boolean;
     autosizeOnCommit: boolean;
 
-    @observable.ref columns: ColMeta[] = [];
-    @bindable pinFirst: boolean;
+    @observable.ref accessor columns: ColMeta[] = [];
+    @bindable accessor pinFirst: boolean;
 
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     get pinnedColumn() {
         return this.pinFirst ? this.columns.find(it => it.pinned) : null;
@@ -43,7 +43,6 @@ export class ColChooserModel extends HoistModel {
 
     constructor({gridModel, showRestoreDefaults = true, autosizeOnCommit = true}) {
         super();
-        makeObservable(this);
 
         this.gridModel = gridModel;
         this.showRestoreDefaults = showRestoreDefaults;
