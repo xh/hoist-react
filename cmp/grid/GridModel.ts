@@ -67,7 +67,6 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -439,6 +438,8 @@ export interface GridModelDefaults {
  *
  * @see Grid
  * @see DataView
+ *
+ * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
@@ -1340,16 +1341,6 @@ export class GridModel extends HoistModel {
         }
     }
 
-    /** @deprecated - use {@link updateColumnState} instead. */
-    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]): void {
-        apiDeprecated('GridModel.applyColumnStateChanges()', {
-            msg: 'Use updateColumnState() instead.',
-            v: '82',
-            source: GridModel
-        });
-        this.updateColumnState(colStateChanges);
-    }
-
     getColumn(colId: string): Column {
         return this.findColumn(this.columns, colId);
     }
@@ -2068,43 +2059,6 @@ export class GridModel extends HoistModel {
             // See https://github.com/xh/hoist-react/issues/4102.
             manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `GridModel.defaults.restoreDefaultsWarning` */
-    static set DEFAULT_RESTORE_DEFAULTS_WARNING(v: ReactNode) {
-        apiDeprecated('GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING', {
-            msg: 'Use GridModel.defaults.restoreDefaultsWarning instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.restoreDefaultsWarning = v;
-    }
-
-    /** @deprecated - use `GridModel.defaults.autosizeMode` */
-    static set DEFAULT_AUTOSIZE_MODE(v: GridAutosizeMode) {
-        apiDeprecated('GridModel.DEFAULT_AUTOSIZE_MODE', {
-            msg: 'Use GridModel.defaults.autosizeMode instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.autosizeMode = v;
-    }
-
-    /** @deprecated - use `GridModel.defaults.contextMenu` */
-    static get defaultContextMenu(): GridContextMenuItemLike[] {
-        apiDeprecated('GridModel.defaultContextMenu', {
-            msg: 'Use GridModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        return GridModel.defaults.contextMenu;
-    }
-    static set defaultContextMenu(v: GridContextMenuItemLike[]) {
-        apiDeprecated('GridModel.defaultContextMenu', {
-            msg: 'Use GridModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.contextMenu = v;
     }
 }
 

@@ -5,10 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
-import {apiDeprecated, logError} from '@xh/hoist/utils/js';
-import {castArray, compact, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {logError} from '@xh/hoist/utils/js';
+import {compact, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
 import {FieldFilterSpec, FilterLike} from './Types';
@@ -82,68 +81,6 @@ export function appendFilter(source: Filter, ...additions: FilterLike[]): Filter
             : compact([source]);
 
     return parseFilter({filters: [...sourceFilters, ...parsed], op: 'AND'});
-}
-
-//----------------------------------------------------------------------
-// Deprecated aliases - use Filter instance methods instead
-//----------------------------------------------------------------------
-/** @deprecated Use `filter.removeFieldFilters(field)` and `appendFilter()` instead. */
-export function withFilterByField(
-    filter: FilterLike,
-    newFilter: FilterLike,
-    field: string
-): Filter {
-    apiDeprecated('withFilterByField', {
-        msg: 'Use filter.removeFieldFilters(field) and appendFilter() instead.',
-        v: '85.0'
-    });
-    const source = parseFilter(filter);
-    return appendFilter(source?.removeFieldFilters(field), newFilter);
-}
-
-/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
-export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
-    apiDeprecated('withFilterByKey', {
-        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
-        v: '85.0'
-    });
-    const source = parseFilter(filter);
-    return appendFilter(source?.removeFunctionFilters(key), newFilter);
-}
-
-/** @deprecated Use `filter.removeFunctionFilters(key)` and `appendFilter()` instead. */
-export function replaceFilterByKey(
-    filter: FilterLike,
-    replacement: FilterLike,
-    key: string
-): Filter {
-    apiDeprecated('replaceFilterByKey', {
-        msg: 'Use filter.removeFunctionFilters(key) and appendFilter() instead.',
-        v: '85.0'
-    });
-    const source = parseFilter(filter);
-    return appendFilter(source?.removeFunctionFilters(key), replacement);
-}
-
-/** @deprecated Use `filter.removeFieldFilters()` and/or `filter.removeFunctionFilters()` with
- * `appendFilter()` instead. */
-export function withFilterByTypes(
-    filter: Filter,
-    newFilter: FilterLike,
-    types: Some<string>
-): Filter {
-    apiDeprecated('withFilterByTypes', {
-        msg: 'Use filter.removeFieldFilters() / filter.removeFunctionFilters() and appendFilter() instead.',
-        v: '85.0'
-    });
-    const typeArr = castArray(types);
-    let source: Filter = filter;
-    for (const type of typeArr) {
-        if (!source) break;
-        if (type === 'FieldFilter') source = source.removeFieldFilters();
-        if (type === 'FunctionFilter') source = source.removeFunctionFilters();
-    }
-    return appendFilter(source, newFilter);
 }
 
 /**

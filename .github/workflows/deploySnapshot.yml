@@ -51,7 +51,9 @@ jobs:
           run: yarn lint:all
 
         - name: Prepare snapshot version
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@master
+          # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
+          # Bumped by Dependabot when newer versions of the action are released.
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@155a7ff7411a249abe814bd5918a8c43b742f4c9 # master
           with:
               version: ${{ inputs.version }}
 

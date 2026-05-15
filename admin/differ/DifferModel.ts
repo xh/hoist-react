@@ -63,7 +63,7 @@ export class DifferModel extends HoistModel {
      * (Use of startsWith allows configs to end in trailing /)
      */
     get remoteHosts(): string[] {
-        return XH.getConf('xhAppInstances').filter(
+        return XH.getConf('xhAppInstances', []).filter(
             (it: string) => !it.startsWith(window.location.origin)
         );
     }

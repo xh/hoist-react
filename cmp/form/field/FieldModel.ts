@@ -13,5 +13,7 @@ import {BaseFieldModel} from './BaseFieldModel';
  *
  * These models are typically created by passing configuration objects to the constructor of FormModel.
  * The parent Form/FormModel and the FormField component work together to bind to this model by name.
+ *
+ * @mcpHint model for a single form field (extends BaseFieldModel)
  */
 export class FieldModel extends BaseFieldModel {}

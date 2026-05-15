@@ -9,7 +9,7 @@ import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core
 import {required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, observable} from '@xh/hoist/mobx';
-import {apiDeprecated, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
 import {RestField} from '../data/RestField';
@@ -52,14 +52,8 @@ export class RestFormModel extends HoistModel {
     get store() {
         return this.parent.store;
     }
+
     override get loadObserver(): TaskObserver {
-        return this.store.loadSupport.loadObserver;
-    }
-    override get loadModel() {
-        apiDeprecated('RestFormModel.loadModel', {
-            v: 'v82',
-            msg: 'Use RestFormModel.loadObserver instead.'
-        });
         return this.store.loadSupport.loadObserver;
     }
 
@@ -71,6 +65,7 @@ export class RestFormModel extends HoistModel {
     getStoreField(field: string) {
         return this.store.getField(field) as RestField;
     }
+
     getFormFieldModel(field: string) {
         return this.formModel.getField(field);
     }

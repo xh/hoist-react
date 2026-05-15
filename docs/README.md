@@ -15,7 +15,7 @@ patterns for specific hoist-react features. Start with the [Core Framework](#cor
 for foundational concepts, then drill into [Components](#components) or [Utilities](#utilities).
 
 **Library developers:** In addition to the docs below, see
-[`/AGENTS.md`](../AGENTS.md) for architecture patterns and AI assistant guidance, and
+[`/CLAUDE.md`](../CLAUDE.md) for architecture patterns and AI assistant guidance, and
 [Coding Conventions](./coding-conventions.md) for detailed code style and naming conventions.
 See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage tracking and conventions.
 
@@ -123,7 +123,7 @@ Cross-cutting documentation that spans multiple packages:
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon, Spinner, SpinnerProps |
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
@@ -164,6 +164,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |
 | [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
 | [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |
 | [v82](./upgrade-notes/v82-upgrade-notes.md) | 2026-02-25 | 🟢 LOW | `FetchService` static correlation IDs, `xh-popup--framed` removal, DashContainer CSS wrapper |
@@ -179,10 +180,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 ## Additional Resources
 
-- [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns and key
+- [`/CLAUDE.md`](../CLAUDE.md) — AI coding assistant guidance: architecture patterns and key
   dependencies
-- [`docs/coding-conventions.md`](./coding-conventions.md) — Detailed coding conventions: imports,
-  naming, class structure, component patterns, null handling, async, error handling, logging, CSS
 - [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
   (documentation, testing). Not indexed here — these are project management artifacts, not
   hoist-react reference material.

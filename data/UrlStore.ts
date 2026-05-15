@@ -8,13 +8,13 @@
 import {
     Loadable,
     LoadSpec,
+    LoadSpecConfig,
     LoadSupport,
     managed,
     PlainObject,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
-import {apiDeprecated} from '@xh/hoist/utils/js';
 
 import {Store, StoreConfig} from './Store';
 
@@ -45,13 +45,6 @@ export class UrlStore extends Store implements Loadable {
     get loadObserver(): TaskObserver {
         return this.loadSupport.loadObserver;
     }
-    get loadModel() {
-        apiDeprecated('UrlStore.loadModel', {
-            v: 'v82',
-            msg: 'Use UrlStore.loadObserver instead.'
-        });
-        return this.loadSupport.loadObserver;
-    }
     get lastLoadRequested() {
         return this.loadSupport.lastLoadRequested;
     }
@@ -67,7 +60,7 @@ export class UrlStore extends Store implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport.autoRefreshAsync(meta);
     }
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
     }
 

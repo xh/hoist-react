@@ -48,6 +48,7 @@ class InstanceManager {
     registerModelWithTestId(testId: string, m: HoistModel) {
         if (
             isNil(testId) ||
+            isNil(m) ||
             !m.isHoistModel ||
             !this.testSupportedModels.has(m.constructor.name) ||
             this.modelsByTestId.has(testId)

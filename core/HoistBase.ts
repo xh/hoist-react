@@ -22,7 +22,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
-import {Span, SpanConfig} from '@xh/hoist/utils/telemetry';
+import {Runner} from '../utils/telemetry/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -34,7 +34,17 @@ import {
 } from 'lodash';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
-import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
+import {
+    DebounceSpec,
+    LoadSpec,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    Some,
+    Span,
+    SpanConfigLike,
+    XH
+} from './';
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -50,6 +60,8 @@ export interface HoistBaseClass {
  * @see HoistModel
  * @see HoistService
  * @see Store
+ *
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {
@@ -104,12 +116,26 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    withSpan<T>(config: string | SpanConfig, fn: (span: Span) => T): T {
+    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
         return XH.traceService.withSpan(config, fn);
     }
 
-    withSpanAsync<T>(config: string | SpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
-        return XH.traceService.withSpanAsync(config, fn);
+    /**
+     * Create an {@link Runner} builder with this object as the caller.
+     *
+     * @internal  - runner is an experimental beta feature.
+     **/
+    runner(ctx: LoadSpec | Span = null): Runner {
+        return Runner.create(ctx, this);
+    }
+
+    /**
+     * Create an {@link Runner} builder with an initial span and this object as the caller.
+     *
+     * @internal - runner is an experimental beta feature.
+     */
+    newSpan(span: SpanConfigLike): Runner {
+        return this.runner().newSpan(span);
     }
 
     /**

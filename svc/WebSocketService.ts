@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -79,7 +79,7 @@ export class WebSocketService extends HoistService {
     private _lastHeartbeatSent: number = null;
     private _lastHeartbeatReceived: number = null;
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         if (!this.enabled) return;
 
         const {environmentService} = XH;

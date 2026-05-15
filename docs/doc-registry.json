@@ -466,6 +466,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v83.x to v84.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v84", "v83", "getClassName"]
+        },
+        {
+            "id": "docs/upgrade-notes/v85-upgrade-notes.md",
+            "title": "v85 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
         }
     ]
 }

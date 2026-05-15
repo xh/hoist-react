@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import bpPkg from '@blueprintjs/core/package.json';
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
@@ -46,9 +46,10 @@ export class EnvironmentService extends HoistService {
     private pollConfig: PollConfig;
     private pollTimer: Timer;
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
-                url: 'xh/environment'
+                url: 'xh/environment',
+                span: ctx.span
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
@@ -105,15 +106,15 @@ export class EnvironmentService extends HoistService {
     }
 
     /**
-     * Update critical environment information from server, including current app version + build,
+     * Update critical environment information from the server, including current app version + build,
      * upgrade prompt mode, and alert banner.
      *
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        let data;
+        let data: any;
         try {
-            data = await XH.fetchJson({url: 'xh/environmentPoll'});
+            data = await this.newSpan('xh.client.envPoll').fetchJson({url: 'xh/environmentPoll'});
         } catch (e) {
             this.logError('Error polling server environment', e);
             return;

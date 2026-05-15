@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {isHoistException} from '@xh/hoist/exception';
 import {NameSource} from '@xh/hoist/utils/js';
 
 /**
@@ -13,6 +14,8 @@ import {NameSource} from '@xh/hoist/utils/js';
  * Produces W3C-compatible trace and span IDs without requiring the full
  * OpenTelemetry SDK. Completed spans are exported to the Hoist server,
  * which relays them to the configured collector.
+ *
+ * @internal
  */
 export class Span {
     /** 32 hex chars (128-bit). */
@@ -21,8 +24,8 @@ export class Span {
     /** 16 hex chars (64-bit). */
     spanId: string;
 
-    /** 16 hex chars, or null for root spans. */
-    parentSpanId: string;
+    /** Parent span, or null for root spans. */
+    parent: Span;
 
     name: string;
 
@@ -39,39 +42,87 @@ export class Span {
 
     kind: SpanKind;
     status: SpanStatus = 'unset';
+    statusDescription: string;
     tags: PlainObject;
     events: SpanEvent[] = [];
 
-    /** Whether this span was selected by client-side sampling rules. */
-    sampled: boolean;
+    /**
+     * Tri-state sampling decision:
+     * - `true`: span is sampled and will be exported.
+     * - `false`: span is not sampled and will be dropped.
+     * - `null`: decision deferred (e.g. created before {@link TraceService} sampling config is
+     *   loaded). Resolved later by {@link TraceService}; outbound `traceparent` headers send `00`
+     *   while undecided so server-side spans don't sample without a client decision.
+     */
+    sampled: boolean | null;
 
     constructor(config: SpanConfig) {
-        const parent = config.parent;
-        this.traceId = parent?.traceId ?? genTraceId();
+        const {parent} = config;
+        this.parent = config.parent;
         this.spanId = genSpanId();
-        this.parentSpanId = parent?.spanId ?? null;
         this.name = config.name;
         this.kind = config.kind ?? 'internal';
         this.startTime = config.startTime ?? Date.now();
-        this.tags = {...config.tags};
-        this.sampled = config.sampled ?? true;
+        this.tags = config.tags;
+        this.traceId = parent?.traceId ?? genTraceId();
+        this.sampled = config.sampled ?? parent?.sampled ?? null;
     }
 
-    /** End this span, recording status and computing duration. */
-    end(status: SpanStatus = 'ok') {
+    /** End this span, computing duration. */
+    end() {
         this.endTime = Date.now();
-        this.status = status;
     }
 
-    /** Record an error event on this span and stamp traceId onto the error if not already set. */
-    recordError(error: unknown) {
+    /** Set a single tag on this span. */
+    setTag(key: string, value: any) {
+        this.tags[key] = value;
+    }
+
+    /** Merge the given tags onto this span. */
+    setTags(tags: PlainObject) {
+        Object.assign(this.tags, tags);
+    }
+
+    /**
+     * Set the HTTP response status code tag and mark the span as 'error' when appropriate per
+     * OTel HTTP semantic conventions: client spans error on status ≥ 400, server spans on ≥ 500.
+     */
+    setHttpStatus(statusCode: number) {
+        this.setTag('http.response.status_code', statusCode);
+        const errorThreshold = this.kind === 'client' ? 400 : 500;
+        if (statusCode >= errorThreshold) this.setError();
+    }
+
+    /**
+     * Record an exception event on this span, stamp traceId onto the error if not already set,
+     * and mark the span as 'error' (with the exception message as description) unless an error
+     * status has already been set (e.g. via {@link setHttpStatus}).
+     *
+     * Skips stamping when the trace is known not to be sampled - the id would be useless to
+     * any cross-referencing, since the trace itself will never be exported.
+     *
+     * Skips routine HoistExceptions entirely - Datadog's OTLP intake maps any exception event
+     * onto error.* tags, which would mask the routine nature of the failure.
+     */
+    recordException(error: unknown) {
+        if (!error) return;
+        if (this.sampled !== false && !error['traceId']) {
+            error['traceId'] = this.traceId;
+        }
+        if (isHoistException(error) && error.isRoutine) return;
         const message = error instanceof Error ? error.message : String(error);
         this.events.push({
             name: 'exception',
             timestamp: Date.now(),
             attributes: {message}
         });
-        if (error && !error['traceId']) error['traceId'] = this.traceId;
+        this.setError(message);
+    }
+
+    /** Mark the span status as 'error', with an optional description. */
+    private setError(description?: string) {
+        this.status = 'error';
+        if (description) this.statusDescription = description;
     }
 
     /** Serialize for export to the server. */
@@ -79,19 +130,22 @@ export class Span {
         return {
             traceId: this.traceId,
             spanId: this.spanId,
-            parentSpanId: this.parentSpanId,
+            parentSpanId: this.parent?.spanId ?? null,
             name: this.name,
             kind: this.kind,
             startTime: this.startTime,
             endTime: this.endTime,
             duration: this.duration,
             status: this.status,
+            statusDescription: this.statusDescription,
             tags: this.tags,
             events: this.events,
             sampled: this.sampled
         };
     }
 }
+
+export type SpanConfigLike = SpanConfig | string;
 
 /**
  * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.
@@ -120,15 +174,17 @@ export type SpanKind = 'internal' | 'client' | 'server' | 'producer' | 'consumer
 export type SpanStatus = 'ok' | 'error' | 'unset';
 
 /**
- * Format a W3C traceparent header value.
+ * Format a W3C traceparent header value. An undecided sampling state (`null`) is sent as `00`
+ * (not sampled) so the server doesn't make its own sampling decision in the absence of a client
+ * one - those server-side spans would be unparented from the client's perspective.
  * @see https://www.w3.org/TR/trace-context/#traceparent-header
  */
 export function formatTraceparent(
     traceId: string,
     spanId: string,
-    sampled: boolean = true
+    sampled: boolean | null = true
 ): string {
-    return `00-${traceId}-${spanId}-${sampled ? '01' : '00'}`;
+    return `00-${traceId}-${spanId}-${sampled === true ? '01' : '00'}`;
 }
 
 /** Generate a 32-hex-char (128-bit) trace ID. */

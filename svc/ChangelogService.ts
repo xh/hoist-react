@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, observable} from '@xh/hoist/mobx';
@@ -76,7 +76,7 @@ export class ChangelogService extends HoistService {
         return this.versions.find(it => !isEmpty(it.categories))?.version;
     }
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         this.changelog = !isEmpty(jsonFromMarkdown?.versions)
             ? jsonFromMarkdown
             : {title: null, versions: []};

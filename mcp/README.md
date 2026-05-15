@@ -114,9 +114,17 @@ lookup.
 
 **Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
 is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
-in the background while the client sets up. The CLI pays this cost on each invocation -- acceptable
-for a 2-3s cold start. In both cases, `ensureInitialized()` awaits in-flight work if a query arrives
-before init completes.
+in the background while the client sets up. In both cases, `ensureInitialized()` awaits in-flight
+work if a query arrives before init completes.
+
+**Disk-persisted index cache.** A serialized snapshot of the symbol and member indexes is written
+to `node_modules/.cache/hoist-mcp/index-v1.json` after each fresh build. Subsequent invocations
+load it in ~10-20ms when the file set hasn't changed, making CLI search calls sub-second on
+remote/slow workstations where ts-morph builds otherwise dominate. Invalidation is automatic: a
+fingerprint over every indexable file's path/mtime/size (plus `package.json`) is recomputed at
+startup and any drift triggers a rebuild. The live ts-morph `Project` is constructed lazily via
+`ensureProject()` only when detail/member extraction needs AST access -- pure search calls served
+from the cache skip it entirely. Set `HOIST_MCP_NO_CACHE=1` to bypass for debugging.
 
 **Resources for nouns, tools for verbs.** Following MCP protocol design guidance: resources serve
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
@@ -133,6 +141,15 @@ system), so they stop at types outside hoist-react's index. Members are deduplic
 child declarations winning. Inherited members are tagged with their declaring type in the formatted
 output. The same `_`-prefix and `private` filtering applied by the member search index is also
 applied here, so `getMembers()` and `searchMembers()` show a consistent public API view.
+
+For class members with no own JSDoc, the walker also looks up the class's `implements` clause and
+inherits the JSDoc -- including `@param` and `@returns` content -- from the first interface (in
+declaration order) that declares a matching member with documentation. The structured output
+records this with `jsDocInheritedFrom`, distinct from `inheritedFrom` (which remains reserved for
+the `extends` chain). Both fields can be set together when a subclass inherits a member from a
+parent class whose docs the parent itself inherited from an interface. A second pass at index
+build-time mirrors this fallback into the member-name search index so JSDoc-content searches
+(e.g. `"refresh background"`) reach impl members that single-source their docs on an interface.
 
 **Promise extension indexing via AST navigation.** Hoist's Promise prototype extensions are declared
 in a `declare global { interface Promise<T> { ... } }` block, which standard ts-morph APIs like
@@ -306,23 +323,33 @@ Verify the MCP server is running and responsive. Takes no parameters.
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name and JSDoc content.
-Multi-word queries split into tokens matched with AND logic against the combined symbol name +
-JSDoc text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel in
-its JSDoc). Results are ranked with name matches above JSDoc-only matches. Also searches public
-members (properties, methods, accessors) of key framework classes.
+Search for TypeScript classes, interfaces, types, and functions by name, JSDoc content, and own
+member names. Multi-word queries split into tokens matched with AND logic against the combined
+searchable text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel
+in its JSDoc) and `"StoreRecord raw"` finds the `StoreRecord` class (which has a `raw` property).
+Results are ranked with name matches above JSDoc/member-only matches. Also searches public members
+(properties, methods, accessors) of every exported class and every exported `*Config` interface,
+matching against the combined owner name, member name, and member JSDoc.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
+| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), a class + member name (e.g. `"StoreRecord raw"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
 | `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
 | `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |
 
-**Member-indexed classes:** HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField, View, FormModel,
-BaseFieldModel, FieldModel, TabContainerModel. Only public members are indexed (private members and
-those prefixed with `_` are excluded).
+**Member-indexed owners:** Public members of every *exported class* and every exported interface
+whose name ends in `Config` (e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`) are
+indexed for search. The `*Config` rule captures the configuration-object shapes consumed by Hoist
+class constructors, so queries like `"groupSortFn"` or `"omitFn"` reach both the class property
+and the corresponding config-interface field. Only public members are indexed (members with
+`private` scope or names starting with `_` are excluded).
+
+Key framework classes and interfaces carry a short hint shown alongside their name in member
+search results, sourced from an optional `@mcpHint` JSDoc tag on the declaration (e.g.
+`@mcpHint model backing all grid components` on `GridModel`). Owners without the tag are still
+searchable; their results just display without the extra hint. See
+[Member-Indexed Owners](#member-indexed-owners) for how to add or revise a hint.
 
 **Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
 `catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
@@ -385,6 +412,14 @@ framework classes with deep hierarchies -- e.g. `DashContainerModel` inherits ke
 `BaseFieldModel` -- and for Props interfaces that compose multiple parent interfaces (e.g.
 `PlaceholderProps` extends `HoistProps` and `BoxProps`).
 
+For methods, the structured output exposes `@param` descriptions via `parameters[].description`
+(rendered as a `Parameters:` block in text output) and `@returns` via a top-level
+`returns: {type, description}` field (rendered as a `Returns:` line). Class methods that declare
+no own JSDoc inherit it -- including `@param` and `@returns` content -- from the first matching
+member on an implemented interface, with the source interface recorded in `jsDocInheritedFrom`.
+This lets impl classes single-source their docs on the interface they implement without losing
+fidelity in MCP/CLI output.
+
 Members prefixed with `_` and those with the `private` keyword are excluded from the output,
 matching the member-index search behavior.
 
@@ -418,7 +453,10 @@ looks up the base class in the symbol index, and extracts its members. For inter
 BFS traversal of the `extends` chain, handling multiple parents. In both cases, deduplication ensures
 that if a child overrides a parent member, only the child version appears. The walk stops when it
 reaches a type not in the index (e.g. a third-party class or React's `HTMLAttributes`) or a type
-with no `extends` clause.
+with no `extends` clause. For class members at any level of the chain that declare no own JSDoc,
+the tool additionally consults that class's `implements` clause (declaration order) and inherits
+the JSDoc from the first interface that declares a matching member with non-empty docs. Static
+members are exempt from this fallback (interfaces declare instance members only).
 
 ## MCP Resources
 
@@ -489,25 +527,46 @@ const TOP_LEVEL_PACKAGES = [
 ];
 ```
 
-### Member-Indexed Classes
+### Member-Indexed Owners
 
-**File:** `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`)
+**File:** `mcp/data/ts-registry.ts` (functions `shouldIndexClassMembers`,
+`shouldIndexInterfaceMembers`, and `extractMcpHint`)
 
-This map lists classes whose public members are indexed for search by member name via
-`hoist-search-symbols` / `hoist-ts search`. Each entry maps a class name to a brief role
-description shown alongside member search results.
+Which owners have their public members indexed is determined by rule, not a hand-maintained list:
+
+- **Every exported class** (`shouldIndexClassMembers` returns `cls.isExported()`)
+- **Every exported interface whose name ends in `Config`** (`shouldIndexInterfaceMembers`)
+
+The `Config` suffix rule captures configuration-object shapes consumed by Hoist class constructors
+(e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`), so member search surfaces both a
+class property and its corresponding config-interface field for the same query. Other interface
+kinds (`*Props`, `*Spec`) are intentionally excluded -- indexing them floods generic queries like
+`"label"`, `"title"`, `"disabled"` with component-prop hits that dilute more specific results.
+
+**Owner hints via the `@mcpHint` JSDoc tag.** Framework authors attach an optional `@mcpHint`
+tag to the class or interface JSDoc block to give a short hint shown alongside the owner name in
+member search results. Example:
+
+```ts
+/**
+ * Core Model for a Grid, specifying the grid's data store and column definitions.
+ *
+ * @mcpHint model backing all grid components
+ */
+export class GridModel extends HoistModel { ... }
+```
+
+Collocating the hint with the declaration avoids the name-collision and maintenance-drift problems
+of a separate hand-curated registry, and lets framework authors add or revise the hint right where
+they're writing the class. Owners without an `@mcpHint` tag still appear in search results -- they
+just display without the extra hint. The `@mcpHint` tag is declared in the project-root
+`tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
 
 **When to update:**
-- A new key base class is added to the framework and should have its members searchable
-- A member-indexed class is renamed or removed
-- The role description of a class should be clarified
-
-**Current value:**
-```
-HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField,
-View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
-```
+- Add or revise `@mcpHint` on the class/interface JSDoc block directly in its source file. No
+  edit to `ts-registry.ts` is required.
+- Edit `shouldIndexClassMembers` / `shouldIndexInterfaceMembers` only if the indexing rule itself
+  needs to change (e.g. adding `*Spec` interfaces, or scoping out a noisy subtree).
 
 ### Summary: Maintenance Checklist
 
@@ -516,7 +575,8 @@ View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
 | Add/rename/remove a documentation file | `docs/doc-registry.json`, `docs/README.md` |
 | Add upgrade notes for a new major version | `docs/doc-registry.json`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
-| Add/rename/remove a member-indexed class | `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`) |
+| Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
+| Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
 
 ## Extending the Developer Tools
 

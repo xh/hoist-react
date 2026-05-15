@@ -10,6 +10,8 @@ import {flatMap} from 'lodash';
 /**
  * Grouped node data, as returned by {@link Cube.executeQuery} or exposed via {@link View.result}.
  * Designed for direct consumption by hierarchical stores and their associated tree grids.
+ *
+ * @mcpHint row shape returned by Cube queries and View results
  */
 export class ViewRowData {
     constructor(id: string) {

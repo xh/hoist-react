@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {action, computed, comparer, observable} from '@xh/hoist/mobx';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {
     DefaultHoistProps,
@@ -119,6 +119,8 @@ import {Class} from 'type-fest';
  * - {@link LoadSpec}
  * - {@link creates}
  * - {@link useLocalModel}
+ *
+ * @mcpHint base class for all application models
  */
 export abstract class HoistModel extends HoistBase implements Loadable {
     /** Type for constructing an instance of this model */
@@ -167,35 +169,29 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     get loadObserver(): TaskObserver {
         return this.loadSupport?.loadObserver;
     }
-    get loadModel() {
-        apiDeprecated('HoistModel.loadModel', {
-            v: 'v82',
-            msg: 'Use HoistModel.loadObserver instead.'
-        });
-        return this.loadSupport?.loadObserver;
-    }
+
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;
     }
+
     get lastLoadCompleted() {
         return this.loadSupport?.lastLoadCompleted;
     }
+
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
+
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
-    /**
-     * Template method for subclasses that want managed loading.
-     *
-     * Override this method to opt into Hoist's managed loading (i.e. installation of {@link LoadSupport}).
-     * Do not call this method directly - call {@link loadAsync}/{@link refreshAsync}/{@link autoRefreshAsync}.
-     */
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
     async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }

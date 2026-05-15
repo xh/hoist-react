@@ -5,16 +5,29 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
+/**
+ * Configuration for a {@link LoadSpec} - the inputs callers may supply via
+ * {@link LoadSupport.loadAsync} when triggering a managed load.
+ *
+ * @see LoadSpec
+ * @see LoadSupport
+ */
 export type LoadSpecConfig = {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application-specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Optional on input - the
+     * resulting `LoadSpec.meta` will default to an empty object when omitted.
+     */
     meta?: PlainObject;
+    /** Optional caller-provided span to use as the parent for spans within this load. */
+    span?: Span;
 };
 
 /**
@@ -43,7 +56,11 @@ export class LoadSpec {
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
 
-    /** Application specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Always defined - defaults to an
+     * empty object when not provided by the caller, so consumers can read keys without a null
+     * check on `meta` itself.
+     */
     meta: PlainObject;
 
     /** Time the load started. */
@@ -54,6 +71,15 @@ export class LoadSpec {
 
     /** Owner of this object. */
     owner: LoadSupport;
+
+    /**
+     * Current trace span for work happening within this load. Used as parent by nested
+     * `FetchService` calls (via `loadSpec` propagation) and any nested `loadAsync` calls.
+     *
+     * Populated from `LoadSpecConfig.span` (set by callers). May be `null` if no caller
+     * context is provided.
+     */
+    span: Span;
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
@@ -81,16 +107,28 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta} = config;
+        const {isRefresh, isAutoRefresh, meta, span} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
+        this.span = span ?? (config instanceof LoadSpec ? config.span : null);
 
         const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
         this.dateCreated = new Date();
 
         Object.freeze(this);
+    }
+
+    /**
+     * Return a clone of this `LoadSpec` with `span` replaced.
+     * @internal
+     */
+    cloneWithSpan(span: Span): LoadSpec {
+        const ret = Object.create(Object.getPrototypeOf(this)) as LoadSpec;
+        Object.assign(ret, this, {span});
+        Object.freeze(ret);
+        return ret;
     }
 }

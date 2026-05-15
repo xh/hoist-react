@@ -10,7 +10,7 @@ import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItem
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
-import {apiDeprecated, mergeDeep} from '@xh/hoist/utils/js';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -145,24 +145,5 @@ export class ChartModel extends HoistModel {
 
             return getContextMenuItems(items, context);
         };
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `ChartModel.defaults.contextMenu` */
-    static get defaultContextMenu(): ChartMenuToken[] {
-        apiDeprecated('ChartModel.defaultContextMenu', {
-            msg: 'Use ChartModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        return ChartModel.defaults.contextMenu;
-    }
-    static set defaultContextMenu(v: ChartMenuToken[]) {
-        apiDeprecated('ChartModel.defaultContextMenu', {
-            msg: 'Use ChartModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        ChartModel.defaults.contextMenu = v;
     }
 }

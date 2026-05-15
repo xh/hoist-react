@@ -85,6 +85,27 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
     displayNoun?: string;
 
     /**
+     * Controls how multiple selected values are rendered on the trigger button.
+     * - `'summary'` (default) - shows a compact summary, e.g. "3 states", "All regions",
+     *   or the single selected label when only one is selected.
+     * - `'values'` - shows the selected option labels joined by commas, overflowing with an
+     *   ellipsis when too long for the button width.
+     *
+     * Only relevant when `enableMulti` is true. Has no effect when a custom
+     * `buttonTextRenderer` is supplied. App-wide default settable via `Picker.defaults`.
+     */
+    multiSelectButtonStyle?: 'summary' | 'values';
+
+    /**
+     * True to render a small selection-count badge to the left of the trigger button text in
+     * multi-select mode. Particularly useful with `multiSelectButtonStyle: 'values'` to convey
+     * the total selection count even when the inline labels are truncated. Has no effect in
+     * single-select mode or when a custom `buttonTextRenderer` is supplied.
+     * App-wide default settable via `Picker.defaults`.
+     */
+    multiSelectShowCount?: boolean;
+
+    /**
      * Text shown on the trigger button when no value is selected. Defaults to a
      * pluralized form of `displayNoun` if provided (e.g. "States..."), or 'Select...'
      */
@@ -167,6 +188,12 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
     optionRenderer?: (opt: SelectOption, isSelected: boolean) => ReactNode;
 }
 
+/** App-wide overridable defaults for {@link Picker} - settable via `Picker.defaults`. */
+export interface PickerDefaults {
+    multiSelectButtonStyle?: 'summary' | 'values';
+    multiSelectShowCount?: boolean;
+}
+
 /**
  * An input control that presents its options in a popover dropdown, triggered by a button
  * displaying the current value or a summary. Supports single and multi-select modes.
@@ -178,9 +205,13 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
  * This component does not use react-select. It renders a simple, scrollable list of options
  * with check indicators, making it lightweight and easy to style.
  */
-export const [Picker, picker] = hoistCmp.withFactory<PickerProps>({
+export const [Picker, picker] = hoistCmp.withFactory<PickerProps, PickerDefaults>({
     displayName: 'Picker',
     className: 'xh-picker',
+    defaults: {
+        multiSelectButtonStyle: 'summary',
+        multiSelectShowCount: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, PickerModel);
     }
@@ -306,7 +337,14 @@ class PickerModel extends HoistInputModel {
 
     getButtonText(): ReactNode {
         const {componentProps, internalOptions} = this,
-            {buttonTextRenderer, placeholder, displayNoun} = componentProps,
+            {defaults} = Picker,
+            {
+                buttonTextRenderer,
+                placeholder,
+                displayNoun,
+                multiSelectButtonStyle = defaults.multiSelectButtonStyle,
+                multiSelectShowCount = defaults.multiSelectShowCount
+            } = componentProps,
             selectedOpts = this.getSelectedOptions();
 
         if (buttonTextRenderer) {
@@ -323,14 +361,38 @@ class PickerModel extends HoistInputModel {
             return selectedOpts[0].label;
         }
 
-        // Multi mode summary
-        const selCount = selectedOpts.length,
-            totalCount = internalOptions.length;
+        // Multi mode body text - either inline values or summary
+        let text: string;
+        if (multiSelectButtonStyle === 'values') {
+            text = selectedOpts.map(o => o.label).join(', ');
+        } else {
+            const selCount = selectedOpts.length,
+                totalCount = internalOptions.length;
+            if (selCount === totalCount) {
+                text = displayNoun ? `All ${pluralize(displayNoun)}` : 'All selected';
+            } else if (selCount === 1) {
+                text = selectedOpts[0].label;
+            } else {
+                text = displayNoun
+                    ? `${selCount} ${pluralize(displayNoun)}`
+                    : `${selCount} selected`;
+            }
+        }
 
-        if (selCount === totalCount)
-            return displayNoun ? `All ${pluralize(displayNoun)}` : 'All selected';
-        if (selCount === 1) return selectedOpts[0].label;
-        return displayNoun ? `${selCount} ${pluralize(displayNoun)}` : `${selCount} selected`;
+        if (multiSelectShowCount) {
+            return hbox({
+                className: 'xh-picker__multi-text',
+                alignItems: 'center',
+                items: [
+                    div({
+                        className: 'xh-picker__count',
+                        item: selectedOpts.length.toString()
+                    }),
+                    span({className: 'xh-picker__multi-text-label', item: text})
+                ]
+            });
+        }
+        return text;
     }
 
     //-------------------------------

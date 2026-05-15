@@ -32,7 +32,7 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -54,12 +54,14 @@ import {
     HoistAppModel,
     HoistService,
     HoistServiceClass,
+    InitContext,
     HoistUser,
     MessageSpec,
     PageState,
     PlainObject,
     ReloadAppOptions,
     SizingMode,
+    Some,
     TaskObserver,
     Theme,
     ToastSpec,
@@ -86,6 +88,8 @@ declare const xhIsDevelopmentMode: boolean;
  * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
+ *
+ * @mcpHint singleton (XH) providing global framework services
  */
 export class XHApi {
     /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
@@ -170,14 +174,6 @@ export class XHApi {
      */
     get appLoadObserver(): TaskObserver {
         return this.acm.appLoadObserver;
-    }
-
-    get appLoadModel(): TaskObserver {
-        apiDeprecated('XH.appLoadModel', {
-            v: 'v82',
-            msg: 'Use XH.appLoadObserver instead.'
-        });
-        return this.appLoadObserver;
     }
 
     /** Root level application model. */
@@ -768,10 +764,16 @@ export class XHApi {
      * Applications must choose a unique name of the form xxxService to avoid naming collisions.
      * If naming collisions are detected, an error will be thrown.
      *
-     * @param serviceClasses - classes extending HoistService
+     * @param serviceClasses - one or more classes extending HoistService.
+     * @param ctx - init context for the current phase (typically the `ctx` passed to
+     *      `AppModel.initAsync()`). Forwarded to each service's `initAsync()` so spans created
+     *      during init nest under this phase's root span.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    async installServicesAsync(
+        serviceClasses: Some<HoistServiceClass>,
+        ctx: InitContext
+    ): Promise<void> {
+        return installServicesAsync(serviceClasses, ctx);
     }
 
     /**

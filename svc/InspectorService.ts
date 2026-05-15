@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, managed, persist, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, managed, persist, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -61,7 +61,7 @@ export class InspectorService extends HoistService {
     private _syncRun: number = 0;
     private _idToSyncRun = new Map<string, number>();
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Ensure deactivated if not enabled - active could be persisted to true.
         if (!this.enabled) {
             this.deactivate();

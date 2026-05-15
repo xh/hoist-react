@@ -17,6 +17,7 @@ module.exports = defineConfig([
         'node_modules/**/*',
         'mcp/**/*',
         'bin/**/*',
-        'docs/planning/**/*'
+        'docs/planning/**/*',
+        'kit/golden-layout/impl/**/*'
     ])
 ]);
