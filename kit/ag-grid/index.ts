@@ -67,7 +67,7 @@ export type {
 } from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 
-const MIN_VERSION = '35.0.0';
+const MIN_VERSION = '35.3.0';
 const MAX_VERSION = '35.*.*';
 
 /**
