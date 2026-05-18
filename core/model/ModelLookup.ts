@@ -33,16 +33,16 @@ export class ModelLookup {
      * Lookup a model in the context hierarchy.
      * @returns model, or null if no matching model found.
      *
-     * All MobX bookkeeping lives here: the recursive walk runs inside `untracked()` and
-     * accumulates slots into `trackKeys`. On a match anywhere in the chain, the walk clears
-     * `trackKeys` and pushes only the matched slot — preventing "closer" nullish slots from
-     * preempting an already-resolved model. With no match anywhere, `trackKeys` ends up with
-     * every nullish accessor we walked past, catching late arrivals.
+     * Walk runs inside `untracked()`; we then tracked-read whatever `trackKeys` ended up
+     * with — the matched slot if any level resolved, or every nullish accessor we walked
+     * past if not (so a late arrival triggers re-resolve).
      */
     lookupModel(selector: ModelSelector): HoistModel {
         const trackKeys: TrackKeys = {value: []};
         const result = untracked(() => this.lookupModelInternal(selector, trackKeys));
-        for (const [model, key] of trackKeys.value) void (model as any)[key];
+        for (const [model, key] of trackKeys.value) {
+            void (model as any)[key];
+        }
         return result;
     }
 
@@ -58,8 +58,6 @@ export class ModelLookup {
             return model;
         }
 
-        // Scan this model's own props (plain class fields like `@managed grid = new GridModel()`)
-        // and accessor-defined fields (TC39 `@observable.ref accessor chartModel: ChartModel`).
         if (modeIsDefault) {
             const match = this.findChildMatch(model, selector, trackKeys);
             if (match) return match;
@@ -68,6 +66,8 @@ export class ModelLookup {
         return parent?.lookupModelInternal(selector, trackKeys) ?? null;
     }
 
+    // Scan this model's own props (plain class fields like `@managed grid = new GridModel()`)
+    // and accessor-defined fields (TC39 `@observable.ref accessor chartModel: ChartModel`).
     private findChildMatch(
         model: HoistModel,
         selector: ModelSelector,
@@ -81,6 +81,7 @@ export class ModelLookup {
         }
 
         // 2) TC39 accessor observables on the prototype chain — invisible to `find` above.
+        // If we find one, track and return, otherwise track the null slots we encountered
         for (
             let proto = Object.getPrototypeOf(model);
             proto && proto !== HoistModel.prototype && proto !== Object.prototype;
