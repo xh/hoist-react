@@ -20,6 +20,8 @@
   where the eager default would reformat the user's text mid-typing.
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
+* Desktop `Select` no longer hijacks `Home`/`End` keys, allowing native caret movement in the
+  input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
 
 ### ⚙️ Technical
 
@@ -36,6 +38,7 @@
     * Note, applications with previously required `"jquery": "3.x"` pin in package.json
       `resolutions` should now be able to remove that pin.
 * semver `7.7 → 7.8`
+* react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
 
 ## 85.0.0 - 2020-04-30
 
