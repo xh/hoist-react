@@ -6,17 +6,21 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, hbox, input} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Some, uses} from '@xh/hoist/core';
+import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {dropzone} from '@xh/hoist/kit/react-dropzone';
+import {Accept, dropzone} from '@xh/hoist/kit/react-dropzone';
 import classNames from 'classnames';
 import {ReactNode} from 'react';
 import './FileChooser.scss';
 import {FileChooserModel} from './FileChooserModel';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
-    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
-    accept?: Some<string>;
+    /**
+     * File types to accept, keyed by MIME type with arrays of file extensions as values
+     * (e.g. `{'application/pdf': ['.pdf'], 'application/msword': ['.doc', '.docx']}`).
+     * See react-dropzone docs for details.
+     */
+    accept?: Accept;
 
     /** True (default) to allow multiple files in a single upload. */
     enableMulti?: boolean;
@@ -26,6 +30,13 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
      * for selection of multiple files within the OS pop-up window.  Defaults to enableMulti.
      */
     enableAddMulti?: boolean;
+
+    /**
+     * Maximum number of files that can be selected. Defaults to 0 (no limit). Note that
+     * react-dropzone enforces this only on a per-drop/per-browse basis - it does not account
+     * for files already in the selection.
+     */
+    maxFiles?: number;
 
     /** Maximum accepted file size in bytes. */
     maxSize?: number;
@@ -66,6 +77,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         {
             model,
             accept,
+            maxFiles,
             maxSize,
             minSize,
             targetText = 'Drag and drop files here, or click to browse...',
@@ -85,14 +97,12 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             items: [
                 dropzone({
                     accept,
+                    maxFiles,
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,
-                    children: ({getRootProps, getInputProps, isDragActive, draggedFiles}) => {
-                        const draggedCount = draggedFiles.length,
-                            targetTxt = isDragActive
-                                ? `Drop to add ${fileNoun(draggedCount)}.`
-                                : targetText,
+                    children: ({getRootProps, getInputProps, isDragActive}) => {
+                        const targetTxt = isDragActive ? 'Drop to add files.' : targetText,
                             rejectTxt =
                                 lastRejectedCount && !isDragActive
                                     ? `Unable to accept ${fileNoun(lastRejectedCount)} for upload.`
