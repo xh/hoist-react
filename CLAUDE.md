@@ -65,23 +65,31 @@ exact signatures, decorators, and member listings.
 
 ### GitHub MCP Server (opt-in)
 
-A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the official
-`github-mcp-server` image. This server is configured in `.mcp.json` but **not enabled by default**
-— it requires Docker and a GitHub token, which not all developers will have running. If you work
-with GitHub issues, PRs, or code search, enabling it is recommended. To do so:
+A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the
+official `github-mcp-server` image. Configured in `.mcp.json` but **not enabled by default** —
+it requires Docker and an authenticated GitHub CLI, which not every developer keeps running.
 
-1. Install and start **Docker**
-2. Set the **`GITHUB_TOKEN`** environment variable to a GitHub Personal Access Token
-3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json`:
+**To enable:**
+
+1. Install and start **Docker**.
+2. Install the **GitHub CLI** (`brew install gh`) and authenticate with `gh auth login`. The
+   server invokes `gh auth token` at startup to fetch a token from the macOS Keychain (or
+   `gh`'s credential store on other platforms), so no plaintext token needs to live in your
+   shell environment.
+3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json` (local settings
+   merge with the shared `settings.json` — enabling locally does not affect other developers):
    ```json
    {
      "enabledMcpjsonServers": ["hoist-react", "github"]
    }
    ```
 
-Local settings merge with the shared `settings.json`, so enabling it locally does not affect other
-developers. If Docker is not running or the token is not set when the server is enabled, Claude
-Code may show errors on startup — remove `"github"` from your local settings to resolve.
+If Docker is not running or `gh` is not authenticated when the server is enabled, Claude Code
+may show errors on startup — remove `"github"` from your local settings to resolve.
+
+**Fallback when not enabled:** The `gh` CLI provides functionally equivalent access to the same
+operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
+crafting raw `curl` calls to the GitHub API.
 
 ### JetBrains IntelliJ MCP Server (opt-in)
 
