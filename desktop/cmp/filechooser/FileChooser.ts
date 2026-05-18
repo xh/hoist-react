@@ -31,6 +31,13 @@ export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps
      */
     enableAddMulti?: boolean;
 
+    /**
+     * Maximum number of files that can be selected. Defaults to 0 (no limit). Note that
+     * react-dropzone enforces this only on a per-drop/per-browse basis - it does not account
+     * for files already in the selection.
+     */
+    maxFiles?: number;
+
     /** Maximum accepted file size in bytes. */
     maxSize?: number;
 
@@ -70,6 +77,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         {
             model,
             accept,
+            maxFiles,
             maxSize,
             minSize,
             targetText = 'Drag and drop files here, or click to browse...',
@@ -89,6 +97,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             items: [
                 dropzone({
                     accept,
+                    maxFiles,
                     maxSize,
                     minSize,
                     multiple: enableAddMulti,

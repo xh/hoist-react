@@ -14,6 +14,10 @@
   [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
   for the new format.
 
+### 🎁 New Features
+
+* `FileChooser` now supports a `maxFiles` prop. See [#3570](https://github.com/xh/hoist-react/issues/3570).
+
 ### 🐞 Bug Fixes
 
 * Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
