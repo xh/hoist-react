@@ -9,6 +9,10 @@
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
   existed only to support the above.
+* `FileChooser.accept` now takes a react-dropzone `Accept` object keyed by MIME type
+  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
+  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
+  for the new format.
 
 ### 🐞 Bug Fixes
 
@@ -36,6 +40,7 @@
     * Note, applications with previously required `"jquery": "3.x"` pin in package.json
       `resolutions` should now be able to remove that pin.
 * semver `7.7 → 7.8`
+* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
 
 ## 85.0.0 - 2020-04-30
 
