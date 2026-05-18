@@ -591,6 +591,26 @@ class SelectInputModel extends HoistInputModel {
         return this._valueContainerCmp;
     }
 
+    // Let Home/End move the caret when there's text to navigate. See #3930.
+    _inputCmp = null;
+    getInputCmp() {
+        if (!this._inputCmp) {
+            this._inputCmp = props =>
+                createElement(components.Input, {
+                    ...props,
+                    onKeyDown: e => {
+                        if (
+                            (e.key === 'Home' || e.key === 'End') &&
+                            (e.currentTarget as HTMLInputElement).value
+                        ) {
+                            e.stopPropagation();
+                        }
+                    }
+                });
+        }
+        return this._inputCmp;
+    }
+
     _menuCmp = null;
     getMenuCmp() {
         if (!this._menuCmp) {
@@ -717,6 +737,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
+                Input: model.getInputCmp(),
                 Menu: model.getMenuCmp(),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
