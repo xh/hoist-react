@@ -14,10 +14,8 @@ import WindowedSelect from 'react-windowed-select';
 
 export {Select, AsyncSelect, AsyncCreatable, Creatable, WindowedSelect};
 
-// v5 of react-select is generic over Option/IsMulti/Group. Cast to ComponentType to keep our
-// element factories ergonomic and produce portable type declarations.
-export const reactSelect = elementFactory(Select as ComponentType),
-    reactCreatableSelect = elementFactory(Creatable as ComponentType),
-    reactAsyncSelect = elementFactory(AsyncSelect as ComponentType),
-    reactAsyncCreatableSelect = elementFactory(AsyncCreatable as ComponentType),
+export const reactSelect = elementFactory(Select),
+    reactCreatableSelect = elementFactory(Creatable),
+    reactAsyncSelect = elementFactory(AsyncSelect),
+    reactAsyncCreatableSelect = elementFactory(AsyncCreatable),
     reactWindowedSelect = elementFactory(WindowedSelect as ComponentType);
