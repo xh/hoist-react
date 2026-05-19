@@ -16,7 +16,8 @@ export class UniqueAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        const {newValue} = update;
-        return rows.length === 1 || isEqual(newValue, currAgg) ? newValue : null;
+        const {newValue, field} = update;
+        if (rows.length === 1 || isEqual(newValue, currAgg)) return newValue;
+        return this.aggregate(rows, field.name);
     }
 }
