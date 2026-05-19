@@ -20,6 +20,7 @@
   where the eager default would reformat the user's text mid-typing.
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
+* Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge → reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the cache could be transitioning. See [#4383](https://github.com/xh/hoist-react/issues/4383).
 
 ### ⚙️ Technical
 
