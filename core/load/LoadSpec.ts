@@ -2,42 +2,53 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {apiDeprecated} from '@xh/hoist/utils/js';
+import {Span} from '../Span';
 import {PlainObject} from '../types/Types';
 import {LoadSupport} from './';
 
 /**
- * Object describing a load/refresh request in Hoist.
+ * Configuration for a {@link LoadSpec} - the inputs callers may supply via
+ * {@link LoadSupport.loadAsync} when triggering a managed load.
  *
- * Instances of this class are created within the public APIs provided by {@link LoadSupport}
- * and are passed to subclass (i.e. app-level) implementations of `doLoadAsync()`.
- *
- * Application implementations of `doLoadAsync()` can consult this object's flags. Of particular
- * interest are {@link isStale} and {@link isObsolete}, which implementations can read after any
- * async calls return to determine if a newer, subsequent load has already been requested.
- *
- * In addition, `doLoadAsync()` implementations should typically pass along this object to any
- * calls they make to `loadAsync()` on other objects + all calls to {@link FetchService} APIs.
- *
- * Note that Hoist's exception handling and activity tracking will consult the {@link isAutoRefresh}
- * flag on specs passed to their calls to automatically adjust their behavior (e.g. not showing an
- * exception dialog on error, not tracking background refresh activity).
- *
+ * @see LoadSpec
  * @see LoadSupport
  */
-
 export type LoadSpecConfig = {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh?: boolean;
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh?: boolean;
-    /** Application specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Optional on input - the
+     * resulting `LoadSpec.meta` will default to an empty object when omitted.
+     */
     meta?: PlainObject;
+    /** Optional caller-provided span to use as the parent for spans within this load. */
+    span?: Span;
 };
 
+/**
+ * Immutable descriptor for a load/refresh request, passed to `doLoadAsync()` implementations.
+ *
+ * Instances are created automatically by {@link LoadSupport} when `loadAsync()`,
+ * `refreshAsync()`, or `autoRefreshAsync()` are called. Application code should not construct
+ * LoadSpec instances directly.
+ *
+ * Within `doLoadAsync()`, check {@link isStale} after any async call to determine if a newer
+ * load has already been requested - if so, return early to avoid applying outdated results.
+ * Check {@link isAutoRefresh} to adjust behavior for background refreshes (e.g. skip expensive
+ * operations, avoid user-facing error dialogs).
+ *
+ * Pass this object along to any nested `loadAsync()` calls and to all {@link FetchService}
+ * requests. Hoist's exception handling and activity tracking consult the LoadSpec to
+ * automatically suppress error dialogs and skip tracking for auto-refresh operations.
+ *
+ * @see LoadSupport
+ * @see HoistModel.doLoadAsync
+ */
 export class LoadSpec {
     /** True if triggered by a refresh request (automatic or user-driven). */
     isRefresh: boolean;
@@ -45,7 +56,11 @@ export class LoadSpec {
     /** True if triggered by an automatic refresh process. */
     isAutoRefresh: boolean;
 
-    /** Application specific information about the load request. */
+    /**
+     * Application-specific information about the load request. Always defined - defaults to an
+     * empty object when not provided by the caller, so consumers can read keys without a null
+     * check on `meta` itself.
+     */
     meta: PlainObject;
 
     /** Time the load started. */
@@ -56,6 +71,15 @@ export class LoadSpec {
 
     /** Owner of this object. */
     owner: LoadSupport;
+
+    /**
+     * Current trace span for work happening within this load. Used as parent by nested
+     * `FetchService` calls (via `loadSpec` propagation) and any nested `loadAsync` calls.
+     *
+     * Populated from `LoadSpecConfig.span` (set by callers). May be `null` if no caller
+     * context is provided.
+     */
+    span: Span;
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
@@ -83,11 +107,12 @@ export class LoadSpec {
      * {@link LoadSupport} class as part of its managed `loadAsync()` wrapper.
      */
     constructor(config: LoadSpecConfig, owner: LoadSupport) {
-        const {isRefresh, isAutoRefresh, meta} = config;
+        const {isRefresh, isAutoRefresh, meta, span} = config;
         this.isRefresh = !!(isRefresh || isAutoRefresh);
         this.isAutoRefresh = !!isAutoRefresh;
         this.meta = meta ?? {};
         this.owner = owner;
+        this.span = span ?? (config instanceof LoadSpec ? config.span : null);
 
         const last = owner.lastRequested;
         this.loadNumber = last ? last.loadNumber + 1 : 0;
@@ -96,9 +121,14 @@ export class LoadSpec {
         Object.freeze(this);
     }
 
-    /** @deprecated Applications should use `instanceof` instead of this property. */
-    get isLoadSpec(): boolean {
-        apiDeprecated('isLoadSpec', {v: '68', msg: 'Use `instanceof` instead.'});
-        return true;
+    /**
+     * Return a clone of this `LoadSpec` with `span` replaced.
+     * @internal
+     */
+    cloneWithSpan(span: Span): LoadSpec {
+        const ret = Object.create(Object.getPrototypeOf(this)) as LoadSpec;
+        Object.assign(ret, this, {span});
+        Object.freeze(ret);
+        return ret;
     }
 }

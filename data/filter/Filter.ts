@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Store} from '../Store';
-import {FilterSpec, FilterTestFn} from './Types';
+import {Store} from '@xh/hoist/data';
+import type {FilterSpec, FilterTestFn} from './Types';
 
 /**
  * Base class for Hoist data package Filters.
@@ -20,8 +20,8 @@ import {FilterSpec, FilterTestFn} from './Types';
  *      via an `AND` or `OR` operator.
  */
 export abstract class Filter {
-    get isFilter() {
-        return true;
+    static isFilter(obj: unknown): obj is Filter {
+        return obj instanceof Filter;
     }
 
     /**
@@ -36,4 +36,10 @@ export abstract class Filter {
 
     /** @returns a JSON serializable spec that can be used to persist and recreate this filter.*/
     abstract toJSON(): FilterSpec;
+
+    /** Remove FieldFilters targeting a specific field, or all FieldFilters if no field given. */
+    abstract removeFieldFilters(field?: string): Filter;
+
+    /** Remove FunctionFilter with a specific key, or all FunctionFilters if no key given. */
+    abstract removeFunctionFilters(key?: string): Filter;
 }

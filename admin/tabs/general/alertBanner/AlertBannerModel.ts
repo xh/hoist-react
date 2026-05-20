@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
@@ -106,7 +106,7 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async saveAsync() {
-        return this.saveInternalAsync().linkTo(this.loadModel).catchDefault();
+        return this.saveInternalAsync().linkTo(this.loadObserver).catchDefault();
     }
 
     resetForm() {
@@ -135,7 +135,7 @@ export class AlertBannerModel extends HoistModel {
     @action
     removePreset(preset: PlainObject) {
         XH.confirm({
-            message: 'Are you sure you wish to delete this preset?',
+            message: 'Are you sure you want to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
@@ -252,7 +252,7 @@ export class AlertBannerModel extends HoistModel {
             const finalConfirm = await XH.confirm({
                 message: fragment(
                     p('This change will modify a live banner for all users of this application.'),
-                    p('Are you sure you wish to do this?')
+                    p('Are you sure you want to do this?')
                 ),
                 confirmProps: {
                     text: 'Yes, modify the banner',

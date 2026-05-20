@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {
@@ -397,13 +397,13 @@ function fmtNumberString(
         ret += sign;
     }
 
-    if (isString(prefix)) {
+    if (isString(prefix) && prefix.trim()) {
         ret += prefix;
     }
 
     ret += str;
 
-    if (isString(label)) {
+    if (isString(label) && label.trim()) {
         if (labelCls) {
             ret += fmtSpan(label, {className: labelCls, asHtml});
         } else {

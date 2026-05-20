@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
 import {Property} from 'csstype';
@@ -61,13 +61,20 @@ export interface DefaultHoistProps<M extends HoistModel = HoistModel> extends Ho
 }
 
 /**
- * Props for Components that support standard Layout attributes
+ * Props for components that support standard layout attributes (margin, padding, dimensions,
+ * flex, alignment, overflow). Extends {@link LayoutProps} with test support and standard
+ * HTML div attributes.
  *
- * Most component will typically separate these props out and pass them along to another component
- * which also supports this interface.  Eventually, they should be passed to a Box class.
+ * Higher-level components accept these props and pass them through to a {@link Box} or
+ * {@link Frame} at the bottom of their render tree, where they are resolved to CSS styles.
+ *
+ * @see Box
+ * @see Frame
+ * @see LayoutProps
  */
 export interface BoxProps
-    extends LayoutProps,
+    extends
+        LayoutProps,
         TestSupportProps,
         Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'contextMenu'> {}
 
@@ -93,17 +100,17 @@ export interface TestSupportProps {
 }
 
 export interface LayoutProps {
-    margin?: string | number;
-    marginTop?: string | number;
-    marginRight?: string | number;
-    marginBottom?: string | number;
-    marginLeft?: string | number;
+    margin?: string | number | boolean;
+    marginTop?: string | number | boolean;
+    marginRight?: string | number | boolean;
+    marginBottom?: string | number | boolean;
+    marginLeft?: string | number | boolean;
 
-    padding?: string | number;
-    paddingTop?: string | number;
-    paddingRight?: string | number;
-    paddingBottom?: string | number;
-    paddingLeft?: string | number;
+    padding?: string | number | boolean;
+    paddingTop?: string | number | boolean;
+    paddingRight?: string | number | boolean;
+    paddingBottom?: string | number | boolean;
+    paddingLeft?: string | number | boolean;
 
     height?: string | number;
     minHeight?: string | number;
@@ -115,9 +122,11 @@ export interface LayoutProps {
     flex?: string | number;
     flexBasis?: string | number;
     flexDirection?: Property.FlexDirection;
+    flexFlow?: Property.FlexFlow;
     flexGrow?: string | number;
     flexShrink?: string | number;
     flexWrap?: Property.FlexWrap;
+    gap?: string | number | boolean;
 
     alignItems?: string;
     alignSelf?: string;
@@ -134,3 +143,8 @@ export interface LayoutProps {
     position?: Property.Position;
     display?: string;
 }
+
+/** LayoutProps after resolution by `getLayoutProps()`, with boolean values resolved. */
+export type ResolvedLayoutProps = {
+    [K in keyof LayoutProps]: Exclude<LayoutProps[K], boolean>;
+};

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -148,11 +148,8 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                             field: 'expires',
                             info: relativeTimestamp({
                                 timestamp: formModel.values.expires,
-                                options: {
-                                    allowFuture: true,
-                                    emptyResult:
-                                        'Set a date & time to automatically hide this banner.'
-                                }
+                                allowFuture: true,
+                                emptyResult: 'Set a date & time to automatically hide this banner.'
                             }),
                             item: dateInput({
                                 enableClear: true,

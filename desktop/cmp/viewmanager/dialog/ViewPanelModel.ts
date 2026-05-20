@@ -2,17 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {capitalize} from 'lodash';
+import {ReactNode} from 'react';
 import {ManageDialogModel} from './ManageDialogModel';
 import {makeObservable} from '@xh/hoist/mobx';
 import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
-import {ReactNode} from 'react';
 
 /**
  * Backing model for EditForm
@@ -27,7 +27,7 @@ export class ViewPanelModel extends HoistModel {
     }
 
     get loadTask(): TaskObserver {
-        return this.parent.loadModel;
+        return this.parent.loadObserver;
     }
 
     constructor(parent: ManageDialogModel) {
@@ -44,6 +44,7 @@ export class ViewPanelModel extends HoistModel {
                     const {formModel} = this;
                     formModel.init({
                         ...view,
+                        visibility: view.isShared ? 'shared' : view.isGlobal ? 'global' : 'private',
                         owner: view.owner ?? capitalize(parent.viewManagerModel.globalDisplayName)
                     });
                     formModel.readonly = !view.isEditable;
@@ -55,22 +56,44 @@ export class ViewPanelModel extends HoistModel {
 
     async saveAsync() {
         const {parent, view, formModel} = this,
-            {name, group, description, isDefaultPinned, isShared} = formModel.getData(),
+            updates = formModel.getData(true),
             isValid = await formModel.validateAsync(),
-            isDirty = formModel.isDirty;
+            isDirty = formModel.isDirty,
+            visibilityField = formModel.fields.visibility;
 
         if (!isValid || !isDirty) return;
 
-        if (view.isOwned && view.isShared != isShared) {
-            const msg: ReactNode = !isShared
-                ? `Your ${view.typedName} will no longer be visible to all other ${XH.appName} users.`
-                : `Your ${view.typedName} will become visible to all other ${XH.appName} users.`;
-            const msgs = [msg, strong('Are you sure you want to proceed?')];
+        if (visibilityField.isDirty) {
+            const visibility = visibilityField.value;
+            updates.isShared = visibility === 'shared';
+            updates.isGlobal = visibility === 'global';
+
+            const msgs: ReactNode[] = [strong('Are you sure you want to proceed?')];
+            switch (visibility) {
+                case 'private':
+                    msgs.unshift(
+                        `Your ${view.typedName} will no longer be available to all other ${XH.appName} users.`
+                    );
+                    break;
+                case 'global':
+                    msgs.unshift(
+                        `Your ${view.typedName} will become globally visible to all other ${XH.appName} users.`
+                    );
+                    break;
+                case 'shared':
+                    view.isGlobal
+                        ? msgs.unshift(
+                              `Your ${view.typedName} will no longer be globally visible to all other ${XH.appName} users.`
+                          )
+                        : msgs.unshift(
+                              `Your ${view.typedName} will become available to all other ${XH.appName} users.`
+                          );
+            }
 
             const confirmed = await XH.confirm({
                 message: fragment(msgs.map(m => p(m))),
                 confirmProps: {
-                    text: 'Yes, update sharing',
+                    text: 'Yes, update visibility',
                     outlined: true,
                     autoFocus: false,
                     intent: 'primary'
@@ -79,13 +102,7 @@ export class ViewPanelModel extends HoistModel {
             if (!confirmed) return;
         }
 
-        await parent.updateAsync(view, {
-            name,
-            group,
-            description,
-            isShared,
-            isDefaultPinned
-        });
+        await parent.updateAsync(view, updates);
     }
 
     //------------------------
@@ -97,10 +114,11 @@ export class ViewPanelModel extends HoistModel {
                 {
                     name: 'name',
                     rules: [
-                        async ({value}) => {
+                        async ({value}, {visibility}) => {
                             return this.parent.viewManagerModel.validateViewNameAsync(
                                 value,
-                                this.view
+                                this.view,
+                                visibility === 'global'
                             );
                         }
                     ]
@@ -108,8 +126,7 @@ export class ViewPanelModel extends HoistModel {
                 {name: 'owner'},
                 {name: 'group'},
                 {name: 'description'},
-                {name: 'isShared'},
-                {name: 'isDefaultPinned'}
+                {name: 'visibility'}
             ]
         });
     }

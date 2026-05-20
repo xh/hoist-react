@@ -2,17 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
 
@@ -82,7 +83,7 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
     stepSize?: number;
 
     /** Alignment of entry text within control, default 'right'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /**
      * Text appended to the rendered value within control when not editing.
@@ -124,8 +125,7 @@ export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>
 class NumberInputModel extends HoistInputModel {
     override xhImpl = true;
 
-    constructor() {
-        super();
+    override onLinked() {
         throwIf(Math.log10(this.scaleFactor) % 1 !== 0, 'scaleFactor must be a factor of 10');
     }
 

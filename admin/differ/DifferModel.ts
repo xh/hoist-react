@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {ColumnRenderer, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
@@ -60,8 +60,14 @@ export class DifferModel extends HoistModel {
         recordsRequired: true
     };
 
+    /**
+     * All other configured appInstances URLs, excepting the current one.
+     * (Use of startsWith allows configs to end in trailing /)
+     */
     get remoteHosts(): string[] {
-        return XH.getConf('xhAppInstances').filter(it => it !== window.location.origin);
+        return XH.getConf('xhAppInstances', []).filter(
+            (it: string) => !it.startsWith(window.location.origin)
+        );
     }
 
     constructor({
@@ -82,6 +88,9 @@ export class DifferModel extends HoistModel {
         this.valueRenderer = valueRenderer ?? (v => (isNil(v) ? '' : v.value));
 
         this.url = entityName + 'DiffAdmin';
+
+        // Default to first available remote for comparison
+        this.remoteHost = this.remoteHosts[0];
 
         const rendererIsComplex = true;
         this.gridModel = new GridModel({
@@ -126,7 +135,7 @@ export class DifferModel extends HoistModel {
                     renderer: this.valueRenderer
                 }
             ],
-            contextMenu: [this.applyRemoteAction, '-', ...GridModel.defaultContextMenu]
+            contextMenu: [this.applyRemoteAction, '-', ...GridModel.defaults.contextMenu]
         });
 
         this.addReaction({
@@ -348,7 +357,7 @@ export class DifferModel extends HoistModel {
                 this.parentModel.gridModel.loadAsync();
                 this.detailModel.close();
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 

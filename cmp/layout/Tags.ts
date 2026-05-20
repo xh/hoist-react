@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
 import {Fragment} from 'react';
@@ -29,6 +29,7 @@ export const a = elementFactory('a');
 export const br = elementFactory('br');
 export const code = elementFactory('code');
 export const div = elementFactory('div');
+export const fieldset = elementFactory('fieldset');
 export const em = elementFactory('em');
 export const form = elementFactory('form');
 export const hr = elementFactory('hr');
@@ -37,6 +38,7 @@ export const h2 = elementFactory('h2');
 export const h3 = elementFactory('h3');
 export const h4 = elementFactory('h4');
 export const label = elementFactory('label');
+export const legend = elementFactory('legend');
 export const li = elementFactory('li');
 export const nav = elementFactory('nav');
 export const ol = elementFactory('ol');
@@ -52,3 +54,5 @@ export const th = elementFactory('th');
 export const thead = elementFactory('thead');
 export const tr = elementFactory('tr');
 export const ul = elementFactory('ul');
+export const details = elementFactory('details');
+export const summary = elementFactory('summary');

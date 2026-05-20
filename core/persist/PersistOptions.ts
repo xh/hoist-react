@@ -2,12 +2,24 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {DebounceSpec} from '../';
+import {Class} from 'type-fest';
+import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
+
+/**
+ * Built-in Hoist PersistenceProviders.
+ */
+export type PersistenceProviderType =
+    | 'pref'
+    | 'localStorage'
+    | 'sessionStorage'
+    | 'dashView'
+    | 'viewManager'
+    | 'custom';
 
 export interface PersistOptions {
     /** Dot delimited path to store state. */
@@ -17,11 +29,18 @@ export interface PersistOptions {
     debounce?: DebounceSpec;
 
     /**
-     * Type of PersistenceProvider to create. If not provided, defaulted based
-     * on the presence of `prefKey`, `localStorageKey`, `dashViewModel`, 'viewManagerModel',
-     * `getData` and `setData`.
+     * Delay (in ms) to wait after state has been read before listening for further state changes.
      */
-    type?: 'pref' | 'localStorage' | 'sessionStorage' | 'dashView' | 'viewManager' | 'custom';
+    settleTime?: number;
+
+    /**
+     * Type of PersistenceProvider to create. Specify as one of the built-in string types,
+     * or a subclass of PersistenceProvider.
+     *
+     * If not provided, defaulted to one of the built-in string types based on the presence of
+     * `prefKey`, `localStorageKey`, `dashViewModel`, 'viewManagerModel', or `getData/setData`.
+     */
+    type?: PersistenceProviderType | Class<PersistenceProvider, [PersistenceProviderConfig]>;
 
     /** Predefined Hoist application Preference key used to store state. */
     prefKey?: string;
@@ -40,13 +59,13 @@ export interface PersistOptions {
 
     /**
      *  Function returning blob of data to be used for reading state.
-     *  Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     *  Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     getData?: () => any;
 
     /**
      * Function to be used to write blob of data representing state.
-     * Ignored if `prefKey`, `localStorageKey` or `dashViewModel` are provided.
+     * Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     setData?: (data: object) => void;
 }

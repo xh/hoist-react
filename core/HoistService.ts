@@ -2,9 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from './';
+import {
+    HoistBase,
+    InitContext,
+    managed,
+    LoadSupport,
+    LoadSpec,
+    LoadSpecConfig,
+    Loadable,
+    PlainObject,
+    TaskObserver
+} from './';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -29,6 +39,8 @@ import {HoistBase, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '
  * Services extend `HoistBase` and can therefore leverage MobX-powered observables and reactions if
  * so desired. And while components should typically source their state from backing models, they
  * can also read and react to service state and call service APIs.
+ *
+ * @mcpHint base class for all application services
  */
 export class HoistService extends HoistBase implements Loadable {
     // Internal State
@@ -52,8 +64,10 @@ export class HoistService extends HoistBase implements Loadable {
      * Called by framework or application to initialize before application startup.
      * Throwing an exception from this method will typically block startup.
      * Service writers should take care to stifle and manage all non-fatal exceptions.
+     *
+     * @param ctx - init context
      */
-    async initAsync(): Promise<void> {}
+    async initAsync(ctx: InitContext): Promise<void> {}
 
     /**
      * Provides optional support for Hoist's approach to managed loading.
@@ -65,26 +79,33 @@ export class HoistService extends HoistBase implements Loadable {
     @managed
     loadSupport: LoadSupport;
 
-    get loadModel() {
-        return this.loadSupport?.loadModel;
+    get loadObserver(): TaskObserver {
+        return this.loadSupport?.loadObserver;
     }
+
     get lastLoadRequested() {
         return this.loadSupport?.lastLoadRequested;
     }
+
     get lastLoadCompleted() {
         return this.loadSupport?.lastLoadCompleted;
     }
+
     get lastLoadException() {
         return this.loadSupport?.lastLoadException;
     }
+
     async refreshAsync(meta?: PlainObject) {
         return this.loadSupport?.refreshAsync(meta);
     }
+
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
+
     async doLoadAsync(loadSpec: LoadSpec) {}
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 }

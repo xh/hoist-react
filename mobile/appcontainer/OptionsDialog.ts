@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -30,6 +30,7 @@ export const optionsDialog = hoistCmp.factory({
             title: `${XH.clientAppName} Options`,
             icon: Icon.options(),
             className: 'xh-options-dialog',
+            testId: 'xh-options-dialog',
             isOpen: true,
             item: [
                 mask({bind: loadTask, spinner: true}),
@@ -43,7 +44,8 @@ export const optionsDialog = hoistCmp.factory({
                             restoreDefaultsButton({
                                 intent: 'danger',
                                 minimal: false,
-                                className: 'xh-options-dialog__restore-defaults-btn'
+                                className: 'xh-options-dialog__restore-defaults-btn',
+                                testId: 'xh-options-restore-defaults-btn'
                             })
                         ]
                     })
@@ -54,12 +56,16 @@ export const optionsDialog = hoistCmp.factory({
                 button({
                     text: 'Cancel',
                     minimal: true,
+                    testId: 'xh-options-cancel-btn',
                     onClick: () => model.hide()
                 }),
                 button({
-                    text: 'Save',
+                    text: 'Apply',
                     icon: reloadRequired ? Icon.refresh() : Icon.check(),
+                    intent: 'primary',
+                    outlined: true,
                     disabled: !formModel.isDirty,
+                    testId: 'xh-options-save-btn',
                     onClick: () => model.saveAsync()
                 })
             ]

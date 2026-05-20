@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -14,9 +14,11 @@ export function installZoomoutGesture(Highcharts) {
     Highcharts.wrap(Highcharts.Chart.prototype, 'init', function (proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-        const {container} = this;
+        const {container} = this,
+            {chart} = this.options,
+            zoomType = chart.zooming?.type ?? chart.zoomType;
 
-        if (this.options.chart.zoomType != 'x') return;
+        if (zoomType != 'x') return;
 
         let selectFrom, selectTo, pixelDiff;
         Highcharts.addEvent(container, 'mousedown', e => {
@@ -30,7 +32,8 @@ export function installZoomoutGesture(Highcharts) {
 
         Highcharts.addEvent(this, 'selection', e => {
             if (pixelDiff < 0) {
-                this.zoom(); // call w/o arguments resets zoom
+                // `undefined`'s preserve defaults, last arg `false` disables animation
+                this.xAxis?.forEach(it => it.setExtremes(undefined, undefined, undefined, false));
                 e.preventDefault();
             }
         });

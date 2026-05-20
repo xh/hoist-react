@@ -2,15 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
+import {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch} from 'lodash';
+import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
 import {Store} from './Store';
 import {ValidationState} from './validation/ValidationState';
 import {RecordValidator} from './impl/RecordValidator';
 import {Field} from './Field';
+import equal from 'fast-deep-equal';
 
 /**
  * Wrapper object for each data element within a {@link Store}. Records must be assigned a unique ID
@@ -24,6 +26,8 @@ import {Field} from './Field';
  *
  * Records are intended to be created and managed internally by Store implementations and should
  * most not typically be constructed directly within application code.
+ *
+ * @mcpHint individual record within a Store
  */
 export class StoreRecord {
     readonly id: StoreRecordId;
@@ -71,8 +75,13 @@ export class StoreRecord {
     }
 
     /** True if the StoreRecord has been modified since it was last committed. */
-    get isModified(): boolean {
+    get isDirty(): boolean {
         return this.committedData && this.committedData !== this.data;
+    }
+
+    /** Alias for {@link StoreRecord.isDirty} */
+    get isModified(): boolean {
+        return this.isDirty;
     }
 
     /** False if the StoreRecord has been added or modified. */
@@ -147,9 +156,19 @@ export class StoreRecord {
         return this.validator?.errors ?? {};
     }
 
+    /** Map of field names to list of ValidationResults. */
+    get validationResults(): Record<string, ValidationResult[]> {
+        return this.validator?.validationResults ?? {};
+    }
+
     /** Array of all errors for this record. */
     get allErrors() {
         return flatMap(this.errors);
+    }
+
+    /** Array of all ValidationResults for this record. */
+    get allValidationResults(): ValidationResult[] {
+        return flatMap(this.validationResults);
     }
 
     /** Count of all validation errors for the record. */
@@ -180,6 +199,26 @@ export class StoreRecord {
     }
 
     /**
+     * Get a map of modified values only.
+     *
+     * If record has no modifications, this method will return null.
+     * If modifications are returned, the returned object will include id,
+     * for convenience.
+     */
+    getModifiedValues(): PlainObject {
+        if (!this.isModified) return null;
+
+        const {data, committedData} = this,
+            ret = pickBy(data, (v, k) => !equal(v, committedData[k]));
+        if (!isEmpty(ret)) {
+            ret.id = this.id;
+            return ret;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Construct a StoreRecord from a pre-processed `data` source object.
      *
      * Not typically called by applications directly - `Store` instances create `StoreRecord`s when
@@ -190,15 +229,7 @@ export class StoreRecord {
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {
-            id,
-            store,
-            data,
-            raw = null,
-            committedData = data,
-            parent,
-            isSummary = false
-        } = config;
+        const {id, store, raw, data, committedData, parent, isSummary} = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
@@ -212,7 +243,12 @@ export class StoreRecord {
         this.raw = raw;
         this.committedData = committedData;
         this.parentId = parent?.id;
-        this.treePath = parent ? [...parent.treePath, id] : [id];
+        /*
+         * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
+         * Each row's position in the hierarchy must be provided to the grid as an array of strings,
+         * representing the path to the row.
+         */
+        this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
         this.isSummary = isSummary;
     }
 

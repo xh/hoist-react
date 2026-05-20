@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {useCallback, useEffect} from 'react';
-import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
 import {hoistCmp} from '@xh/hoist/core';
 import {numberInput, NumberInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -17,6 +17,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type NumberEditorProps = EditorProps<NumberInputProps>;
 
+/** Numeric input inline cell editor with guards to reject non-numeric key presses. */
 export const [NumberEditor, numberEditor] = hoistCmp.withFactory<NumberEditorProps>({
     displayName: 'NumberEditor',
     className: 'xh-number-editor',

@@ -23,6 +23,11 @@
       & > .xh-panel {
         width: 100%;
         height: 100%;
+
+        // Additional padding on dialog panel's own header.
+        > .xh-panel-header {
+          padding: 10px;
+        }
       }
     }
   }

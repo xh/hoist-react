@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
@@ -14,8 +14,7 @@ import {castArray, filter, isEmpty, without} from 'lodash';
 import {Children, cloneElement, isValidElement} from 'react';
 
 export interface ButtonGroupInputProps
-    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>,
-        HoistInputProps {
+    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>, HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Defaults to false.
      * Does not apply when enableMulti: true.

@@ -2,9 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {SECONDS} from '@xh/hoist/utils/datetime';
+import {throwIf} from '@xh/hoist/utils/js';
 import {ViewManagerModel} from './ViewManagerModel';
 import {JsonBlob} from '@xh/hoist/svc';
 import {PlainObject, XH} from '@xh/hoist/core';
@@ -28,7 +29,10 @@ export class ViewInfo {
     /** User owning this view. Null if the view is global.*/
     readonly owner: string;
 
-    /** Is the owner making this view accessible to others? Always true for global views. */
+    /**
+     * True if the owner (which can be the current user) has made this view accessible to all other
+     * users. Note always `false` for global views, to better distinguish the two sharing models.
+     */
     readonly isShared: boolean;
 
     /** True if this view is global and visible to all users. */
@@ -36,12 +40,6 @@ export class ViewInfo {
 
     /** Optional group name used for bucketing this view in display. */
     readonly group: string;
-
-    /**
-     * Should this view be pinned by users by default?
-     * This value is intended to be used for global views only.
-     */
-    readonly isDefaultPinned: boolean;
 
     /**
      * Original meta-data on views associated JsonBlob.
@@ -57,6 +55,8 @@ export class ViewInfo {
     readonly model: ViewManagerModel;
 
     constructor(blob: JsonBlob, model: ViewManagerModel) {
+        throwIf(blob.type !== model.type, 'View type does not match ViewManager type.');
+
         this.token = blob.token;
         this.type = blob.type;
         this.name = blob.name;
@@ -66,7 +66,6 @@ export class ViewInfo {
         this.isGlobal = !this.owner;
 
         this.group = this.meta.group ?? null;
-        this.isDefaultPinned = !!(this.isGlobal && this.meta.isDefaultPinned);
         this.isShared = !!(!this.isGlobal && this.meta.isShared);
 
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
@@ -91,11 +90,13 @@ export class ViewInfo {
     /**
      * True if this view should appear on the users easy access menu.
      *
-     * This value is computed with the user persisted state along with the View's
-     * `defaultPinned` property.
+     * This value is computed with the user persisted state for the view.
+     *
+     * If the user has not set pinning state for the view, global views and
+     * owned views are pinned by default.
      */
     get isPinned(): boolean {
-        return this.isUserPinned ?? this.isDefaultPinned;
+        return this.isUserPinned ?? (this.isGlobal || this.isOwned);
     }
 
     /**

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
@@ -50,7 +50,7 @@ export class ColumnWidthCalculator {
         gridModel: GridModel,
         records: StoreRecord[],
         colId: string,
-        options: GridAutosizeOptions
+        options: Omit<GridAutosizeOptions, 'columns'>
     ) {
         const column = gridModel.findColumn(gridModel.columns, colId),
             {autosizeMinWidth, autosizeMaxWidth} = column;

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
@@ -14,6 +14,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type DateEditorProps = EditorProps<DateInputProps>;
 
+/** Date picker inline cell editor with calendar popover rendered within the grid viewport. */
 export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
     displayName: 'DateEditor',
     className: 'xh-date-editor',
@@ -23,19 +24,13 @@ export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
         // We need to render the day picker popover inside the grid viewport in order for
         // `stopEditingWhenCellsLoseFocus` to work properly - otherwise the day picker becomes
         // unusable due to the grid losing focus and stopping editing when clicking inside picker
-        // @ts-ignore -- private
-        const portalContainer = props.gridModel.agApi.gridBodyCtrl?.eBodyViewport;
-
-        warnIf(
-            !portalContainer,
-            'Could not find the grid body viewport for rendering DateEditor picker popover.'
-        );
+        const portalContainer = props.gridModel.bodyViewport;
+        warnIf(!portalContainer, 'Could not find the grid viewport for rendering DateEditor');
 
         props = {
             ...props,
             inputProps: {
                 rightElement: null,
-
                 enablePicker: !!portalContainer,
                 showPickerOnFocus: !!portalContainer,
                 portalContainer,

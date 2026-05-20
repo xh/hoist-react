@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps, useGridCellEditor} from '@ag-grid-community/react';
+import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
 import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
@@ -52,7 +52,7 @@ export function useInlineEditorModel(
             // Call the onCommit callback last - if provided by the app developer.
             // If app's onCommit invokes agParams.stopEditing() before onValueChange is called,
             // it will prevent the value change.
-            props.inputProps?.onCommit?.(value, oldValue);
+            inputProps?.onCommit?.(value, oldValue);
         }
     });
 }

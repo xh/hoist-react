@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
@@ -69,6 +69,14 @@ export interface FileChooserConf {
     emptyDisplayBrowseButton?: ButtonProps | boolean;
 }
 
+/**
+ * Model managing file selection state for a FileChooser component.
+ *
+ * Tracks selected files, supports add/remove/clear operations, and de-duplicates by filename.
+ * Includes a managed GridModel to display selected files with name and size columns.
+ *
+ * @see FileChooser
+ */
 export class FileChooserModel extends HoistModel {
     @observable.ref
     files: File[] = [];

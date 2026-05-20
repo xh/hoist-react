@@ -2,20 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {br, fragment} from '@xh/hoist/cmp/layout';
+import {isHoistException} from '@xh/hoist/exception';
 import {HoistBase, managed, XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {never, wait} from '@xh/hoist/promise';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, throwIf} from '@xh/hoist/utils/js';
-import {find, forEach, isEmpty, isObject, keys, pickBy, union} from 'lodash';
+import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
+import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
 import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
-export interface BaseOAuthClientConfig<S> {
+/**
+ * Base configuration shared by all OAuth client implementations. Extended by
+ * {@link MsalClientConfig} and {@link AuthZeroClientConfig} with provider-specific options.
+ *
+ * See the security package README (`security/README.md`) for authentication architecture
+ * and setup guidance.
+ *
+ * @see BaseOAuthClient
+ */
+export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
 
@@ -42,25 +56,16 @@ export interface BaseOAuthClientConfig<S> {
      * Governs an optional refresh timer that will work to keep the tokens fresh.
      *
      * A typical refresh will use the underlying provider cache, and should not result in
-     * network activity. However, if any token lifetime falls below`autoRefreshSkipCacheSecs`,
+     * network activity. However, if any token would expire before the next autoRefresh,
      * this client will force a call to the underlying provider to get the token.
      *
      * In order to allow aging tokens to be replaced in a timely manner, this value should be
      * significantly shorter than both the minimum token lifetime that will be
-     * returned by the underlying API and `autoRefreshSkipCacheSecs`.
+     * returned by the underlying API.
      *
      * Default is -1, disabling this behavior.
      */
     autoRefreshSecs?: number;
-
-    /**
-     * During auto-refresh, if the remaining lifetime for any token is below this threshold,
-     * force the provider to skip the local cache and go directly to the underlying provider for
-     * new tokens and refresh tokens.
-     *
-     * Default is -1, disabling this behavior.
-     */
-    autoRefreshSkipCacheSecs?: number;
 
     /**
      * Scopes to request - if any - beyond the core `['openid', 'email']` scopes, which
@@ -69,16 +74,33 @@ export interface BaseOAuthClientConfig<S> {
     idScopes?: string[];
 
     /**
-     * Optional map of access tokens to be loaded and maintained.
+     * Optional spec for access tokens to be loaded and maintained to support access to one or more
+     * different back-end resources, distinct from the core Hoist auth flow via ID token.
      *
-     * Map of code to a spec for an access token.  The code is app-determined and
-     * will simply be used to get the loaded token via tha getAccessToken() method. The
-     * spec is implementation specific, but will typically include scopes to be loaded
-     * for the access token and potentially other meta-data required by the underlying provider.
-     *
-     * Use this map to gain targeted access tokens for different back-end resources.
+     * Map of key to a spec for an access token. The key is an arbitrary, app-determined string
+     * used to retrieve the loaded token via {@link getAccessTokenAsync}. The spec is implementation
+     * specific, but will typically include scopes to be loaded for the access token and potentially
+     * other metadata required by the underlying provider.
      */
     accessTokens?: Record<string, S>;
+
+    /**
+     * True to allow this client to try to re-login interactively (via pop-up) if tokens begin
+     * failing to load due to specific provider exceptions indicating user interaction is required.
+     * This can happen, for example, if a token expires and the refresh token is expired or
+     * invalidated during the lifetime of the client.  Default is false and retry will not be
+     * attempted.
+     */
+    reloginEnabled?: boolean;
+
+    /**
+     * Maximum time for (interactive) re-login.
+     *
+     * Set to a reasonably fixed amount of time, to allow user to type in password and complete
+     * MFA, but not so long as to allow a problematic build-up of application requests.
+     * Default 60 seconds;
+     */
+    reloginTimeoutSecs?: number;
 }
 
 /**
@@ -86,13 +108,15 @@ export interface BaseOAuthClientConfig<S> {
  * suitable concrete implementation to power a client-side OauthService. See `MsalClient` and
  * `AuthZeroClient`
  *
- * Initialize such a service and this client within the `preAuthInitAsync()` lifecycle method of
- * `AppModel` to use the tokens it acquires to authenticate with the Hoist server. (Note this
- * requires a suitable server-side `AuthenticationService` implementation to validate the token and
- * actually resolve the user.) On init, the client implementation will initiate a pop-up or redirect
- * flow as necessary.
+ * Initialize such a service and this client within an app's primary {@link HoistAuthModel} to use
+ * the tokens it acquires to authenticate with the Hoist server. (Note this requires a suitable
+ * server-side `AuthenticationService` implementation to validate the token and actually resolve
+ * the user.) On init, the client impl will initiate a pop-up or redirect flow as necessary.
  */
-export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> extends HoistBase {
+export abstract class BaseOAuthClient<
+    C extends BaseOAuthClientConfig<S>,
+    S extends AccessTokenSpec
+> extends HoistBase {
     /** Config loaded from UI server + init method. */
     protected config: C;
 
@@ -105,6 +129,8 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     @managed private timer: Timer;
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
+    private pendingRelogin: Promise<void> = null;
+    private lastRelogin: {started: number; completed: number};
 
     //------------------------
     // Public API
@@ -118,26 +144,36 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
             redirectUrl: 'APP_BASE_URL',
             postLogoutRedirectUrl: 'APP_BASE_URL',
             autoRefreshSecs: -1,
-            autoRefreshSkipCacheSecs: -1,
+            reloginEnabled: false,
+            reloginTimeoutSecs: 60,
             ...config
         };
         throwIf(!config.clientId, 'Missing OAuth clientId. Please review your configuration.');
 
         this.idScopes = union(['openid', 'email'], config.idScopes);
-        this.accessSpecs = this.config.accessTokens;
+        this.accessSpecs = this.config.accessTokens ?? {};
     }
 
     /**
      * Main entry point for this object.
      */
     async initAsync(): Promise<void> {
-        const tokens = await this.doInitAsync();
-        this.logDebug('Successfully initialized with following tokens:');
-        this.logTokensDebug(tokens);
-        if (this.config.autoRefreshSecs > 0) {
-            this.timer = Timer.create({
-                runFn: async () => this.onTimerAsync(),
-                interval: this.TIMER_INTERVAL
+        try {
+            const tokens = await this.doInitAsync();
+            this.logDebug('Successfully initialized with following tokens:');
+            this.logTokensDebug(tokens);
+            if (this.config.autoRefreshSecs > 0) {
+                this.timer = Timer.create({
+                    runFn: async () => this.onTimerAsync(),
+                    interval: this.TIMER_INTERVAL
+                });
+            }
+        } catch (e) {
+            if (isHoistException(e)) throw e;
+            throw XH.exception({
+                name: 'Auth Failed',
+                message: 'Authentication has failed.',
+                cause: e
             });
         }
     }
@@ -153,29 +189,32 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        await this.doLogoutAsync();
         this.setSelectedUsername(null);
+        await this.doLogoutAsync();
     }
 
     /**
      * Get an ID token.
      */
     async getIdTokenAsync(): Promise<Token> {
-        return this.fetchIdTokenSafeAsync(true);
+        return this.getWithRetry(() => this.fetchIdTokenSafeAsync(true));
     }
 
     /**
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        return this.fetchAccessTokenAsync(this.accessSpecs[key], true);
+        const spec = this.accessSpecs[key];
+        if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
+
+        return this.getWithRetry(() => this.fetchAccessTokenAsync(spec, true));
     }
 
     /**
-     * Get all available tokens.
+     * Get all configured tokens.
      */
-    async getAllTokensAsync(): Promise<TokenMap> {
-        return this.fetchAllTokensAsync(true);
+    async getAllTokensAsync(opts?: {eagerOnly?: boolean; useCache?: boolean}): Promise<TokenMap> {
+        return this.getWithRetry(() => this.fetchAllTokensAsync(opts));
     }
 
     /**
@@ -211,6 +250,8 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
 
     protected abstract doLogoutAsync(): Promise<void>;
 
+    protected abstract interactiveLoginNeeded(exception: unknown): boolean;
+
     //---------------------------------------
     // Implementation
     //---------------------------------------
@@ -229,7 +270,9 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     protected get baseUrl() {
-        return `${window.location.origin}/${XH.clientAppCode}/`;
+        const {origin, pathname} = window.location,
+            firstSegment = head(compact(pathname.split('/')));
+        return firstSegment ? `${origin}/${firstSegment}/` : `${origin}/`;
     }
 
     protected get blankUrl() {
@@ -285,12 +328,53 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         window.history.replaceState(null, '', pathname + search);
     }
 
-    protected async fetchAllTokensAsync(useCache = true): Promise<TokenMap> {
-        const ret: TokenMap = {},
-            {accessSpecs} = this;
-        for (const key of keys(accessSpecs)) {
-            ret[key] = await this.fetchAccessTokenAsync(accessSpecs[key], useCache);
-        }
+    /** Call after requesting the provider library redirect the user away for auth. */
+    protected async maskAfterRedirectAsync() {
+        // We expect the tab to unload momentarily and be redirected to the provider's login page.
+        // Wait here to ensure we mask the app while the browser processes the redirect...
+        await wait(10 * SECONDS);
+
+        // ...but also handle an observed edge case where the browser decided to open a new tab
+        // instead of redirecting the current one (https://github.com/xh/hoist-react/issues/3899).
+        // Show message below if/when user swaps back to the original tab, vs. endless spinner.
+        await XH.alert({
+            title: 'Auth / Redirect Error',
+            message: fragment(
+                'Authentication did not complete as expected / tab was not redirected.',
+                br(),
+                br(),
+                'Please click below or refresh this tab in your browser to try again.'
+            ),
+            confirmProps: {text: 'Reload', icon: Icon.refresh(), intent: 'primary', minimal: false}
+        });
+
+        XH.reloadApp();
+
+        // Ensure stale init does not progress - this tab should *really* be on its way out now!
+        await never();
+    }
+
+    protected async fetchAllTokensAsync(opts?: {
+        eagerOnly?: boolean;
+        useCache?: boolean;
+    }): Promise<TokenMap> {
+        const eagerOnly = opts?.eagerOnly ?? false,
+            useCache = opts?.useCache ?? true,
+            accessSpecs = eagerOnly
+                ? pickBy(this.accessSpecs, spec => spec.fetchMode !== 'lazy') // specs are eager by default - opt-in to lazy
+                : this.accessSpecs,
+            ret: TokenMap = {};
+
+        await Promise.allSettled(
+            map(accessSpecs, async (spec, key) => {
+                try {
+                    ret[key] = await this.fetchAccessTokenAsync(spec, useCache);
+                } catch (e) {
+                    XH.handleException(e, {logOnServer: true, showAlert: false});
+                }
+            })
+        );
+
         // Do this after getting any access tokens --which can also populate the idToken cache!
         ret.id = await this.fetchIdTokenSafeAsync(useCache);
 
@@ -304,7 +388,10 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
     }
 
     protected setLocalStorage(key: string, value: any) {
-        if (value == null) window.localStorage.removeItem(value);
+        if (value == null) {
+            window.localStorage.removeItem(key);
+            return;
+        }
         if (isObject(value)) value = JSON.stringify(value);
         window.localStorage.setItem(key, value);
     }
@@ -318,7 +405,7 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4206
         // Protect ourselves from this, without losing benefits of local cache.
         let ret = await this.fetchIdTokenAsync(useCache);
-        if (useCache && ret.expiresWithin(ONE_MINUTE)) {
+        if (useCache && ret.expiresWithin(1 * MINUTES)) {
             this.logDebug('Stale ID Token loaded from the cache, reloading without cache.');
             ret = await this.fetchIdTokenAsync(false);
         }
@@ -328,26 +415,79 @@ export abstract class BaseOAuthClient<C extends BaseOAuthClientConfig<S>, S> ext
         return ret;
     }
 
+    private async getWithRetry<V>(fn: () => Promise<V>): Promise<V> {
+        const {reloginEnabled} = this.config,
+            {lastRelogin, pendingRelogin} = this;
+
+        // 0) Simple case: either no relogin possible, OR we are already working on a relogin,
+        // and will take just a single shot when it completes.
+        if (!reloginEnabled || !olderThan(lastRelogin?.completed, 1 * MINUTES) || pendingRelogin) {
+            await pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
+        }
+
+        // 1) Complex case:  Take potentially two tries.
+        try {
+            return await fn();
+        } catch (e) {
+            if (!this.interactiveLoginNeeded(e)) throw e;
+            // Be sure to create and join on just a single shared loginTask.
+            this.pendingRelogin ??= this.getLoginTask().finally(() => (this.pendingRelogin = null));
+            await this.pendingRelogin;
+            return fn().catch(e => this.rethrowWrapped(e));
+        }
+    }
+
+    private rethrowWrapped(e: unknown): never {
+        if (!this.interactiveLoginNeeded(e)) throw e;
+
+        throw XH.exception({
+            name: 'Auth Expired',
+            message: 'Your authentication has expired. Please reload the app to login again.',
+            cause: e
+        });
+    }
+
+    // Return a highly managed task that will attempt to relogin the user, and never throw.
+    private getLoginTask(): Promise<void> {
+        let started: number = Date.now(),
+            completed: number;
+        return this.doLoginPopupAsync()
+            .timeout(this.config.reloginTimeoutSecs * SECONDS)
+            .finally(() => {
+                completed = Date.now();
+                this.lastRelogin = XH.appContainerModel.lastRelogin = {started, completed};
+            })
+            .then(() => {
+                XH.track({
+                    category: 'App',
+                    message: 'Interactive reauthentication succeeded',
+                    elapsed: completed - started
+                });
+            })
+            .catch(e => {
+                // Should there be a non-auth requiring way to communicate this to server?
+                logError('Failed to reauthenticate', e);
+            });
+    }
+
     @action
     private async onTimerAsync(): Promise<void> {
         const {config, lastRefreshAttempt} = this,
             refreshSecs = config.autoRefreshSecs * SECONDS,
-            skipCacheSecs = config.autoRefreshSkipCacheSecs * SECONDS;
+            skipCacheSecs = refreshSecs + 5 * SECONDS;
 
         if (olderThan(lastRefreshAttempt, refreshSecs)) {
             this.lastRefreshAttempt = Date.now();
             try {
                 this.logDebug('Refreshing all tokens:');
                 let tokens = await this.fetchAllTokensAsync(),
-                    aging = pickBy(
-                        tokens,
-                        v => skipCacheSecs > 0 && v.expiresWithin(skipCacheSecs)
-                    );
+                    aging = pickBy(tokens, v => v.expiresWithin(skipCacheSecs));
                 if (!isEmpty(aging)) {
                     this.logDebug(
                         `Tokens [${keys(aging).join(', ')}] have < ${skipCacheSecs}s remaining, reloading without cache.`
                     );
-                    tokens = await this.fetchAllTokensAsync(false);
+                    tokens = await this.fetchAllTokensAsync({useCache: false});
                 }
                 this.logTokensDebug(tokens);
             } catch (e) {

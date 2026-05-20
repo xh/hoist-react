@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -25,16 +25,23 @@ export class UserPreferenceModel extends HoistModel {
             hidden = true;
 
         this.gridModel = new RestGridModel({
-            readonly: AppModel.readonly,
-            persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
+            // Core config
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('user-prefs')},
+            filterFields: ['name', 'username'],
+            groupBy: 'groupName',
+            persistWith: {localStorageKey: 'xhAdminUserPreferenceState'},
+            readonly: AppModel.readonly,
             selModel: 'multiple',
+            sortBy: 'name',
+            unit: 'user preference',
+            // Store + fields
             store: {
                 url: 'rest/userPreferenceAdmin',
                 reloadLookupsOnLoad: true,
-                fieldDefaults: {disableXssProtection: true},
+                fieldDefaults: {enableXssProtection: false},
                 fields: [
                     {
                         ...(Col.name.field as FieldSpec),
@@ -55,10 +62,7 @@ export class UserPreferenceModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
-            sortBy: 'name',
-            groupBy: 'groupName',
-            unit: 'user preference',
-            filterFields: ['name', 'username'],
+            // Cols + editors
             columns: [
                 {...Col.name},
                 {...Col.type},

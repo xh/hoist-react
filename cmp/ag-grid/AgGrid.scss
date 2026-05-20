@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @mixin group-border($side) {
@@ -25,6 +25,12 @@
   .ag-floating-top,
   .ag-floating-bottom {
     overflow-y: hidden !important;
+  }
+
+  // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
+  // conflicts with the drag management in the Navigator.
+  .ag-center-cols-viewport {
+    overscroll-behavior-x: none;
   }
 }
 
@@ -440,7 +446,7 @@
   }
 
   // Set Blueprint controls - specifically checkboxes - to match grid size.
-  .bp5-control .bp5-control-indicator {
+  .bp6-control .bp6-control-indicator {
     font-size: 1em;
   }
 }

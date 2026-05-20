@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
@@ -15,14 +15,14 @@ import {
     XH
 } from '@xh/hoist/core';
 import {
-    combineValueFilters,
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
-    parseFilter,
-    Store,
-    View,
-    withFilterByTypes
+    FilterBindTarget,
+    FilterValueSource,
+    isFilterValueSource,
+    parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -32,6 +32,8 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     cloneDeep,
     compact,
+    every,
+    first,
     flatMap,
     flatten,
     forEach,
@@ -41,6 +43,7 @@ import {
     isFinite,
     isObject,
     isString,
+    map,
     partition,
     sortBy,
     uniq,
@@ -52,6 +55,12 @@ import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChoo
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
+/**
+ * Configuration for a {@link FilterChooserModel} - an interactive, tokenized filter builder
+ * that binds to a {@link Store} or Cube {@link View}.
+ *
+ * @see FilterChooserModel
+ */
 export interface FilterChooserConfig {
     /**
      * Specifies the fields this model supports for filtering and customizes how their available values
@@ -64,17 +73,26 @@ export interface FilterChooserConfig {
     fieldSpecDefaults?: Partial<FilterChooserFieldSpecConfig>;
 
     /**
-     * Store or cube View that should actually be filtered as this model's value changes.
-     * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
-     * with other filters, send it to the server, or otherwise observe and handle value changes manually.
+     * Target (typically a {@link Store} or Cube {@link View}) to which this model's filter should
+     * be automatically applied as it changes.
+     *
+     * Note this binding is bi-directional - the target's filter will also be *set onto* this model
+     * if it changes on the target, to support e.g. sync'd filtering between a FilterChooser and
+     * Grid filtering bound to the same target Store.
+     *
+     * Leave undefined if you wish to combine this model's values with other filters, send it to
+     * the server, or otherwise observe and handle value changes manually.
      */
-    bind?: Store | View;
+    bind?: FilterBindTarget;
 
     /**
-     * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
-     * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
+     * Source (typically a {@link Store} or Cube {@link View}) from which this model can lookup
+     * matching Field-level defaults for `fieldSpecs` and provide suggested data values (if so
+     * configured) from user input.
+     *
+     * Defaults to {@link bind} if the a bind target is provided and is a valid source.
      */
-    valueSource?: Store | View;
+    valueSource?: FilterValueSource;
 
     /**
      * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
@@ -119,11 +137,29 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
+/**
+ * Model for a Select-based filter control that allows users to search for and compose filters
+ * across multiple data fields.
+ *
+ * Manages the current filter value, user-managed favorites, and available field specs. Supports
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
+ * are automatically applied to the target as they change, and external filter changes on the
+ * target are reflected back into this model.
+ *
+ * Field specs define which fields are available for filtering and how their values are parsed
+ * and displayed. If a `valueSource` is provided, field specs can be auto-populated from the
+ * source's fields.
+ *
+ * Supports persistence of both the current filter value and favorites via `persistWith`.
+ *
+ * @see FilterChooser
+ * @see FilterChooserFieldSpec
+ */
 export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
-    bind: Store | View;
-    valueSource: Store | View;
+    bind: FilterBindTarget;
+    valueSource: FilterValueSource;
 
     @managed fieldSpecs: FilterChooserFieldSpec[] = [];
 
@@ -145,11 +181,15 @@ export class FilterChooserModel extends HoistModel {
     @observable unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
 
+    get tagCount(): number {
+        return this.selectValue?.length ?? 0;
+    }
+
     constructor({
         fieldSpecs,
         fieldSpecDefaults,
         bind = null,
-        valueSource = bind,
+        valueSource,
         initialValue = null,
         initialFavorites = [],
         suggestFieldsWhenEmpty = true,
@@ -163,7 +203,12 @@ export class FilterChooserModel extends HoistModel {
         makeObservable(this);
 
         this.bind = bind;
+
         this.valueSource = valueSource;
+        if (!this.valueSource && isFilterValueSource(bind)) {
+            this.valueSource = bind;
+        }
+
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.suggestFieldsWhenEmpty = !!suggestFieldsWhenEmpty;
         this.sortFieldSuggestions = sortFieldSuggestions;
@@ -180,11 +225,13 @@ export class FilterChooserModel extends HoistModel {
         this.updateSelectValueAndBind();
 
         if (bind) {
+            // Inbound sync: when the bind target's filter changes externally (e.g. via
+            // Grid column filters on the same Store), update this model's value to match.
+            // FunctionFilters are stripped as they are unsupported by FilterChooser.
             this.addReaction({
                 track: () => bind.filter,
                 run: filter => {
-                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
-                    this.setValue(value);
+                    this.setValue(filter?.removeFunctionFilters());
                 }
             });
         }
@@ -218,46 +265,10 @@ export class FilterChooserModel extends HoistModel {
         const [filters, suggestions] = partition(parsedValues, 'op');
 
         // Round-trip actual filters through main value setter above.
-        this.setValue(combineValueFilters(filters));
+        this.setValue(this.toValueFilter(filters));
 
         // And then programmatically re-enter any suggestion
         if (suggestions.length === 1) this.autoComplete(suggestions[0]);
-    }
-
-    // Transfer the value filter to the canonical set of individual filters for display.
-    // Filters with arrays values will be split.
-    toDisplayFilters(filter: Filter) {
-        if (!filter) return [];
-
-        let ret;
-        const unsupported = s => {
-            throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
-        };
-
-        // 1) Flatten CompoundFilters across disparate fields to FieldFilters.
-        if (filter instanceof CompoundFilter && !filter.field) {
-            ret = filter.filters;
-        } else {
-            ret = [filter];
-        }
-        if (ret.some(f => !(f instanceof FieldFilter) && !(f instanceof CompoundFilter))) {
-            unsupported('Filters must be FieldFilters or CompoundFilters.');
-        }
-
-        // 2) Recognize unsupported multiple filters for array-based filters.
-        const groupMap = groupBy(ret, ({op, field}) => `${op}|${field}`);
-        forEach(groupMap, filters => {
-            const {op} = filters[0];
-            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
-                unsupported(`Multiple filters cannot be provided with ${op} operator`);
-            }
-        });
-
-        // 3) Finally unroll multi-value filters to one value per filter.
-        // The multiple values will later be restored.
-        return flatMap(ret, f => {
-            return isArray(f.value) ? f.value.map(value => new FieldFilter({...f, value})) : f;
-        });
     }
 
     //-------------
@@ -407,6 +418,108 @@ export class FilterChooserModel extends HoistModel {
     // -------------------------------
     // Implementation
     // -------------------------------
+
+    // Take the raw flat displayed FieldFilter specs and combine them with appropriate semantics
+    // into a proper Filter for the value of ths model.  Field Filters on the same field are going
+    // to be combined into a FieldFilter with array values as well as potentially appropriate
+    // compound filters to combine different ops.  See toDisplayFilters() for the inverse of this
+    // operation.
+    private toValueFilter(specs: FieldFilterSpec[] = []): FilterLike {
+        const ret: FilterLike[] = [];
+
+        // group filters by field -- we'll produce up to two ANDable filters per field
+        const fieldMap = groupBy(specs, 'field');
+        forEach(fieldMap, specs => {
+            // a) combine filters with SAME operator in to a single FieldFilter
+            const opMap = groupBy(specs, 'op');
+            specs = flatMap(opMap, specs => {
+                const firstSpec = first(specs);
+                return specs.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(firstSpec.op)
+                    ? {...firstSpec, value: map(specs, 'value')}
+                    : specs;
+            });
+
+            // Process like operators together, potentially creating sub-OR clauses.
+            [
+                FieldFilter.INCLUDE_LIKE_OPERATORS,
+                FieldFilter.EXCLUDE_LIKE_OPERATORS,
+                FieldFilter.RANGE_LIKE_OPERATORS
+            ].forEach(type => {
+                const filters = specs.filter(s => type.includes(s.op));
+                if (this.implicitOrFieldFilters(filters)) {
+                    ret.push([{op: 'OR', filters}]);
+                } else {
+                    ret.push(...filters);
+                }
+            });
+        });
+
+        return ret;
+    }
+
+    // Transfer the value filter to the canonical set of individual filters for display.
+    // See toValueFilter() for the inverse of this operation.
+    private toDisplayFilters(filter: Filter): Filter[] {
+        if (!filter) return [];
+        const unsupported = s => {
+            throw XH.exception(`Unsupported Filter in FilterChooserModel: ${s}`);
+        };
+
+        let ret: Filter[] = [filter];
+
+        // 0) Can always unwind the top level AND -- its implicit.
+        if (filter instanceof CompoundFilter && filter.op == 'AND') {
+            ret = filter.filters;
+        }
+
+        // 1) Further flatten 2nd-Level CompoundFilters to FieldFilters.
+        // OR'ed filters on the same field can be decomposed if they will later be re-combined
+        ret = ret.flatMap(f => {
+            return f instanceof CompoundFilter &&
+                (f.op == 'AND' ||
+                    (f.field && this.implicitOrFieldFilters(f.filters as FieldFilter[])))
+                ? f.filters
+                : f;
+        });
+
+        // 2) Recognize misc unsupported filters.
+        if (!ret.every(f => f instanceof FieldFilter || f instanceof CompoundFilter)) {
+            unsupported('Filters must be FieldFilters or CompoundFilters.');
+        }
+        const fieldFilters = ret.filter(it => it instanceof FieldFilter) as FieldFilter[];
+        const groupMap = groupBy(fieldFilters, ({op, field}) => `${op}|${field}`);
+        forEach(groupMap, filters => {
+            const {op} = filters[0];
+            if (filters.length > 1 && FieldFilter.ARRAY_OPERATORS.includes(op)) {
+                unsupported(`Multiple filters cannot be provided with ${op} operator`);
+            }
+        });
+
+        // 3) Finally unroll multi-value filters to one filter per value.
+        return flatMap(ret, f => {
+            return f instanceof FieldFilter && isArray(f.value)
+                ? f.value.map(value => new FieldFilter({...f, value}))
+                : f;
+        });
+    }
+
+    // Should Field Filters on a particular Field be implicitly OR'ed together?
+    private implicitOrFieldFilters(filters: Array<FieldFilterSpec | FieldFilter>): boolean {
+        const {INCLUDE_LIKE_OPERATORS, RANGE_LIKE_OPERATORS} = FieldFilter;
+        if (filters.length < 2) return false;
+
+        // For INCLUDE_LIKE, treat them like "equals" and OR them
+        if (every(filters, f => INCLUDE_LIKE_OPERATORS.includes(f.op))) return true;
+
+        // For RANGE_LIKE, recognize simple "exterior" bifurcated range as an OR, otherwise AND
+        if (filters.length == 2 && every(filters, f => RANGE_LIKE_OPERATORS.includes(f.op))) {
+            const [a, b] = sortBy(filters, 'op');
+            return a.op.startsWith('<') && b.op.startsWith('>') && a.value <= b.value;
+        }
+
+        return false;
+    }
+
     private initPersist({
         persistValue = true,
         persistFavorites = true,
@@ -415,7 +528,9 @@ export class FilterChooserModel extends HoistModel {
     }: FilterChooserPersistOptions) {
         if (persistValue) {
             const status = {initialized: false},
-                persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+                persistWith = isObject(persistValue)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+                    : rootPersistWith;
             PersistenceProvider.create({
                 persistOptions: {
                     path: `${path}.value`,
@@ -432,7 +547,9 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+            const persistWith = isObject(persistFavorites)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
+                    : rootPersistWith,
                 provider = PersistenceProvider.create({
                     persistOptions: {
                         path: `${path}.favorites`,
@@ -513,12 +630,11 @@ export class FilterChooserModel extends HoistModel {
                     }
                 );
 
-                // Round-trip value to bound filter
+                // Outbound sync: replace the FieldFilter portion of the bind target's
+                // filter with this model's value, preserving any FunctionFilters
+                // installed by other components (e.g. StoreFilterField).
                 if (bind) {
-                    const filter = withFilterByTypes(bind.filter, value, [
-                        'FieldFilter',
-                        'CompoundFilter'
-                    ]);
+                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
                     bind.setFilter(filter);
                 }
             })

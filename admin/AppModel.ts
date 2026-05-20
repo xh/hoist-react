@@ -2,25 +2,31 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistAppModel, managed, XH} from '@xh/hoist/core';
+import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {HoistAppModel, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
-import {activityTab} from './tabs/activity/ActivityTab';
-import {generalTab} from './tabs/general/GeneralTab';
+import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
+import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {userDataTab} from './tabs/userData/UserDataTab';
+import {instancesTab, metricsPanel, clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster';
+import {aboutPanel, alertBannerPanel, configPanel} from '@xh/hoist/admin/tabs/general';
+import {
+    jsonBlobPanel,
+    userPreferencePanel,
+    rolePanel,
+    userPanel
+} from '@xh/hoist/admin/tabs/userData';
 
 export class AppModel extends HoistAppModel {
-    static instance: AppModel;
-
-    @managed
     tabModel: TabContainerModel;
+
+    viewManagerModels: Record<string, ViewManagerModel> = {};
 
     static get readonly() {
         return !XH.getUser().isHoistAdmin;
@@ -31,12 +37,16 @@ export class AppModel extends HoistAppModel {
 
         this.tabModel = new TabContainerModel({
             route: 'default',
-            switcher: false,
             tabs: this.createTabs()
         });
 
         // Enable managed autosize mode across Hoist Admin console grids.
-        GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+        GridModel.defaults.autosizeMode = 'managed';
+    }
+
+    override async initAsync(ctx: InitContext) {
+        await this.initViewManagerModelsAsync();
+        await super.initAsync(ctx);
     }
 
     override getRoutes(): Route[] {
@@ -64,22 +74,32 @@ export class AppModel extends HoistAppModel {
                 children: [
                     {name: 'about', path: '/about'},
                     {name: 'config', path: '/config'},
+                    {name: 'feedback', path: '/feedback'},
                     {name: 'alertBanner', path: '/alertBanner'}
                 ]
             },
             {
-                name: 'cluster',
-                path: '/cluster',
+                name: 'servers',
+                path: '/servers',
                 children: [
-                    {name: 'logs', path: '/logs'},
-                    {name: 'memory', path: '/memory'},
-                    {name: 'jdbcPool', path: '/jdbcPool'},
-                    {name: 'environment', path: '/environment'},
-                    {name: 'services', path: '/services'},
+                    {
+                        name: 'instances',
+                        path: '/instances',
+                        children: [
+                            {name: 'logs', path: '/logs'},
+                            {name: 'memory', path: '/memory'},
+                            {name: 'jdbcPool', path: '/jdbcPool'},
+                            {name: 'environment', path: '/environment'},
+                            {name: 'services', path: '/services'}
+                        ]
+                    },
                     {name: 'objects', path: '/objects'},
-                    {name: 'hibernate', path: '/hibernate'},
-                    {name: 'webSockets', path: '/webSockets'}
+                    {name: 'metrics', path: '/metrics'}
                 ]
+            },
+            {
+                name: 'clients',
+                path: '/clients'
             },
             {
                 name: 'monitors',
@@ -87,12 +107,7 @@ export class AppModel extends HoistAppModel {
             },
             {
                 name: 'activity',
-                path: '/activity',
-                children: [
-                    {name: 'tracking', path: '/tracking'},
-                    {name: 'clientErrors', path: '/clientErrors'},
-                    {name: 'feedback', path: '/feedback'}
-                ]
+                path: '/activity'
             },
             {
                 name: 'userData',
@@ -108,16 +123,35 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
+        const conf = XH.getConf('xhAdminAppConfig', {});
+
         return [
             {
                 id: 'general',
                 icon: Icon.info(),
-                content: generalTab
+                content: {
+                    tabs: [
+                        {id: 'about', icon: Icon.info(), content: aboutPanel},
+                        {id: 'config', icon: Icon.settings(), content: configPanel},
+                        {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                    ]
+                }
             },
             {
-                id: 'cluster',
+                id: 'servers',
                 icon: Icon.server(),
-                content: clusterTab
+                content: {
+                    tabs: [
+                        {id: 'instances', icon: Icon.server(), content: instancesTab},
+                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel},
+                        {id: 'metrics', icon: Icon.gauge(), content: metricsPanel}
+                    ]
+                }
+            },
+            {
+                id: 'clients',
+                icon: Icon.desktop(),
+                content: clientsPanel
             },
             {
                 id: 'monitors',
@@ -127,24 +161,60 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                content: userDataTab
+                content: {
+                    refreshMode: 'onShowAlways',
+                    tabs: [
+                        {
+                            id: 'users',
+                            icon: Icon.users(),
+                            content: userPanel,
+                            omit: conf['hideUsersTab']
+                        },
+                        {
+                            id: 'roles',
+                            icon: Icon.idBadge(),
+                            content: rolePanel
+                        },
+                        {
+                            id: 'prefs',
+                            title: 'Preferences',
+                            icon: Icon.bookmark(),
+                            content: userPreferencePanel
+                        },
+                        {
+                            id: 'jsonBlobs',
+                            title: 'JSON Blobs',
+                            icon: Icon.json(),
+                            content: jsonBlobPanel
+                        }
+                    ]
+                }
             },
             {
                 id: 'activity',
                 title: 'User Activity',
                 icon: Icon.analytics(),
-                content: activityTab
+                content: activityTrackingPanel
             }
         ];
     }
 
     /** Open the primary business-facing application, typically 'app'. */
     openPrimaryApp() {
-        window.open(`/${this.getPrimaryAppCode()}`);
+        const appCode = this.getPrimaryAppCode();
+        XH.openWindow(`/${appCode}`, appCode);
     }
 
     getPrimaryAppCode() {
         const appCodes = without(XH.clientApps, XH.clientAppCode, 'mobile');
         return appCodes.find(it => it === 'app') ?? appCodes[0];
+    }
+
+    async initViewManagerModelsAsync() {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
+            type: 'xhAdminActivityTrackingView',
+            typeDisplayName: 'View',
+            manageGlobal: XH.getUser().isHoistAdmin
+        });
     }
 }

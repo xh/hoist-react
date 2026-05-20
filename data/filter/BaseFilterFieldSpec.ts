@@ -2,13 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
-import {Field, Store, FieldFilter, FieldType, genDisplayName, View} from '@xh/hoist/data';
-import {isEmpty} from 'lodash';
+import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '@xh/hoist/data';
+import {compact, isArray, isEmpty} from 'lodash';
 import {FieldFilterOperator} from './Types';
 
+/**
+ * Base configuration for field-level filtering options - defines available operators, value
+ * enumeration, and display metadata. Not used directly by applications; extended by
+ * {@link GridFilterFieldSpecConfig} (for column-header filters via {@link GridFilterModelConfig})
+ * and {@link FilterChooserFieldSpecConfig} (for {@link FilterChooserModel}).
+ *
+ * @see GridFilterFieldSpec
+ * @see FilterChooserFieldSpec
+ */
 export interface BaseFilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;
@@ -19,7 +28,7 @@ export interface BaseFilterFieldSpecConfig {
     /** Operators available for filtering, will default to a supported set based on type.*/
     ops?: FieldFilterOperator[];
     /** Used to source matching data `Field` and extract values if configured. */
-    source?: Store | View;
+    source?: FilterValueSource;
     /**
      * True to provide interfaces and auto-complete options
      * with enumerated matches for creating '=' or '!=' filters. Defaults to true for
@@ -47,7 +56,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
     fieldType: FieldType;
     displayName: string;
     ops: FieldFilterOperator[];
-    source: Store | View;
+    source: FilterValueSource;
     enableValues: boolean;
     forceSelection: boolean;
     values: any[];
@@ -72,7 +81,11 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
-        this.values = values ?? (this.isBoolFieldType ? [true, false] : null);
+        this.values = isArray(values)
+            ? compact(values)
+            : this.isBoolFieldType
+              ? [true, false]
+              : null;
         this.hasExplicitValues = !isEmpty(this.values);
         this.enableValues = this.hasExplicitValues || (enableValues ?? this.isEnumerableByDefault);
     }

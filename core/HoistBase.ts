@@ -2,20 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {runInAction} from 'mobx';
-import {XH, PersistenceProvider, PersistOptions, DebounceSpec, Some, PersistableState} from './';
 import {
-    throwIf,
+    action,
+    autorun as mobxAutorun,
+    checkMakeObservable,
+    comparer,
+    reaction as mobxReaction,
+    runInAction,
+    when as mobxWhen
+} from '@xh/hoist/mobx';
+import {
     getOrCreate,
-    logInfo,
     logDebug,
     logError,
+    logInfo,
     logWarn,
+    throwIf,
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
+import {Runner} from '../utils/telemetry/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -25,15 +33,22 @@ import {
     isString,
     upperFirst
 } from 'lodash';
-import {
-    action,
-    comparer,
-    autorun as mobxAutorun,
-    reaction as mobxReaction,
-    when as mobxWhen
-} from '@xh/hoist/mobx';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
-import {IReactionDisposer, IEqualsComparer} from 'mobx/dist/internal';
+import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
+import {
+    DebounceSpec,
+    LoadSpec,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    Some,
+    Span,
+    SpanConfigLike,
+    XH
+} from './';
+import {wait} from '@xh/hoist/promise';
+
+declare const xhIsDevelopmentMode: boolean;
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;
@@ -49,6 +64,8 @@ export interface HoistBaseClass {
  * @see HoistModel
  * @see HoistService
  * @see Store
+ *
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {
@@ -56,6 +73,12 @@ export abstract class HoistBase {
     }
     get isHoistBase(): boolean {
         return true;
+    }
+
+    constructor() {
+        if (xhIsDevelopmentMode) {
+            wait().then(() => checkMakeObservable(this));
+        }
     }
 
     /**
@@ -103,6 +126,28 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
+    withSpan<T>(config: SpanConfigLike, fn: (span: Span) => Promise<T>): Promise<T> {
+        return XH.traceService.withSpan(config, fn);
+    }
+
+    /**
+     * Create an {@link Runner} builder with this object as the caller.
+     *
+     * @internal  - runner is an experimental beta feature.
+     **/
+    runner(ctx: LoadSpec | Span = null): Runner {
+        return Runner.create(ctx, this);
+    }
+
+    /**
+     * Create an {@link Runner} builder with an initial span and this object as the caller.
+     *
+     * @internal - runner is an experimental beta feature.
+     */
+    newSpan(span: SpanConfigLike): Runner {
+        return this.runner().newSpan(span);
+    }
+
     /**
      * Add and start one or more managed reactions.
      *
@@ -127,6 +172,10 @@ export abstract class HoistBase {
      * observables in a simple array or object, which the run function can use as its input or
      * (commonly) ignore. This helps to clarify that the track function is only enumerating
      * the observables to be watched, and not necessarily generating or transforming values.
+     *
+     * Set `fireImmediately: true` to execute the `run` function once immediately with the
+     * current value of the tracked expression, rather than waiting for it to change. This is
+     * useful for syncing initial state without duplicating logic outside the reaction.
      *
      *  Reactions created in this method will be disposed of automatically when this object is
      *  destroyed. They can also be ended/disposed of manually using the native MobX disposer
@@ -256,13 +305,12 @@ export abstract class HoistBase {
      * @param options - options governing the persistence of this object. These will be applied
      *      on top of any default persistWith options defined on the instance itself.
      */
-    markPersist(property: keyof this & string, options: PersistOptions = {}) {
+    markPersist<P extends keyof this & string>(property: P, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         PersistenceProvider.create({
             persistOptions: {
                 path: property,
-                ...this.persistWith,
-                ...options
+                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
             },
             owner: this,
             target: {
@@ -278,9 +326,15 @@ export abstract class HoistBase {
     }
 
     /**
-     * Clean up resources associated with this object
+     * Clean up resources associated with this object.
      */
     destroy() {
+        // If a model is being destroyed or has already been destroyed, no need to destroy it again.
+        // Prevents stack overflow in case this model gets a managed reference chain back to itself.
+        if (this.isDestroyed) {
+            this.logWarn('Destruction skipped - this model is already destroyed.');
+            return;
+        }
         this._destroyed = true;
         this.disposers.forEach(f => f());
         this.managedInstances.forEach(i => XH.safeDestroy(i));
@@ -290,6 +344,8 @@ export abstract class HoistBase {
 
 /**
  * Object containing options accepted by MobX 'reaction' API as well as arguments below.
+ * Also supports MobX options inherited from IReactionOptions, including `fireImmediately`
+ * (run the reaction once immediately with the current tracked value).
  */
 export interface ReactionSpec<T = any> extends Omit<IReactionOptions<T, any>, 'equals'> {
     /**

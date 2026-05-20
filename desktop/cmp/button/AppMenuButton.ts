@@ -2,19 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MenuItemProps} from '@blueprintjs/core';
-import {hoistCmp, MenuItemLike, MenuItem, XH} from '@xh/hoist/core';
+import {div} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
 import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {wait} from '@xh/hoist/promise';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {menu, popover} from '@xh/hoist/kit/blueprint';
+import {parseMenuItems} from '@xh/hoist/utils/impl';
 import {withDefault} from '@xh/hoist/utils/js';
-import {clone, isEmpty, isString} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -54,8 +53,22 @@ export interface AppMenuButtonProps extends ButtonProps {
 
     /** True to hide the Theme Toggle button. */
     hideThemeItem?: boolean;
+
+    /**
+     * Replace the default hamburger icon with a user profile representation. Set to true to render
+     * the user's initials from their `HoistUser.displayName`. Alternately, provide a custom
+     * function to render an alternate compact string or element for the current user.
+     */
+    renderWithUserProfile?: boolean | RenderWithUserProfileCustomFn;
 }
 
+type RenderWithUserProfileCustomFn = (user: HoistUser) => ReactNode;
+
+/**
+ * Application-level menu button rendered in the AppBar. Provides a dropdown menu with standard
+ * items for About, Admin, Feedback, Options, Theme, Impersonation, Changelog, and Logout.
+ * Individual items can be hidden via props, and custom items added via `extraItems`.
+ */
 export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButtonProps>({
     displayName: 'AppMenuButton',
     model: false,
@@ -74,6 +87,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             hideOptionsItem,
             hideThemeItem,
             disabled,
+            renderWithUserProfile,
             ...rest
         } = props;
 
@@ -83,7 +97,8 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             position: 'bottom-right',
             minimal: true,
             item: button({
-                icon: Icon.menu(),
+                icon: renderWithUserProfile ? null : Icon.menu(),
+                text: renderWithUserProfile ? userProfile({renderWithUserProfile}) : null,
                 disabled,
                 ...rest
             }),
@@ -99,6 +114,20 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
 //---------------------------
 // Implementation
 //---------------------------
+const userProfile = hoistCmp.factory<
+    HoistProps & {renderWithUserProfile: true | RenderWithUserProfileCustomFn}
+>({
+    model: false,
+    render({renderWithUserProfile}) {
+        return div({
+            className: 'xh-app-menu-button__user-profile',
+            item: isFunction(renderWithUserProfile)
+                ? renderWithUserProfile(XH.getUser())
+                : XH.getUserInitials()
+        });
+    }
+});
+
 function buildMenuItems(props: AppMenuButtonProps) {
     let {
         hideAboutItem,
@@ -143,7 +172,7 @@ function buildMenuItems(props: AppMenuButtonProps) {
             omit: hideAdminItem,
             text: 'Admin',
             icon: Icon.wrench(),
-            actionFn: () => window.open('/admin')
+            actionFn: () => XH.appContainerModel.openAdmin()
         },
         {
             omit: hideImpersonateItem,
@@ -175,47 +204,4 @@ function buildMenuItems(props: AppMenuButtonProps) {
     ];
 
     return parseMenuItems([...extraItems, '-', ...defaultItems]);
-}
-
-function parseMenuItems(items: MenuItemLike[]): ReactNode[] {
-    items = items.map(item => {
-        if (!isMenuItem(item)) return item;
-
-        item = clone(item);
-        item.items = clone(item.items);
-        item.prepareFn?.(item);
-        return item;
-    });
-
-    return items
-        .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
-        .filter(filterConsecutiveMenuSeparators())
-        .map(item => {
-            if (item === '-') return menuDivider();
-            if (!isMenuItem(item)) return item;
-
-            const {actionFn} = item;
-
-            // Create menuItem from config
-            const cfg: MenuItemProps = {
-                text: item.text,
-                icon: item.icon,
-                intent: item.intent,
-                className: item.className,
-                onClick: actionFn ? () => wait().then(actionFn) : null, // do async to allow menu to close
-                disabled: item.disabled
-            };
-
-            // Recursively parse any submenus
-            if (!isEmpty(item.items)) {
-                cfg.children = parseMenuItems(item.items);
-                cfg.popoverProps = {openOnTargetFocus: false};
-            }
-
-            return menuItem(cfg);
-        });
-}
-
-function isMenuItem(item: MenuItemLike): item is MenuItem {
-    return !isString(item) && !isValidElement(item);
 }

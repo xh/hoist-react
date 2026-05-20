@@ -2,18 +2,25 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Auth0ClientOptions} from '@auth0/auth0-spa-js';
 import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
-import {never, wait} from '@xh/hoist/promise';
-import {Token, TokenMap} from '@xh/hoist/security/Token';
+import {wait} from '@xh/hoist/promise';
+import {Token} from '@xh/hoist/security/Token';
+import {AccessTokenSpec, TokenMap} from '../Types';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
+/**
+ * Configuration for an {@link AuthZeroClient} - the Auth0 OAuth client.
+ * Extends {@link BaseOAuthClientConfig} with Auth0-specific options.
+ *
+ * @see AuthZeroClient
+ */
 export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
     /** Domain of your app registered with Auth0.  */
     domain: string;
@@ -40,10 +47,7 @@ export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroToke
     authZeroClientOptions?: Partial<Auth0ClientOptions>;
 }
 
-export interface AuthZeroTokenSpec {
-    /** Scopes for the desired access token.*/
-    scopes: string[];
-
+export interface AuthZeroTokenSpec extends AccessTokenSpec {
     /**
      * Audience (i.e. API) identifier for AccessToken.  Must be registered with Auth0.
      * Note that this is required to ensure that issued token is a JWT and not an opaque string.
@@ -75,7 +79,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             const {appState} = await client.handleRedirectCallback();
             this.restoreRedirectState(appState);
             await this.noteUserAuthenticatedAsync();
-            return this.fetchAllTokensAsync();
+            return this.fetchAllTokensAsync({eagerOnly: true});
         }
 
         // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
@@ -83,7 +87,7 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         if (await client.isAuthenticated()) {
             try {
                 this.logDebug('Attempting silent token load.');
-                return await this.fetchAllTokensAsync();
+                return await this.fetchAllTokensAsync({eagerOnly: true});
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             }
@@ -94,16 +98,18 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         await this.loginAsync();
 
         // 3) return tokens
-        return this.fetchAllTokensAsync();
+        return this.fetchAllTokensAsync({eagerOnly: true});
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {
         const appState = this.captureRedirectState();
+
         await this.client.loginWithRedirect({
             appState,
             authorizationParams: {scope: this.loginScope}
         });
-        await never();
+
+        await this.maskAfterRedirectAsync();
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
@@ -176,6 +182,12 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
 
         // Wait enough time for Auth0 logout to complete before any reload.
         await wait(10 * SECONDS);
+    }
+
+    protected override interactiveLoginNeeded(exception: unknown): boolean {
+        return ['login_required', 'interaction_required', 'consent_required'].includes(
+            exception['error']
+        );
     }
 
     //------------------------

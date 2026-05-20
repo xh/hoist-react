@@ -2,18 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@ag-grid-community/react';
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
 import {HAlign, HSide, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
 import {
     CubeFieldSpec,
     FieldSpec,
     genDisplayName,
+    maxSeverity,
     RecordAction,
     RecordActionSpec,
-    StoreRecord
+    StoreRecord,
+    ValidationResult,
+    ValidationSeverity
 } from '@xh/hoist/data';
 import {logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -22,6 +24,7 @@ import {
     clone,
     find,
     get,
+    groupBy,
     isArray,
     isEmpty,
     isFinite,
@@ -34,9 +37,9 @@ import {
     toString
 } from 'lodash';
 import {
-    Attributes,
     createElement,
     forwardRef,
+    FunctionComponent,
     isValidElement,
     ReactNode,
     useImperativeHandle,
@@ -52,6 +55,7 @@ import {
     ColumnComparator,
     ColumnEditableFn,
     ColumnEditorFn,
+    ColumnEditorProps,
     ColumnExcelFormatFn,
     ColumnExportValueFn,
     ColumnGetValueFn,
@@ -64,14 +68,26 @@ import {
     ColumnTooltipFn
 } from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
-import {FunctionComponent} from 'react';
 import type {
     ColDef,
     ITooltipParams,
     ValueGetterParams,
-    ValueSetterParams
+    ValueSetterParams,
+    CustomCellEditorProps,
+    CellClickedEvent
 } from '@xh/hoist/kit/ag-grid';
 
+/**
+ * Configuration object for defining a {@link Column} within a {@link GridModel}.
+ *
+ * Passed as plain objects in the `columns` array of a {@link GridConfig}. Each spec must
+ * identify its data via `field` (and/or `colId`). All other properties are optional and
+ * have sensible defaults - many are derived from the corresponding {@link Field} definition
+ * on the grid's store when available (e.g. `displayName`, `align`, `sortingOrder`).
+ *
+ * @see Column
+ * @see GridModel
+ */
 export interface ColumnSpec {
     /**
      * Name of data store field to display within the column, or object containing properties
@@ -103,12 +119,19 @@ export interface ColumnSpec {
     displayName?: string;
 
     /**
+     * Supplementary descriptive text for this Column. Sourced from the corresponding data
+     * `Field.description` if available. Used as the default value for `headerTooltip` and
+     * `chooserDescription` when those are not explicitly set.
+     */
+    description?: string;
+
+    /**
      * User-facing text/element displayed in the Column header, or a function to produce the same.
      * Defaulted from `displayName`.
      */
     headerName?: ColumnHeaderNameFn | ReactNode;
 
-    /** Tooltip text for grid header.*/
+    /** Tooltip text for grid header. Defaults from `description` when not explicitly set. */
     headerTooltip?: string;
 
     /**
@@ -229,7 +252,20 @@ export interface ColumnSpec {
      */
     pinned?: boolean | HSide;
 
-    /** Function returning a React Element for each cell value in this Column.*/
+    /**
+     * Function returning a React Element for each cell value in this Column.
+     *
+     * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
+     * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
+     * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
+     * `boolCheck` from `@xh/hoist/cmp/grid`) which bundle a renderer with appropriate alignment,
+     * sorting, and export formatting.
+     *
+     * For custom rendering based on record data beyond this column's field, set
+     * `rendererIsComplex: true` to ensure cells refresh on any record change.
+     *
+     * See the grid package README (`cmp/grid/README.md`) for renderer patterns and examples.
+     */
     renderer?: ColumnRenderer;
 
     /**
@@ -263,7 +299,7 @@ export interface ColumnSpec {
 
     /**
      * Additional descriptive text to display within the column chooser. Appears when the column
-     * is selected within the chooser UI.
+     * is selected within the chooser UI. Defaults from `description` when not explicitly set.
      */
     chooserDescription?: string;
 
@@ -333,10 +369,10 @@ export interface ColumnSpec {
     editable?: boolean | ColumnEditableFn;
 
     /**
-     * Cell editor Component or a function to create one.  Adding an editor will also
-     * install a cellClassRule and tooltip to display the validation state of the cell in question.
+     * Cell editor Component or a function to create one. Adding an editor will also install a
+     * cellClassRule and tooltip to display the validation state of the cell in question.
      */
-    editor?: FunctionComponent | ColumnEditorFn;
+    editor?: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
 
     /**
      * True if this cell editor should be rendered as a popup over the cell instead of within the
@@ -375,6 +411,12 @@ export interface ColumnSpec {
     actionsShowOnHoverOnly?: boolean;
 
     /**
+     * Callback when a cell within this column clicked.
+     * See also {@link GridConfig.onCellClicked}, called when any cell within the grid is clicked.
+     */
+    onCellClicked?: (e: CellClickedEvent) => void;
+
+    /**
      * "escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note these
      * options may be used / overwritten by the framework itself, and are not all guaranteed to be
      * compatible with its usages of Ag-Grid.
@@ -388,7 +430,23 @@ export interface ColumnSpec {
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Provided to GridModels as plain configuration objects.
+ *
+ * Columns are defined as plain {@link ColumnSpec} objects within the `columns` array of a
+ * {@link GridConfig} - they are never constructed directly. GridModel also supports
+ * `colDefaults` for shared config applied to all columns, and `GridModel.defaults.colDefaults`
+ * for app-wide column defaults. Columns can be nested within {@link ColumnGroup}s for
+ * multi-level headers.
+ *
+ * Every column must resolve to a unique `colId`, which defaults to `field` when not set.
+ * If two columns reference the same `field`, provide an explicit `colId` on one of them.
+ *
+ * See {@link ColumnSpec} for all available configuration properties, and the grid package
+ * README (`cmp/grid/README.md`) for full configuration guidance, renderer patterns, and pitfalls.
+ *
+ * @see GridModel
+ * @see ColumnGroup
+ *
+ * @mcpHint column configuration for grids
  */
 export class Column {
     static DEFAULT_WIDTH = 60;
@@ -425,6 +483,7 @@ export class Column {
     colId: string;
     isTreeColumn: boolean;
     displayName: string;
+    description: string;
     headerName: ColumnHeaderNameFn | ReactNode;
     headerTooltip: string;
     headerHasExpandCollapse: boolean;
@@ -471,7 +530,7 @@ export class Column {
     autosizeBufferPx: number;
     autoHeight: boolean;
     editable: boolean | ColumnEditableFn;
-    editor: FunctionComponent | ColumnEditorFn;
+    editor: FunctionComponent<ColumnEditorProps> | ColumnEditorFn;
     editorIsPopup: boolean;
     setValueFn: ColumnSetValueFn;
     getValueFn: ColumnGetValueFn;
@@ -479,6 +538,7 @@ export class Column {
     actionsShowOnHoverOnly?: boolean;
     fieldSpec: FieldSpec;
     omit: Thunkable<boolean>;
+    onCellClicked?: (e: CellClickedEvent) => void;
 
     gridModel: GridModel;
     agOptions: ColDef;
@@ -497,6 +557,7 @@ export class Column {
             colId,
             isTreeColumn,
             displayName,
+            description,
             headerName,
             headerTooltip,
             headerHasExpandCollapse,
@@ -551,6 +612,7 @@ export class Column {
             actionsShowOnHoverOnly,
             actions,
             omit,
+            onCellClicked,
             agOptions,
             appData,
             ...rest
@@ -572,11 +634,12 @@ export class Column {
         // `Store.field` when pre-processing Column configs - prior to calling this ctor. If that
         // hasn't happened, displayName will still always be defaulted to a fallback based on colId.
         this.displayName = displayName ?? this.fieldSpec?.displayName ?? genDisplayName(this.colId);
+        this.description = description ?? this.fieldSpec?.description;
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
         this.headerName = withDefault(headerName, this.displayName);
 
-        this.headerTooltip = headerTooltip;
+        this.headerTooltip = withDefault(headerTooltip, this.description);
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerAlign = headerAlign || align;
         this.headerClass = headerClass;
@@ -627,7 +690,7 @@ export class Column {
 
         this.chooserName = chooserName || this.displayName;
         this.chooserGroup = chooserGroup;
-        this.chooserDescription = chooserDescription;
+        this.chooserDescription = withDefault(chooserDescription, this.description);
         this.excludeFromChooser = withDefault(excludeFromChooser, false);
 
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports
@@ -657,6 +720,7 @@ export class Column {
 
         this.actions = actions;
         this.actionsShowOnHoverOnly = actionsShowOnHoverOnly ?? false;
+        this.onCellClicked = onCellClicked;
 
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
@@ -751,14 +815,19 @@ export class Column {
                     const {gridModel, colId} = this,
                         editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
                         // @ts-ignore -- private
-                        reactSelect = editor?.componentInstance?.reactSelect;
-                    if (reactSelect?.state.menuIsOpen) return true;
+                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
+                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
+                    // but loadedInputValue should be truthy when the menu is open
+                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                        return true;
+                    }
 
                     // Allow shift+enter to add newlines in certain editors
                     if (event.shiftKey && event.key === 'Enter') return true;
 
                     return false;
-                }
+                },
+                onCellClicked: this.onCellClicked
             };
 
         // We will change this setter as needed to install the renderer in the proper location
@@ -852,20 +921,28 @@ export class Column {
                 if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
                 if (!hasRecord) return null;
 
-                // Override with validation errors, if present
+                // Override with validation errors, if present -- only show highest-severity level
                 if (editor) {
-                    const errors = record.errors[field];
-                    if (!isEmpty(errors)) {
+                    const validationsBySeverity = groupBy(
+                            record.validationResults[field],
+                            'severity'
+                        ) as Record<ValidationSeverity, ValidationResult[]>,
+                        validationMessages = (
+                            validationsBySeverity.error ??
+                            validationsBySeverity.warning ??
+                            validationsBySeverity.info
+                        )?.map(v => v.message);
+                    if (!isEmpty(validationMessages)) {
                         return div({
                             ref: wrapperRef,
                             item: ul({
                                 className: classNames(
                                     'xh-grid-tooltip--validation',
-                                    errors.length === 1
+                                    validationMessages.length === 1
                                         ? 'xh-grid-tooltip--validation--single'
                                         : null
                                 ),
-                                items: errors.map((it, idx) => li({key: idx, item: it}))
+                                items: validationMessages.map((it, idx) => li({key: idx, item: it}))
                             })
                         });
                     }
@@ -986,17 +1063,18 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                if ((editor as any).isHoistComponent)
-                    return createElement(editor, props as Attributes);
+                if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props);
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
             });
             ret.cellEditorPopup = this.editorIsPopup;
             ret.cellClassRules = {
-                'xh-cell--invalid': agParams => {
-                    const record = agParams.data;
-                    return record && !isEmpty(record.errors[field]);
-                },
+                'xh-cell--invalid': agParams =>
+                    maxSeverity(agParams.data?.validationResults[field]) === 'error',
+                'xh-cell--warning': agParams =>
+                    maxSeverity(agParams.data?.validationResults[field]) === 'warning',
+                'xh-cell--info': agParams =>
+                    maxSeverity(agParams.data?.validationResults[field]) === 'info',
                 'xh-cell--editable': agParams => {
                     return this.isEditableForRecord(agParams.data);
                 },

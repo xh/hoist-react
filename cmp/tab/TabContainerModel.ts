@@ -2,32 +2,43 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {
+    TabSwitcherConfig,
+    IDynamicTabSwitcherModel,
+    TabContainerModelPersistOptions
+} from '@xh/hoist/cmp/tab/Types';
 import {
     HoistModel,
     managed,
-    Persistable,
     PersistableState,
     PersistenceProvider,
-    PersistOptions,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
     XH
 } from '@xh/hoist/core';
+import {DynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DynamicTabSwitcherModel';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
-import {difference, find, findLast, isString, without} from 'lodash';
+import {difference, find, findLast, isObject, isString, without} from 'lodash';
 import {ReactNode} from 'react';
 import {TabConfig, TabModel} from './TabModel';
-import {TabSwitcherProps} from './TabSwitcherProps';
 
+/**
+ * Configuration for a {@link TabContainerModel} - the primary tabbed navigation container
+ * in Hoist. Supports routing, lazy rendering/refresh strategies, and optional persistence
+ * of the active tab.
+ *
+ * @see TabContainerModel
+ * @see TabConfig
+ */
 export interface TabContainerConfig {
     /** Tabs to be displayed. */
-    tabs?: TabConfig[];
+    tabs: TabConfig[];
 
     /**
      * ID of Tab to be shown initially if routing does not specify otherwise. If not set,
@@ -37,16 +48,15 @@ export interface TabContainerConfig {
 
     /**
      * Base route name for this container. If set, this container will be route-enabled, with the
-     * route for each tab being "[route]/[tab.id]".  Cannot be used with `persistWith`.
+     * route for each tab being "[route]/[tab.id]".
      */
     route?: string;
 
     /**
-     * Indicates whether to include a default switcher docked within this component. Specify as a
-     * boolean or an object containing props for a TabSwitcher component. Set to false to not
-     * include a switcher. Defaults to true.
+     * Specification for type of switcher. Specify `dynamic` or config for user-configurable tabs.
+     * Default `{mode: 'static'}` for simple, static switcher.
      */
-    switcher?: boolean | TabSwitcherProps;
+    switcher?: TabSwitcherConfig;
 
     /**
      * True to enable activity tracking of tab views (default false).  Viewing of each tab will
@@ -66,8 +76,13 @@ export interface TabContainerConfig {
      */
     refreshMode?: RefreshMode;
 
-    /** Options governing persistence. Cannot be used with `route`. */
-    persistWith?: PersistOptions;
+    /**
+     * Options governing persistence. Tab containers can persist their last-active tab as well
+     * as favorite tabs for the dynamic `switcher` option. Note that this must be left unset or
+     * its nested `persistActiveTabId` option must be set to false if also using `route`, to avoid
+     * a possible conflict between an initial route and persisted last active tab.
+     */
+    persistWith?: TabContainerModelPersistOptions;
 
     /**
      * Placeholder to display if no tabs are provided or all tabs have been removed via
@@ -86,8 +101,13 @@ export interface TabContainerConfig {
  * unmounting of inactive tabs, and customizable refreshing of tabs via a built-in RefreshContextModel.
  *
  * Note: Routing is currently enabled for desktop applications only.
+ *
+ * See the tab package README (`cmp/tab/README.md`) for render/refresh mode options, routing
+ * configuration, and usage patterns.
+ *
+ * @mcpHint model for tabbed container with routing and refresh support
  */
-export class TabContainerModel extends HoistModel implements Persistable<{activeTabId: string}> {
+export class TabContainerModel extends HoistModel {
     declare config: TabContainerConfig;
 
     @managed
@@ -97,42 +117,47 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     @observable
     activeTabId: string;
 
+    depth: number; // Depth in hierarchy of nested TabContainerModels
     route: string;
     defaultTabId: string;
-    switcher: TabSwitcherProps;
     track: boolean;
     renderMode: RenderMode;
     refreshMode: RefreshMode;
     emptyText: ReactNode;
+    switcherConfig: TabSwitcherConfig;
 
     @managed
     refreshContextModel: RefreshContextModel;
 
-    private lastActiveTabId: string;
+    @managed
+    dynamicTabSwitcherModel: IDynamicTabSwitcherModel;
 
-    constructor({
-        tabs = [],
-        defaultTabId = null,
-        route = null,
-        switcher = true,
-        track = false,
-        renderMode = 'lazy',
-        refreshMode = 'onShowLazy',
-        persistWith,
-        emptyText = 'No tabs to display.',
-        xhImpl = false
-    }: TabContainerConfig) {
+    protected lastActiveTabId: string;
+
+    /**
+     * @param config - TabContainer configuration.
+     * @param depth - Depth in hierarchy of nested TabContainerModels. Not for application use.
+     */
+    constructor(
+        {
+            tabs = [],
+            defaultTabId = null,
+            route = null,
+            track = false,
+            renderMode = 'lazy',
+            refreshMode = 'onShowLazy',
+            persistWith,
+            emptyText = 'No tabs to display.',
+            xhImpl = false,
+            switcher = {mode: 'static'}
+        }: TabContainerConfig,
+        depth: number = 0
+    ) {
         super();
         makeObservable(this);
         this.xhImpl = xhImpl;
 
-        throwIf(route && persistWith, '"persistWith" and "route" cannot both be specified.');
-
-        // Create default switcher props
-        if (switcher === true) switcher = {orientation: XH.isMobileApp ? 'bottom' : 'top'};
-        if (switcher === false) switcher = null;
-
-        this.switcher = switcher as TabSwitcherProps;
+        this.depth = depth;
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.defaultTabId = defaultTabId;
@@ -142,6 +167,8 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.setTabs(tabs);
         this.refreshContextModel = new RefreshContextModel();
         this.refreshContextModel.xhImpl = xhImpl;
+        this.switcherConfig = switcher;
+        this.dynamicTabSwitcherModel = this.parseSwitcher(switcher);
 
         if (route) {
             if (XH.isMobileApp) {
@@ -156,15 +183,9 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             wait().then(() => this.syncWithRouter());
 
             this.forwardRouterToTab(this.activeTabId);
-        } else if (persistWith) {
-            PersistenceProvider.create({
-                persistOptions: {
-                    path: 'tabContainer',
-                    ...persistWith
-                },
-                target: this
-            });
         }
+
+        if (persistWith) this.initPersist(persistWith);
 
         if (track) {
             this.addReaction({
@@ -202,13 +223,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             this.activeTabId = this.calculateActiveTabId(tabs);
         }
         this.tabs = tabs.map(t =>
-            t instanceof TabModel
-                ? t
-                : new TabModel({
-                      ...t,
-                      containerModel: this,
-                      xhImpl: this.xhImpl
-                  })
+            t instanceof TabModel ? t : new TabModel({...t, xhImpl: this.xhImpl}, this)
         );
 
         if (oldTabs) {
@@ -223,12 +238,15 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             {index = tabs.length, activateImmediately = false} = opts ?? {};
         this.setTabs([...tabs.slice(0, index), tab, ...tabs.slice(index)]);
         if (activateImmediately) {
-            this.activateTab(tab.id);
+            this.setActiveTabId(tab.id);
         }
         return this.findTab(tab.id);
     }
 
-    /** Remove a single tab from the container. */
+    /**
+     * Remove a single tab from the container.
+     * Supported for tabs that are immediate children of this container.
+     **/
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
@@ -243,23 +261,26 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
                 toActivate = this.nextTab ?? this.prevTab;
             }
             if (toActivate) {
-                this.activateTab(toActivate);
+                this.setActiveTabId(toActivate.id);
             }
         }
 
         this.setTabs(without(tabs, toRemove));
     }
 
-    /** Update the title of an existing tab. Logs failures quietly on debug if not found.  */
+    /**
+     * Update the title of an existing tab.
+     * Supported for tabs that are immediate children of this container.
+     * Logs failures quietly on debug if not found.
+     * */
     setTabTitle(tabId: string, title: ReactNode) {
         const tab = this.findTab(tabId);
         if (tab) {
             tab.title = title;
-        } else {
-            this.logDebug(`Failed to setTabTitle`, `Tab ${tabId} not found`);
         }
     }
 
+    /** Find a tab that is an immediate child of this container. */
     findTab(id: string): TabModel {
         return find(this.tabs, {id});
     }
@@ -268,30 +289,31 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         return this.findTab(this.activeTabId);
     }
 
-    /** The tab immediately before the active tab in the model's tab list. */
+    /** The visitable tab immediately before the active tab in the model's tab list. */
     get prevTab(): TabModel {
-        const activeTabIdx = this.tabs.indexOf(this.activeTab);
-        return activeTabIdx > 0 ? this.tabs[activeTabIdx - 1] : null;
+        const tabs = this.tabs.filter(t => !t.disabled || t === this.activeTab),
+            activeTabIdx = tabs.indexOf(this.activeTab);
+        return activeTabIdx > 0 ? tabs[activeTabIdx - 1] : null;
     }
 
-    /** The tab immediately after the active tab in the model's tab list. */
+    /** The visitable tab immediately after the active tab in the model's tab list. */
     get nextTab(): TabModel {
-        const activeTabIdx = this.tabs.indexOf(this.activeTab);
-        return activeTabIdx < this.tabs.length - 1 ? this.tabs[activeTabIdx + 1] : null;
+        const tabs = this.tabs.filter(t => !t.disabled || t === this.activeTab),
+            activeTabIdx = tabs.indexOf(this.activeTab);
+        return activeTabIdx < tabs.length - 1 ? tabs[activeTabIdx + 1] : null;
     }
 
     /**
-     * Set the currently active Tab.
+     * Set the currently active Tab by ID.
      *
-     * If using routing, this method will navigate to the new tab via the router and the active Tab
-     * will only be updated once the router state changes. Otherwise the active Tab will be updated
-     * immediately.
+     * This method may be bound directly to a UI control (e.g., a SegmentedControl). It handles
+     * routing-aware navigation: if this container is route-enabled, the tab will only be updated
+     * once the router state changes. Otherwise, the active Tab will be updated immediately.
      *
-     * @param tab - TabModel or id of TabModel to be activated.
+     * @param id - ID of TabModel to be activated.
      */
-    activateTab(tab: TabModel | string) {
-        tab = this.findTab(tab instanceof TabModel ? tab.id : tab);
-
+    setActiveTabId(id: string) {
+        const tab = this.findTab(id);
         if (!tab || tab.disabled || tab.isActive) return;
 
         const {route} = this;
@@ -304,6 +326,16 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
     }
 
     /**
+     * Set the currently active Tab. Convenience for {@link setActiveTabId} that also accepts a
+     * TabModel instance directly.
+     *
+     * @param tab - TabModel or id of TabModel to be activated.
+     */
+    activateTab(tab: TabModel | string) {
+        this.setActiveTabId(tab instanceof TabModel ? tab.id : tab);
+    }
+
+    /**
      * Navigate to the first enabled tab before the currently active tab, if any.
      * @param cycle - true to loop back to last tab if necessary.
      */
@@ -312,7 +344,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             idx = tabs.indexOf(this.activeTab);
         let target = findLast(tabs, f => !f.disabled, idx - 1);
         if (cycle && !target) target = findLast(tabs, f => !f.disabled);
-        if (target) this.activateTab(target);
+        if (target) this.setActiveTabId(target.id);
     }
 
     /**
@@ -324,25 +356,14 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
             idx = tabs.indexOf(this.activeTab);
         let target = find(tabs, f => !f.disabled, idx + 1);
         if (cycle && !target) target = find(tabs, f => !f.disabled);
-        if (target) this.activateTab(target);
-    }
-
-    //-------------------------
-    // Persistable Interface
-    //-------------------------
-    getPersistableState(): PersistableState<{activeTabId: string}> {
-        return new PersistableState({activeTabId: this.activeTabId});
-    }
-
-    setPersistableState(state: PersistableState<{activeTabId: string}>): void {
-        this.activateTab(state.value.activeTabId);
+        if (target) this.setActiveTabId(target.id);
     }
 
     //-------------------------
     // Implementation
     //-------------------------
     @action
-    private setActiveTabIdInternal(id) {
+    protected setActiveTabIdInternal(id) {
         const tab = this.findTab(id);
         throwIf(!tab, `Unknown Tab ${id} in TabContainer.`);
         throwIf(tab.disabled, `Cannot activate Tab ${id} because it is disabled!`);
@@ -351,7 +372,7 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         this.forwardRouterToTab(id);
     }
 
-    private syncWithRouter() {
+    protected syncWithRouter() {
         const {tabs, route} = this,
             {router} = XH,
             state = router.getState();
@@ -364,14 +385,14 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         }
     }
 
-    private forwardRouterToTab(id) {
+    protected forwardRouterToTab(id) {
         const {route} = this;
         if (route && id) {
             XH.router.forward(route, route + '.' + id);
         }
     }
 
-    private calculateActiveTabId(tabs) {
+    protected calculateActiveTabId(tabs) {
         let ret;
 
         // try route
@@ -391,6 +412,71 @@ export class TabContainerModel extends HoistModel implements Persistable<{active
         if (ret) return ret.id;
 
         return null;
+    }
+
+    private parseSwitcher(switcher: TabContainerConfig['switcher']): IDynamicTabSwitcherModel {
+        if (!switcher || switcher.mode === 'static') return null;
+        throwIf(XH.isMobileApp, 'DynamicTabSwitcherModel not supported for mobile TabContainer.');
+
+        return this.markManaged(new DynamicTabSwitcherModel(switcher, this));
+    }
+
+    private initPersist({
+        persistActiveTabId = !this.route,
+        persistFavoriteTabIds = !!this.dynamicTabSwitcherModel,
+        path = 'tabContainer',
+        ...rootPersistWith
+    }: TabContainerModelPersistOptions) {
+        if (persistActiveTabId) {
+            if (this.route) {
+                this.logWarn('persistActiveTabId and route cannot both be specified.');
+            } else {
+                const persistWith = isObject(persistActiveTabId)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistActiveTabId)
+                    : rootPersistWith;
+                PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.activeTabId`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () => new PersistableState(this.activeTabId),
+                        setPersistableState: ({value}) => this.setActiveTabId(value)
+                    },
+                    owner: this
+                });
+            }
+        }
+
+        if (persistFavoriteTabIds) {
+            const {dynamicTabSwitcherModel} = this;
+            if (!dynamicTabSwitcherModel) {
+                this.logWarn(
+                    'persistFavoriteTabIds is set but no DynamicTabSwitcherModel is present.'
+                );
+            } else {
+                const persistWith = isObject(persistFavoriteTabIds)
+                    ? PersistenceProvider.mergePersistOptions(
+                          rootPersistWith,
+                          persistFavoriteTabIds
+                      )
+                    : rootPersistWith;
+                PersistenceProvider.create({
+                    persistOptions: {
+                        path: `${path}.favoriteTabIds`,
+                        ...persistWith
+                    },
+                    target: {
+                        getPersistableState: () =>
+                            new PersistableState(dynamicTabSwitcherModel.favoriteTabIds),
+                        setPersistableState: ({value}) => {
+                            dynamicTabSwitcherModel.setFavoriteTabIds(value);
+                        }
+                    },
+                    owner: this
+                });
+            }
+        }
     }
 }
 

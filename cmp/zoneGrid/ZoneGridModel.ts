@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     CellClickedEvent,
@@ -10,7 +10,7 @@ import {
     CellDoubleClickedEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
-} from '@ag-grid-community/core';
+} from '@xh/hoist/kit/ag-grid';
 import {
     Column,
     ColumnRenderer,
@@ -39,6 +39,7 @@ import {
     managed,
     PlainObject,
     Some,
+    Thunkable,
     VSide,
     XH
 } from '@xh/hoist/core';
@@ -60,6 +61,14 @@ import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
 import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
+/**
+ * Configuration for a {@link ZoneGridModel} - a card-style grid that arranges column data
+ * into four zones (top-left, top-right, bottom-left, bottom-right) within each row.
+ * Provide `columns` and `mappings` to define which fields appear in each zone.
+ *
+ * @see ZoneGridModel
+ * @see ZoneMapperConfig
+ */
 export interface ZoneGridConfig {
     /**
      * Available columns for this grid. Columns with an omit property evaluating to true will be
@@ -145,6 +154,9 @@ export interface ZoneGridConfig {
 
     /** Column ID(s) by which to do full-width grouping. */
     groupBy?: Some<string>;
+
+    /** Group level to expand to on initial load. 0 = all collapsed, 1 = only top level expanded. */
+    expandLevel?: number;
 
     /** True (default) to show a count of group member rows within each full-width group row. */
     showGroupRowCounts?: boolean;
@@ -232,6 +244,13 @@ export interface ZoneGridConfig {
     onCellContextMenu?: (e: CellContextMenuEvent) => void;
 
     /**
+     * Array of labels (or a function returning one) that describes the individual depth
+     * levels in a tree or grouped grid. If provided, will be used to construct expand/collapse
+     * options in the default context menu.
+     */
+    levelLabels?: Thunkable<string[]>;
+
+    /**
      * Number of clicks required to expand / collapse a parent row in a tree grid. Defaults
      * to 2 for desktop, 1 for mobile. Any other value prevents clicks on row body from
      * expanding / collapsing (requires click on tree col affordance to expand/collapse).
@@ -285,10 +304,21 @@ export interface ZoneGridConfig {
 }
 
 /**
- * ZoneGridModel is a wrapper around GridModel, which shows date in a grid with multi-line
- * full-width rows, each broken into four zones for top/bottom and left/right.
+ * Model for a ZoneGrid - a card-style grid that renders each row as a full-width block
+ * divided into four zones: top-left, top-right, bottom-left, and bottom-right. Built on
+ * {@link GridModel} internally.
  *
- * This is the primary app entry-point for specifying ZoneGrid component options and behavior.
+ * Use ZoneGrid when you want a structured multi-field card layout per row without writing
+ * a fully custom renderer. Especially well-suited for mobile or other space-constrained
+ * contexts where horizontal scrolling is undesirable but four or more user-configurable
+ * fields need to be visible per row. The `mappings` config controls which columns appear
+ * in each zone, and users can rearrange them via the optional ZoneMapper UI.
+ *
+ * For a standard column-based grid, use {@link GridModel}. For fully custom row rendering,
+ * use {@link DataViewModel}.
+ *
+ * @see ZoneGrid
+ * @see ZoneGridConfig
  */
 export class ZoneGridModel extends HoistModel {
     @managed
@@ -419,7 +449,7 @@ export class ZoneGridModel extends HoistModel {
         'copyWithHeaders',
         'copyCell',
         '-',
-        'expandCollapseAll',
+        'expandCollapse',
         '-',
         'restoreDefaults',
         '-',
@@ -602,7 +632,7 @@ export class ZoneGridModel extends HoistModel {
 
         return {
             // Controlled properties
-            field: isLeft ? 'left_column' : 'right_column',
+            colId: isLeft ? 'left_column' : 'right_column',
             align: isLeft ? 'left' : 'right',
             isTreeColumn: gridModel?.treeMode && isLeft,
             flex: overrideSpec.width ? null : isLeft ? 2 : 1,

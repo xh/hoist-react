@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
@@ -69,7 +69,7 @@ export const actionCol: ColumnSpec = {
                 disabled,
                 tooltip,
                 intent,
-                className: classNames('bp5-small', 'xh-record-action-button', className),
+                className: classNames('bp6-small', 'xh-record-action-button', className),
                 onClick: ev => {
                     ev.stopPropagation();
                     action.call({record, selectedRecords: [record], gridModel, column});

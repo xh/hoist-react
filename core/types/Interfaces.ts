@@ -2,16 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
-import {ReactElement, ReactNode} from 'react';
-import {LoadSpec} from '../load';
+import {Span} from '@xh/hoist/core';
+import {isString} from 'lodash';
+import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
+import {LoadSpec, LoadSpecConfig} from '../load';
 import {Intent, PlainObject, Thunkable} from './Types';
 
 /**
- * User of the application, as loaded from the server.
+ * A user of the application, as loaded from the server.
  *
  * Note that instances of this class may contain other custom properties serialize by an
  * application.  Applications may wish to extend this interface
@@ -26,6 +29,46 @@ export interface HoistUser {
     isHoistRoleManager: boolean;
     hasRole(s: string): boolean;
     hasGate(s: string): boolean;
+}
+
+/**
+ * Identity of the authenticated user using the application,
+ * along with any user being impersonated.
+ */
+export interface IdentityInfo {
+    /**
+     * Actual underlying user that has authenticated in the app.
+     */
+    authUser: HoistUser;
+
+    /**
+     * User the app should be displayed for.  Typically the same as authUser, but
+     * will be different during impersonation.
+     */
+    apparentUser: HoistUser;
+}
+
+/**
+ * Context passed to `HoistService.initAsync()` and `HoistAppModel.initAsync()`, and forwarded
+ * via `XH.installServicesAsync()` to nest service-init activity under the current phase.
+ *
+ * Apps should pass `ctx` through unchanged to `XH.installServicesAsync()` calls, and use
+ * `ctx.span` as the `parent` for any new spans created during init.
+ */
+export interface InitContext {
+    /** Root span for the current init phase (e.g. `xh.client.hoistInit`, `xh.client.appInit`). */
+    span: Span;
+}
+
+/**
+ * Options governing XH.reloadApp().
+ */
+export interface ReloadAppOptions {
+    /** Relative path to reload (e.g. 'mobile/').  Defaults to the existing location pathname. */
+    path?: string;
+
+    /** Should the query parameters be removed from the url before reload.  Default false. */
+    removeQueryParams?: boolean;
 }
 
 /**
@@ -79,16 +122,17 @@ export interface MessageSpec {
     messageKey?: string;
 
     /** Config for input to be displayed (as a prompt). */
-    input?: {
-        /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
-        item?: ReactElement;
+    input?: MessageSpecInput;
 
-        /** Validation constraints to apply. */
-        rules?: RuleLike[];
+    /** If specified, user will be required to type this text when confirming. */
+    extraConfirmText?: string;
 
-        /** Initial value for the input. */
-        initialValue?: any;
-    };
+    /**
+     * Text/label to inform the user of the text required to confirm.
+     * Only used if extraConfirmText is specified.
+     * Defaults to `Type '${extraConfirmText}' to confirm:`.
+     */
+    extraConfirmLabel?: ReactNode;
 
     /**
      * Props for primary confirm button.
@@ -121,6 +165,17 @@ export interface MessageSpec {
 
     /** Flag to specify whether onCancel is executed when clicking out of or escaping a popup. */
     cancelOnDismiss?: boolean;
+}
+
+export interface MessageSpecInput {
+    /** An element specifying a HoistInput, defaults to a platform appropriate TextInput. */
+    item?: ReactElement;
+
+    /** Validation constraints to apply. */
+    rules?: RuleLike[];
+
+    /** Initial value for the input. */
+    initialValue?: any;
 }
 
 /**
@@ -178,7 +233,7 @@ export interface AppOptionSpec {
     formField: any;
 
     /** Config for FieldModel for the option.*/
-    fieldModel?: any;
+    fieldModel?: Omit<BaseFieldConfig, 'name'>;
 
     /** Function, possibly async, which returns the value. */
     valueGetter?: () => any;
@@ -189,9 +244,22 @@ export interface AppOptionSpec {
     /** True to reload the app after changing this option.  Default false. */
     reloadRequired?: boolean;
 
+    /**
+     * True (default) to refresh the app after changing this option.
+     *
+     * Set to false for options that take effect immediately without requiring a full app
+     * refresh (e.g. visual options unrelated to data). Ignored if `reloadRequired` is true.
+     */
+    refreshRequired?: boolean;
+
     /** Optional flag to omit displaying option. */
     omit?: Thunkable<boolean>;
 }
+
+/**
+ * Severity levels for tracking.  Default is 'INFO'.
+ */
+export type TrackSeverity = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 /**
  * Options for tracking activity on the server via TrackService.
@@ -207,7 +275,7 @@ export interface TrackOptions {
     correlationId?: string;
 
     /** App-supplied data to save along with track log.*/
-    data?: PlainObject | PlainObject[];
+    data?: PlainObject | Array<unknown>;
 
     /**
      * Set true to log on the server all primitive values in the 'data' property.
@@ -219,11 +287,16 @@ export interface TrackOptions {
     logData?: boolean | string[];
 
     /**
-     * Flag to indicate relative importance of activity.
-     * Default 'INFO'. Note, errors should be tracked via {@link XH.handleException}, which
+     * Flag to indicate relative importance of activity. Default 'INFO'.
+     *
+     * Allows conditional saving of messages depending on the currently active
+     * level configuration for the category/user.  See HoistCore's 'TrackService' for
+     * more information.
+     *
+     * Note, errors should be tracked via {@link XH.handleException}, which
      * will post to the server for dedicated logging if requested.
      */
-    severity?: string;
+    severity?: TrackSeverity;
 
     /**
      * Set to true to log this message only once during the current session. The category and
@@ -232,7 +305,7 @@ export interface TrackOptions {
     oncePerSession?: boolean;
 
     /** Optional LoadSpec associated with this track.*/
-    loadSpec?: LoadSpec;
+    loadSpec?: LoadSpec | LoadSpecConfig;
 
     /** Timestamp for action. */
     timestamp?: number;
@@ -245,11 +318,40 @@ export interface TrackOptions {
 }
 
 /**
+ * The base `MenuToken` type.  '-' is interpreted as the standard textless divider.
+ * Components will likely extend this type to support other strings like 'copyToClipboard',
+ * 'print', etc. which the component then converts into a {@link MenuItem}.
+ */
+export type MenuToken = '-';
+
+/**
+ * `MenuContext` is the set of contextual arguments passed to a {@link MenuItem}'s
+ * `actionFn` and `prepareFn`. `contextMenuEvent` is the right click event that opened the
+ * context menu.  It is optional because the `contextMenu` component can also be used on
+ * popover buttons, where there is no `contextMenuEvent`.
+ *
+ * Components offering a built-in {@link contextMenu} can extend `MenuContext` to add values
+ * relevant to the component.  See for example {@link ChartMenuContext}.
+ */
+export interface MenuContext {
+    contextMenuEvent?: MouseEvent | PointerEvent;
+}
+
+/**
+ * A context menu is specified as an array of items, a function to generate one from a click, or
+ * a full element representing a contextMenu Component.
+ */
+export type ContextMenuSpec<T = MenuToken, C = MenuContext> =
+    | MenuItemLike<T, C>[]
+    | ((e: MouseEvent | PointerEvent, context: C) => MenuItemLike<T, C>[])
+    | boolean;
+
+/**
  *  Basic interface for a MenuItem to appear in a menu.
  *
  *  MenuItems can be displayed within a context menu, or shown when clicking on a button.
  */
-export interface MenuItem {
+export interface MenuItem<T = MenuToken, C = MenuContext> {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -263,13 +365,13 @@ export interface MenuItem {
     className?: string;
 
     /** Executed when the user clicks the menu item. */
-    actionFn?: () => void;
+    actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
     /** Executed before the item is shown.  Use to adjust properties dynamically. */
-    prepareFn?: (me: MenuItem) => void;
+    prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
     /** Child menu items. */
-    items?: MenuItemLike[];
+    items?: MenuItemLike<T, C>[];
 
     /** True to disable this item. */
     disabled?: boolean;
@@ -283,12 +385,15 @@ export interface MenuItem {
 
 /**
  * An item that can exist in a Menu.
- *
- * Allows for a ReactNode as divider.  If strings are specified, the implementations may choose
- * an appropriate default display, with '-' providing a standard textless divider that will also
- * be de-duped if appearing at the beginning, or end, or adjacent to another divider at render time.
+ * Components may accept token strings, in addition, '-' will be interpreted as the standard
+ * textless divider that will also be de-duped if appearing at the beginning, or end, or adjacent
+ * to another divider at render time. Also allows for a ReactNode for flexible display.
  */
-export type MenuItemLike = MenuItem | ReactNode;
+export type MenuItemLike<T = MenuToken, C = MenuContext> = MenuItem<T, C> | T | ReactElement;
+
+export function isMenuItem<T, C>(item: MenuItemLike<T, C>): item is MenuItem<T, C> {
+    return !isString(item) && !isValidElement(item);
+}
 
 /**
  * An option to be passed to Select controls

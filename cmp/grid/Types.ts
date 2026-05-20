@@ -2,27 +2,33 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {IRowNode} from '@xh/hoist/kit/ag-grid';
-import {GridFilterFieldSpecConfig} from '@xh/hoist/cmp/grid/filter/GridFilterFieldSpec';
-import {HSide, PersistOptions, Some} from '@xh/hoist/core';
-import {Store, StoreRecord, View} from '@xh/hoist/data';
-import {ReactElement, ReactNode} from 'react';
-import {Column} from './columns/Column';
-import {ColumnGroup} from './columns/ColumnGroup';
-import {GridModel} from './GridModel';
-
+import type {HSide, PersistOptions, Some} from '@xh/hoist/core';
+import type {
+    FilterBindTarget,
+    FilterMatchMode,
+    FilterValueSource,
+    Store,
+    StoreRecord
+} from '@xh/hoist/data';
 import type {
     CellClassParams,
+    CustomCellEditorProps,
     HeaderClassParams,
     HeaderValueGetterParams,
     ICellRendererParams,
+    IRowNode,
     ITooltipParams,
     RowClassParams,
     ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
+import type {ReactElement, ReactNode} from 'react';
+import type {Column, ColumnSpec} from './columns/Column';
+import type {ColumnGroup, ColumnGroupSpec} from './columns/ColumnGroup';
+import type {GridFilterFieldSpecConfig} from './filter/GridFilterFieldSpec';
+import type {GridModel} from './GridModel';
 
 export interface ColumnState {
     colId: string;
@@ -45,8 +51,8 @@ export interface ColumnState {
  *      and a positive number if `b` sorts first.
  */
 export type GridGroupSortFn = (
-    groupAVal: any,
-    groupBVal: any,
+    groupAVal: string,
+    groupBVal: string,
     groupField: string,
     metadata: {
         gridModel: GridModel;
@@ -80,28 +86,54 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistGrouping?: boolean | PersistOptions;
     /** True (default) to include sort state or provide sort-specific PersistOptions. */
     persistSort?: boolean | PersistOptions;
+    /** True (default) to include expanded level state or provide expanded level-specific PersistOptions.  */
+    persistExpandToLevel?: boolean | PersistOptions;
 }
 
+/**
+ * Configuration for a {@link GridFilterModel} - the model powering column-header filter menus.
+ * Passed via the `filterModel` config on {@link GridConfig}.
+ *
+ * @see GridFilterModel
+ * @see GridFilterFieldSpec
+ */
 export interface GridFilterModelConfig {
     /**
-     * Store / Cube View to be filtered as column filters are applied. Defaulted to the
-     * gridModel's store.
+     * Target (typically a {@link Store} or Cube {@link View}) to be filtered as column filters
+     * are applied and used as a source for unique values displayed in the filtering UI when
+     * applicable. Defaulted to the gridModel's store.
      */
-    bind?: Store | View;
+    bind?: GridFilterBindTarget;
 
-    /** True (default) to update filters immediately after each change made in the column-based filter UI.*/
+    /**
+     * True to update filters immediately after each change made in the column-based filter UI.
+     * Defaults to False.
+     */
     commitOnChange?: boolean;
 
     /**
      * Specifies the fields this model supports for filtering. Should be configs for
-     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or omitted
-     * entirely to indicate that all fields should be filter-enabled.
+     * {@link GridFilterFieldSpec}, string names to match with Fields in bound Store/View, or
+     * omitted entirely to indicate that all fields should be filter-enabled.
      */
     fieldSpecs?: Array<string | GridFilterFieldSpecConfig>;
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
     fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
+
+    /**
+     * Icon element rendered in the column header when a filter is active on that column.
+     * Use to customize the icon's appearance with e.g. a specific intent or prefix.
+     * Defaults to `Icon.filter()` (the standard funnel icon in regular/outline style).
+     */
+    activeFilterIcon?: ReactElement;
 }
+
+/**
+ * {@link GridFilterModel} currently accepts a single `bind` target that also provides available
+ * values. Note that both `Store` and `View` satisfy this intersection.
+ */
+export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSource {}
 
 /**
  * Renderer for a group row
@@ -110,7 +142,17 @@ export interface GridFilterModelConfig {
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
+/**
+ * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
+ * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
+ * `GridModel.defaults.colChooserModel`.
+ *
+ * @see ColChooserModel
+ */
 export interface ColChooserConfig {
+    /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
+    gridModel?: GridModel;
+
     /**
      * Immediately render changed columns on grid (default true).
      * Set to false to enable Save button for committing changes on save. Desktop only.
@@ -130,10 +172,20 @@ export interface ColChooserConfig {
     autosizeOnCommit?: boolean;
 
     /** Chooser width for popover and dialog. Desktop only. */
-    width?: number;
+    width?: string | number;
 
     /** Chooser height for popover and dialog. Desktop only. */
-    height?: number;
+    height?: string | number;
+
+    /** Mode to use when filtering (default 'startWord'). Desktop only. */
+    filterMatchMode?: FilterMatchMode;
+}
+
+export type ColumnOrGroup = Column | ColumnGroup;
+export type ColumnOrGroupSpec = ColumnSpec | ColumnGroupSpec;
+
+export function isColumnSpec(spec: ColumnOrGroupSpec): spec is ColumnSpec {
+    return !('children' in spec);
 }
 
 /**
@@ -242,7 +294,7 @@ export type ColumnTooltipFn<T = any> = (
  * @returns CSS class(es) to use.
  */
 export type ColumnHeaderClassFn = (context: {
-    column: Column | ColumnGroup;
+    column: ColumnOrGroup;
     gridModel: GridModel;
     agParams: HeaderClassParams;
 }) => Some<string>;
@@ -278,15 +330,24 @@ export type ColumnEditableFn = (params: {
 }) => boolean;
 
 /**
- * Function to return one Grid cell editor.  This value will be used to create a new Component
- * whenever editing is initiated on a cell.
+ * Function to return one Grid cell editor. This function will be used to create a new
+ * Component, whenever editing is initiated on a cell.
+ * The never parameter is never provided - it is included to satisfy typescript. See
+ * discussion in https://github.com/xh/hoist-react/pull/3351.
  * @returns the react element to use as the cell editor.
  */
-export type ColumnEditorFn = (params: {
+export type ColumnEditorFn = (props: ColumnEditorProps, never?: any) => ReactElement;
+
+/**
+ * The object passed into the first argument of {@link ColumnSpec.editor}.
+ * Satisfies the {@link EditorProps} of an editor component.
+ */
+export type ColumnEditorProps = {
     record: StoreRecord;
     column: Column;
     gridModel: GridModel;
-}) => ReactElement;
+    agParams: CustomCellEditorProps;
+};
 
 /**
  * Function to update the value of a StoreRecord field after inline editing
@@ -312,6 +373,10 @@ export type ColumnGetValueFn<T = any> = (params: {
     gridModel: GridModel;
 }) => T;
 
+/**
+ * Entry within a {@link ColumnSpec.sortingOrder} array, defining one step in the sort cycle
+ * applied by successive clicks on a column header.
+ */
 export interface ColumnSortSpec {
     /** Direction to sort, either 'asc' or 'desc', or null to remove sort. */
     sort: 'asc' | 'desc' | null;

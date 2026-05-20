@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
@@ -21,20 +21,24 @@ export class TrackService extends HoistService {
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
-    get conf() {
-        return XH.getConf('xhActivityTrackingConfig', {
+    get conf(): ActivityTrackingConfig {
+        const appConfig = XH.getConf('xhActivityTrackingConfig', {});
+        return {
+            clientHealthReport: {intervalMins: -1},
             enabled: true,
+            logData: false,
             maxDataLength: 2000,
             maxRows: {
                 default: 10000,
                 options: [1000, 5000, 10000, 25000]
             },
-            logData: false
-        });
+            levels: [{username: '*', category: '*', severity: 'INFO'}],
+            ...appConfig
+        };
     }
 
     get enabled(): boolean {
@@ -79,28 +83,32 @@ export class TrackService extends HoistService {
             sent.set(key, true);
         }
 
-        // Otherwise - log and for next batch,
+        // Otherwise - log and queue to send with next debounced push to server.
         this.logMessage(options);
 
         this.pending.push(this.toServerJson(options));
         this.pushPendingBuffered();
     }
 
-    //------------------
-    // Implementation
-    //------------------
-    private async pushPendingAsync() {
+    /**
+     * Flush the queue of pending activity tracking messages to the server.
+     * @internal - apps should generally allow this service to manage w/its internal debounce.
+     */
+    async pushPendingAsync() {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
         this.pending = [];
-        await XH.fetchService.postJson({
+        await this.newSpan('xh.client.track.push').postJson({
             url: 'xh/track',
             body: {entries: pending},
             params: {clientUsername: XH.getUsername()}
         });
     }
 
+    //------------------
+    // Implementation
+    //------------------
     @debounced(10 * SECONDS)
     private pushPendingBuffered() {
         this.pushPendingAsync();
@@ -111,6 +119,9 @@ export class TrackService extends HoistService {
             msg: stripTags(options.message),
             clientUsername: XH.getUsername(),
             appVersion: XH.getEnv('clientVersion'),
+            clientAppCode: XH.clientAppCode,
+            loadId: XH.loadId,
+            tabId: XH.tabId,
             url: window.location.href,
             timestamp: Date.now()
         };
@@ -122,10 +133,11 @@ export class TrackService extends HoistService {
         if (options.logData !== undefined) ret.logData = options.logData;
         if (options.elapsed !== undefined) ret.elapsed = options.elapsed;
 
-        const {maxDataLength} = this.conf;
-        if (ret.data?.length > maxDataLength) {
+        const {maxDataLength} = this.conf,
+            dataLength = JSON.stringify(ret.data)?.length ?? 0;
+        if (dataLength > maxDataLength) {
             this.logWarn(
-                `Track log includes ${ret.data.length} chars of JSON data`,
+                `Track log includes ${dataLength} chars of JSON data`,
                 `exceeds limit of ${maxDataLength}`,
                 'data will not be persisted',
                 options.data
@@ -144,4 +156,22 @@ export class TrackService extends HoistService {
 
         this.logInfo(...consoleMsgs);
     }
+}
+
+interface ActivityTrackingConfig {
+    clientHealthReport?: Partial<TrackOptions> & {
+        intervalMins: number;
+    };
+    enabled: boolean;
+    logData: boolean;
+    maxDataLength: number;
+    maxRows?: {
+        default: number;
+        options: number[];
+    };
+    levels?: Array<{
+        username: string | '*';
+        category: string | '*';
+        severity: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+    }>;
 }

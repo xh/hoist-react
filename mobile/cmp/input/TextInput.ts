@@ -2,17 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
-import {withDefault} from '@xh/hoist/utils/js';
+import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import './TextInput.scss';
 
@@ -58,7 +59,7 @@ export interface TextInputProps extends HoistProps, HoistInputProps, StyleProps,
     spellCheck?: boolean;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /** Underlying HTML <input> element type. */
     type?: 'text' | 'password';
@@ -138,6 +139,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
                 type: props.type,
                 className: 'xh-text-input__input',
                 style: {textAlign: withDefault(props.textAlign, 'left')},
+                [TEST_ID]: props.testId,
 
                 onInput: model.onChange,
                 onKeyDown: model.onKeyDown,
@@ -156,6 +158,7 @@ const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>
         tabIndex: -1,
         minimal: true,
         omit: !model.showClearButton,
+        testId: getTestId(model.componentProps, 'clear-btn'),
         onClick: () => {
             model.noteValueChange(null);
             model.doCommit();

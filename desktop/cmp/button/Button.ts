@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import {
@@ -23,11 +23,7 @@ import {ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
-    extends HoistProps<M>,
-        StyleProps,
-        LayoutProps,
-        TestSupportProps,
-        Omit<BpButtonProps, 'ref'> {
+    extends HoistProps<M>, StyleProps, LayoutProps, TestSupportProps, Omit<BpButtonProps, 'ref'> {
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
@@ -46,20 +42,30 @@ export interface ButtonProps<M extends HoistModel = null>
     tooltip?: string;
 }
 
+export interface ButtonDefaults {
+    minimal?: boolean;
+    outlined?: boolean;
+}
+
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
  * and adds layout support for top-level sizing and margin/padding props.
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
+export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults>({
     displayName: 'Button',
     model: false,
     className: 'xh-button',
+    defaults: {
+        minimal: true,
+        outlined: false
+    },
 
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
-            classes = [];
+            classes = [],
+            {defaults} = Button;
 
         const {
             autoFocus,
@@ -67,9 +73,9 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             disabled,
             icon,
             intent,
-            minimal = true,
+            minimal = defaults.minimal,
             onClick,
-            outlined,
+            outlined = defaults.outlined,
             rightIcon,
             style,
             text,

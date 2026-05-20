@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
+import {fragment, p} from '@xh/hoist/cmp/layout';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
@@ -80,7 +81,7 @@ export class RoleModel extends HoistModel {
             runInAction(() => {
                 this.allRoles = this.processRolesFromServer(data);
             });
-            this.displayRoles();
+            this.displayRoles(loadSpec.isRefresh);
             await this.gridModel.preSelectFirstAsync();
         } catch (e) {
             if (loadSpec.isStale) return;
@@ -125,10 +126,15 @@ export class RoleModel extends HoistModel {
         if (this.readonly) return false;
 
         const confirm = await XH.confirm({
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this application.`,
+            message: fragment(
+                p(`Are you sure you want to delete the ${role.name} role?`),
+                p(`This may impact access to this application.`)
+            ),
+            extraConfirmText: role.name,
             confirmProps: {
-                text: 'Yes, delete role',
+                text: 'Delete role',
                 intent: 'danger',
+                outlined: true,
                 autoFocus: false
             }
         });
@@ -191,7 +197,7 @@ export class RoleModel extends HoistModel {
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
-                    .linkTo(this.loadModel),
+                    .linkTo(this.loadObserver),
             recordsRequired: 1
         };
     }
@@ -212,13 +218,13 @@ export class RoleModel extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private displayRoles() {
+    private displayRoles(isRefresh?: boolean) {
         const {gridModel} = this,
             gridData = this.showInGroups
                 ? this.processRolesForTreeGrid(this.allRoles)
                 : this.allRoles;
         gridModel.loadData(gridData);
-        gridModel.expandAll();
+        if (!isRefresh) gridModel.expandAll();
         gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
@@ -275,7 +281,7 @@ export class RoleModel extends HoistModel {
         return new GridModel({
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
-            autosizeOptions: {mode: 'managed'},
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             selModel: 'multiple',
             emptyText: 'No roles found.',
             colChooserModel: true,
@@ -328,6 +334,7 @@ export class RoleModel extends HoistModel {
                 {
                     ...actionCol,
                     actionsShowOnHoverOnly: true,
+                    excludeFromChooser: true,
                     width: calcActionColWidth(1),
                     actions: [this.editAction()],
                     omit: this.readonly
@@ -353,7 +360,7 @@ export class RoleModel extends HoistModel {
 
     private getContextMenuItems() {
         return this.readonly
-            ? [this.groupByAction(), '-', ...GridModel.defaultContextMenu]
+            ? [this.groupByAction(), '-', ...GridModel.defaults.contextMenu]
             : [
                   this.addAction(),
                   this.editAction(),
@@ -364,7 +371,7 @@ export class RoleModel extends HoistModel {
                   '-',
                   this.groupByAction(),
                   '-',
-                  ...GridModel.defaultContextMenu
+                  ...GridModel.defaults.contextMenu
               ];
     }
 

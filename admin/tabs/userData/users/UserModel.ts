@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
@@ -25,6 +25,7 @@ export class UserModel extends HoistModel {
         makeObservable(this);
 
         this.gridModel = new GridModel({
+            emptyText: 'No users found.',
             persistWith: this.persistWith,
             colChooserModel: true,
             enableExport: true,

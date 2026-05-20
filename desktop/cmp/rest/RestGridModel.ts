@@ -2,23 +2,31 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {RowDoubleClickedEvent} from '@ag-grid-community/core';
 import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
+import {ReactNode} from 'react';
 import {FormFieldProps} from '../form';
 import {addAction, deleteAction, editAction, viewAction} from './Actions';
 import {RestStore, RestStoreConfig} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
+/**
+ * Configuration for a {@link RestGridModel} - extends {@link GridConfig} with CRUD support
+ * for editing records via a built-in form backed by a hoist-core `RestController`.
+ *
+ * @see RestGridModel
+ * @see RestGrid
+ */
 export interface RestGridConfig extends GridConfig {
     store?: RestStore | RestStoreConfig;
 
@@ -39,9 +47,9 @@ export interface RestGridConfig extends GridConfig {
 
     /** Warning to display before actions on a selection of records. */
     actionWarning?: {
-        add?: string | ((recs: StoreRecord[]) => string);
-        del?: string | ((recs: StoreRecord[]) => string);
-        edit?: string | ((recs: StoreRecord[]) => string);
+        add?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
+        del?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
+        edit?: ReactNode | ((recs: StoreRecord[]) => ReactNode);
     };
 
     /** Name that describes records in this grid. */
@@ -86,10 +94,22 @@ export interface RestGridEditor {
     omit?: boolean | ((fieldValue: unknown, model: RestFormModel) => boolean);
 }
 
+export interface RestGridModelDefaults {
+    showRefreshButton?: boolean;
+    unit?: string;
+}
+
 /**
- * Core Model for a RestGrid.
+ * Core Model for a {@link RestGrid}. Configures the grid's columns, editors, toolbar and
+ * context menu actions, and its backing {@link RestStore} for server-side CRUD operations.
  */
 export class RestGridModel extends HoistModel {
+    /** App-level defaults for RestGridModel. Instance config takes precedence. */
+    static defaults: RestGridModelDefaults = {
+        showRefreshButton: false,
+        unit: 'record'
+    };
+
     declare config: RestGridConfig;
 
     //----------------
@@ -109,11 +129,7 @@ export class RestGridModel extends HoistModel {
         add: null,
         edit: null,
         del: recs =>
-            recs.length > 1
-                ? `Are you sure you want to delete the selected ${recs.length} ${pluralize(
-                      this.unit
-                  )}?`
-                : `Are you sure you want to delete the selected ${this.unit}?`
+            `Are you sure you want to delete ${pluralize(`selected ${this.unit}`, recs.length, true)}?`
     };
 
     @managed gridModel: GridModel = null;
@@ -137,10 +153,10 @@ export class RestGridModel extends HoistModel {
         toolbarActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         menuActions = !readonly ? [addAction, editAction, deleteAction] : [viewAction],
         formActions = !readonly ? [deleteAction] : [],
-        showRefreshButton = false,
+        showRefreshButton = RestGridModel.defaults.showRefreshButton,
         actionWarning,
         prepareCloneFn,
-        unit = 'record',
+        unit = RestGridModel.defaults.unit,
         filterFields,
         editors = [],
         onRowDoubleClicked,
@@ -170,7 +186,7 @@ export class RestGridModel extends HoistModel {
         });
 
         this.gridModel = new GridModel({
-            contextMenu: [...this.menuActions, '-', ...GridModel.defaultContextMenu],
+            contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
             enableExport: true,
@@ -211,7 +227,7 @@ export class RestGridModel extends HoistModel {
         return this.store
             .deleteRecordAsync(record)
             .then(() => this.formModel.close())
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 
@@ -227,7 +243,7 @@ export class RestGridModel extends HoistModel {
 
                 XH.toast({intent, message});
             })
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 

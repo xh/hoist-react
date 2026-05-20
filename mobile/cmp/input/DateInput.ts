@@ -2,19 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, StyleProps, LayoutProps, HSide, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, StyleProps, LayoutProps, PlainObject} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {singleDatePicker} from '@xh/hoist/kit/react-dates';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
+import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
+import type {Property} from 'csstype';
 import moment from 'moment';
 import './DateInput.scss';
 import {ReactElement} from 'react';
@@ -68,7 +69,7 @@ export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps,
     singleDatePickerProps?: PlainObject;
 
     /** Alignment of entry text within control, default 'left'. */
-    textAlign?: HSide;
+    textAlign?: Property.TextAlign;
 
     /** Type of value to publish. Defaults to 'date'. */
     valueType?: 'date' | 'localDate';
@@ -207,6 +208,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 displayFormat: model.getFormat(),
                 showClearDate: enableClear,
                 placeholder: props.placeholder,
+                [TEST_ID]: props.testId,
 
                 ...props.singleDatePickerProps
             }),

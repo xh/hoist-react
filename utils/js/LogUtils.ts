@@ -2,13 +2,89 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
-import {castArray, isString} from 'lodash';
-import {intersperse} from './LangUtils';
+import type {Some} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
+import {castArray, isUndefined} from 'lodash';
+import store from 'store2';
+import {intersperse, type NameSource, parseNameSource} from './LangUtils';
 
-export type LogSource = string | {displayName: string} | {constructor: {name: string}};
+/**
+ * Utility functions providing managed, structured logging to Hoist apps.
+ *
+ * Essentially a wrapper around the browser console supporting logging levels, timing, and
+ * miscellaneous Hoist display conventions.
+ *
+ * Objects extending `HoistBase` need not import these functions directly, as they are available
+ * via delegates on `HoistBase`.
+ *
+ * Hoist sets its minimum severity level to 'info' by default.  This prevents performance or
+ * memory impacts that might result from verbose debug logging.  This can be adjusted by calling
+ * XH.logLevel from the console.
+ */
+
+/** Severity Level for log statement */
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
+/** @deprecated Use {@link NameSource} from LangUtils. */
+export type LogSource = NameSource;
+
+export interface APIWarnOptions {
+    /**
+     * If provided and undefined, this method will be a no-op.
+     * Useful for testing if a parameter has been provided in caller.
+     */
+    test?: any;
+
+    /** Version when this API will no longer be supported or this warning should be removed. */
+    v?: string;
+
+    /** An additional message. Can contain suggestions for alternatives. */
+    msg?: string;
+
+    /** Source of message for labelling log message.  */
+    source?: NameSource;
+}
+
+/**
+ * Current minimum severity for Hoist log utils (default 'info').
+ * Messages logged via managed Hoist log utils with lower severity will be ignored.
+ *
+ * @internal - use public `XH.logLevel`.
+ */
+export function getLogLevel() {
+    return _logLevel;
+}
+
+/**
+ * Set the minimum severity for Hoist log utils until the page is refreshed. Optionally persist
+ * this adjustment to localStorage for up to 24 hours.
+ *
+ * @internal - use public `XH.setLogLevel()`.
+ */
+export function setLogLevel(level: LogLevel, persistMins: number = -1) {
+    level = level.toLowerCase() as LogLevel;
+
+    const validLevels = ['error', 'warn', 'info', 'debug'];
+    if (!validLevels.includes(level)) {
+        console.error(`Ignored invalid log level '${level}' - must be one of ${validLevels}`);
+        return;
+    }
+    if (persistMins > 1440) {
+        console.error(`Ignored invalid 'persistMins' value - must be less than 1440`);
+        return;
+    }
+    _logLevel = level;
+    if (level != 'info') {
+        console.warn(`Client logging set to level '${level}'.`);
+    }
+    if (persistMins > 0) {
+        store.local.set('xhLogLevel', level);
+        store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
+        console.warn(`Logging level '${level}' will persist for ${persistMins} minutes.`);
+    }
+}
 
 /**
  * Time and log execution of a function to `console.info()`.
@@ -24,7 +100,7 @@ export type LogSource = string | {displayName: string} | {constructor: {name: st
  * @param fn - function to execute
  * @param source - class, function or string to label the source of the message
  */
-export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
+export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: NameSource): T {
     return loggedDo(msgs, fn, source, 'info');
 }
 
@@ -32,7 +108,7 @@ export function withInfo<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource
  * Time and log execution of a function to `console.debug()`.
  * @see withInfo
  */
-export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSource): T {
+export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: NameSource): T {
     return loggedDo(msgs, fn, source, 'debug');
 }
 
@@ -41,7 +117,7 @@ export function withDebug<T>(msgs: Some<unknown>, fn: () => T, source?: LogSourc
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logInfo(msgs: Some<unknown>, source?: LogSource) {
+export function logInfo(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'info');
 }
 
@@ -50,7 +126,7 @@ export function logInfo(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logDebug(msgs: Some<unknown>, source?: LogSource) {
+export function logDebug(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'debug');
 }
 
@@ -59,7 +135,7 @@ export function logDebug(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logError(msgs: Some<unknown>, source?: LogSource) {
+export function logError(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'error');
 }
 
@@ -68,14 +144,66 @@ export function logError(msgs: Some<unknown>, source?: LogSource) {
  * @param msgs - message(s) to output
  * @param source - class, function or string to label the source of the message
  */
-export function logWarn(msgs: Some<unknown>, source?: LogSource) {
+export function logWarn(msgs: Some<unknown>, source?: NameSource) {
     return loggedDo(msgs, null, source, 'warn');
+}
+
+/**
+ * Log a warning to the console if a condition evaluates as truthy.
+ */
+export function warnIf(condition: any, message: any) {
+    if (condition) {
+        logWarn(message);
+    }
+}
+
+/**
+ * Log an error to the console if a condition evaluates as truthy.
+ */
+export function errorIf(condition: any, message: any) {
+    if (condition) {
+        logError(message);
+    }
+}
+
+/**
+ * Document and prevent usage of a removed parameter.
+ */
+export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const src = opts.source ? `[${opts.source}] ` : '',
+        msg = opts.msg ? ` ${opts.msg}.` : '';
+    // low-level exception api for low-level package
+    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
+}
+
+/**
+ * Document and warn on usage of a deprecated API
+ *
+ * @param name - the name of the deprecated parameter
+ */
+const _seenWarnings = {};
+export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
+    if ('test' in opts && isUndefined(opts.test)) return;
+
+    const v = opts.v ?? 'a future release',
+        msg = opts.msg ?? '',
+        warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
+    if (!_seenWarnings[warn]) {
+        logWarn(warn, opts.source);
+        _seenWarnings[warn] = true;
+    }
 }
 
 //----------------------------------
 // Implementation
 //----------------------------------
-function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, level: LogLevel) {
+function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: NameSource, level: LogLevel): T {
+    if (_severity[level] < _severity[_logLevel]) {
+        return fn?.();
+    }
+
     let src = parseSource(source);
     let msgs = castArray(messages);
 
@@ -117,14 +245,6 @@ function loggedDo<T>(messages: Some<unknown>, fn: () => T, source: LogSource, le
     return ret;
 }
 
-function parseSource(source: LogSource): string {
-    if (!source) return null;
-    if (isString(source)) return source;
-    if (source['displayName']) return source['displayName'];
-    if (source.constructor) return source.constructor.name;
-    return null;
-}
-
 function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     if (src) msgs = [`[${src}]`, ...msgs];
 
@@ -146,4 +266,18 @@ function writeLog(msgs: unknown[], src: string, level: LogLevel) {
     }
 }
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+/** Parse a LogSource into a canonical string label. */
+function parseSource(source: NameSource): string {
+    return parseNameSource(source);
+}
+
+//----------------------------------------------------------------
+// Initialization + Level/Severity support.
+// Initialize during parsing to make available immediately.
+//----------------------------------------------------------------
+let _logLevel: LogLevel = 'info';
+const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
+
+const level = store.local.get('xhLogLevel'),
+    expire = store.local.get('xhLogLevelExpire');
+setLogLevel(level && expire > Date.now() ? level : 'info');

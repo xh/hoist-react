@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import {
@@ -20,7 +20,8 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {SetOptional} from 'type-fest';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
-    extends HoistProps<M>,
+    extends
+        HoistProps<M>,
         LayoutProps,
         StyleProps,
         TestSupportProps,

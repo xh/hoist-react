@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
 import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
@@ -65,8 +65,8 @@ export class RecategorizeDialogModel extends HoistModel {
                     }
                 })
                 .linkTo(this.savingTask);
-            await this.parent.refreshAsync();
             this.close();
+            await this.parent.refreshAsync();
         } catch (e) {
             XH.handleException(e);
         }

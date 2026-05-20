@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
+import {cardHeaderImpl} from '@xh/hoist/mobile/cmp/card/impl/CardHeaderImpl';
 import {errorMessageImpl} from '@xh/hoist/mobile/cmp/error/impl/ErrorMessage';
 import {maskImpl} from '@xh/hoist/mobile/cmp/mask/impl/Mask';
 import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
@@ -24,13 +25,12 @@ import {aboutDialog} from './AboutDialog';
 import {banner} from './Banner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
-import {idlePanel} from './IdlePanel';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
 import {messageSource} from './MessageSource';
 import {optionsDialog} from './OptionsDialog';
-import {suspendPanel} from './SuspendPanel';
+import {suspendPanel} from './suspend/SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
 
@@ -42,7 +42,8 @@ installMobileImpls({
     ColChooserModel,
     zoneMapper,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    cardHeaderImpl
 });
 
 /**
@@ -144,7 +145,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
 });
 
 const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
-    mask({bind: model.appLoadModel, spinner: true})
+    mask({bind: model.appLoadObserver, spinner: true})
 );
 
 const bannerList = hoistCmp.factory<AppContainerModel>({
@@ -157,16 +158,4 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
     }
 });
 
-const suspendedView = hoistCmp.factory<AppContainerModel>({
-    render({model}) {
-        let ret;
-        if (model.appStateModel.suspendData?.reason === 'IDLE') {
-            const content = model.appSpec.idlePanel ?? idlePanel;
-            ret = elementFromContent(content, {onReactivate: () => XH.reloadApp()});
-        } else {
-            ret = suspendPanel();
-        }
-
-        return viewport(ret, appLoadMask());
-    }
-});
+const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));

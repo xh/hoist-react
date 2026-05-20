@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
@@ -51,7 +51,7 @@ export class RestStore extends UrlStore {
             .then(() => {
                 this.updateData({remove: [rec.id]});
             })
-            .linkTo(this.loadModel);
+            .linkTo(this.loadObserver);
     }
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
@@ -60,18 +60,18 @@ export class RestStore extends UrlStore {
             resp = await XH.fetchJson({
                 url: `${url}/bulkDelete`,
                 params: {ids}
-            }).linkTo(this.loadModel);
+            }).linkTo(this.loadObserver);
 
         await this.loadAsync();
         return resp;
     }
 
     async addRecordAsync(rec: {id?: StoreRecordId; data: PlainObject}) {
-        return this.saveRecordInternalAsync(rec, true).linkTo(this.loadModel);
+        return this.saveRecordInternalAsync(rec, true).linkTo(this.loadObserver);
     }
 
     async saveRecordAsync(rec: {id: StoreRecordId; data: PlainObject}) {
-        return this.saveRecordInternalAsync(rec, false).linkTo(this.loadModel);
+        return this.saveRecordInternalAsync(rec, false).linkTo(this.loadObserver);
     }
 
     async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
@@ -81,7 +81,7 @@ export class RestStore extends UrlStore {
                     url: `${url}/bulkUpdate`,
                     body: {ids, newParams}
                 })
-                .linkTo(this.loadModel);
+                .linkTo(this.loadObserver);
 
         await this.loadAsync();
         return resp;

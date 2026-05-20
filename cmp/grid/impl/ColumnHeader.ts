@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -11,7 +11,7 @@ import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {debounced} from '@xh/hoist/utils/js';
+import {debounced, consumeEvent} from '@xh/hoist/utils/js';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {
     filter,
@@ -70,7 +70,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: model.isAgFiltered ? Icon.filter() : Icon.columnMenu(),
+                item: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
                 onClick: e => {
                     e.stopPropagation();
@@ -229,6 +229,10 @@ class ColumnHeaderModel extends HoistModel {
         return this.isAgFiltered || this.columnHeaderFilterModel?.isFiltered;
     }
 
+    get activeFilterIcon() {
+        return this.gridModel?.filterModel?.activeFilterIcon ?? Icon.filter();
+    }
+
     // Ag-Grid's filter callback
     onFilterChanged = () => {
         this.isAgFiltered = this.agColumn.isFilterActive();
@@ -253,8 +257,7 @@ class ColumnHeaderModel extends HoistModel {
     onExpandOrCollapse = e => {
         const {gridModel, majorityIsExpanded} = this;
 
-        e.stopPropagation();
-        e.preventDefault();
+        consumeEvent(e);
         if (majorityIsExpanded) {
             gridModel.collapseAll();
         } else {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -32,7 +32,6 @@ export const columnHeaderFilter = hoistCmp.factory({
                 isOpen ? 'xh-column-header-filter__icon--open' : null,
                 hasFilter ? 'xh-column-header-filter__icon--active' : null
             ),
-            popoverClassName: 'xh-popup--framed',
             position: 'right-top',
             hasBackdrop: true,
             interactionKind: 'click',
@@ -40,7 +39,7 @@ export const columnHeaderFilter = hoistCmp.factory({
                 if (!open) model.close();
             },
             item: div({
-                item: hasFilter ? Icon.filter() : Icon.columnMenu(),
+                item: hasFilter ? model.activeFilterIcon : Icon.columnMenu(),
                 onClick: e => {
                     e.stopPropagation();
                     model.open();

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AboutDialogModel} from '@xh/hoist/appcontainer/AboutDialogModel';
 import {filler, frame} from '@xh/hoist/cmp/layout';
@@ -42,10 +42,26 @@ export const aboutDialog = hoistCmp.factory({
                     item: model.getTable()
                 }),
                 toolbar(
+                    button({
+                        text: 'Send Client Health Report',
+                        icon: Icon.health(),
+                        testId: 'xh-about-health-report-btn',
+                        omit: !XH.clientHealthService.enabled,
+                        onClick: async () => {
+                            try {
+                                await XH.clientHealthService.sendReportAsync();
+                                XH.successToast('Client health report successfully submitted.');
+                            } catch (e) {
+                                XH.handleException('Error sending client health report', e);
+                            }
+                        }
+                    }),
                     filler(),
                     button({
                         text: 'Close',
                         intent: 'primary',
+                        outlined: true,
+                        testId: 'xh-about-close-btn',
                         onClick: onClose
                     })
                 )

@@ -2,11 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
 import {
+    AggregationContext,
     Aggregator,
     AverageAggregator,
     AverageStrictAggregator,
@@ -25,26 +26,8 @@ import {
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
-    /** True to allow this field to be used for grouping.*/
-    isDimension?: boolean;
-
-    /**
-     * Instance of a Hoist Cube Aggregator (from the aggregate package), or string alias for the
-     * same (e.g. 'MAX').
-     */
-    aggregator?:
-        | Aggregator
-        | 'AVG'
-        | 'AVG_STRICT'
-        | 'CHILD_COUNT'
-        | 'LEAF_COUNT'
-        | 'MAX'
-        | 'MIN'
-        | 'NULL'
-        | 'SINGLE'
-        | 'SUM'
-        | 'SUM_STRICT'
-        | 'UNIQUE';
+    /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
+    aggregator?: Aggregator | AggregatorToken;
 
     /** Function to determine if aggregation should be performed at a given level of a query result. */
     canAggregateFn?: CanAggregateFn;
@@ -60,22 +43,43 @@ export interface CubeFieldSpec extends FieldSpec {
     parentDimension?: string;
 }
 
+/** Convenient (and serializable) alias for one of Hoist's Cube {@link Aggregator} classes. */
+export type AggregatorToken =
+    | 'AVG'
+    | 'AVG_STRICT'
+    | 'CHILD_COUNT'
+    | 'LEAF_COUNT'
+    | 'MAX'
+    | 'MIN'
+    | 'NULL'
+    | 'SINGLE'
+    | 'SUM'
+    | 'SUM_STRICT'
+    | 'UNIQUE';
+
 /**
  * @param dimension - dimension of aggregation
  * @param value - value of record on dimension
  * @param appliedDims - *all* applied dimension values for this record
+ * @param context - current aggregation context
  */
-export type CanAggregateFn = (dimension: string, value: any, appliedDims: PlainObject) => boolean;
+export type CanAggregateFn = (
+    dimension: string,
+    value: any,
+    appliedDims: PlainObject,
+    context: AggregationContext
+) => boolean;
 
 /**
  * Metadata used to define a measure or dimension in Cube. For properties present on raw data source
  * objects to be included in a Cube, the Cube must be configured with a matching Field that tells
  * it to extract the data from the source objects and how to aggregate or filter on that data.
+ *
+ * @mcpHint field with aggregation metadata for use within a Cube
  */
 export class CubeField extends Field {
     aggregator: Aggregator;
     canAggregateFn: CanAggregateFn;
-    isDimension: boolean;
     isLeafDimension: boolean;
     parentDimension: string;
 
@@ -92,7 +96,6 @@ export class CubeField extends Field {
     static uniqueAggregator = new UniqueAggregator();
 
     constructor({
-        isDimension = false,
         aggregator = null,
         canAggregateFn = null,
         isLeafDimension = false,
@@ -100,7 +103,6 @@ export class CubeField extends Field {
         ...fieldArgs
     }: CubeFieldSpec) {
         super(fieldArgs);
-        this.isDimension = isDimension;
 
         // Metrics
         this.aggregator = this.parseAggregator(aggregator);
@@ -114,7 +116,7 @@ export class CubeField extends Field {
     //------------------------
     // Implementation
     //------------------------
-    private parseAggregator(val: any): Aggregator {
+    private parseAggregator(val: Aggregator | AggregatorToken): Aggregator {
         if (isString(val)) {
             switch (val) {
                 case 'AVG':

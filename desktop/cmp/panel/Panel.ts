@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
@@ -15,7 +15,8 @@ import {
     Some,
     TaskObserver,
     useContextModel,
-    uses
+    uses,
+    type ContextMenuSpec
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
@@ -25,16 +26,17 @@ import '@xh/hoist/desktop/register';
 import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {castArray, omitBy} from 'lodash';
+import classNames from 'classnames';
+import {omitBy} from 'lodash';
 import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
-import {ContextMenuSpec} from '../contextmenu/ContextMenu';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
 import './Panel.scss';
 import {PanelModel} from './PanelModel';
 
-export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'title'> {
+export interface PanelProps<M extends PanelModel = PanelModel>
+    extends HoistProps<M>, Omit<BoxProps, 'title'> {
     /** True to style panel header (if displayed) with reduced padding and font-size. */
     compactHeader?: boolean;
 
@@ -81,19 +83,29 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
      * A toolbar to be docked at the top of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
-    tbar?: Some<ReactNode>;
+    tbar?: ReactNode;
 
     /**
-     * A toolbar to be docked at the top of the panel.
+     * A toolbar to be docked at the bottom of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
-    bbar?: Some<ReactNode>;
+    bbar?: ReactNode;
 
     /** Title text added to the panel's header. */
     title?: ReactNode;
 
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
+
+    /** Additional props to pass to the inner frame hosting child `items`. */
+    contentBoxProps?: BoxProps;
+
+    /** Allow the panel content area to scroll vertically. */
+    scrollable?: boolean;
+}
+
+export interface PanelDefaults {
+    compactHeader?: boolean;
 }
 
 /**
@@ -101,11 +113,11 @@ export interface PanelProps extends HoistProps<PanelModel>, Omit<BoxProps, 'titl
  * w/standardized styling, title, and Icon as well as support for top and bottom toolbars.
  *
  * Panels also support resizing and collapsing their contents via its `model` prop. Provide an
- * optional `PanelModel` config as a prop to enable and customize these features.
+ * optional {@link PanelModel} config as a prop to enable and customize these features.
  *
  * A Panel will accept a ref argument to provide access to its top level DOM element.
  */
-export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
+export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
     displayName: 'Panel',
     model: uses(PanelModel, {
         fromContext: false,
@@ -113,6 +125,9 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         createDefault: () => new PanelModel({collapsible: false, resizable: false, xhImpl: true})
     }),
     className: 'xh-panel',
+    defaults: {
+        compactHeader: false
+    },
 
     render({model, className, testId, ...props}, ref) {
         const contextModel = useContextModel('*');
@@ -120,23 +135,26 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         let wasDisplayed = useRef(false),
             [layoutProps, nonLayoutProps] = splitLayoutProps(props);
 
-        const {
-            tbar,
-            bbar,
-            title,
-            icon,
-            compactHeader,
-            collapsedTitle,
-            collapsedIcon,
-            headerClassName,
-            headerItems,
-            mask: maskProp,
-            loadingIndicator: loadingIndicatorProp,
-            contextMenu,
-            hotkeys,
-            children,
-            ...rest
-        } = nonLayoutProps;
+        const {defaults} = Panel,
+            {
+                tbar,
+                bbar,
+                title,
+                icon,
+                compactHeader = defaults.compactHeader,
+                collapsedTitle,
+                collapsedIcon,
+                headerClassName,
+                headerItems,
+                mask: maskProp,
+                loadingIndicator: loadingIndicatorProp,
+                contextMenu,
+                hotkeys,
+                contentBoxProps,
+                scrollable,
+                children,
+                ...rest
+            } = nonLayoutProps;
 
         useLayoutEffect(() => {
             model.enforceSizeLimits();
@@ -184,7 +202,16 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                 style: {display: isRenderedCollapsed ? 'none' : 'flex'},
                 items: Children.toArray([
                     parseToolbar(tbar),
-                    ...castArray(children),
+                    frame({
+                        display: scrollable ? 'block' : 'flex',
+                        ...contentBoxProps,
+                        className: classNames('xh-panel__content', contentBoxProps?.className),
+                        flexDirection: contentBoxProps?.flexFlow
+                            ? undefined
+                            : (contentBoxProps?.flexDirection ?? 'column'),
+                        overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
+                        items: children
+                    }),
                     parseToolbar(bbar)
                 ])
             });
@@ -202,7 +229,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
-            className: 'xh-panel__content',
+            className: 'xh-panel__inner',
             items: [
                 panelHeader({
                     title,
@@ -255,15 +282,15 @@ function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel
     if (isValidElement(propVal)) return propVal;
     if (propVal === true) return cmp({isDisplayed: true});
     if (propVal === 'onLoad') {
-        const loadModel = ctxModel?.loadModel;
-        if (!loadModel) {
+        const loadObserver = ctxModel?.loadObserver;
+        if (!loadObserver) {
             logWarn(
                 `Cannot use 'onLoad' for '${propName}'. The linked context model (${ctxModel?.constructor.name} ${ctxModel?.xhId}) must enable LoadSupport to support this feature.`,
                 Panel
             );
             return null;
         }
-        return cmp({bind: loadModel, spinner: true});
+        return cmp({bind: loadObserver, spinner: true});
     }
     return cmp({bind: propVal, spinner: true});
 }

@@ -13,6 +13,12 @@ tsconfig.tsbuildinfo
 # Logs
 *.log
 
+# Local Claude Code instructions
+CLAUDE.local.md
+
+# GSD project planning (archived to hoist-ai repo)
+.planning/
+
 # OS generated files
 .DS_Store
 .DS_Store?

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FeedbackDialogModel} from '@xh/hoist/appcontainer/FeedbackDialogModel';
 import {filler} from '@xh/hoist/cmp/layout';
@@ -37,12 +37,14 @@ export const feedbackDialog = hoistCmp.factory({
                     height: 250,
                     style: {marginBottom: 2},
                     commitOnChange: true,
-                    bind: 'message'
+                    bind: 'message',
+                    testId: 'xh-feedback-message'
                 }),
                 toolbar(
                     filler(),
                     button({
                         text: 'Cancel',
+                        testId: 'xh-feedback-cancel-btn',
                         onClick: () => model.hide()
                     }),
                     button({
@@ -50,6 +52,7 @@ export const feedbackDialog = hoistCmp.factory({
                         intent: 'success',
                         minimal: false,
                         disabled: !model.message,
+                        testId: 'xh-feedback-send-btn',
                         onClick: () => model.submitAsync()
                     })
                 )

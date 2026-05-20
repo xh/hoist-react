@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH} from '@xh/hoist/core';
+import {Runner, SpanConfigLike, XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {map} from 'lodash';
 import {ViewInfo} from './ViewInfo';
@@ -24,6 +24,9 @@ export class DataAccess<T> {
         this.model = model;
     }
 
+    private newSpan(span: SpanConfigLike): Runner {
+        return Runner.create(null, this).newSpan(span);
+    }
     //---------------
     // Load/search.
     //---------------
@@ -31,7 +34,7 @@ export class DataAccess<T> {
     async fetchDataAsync(): Promise<{views: ViewInfo[]; state: ViewUserState}> {
         const {typeDisplayName, type, instance} = this.model;
         try {
-            const ret = await XH.fetchJson({
+            const ret = await this.newSpan('xh.client.view.getAll').fetchJson({
                 url: 'xhView/allData',
                 params: {type, viewInstance: instance}
             });
@@ -47,15 +50,18 @@ export class DataAccess<T> {
         }
     }
 
-    /** Fetch the latest version of a view. */
-    async fetchViewAsync(info: ViewInfo): Promise<View<T>> {
+    /** Fetch the latest version of a view, or the in-code default if token null/undefined/empty. */
+    async fetchViewAsync(token: string): Promise<View<T>> {
         const {model} = this;
-        if (!info) return View.createDefault(model);
+        if (!token) return View.createDefault(model);
         try {
-            const raw = await XH.fetchJson({url: 'xhView/get', params: {token: info.token}});
+            const raw = await this.newSpan('xh.client.view.get').fetchJson({
+                url: 'xhView/get',
+                params: {token}
+            });
             return View.fromBlob(raw, model);
         } catch (e) {
-            throw XH.exception({message: `Unable to fetch ${info.typedName}`, cause: e});
+            throw XH.exception({message: `Unable to fetch view with token ${token}`, cause: e});
         }
     }
 
@@ -63,7 +69,7 @@ export class DataAccess<T> {
     async createViewAsync(spec: ViewCreateSpec): Promise<View<T>> {
         const {model} = this;
         try {
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.create').postJson({
                 url: 'xhView/create',
                 body: {type: model.type, ...spec}
             });
@@ -77,7 +83,7 @@ export class DataAccess<T> {
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
         try {
             this.ensureEditable(view);
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.updateInfo').postJson({
                 url: 'xhView/updateInfo',
                 params: {token: view.token},
                 body: updates
@@ -88,22 +94,11 @@ export class DataAccess<T> {
         }
     }
 
-    /** Promote a view to global visibility/ownership status. */
-    async makeViewGlobalAsync(view: ViewInfo): Promise<View<T>> {
-        try {
-            this.ensureEditable(view);
-            const raw = await XH.fetchJson({url: 'xhView/makeGlobal', params: {token: view.token}});
-            return View.fromBlob(raw, this.model);
-        } catch (e) {
-            throw XH.exception({message: `Unable to update ${view.typedName}`, cause: e});
-        }
-    }
-
     /** Update a view's value. */
     async updateViewValueAsync(view: View<T>, value: Partial<T>): Promise<View<T>> {
         try {
             this.ensureEditable(view.info);
-            const raw = await XH.postJson({
+            const raw = await this.newSpan('xh.client.view.updateValue').postJson({
                 url: 'xhView/updateValue',
                 params: {token: view.token},
                 body: value
@@ -120,7 +115,7 @@ export class DataAccess<T> {
     async deleteViewsAsync(views: ViewInfo[]) {
         views.forEach(v => this.ensureEditable(v));
         try {
-            await XH.postJson({
+            await this.newSpan('xh.client.view.delete').postJson({
                 url: 'xhView/delete',
                 params: {tokens: map(views, 'token').join(',')}
             });
@@ -137,7 +132,7 @@ export class DataAccess<T> {
     //--------------------------
     async updateStateAsync(update: Partial<ViewUserState>): Promise<ViewUserState> {
         const {type, instance} = this.model;
-        return XH.postJson({
+        return this.newSpan('xh.client.view.updateState').postJson({
             url: 'xhView/updateState',
             params: {type, viewInstance: instance},
             body: update

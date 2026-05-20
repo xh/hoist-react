@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, managed, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -24,7 +24,7 @@ import {withDefault} from '@xh/hoist/utils/js';
  *     to customize via the global options dialog, or set a default pref value if per-user
  *     customization is not desirable.
  *
- * @see RefreshContextModel - the underlying mechanism used to implement the refresh.
+ * @see RefreshContextModel
  */
 export class AutoRefreshService extends HoistService {
     override xhImpl = true;
@@ -44,7 +44,7 @@ export class AutoRefreshService extends HoistService {
         return withDefault(conf[XH.clientAppCode], -1);
     }
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         this.initTime = Date.now();
 
         this.timer = Timer.create({

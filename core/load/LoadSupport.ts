@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     HoistBase,
@@ -32,7 +32,7 @@ export class LoadSupport extends HoistBase implements Loadable {
     lastSucceeded: LoadSpec = null;
 
     @managed
-    loadModel: TaskObserver = TaskObserver.trackLast();
+    loadObserver: TaskObserver = TaskObserver.trackLast();
 
     @observable.ref
     lastLoadRequested: Date = null;
@@ -51,6 +51,16 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
+    /**
+     * Trigger a managed load through the target's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request.
+     *
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
     async loadAsync(loadSpec?: LoadSpecConfig) {
         throwIf(
             loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
@@ -70,14 +80,26 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
+    /**
+     * Run the managed-load lifecycle for the target: short-circuits redundant
+     * auto-refreshes, links the load to the `loadObserver`, delegates to
+     * `target.doLoadAsync(loadSpec)`, and updates `lastLoadCompleted` /
+     * `lastLoadException` on completion.
+     *
+     * Application code should not override or call this directly - it is the
+     * orchestrator that the public entry points (`loadAsync`/`refreshAsync`/
+     * `autoRefreshAsync`) ultimately invoke. Application templates that opt
+     * into managed loading override `doLoadAsync` on their own model/service
+     * class instead (see {@link Loadable.doLoadAsync}).
+     */
     async doLoadAsync(loadSpec: LoadSpec) {
-        let {target, loadModel} = this;
+        let {target, loadObserver} = this;
 
         // Auto-refresh:
-        // Skip if we have a pending triggered refresh, and never link to loadModel
+        // Skip if we have a pending triggered refresh, and never link to loadObserver
         if (loadSpec.isAutoRefresh) {
-            if (loadModel.isPending) return;
-            loadModel = null;
+            if (loadObserver.isPending) return;
+            loadObserver = null;
         }
 
         runInAction(() => (this.lastLoadRequested = new Date()));
@@ -87,7 +109,7 @@ export class LoadSupport extends HoistBase implements Loadable {
 
         return target
             .doLoadAsync(loadSpec)
-            .linkTo(loadModel)
+            .linkTo(loadObserver)
             .catch(e => {
                 exception = e;
                 throw e;
@@ -135,7 +157,7 @@ export async function loadAllAsync(objs: Loadable[], loadSpec?: LoadSpec | any) 
         ret = await Promise.allSettled(promises);
 
     ret.filter(it => it.status === 'rejected').forEach((err: any) =>
-        console.error('Failed to Load Object', err.reason)
+        logError(['Failed to Load Object', err.reason])
     );
 
     return ret;

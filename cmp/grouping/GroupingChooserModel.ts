@@ -2,43 +2,77 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
-import {genDisplayName} from '@xh/hoist/data';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import {Field, genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {difference, isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
+import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';
 
+/**
+ * Configuration for a {@link GroupingChooserModel} - a control for selecting multi-level
+ * dimension groupings, typically bound to a Cube {@link View} or {@link GridModel}.
+ *
+ * @see GroupingChooserModel
+ * @see DimensionSpec
+ */
 export interface GroupingChooserConfig {
-    /**
-     * Dimensions available for selection. When using GroupingChooser to create Cube queries,
-     * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
-     * Note that {@link CubeField} meets the `DimensionSpec` interface.
-     */
-    dimensions?: (DimensionSpec | string)[];
-
-    /** Initial value as an array of dimension names, or a function to produce such an array. */
-    initialValue?: string[] | (() => string[]);
-
-    /** Initial favorites as an array of dim name arrays, or a function to produce such an array. */
-    initialFavorites?: string[][] | (() => string[][]);
-
-    /** Options governing persistence. */
-    persistWith?: GroupingChooserPersistOptions;
-
     /** True to accept an empty list as a valid value. */
     allowEmpty?: boolean;
 
-    /** Maximum number of dimensions allowed in a single grouping. */
-    maxDepth?: number;
+    /**
+     * Target ({@link GridModel} or Cube {@link View}) to which this model's grouping value
+     * should be automatically applied as it changes. When bound to a GridModel, calls
+     * `setGroupBy()`; when bound to a View, calls `updateQuery({dimensions: ...})`.
+     *
+     * This is a two-way binding - changes to the target's value are reflected back into
+     * the GroupingChooserModel automatically.
+     */
+    bind?: GroupingBindTarget;
 
     /**
      * False (default) waits for the user to dismiss the popover before updating the
      * external/observable value.
      */
+    commitOnChange?: boolean;
+
+    /**
+     * Dimensions available for selection. When using GroupingChooser to create Cube queries,
+     * it is recommended to pass the `dimensions` from the related cube (or a subset thereof).
+     * Note that {@link CubeField} meets the `DimensionSpec` interface.
+     *
+     * If omitted and `bind` is provided, dimensions will be auto-populated from the target:
+     * fields with `isDimension: true` from a GridModel's store, or from a View's associated Cube.
+     * If provided alongside `bind`, dimensions will be validated against the target's fields.
+     */
+    dimensions?: (DimensionSpec | string)[];
+
+    /**
+     * Initial favorites as an array of dim name arrays, or a function to produce such an array.
+     * Ignored if `persistWith.persistFavorites: false`.
+     */
+    initialFavorites?: string[][] | (() => string[][]);
+
+    /** Initial value as an array of dimension names, or a function to produce such an array. */
+    initialValue?: string[] | (() => string[]);
+
+    /** Maximum number of dimensions allowed in a single grouping. */
+    maxDepth?: number;
+
+    /** Options governing persistence. */
+    persistWith?: GroupingChooserPersistOptions;
+
+    /**
+     * True (default) to auto-sort dimensions by label. Set to false to show them in the order
+     * provided in the `dimensions` config.
+     */
+    sortDimensions?: boolean;
+}
+
+export interface GroupingChooserModelDefaults {
     commitOnChange?: boolean;
 }
 
@@ -62,29 +96,43 @@ export interface GroupingChooserPersistOptions extends PersistOptions {
     persistFavorites?: boolean | PersistOptions;
 }
 
+/** Target to which GroupingChooser value changes should be automatically synced. */
+export type GroupingBindTarget = GridModel | View;
+
+/**
+ * Model for a control that allows users to select and order a list of dimensions for use with
+ * grouping APIs, such as Grid `groupBy` or Cube queries.
+ *
+ * Manages the current dimension selection, available dimensions, user-managed favorites, and
+ * drag-and-drop reordering. Supports bidirectional binding to a {@link GridModel} or Cube
+ * {@link View} via the `bind` config - grouping changes are automatically applied to the
+ * target, and external changes to the target are reflected back into this model.
+ *
+ * Dimensions can be auto-populated from the bind target or specified explicitly. When binding
+ * to a Cube View, {@link CubeField} instances satisfy the {@link DimensionSpec} interface.
+ *
+ * Supports persistence of both the current value and favorites via `persistWith`.
+ *
+ * @see GroupingChooser
+ */
 export class GroupingChooserModel extends HoistModel {
+    /** App-level defaults for GroupingChooserModel. Instance config takes precedence. */
+    static defaults: GroupingChooserModelDefaults = {
+        commitOnChange: false
+    };
+
     @observable.ref value: string[];
     @observable.ref favorites: string[][] = [];
 
     allowEmpty: boolean;
-    maxDepth: number;
+    bind: GroupingBindTarget;
     commitOnChange: boolean;
+    maxDepth: number;
     persistFavorites: boolean = false;
+    sortDimensions: boolean;
 
-    // Implementation fields for Control
-    @observable.ref pendingValue: string[] = [];
-    @observable editorIsOpen: boolean = false;
-    @observable favoritesIsOpen: boolean = false;
-    popoverRef = createObservableRef<HTMLElement>();
-
-    // Internal state
-    @observable.ref private dimensions: Record<string, DimensionSpec>;
-    @observable.ref private dimensionNames: string[];
-
-    @computed
-    get availableDims(): string[] {
-        return difference(this.dimensionNames, this.pendingValue);
-    }
+    @observable.ref dimensions: Record<string, DimensionSpec>;
+    @observable.ref dimensionNames: string[];
 
     @computed
     get dimensionSpecs(): DimensionSpec[] {
@@ -92,34 +140,34 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     @computed
-    get isValid(): boolean {
-        return this.validateValue(this.pendingValue);
-    }
-
-    @computed
-    get isAddEnabled(): boolean {
-        const {pendingValue, maxDepth, dimensionNames, availableDims} = this,
-            limit =
-                maxDepth > 0 ? Math.min(maxDepth, dimensionNames.length) : dimensionNames.length,
-            atMaxDepth = pendingValue.length === limit;
-        return !atMaxDepth && !isEmpty(availableDims);
+    get valueDisplayNames(): string[] {
+        return this.value.map(dimName => this.getDimDisplayName(dimName));
     }
 
     constructor({
-        dimensions,
-        initialValue = [],
-        initialFavorites = [],
-        persistWith = null,
         allowEmpty = false,
+        bind = null,
+        commitOnChange = GroupingChooserModel.defaults.commitOnChange,
+        dimensions,
+        initialFavorites = [],
+        initialValue = [],
         maxDepth = null,
-        commitOnChange = false
+        persistWith = null,
+        sortDimensions = true
     }: GroupingChooserConfig) {
         super();
         makeObservable(this);
 
         this.allowEmpty = allowEmpty;
-        this.maxDepth = maxDepth;
+        this.bind = bind;
         this.commitOnChange = commitOnChange;
+        this.maxDepth = maxDepth;
+        this.sortDimensions = sortDimensions;
+
+        // Auto-populate dimensions from bind target if not explicitly provided.
+        if (!dimensions && bind) {
+            dimensions = this.getDimensionsFromTarget();
+        }
 
         this.setDimensions(dimensions);
 
@@ -135,12 +183,25 @@ export class GroupingChooserModel extends HoistModel {
 
         if (persistWith) this.initPersist(persistWith);
 
-        this.addReaction({
-            track: () => this.pendingValue,
-            run: () => {
-                if (this.commitOnChange) this.setValue(this.pendingValue);
-            }
-        });
+        if (bind) {
+            this.addReaction({
+                track: () => this.value,
+                run: value => this.updateTargetValue(value),
+                fireImmediately: true
+            });
+
+            this.addReaction({
+                track: () => this.targetValue,
+                run: targetValue => {
+                    if (isEqual(this.value, targetValue)) return;
+                    throwIf(
+                        !this.validateValue(targetValue),
+                        `Bound target has grouping dimensions not present in GroupingChooserModel: [${targetValue}].`
+                    );
+                    this.setValue(targetValue);
+                }
+            });
+        }
     }
 
     @action
@@ -152,6 +213,7 @@ export class GroupingChooserModel extends HoistModel {
 
         this.dimensions = this.normalizeDimensions(dimensions);
         this.dimensionNames = keys(this.dimensions);
+        if (this.bind) this.ensureDimensionsValid();
         this.removeUnknownDimsFromValue();
     }
 
@@ -162,69 +224,6 @@ export class GroupingChooserModel extends HoistModel {
             return;
         }
         this.value = value;
-        this.pendingValue = value;
-    }
-
-    @action
-    toggleEditor() {
-        this.pendingValue = this.value;
-        this.editorIsOpen = !this.editorIsOpen;
-        this.favoritesIsOpen = false;
-    }
-
-    @action
-    toggleFavoritesMenu() {
-        this.favoritesIsOpen = !this.favoritesIsOpen;
-        this.editorIsOpen = false;
-    }
-
-    @action
-    closePopover() {
-        this.editorIsOpen = false;
-        this.favoritesIsOpen = false;
-    }
-
-    //-------------------------
-    // Value handling
-    //-------------------------
-    @action
-    addPendingDim(dimName: string) {
-        if (!dimName) return;
-        this.pendingValue = [...this.pendingValue, dimName];
-    }
-
-    @action
-    replacePendingDimAtIdx(dimName: string, idx: number) {
-        if (!dimName) return this.removePendingDimAtIdx(idx);
-        const pendingValue = [...this.pendingValue];
-        pendingValue[idx] = dimName;
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    removePendingDimAtIdx(idx: number) {
-        const pendingValue = [...this.pendingValue];
-        pendingValue.splice(idx, 1);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    movePendingDimToIndex(dimName: string, toIdx: number) {
-        const pendingValue = [...this.pendingValue],
-            dim = pendingValue.find(it => it === dimName),
-            fromIdx = pendingValue.indexOf(dim);
-
-        pendingValue.splice(toIdx, 0, pendingValue.splice(fromIdx, 1)[0]);
-        this.pendingValue = pendingValue;
-    }
-
-    @action
-    commitPendingValueAndClose() {
-        const {pendingValue, value} = this;
-        if (!isEqual(value, pendingValue) && this.validateValue(pendingValue)) {
-            this.setValue(pendingValue);
-        }
-        this.closePopover();
     }
 
     validateValue(value: string[]) {
@@ -242,15 +241,6 @@ export class GroupingChooserModel extends HoistModel {
     }
 
     //--------------------
-    // Drag Drop
-    //--------------------
-    onDragEnd(result) {
-        const {draggableId, destination} = result;
-        if (!destination) return;
-        this.movePendingDimToIndex(draggableId, destination.index);
-    }
-
-    //--------------------
     // Favorites
     //--------------------
     get favoritesOptions() {
@@ -261,6 +251,11 @@ export class GroupingChooserModel extends HoistModel {
             })),
             it => it.label[0]
         );
+    }
+
+    @computed
+    get hasFavorites() {
+        return !isEmpty(this.favorites);
     }
 
     @action
@@ -286,6 +281,43 @@ export class GroupingChooserModel extends HoistModel {
     //------------------------
     // Implementation
     //------------------------
+    @computed.struct
+    private get targetValue(): string[] {
+        const {bind} = this;
+        if (!bind) return null;
+        if (bind instanceof View) {
+            return bind.query?.dimensions?.map(d => d.name) ?? [];
+        } else {
+            return bind.groupBy ?? [];
+        }
+    }
+
+    private updateTargetValue(value: string[]) {
+        const {bind} = this;
+        if (bind instanceof View) {
+            bind.updateQuery({dimensions: value});
+        } else {
+            bind.setGroupBy(value);
+        }
+    }
+
+    private get targetFields(): Field[] {
+        const {bind} = this;
+        return bind instanceof View ? bind.cube.fields : bind.store.fields;
+    }
+
+    private getDimensionsFromTarget(): DimensionSpec[] {
+        return this.targetFields.filter(f => f.isDimension);
+    }
+
+    private ensureDimensionsValid() {
+        const targetFieldNames = this.targetFields.map(f => f.name);
+        throwIf(
+            this.dimensionNames.some(d => !targetFieldNames.includes(d)),
+            "GroupingChooserModel has dimensions not found in bound target's fields."
+        );
+    }
+
     private initPersist({
         persistValue = true,
         persistFavorites = true,
@@ -293,7 +325,9 @@ export class GroupingChooserModel extends HoistModel {
         ...rootPersistWith
     }: GroupingChooserPersistOptions) {
         if (persistValue) {
-            const persistWith = isObject(persistValue) ? persistValue : rootPersistWith;
+            const persistWith = isObject(persistValue)
+                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
+                : rootPersistWith;
             PersistenceProvider.create({
                 persistOptions: {
                     path: `${path}.value`,
@@ -308,7 +342,9 @@ export class GroupingChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites) ? persistFavorites : rootPersistWith,
+            const persistWith = isObject(persistFavorites)
+                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
+                    : rootPersistWith,
                 provider = PersistenceProvider.create({
                     persistOptions: {
                         path: `${path}.favorites`,

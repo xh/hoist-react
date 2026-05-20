@@ -2,14 +2,20 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
-import {pull} from 'lodash';
 import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager/ViewManagerModel';
 
+/**
+ * PersistenceProvider that delegates state storage to a ViewManagerModel, enabling components
+ * to persist their state as part of user-managed named views.
+ *
+ * @see ViewManagerModel
+ * @see PersistenceProvider
+ */
 export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     readonly viewManagerModel: ViewManagerModel;
 
@@ -18,12 +24,7 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
         const {viewManagerModel} = cfg.persistOptions;
         throwIf(!viewManagerModel, `ViewManagerProvider requires a 'viewManagerModel'.`);
         this.viewManagerModel = viewManagerModel;
-        viewManagerModel.providers.push(this);
-    }
-
-    pushStateToTarget() {
-        const state = this.read();
-        this.target.setPersistableState(state ? state : this.defaultState);
+        viewManagerModel.registerProvider(this);
     }
 
     //----------------
@@ -38,10 +39,7 @@ export class ViewManagerProvider<S> extends PersistenceProvider<S> {
     }
 
     override destroy() {
-        if (this.viewManagerModel) {
-            pull(this.viewManagerModel.providers, this);
-        }
-
+        this.viewManagerModel?.unregisterProvider(this);
         super.destroy();
     }
 }

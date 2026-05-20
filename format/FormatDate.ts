@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
-import {defaults, isString} from 'lodash';
+import {DAYS, isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import {defaults, isFinite, isString} from 'lodash';
 import moment from 'moment';
 import {ReactNode} from 'react';
-import {DateLike} from '../core/types/Types';
+import {DateLike, PlainObject} from '../core/types/Types';
 import {fmtSpan, FormatOptions} from './FormatMisc';
 import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
@@ -28,7 +28,10 @@ export interface DateFormatOptions extends FormatOptions<DateLike> {
     /** Display value for null values. */
     nullDisplay?: ReactNode;
 
-    /** A MomentJs format string. */
+    /**
+     * A MomentJs format string. Wrap literal text in square brackets to prevent
+     * interpretation as format tokens - e.g. `'[today at] h:mma'`.
+     */
     fmt?: string;
 }
 
@@ -95,19 +98,20 @@ export function fmtTime(v: DateLike, opts?: DateFormatOptions | string) {
 
 export interface CompactDateFormatOptions extends FormatOptions<DateLike> {
     /**
-     * Format for date matching current day, defaults to 'hh:mma' for dates, 'MMM D' for LocalDates.
+     * Format for date matching current day, defaults to 'hh:mma' for dates, 'MMM D' for
+     * LocalDates. Wrap literal text in square brackets - e.g. `'[today]'` or `'[today at] h:mma'`.
      */
     sameDayFmt?: string;
 
     /**
-     *  Format for dates within the number of months specified by the distantThreshold, defaults
-     *  to 'MMM D'.
+     * Format for dates within the number of months specified by the distantThreshold, defaults
+     * to 'MMM D'. Wrap literal text in square brackets - e.g. `'[recent]'`.
      */
     nearFmt?: string;
 
     /**
      * Format for dates beyond number of months specified by the distantThreshold, defaults to
-     * 'YYYY-MM-DD'.
+     * 'YYYY-MM-DD'. Wrap literal text in square brackets - e.g. `'[older]'`.
      */
     distantFmt?: string;
 
@@ -146,6 +150,48 @@ export function fmtCompactDate(v: DateLike, opts?: CompactDateFormatOptions) {
     }
 
     return fmtDate(v, dateOpts);
+}
+
+export interface TimestampReplacerConfig {
+    /**
+     * Suffixes used to identify keys that may hold timestamps.
+     * Defaults to ['time', 'date', 'timestamp']
+     */
+    suffixes?: string[];
+
+    /**
+     * Format for replaced timestamp.
+     * Defaults to 'MMM DD HH:mm:ss.SSS'
+     */
+    format?: string;
+}
+
+/**
+ * Replace timestamps in an Object with formatted strings.
+ */
+export function withFormattedTimestamps(
+    obj: PlainObject,
+    config: TimestampReplacerConfig = {}
+): PlainObject {
+    return JSON.parse(JSON.stringify(obj, timestampReplacer(config)));
+}
+
+/**
+ * Create a replacer, suitable for JSON.stringify, that will replace timestamps with
+ * formatted strings.
+ */
+export function timestampReplacer(
+    config: TimestampReplacerConfig = {}
+): (k: string, v: any) => any {
+    const suffixes = config.suffixes ?? ['time', 'date', 'timestamp'],
+        fmt = 'MMM DD HH:mm:ss.SSS';
+    return (k: string, v: any) => {
+        return suffixes.some(s => k.toLowerCase().endsWith(s.toLowerCase())) &&
+            isFinite(v) &&
+            v > Date.now() - 25 * 365 * DAYS // heuristic to avoid catching smaller ms ranges
+            ? fmtDateTime(v, {fmt})
+            : v;
+    };
 }
 
 export const dateRenderer = createRenderer(fmtDate),

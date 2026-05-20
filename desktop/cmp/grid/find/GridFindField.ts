@@ -2,11 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import composeRefs from '@seznam/compose-react-refs/composeRefs';
+import type {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import type {FilterMatchMode} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -24,7 +26,7 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     gridModel?: GridModel;
 
     /** Mode to use when searching (default 'startWord'). */
-    matchMode?: 'start' | 'startWord' | 'any';
+    matchMode?: FilterMatchMode;
 
     /**
      * Delay (in ms) to buffer searching the grid after the value changes from user input.
@@ -60,7 +62,7 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
 export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindFieldProps>({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
-    render({className, model, ...props}) {
+    render({className, model, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel(GridFindFieldImplModel);
 
@@ -72,7 +74,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                 textInput({
                     model: impl,
                     bind: 'query',
-                    ref: impl.inputRef,
+                    ref: composeRefs(impl.inputRef, ref),
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,

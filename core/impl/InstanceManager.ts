@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {HoistService, HoistModel} from '../';
@@ -51,6 +51,7 @@ class InstanceManager {
     registerModelWithTestId(testId: string, m: HoistModel) {
         if (
             isNil(testId) ||
+            isNil(m) ||
             !m.isHoistModel ||
             !this.testSupportedModels.has(m.constructor.name) ||
             this.modelsByTestId.has(testId)

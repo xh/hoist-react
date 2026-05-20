@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {badge} from '@xh/hoist/cmp/badge';
 import {hbox} from '@xh/hoist/cmp/layout';
@@ -44,7 +44,7 @@ export class RoleDetailsModel extends HoistModel {
                 );
 
                 this.setTabTitle('users', 'Users', role?.effectiveUsers);
-                this.setTabTitle('directories', 'Directories', role?.effectiveDirectoryGroups);
+                this.setTabTitle('directories', 'Dir. Groups', role?.effectiveDirectoryGroups);
                 this.setTabTitle('effectiveRoles', 'Granted To', role?.effectiveRoles);
                 this.setTabTitle('inheritedRoles', 'Inheriting From', role?.inheritedRoles);
             },
@@ -69,7 +69,6 @@ export class RoleDetailsModel extends HoistModel {
 
     private createTabContainerModel(): TabContainerModel {
         return new TabContainerModel({
-            switcher: true,
             tabs: [
                 {
                     id: 'users',
@@ -77,6 +76,7 @@ export class RoleDetailsModel extends HoistModel {
                 },
                 {
                     id: 'directories',
+                    title: 'Dir. Groups',
                     omit: !this.roleModel.moduleConfig.directoryGroupsSupported,
                     content: directoryMembers
                 },

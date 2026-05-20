@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {managed, PlainObject, XH} from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
+import {ValidationResult, ValidationState} from '@xh/hoist/data';
 import {action, computed, makeObservable, override} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
@@ -15,36 +15,50 @@ import {BaseFieldModel, BaseFieldConfig} from './BaseFieldModel';
 import {FormConfig} from '../FormModel';
 
 export interface SubformsFieldConfig extends BaseFieldConfig {
-    /** Config for FormModel representing a subform. */
+    /**
+     * Config for a {@link FormModel} to be auto-created to manage and validate the data for each
+     * object in this field's collection.
+     */
     subforms: FormConfig;
 
     /**
-     * Initial value of this field.  If a function, will be
-     * executed dynamically when form is initialized to provide value.
+     * Initial value of this field. If a function, will be executed dynamically when form is
+     * initialized to provide value.
      */
-    initialValue?: any[];
+    initialValue?: Thunkable<PlainObject[]>;
+}
+
+export interface SubformAddOptions {
+    /** Initial values for the new object/subform. */
+    initialValues?: PlainObject;
+    /** Index within the collection where the new subform should be inserted. */
+    index?: number;
 }
 
 /**
- * A data field in a form whose value is a collection of FormModels (subforms).
+ * A data field in a form whose value is a collection of nested objects - all of the same shape, but
+ * with arbitrary internal complexity. A dedicated {@link FormModel} is auto-created to manage and
+ * validate each object independently.
  *
- * Applications should initialize this field with an array of objects.  These values will be
- * loaded into an array of managed FormModels which will form the value of this field.
+ * Applications should initialize this field with an array of objects. These values will be loaded
+ * into an array of managed FormModels which will form the value of this field.
  *
  * Applications should *not* modify the value property directly, unless they wish to reinitialize
- * all existing form contents to new values.  Use the methods add() or remove() to
- * adjust the contents of the collection while preserving existing form state.
+ * all existing form contents to new values. Call {@link add} or {@link remove} on one of these
+ * fields to adjust the contents of its collection while preserving existing state.
  *
- * Validation rules for the entire collection may be specified as for any field, but
- * validations on the subforms will also bubble up to this field, affecting its overall
- * validation state.
+ * Validation rules for the entire collection may be specified as for any field, but ValidationResults on
+ * the subforms will also bubble up to this field, affecting its overall validation state.
  */
 export class SubformsFieldModel extends BaseFieldModel {
-    // (Sub)FormModels created by this model, tracked to support cleanup.
-    @managed
-    private createdModels: FormModel[] = [];
+    declare value: FormModel[];
+    declare initialValue: FormModel[];
+
+    /** (Sub)FormModels created by this model, tracked to support cleanup. */
+    @managed private createdModels: FormModel[] = [];
+
     private formConfig: FormConfig = null;
-    private origInitialValues: any[];
+    private readonly origInitialValues: Thunkable<PlainObject[]>;
 
     constructor({subforms, initialValue = [], ...rest}: SubformsFieldConfig) {
         super(rest);
@@ -96,16 +110,18 @@ export class SubformsFieldModel extends BaseFieldModel {
         this.addAutorun(() => {
             const {disabled, readonly, value} = this;
             value.forEach(sub => {
-                sub.setDisabled(disabled);
-                sub.setReadonly(readonly);
+                sub.disabled = disabled;
+                sub.readonly = readonly;
             });
         });
     }
 
     @computed
-    override get allErrors(): string[] {
-        const subErrs = flatMap(this.value, s => s.allErrors);
-        return [...this.errors, ...subErrs];
+    override get allValidationResults(): ValidationResult[] {
+        const subVals = flatMap(this.value, v => {
+            return v.fieldList.flatMap(field => field.validationResults);
+        });
+        return [...this.validationResults, ...subVals];
     }
 
     @override
@@ -161,14 +177,9 @@ export class SubformsFieldModel extends BaseFieldModel {
     //-----------------------------
     // Collection management
     //-----------------------------
-    /**
-     * Add a new record (subform) to this field.
-     *
-     * @param initialValues - object containing initial values for new record.
-     * @param index - index in collection where subform should be inserted.
-     */
+    /** Add a new object (subform) to this field's collection. */
     @action
-    add(opts: {initialValues?: PlainObject; index?: number} = {}) {
+    add(opts: SubformAddOptions = {}) {
         const {initialValues = {}, index = this.value.length} = opts,
             newSubforms = this.parseValue([initialValues]),
             newValue = clone(this.value);

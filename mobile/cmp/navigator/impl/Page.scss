@@ -1,7 +1,9 @@
-.xh-page .page__content {
+.xh-page {
   display: flex;
   align-items: stretch;
   flex-direction: column;
-  transform: translateX(0);
+  height: 100%;
+  width: 100%;
+  background: var(--xh-bg);
   font-family: var(--xh-font-family);
 }

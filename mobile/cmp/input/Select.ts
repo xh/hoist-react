@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -663,6 +663,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 item: box({
                     item: factory(rsProps),
                     className,
+                    testId: props.testId,
                     ref
                 })
             }),
@@ -674,6 +675,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             className,
             ...layoutProps,
             width: withDefault(width, null),
+            testId: props.testId,
             ref
         });
     }

@@ -2,13 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppState, AppSuspendData, HoistModel, XH} from '@xh/hoist/core';
+import {AppState, AppSuspendData, HoistModel, PlainObject, XH} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
-import {getClientDeviceInfo} from '@xh/hoist/utils/js';
-import {camelCase, isBoolean, isString, mapKeys} from 'lodash';
+import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
 
 /**
  * Support for Core Hoist Application state and loading.
@@ -24,8 +23,13 @@ export class AppStateModel extends HoistModel {
     suspendData: AppSuspendData;
     accessDeniedMessage: string = 'Access Denied';
 
-    private timings: Record<AppState, number> = {} as Record<AppState, number>;
-    private loadStarted: number = window['_xhLoadTimestamp']; // set in index.html
+    /**
+     * Timestamp when the app first started loading, prior to even JS download/eval.
+     * Read from timestamp set on window within index.html.
+     */
+    readonly loadStarted: number = window['_xhLoadTimestamp'];
+    readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
+
     private lastStateChangeTime: number = this.loadStarted;
 
     constructor() {
@@ -53,7 +57,7 @@ export class AppStateModel extends HoistModel {
         this.setAppState('SUSPENDED');
         XH.webSocketService.shutdown();
         Timer.cancelAll();
-        XH.appContainerModel.appLoadModel.clear();
+        XH.appContainerModel.appLoadObserver.clear();
     }
 
     checkAccess(): boolean {
@@ -81,22 +85,22 @@ export class AppStateModel extends HoistModel {
         const {timings, loadStarted} = this;
         this.addReaction({
             when: () => this.state === 'RUNNING',
-            run: () =>
+            run: () => {
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
                     elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
                     data: {
-                        appVersion: XH.appVersion,
-                        appBuild: XH.appBuild,
-                        locationHref: window.location.href,
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
-                        ...getClientDeviceInfo()
+                        clientHealth: XH.clientHealthService.getReport(),
+                        window: this.getWindowData(),
+                        screen: this.getScreenData()
                     },
-                    logData: ['appVersion', 'appBuild'],
                     omit: !XH.appSpec.trackAppLoad
-                })
+                });
+                this.logDebug('Load timings', this.timings);
+            }
         });
     }
 
@@ -109,5 +113,37 @@ export class AppStateModel extends HoistModel {
                 this.lastActivityMs = Date.now();
             });
         });
+    }
+
+    private getScreenData(): PlainObject {
+        const screen = window.screen as any;
+        if (!screen) return null;
+
+        const ret: PlainObject = pick(screen, [
+            'availWidth',
+            'availHeight',
+            'width',
+            'height',
+            'colorDepth',
+            'pixelDepth',
+            'availLeft',
+            'availTop'
+        ]);
+        if (screen.orientation) {
+            ret.orientation = pick(screen.orientation, ['angle', 'type']);
+        }
+        return ret;
+    }
+
+    private getWindowData(): PlainObject {
+        return pick(window, [
+            'devicePixelRatio',
+            'screenX',
+            'screenY',
+            'innerWidth',
+            'innerHeight',
+            'outerWidth',
+            'outerHeight'
+        ]);
     }
 }

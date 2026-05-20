@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     difference,
@@ -26,6 +26,8 @@ import {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
 import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
 
+const _warnedFields = new Set<string>();
+
 /**
  * Filters by comparing the value of a given field to one or more given candidate values using one
  * of several supported operators.
@@ -36,8 +38,8 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FieldFilter extends Filter {
-    get isFieldFilter() {
-        return true;
+    static isFieldFilter(obj: unknown): obj is FieldFilter {
+        return obj instanceof FieldFilter;
     }
 
     readonly field: string;
@@ -54,7 +56,9 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
@@ -64,10 +68,16 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
+
+    static INCLUDE_LIKE_OPERATORS = ['=', 'like', 'begins', 'ends', 'includes'];
+    static EXCLUDE_LIKE_OPERATORS = ['!=', 'not like', 'excludes'];
+    static RANGE_LIKE_OPERATORS = ['>', '>=', '<', '<='];
 
     /**
      * Constructor - not typically called by apps - create via {@link parseFilter} instead.
@@ -107,7 +117,16 @@ export class FieldFilter extends Filter {
 
         if (store) {
             const storeField = store.getField(field);
-            if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
+            if (!storeField) {
+                if (!_warnedFields.has(field)) {
+                    _warnedFields.add(field);
+                    logWarn(
+                        `Unknown field '${field}' - not found in the target store. This filter will be ignored.`,
+                        this
+                    );
+                }
+                return () => true;
+            }
 
             const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
             value = isArray(value)
@@ -157,9 +176,17 @@ export class FieldFilter extends Filter {
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 opFn = v => regExps.some(re => re.test(v));
                 break;
+            case 'not begins':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
+                break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 opFn = v => regExps.some(re => re.test(v));
+                break;
+            case 'not ends':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 opFn = v => !isNil(v) && v.some(it => value.includes(it));
@@ -202,6 +229,14 @@ export class FieldFilter extends Filter {
     override toJSON(): FieldFilterSpec {
         const {field, op, value, serializedValueType} = this;
         return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
+    }
+
+    override removeFieldFilters(field: string = null): Filter {
+        return !field || this.field === field ? null : this;
+    }
+
+    override removeFunctionFilters(key: string = null): Filter {
+        return this;
     }
 
     //-----------------
