@@ -8,13 +8,14 @@ import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
 import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
+import {FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy, isFunction} from 'lodash';
 import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
-import {DropzoneRef, FileRejection} from 'react-dropzone';
+import {DropzoneRef} from 'react-dropzone';
 
 export interface FileChooserConf {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
