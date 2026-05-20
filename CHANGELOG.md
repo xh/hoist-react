@@ -9,6 +9,10 @@
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
   existed only to support the above.
+* `FileChooser.accept` now takes a react-dropzone `Accept` object keyed by MIME type
+  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
+  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
+  for the new format.
 
 ### 🐞 Bug Fixes
 
@@ -22,6 +26,9 @@
   for a `tags`-typed field with an active filter.
 * Desktop `Select` no longer hijacks `Home`/`End` keys, allowing native caret movement in the
   input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
+* Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
+  reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
+  cache could be transitioning.
 
 ### ⚙️ Technical
 
@@ -39,6 +46,7 @@
       `resolutions` should now be able to remove that pin.
 * semver `7.7 → 7.8`
 * react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
+* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
 
 ## 85.0.0 - 2020-04-30
 
