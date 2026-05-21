@@ -26,6 +26,8 @@
   for a `tags`-typed field with an active filter.
 * Desktop `Select` no longer hijacks `Home`/`End` keys, allowing native caret movement in the
   input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
+* Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
+  source - the prop is now honored, falling back to the context model only when unset.
 * Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
   reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
   cache could be transitioning.
