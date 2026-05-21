@@ -374,11 +374,8 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // TODO - after update to react-select v5 in HR v59, could not identify any cases that
-        //  still required the while loop below. Had been required due to nested layers of
-        //  components when using enableWindowed, enableCreate, and/or queryFn. Leaving in place to
-        //  avoid breaking some edge-case we're not finding, but could review/simplify once update
-        //  is baked in a bit more.
+        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
+        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
         let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
@@ -528,8 +525,6 @@ class SelectInputModel extends HoistInputModel {
     };
 
     loadingMessageFn = params => {
-        // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
-        if (!params) return '';
         const {loadingMessageFn} = this.componentProps,
             q = params.inputValue;
 
@@ -674,8 +669,6 @@ class SelectInputModel extends HoistInputModel {
     }
 
     noOptionsMessageFn = params => {
-        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
-        if (!params) return '';
         const {noOptionsMessageFn} = this.componentProps,
             q = params.inputValue;
 
@@ -804,9 +797,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         onKeyDown: e => {
             // Esc. and Enter can be listened for by parents -- stop the keydown event
             // propagation only if react-select already likely to have used for menu management.
-            // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-            const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
-            if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+            if (model.reactSelect?.props?.menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
                 e.stopPropagation();
             }
         },
