@@ -285,21 +285,24 @@ export class FilterChooserModel extends HoistModel {
         const rsSelectCmp = (this.inputRef.current as any)?.reactSelectRef?.current;
         if (!rsSelectCmp) return;
 
-        const currentVal = rsSelectCmp.select.state.inputValue,
+        // Push the suggestion text back into the Select's filter input, then re-open the menu.
+        const currentVal = (rsSelectCmp.props?.inputValue as string) ?? '',
             newVal = value.displayName,
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
-        rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
+        rsSelectCmp.props.onInputChange(inputValue, {
+            action: 'input-change',
+            prevInputValue: currentVal
+        });
+
         wait()
             .then(() => {
                 rsSelectCmp.focus();
-                rsSelectCmp.handleInputChange(inputValue);
+                rsSelectCmp.openMenu('first');
             })
             .thenAction(() => {
-                // Setting the Select's `inputValue` state above has the side-effect of modifying
-                // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
-                // to get it back inline. Note we're intentionally not using `setSelectValue()`,
-                // which returns early if the actual filter value hasn't changed.
+                // Force-resync our bound selectValue in case state manager nudged react-select's
+                // internal selection. Not via setSelectValue() (early-returns when unchanged).
                 this.selectValue = cloneDeep(this.selectValue);
             });
     }
