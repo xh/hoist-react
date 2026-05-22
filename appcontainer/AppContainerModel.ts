@@ -37,6 +37,7 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
+    MetricsService,
     PrefService,
     SessionStorageService,
     TrackService,
@@ -277,7 +278,7 @@ export class AppContainerModel extends HoistModel {
             );
             XH.traceService.noteConfigAvailable();
 
-            await installServicesAsync([TrackService], ctx);
+            await installServicesAsync([TrackService, MetricsService], ctx);
             await installServicesAsync(
                 [
                     AlertBannerService,

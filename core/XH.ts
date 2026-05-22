@@ -26,6 +26,7 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
+    MetricsService,
     PrefService,
     SessionStorageService,
     TrackService,
@@ -159,6 +160,7 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
+    metricsService: MetricsService;
     prefService: PrefService;
     sessionStorageService: SessionStorageService;
     trackService: TrackService;

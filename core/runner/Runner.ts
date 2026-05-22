@@ -26,6 +26,8 @@ export class Runner {
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
     private linkSpec: PromiseLinkSpec;
+    private counterMetric: {name: string; tags?: Record<string, string>} = null;
+    private timerMetric: {name: string; tags?: Record<string, string>} = null;
 
     static create(ctx: CallContext, caller: NameSource) {
         return new Runner(ctx, caller);
@@ -76,6 +78,27 @@ export class Runner {
     }
 
     //---------------------------
+    // Metrics configuration
+    //---------------------------
+    /**
+     * Increment a counter metric on completion of the wrapped fn. An `xh.outcome` tag is
+     * added with value `success` or `failure` based on whether the fn threw.
+     */
+    counter(name: string, tags?: Record<string, string>): this {
+        this.counterMetric = {name, tags};
+        return this;
+    }
+
+    /**
+     * Record elapsed time for the wrapped fn. Recorded regardless of success or failure;
+     * an `xh.outcome` tag is added with value `success` or `failure`.
+     */
+    timer(name: string, tags?: Record<string, string>): this {
+        this.timerMetric = {name, tags};
+        return this;
+    }
+
+    //---------------------------
     // Terminal
     //---------------------------
     /** Execute an async fn with all configured observability. */
@@ -97,6 +120,7 @@ export class Runner {
     // Implementation
     //--------------------------
     private executeWrapped<T>(fn: RunFunction<T>): Promise<T> {
+        fn = this.wrapMetrics(fn);
         fn = this.wrapLink(fn);
         fn = this.wrapTrack(fn);
         fn = this.wrapLog(fn);
@@ -105,6 +129,29 @@ export class Runner {
         return spanConfig
             ? XH.traceService.withSpan(spanConfig, span => fn(this.getNestedCtx(span)))
             : fn(ctx);
+    }
+
+    private wrapMetrics<S>(fn: RunFunction<S>): RunFunction<S> {
+        const {timerMetric: t, counterMetric: c} = this,
+            svc = XH.metricsService;
+        if (!t && !c) return fn;
+        return async ctx => {
+            const start = performance.now();
+            let outcome = 'failure';
+            try {
+                const result = await fn(ctx);
+                outcome = 'success';
+                return result;
+            } finally {
+                if (t) {
+                    const elapsed = performance.now() - start;
+                    svc.recordTimer(t.name, elapsed, {...t.tags, 'xh.outcome': outcome});
+                }
+                if (c) {
+                    svc.recordCount(c.name, 1, {...c.tags, 'xh.outcome': outcome});
+                }
+            }
+        };
     }
 
     private wrapLog<S>(fn: RunFunction<S>): RunFunction<S> {

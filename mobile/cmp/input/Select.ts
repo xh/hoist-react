@@ -324,9 +324,9 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Use of windowedMode, creatable and async variants will create levels of nesting we must
-        // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
+        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }

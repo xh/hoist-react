@@ -6,14 +6,19 @@
 
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
-  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved -
-  drive dynamic icons from a reaction on observable state.
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
-  existed only to support the above. Apps still needing this can use `pickBy(iconEl.props)` and
-  `Icon.icon(json)` respectively.
+  existed only to support the above.
+* `FileChooser.accept` now takes a react-dropzone `Accept` object keyed by MIME type
+  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
+  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
+  for the new format.
 
 ### 🎁 New Features
 
+* New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
+  optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
+  flow into the Micrometer registry. Requires hoist-core >= 40.0.
 * Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
   can accept and forward across call boundaries to propagate trace/load context into nested
   loads and fetches.
@@ -21,7 +26,7 @@
   client work into a remote trace context received off-channel (WebSocket / SSE / queue
   messages).
 * Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
-  or `runOnOptional()` to compose spanned, logged, tracked, and fetch-aware async work in a
+  or `runOnOptional()` to compose spanned, logged, metered, tracked, and fetch-aware async work in a
   fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
 * `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
   obsolete, and auto-refresh errors:
@@ -43,14 +48,31 @@
   where the eager default would reformat the user's text mid-typing.
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
+* Desktop `Select` no longer hijacks `Home`/`End` keys, allowing native caret movement in the
+  input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
+* Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
+  source - the prop is now honored, falling back to the context model only when unset.
+* Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
+  reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
+  cache could be transitioning.
 
 ### ⚙️ Technical
+
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
   See [#4336](https://github.com/xh/hoist-react/issues/4336).
 
 ### 📚 Libraries
-* `golden-layout` and `jquery` `removed` (replaced by the forked source above).
+
+* ag-Grid `34.x → 35.x`. Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and
+  `ag-grid-react` dependencies to `35.x`. See the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+  no Hoist API changes required.
+* Removed `golden-layout` and `jquery` (replaced by the forked source above).
+    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
+      `resolutions` should now be able to remove that pin.
+* semver `7.7 → 7.8`
+* react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
+* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
 
 ## 85.0.0 - 2020-04-30
 
@@ -93,17 +115,19 @@ app-load span changes in this release.
   notes for the full list and replacements.
 
 ### 🎁 New Features
-* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
   matching the server-side API.
-* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via loadAsync().
-  This span will be made available on the LoadSpec and  automatically picked up by FetchService for
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
+  loadAsync().
+  This span will be made available on the LoadSpec and automatically picked up by FetchService for
   properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
   span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
-* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+* Added the `user.name` tag to all spans. New `xh.impersonating` tag on spans shows impersonated
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
@@ -155,6 +179,15 @@ app-load span changes in this release.
 Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
 expected - none were part of the public API surface. Apps that imported these directly (relying
 on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.2 - 2026-05-13
+
+### 🐞 Bug Fixes
+
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
+  originally shipped in v85.0.0.
 
 ## 84.0.1 - 2026-04-20
 
