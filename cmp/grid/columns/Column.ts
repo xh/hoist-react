@@ -811,14 +811,12 @@ export class Column {
                 suppressKeyboardEvent: ({editing, event}) => {
                     if (!editing) return false;
 
-                    // Avoid stomping on react-select menus in editors
-                    const {gridModel, colId} = this,
-                        editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
-                        // @ts-ignore -- private
-                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
-                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
-                    // but loadedInputValue should be truthy when the menu is open
-                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                    // Let the editor's Select handle keys (Enter/Esc/arrows) while its menu
+                    // is open, instead of having ag-grid commit or cancel the edit.
+                    const {colId} = this,
+                        {agApi} = this.gridModel,
+                        editor = agApi.getCellEditorInstances({columns: [colId]})[0] as any;
+                    if (editor?.componentInstance?.reactSelect?.props?.menuIsOpen) {
                         return true;
                     }
 
