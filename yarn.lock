@@ -10,10 +10,10 @@
     jose "^6.0.8"
     openid-client "^6.8.0"
 
-"@auth0/auth0-spa-js@~2.19.0":
-  version "2.19.3"
-  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.19.3.tgz#1a448cc99ac77761ee991e36cbd570b5f12de493"
-  integrity sha512-Dx0VKuJwmEjdHLQJHTyGY6LLZ8Jk0DFEIBPKhfoCpvWoo47AoaqO5YV+Ix5isn7zso+8IsJ9Awx7sgHKA5zBPQ==
+"@auth0/auth0-spa-js@~2.20.0":
+  version "2.20.0"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.20.0.tgz#8338ce93def2c29b56b0cf9088f33847d26c22e5"
+  integrity sha512-XKIfFgsz4M1h2qyGhxLb33k1i8eL7Nost+EmYIOY5givxZuzWOCmhzmwnXjprqYsT+dRGu6ORT29IuTd1rwDYQ==
   dependencies:
     "@auth0/auth0-auth-js" "1.6.0"
     browser-tabs-lock "1.3.0"
@@ -948,10 +948,10 @@
   dependencies:
     tslib "~2.6.2"
 
-"@blueprintjs/core@^6.14.0", "@blueprintjs/core@^6.3.2":
-  version "6.14.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.14.0.tgz#45cd8b5d9f446cff955b349a3c6b71e0166361ab"
-  integrity sha512-CRM9oZ/DWdDM7bVXMr0Iis8srpVTW9inwrrzPM+S209U4q60BTAJf7iiADqXRdNvFd50QXh8CeMuXXl7qY3WWg==
+"@blueprintjs/core@^6.15.0", "@blueprintjs/core@^6.3.2":
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-6.15.0.tgz#ef675296dc32465fe7f4239e659cc5d96a9d6fdc"
+  integrity sha512-g0CcgoZltOHd142EJfLkLpsgQ5/JjFaJmMkTclef1Z5bZUrkJl8pLS8GZfjdhLp/ZGWqFUZRXvKV2jEnbd/W1Q==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
     "@blueprintjs/icons" "^6.10.0"
@@ -964,13 +964,13 @@
     tslib "~2.6.2"
 
 "@blueprintjs/datetime@^6.0.6":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.1.0.tgz#3c53589a04b1bcab84fd0e7bc1880eb44ad46a3a"
-  integrity sha512-jFO/7IIr33FKm6aUIJVXSc10wLZCjDFjx/s3d1ycUR+wo5PmHwa3JCEwzueiMnZYqxlZlOFm3KgnyN+zEjbNMA==
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-6.1.1.tgz#6032fcbcfd733313835ae0c1994a2bc038193a44"
+  integrity sha512-DqMJobBz2qxfJkk73rK3kXsZMQFCHWAv5i2d24qgpl+eHp4XNFcE/q/nctXkvvNaJ/bgudAPamiph+GD3Yp3ig==
   dependencies:
-    "@blueprintjs/core" "^6.14.0"
+    "@blueprintjs/core" "^6.15.0"
     "@blueprintjs/icons" "^6.10.0"
-    "@blueprintjs/select" "^6.2.0"
+    "@blueprintjs/select" "^6.2.1"
     classnames "^2.3.1"
     date-fns "^2.28.0"
     date-fns-tz "^2.0.0"
@@ -987,13 +987,13 @@
     classnames "^2.3.1"
     tslib "~2.6.2"
 
-"@blueprintjs/select@^6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.2.0.tgz#a8207e306cee32a3bc15028c211e6f161444ebf5"
-  integrity sha512-I9F6ifDb2oHnLYq/QLARaS1Lx71KJjhWQms8iuEsVBr9Q7znvvwYupDFgBnhqOnix9LP9HbypaxeqhTGkmie8g==
+"@blueprintjs/select@^6.2.1":
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-6.2.1.tgz#a1ca44ceaf339a1154b2a275182ad596ab7f4142"
+  integrity sha512-NBMxdAR7PE4Oyn5tN9AfKVzFpCRoQHaIuhNCCGFFjt22efgQscQF+ppHPe1+pUy4YIWB2KBwfBUT5bpIvNFPfA==
   dependencies:
     "@blueprintjs/colors" "^5.1.16"
-    "@blueprintjs/core" "^6.14.0"
+    "@blueprintjs/core" "^6.15.0"
     "@blueprintjs/icons" "^6.10.0"
     classnames "^2.3.1"
     tslib "~2.6.2"
@@ -8048,9 +8048,9 @@ semver@^6.3.1:
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
 semver@^7.6.2, semver@^7.6.3, semver@^7.7.3, semver@~7.8.0:
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.0.tgz#ed0661039fcbcda2ce71f01fa6adbefaa77040df"
-  integrity sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==
+  version "7.8.1"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.1.tgz#bf4970b5e70fda0686363cc18bfe8805d5ed957e"
+  integrity sha512-rkVq3IXh+4FDGch+KwzX3aV9W3kO54GyEgpvBzSyctDA6Xtd7RJQV1xmXbeQp5v7+VzLOfVqiutSE6GICgPFvg==
 
 send@^1.1.0, send@^1.2.0:
   version "1.2.1"
@@ -8933,9 +8933,9 @@ ua-is-frozen@^0.1.2:
   integrity sha512-RwKDW2p3iyWn4UbaxpP2+VxwqXh0jpvdxsYpZ5j/MLLiQOfbsV5shpgQiw93+KMYQPcteeMQ289MaAFzs3G9pw==
 
 ua-parser-js@~2.0.4:
-  version "2.0.9"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-2.0.9.tgz#befd25ded7d3490008463f3d5ea6259ec6316d7a"
-  integrity sha512-OsqGhxyo/wGdLSXMSJxuMGN6H4gDnKz6Fb3IBm4bxZFMnyy0sdf6MN96Ie8tC6z/btdO+Bsy8guxlvLdwT076w==
+  version "2.0.10"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-2.0.10.tgz#a28f1087ef5a3fff5aeb6bd86258841bfb6327b8"
+  integrity sha512-t+3Ktbq0Ies2vaSezfOaWiolH4OigQIO1dk+1xDpOydB1COVPocVYOrEV5rqZ0kFY9XYG1v9LutCyMgYBpABcw==
   dependencies:
     detect-europe-js "^0.1.2"
     is-standalone-pwa "^0.1.1"
