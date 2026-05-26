@@ -14,7 +14,8 @@ import {
     LoadSpecConfig,
     Loadable,
     PlainObject,
-    TaskObserver
+    TaskObserver,
+    XH
 } from './';
 
 /**
@@ -110,7 +111,7 @@ export class HoistService extends HoistBase implements Loadable {
     async doLoadAsync(loadSpec: LoadSpec) {}
 
     handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
-        return this.loadSupport?.handleLoadException(e, loadSpec);
+        XH.handleException(e);
     }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {

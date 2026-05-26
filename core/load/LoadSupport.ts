@@ -161,10 +161,6 @@ export class LoadSupport extends HoistBase implements Loadable {
                 logDebug(msg, target);
             });
     }
-
-    handleLoadException(e: unknown, loadSpec: LoadSpec): void {
-        XH.handleException(e);
-    }
 }
 
 /**
