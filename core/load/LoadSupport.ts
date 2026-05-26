@@ -133,7 +133,7 @@ export class LoadSupport extends HoistBase implements Loadable {
                     skipped = true;
                     if (!e.isAborted) XH.handleException(e);
                 } else {
-                    await target.handleLoadException?.(e, loadSpec);
+                    await target.handleLoadException(e, loadSpec);
                     exception = e;
                 }
             })
@@ -161,6 +161,9 @@ export class LoadSupport extends HoistBase implements Loadable {
                 logDebug(msg, target);
             });
     }
+
+    /** No-op - LoadSupport is the orchestrator; the target's hook is invoked instead. */
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void {}
 }
 
 /**

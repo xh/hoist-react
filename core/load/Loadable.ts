@@ -112,5 +112,5 @@ export interface Loadable {
      *
      * Default implementation calls `XH.handleException(e)`.
      */
-    handleLoadException?(e: unknown, loadSpec: LoadSpec): void | Promise<void>;
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void>;
 }
