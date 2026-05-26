@@ -162,8 +162,9 @@ export class LoadSupport extends HoistBase implements Loadable {
             });
     }
 
-    /** No-op - LoadSupport is the orchestrator; the target's hook is invoked instead. */
-    handleLoadException(e: unknown, loadSpec: LoadSpec): void {}
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void {
+        XH.handleException(e);
+    }
 }
 
 /**
