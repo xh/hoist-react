@@ -2644,9 +2644,9 @@
     typescript-eslint "^8.32"
 
 "@xh/hoist-dev-utils@12.x":
-  version "12.1.1"
-  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-12.1.1.tgz#34a69ce8f50538f576a187926bc840f117b49371"
-  integrity sha512-TgoemjdbnoYicpGW2AFZ+kMwsk6zjiwVLgIdZvHrE9pB3nbudvsDUvTKfNEsH/IvFdJS9NwAcidRwKW23rB+cg==
+  version "12.2.0"
+  resolved "https://registry.yarnpkg.com/@xh/hoist-dev-utils/-/hoist-dev-utils-12.2.0.tgz#5a316a114825388215799023fa65992b27e732f3"
+  integrity sha512-VwveWOH18sDecb+uv0itdDdeWDke1SonVPjZlNOyY1iMLywt3KHpqVT5XTXSskI+YeSbxh3jtA2sFCE1hNmgaw==
   dependencies:
     "@babel/core" "^7.28.5"
     "@babel/plugin-proposal-decorators" "^7.28.0"
@@ -9347,12 +9347,12 @@ which-collection@^1.0.2:
     is-weakset "^2.0.3"
 
 which-typed-array@^1.1.16, which-typed-array@^1.1.19:
-  version "1.1.20"
-  resolved "https://registry.yarnpkg.com/which-typed-array/-/which-typed-array-1.1.20.tgz#3fdb7adfafe0ea69157b1509f3a1cd892bd1d122"
-  integrity sha512-LYfpUkmqwl0h9A2HL09Mms427Q1RZWuOHsukfVcKRq9q95iQxdw0ix1JQrqbcDR9PH1QDwf5Qo8OZb5lksZ8Xg==
+  version "1.1.21"
+  resolved "https://registry.yarnpkg.com/which-typed-array/-/which-typed-array-1.1.21.tgz#ea7aab68168079646af06b4a36a6f7d7b72e1c0a"
+  integrity sha512-zbRA8cVm6io/d5W8uIe2hblzN76/Wm3v/yiythQvr+dpBWeqhPSWIDNj4zOyHi4zKbMK6DN34Xsr9jPHJERAEw==
   dependencies:
     available-typed-arrays "^1.0.7"
-    call-bind "^1.0.8"
+    call-bind "^1.0.9"
     call-bound "^1.0.4"
     for-each "^0.3.5"
     get-proto "^1.0.1"
