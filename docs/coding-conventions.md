@@ -615,6 +615,15 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
 
+Generally, class- and method-level (TSDoc) comments should focus on the **public API surface** -
+what a caller needs to know to use the component, model, service, or method correctly - rather
+than narrating implementation details. Implementation notes belong in inline code comments next
+to the code they describe.
+
+This is especially important for **Hoist library code itself**, which is consumed by downstream
+applications: the TSDoc on a public type or method is effectively its contract, and should be
+written from the caller's perspective.
+
 ### Avoid Em Dashes in Code Comments
 
 Use ` - ` (spaced hyphen) rather than em dashes (`—`) for parenthetical asides in `.ts`
