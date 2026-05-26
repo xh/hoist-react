@@ -17,20 +17,29 @@ import {
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {logDebug, logError} from '@xh/hoist/utils/js';
-import {pull} from 'lodash';
+import {isNil, omitBy} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
  *
  * This utility is used by core Hoist classes such as {@link HoistModel} and {@link HoistService}.
  * Model and service instances will automatically create an instance of this class if they have
- * declared a concrete implementation of `doLoadAsync()`, signalling that they wish to take
+ * declared a concrete implementation of `doLoadAsync()`, signaling that they wish to take
  * advantage of the additional tracking and management provided here.
  *
  * Not typically created directly by applications.
  */
 export class LoadSupport extends HoistBase implements Loadable {
+    /**
+     * LoadSpec for the last load initiated.
+     * @internal
+     */
     lastRequested: LoadSpec = null;
+
+    /**
+     * LoadSpec for the last load to complete successfully.
+     * @internal
+     */
     lastSucceeded: LoadSpec = null;
 
     @managed
@@ -45,6 +54,7 @@ export class LoadSupport extends HoistBase implements Loadable {
     @observable.ref
     lastLoadException: any = null;
 
+    /** @internal */
     target: Loadable;
 
     constructor(target: Loadable) {
@@ -95,13 +105,14 @@ export class LoadSupport extends HoistBase implements Loadable {
         let {target, loadObserver} = this;
 
         // Auto-refresh:
-        // Skip if we have a pending triggered refresh, and never link to loadObserver
+        // Skip if we have a pending triggered refresh and never link to loadObserver
         if (loadSpec.isAutoRefresh) {
             if (loadObserver.isPending) return;
             loadObserver = null;
         }
 
-        runInAction(() => (this.lastLoadRequested = new Date()));
+        const requested = new Date();
+        runInAction(() => (this.lastLoadRequested = requested));
         this.lastRequested = loadSpec;
 
         let exception = null;
@@ -112,36 +123,41 @@ export class LoadSupport extends HoistBase implements Loadable {
             loadSpec.shouldAbort ||
             (target.skipAutoRefreshErrors && loadSpec.isAutoRefresh);
 
+        let skipped = false;
         return target
             .doLoadAsync(loadSpec)
             .linkTo(loadObserver)
             .catch(async e => {
-                if (!skip(e)) {
+                if (skip(e)) {
+                    // Log non-timing errors on the server.
+                    skipped = true;
+                    if (!e.isAborted) XH.handleException(e);
+                } else {
                     await target.handleLoadException?.(e, loadSpec);
                     exception = e;
-                } else {
-                    // True timing errors can be skipped. Log real errors on the server.
-                    e.isAborted ?
-                        logError(["Aborted Load", e], target);
-                        XH.handleException(e)
                 }
-
             })
             .finally(() => {
-                runInAction(() => {
-                    this.lastLoadException = exception
-                    this.lastLoadCompleted = new Date();
-                });
-
-                if (!exception) {
-                    this.lastSucceeded = loadSpec;
+                // For non-skipped, update state in transaction
+                if (!skipped) {
+                    runInAction(() => {
+                        this.lastLoadException = exception;
+                        this.lastLoadCompleted = new Date();
+                        if (!exception) {
+                            this.lastSucceeded = loadSpec;
+                        }
+                    });
                 }
 
+                // Debug log skipping uninteresting trampolining RefreshContextModels
                 if (target instanceof RefreshContextModel) return;
 
-                const elapsed = this.lastLoadCompleted.getTime() - this.lastLoadRequested.getTime(),
+                const elapsed = Date.now() - requested.getTime(),
                     status = exception ? 'failed' : null,
-                    msg = pull([loadSpec.typeDisplay, status, `${elapsed}ms`, exception], null);
+                    msg = omitBy(
+                        {type: loadSpec.typeDisplay, status, elapsed, skipped, exception},
+                        isNil
+                    );
                 logDebug(msg, target);
             });
     }

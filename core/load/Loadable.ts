@@ -17,13 +17,23 @@ export interface Loadable {
      */
     loadObserver: TaskObserver;
 
-    /** Date when last load was initiated. */
+    /** Date when the last load was initiated. */
     lastLoadRequested: Date;
 
-    /** Date when last load was completed. */
+    /**
+     * Date when the last load was completed.
+     *
+     * Does not include loads "skipped" due to {@link skipStaleLoads} and {@link skipAutoRefreshErrors}.
+     */
     lastLoadCompleted: Date;
 
-    /** Any exception that occurred during last load. */
+    /**
+     * Any exception that occurred during the last load.
+     *
+     * If the last load was successfully completed, this property will be null.
+     *
+     * Does not include loads "skipped" due to {@link skipStaleLoads} and {@link skipAutoRefreshErrors}.
+     */
     lastLoadException: any;
 
     /**
