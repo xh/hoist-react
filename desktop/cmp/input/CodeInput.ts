@@ -394,6 +394,7 @@ class CodeInputModel extends HoistInputModel {
     private async getExtensionsAsync(): Promise<Extension[]> {
         const {
                 autoFocus,
+                disabled,
                 readonly,
                 language,
                 highlightActiveLine,
@@ -405,8 +406,9 @@ class CodeInputModel extends HoistInputModel {
                 // Switches between dark/light theme using GitHub theme presets.
                 this.getThemeExtension(),
 
-                // Makes the editor read-only if `readonly` is true.
-                this.editableCompartment.of(EditorView.editable.of(!readonly)),
+                // Makes the editor read-only if `readonly` or `disabled` is true.
+                // Kept in sync with later prop changes by a reaction in onLinked().
+                this.editableCompartment.of(EditorView.editable.of(!readonly && !disabled)),
 
                 // Listens for changes in the document.
                 // - Calls `noteValueChange` to update the Hoist input model.
