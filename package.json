@@ -50,7 +50,6 @@
     "@fortawesome/pro-thin-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.2.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@seznam/compose-react-refs": "~1.0.5",
     "classnames": "~2.5.1",
     "clipboard-copy": "~4.0.1",
     "codemirror": "~5.65.0",

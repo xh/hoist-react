@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
@@ -13,7 +12,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';

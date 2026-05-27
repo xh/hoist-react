@@ -37,6 +37,8 @@
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
   See [#4336](https://github.com/xh/hoist-react/issues/4336).
+* Replaced unmaintained `@seznam/compose-react-refs` with a Hoist-owned `composeRefs` utility
+  exported from `@xh/hoist/utils/react`. Behavior unchanged.
 
 ### 📚 Libraries
 
