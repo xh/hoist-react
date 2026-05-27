@@ -4,16 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {XH} from '@xh/hoist/core';
 
 /**
  * Copy the given text to the system clipboard.
  *
- * Uses the modern async Clipboard API when available (requires a secure browsing context).
- * Falls back to the legacy `document.execCommand('copy')` approach via a hidden, briefly-selected
- * `<span>` for older or non-secure contexts. Rejects with a `NotAllowedError` if both paths fail.
+ * Uses the modern async Clipboard API when available, falling back to the legacy
+ * `document.execCommand('copy')` approach for non-secure (`http://`) contexts where
+ * `navigator.clipboard` is unavailable. Throws if both paths fail.
  *
  * Adapted from the (unmaintained) `clipboard-copy` package by Feross Aboukhadijeh,
  * https://github.com/feross/clipboard-copy - MIT licensed.
+ *
+ * TODO: drop the execCommand fallback once Hoist requires a secure context.
  */
 export async function copyToClipboard(text: string): Promise<void> {
     try {
@@ -60,6 +63,6 @@ function copyViaExecCommand(text: string): void {
     if (!success) throw notAllowed();
 }
 
-function notAllowed(): DOMException {
-    return new DOMException('The request is not allowed', 'NotAllowedError');
+function notAllowed(): Error {
+    return XH.exception({name: 'NotAllowedError', message: 'Clipboard copy not allowed'});
 }
