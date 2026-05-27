@@ -39,6 +39,8 @@
   See [#4336](https://github.com/xh/hoist-react/issues/4336).
 * Replaced unmaintained `@seznam/compose-react-refs` with a Hoist-owned `composeRefs` utility
   exported from `@xh/hoist/utils/react`. Behavior unchanged.
+* Replaced unmaintained `clipboard-copy` with a Hoist-owned `copyToClipboard` utility exported
+  from `@xh/hoist/utils/js`. Behavior unchanged (async Clipboard API with `execCommand` fallback).
 
 ### 📚 Libraries
 
