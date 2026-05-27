@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.20.0",
-    "@azure/msal-browser": "~4.29.0",
+    "@azure/msal-browser": "~5.11.0",
     "@blueprintjs/core": "^6.3.2",
     "@blueprintjs/datetime": "^6.0.6",
     "@fortawesome/fontawesome-pro": "^7.2.0",

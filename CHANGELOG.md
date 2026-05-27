@@ -49,6 +49,9 @@
 * semver `7.7 → 7.8`
 * react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
 * react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
+* `@azure/msal-browser` `4.29 → 5.11`. Apps passing `msalClientOptions` to `MsalClient` should
+  review the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration)
+  for breaking changes to the underlying MSAL configuration API.
 
 ## 85.0.0 - 2020-04-30
 
