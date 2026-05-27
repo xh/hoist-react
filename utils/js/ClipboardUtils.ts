@@ -30,7 +30,7 @@ export async function copyToClipboard(text: string): Promise<void> {
 //  Implementation
 //-------------------
 async function copyViaClipboardApi(text: string): Promise<void> {
-    if (!navigator.clipboard) throw notAllowed();
+    if (!navigator.clipboard) throw XH.exception('Clipboard copy not allowed');
     return navigator.clipboard.writeText(text);
 }
 
@@ -56,9 +56,5 @@ function copyViaExecCommand(text: string): void {
         selection.removeAllRanges();
         document.body.removeChild(span);
     }
-    if (!success) throw notAllowed();
-}
-
-function notAllowed(): Error {
-    return XH.exception({name: 'NotAllowedError', message: 'Clipboard copy not allowed'});
+    if (!success) throw XH.exception('Clipboard copy not allowed');
 }
