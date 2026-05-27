@@ -563,6 +563,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   hamburger menu. Set to `true` to render the current user's initials instead or provide a function
   to render a custom element for the user.
 * Added `AggregationContext` as an additional argument to `CubeField.canAggregateFn`.
+* Added `ajvSchema` and `ajvOptions` configs to JsonInputProps.
+    * `ajvSchema` - Used to validate the input JSON
+    * `ajvOptions` - Options to be passed to Ajv constructor (JSON schema validator)
 * Added `filterMatchMode` option to `ColChooserModel`, allowing customizing match to `start`,
   `startWord`, or `any`.
 * Added support for reconnecting a `View` to its associated `Cube`.
@@ -613,6 +616,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * @codemirror/state `6.6.0`
 * @codemirror/view `6.43.0`
 * @uiw/codemirror-theme-github `4.25.10`
+* ajv `8.17.1`
 
 ## 79.0.0 - 2026-01-05
 
