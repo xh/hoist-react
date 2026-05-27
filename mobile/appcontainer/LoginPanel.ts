@@ -30,6 +30,7 @@ export const loginPanel = hoistCmp.factory({
 
         return panel({
             className: 'xh-login',
+            testId: 'xh-login',
             items: [
                 toolbar(filler(), XH.clientAppName, filler()),
                 panel({
@@ -44,14 +45,16 @@ export const loginPanel = hoistCmp.factory({
                                     placeholder: 'Username',
                                     autoComplete: 'username',
                                     autoCapitalize: 'none',
-                                    commitOnChange: true
+                                    commitOnChange: true,
+                                    testId: 'xh-login-username'
                                 }),
                                 textInput({
                                     bind: 'password',
                                     placeholder: 'Password',
                                     autoComplete: 'current-password',
                                     type: 'password',
-                                    commitOnChange: true
+                                    commitOnChange: true,
+                                    testId: 'xh-login-password'
                                 })
                             ]
                         }),
@@ -69,7 +72,8 @@ export const loginPanel = hoistCmp.factory({
                             icon: Icon.login(),
                             text: loginInProgress ? 'Please wait...' : 'Login',
                             disabled: !isValid || loginInProgress,
-                            onClick: () => model.submitAsync()
+                            onClick: () => model.submitAsync(),
+                            testId: 'xh-login-btn'
                         })
                     ]
                 })

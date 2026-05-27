@@ -47,9 +47,15 @@ npx hoist-ts symbol GridModel                # Get detailed type info for a symb
 npx hoist-ts members GridModel               # List all members of a class/interface
 ```
 
-**Use `search` for discovery** — it does case-insensitive fuzzy matching across both symbol names
-and class members. Use `symbol` and `members` only when you already know the exact PascalCase name.
-Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
+**Use `search` for discovery** — it matches against symbol names, JSDoc content, and own member
+names. Multi-word queries use AND logic (e.g. `"panel modal"` finds ModalSupportModel via its
+JSDoc, `"StoreRecord raw"` finds StoreRecord via its `raw` property). Also searches public members
+of every exported class and every exported `*Config` interface (e.g. `GridConfig`, `StoreConfig`)
+by owner name, member name, and JSDoc — so a query for `"groupSortFn"` reaches both `GridModel`
+and `GridConfig`. Use `symbol` and `members` when you already know the exact PascalCase name.
+When multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
+pass the file path to `symbol` or `members` to disambiguate — the tools will hint when this is
+needed. Run `npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
 
 **Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
 to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
@@ -59,23 +65,31 @@ exact signatures, decorators, and member listings.
 
 ### GitHub MCP Server (opt-in)
 
-A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the official
-`github-mcp-server` image. This server is configured in `.mcp.json` but **not enabled by default**
-— it requires Docker and a GitHub token, which not all developers will have running. If you work
-with GitHub issues, PRs, or code search, enabling it is recommended. To do so:
+A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the
+official `github-mcp-server` image. Configured in `.mcp.json` but **not enabled by default** —
+it requires Docker and an authenticated GitHub CLI, which not every developer keeps running.
 
-1. Install and start **Docker**
-2. Set the **`GITHUB_TOKEN`** environment variable to a GitHub Personal Access Token
-3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json`:
+**To enable:**
+
+1. Install and start **Docker**.
+2. Install the **GitHub CLI** (`brew install gh`) and authenticate with `gh auth login`. The
+   server invokes `gh auth token` at startup to fetch a token from the macOS Keychain (or
+   `gh`'s credential store on other platforms), so no plaintext token needs to live in your
+   shell environment.
+3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json` (local settings
+   merge with the shared `settings.json` — enabling locally does not affect other developers):
    ```json
    {
      "enabledMcpjsonServers": ["hoist-react", "github"]
    }
    ```
 
-Local settings merge with the shared `settings.json`, so enabling it locally does not affect other
-developers. If Docker is not running or the token is not set when the server is enabled, Claude
-Code may show errors on startup — remove `"github"` from your local settings to resolve.
+If Docker is not running or `gh` is not authenticated when the server is enabled, Claude Code
+may show errors on startup — remove `"github"` from your local settings to resolve.
+
+**Fallback when not enabled:** The `gh` CLI provides functionally equivalent access to the same
+operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
+crafting raw `curl` calls to the GitHub API.
 
 ### JetBrains IntelliJ MCP Server (opt-in)
 
@@ -155,6 +169,15 @@ Factories can take a config object for props, using the key `item`/`items` for c
 form also exists where factories are passed children directly as arguments, when no other props
 are required. Factories all support an `omit` prop for conditional rendering.
 
+**Important — `items` in, `children` out**: `item`/`items` are Hoist's *calling* API. Inside a
+render function, those values arrive as the standard React `children` prop (because the factory
+spreads them as rest args to `React.createElement`). The canonical pattern when authoring a
+container component is therefore to destructure `children` from props and pass them downstream as
+`items` to an inner factory. See
+[Authoring a Container Component](./core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation, examples, and the `$item`/`$items` escape hatch for
+components whose underlying API genuinely has its own `items` prop.
+
 See [`/core/README.md`](./core/README.md) for full element factory API including conditional
 rendering with `omit` and factory creation.
 
@@ -225,12 +248,17 @@ important guidelines to internalize:
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
   (loose equality) for concise null-or-undefined testing.
+- **No em dashes in code comments** — Use ` - ` (spaced hyphen) not em dashes (`—`) in `.ts`
+  comments and JSDoc. Em dashes cause tooling issues and are reserved for prose `.md` docs.
+  Other Unicode characters (arrows, symbols, accented letters, etc.) are fine in code comments
+  when they aid clarity.
 
-**Commit messages, PRs, and comments**: Do not hard-wrap lines in commit message bodies, pull
-request descriptions, or issue/PR comments. Write each sentence or thought as a single unwrapped
-line and let the viewing tool handle display wrapping. Keep PR descriptions concise — XH developers
-review these regularly, so favor brief summaries over exhaustive detail. Bullet the key changes and
-let the diff and any upgrade notes speak for themselves.
+**Commit messages, PRs, and comments**: Do not hard-wrap lines at a fixed column width in commit
+message bodies, pull request descriptions, or issue/PR comments — let the viewing tool handle
+display wrapping. However, do use line breaks for structure: separate logical points into bullet
+lists, use blank lines between paragraphs, and break after the subject line. Keep PR descriptions
+concise — XH developers review these regularly, so favor brief summaries over exhaustive detail.
+Bullet the key changes and let the diff and any upgrade notes speak for themselves.
 
 **Feature branch workflow**: On feature branches, prefer multiple small commits over amending — PRs
 are squash-merged into `develop`, so intermediate commits are collapsed automatically. Never

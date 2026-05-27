@@ -21,6 +21,13 @@ import {isArray, isUndefined, startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {ReactElement, ReactNode} from 'react';
 
+/**
+ * Configuration for a {@link TabModel} - a single tab within a {@link TabContainerModel}.
+ * Passed as entries in the `tabs` array of a {@link TabContainerConfig}.
+ *
+ * @see TabModel
+ * @see TabContainerConfig
+ */
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
     id: string;

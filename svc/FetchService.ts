@@ -11,13 +11,16 @@ import {
     LoadSpecConfig,
     PlainObject,
     TrackOptions,
-    XH
+    XH,
+    formatTraceparent,
+    Span,
+    SpanConfig,
+    RunContext
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {formatTraceparent, Span} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -25,32 +28,34 @@ import ShortUniqueId from 'short-unique-id';
 
 const defaultIdGenerator = new ShortUniqueId({length: 16});
 
-/**
- * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
- *
- * Wrapper around the standard Fetch API with some enhancements to streamline the process for
- * the most common use-cases. The Fetch API will be called with CORS enabled, credentials
- * included, and redirects followed.
- *
- * Set {@link FetchService.defaults.autoGenCorrelationIds} to enable auto-generation of Correlation IDs
- * for requests issued by this service. Best configured in the app's `Bootstrap` module to ensure
- * coverage of early hoist core init requests. Can also be set on a per-request basis via
- * {@link FetchOptions.correlationId}.
- *
- * Custom headers can be set on a request via {@link FetchOptions.headers}. Default headers for all
- * requests can be set / customized using {@link addDefaultHeaders}.
- *
- * Also see the {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API | Fetch API Docs}.
- *
- * Note that the convenience methods `fetchJson`, `postJson`, `putJson` all accept the same options
- * as the main entry point `fetch`, as they delegate to fetch after setting additional defaults.
- */
 export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
     correlationIdHeaderKey?: string;
     genCorrelationId?: () => string;
 }
 
+/**
+ * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
+ *
+ * Typically accessed via `XH.fetchService` or the convenience methods on XH - `XH.fetch()`,
+ * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` - which delegate here.
+ *
+ * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
+ * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
+ * `deleteJson`, `getJson`) that handle serialization and content-type headers automatically.
+ *
+ * Key features:
+ * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
+ * - Auto-abort of duplicate in-flight requests via {@link FetchOptions.autoAbortKey}
+ * - Optional correlation IDs for request tracking (see `defaults.autoGenCorrelationIds`)
+ * - Request/response interceptors via {@link addInterceptor}
+ * - Default headers for all requests via {@link addDefaultHeaders}
+ * - Rich exception handling with HTTP status, server messages, and trace IDs
+ *
+ * All convenience methods accept the same {@link FetchOptions} as the main `fetch()` entry point.
+ *
+ * @see FetchOptions
+ */
 export class FetchService extends HoistService {
     static instance: FetchService;
 
@@ -82,17 +87,17 @@ export class FetchService extends HoistService {
     }
 
     /**
-     * Promise handlers to be executed before fufilling or rejecting returned Promise.
+     * Promise handlers to be executed before fulfilling or rejecting returned Promise.
      *
      * Use the `onRejected` handler for apps requiring common handling for particular exceptions.
-     * Useful for recognizing 401s (i.e. session end), or wrapping, logging, or enhancing exceptions.
+     * Useful for recognizing 401s (i.e., session end), or wrapping, logging, or enhancing exceptions.
      * The simplest onRejected handler will simply rethrow the passed exception, or a wrapped version of it.
      * Such handlers may also return `never()` to prevent further processing of the request -- this
-     * is useful, i.e. if the handler is going to redirect the entire app, or otherwise end normal
+     * is useful, i.e., if the handler is going to redirect the entire app, or otherwise end normal
      * app processing.  Rejected handlers may also be able to retry and return valid results via
      * another call to fetch.
      *
-     * Use the `onFulfilled` hander for enhancing, tracking, or even rejecting "successful" returns.
+     * Use the `onFulfilled` handler for enhancing, tracking, or even rejecting "successful" returns.
      * For example, a handler of this form could be used to transform a 200 response returned by
      * an API with an "error" flag into a proper client-side exception.
      */
@@ -195,43 +200,34 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        opts = this.withCorrelationId(opts);
+        // 1) Apply optional span and correlation to the core work
+        const fn = (ctx: RunContext) => {
+            opts = this.withCorrelationId(opts);
+            opts = this.withTraceId(opts, ctx?.span);
+            return this.withResolvedHeadersAsync(opts, ctx?.span).then(opts =>
+                this.managedFetchAsync(opts, ctx?.span)
+            );
+        };
+        const spanConfig = this.createSpanConfig(opts),
+            parent = opts.span ?? opts.loadSpec?.span;
+        let ret = spanConfig ? this.runner(parent).newSpan(spanConfig).run(fn) : fn(null);
 
-        // Tracing — create span for this request.
-        const span = this.startFetchSpan(opts);
-        if (span) opts = {...opts, traceId: span.traceId};
-
-        // Core Promise - chained with header resolution to ensure that work is included in overall tracked time.
-        let ret = this.withResolvedHeadersAsync(opts, span).then(opts =>
-            this.managedFetchAsync(opts)
-        );
-
-        // Apply tracking
-        const {correlationId, loadSpec, track} = opts;
-        if (track) {
+        // 2) Apply tracking
+        if (opts.track) {
+            const {correlationId, loadSpec, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
                 trackOptions.correlationId || trackOptions.loadSpec,
                 'Neither Correlation ID nor LoadSpec should be set in `FetchOptions.track`. Use `FetchOptions` top-level properties instead.'
             );
-            ret = ret.track({...trackOptions, correlationId: correlationId as string, loadSpec});
+            ret = ret.track({
+                ...trackOptions,
+                correlationId: correlationId as string,
+                loadSpec
+            });
         }
 
-        // Tracing — end span on completion or failure.
-        if (span) {
-            ret = ret.then(
-                value => {
-                    this.endFetchSpan(span, value);
-                    return value;
-                },
-                cause => {
-                    this.endFetchSpan(span, null, cause);
-                    throw cause;
-                }
-            );
-        }
-
-        // Apply interceptors
+        // 3) Apply interceptors - run after span has ended and exported.
         for (const interceptor of this._interceptors) {
             ret = ret.then(
                 value => interceptor.onFulfilled(opts, value),
@@ -267,7 +263,11 @@ export class FetchService extends HoistService {
         return opts;
     }
 
-    private async withResolvedHeadersAsync(opts: FetchOptions, span?: Span): Promise<FetchOptions> {
+    private withTraceId(opts: FetchOptions, span: Span): FetchOptions {
+        return span ? {...opts, traceId: span.traceId} : opts;
+    }
+
+    private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -280,7 +280,9 @@ export class FetchService extends HoistService {
             'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span ? {traceparent: formatTraceparent(span.traceId, span.spanId)} : {}),
+            ...(span
+                ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
+                : {}),
             ...opts.headers
         };
 
@@ -298,7 +300,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions): Promise<any> {
+    private async managedFetchAsync(opts: FetchOptions, span: Span): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -311,8 +313,8 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await this.abortableFetchAsync(opts, aborter)
-                .then(opts.asJson ? r => this.parseJsonAsync(opts, r) : null)
+            return await this.abortableFetchAsync(opts, aborter, span)
+                .then(r => (opts.asJson ? this.parseJsonAsync(opts, r) : r))
                 .timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
@@ -341,14 +343,12 @@ export class FetchService extends HoistService {
 
     private async abortableFetchAsync(
         opts: FetchOptions,
-        aborter: AbortController
+        aborter: AbortController,
+        span: Span
     ): Promise<Response> {
         // 1) Prepare URL
-        let {url, method, headers, body, params} = opts,
-            isRelativeUrl = !url.startsWith('/') && !url.includes('//');
-        if (isRelativeUrl) {
-            url = XH.baseUrl + url;
-        }
+        let {url, method, headers, body, params} = opts;
+        url = this.resolveUrl(url);
 
         // 2) Prepare options for fetch API
         const fetchOpts: RequestInit = {
@@ -384,9 +384,11 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
+        span?.setHttpStatus(ret.status);
 
-        if (!ret.ok)
+        if (!ret.ok) {
             throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
+        }
 
         return ret;
     }
@@ -406,54 +408,63 @@ export class FetchService extends HoistService {
         }
     }
 
-    //------------------
-    // Tracing
-    //------------------
-    private startFetchSpan(opts: FetchOptions): Span {
-        const traceService = XH.traceService;
-        if (!traceService?.enabled) return null;
+    private createSpanConfig(opts: FetchOptions): SpanConfig {
+        if (!XH.traceService.enabled) return null;
 
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            url = this.extractUrlPath(opts.url);
+            fullUrl = this.buildFullUrl(opts.url),
+            tags: PlainObject = {
+                'xh.source': 'hoist',
+                'http.request.method': method,
+                'url.full': fullUrl
+            };
 
-        if (url.endsWith('submitSpans')) return null;
+        // Per OTel HTTP semconv, populate server.address (and server.port if non-default).
+        try {
+            const {hostname, port, protocol} = new URL(fullUrl, window.location.origin);
+            if (hostname) tags['server.address'] = hostname;
+            if (port) {
+                tags['server.port'] = parseInt(port, 10);
+            } else if (protocol === 'http:') {
+                tags['server.port'] = 80;
+            } else if (protocol === 'https:') {
+                tags['server.port'] = 443;
+            }
+        } catch {}
 
-        return traceService.createSpan({
+        return {
             name: method,
             kind: 'client',
-            parent: opts.span,
-            tags: {'http.request.method': method, 'url.path': opts.url, source: 'hoist'},
-            caller: this
-        });
+            tags
+        };
     }
 
-    private endFetchSpan(span: Span, value?: any, error?: unknown) {
-        if (!span) return;
-
-        if (value?.status != null) {
-            span.tags['http.response.status_code'] = value.status;
-        }
-
-        if (error) {
-            span.recordError(error);
-            span.end('error');
-        } else {
-            span.end('ok');
-        }
-        XH.traceService.exportSpan(span);
-    }
-
-    private extractUrlPath(url: string): string {
+    /** Prefix relative URLs with {@link XH.baseUrl}; leave absolute/root-relative URLs as-is. */
+    private resolveUrl(url: string): string {
         if (!url) return '';
+        const isRelative = !url.startsWith('/') && !url.includes('//');
+        return isRelative ? XH.baseUrl + url : url;
+    }
+
+    private buildFullUrl(url: string): string {
+        const raw = this.resolveUrl(url);
+        if (!raw) return '';
+
         try {
-            if (url.includes('//')) return new URL(url).pathname;
-            return url.split('?')[0];
-        } catch (e) {
-            return url.split('?')[0];
+            const parsed = new URL(raw, window.location.origin);
+            // Redact values of query params that commonly carry secrets.
+            const sensitive =
+                /^(token|access_token|id_token|password|pwd|secret|api[_-]?key|auth|session|sig|signature)$/i;
+            for (const key of Array.from(parsed.searchParams.keys())) {
+                if (sensitive.test(key)) parsed.searchParams.set(key, 'REDACTED');
+            }
+            return parsed.toString();
+        } catch {
+            return raw;
         }
     }
 
-    private qsFilterFn = (prefix, value) => {
+    private qsFilterFn = (_prefix: string, value: any) => {
         if (isDate(value)) return value.getTime();
         if (isLocalDate(value)) return value.isoString;
         return value;
@@ -635,36 +646,6 @@ export class FetchService extends HoistService {
         // Fallback to statusText if we have nothing else.
         return ret || statusText;
     }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `FetchService.defaults.autoGenCorrelationIds` */
-    static set autoGenCorrelationIds(v: boolean | ((opts: FetchOptions) => boolean)) {
-        apiDeprecated('FetchService.autoGenCorrelationIds', {
-            msg: 'Use FetchService.defaults.autoGenCorrelationIds instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.autoGenCorrelationIds = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.genCorrelationId` */
-    static set genCorrelationId(v: () => string) {
-        apiDeprecated('FetchService.genCorrelationId', {
-            msg: 'Use FetchService.defaults.genCorrelationId instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.genCorrelationId = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.correlationIdHeaderKey` */
-    static set correlationIdHeaderKey(v: string) {
-        apiDeprecated('FetchService.correlationIdHeaderKey', {
-            msg: 'Use FetchService.defaults.correlationIdHeaderKey instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.correlationIdHeaderKey = v;
-    }
 }
 
 /** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
@@ -755,8 +736,7 @@ export interface FetchOptions {
     track?: string | TrackOptions;
 
     /**
-     * If set, the fetch span created by TraceService will be parented under this span.
-     * Use to nest fetch calls under a business-level span.
+     * Parent span for this fetch request. Use to nest fetch calls under a business-level span.
      */
     span?: Span;
 
@@ -785,7 +765,8 @@ export interface FetchException extends HoistException {
 
     /**
      * True if exception resulted from the fetch being aborted by fetchService, or the application.
-     * @see FetchService.abort and FetchOptions.autoAbortKey.
+     * @see FetchService.abort
+     * @see FetchOptions.autoAbortKey
      */
     isFetchAborted: boolean;
 }

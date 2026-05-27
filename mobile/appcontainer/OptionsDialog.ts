@@ -30,6 +30,7 @@ export const optionsDialog = hoistCmp.factory({
             title: `${XH.clientAppName} Options`,
             icon: Icon.options(),
             className: 'xh-options-dialog',
+            testId: 'xh-options-dialog',
             isOpen: true,
             item: [
                 mask({bind: loadTask, spinner: true}),
@@ -43,7 +44,8 @@ export const optionsDialog = hoistCmp.factory({
                             restoreDefaultsButton({
                                 intent: 'danger',
                                 minimal: false,
-                                className: 'xh-options-dialog__restore-defaults-btn'
+                                className: 'xh-options-dialog__restore-defaults-btn',
+                                testId: 'xh-options-restore-defaults-btn'
                             })
                         ]
                     })
@@ -54,6 +56,7 @@ export const optionsDialog = hoistCmp.factory({
                 button({
                     text: 'Cancel',
                     minimal: true,
+                    testId: 'xh-options-cancel-btn',
                     onClick: () => model.hide()
                 }),
                 button({
@@ -62,6 +65,7 @@ export const optionsDialog = hoistCmp.factory({
                     intent: 'primary',
                     outlined: true,
                     disabled: !formModel.isDirty,
+                    testId: 'xh-options-save-btn',
                     onClick: () => model.saveAsync()
                 })
             ]

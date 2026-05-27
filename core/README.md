@@ -1,5 +1,19 @@
 # Core Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Architecture overview and primary artifact types |
+| [Class Hierarchy](#class-hierarchy) | Inheritance tree for Hoist's foundational classes |
+| [HoistBase](#hoistbase) | MobX integration, resource management, and lifecycle |
+| [HoistModel](#hoistmodel) | Stateful UI backing — linked/unlinked models, loading, lookup |
+| [HoistService](#hoistservice) | Singleton services for app-wide state and data access |
+| [Components and hoistCmp](#components-and-hoistcmp) | Functional components with MobX reactivity, model wiring, and defaults |
+| [Element Factories](#element-factories) | Declarative JS-native alternative to JSX |
+| [XH Singleton](#xh-singleton) | Top-level API entry point for the framework |
+| [Decorators Reference](#decorators-reference) | Quick reference for all Hoist and MobX decorators |
+| [Common Patterns](#common-patterns) | Constructor boilerplate, async naming, multiple models, error handling |
+| [Common Pitfalls](#common-pitfalls) | Frequently encountered issues and how to avoid them |
+
 ## Overview
 
 The `/core/` package contains the foundational classes and utilities that define Hoist's architecture.
@@ -233,6 +247,28 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 }
 ```
 
+Callers can also pass arbitrary application data through `LoadSpec.meta` to communicate
+context-specific information into `doLoadAsync()` - useful for tagging the source of a load,
+passing parameters through a refresh chain, or branching behavior on a per-call basis. The
+field is always defined (defaults to `{}` when omitted), so consumers can read keys without a
+null check on `meta` itself:
+
+```typescript
+// Caller - supply meta when triggering a load or refresh
+await model.loadAsync({meta: {reason: 'userClickedSync', accountId}});
+await model.refreshAsync({reason: 'pollTick'});
+
+// doLoadAsync - read keys directly off meta
+override async doLoadAsync(loadSpec: LoadSpec) {
+    const {reason, accountId} = loadSpec.meta;
+    if (reason === 'pollTick') { /* lighter-weight path */ }
+}
+```
+
+Note the calling shape: `loadAsync()` accepts a full `LoadSpecConfig` (so `meta` goes inside
+`{meta: {...}}`), while `refreshAsync()` and `autoRefreshAsync()` accept `meta` directly as
+their only argument - their `isRefresh`/`isAutoRefresh` flags are already implied.
+
 ```typescript
 // ✅ Do: Use public entry points which create LoadSpec for you
 await model.loadAsync();        // isRefresh: false
@@ -349,7 +385,7 @@ export const userDetail = hoistCmp.factory({
 // Simple component with no model
 export const statusBadge = hoistCmp.factory({
     model: false,
-    className: 'status-badge',
+    className: 'my-app-status-badge',
     render({status, className}) {
         return div({className, item: status});
     }
@@ -366,11 +402,20 @@ export const statusBadge = hoistCmp.factory({
 | `displayName` | - | Component name for debugging |
 | `memo` | `true` | Wrap with React.memo |
 | `observer` | `true` | Enable MobX reactivity |
+| `defaults` | - | Typed static config for the component, overridable at app bootstrap (see below) |
 
-> **Note:** When `className` is specified in the component config, it becomes the base class for
-> the component. Any `className` passed by callers is added as an additional class, and the
-> combined value is provided to `render()` via props. Apply this merged `className` to the
-> component's root element.
+> **Best practice: Define `className` in the component spec** rather than hardcoding it inside
+> the render function. The framework automatically merges the spec's base class with any
+> `className` passed by callers, ensuring every component consistently supports caller-provided
+> CSS class overrides without each render function needing to handle the merging itself.
+>
+> The merged `className` is provided to `render()` via props — it already contains both the
+> base class from the spec and any caller-supplied classes. Apply it to the component's root
+> element. If you need to add conditional modifier classes, combine them with the prop value
+> (e.g. via the `classNames` library) — but don't re-add the base class, it's already included.
+>
+> Hoist library components use the `xh-` prefix for their base class names (e.g.
+> `className: 'xh-panel'`). Applications should standardize on their own app-specific prefix.
 
 ### Model Specs: creates() vs uses()
 
@@ -454,6 +499,45 @@ export const myInput = hoistCmp.factory({
 });
 ```
 
+### Component Defaults
+
+Components can declare a typed `defaults` object to expose **static, app-wide configuration** that
+applications can override at bootstrap (e.g. in `Bootstrap.ts`) to customize all instances of the
+component.
+
+Most often this supplies default values for selected props — when read in `render` as fallbacks,
+**instance props take precedence**. But `defaults` is not restricted to props and may carry other
+app-overridable settings (thresholds, modes, etc.).
+
+```typescript
+// 1) Define a defaults interface — typically mirrors a few props the author wants to be
+//    globally configurable, but may also include non-prop tunables.
+export interface ButtonDefaults {
+    minimal?: boolean;
+    outlined?: boolean;
+}
+
+// 2) Pass as a second generic and include in the component config
+export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults>({
+    displayName: 'Button',
+    defaults: {
+        minimal: true,
+        outlined: false
+    },
+    render(props) {
+        const {defaults} = Button;
+        const {minimal = defaults.minimal, outlined = defaults.outlined, ...rest} = props;
+        // ...
+    }
+});
+
+// 3) Override in app Bootstrap.ts — mutate fields directly.
+Button.defaults.minimal = false;
+```
+
+This pattern is analogous to `static defaults` on Model and Service classes (e.g.
+`GridModel.defaults`), adapted for functional components created via `hoistCmp`.
+
 ## Element Factories
 
 **File**: `elem.ts`
@@ -497,6 +581,115 @@ div(
 
 > **Note:** `item` and `items` are interchangeable - either accepts a single element or an array.
 > Use whichever reads better in context.
+
+### Authoring a Container Component: `items` In, `children` Out
+
+There is an important asymmetry between the **calling** side of an element factory and the
+**authoring** side of a Hoist component's render function. Understanding it is essential when
+writing any component that accepts and renders child elements.
+
+| Side | Prop name | Why |
+|------|-----------|-----|
+| **Calling** a factory | `item` / `items` | Hoist's config-object API for passing children |
+| **Inside** a render function | `children` | The standard React prop populated by `React.createElement` |
+
+When you call a factory like `panel({items: [a, b, c]})`, the factory strips `items` off the
+config object and passes the values as **rest arguments** to `React.createElement(Panel, props,
+a, b, c)`. React then exposes them inside the component as `props.children` — the standard React
+children prop. There is no `items` prop reaching the render function; only `children` does.
+
+The canonical pattern when writing a container component is therefore: **destructure `children`
+from props, then pass them along to your inner factory as `items`**. This is exactly how Hoist's
+own library components are implemented. From `cmp/layout/Box.ts`:
+
+```typescript
+export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
+    render(props, ref) {
+        // Read inbound children as the standard React `children` prop...
+        let [layoutProps, {children, model, testId, ...restProps}] = splitLayoutProps(props);
+
+        // ...and pass them onward to the inner factory as `items`.
+        return div({
+            ref,
+            ...restProps,
+            items: children
+        });
+    }
+});
+```
+
+Typing follows the same convention: `HoistProps` declares `children?: ReactNode`, so destructuring
+`children` from `props` is fully typed and works for any component extending `HoistProps`.
+
+#### Iterating, Wrapping, or Spreading Children
+
+The simple pass-through pattern above relies on the fact that `items` and `item` accept any
+`ReactNode` shape, so you can hand `children` directly to an inner factory. But if your
+component needs to **inspect, transform, or interleave** children — e.g. prepend a header before
+each child, wrap each in a styled box, or count them — you need an iterable array first.
+
+React's `children` prop is intentionally opaque: it can be a single node, an array, a fragment,
+`null`, or `undefined` depending on how the caller invoked the factory. Don't try to iterate it
+directly. Use `React.Children.toArray()` to normalize to a flat, keyed array, then iterate or
+spread as needed:
+
+```typescript
+import {Children} from 'react';
+import {hbox, vbox, div} from '@xh/hoist/cmp/layout';
+
+// A container that renders a fixed header above its children,
+// each wrapped in a styled row.
+export const labeledList = hoistCmp.factory({
+    render({header, children}) {
+        const items = Children.toArray(children);
+
+        return vbox({
+            className: 'my-labeled-list',
+            items: [
+                div({className: 'my-labeled-list__header', item: header}),
+                ...items.map((child, idx) =>
+                    hbox({
+                        className: 'my-labeled-list__row',
+                        items: [div({item: `${idx + 1}.`}), child]
+                    })
+                )
+            ]
+        });
+    }
+});
+```
+
+`Children.toArray` handles all the edge cases — missing children, a single child, a fragment, a
+sparse array — and assigns stable keys based on each child's position, so React's reconciler
+won't complain about missing `key` props on the wrapped children. This is the pattern used
+internally by `Toolbar` (filtering and inserting separators between children) and `TileFrame`
+(laying out a variable number of children in a grid). For shallow per-child transforms where
+you don't also need an array (e.g. to count, slice, or interleave), `Children.map(children, fn)`
+is a slightly more direct alternative.
+
+#### Why the asymmetry?
+
+`item`/`items` are deliberate Hoist enhancements to the config-object form — `item` (singular)
+has no equivalent in standard React, and reads naturally for the very common case of a single
+child (`panel({title, item: grid()})`). On the receiving side, however, the framework rides on
+React's standard `createElement(type, props, ...children)` contract; what arrives at the render
+function is whatever React provides, which is always `children`.
+
+#### The `$item` / `$items` Escape Hatch
+
+When a component being rendered actually defines its own `items` (or `item`/`omit`) prop — for
+example, Blueprint's `OverflowList` — prefix it with `$` to bypass the factory's special handling
+and pass it through as a real prop. The `$` is stripped before the prop reaches the component.
+
+```typescript
+// `overflowList` is from Blueprint and has its own `items` prop.
+// Use `$items` to pass an array as a regular prop (not as Hoist children).
+overflowList({
+    $items: children as readonly ReactNode[],
+    minVisibleItems: 3,
+    visibleItemRenderer: item => item
+});
+```
 
 ### Conditional Rendering
 
@@ -740,6 +933,31 @@ class ChildModel extends HoistModel {
     gridModel: GridModel;  // Not managed - parent owns it
     @managed localStore = new Store({...});  // Managed - we created it
 }
+```
+
+### Expecting `items` in Render Functions
+
+A common trap when authoring a Hoist component is to assume that the `items`/`item` prop used to
+*call* the factory also appears in the render function's `props`. It does not. The factory
+translates `items` to React's standard children rest-args, which arrive at the render function as
+`props.children`. See [Authoring a Container Component](#authoring-a-container-component-items-in-children-out)
+for the full explanation.
+
+```typescript
+// ❌ Wrong: `items` is never populated on the inbound props.
+export const myContainer = hoistCmp.factory({
+    render({items, ...rest}) {           // items is always undefined here
+        return panel({items, ...rest});
+    }
+});
+
+// ✅ Correct: Destructure the standard React `children` prop, then pass it
+// downstream as `items` to the next factory.
+export const myContainer = hoistCmp.factory({
+    render({children, ...rest}) {
+        return panel({items: children, ...rest});
+    }
+});
 ```
 
 ### Mutating Observables Outside Actions

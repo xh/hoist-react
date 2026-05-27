@@ -1,5 +1,19 @@
 # Data Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Core classes, architecture diagram |
+| [Store](#store) | Creating, loading, filtering, and observing record collections |
+| [StoreRecord](#storerecord) | Record state, data access, tree navigation, validation |
+| [Field](#field) | Type parsing, display names, descriptions, validation rules |
+| [Filter System](#filter-system) | FieldFilter, CompoundFilter, FunctionFilter, and utilities |
+| [Validation System](#validation-system) | Rules, constraints, severity levels, async validation |
+| [Integration with GridModel](#integration-with-gridmodel) | Inline store config, data loading, and editing |
+| [Tree Data](#tree-data) | Hierarchical loading, filtering, and summary records |
+| [Cube (Aggregation)](#cube-aggregation) | Pointer to dedicated [`cube/README.md`](cube/README.md) |
+| [Common Patterns](#common-patterns) | Record reuse, processRawData, composite IDs |
+| [Common Pitfalls](#common-pitfalls) | ID fields, missing IDs, data mutation, FunctionFilter persistence |
+
 ## Overview
 
 The `/data/` package provides Hoist's data management layer - observable, in-memory data containers
@@ -603,6 +617,36 @@ record.errors;                     // Map<field, string[]>
 record.validationResults;          // Map<field, ValidationResult[]>
 ```
 
+## Integration with GridModel
+
+Stores are the primary data source for GridModel:
+
+```typescript
+import {GridModel} from '@xh/hoist/cmp/grid';
+import {numberEditor} from '@xh/hoist/desktop/cmp/grid';
+
+const gridModel = new GridModel({
+    // Inline store config
+    store: {
+        fields: [
+            {name: 'name', type: 'string'},
+            {name: 'salary', type: 'number', rules: [required]}
+        ]
+    },
+    columns: [
+        {field: 'name', flex: 1},
+        {field: 'salary', width: 120, editable: true, editor: numberEditor()}
+    ]
+});
+
+// Load data through GridModel (delegates to store)
+gridModel.loadData(data);
+
+// Access store directly
+gridModel.store.records;
+gridModel.store.setFilter({field: 'salary', op: '>', value: 50000});
+```
+
 ## Tree Data
 
 Stores provide full support for hierarchical parent-child data.
@@ -690,130 +734,10 @@ See `cmp/grid/GridModel.ts` for details on summary row rendering.
 
 ## Cube (Aggregation)
 
-**Files**: `cube/Cube.ts`, `cube/CubeField.ts`, `cube/Query.ts`, `cube/View.ts`
-
-Multi-dimensional aggregation for OLAP-style grouping and analysis.
-
-### Creating a Cube
-
-```typescript
-import {Cube} from '@xh/hoist/data';
-
-const cube = new Cube({
-    fields: [
-        // Dimensions - can be grouped on
-        {name: 'region', isDimension: true},
-        {name: 'product', isDimension: true},
-        {name: 'year', isDimension: true},
-
-        // Measures - aggregated values
-        {name: 'revenue', aggregator: 'SUM'},
-        {name: 'quantity', aggregator: 'SUM'},
-        {name: 'avgPrice', aggregator: 'AVG'}
-    ]
-});
-
-await cube.loadDataAsync(salesData);
-```
-
-### Built-in Aggregators
-
-| Aggregator | Description |
-|------------|-------------|
-| `'SUM'` | Total of non-null values |
-| `'SUM_STRICT'` | Total only if all non-null |
-| `'AVG'` | Average of non-null values |
-| `'AVG_STRICT'` | Average only if all non-null |
-| `'MIN'` | Minimum value |
-| `'MAX'` | Maximum value |
-| `'UNIQUE'` | Count of unique values |
-| `'LEAF_COUNT'` | Count of leaf records |
-| `'CHILD_COUNT'` | Count of immediate children |
-
-### Querying and Accessing View Data
-
-```typescript
-// Create a view with specific groupings
-const view = cube.createView({
-    query: {
-        cube,
-        dimensions: ['region', 'product'],
-        filter: {field: 'year', op: '=', value: 2024},
-        includeLeaves: false,
-        includeRoot: true
-    },
-    connect: true  // Auto-update when cube data changes
-});
-```
-
-There are two primary ways to access view data:
-
-**Option 1: Read `view.result` directly**
-
-The observable `ViewResult` contains hierarchical `ViewRowData` objects:
-
-```typescript
-// React to view updates
-addReaction({
-    track: () => view.result,
-    run: (result) => {
-        const {rows, leafMap} = result;
-        // rows: ViewRowData[] - hierarchical aggregated data
-        // leafMap: Map<id, LeafRow> - direct access to leaf-level rows
-    }
-});
-```
-
-**Option 2: Connect stores for automatic loading**
-
-Provide one or more stores that the view will automatically populate:
-
-```typescript
-const store = new Store({fields: [...]});
-
-const view = cube.createView({
-    query: {...},
-    stores: store,   // View auto-loads data into this store
-    connect: true
-});
-
-// Store now receives updates automatically
-gridModel.store === store;  // Use with GridModel
-```
-
-**Update triggers:** View data updates when either:
-- The underlying Cube data changes (requires `connect: true`)
-- The `view.query` is modified via `view.updateQuery()`
-
-## Integration with GridModel
-
-Stores are the primary data source for GridModel:
-
-```typescript
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {numberEditor} from '@xh/hoist/desktop/cmp/grid';
-
-const gridModel = new GridModel({
-    // Inline store config
-    store: {
-        fields: [
-            {name: 'name', type: 'string'},
-            {name: 'salary', type: 'number', rules: [required]}
-        ]
-    },
-    columns: [
-        {field: 'name', flex: 1},
-        {field: 'salary', width: 120, editable: true, editor: numberEditor()}
-    ]
-});
-
-// Load data through GridModel (delegates to store)
-gridModel.loadData(data);
-
-// Access store directly
-gridModel.store.records;
-gridModel.store.setFilter({field: 'salary', op: '>', value: 50000});
-```
+Client-side OLAP-style aggregation for multi-dimensional grouping and analysis. The Cube
+subsystem has its own dedicated documentation — see the
+[Cube package README](cube/README.md) for full coverage of creating Cubes, aggregators,
+querying with Views, and accessing results.
 
 ## Common Patterns
 

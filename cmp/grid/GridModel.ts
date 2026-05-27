@@ -67,7 +67,6 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -120,6 +119,16 @@ import {
     RowClassRuleFn
 } from './Types';
 
+/**
+ * Configuration for a {@link GridModel} - the primary model backing the Hoist Grid component.
+ *
+ * At minimum, provide `columns` (an array of {@link ColumnSpec} or {@link ColumnGroupSpec}
+ * objects). A {@link Store} can be provided or will be auto-created with fields inferred
+ * from the column configs. Use `colDefaults` to apply shared settings across all columns.
+ *
+ * @see GridModel
+ * @see ColumnSpec
+ */
 export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
@@ -413,7 +422,7 @@ export interface GridModelDefaults {
 }
 
 /**
- * Core Model for a Grid, specifying the grid's data store, column definitions,
+ * Core Model for a {@link Grid}, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
@@ -424,6 +433,13 @@ export interface GridModelDefaults {
  *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
+ * See the grid package README (`cmp/grid/README.md`) for full documentation including column
+ * configuration, renderers, filtering, sorting, and common pitfalls.
+ *
+ * @see Grid
+ * @see DataView
+ *
+ * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
@@ -1326,16 +1342,6 @@ export class GridModel extends HoistModel {
         }
     }
 
-    /** @deprecated - use {@link updateColumnState} instead. */
-    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]): void {
-        apiDeprecated('GridModel.applyColumnStateChanges()', {
-            msg: 'Use updateColumnState() instead.',
-            v: '82',
-            source: GridModel
-        });
-        this.updateColumnState(colStateChanges);
-    }
-
     getColumn(colId: string): Column {
         return this.findColumn(this.columns, colId);
     }
@@ -2054,43 +2060,6 @@ export class GridModel extends HoistModel {
             // See https://github.com/xh/hoist-react/issues/4102.
             manuallySized: !!(column.width && this.autosizeOptions.mode !== 'managed')
         };
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `GridModel.defaults.restoreDefaultsWarning` */
-    static set DEFAULT_RESTORE_DEFAULTS_WARNING(v: ReactNode) {
-        apiDeprecated('GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING', {
-            msg: 'Use GridModel.defaults.restoreDefaultsWarning instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.restoreDefaultsWarning = v;
-    }
-
-    /** @deprecated - use `GridModel.defaults.autosizeMode` */
-    static set DEFAULT_AUTOSIZE_MODE(v: GridAutosizeMode) {
-        apiDeprecated('GridModel.DEFAULT_AUTOSIZE_MODE', {
-            msg: 'Use GridModel.defaults.autosizeMode instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.autosizeMode = v;
-    }
-
-    /** @deprecated - use `GridModel.defaults.contextMenu` */
-    static get defaultContextMenu(): GridContextMenuItemLike[] {
-        apiDeprecated('GridModel.defaultContextMenu', {
-            msg: 'Use GridModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        return GridModel.defaults.contextMenu;
-    }
-    static set defaultContextMenu(v: GridContextMenuItemLike[]) {
-        apiDeprecated('GridModel.defaultContextMenu', {
-            msg: 'Use GridModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        GridModel.defaults.contextMenu = v;
     }
 }
 

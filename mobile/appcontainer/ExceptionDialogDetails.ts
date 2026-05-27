@@ -51,6 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                 button({
                     icon: Icon.envelope(),
                     text: 'Send Message',
+                    testId: 'xh-exception-details-send-btn',
                     onClick: () => {
                         XH.prompt<string>({
                             title: 'Send Message',

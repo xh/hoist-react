@@ -1,5 +1,19 @@
 # Dashboard
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Dashboard system intro, DashContainer vs DashCanvas comparison |
+| [Architecture](#architecture) | Model hierarchy, ViewSpec/ViewModel lifecycle |
+| [DashContainer](#dashcontainer) | Space-filling tabbed/tiled layout via GoldenLayout |
+| [DashCanvas](#dashcanvas) | Scrollable grid-based widget layout via react-grid-layout |
+| [DashCanvasWidgetChooser](#dashcanvaswidgetchooser) | UI for adding widgets to a DashCanvas |
+| [Common Features](#common-features) | ViewSpecs, state persistence, publishing, refresh |
+| [Widget Content Patterns](#widget-content-patterns) | Implementing widget views and their models |
+| [Common Patterns](#common-patterns) | Initialization, programmatic layout, view management |
+| [Common Pitfalls](#common-pitfalls) | Frequent issues and how to avoid them |
+| [Key Source Files](#key-source-files) | Primary source files for the dash package |
+| [Related Packages](#related-packages) | Links to related hoist-react packages |
+
 ## Overview
 
 The `/desktop/cmp/dash/` package provides Hoist's dashboard system — configurable layouts where

@@ -282,7 +282,7 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
 }
 
 /**
- * A string, or an object from which a name can be derived — via `displayName` (e.g. React
+ * A string, or an object from which a name can be derived - via `displayName` (e.g. React
  * components) or `constructor.name` (e.g. class instances). Used for logging and tracing.
  */
 export type NameSource = string | {displayName: string} | {constructor: {name: string}};

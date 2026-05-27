@@ -20,6 +20,8 @@ import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {groupBy} from 'lodash';
 
+type SourceFilter = 'all' | 'hoist' | 'app';
+
 export class MetricsModel extends BaseAdminTabModel {
     override persistWith = {localStorageKey: 'xhAdminMetricsState'};
 
@@ -28,14 +30,9 @@ export class MetricsModel extends BaseAdminTabModel {
     @managed detailGridModel: GridModel;
     @managed private timer: Timer;
 
-    @bindable sourceFilter: string[] = [];
+    @bindable sourceFilter: SourceFilter = 'all';
 
     @observable.ref allMetrics: any[] = [];
-
-    @computed
-    get sourceOptions(): string[] {
-        return [...new Set(this.allMetrics.map(it => it.source))].filter(Boolean).sort();
-    }
 
     get selectedMetricNames(): string[] {
         return this.gridModel.selectedRecords.map(r => r.data.name);
@@ -54,9 +51,13 @@ export class MetricsModel extends BaseAdminTabModel {
         makeObservable(this);
 
         this.gridModel = new GridModel({
-            persistWith: {...this.persistWith, path: 'mainGrid'},
+            autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
+            colChooserModel: true,
             enableExport: true,
             exportOptions: {filename: exportFilenameWithDate('metrics'), columns: 'ALL'},
+            persistWith: {...this.persistWith, path: 'mainGrid'},
+            selModel: 'multiple',
+            sortBy: 'name',
             store: {
                 idSpec: 'name',
                 fields: [
@@ -69,15 +70,6 @@ export class MetricsModel extends BaseAdminTabModel {
                     {name: 'published', type: 'bool'}
                 ]
             },
-            sortBy: 'name',
-            selModel: 'multiple',
-            colChooserModel: true,
-            contextMenu: [
-                this.publishAction,
-                this.unpublishAction,
-                '-',
-                ...GridModel.defaults.contextMenu
-            ],
             columns: [
                 {
                     field: 'published',
@@ -92,6 +84,12 @@ export class MetricsModel extends BaseAdminTabModel {
                 {field: 'baseUnit', width: 80, hidden: true},
                 {field: 'count', width: 50},
                 {field: 'description', flex: true, minWidth: 200}
+            ],
+            contextMenu: [
+                this.publishAction,
+                this.unpublishAction,
+                '-',
+                ...GridModel.defaults.contextMenu
             ]
         });
 
@@ -176,8 +174,8 @@ export class MetricsModel extends BaseAdminTabModel {
             if (loadSpec.isStale) return;
 
             const enriched = data.map(it => {
-                const instance = it.tags.find(t => t.key === 'instance')?.value,
-                    source = it.tags.find(t => t.key === 'source')?.value,
+                const instance = it.tags.find(t => t.key === 'xh.instance')?.value,
+                    source = it.tags.find(t => t.key === 'xh.source')?.value,
                     tags = sortTags(it.tags).map(t => `${t.key}: ${t.value}`);
                 return {...it, instance, source, tags};
             });
@@ -255,9 +253,10 @@ export class MetricsModel extends BaseAdminTabModel {
     //------------------
     private loadMasterGrid(enriched: any[]) {
         const {sourceFilter, gridModel} = this,
-            filtered = sourceFilter?.length
-                ? enriched.filter(it => sourceFilter.includes(it.source))
-                : enriched;
+            filtered =
+                sourceFilter === 'all'
+                    ? enriched
+                    : enriched.filter(it => it.source === sourceFilter);
         const masterData = Object.entries(groupBy(filtered, 'name')).map(([name, items]) => {
             const {description, baseUnit, type, source, published} = items[0];
             return {name, description, baseUnit, type, source, count: items.length, published};
@@ -282,7 +281,7 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 }
 
-const PRIORITY_KEYS = ['application', 'source', 'instance'];
+const PRIORITY_KEYS = ['xh.application', 'xh.source', 'xh.instance'];
 
 function sortTags(tags: {key: string; value: string}[]) {
     return [...tags].sort((a, b) => {

@@ -7,7 +7,12 @@
 import {Command} from 'commander';
 
 import {buildRegistry, searchDocs, loadDocContent} from '../data/doc-registry.js';
-import {formatSearchResults, formatDocList} from '../formatters/docs.js';
+import {
+    formatSearchResults,
+    formatDocList,
+    toSearchDocsOutput,
+    toListDocsOutput
+} from '../formatters/docs.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
 const {entries: registry, mcpCategories} = buildRegistry(resolveRepoRoot());
@@ -63,7 +68,11 @@ program
         'all'
     )
     .option('-l, --limit <n>', 'Maximum number of results (1-20)', '10')
-    .action((query: string, opts: {category: string; limit: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action((query: string, opts: {category: string; limit: string; json?: boolean}) => {
         validateCategory(opts.category);
         validateLimit(opts.limit, 1, 20);
 
@@ -71,6 +80,12 @@ program
             mcpCategory: opts.category,
             limit: parseInt(opts.limit, 10)
         });
+
+        if (opts.json) {
+            const structured = toSearchDocsOutput(query, results);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
 
         let text = formatSearchResults(results, query);
         if (results.length > 0) {
@@ -90,8 +105,19 @@ program
         'Filter by category: ' + VALID_CATEGORIES.join(', '),
         'all'
     )
-    .action((opts: {category: string}) => {
+    .option(
+        '--json',
+        'Output machine-readable JSON matching the MCP outputSchema instead of formatted text.'
+    )
+    .action((opts: {category: string; json?: boolean}) => {
         validateCategory(opts.category);
+
+        if (opts.json) {
+            const structured = toListDocsOutput(registry, mcpCategories, opts.category);
+            process.stdout.write(JSON.stringify(structured, null, 2) + '\n');
+            return;
+        }
+
         let text = formatDocList(registry, mcpCategories, opts.category);
         text += 'Read any document using: hoist-docs read <id>';
         process.stdout.write(text + '\n');

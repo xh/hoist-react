@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, XH} from '@xh/hoist/core';
+import {HoistAppModel, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
@@ -44,9 +44,9 @@ export class AppModel extends HoistAppModel {
         GridModel.defaults.autosizeMode = 'managed';
     }
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         await this.initViewManagerModelsAsync();
-        await super.initAsync();
+        await super.initAsync(ctx);
     }
 
     override getRoutes(): Route[] {

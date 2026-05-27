@@ -13,16 +13,6 @@ import {uniq} from 'lodash';
 
 import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapConfig} from './TreeMapModel';
 
-/**
- * Core Model for a SplitTreeMap.
- *
- * Binds to a Store (or GridModel) and splits the data into two managed child TreeMaps.
- * Users should specify a `mapFilter` function to control how records are divided
- * across the two TreeMaps.
- *
- * Additionally, accepts and passes along all settings for TreeMapModel.
- * @see TreeMapModel
- */
 export interface SplitTreeMapConfig extends TreeMapConfig {
     /**
      * Filter used to allocate records between the primary and secondary maps.
@@ -40,6 +30,16 @@ export interface SplitTreeMapConfig extends TreeMapConfig {
     orientation?: SplitTreeMapOrientation;
 }
 
+/**
+ * Core Model for a SplitTreeMap.
+ *
+ * Binds to a Store (or GridModel) and splits the data into two managed child TreeMaps.
+ * Users should specify a `mapFilter` function to control how records are divided
+ * across the two TreeMaps.
+ *
+ * Additionally, accepts and passes along all settings for TreeMapModel.
+ * @see TreeMapModel
+ */
 export class SplitTreeMapModel extends HoistModel {
     //------------------------
     // Immutable public properties

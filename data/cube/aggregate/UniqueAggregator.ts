@@ -7,6 +7,7 @@
 import {Aggregator} from './Aggregator';
 import {isEmpty, isEqual} from 'lodash';
 
+/** Returns the value if all rows share the same value, otherwise null. */
 export class UniqueAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         if (isEmpty(rows)) return null;
@@ -15,7 +16,8 @@ export class UniqueAggregator extends Aggregator {
     }
 
     override replace(rows, currAgg, update, context) {
-        const {newValue} = update;
-        return rows.length === 1 || isEqual(newValue, currAgg) ? newValue : null;
+        const {newValue, field} = update;
+        if (rows.length === 1 || isEqual(newValue, currAgg)) return newValue;
+        return this.aggregate(rows, field.name);
     }
 }

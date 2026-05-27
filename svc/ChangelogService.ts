@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -26,9 +26,8 @@ import {isEmpty, forOwn, includes} from 'lodash';
  *
  * Several additional options can be controlled via soft-config - see below.
  *
- * @see XH.showChangelog - public API for displaying the changelog, if enabled and populated.
- * @see whatsNewButton - utility button that conditionally renders when an unread entry exists for
- *      the currently deployed app version. Installed by default in desktop appBar.
+ * @see XH.showChangelog
+ * @see whatsNewButton
  */
 export class ChangelogService extends HoistService {
     override xhImpl = true;
@@ -83,7 +82,7 @@ export class ChangelogService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         this.changelog = !isEmpty(jsonFromMarkdown?.versions)
             ? jsonFromMarkdown
             : {title: null, versions: []};

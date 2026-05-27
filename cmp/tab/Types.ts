@@ -37,6 +37,10 @@ export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProp
     tabMaxWidth?: number;
 }
 
+/**
+ * Configuration for the tab switcher UI within a {@link TabContainerModel}. Passed via the
+ * `switcher` config on {@link TabContainerConfig}.
+ */
 export interface TabSwitcherConfig {
     /** Specification for type of switcher. Specify `dynamic`for user-configurable tabs */
     mode: 'static' | 'dynamic';

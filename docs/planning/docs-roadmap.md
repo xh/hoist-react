@@ -15,6 +15,7 @@ is essential for working effectively with any part of hoist-react.
 | `/` (root) | 1 | AGENTS.md provides AI-focused project guidance | [Done](../../AGENTS.md) |
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | [Done](../../core/README.md) |
 | `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | [Done](../../data/README.md) |
+| `/data/cube/` | 10 | Cube aggregation engine - dimensions, measures, Views, Queries | [Done](../../data/cube/README.md) |
 | `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | [Done](../../svc/README.md) |
 
 ## Priority 2 - Component System

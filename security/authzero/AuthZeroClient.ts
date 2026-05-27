@@ -15,6 +15,12 @@ import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 
+/**
+ * Configuration for an {@link AuthZeroClient} - the Auth0 OAuth client.
+ * Extends {@link BaseOAuthClientConfig} with Auth0-specific options.
+ *
+ * @see AuthZeroClient
+ */
 export interface AuthZeroClientConfig extends BaseOAuthClientConfig<AuthZeroTokenSpec> {
     /** Domain of your app registered with Auth0.  */
     domain: string;

@@ -1,5 +1,18 @@
 # Form Package
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Form infrastructure for data entry with validation and binding |
+| [Architecture](#architecture) | FormModel, FieldModel, and SubformsFieldModel structure |
+| [FormModel](#formmodel) | Creating forms, working with data, validation, and focus |
+| [FieldModel](#fieldmodel) | Individual field state, validation rules, and observable props |
+| [SubformsFieldModel](#subformsfieldmodel) | Nested form collections for complex data structures |
+| [Form Component](#form-component) | Non-visual React context provider for FormField components |
+| [FormFieldSet](#formfieldset) | Visual grouping with aggregate validation and state cascading |
+| [Common Patterns](#common-patterns) | Forms in models, cascading dropdowns, persistence, scrolling |
+| [Common Pitfalls](#common-pitfalls) | Confusing form imports and other issues |
+| [Related Packages](#related-packages) | Links to card, data, input, and platform form packages |
+
 ## Overview
 
 The `/cmp/form/` package works along with `/cmp/input` to provide Hoist's form infrastructure -

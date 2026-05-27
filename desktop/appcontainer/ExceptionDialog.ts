@@ -41,7 +41,7 @@ export const exceptionDialog = hoistCmp.factory({
                 items: [
                     dialogBody(options.message),
                     div({
-                        omit: !exception.traceId,
+                        omit: !exception.traceId || exception.isRoutine,
                         className: 'xh-exception-dialog__trace-id',
                         item: `Trace ID: ${exception.traceId}`
                     }),
@@ -62,12 +62,14 @@ const bbar = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
             omit: !XH.identityService?.isImpersonating,
             icon: Icon.impersonate(),
             text: 'End Impersonation',
+            testId: 'xh-exception-end-impersonation-btn',
             onClick: () => XH.identityService.endImpersonateAsync()
         }),
         filler(),
         button({
             icon: Icon.search(),
             text: 'Show/Report Details',
+            testId: 'xh-exception-details-btn',
             onClick: () => model.openDetails(),
             omit: !model.options.showAsError
         }),
@@ -86,11 +88,13 @@ export const dismissButton = hoistCmp.factory<ExceptionDialogModel>(({model}) =>
         ? button({
               icon: Icon.refresh(),
               text: 'Reload App',
+              testId: 'xh-exception-dismiss-btn',
               autoFocus: true,
               onClick: () => XH.reloadApp({removeQueryParams: true})
           })
         : button({
               text: 'Close',
+              testId: 'xh-exception-dismiss-btn',
               autoFocus: true,
               onClick: () => model.close()
           });

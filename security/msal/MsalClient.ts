@@ -23,6 +23,12 @@ import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TokenMap} from '../Types';
 
+/**
+ * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
+ * Extends {@link BaseOAuthClientConfig} with MSAL-specific options.
+ *
+ * @see MsalClient
+ */
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
      * Authority for your organization's tenant: `https://login.microsoftonline.com/[tenantId]`.
@@ -401,7 +407,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                     loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
                 },
-                iframeHashTimeout: 3000 // Prevent long pauses for sso failures.
+                iframeBridgeTimeout: 3000 // Prevent long pauses for sso failures.
             },
             cache: {
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.
@@ -413,7 +419,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             conf.telemetry = {client: new BrowserPerformanceClient(conf)};
         }
 
-        return msal.PublicClientApplication.createPublicClientApplication(conf);
+        return msal.createStandardPublicClientApplication(conf);
     }
 
     private logFromMsal(level: LogLevel, message: string) {

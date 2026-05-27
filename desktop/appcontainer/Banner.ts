@@ -26,9 +26,10 @@ export const banner = hoistCmp.factory({
     model: uses(BannerModel),
 
     render({model}) {
-        const {icon, message, intent, onClick, className} = model;
+        const {icon, message, intent, onClick, className, category} = model;
 
         return toolbar({
+            testId: `xh-banner-${category}`,
             className: classNames(
                 'xh-banner',
                 className,
@@ -57,12 +58,13 @@ export const banner = hoistCmp.factory({
 });
 
 const actionButton = hoistCmp.factory<BannerModel>(({model}) => {
-    const {actionButtonProps} = model;
+    const {actionButtonProps, category} = model;
     if (isEmpty(actionButtonProps)) return null;
 
     return button({
         outlined: true,
         className: 'xh-banner__action-button',
+        testId: `xh-banner-${category}-action-btn`,
         ...actionButtonProps
     });
 });
@@ -74,6 +76,7 @@ const dismissButton = hoistCmp.factory<BannerModel>(({model}) => {
     return button({
         icon: Icon.close(),
         className: 'xh-banner__dismiss-button',
+        testId: `xh-banner-${category}-dismiss-btn`,
         onClick: () => {
             XH.hideBanner(category);
             if (isFunction(onClose)) onClose(model);

@@ -18,6 +18,13 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {action, observable} from 'mobx';
 
+/**
+ * Configuration for a {@link CardModel}. A CardModel is created automatically by {@link Card}
+ * when not provided explicitly - pass a config via the Card's `model` prop to customize.
+ *
+ * @see CardModel
+ * @see Card
+ */
 export interface CardModelConfig {
     /** Can card be collapsed? */
     collapsible?: boolean;
@@ -37,8 +44,14 @@ export interface CardPersistState {
 }
 
 /**
- * CardModel supports configuration and state-management for user-driven expand/collapse,
- * along with support for saving this state via a configured PersistenceProvider.
+ * Model for a {@link Card} - manages collapsible state and render mode for the Card's content.
+ * Created automatically by Card when not provided - pass via the Card's `model` prop to
+ * customize collapsibility, default state, or persistence.
+ *
+ * Also serves as the base class for {@link FormFieldSetModel}.
+ *
+ * @see CardModelConfig
+ * @see Card
  */
 export class CardModel extends HoistModel implements Persistable<CardPersistState> {
     declare config: CardModelConfig;

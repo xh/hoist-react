@@ -32,6 +32,15 @@ import {
     compact
 } from 'lodash';
 
+/**
+ * Configuration for a {@link DashCanvasModel} - a grid-based dashboard layout with
+ * drag-and-drop positioning and resizing of views.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashCanvasModel
+ * @see DashCanvasViewSpec
+ */
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
     /**
      * Total number of columns (x coordinates for views correspond with column numbers).
@@ -46,7 +55,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     rowHeight?: number;
 
     /**
-     * Compaction strategy for condensing empty space. Use `'wrap'` with caution — it only
+     * Compaction strategy for condensing empty space. Use `'wrap'` with caution - it only
      * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
@@ -336,7 +345,7 @@ export class DashCanvasModel
      * Add a view to the canvas.
      * @param specId - ID of the DashCanvasViewSpec to add.
      * @param opts - optional title, state, dimensions, and position. `position` accepts a view
-     *      ID in addition to the enumerated values — the new view will take that view's position.
+     *      ID in addition to the enumerated values - the new view will take that view's position.
      */
     @action
     addView(
@@ -411,7 +420,7 @@ export class DashCanvasModel
 
     /**
      * Handle a completed drop from react-grid-layout. Creates the new view from `draggedInView`
-     * and places it at the drop location. Called by the DashCanvas component — not typically
+     * and places it at the drop location. Called by the DashCanvas component - not typically
      * called directly by application code.
      */
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {

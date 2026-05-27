@@ -13,6 +13,10 @@ export type FilterLike = Filter | FilterSpec | FilterTestFn | FilterLike[];
 
 export type FilterSpec = FieldFilterSpec | FunctionFilterSpec | CompoundFilterSpec;
 
+/**
+ * Plain-object form of a {@link FieldFilter} - a single field/operator/value condition.
+ * Can be passed anywhere a {@link FilterLike} is accepted.
+ */
 export interface FieldFilterSpec {
     /** Name of Field to filter or Field instance. */
     field: string | Field;
@@ -42,6 +46,10 @@ export type FieldFilterOperator =
     | 'includes'
     | 'excludes';
 
+/**
+ * Plain-object form of a {@link CompoundFilter} - a group of filters joined by AND/OR.
+ * Can be passed anywhere a {@link FilterLike} is accepted.
+ */
 export interface CompoundFilterSpec {
     /** Collection of Filters or configs to create. */
     filters: FilterLike[];
@@ -52,6 +60,10 @@ export interface CompoundFilterSpec {
 
 export type CompoundFilterOperator = 'AND' | 'OR' | 'and' | 'or';
 
+/**
+ * Plain-object form of a {@link FunctionFilter} - a custom function-based filter.
+ * Can be passed anywhere a {@link FilterLike} is accepted.
+ */
 export interface FunctionFilterSpec {
     /** Key used to identify this FunctionFilter.*/
     key: string;

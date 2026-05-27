@@ -10,22 +10,16 @@ All layout components export both a React component (PascalCase) and an element 
 
 ## Core Components
 
-### Box / VBox / HBox
+### VBox / HBox / Box
 
-The base flexbox container and its directional variants.
+Flexbox containers with layout prop support.
 
 ```typescript
-import {box, vbox, hbox} from '@xh/hoist/cmp/layout';
-
-// Generic flex container
-box({
-    items: [header(), content(), footer()],
-    flexDirection: 'column',
-    padding: 10
-})
+import {vbox, hbox} from '@xh/hoist/cmp/layout';
 
 // Vertical layout (column direction)
 vbox({
+    padding: 10,
     items: [header(), content(), footer()]
 })
 
@@ -35,22 +29,20 @@ hbox({
 })
 ```
 
-**Box provides:**
+**All Box variants provide:**
 - `display: flex` with `overflow: hidden` and `position: relative`
-- All flexbox layout props via the `BoxProps` interface
+- All flexbox layout props via the `BoxProps` interface (see [Layout Props](#layout-props-boxprops))
 - Pass-through of standard HTML div attributes
 
-**VBox/HBox** are convenience wrappers that set `flexDirection` to `column` or `row` respectively.
+**Prefer `vbox` and `hbox`** over bare `box` — they make layout direction explicit. `box` applies
+`display: flex` with the CSS default direction (row) but does not communicate that intent clearly.
 
-### Frame / VFrame / HFrame
+### VFrame / HFrame / Frame
 
 Flexing containers that stretch to fill their parent via `flex: auto`.
 
 ```typescript
-import {frame, vframe, hframe} from '@xh/hoist/cmp/layout';
-
-// Generic frame
-frame({item: content()})
+import {vframe, hframe} from '@xh/hoist/cmp/layout';
 
 // Vertical frame (stretches and arranges children vertically)
 vframe({
@@ -63,9 +55,12 @@ hframe({
 })
 ```
 
-**Key difference from Box:** Frame adds `flex: auto`, making it stretch to consume available space
-in its parent container. Use Frame for content areas that should grow; use Box when you need
-explicit size control.
+**Key difference from Box variants:** Frame adds `flex: auto`, making it stretch to consume
+available space in its parent container. Use Frame variants for content areas that should grow;
+use Box variants when you need explicit size control.
+
+**Prefer `vframe` and `hframe`** over bare `frame` for the same reason as above — they make
+layout direction explicit.
 
 ### Viewport
 

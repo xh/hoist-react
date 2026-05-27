@@ -29,27 +29,16 @@ export interface AgGridProps
     extends HoistProps<AgGridModel>, GridOptions, LayoutProps, TestSupportProps {}
 
 /**
- * Minimal wrapper for AgGridReact, supporting direct use of the ag-Grid component with limited
- * enhancements for consistent Hoist themes/styling, layout support, and a
- * backing model for convenient access to the ag-Grid APIs and other utility methods.
+ * Low-level escape hatch for direct use of ag-Grid - most applications should use the standard
+ * Hoist {@link Grid} component and {@link GridModel} instead.
  *
- * All ag-Grid Grid Properties can be passed as props directly to this component.
- * See {@link https://www.ag-grid.com/javascript-grid-properties/}.  Pass an {@link AgGridModel}
- * via the `model` prop to control additional Hoist customizations.
+ * This minimal wrapper around AgGridReact provides Hoist theming/styling, layout support, and
+ * an {@link AgGridModel} for access to the ag-Grid APIs. All ag-Grid Grid Properties can be
+ * passed as props directly. It is intended for advanced use cases that require ag-Grid features
+ * not yet exposed by the managed Hoist Grid layer (most notably pivoting).
  *
- * This component complements and contrasts with the primary Hoist `Grid` class, which provides a
- * significantly more managed and opinionated use of ag-Grid and a number of Hoist-specific
- * extensions and customizations. That fully managed component is expected to cover the majority of
- * use cases within Hoist apps and is recommended as the primary grid class within the toolkit.
- *
- * This wrapper is provided for advanced usages of grid that wish to leverage features of the
- * underlying component not yet supported by the Hoist layer - most notably pivoting - where the
- * managed option would conflict with or complicate access to those features.
- *
- * Note that this component uses the ag-Grid `getRowHeight` prop to provide the grid with row
- * heights.  As of 4/2023, this may cause scrolling to be slow in large data sets, and
- * applications may wish to set this prop to `null` and use either a fixed `rowWidth` property, or
- * an explicit per-row setting instead. See GridModel for a more efficient, data aware approach.
+ * @see Grid
+ * @see GridModel
  */
 export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     displayName: 'AgGrid',

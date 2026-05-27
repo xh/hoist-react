@@ -20,6 +20,15 @@ import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
+/**
+ * Base configuration shared by all OAuth client implementations. Extended by
+ * {@link MsalClientConfig} and {@link AuthZeroClientConfig} with provider-specific options.
+ *
+ * See the security package README (`security/README.md`) for authentication architecture
+ * and setup guidance.
+ *
+ * @see BaseOAuthClient
+ */
 export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;

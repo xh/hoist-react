@@ -503,3 +503,14 @@
   - Added Quick Reference entry for "Customize colors, fonts, spacing, or theme"
   - Removed `/styles/` from "Other Packages" paragraph (now has a dedicated README)
 - Added `styles` entry to `mcp/data/doc-registry.ts` with CSS/theme/BEM keywords
+
+### 2026-04-14
+- Split Cube documentation out of `data/README.md` into dedicated `data/cube/README.md`:
+  - Expanded querying section with patterns for grand totals (`includeRoot`), leaf drill-down
+    (`includeLeaves`), programmatic leaf access (`provideLeaves`), flat aggregation, dynamic
+    query updates (`updateQuery`/`setFilter`), and one-shot `executeQuery()` usage
+  - Added table of contents, overview with class table, and Related Packages section
+  - Data README retains a brief pointer to the Cube doc
+- Updated `docs/README.md` index: added `/data/cube/` to Quick Reference and Core Framework table
+- Added `data/cube/README.md` entry to `docs/doc-registry.json`
+- Added `/data/cube/` entry to `docs/planning/docs-roadmap.md` Priority 1 table

@@ -8,8 +8,25 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {searchSymbols, searchMembers, getSymbolDetail, getMembers} from '../data/ts-registry.js';
-import {formatSymbolSearch, formatSymbolDetail, formatMembers} from '../formatters/typescript.js';
+import {
+    searchSymbols,
+    searchMembers,
+    getSymbolDetail,
+    getMembers,
+    getCompanionSymbols,
+    findAlternateEntries
+} from '../data/ts-registry.js';
+import {
+    formatSymbolSearch,
+    formatSymbolDetail,
+    formatMembers,
+    searchSymbolsOutputSchema,
+    toSearchSymbolsOutput,
+    getSymbolOutputSchema,
+    toGetSymbolOutput,
+    getMembersOutputSchema,
+    toGetMembersOutput
+} from '../formatters/typescript.js';
 
 /**
  * Register all TypeScript symbol exploration tools on the given MCP server.
@@ -27,12 +44,12 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Search Hoist TypeScript Symbols',
             description:
-                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name. Also searches public members (properties, methods, accessors) of key framework classes like HoistModel, GridModel, Store, and others. Returns matching symbols and members with their kind, source, and context.',
+                'Search for TypeScript classes, interfaces, types, and functions across the hoist-react framework by name, JSDoc content, and own member names. Multi-word queries match all terms (AND logic) — e.g. "panel modal" finds ModalSupportModel via its JSDoc, "StoreRecord raw" finds StoreRecord via its raw property. Also searches public members of every exported class and every exported `*Config` interface by owner name, member name, and member JSDoc. Results are ranked: name matches above JSDoc/member-only matches. Returns matches with short context snippets only — for full type information on a match, call hoist-get-symbol; for a complete property/method list, call hoist-get-members. Use hoist-search-docs for narrative documentation rather than type info.',
             inputSchema: z.object({
                 query: z
                     .string()
                     .describe(
-                        'Symbol or member name to search for (e.g. "GridModel", "Store", "lastLoadCompleted", "setSortBy")'
+                        'Search query — a symbol name (e.g. "GridModel"), a keyword (e.g. "tooltip"), a class + member name (e.g. "StoreRecord raw"), or multiple terms (e.g. "panel modal", "cube view store")'
                     ),
                 kind: z
                     .enum(['class', 'interface', 'type', 'function', 'const', 'enum'])
@@ -44,6 +61,7 @@ export function registerTsTools(server: McpServer): void {
                     .describe('Filter to exported symbols only. Default: true'),
                 limit: z.number().min(1).max(50).optional().describe('Maximum results. Default: 20')
             }),
+            outputSchema: searchSymbolsOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -67,7 +85,11 @@ export function registerTsTools(server: McpServer): void {
                 text += '\n\nTip: Use hoist-get-members to see all members of a specific class.';
             }
 
-            return {content: [{type: 'text' as const, text}]};
+            const structuredContent = toSearchSymbolsOutput(query, symbolResults, memberResults);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 
@@ -79,7 +101,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Get Hoist Symbol Details',
             description:
-                'Get detailed type information for a specific TypeScript symbol including its full signature, JSDoc documentation, inheritance, and source location. Use hoist-search-symbols first to find the symbol name.',
+                'Get detailed type information for a specific TypeScript symbol: full signature, JSDoc documentation, inheritance chain, decorators, and source location. Returns the declaration and doc-block only — for the full property/method list of a class or interface (including inherited members), call hoist-get-members instead. Use hoist-search-symbols first if you do not already have the exact symbol name.',
             inputSchema: z.object({
                 name: z
                     .string()
@@ -91,6 +113,7 @@ export function registerTsTools(server: McpServer): void {
                         'Source file path to disambiguate if multiple symbols share the same name'
                     )
             }),
+            outputSchema: getSymbolOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -100,13 +123,31 @@ export function registerTsTools(server: McpServer): void {
         },
         async ({name, filePath}) => {
             const detail = await getSymbolDetail(name, filePath);
-            let text = formatSymbolDetail(detail, name);
+            const companions = detail ? await getCompanionSymbols(detail) : [];
+            const alternates =
+                detail && !filePath ? findAlternateEntries(name, detail.filePath) : [];
+
+            let text = formatSymbolDetail(detail, name, companions);
 
             if (detail && (detail.kind === 'class' || detail.kind === 'interface')) {
                 text += '\n\nUse hoist-get-members to see all properties and methods.';
             }
 
-            return {content: [{type: 'text' as const, text}]};
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
+            }
+
+            const structuredContent = toGetSymbolOutput(name, detail, companions, alternates);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 
@@ -118,7 +159,7 @@ export function registerTsTools(server: McpServer): void {
         {
             title: 'Get Hoist Class/Interface Members',
             description:
-                'List all properties and methods of a class or interface with their types, decorators, and documentation. Use hoist-search-symbols or hoist-get-symbol first to identify the target symbol.',
+                'List all properties and methods of a class or interface with types, decorators, and JSDoc. Walks the full inheritance chain (extends / implements) and tags inherited members with their declaring type — essential for framework classes with deep hierarchies (e.g. DashContainerModel inherits from DashModel) and for Props interfaces that compose multiple parents. For just the declaration signature and top-level JSDoc without the member list, call hoist-get-symbol instead. Use hoist-search-symbols first if you do not already have the exact name.',
             inputSchema: z.object({
                 name: z
                     .string()
@@ -130,6 +171,7 @@ export function registerTsTools(server: McpServer): void {
                         'Source file path to disambiguate if multiple symbols share the same name'
                     )
             }),
+            outputSchema: getMembersOutputSchema,
             annotations: {
                 readOnlyHint: true,
                 destructiveHint: false,
@@ -139,8 +181,26 @@ export function registerTsTools(server: McpServer): void {
         },
         async ({name, filePath}) => {
             const result = await getMembers(name, filePath);
-            const text = formatMembers(result, name);
-            return {content: [{type: 'text' as const, text}]};
+            const alternates =
+                result && !filePath ? findAlternateEntries(name, result.symbol.filePath) : [];
+
+            let text = formatMembers(result, name);
+
+            if (alternates.length > 0) {
+                const altList = alternates
+                    .map(
+                        a =>
+                            `  - [${a.kind}] ${a.sourcePackage} (${a.filePath.replace(/.*\/hoist-react\//, '')})`
+                    )
+                    .join('\n');
+                text += `\n\nNote: ${alternates.length + 1} symbols named "${name}" exist. Pass filePath to disambiguate:\n${altList}`;
+            }
+
+            const structuredContent = toGetMembersOutput(name, result, alternates);
+            return {
+                content: [{type: 'text' as const, text}],
+                structuredContent
+            };
         }
     );
 }

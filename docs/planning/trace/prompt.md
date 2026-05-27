@@ -245,18 +245,18 @@ Automatic spans representing the app bootstrap, broken into phases that map dire
 `AppStateModel`'s existing state transitions:
 
 ```
-[app-load]                          ← root span, _xhLoadTimestamp → RUNNING
-  ├─ [pre-auth]                     ← PRE_AUTH → AUTHENTICATED (includes SSO redirects)
-  ├─ [hoist-init]                   ← core Hoist service installation
-  └─ [app-init]                     ← AppModel.initAsync() (app service installation + setup)
+[appLoad]                           ← root span, _xhLoadTimestamp → RUNNING
+  ├─ [preAuth]                      ← PRE_AUTH → AUTHENTICATED (includes SSO redirects)
+  ├─ [hoistInit]                    ← core Hoist service installation
+  └─ [appInit]                      ← AppModel.initAsync() (app service installation + setup)
 ```
 
-- **`app-load`:** Root span from `window._xhLoadTimestamp` through `AppState.RUNNING`,
+- **`appLoad`:** Root span from `window._xhLoadTimestamp` through `AppState.RUNNING`,
   capturing the full bootstrap duration.
-- **`pre-auth`:** Time spent in authentication, including any SSO redirects or login flows.
+- **`preAuth`:** Time spent in authentication, including any SSO redirects or login flows.
   This can dominate load time and is valuable to isolate.
-- **`hoist-init`:** Core Hoist service installation — framework overhead.
-- **`app-init`:** `AppModel.initAsync()` — app-level service installation and setup.
+- **`hoistInit`:** Core Hoist service installation — framework overhead.
+- **`appInit`:** `AppModel.initAsync()` — app-level service installation and setup.
 
 All tagged `source: 'hoist'`.
 

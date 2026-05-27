@@ -71,7 +71,10 @@ export class InstancesTabModel extends HoistModel {
             usedPctMax: row.memory?.usedPctMax
         }));
         gridModel.loadData(data);
-        await gridModel.preSelectFirstAsync();
+        if (!gridModel.hasSelection) {
+            const primary = gridModel.store.records.find(r => r.data.isPrimary);
+            await (primary ? gridModel.selectAsync(primary) : gridModel.selectFirstAsync());
+        }
     }
 
     constructor() {

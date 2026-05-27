@@ -62,6 +62,7 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
                         placeholder: 'Add message here...',
                         width: '100%',
                         height: 120,
+                        testId: 'xh-exception-details-message',
                         omit: !clientUserKnown
                     })
                 ]
@@ -71,13 +72,15 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
                 button({
                     icon: Icon.envelope(),
                     text: 'Send',
+                    testId: 'xh-exception-details-send-btn',
                     disabled: !model.userMessage,
                     onClick: () => model.sendReportAsync(),
                     omit: !clientUserKnown
                 }),
                 clipboardButton({
                     getCopyText: () => errorStr,
-                    successMessage: 'Error details copied to clipboard.'
+                    successMessage: 'Error details copied to clipboard.',
+                    testId: 'xh-exception-details-copy-btn'
                 }),
                 dismissButton()
             ])

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import bpPkg from '@blueprintjs/core/package.json';
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
@@ -49,9 +49,10 @@ export class EnvironmentService extends HoistService {
     private pollConfig: PollConfig;
     private pollTimer: Timer;
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
-                url: 'xh/environment'
+                url: 'xh/environment',
+                span: ctx.span
             }),
             clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
             clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
@@ -108,15 +109,15 @@ export class EnvironmentService extends HoistService {
     }
 
     /**
-     * Update critical environment information from server, including current app version + build,
+     * Update critical environment information from the server, including current app version + build,
      * upgrade prompt mode, and alert banner.
      *
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        let data;
+        let data: any;
         try {
-            data = await XH.fetchJson({url: 'xh/environmentPoll'});
+            data = await this.newSpan('xh.client.envPoll').fetchJson({url: 'xh/environmentPoll'});
         } catch (e) {
             this.logError('Error polling server environment', e);
             return;
@@ -162,16 +163,18 @@ export class EnvironmentService extends HoistService {
 
     private ensureVersionRunnable() {
         const hcVersion = this.get('hoistCoreVersion'),
-            clientVersion = this.get('appVersion'),
-            serverVersion = this.serverVersion;
+            // This app version value is sourced by the network call to 'xh/environment'.
+            serverAppVersion = this.get('appVersion'),
+            // This app version value is packaged from configureWebpack -> appVersion.
+            clientAppVersion = this.get('clientVersion');
 
         // Check for client/server mismatch version.  It's an ok transitory state *during* the
         // client app lifetime, but app should *never* start this way, would indicate caching issue.
         throwIf(
-            clientVersion != serverVersion,
+            clientAppVersion != serverAppVersion,
             XH.exception(
-                `The version of this client (${clientVersion}) is out of sync with the
-                available server (${serverVersion}). Please reload to continue.`
+                `The version of this client (${clientAppVersion}) is out of sync with the
+                available server (${serverAppVersion}). Please reload to continue.`
             )
         );
 

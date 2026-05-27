@@ -63,7 +63,11 @@ export interface FieldSpec {
     enableXssProtection?: boolean;
 }
 
-/** Metadata for an individual data field within a {@link StoreRecord}. */
+/**
+ * Metadata for an individual data field within a {@link StoreRecord}.
+ *
+ * @mcpHint metadata for a data field within a Store or Cube
+ */
 export class Field {
     get isField() {
         return true;

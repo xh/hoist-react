@@ -52,6 +52,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
             formField({
                 field: 'value',
                 label: null,
+                testId: 'xh-message-value',
                 item: withDefault(
                     input.item,
                     textInput({
@@ -70,6 +71,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
             formField({
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
+                testId: 'xh-message-extra-confirm',
                 item: textInput({
                     autoFocus: true,
                     selectOnFocus: true,
@@ -95,7 +97,7 @@ const bbar = hoistCmp.factory<MessageModel>(({model}) => {
         ret = [];
 
     if (cancelProps) {
-        ret.push(button(cancelProps));
+        ret.push(button({testId: 'xh-message-cancel-btn', ...cancelProps}));
     }
 
     if (cancelAlign === 'left') {
@@ -108,8 +110,12 @@ const bbar = hoistCmp.factory<MessageModel>(({model}) => {
         // Merge in formModel.isValid here in render stage to get reactivity.
         ret.push(
             formModel
-                ? button({...confirmProps, disabled: !formModel.isValid})
-                : button(confirmProps)
+                ? button({
+                      testId: 'xh-message-confirm-btn',
+                      ...confirmProps,
+                      disabled: !formModel.isValid
+                  })
+                : button({testId: 'xh-message-confirm-btn', ...confirmProps})
         );
     }
 

@@ -10,7 +10,7 @@ import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItem
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
-import {apiDeprecated, mergeDeep} from '@xh/hoist/utils/js';
+import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
     /** The initial highchartsConfig for this chart. */
@@ -33,7 +33,17 @@ export interface ChartModelDefaults {
 }
 
 /**
- * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ * Model for a Highcharts-based {@link Chart} component. Holds the Highcharts configuration
+ * object and data series, providing observable state that drives chart rendering.
+ *
+ * Set `highchartsConfig` for chart-level options (chart type, axes, legend, etc.) and
+ * `series` for the data to display. Both are observable and can be updated at any time
+ * via their setters to trigger a re-render.
+ *
+ * The underlying Highcharts instance is available via the `highchart` property for
+ * read-only access - mutations should go through `setHighchartsConfig` or `setSeries`.
+ *
+ * @see Chart
  */
 export class ChartModel extends HoistModel {
     /** App-level defaults for ChartModel. Instance config takes precedence. */
@@ -139,24 +149,5 @@ export class ChartModel extends HoistModel {
 
             return getContextMenuItems(items, context);
         };
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `ChartModel.defaults.contextMenu` */
-    static get defaultContextMenu(): ChartMenuToken[] {
-        apiDeprecated('ChartModel.defaultContextMenu', {
-            msg: 'Use ChartModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        return ChartModel.defaults.contextMenu;
-    }
-    static set defaultContextMenu(v: ChartMenuToken[]) {
-        apiDeprecated('ChartModel.defaultContextMenu', {
-            msg: 'Use ChartModel.defaults.contextMenu instead.',
-            v: '85.0'
-        });
-        ChartModel.defaults.contextMenu = v;
     }
 }
