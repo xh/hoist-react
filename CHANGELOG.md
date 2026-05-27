@@ -610,9 +610,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * @codemirror/language `6.12.1`
 * @codemirror/language-data `6.5.2`
 * @codemirror/lint `6.9.2`
-* @codemirror/state `6.5.3`
-* @codemirror/view `6.39.9`
-* @uiw/codemirror-theme-github `4.25.4`,
+* @codemirror/state `6.6.0`
+* @codemirror/view `6.40.0`
+* @uiw/codemirror-theme-github `4.25.4`
 
 ## 79.0.0 - 2026-01-05
 
