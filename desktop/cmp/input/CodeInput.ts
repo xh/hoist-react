@@ -339,12 +339,15 @@ class CodeInputModel extends HoistInputModel {
         const {query, editor} = this;
         if (!editor || !query?.trim()) return;
 
-        let doc = editor.state.doc.toString(),
+        // Case-insensitive: match against a lowercased copy of the doc and query.
+        // Match offsets remain valid against the original doc (ASCII-length-preserving).
+        let doc = editor.state.doc.toString().toLowerCase(),
+            q = query.toLowerCase(),
             matches = [],
-            idx = doc.indexOf(query);
+            idx = doc.indexOf(q);
         while (idx !== -1) {
-            matches.push({from: idx, to: idx + query.length});
-            idx = doc.indexOf(query, idx + 1);
+            matches.push({from: idx, to: idx + q.length});
+            idx = doc.indexOf(q, idx + 1);
         }
         this.matches = matches;
         this.currentMatchIdx = -1;
