@@ -21,12 +21,8 @@ import {XH} from '@xh/hoist/core';
 export async function copyToClipboard(text: string): Promise<void> {
     try {
         await copyViaClipboardApi(text);
-    } catch (apiErr) {
-        try {
-            copyViaExecCommand(text);
-        } catch (cmdErr) {
-            throw cmdErr || apiErr || notAllowed();
-        }
+    } catch {
+        copyViaExecCommand(text);
     }
 }
 
