@@ -18,11 +18,11 @@ import {XH} from '@xh/hoist/core';
  * Adapted from the (unmaintained) `clipboard-copy` package by Feross Aboukhadijeh,
  * https://github.com/feross/clipboard-copy - MIT licensed.
  *
- * TODO: drop the execCommand fallback once Hoist requires a secure context.
+ * TODO: consider dropping the execCommand fallback?
  */
 export async function copyToClipboard(text: string): Promise<void> {
     try {
-        await copyViaClipboardApi(text);
+        await navigator.clipboard.writeText(text);
     } catch {
         copyViaExecCommand(text);
     }
@@ -31,11 +31,6 @@ export async function copyToClipboard(text: string): Promise<void> {
 //-------------------
 //  Implementation
 //-------------------
-async function copyViaClipboardApi(text: string): Promise<void> {
-    if (!navigator.clipboard) throw XH.exception('Clipboard copy not allowed');
-    return navigator.clipboard.writeText(text);
-}
-
 function copyViaExecCommand(text: string): void {
     const span = document.createElement('span');
     span.textContent = text;
