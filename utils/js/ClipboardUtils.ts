@@ -11,7 +11,9 @@ import {XH} from '@xh/hoist/core';
  *
  * Uses the modern async Clipboard API when available, falling back to the legacy
  * `document.execCommand('copy')` approach for non-secure (`http://`) contexts where
- * `navigator.clipboard` is unavailable. Throws if both paths fail.
+ * `navigator.clipboard` is unavailable, and for secure-context cases where `writeText()`
+ * itself rejects (no user activation, unfocused document, Permissions Policy denial).
+ * Throws if both paths fail.
  *
  * Adapted from the (unmaintained) `clipboard-copy` package by Feross Aboukhadijeh,
  * https://github.com/feross/clipboard-copy - MIT licensed.
