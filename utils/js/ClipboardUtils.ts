@@ -14,9 +14,6 @@
  *
  * Adapted from the (unmaintained) `clipboard-copy` package by Feross Aboukhadijeh,
  * https://github.com/feross/clipboard-copy - MIT licensed.
- *
- * TODO: once Hoist drops support for non-secure contexts and very old browsers, the execCommand
- * fallback can be removed in favor of a direct `navigator.clipboard.writeText` call.
  */
 export async function copyToClipboard(text: string): Promise<void> {
     try {
