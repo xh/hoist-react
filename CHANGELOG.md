@@ -41,6 +41,9 @@
   exported from `@xh/hoist/utils/react`. Behavior unchanged.
 * Replaced unmaintained `clipboard-copy` with a Hoist-owned `copyToClipboard` utility exported
   from `@xh/hoist/utils/js`. Behavior unchanged (async Clipboard API with `execCommand` fallback).
+* Replaced unmaintained `debounce-promise` with a Hoist-owned `debouncePromise` utility exported
+  from `@xh/hoist/promise`. Behavior unchanged for the trailing-edge / shared-promise usage
+  Hoist relies on; leading-edge and accumulate modes were not used and have been omitted.
 
 ### 📚 Libraries
 
