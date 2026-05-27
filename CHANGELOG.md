@@ -606,13 +606,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
 
 ### 📚 Libraries
-* @codemirror/commands `6.10.1`
-* @codemirror/language `6.12.1`
+* @codemirror/commands `6.10.3`
+* @codemirror/language `6.12.3`
 * @codemirror/language-data `6.5.2`
-* @codemirror/lint `6.9.2`
+* @codemirror/lint `6.9.6`
 * @codemirror/state `6.6.0`
-* @codemirror/view `6.40.0`
-* @uiw/codemirror-theme-github `4.25.4`
+* @codemirror/view `6.43.0`
+* @uiw/codemirror-theme-github `4.25.10`
 
 ## 79.0.0 - 2026-01-05
 
