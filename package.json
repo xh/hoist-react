@@ -58,6 +58,7 @@
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@seznam/compose-react-refs": "~1.0.5",
     "@uiw/codemirror-theme-github": "~4.25.10",
+    "ajv": "~8.17.1",
     "classnames": "~2.5.1",
     "clipboard-copy": "~4.0.1",
     "commander": "^14.0.3",
