@@ -13,6 +13,12 @@
   (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
   [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
   for the new format.
+* `CodeInput` now uses CodeMirror v6 (upgraded from v5).
+    * The `editorProps` prop has been removed. Most former use cases are now supported via
+      first-class `CodeInput` props such as `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+    * Replace the `mode` prop with `language`. See
+      [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts)
+      for valid language strings (aliases and names are both accepted).
 
 ### 🐞 Bug Fixes
 
@@ -52,6 +58,15 @@
 * `@azure/msal-browser` `4.29 → 5.11`. Apps passing `msalClientOptions` to `MsalClient` should
   review the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration)
   for breaking changes to the underlying MSAL configuration API.
+* CodeMirror upgraded to v6 - replaces the v5 monolithic `codemirror` package. See breaking change
+  note above for `CodeInput` prop changes. New direct deps:
+    * `@codemirror/commands` `6.10`
+    * `@codemirror/language` `6.12`
+    * `@codemirror/language-data` `6.5`
+    * `@codemirror/lint` `6.9`
+    * `@codemirror/state` `6.6`
+    * `@codemirror/view` `6.43`
+    * `@uiw/codemirror-theme-github` `4.25`
 
 ## 85.0.0 - 2020-04-30
 
@@ -535,13 +550,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       please review new CSS vars (below) and consider using those instead of class-based selectors.
     * Modifier classes now follow BEM conventions (e.g. `xh-form-field-invalid` is now
       `xh-form-field--invalid`).
-* Hoist v80 **upgrades CodeMirror to v6** (from v5)
-    * editorProps deprecated:
-      The v5-style editorProps object (which accepted any CodeMirror config keys) is no longer
-      supported. Most former editorProps use cases are now supported via first-class CodeInput props,
-      such as, `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
-    * `mode` to set the language of code input now changed to `language` prop.
-        * Check [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts) for language string (alias and name allowed)
 * Completed the refactoring from `loadModel` to `loadObserver` started in v79:
     * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
       deprecated and scheduled for removal in v82.
@@ -604,15 +612,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
   causing a break if upgraded to jQuery's new 4.x release.
     * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
-
-### 📚 Libraries
-* @codemirror/commands `6.10.3`
-* @codemirror/language `6.12.3`
-* @codemirror/language-data `6.5.2`
-* @codemirror/lint `6.9.6`
-* @codemirror/state `6.6.0`
-* @codemirror/view `6.43.0`
-* @uiw/codemirror-theme-github `4.25.10`
 
 ## 79.0.0 - 2026-01-05
 
