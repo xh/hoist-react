@@ -11,13 +11,16 @@ import {
     LoadSpecConfig,
     PlainObject,
     TrackOptions,
-    XH
+    XH,
+    formatTraceparent,
+    Span,
+    SpanConfig,
+    RunContext
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {formatTraceparent, Span, SpanConfig} from '@xh/hoist/utils/telemetry';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
+import {warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -197,26 +200,19 @@ export class FetchService extends HoistService {
     // Implementation
     //-----------------------
     private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        // 1) If a convenience span spec provided, resolve to an outer Span and recurse.
-        if (opts.span && !(opts.span instanceof Span)) {
-            // Use the global withSpan -- don't want to tag with this as the caller.
-            return XH.traceService.withSpan(opts.span, span =>
-                this.fetchInternalAsync({...opts, span})
+        // 1) Apply optional span and correlation to the core work
+        const fn = (ctx: RunContext) => {
+            opts = this.withCorrelationId(opts);
+            opts = this.withTraceId(opts, ctx?.span);
+            return this.withResolvedHeadersAsync(opts, ctx?.span).then(opts =>
+                this.managedFetchAsync(opts, ctx?.span)
             );
-        }
+        };
+        const spanConfig = this.createSpanConfig(opts),
+            parent = opts.span ?? opts.loadSpec?.span;
+        let ret = spanConfig ? this.runner(parent).newSpan(spanConfig).run(fn) : fn(null);
 
-        // 2) Apply appropriate tracing and correlation to the core work.
-        opts = this.withCorrelationId(opts);
-        let ret = this.span(this.createSpanConfig(opts)).run(span => {
-            opts = {...opts, traceId: span.traceId};
-
-            // Core promise - chained with header resolution to ensure that work is included in overall tracked time.
-            return this.withResolvedHeadersAsync(opts, span).then(opts =>
-                this.managedFetchAsync(opts, span)
-            );
-        });
-
-        // 3) Apply tracking
+        // 2) Apply tracking
         if (opts.track) {
             const {correlationId, loadSpec, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
@@ -231,7 +227,7 @@ export class FetchService extends HoistService {
             });
         }
 
-        // 4) Apply interceptors - run after span has ended and exported.
+        // 3) Apply interceptors - run after span has ended and exported.
         for (const interceptor of this._interceptors) {
             ret = ret.then(
                 value => interceptor.onFulfilled(opts, value),
@@ -267,7 +263,11 @@ export class FetchService extends HoistService {
         return opts;
     }
 
-    private async withResolvedHeadersAsync(opts: FetchOptions, span?: Span): Promise<FetchOptions> {
+    private withTraceId(opts: FetchOptions, span: Span): FetchOptions {
+        return span ? {...opts, traceId: span.traceId} : opts;
+    }
+
+    private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             isPost = method === 'POST';
 
@@ -384,7 +384,7 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
-        span.setHttpStatus(ret.status);
+        span?.setHttpStatus(ret.status);
 
         if (!ret.ok) {
             throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
@@ -409,6 +409,8 @@ export class FetchService extends HoistService {
     }
 
     private createSpanConfig(opts: FetchOptions): SpanConfig {
+        if (!XH.traceService.enabled) return null;
+
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
             fullUrl = this.buildFullUrl(opts.url),
             tags: PlainObject = {
@@ -433,7 +435,6 @@ export class FetchService extends HoistService {
         return {
             name: method,
             kind: 'client',
-            parent: opts.span as Span,
             tags
         };
     }
@@ -645,36 +646,6 @@ export class FetchService extends HoistService {
         // Fallback to statusText if we have nothing else.
         return ret || statusText;
     }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `FetchService.defaults.autoGenCorrelationIds` */
-    static set autoGenCorrelationIds(v: boolean | ((opts: FetchOptions) => boolean)) {
-        apiDeprecated('FetchService.autoGenCorrelationIds', {
-            msg: 'Use FetchService.defaults.autoGenCorrelationIds instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.autoGenCorrelationIds = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.genCorrelationId` */
-    static set genCorrelationId(v: () => string) {
-        apiDeprecated('FetchService.genCorrelationId', {
-            msg: 'Use FetchService.defaults.genCorrelationId instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.genCorrelationId = v;
-    }
-
-    /** @deprecated - use `FetchService.defaults.correlationIdHeaderKey` */
-    static set correlationIdHeaderKey(v: string) {
-        apiDeprecated('FetchService.correlationIdHeaderKey', {
-            msg: 'Use FetchService.defaults.correlationIdHeaderKey instead.',
-            v: '85.0'
-        });
-        FetchService.defaults.correlationIdHeaderKey = v;
-    }
 }
 
 /** Headers to be applied to all requests.  Specified as object, or dynamic function to create. */
@@ -766,11 +737,8 @@ export interface FetchOptions {
 
     /**
      * Parent span for this fetch request. Use to nest fetch calls under a business-level span.
-     *
-     * Accepts an existing Span instance, a SpanConfig, or a string span name. When a SpanConfig or
-     * string is provided, FetchService will create and manage the parent span internally.
      */
-    span?: Span | SpanConfig | string;
+    span?: Span;
 
     /**
      * Distributed trace ID for this request. Set automatically by FetchService

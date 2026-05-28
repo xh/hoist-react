@@ -97,13 +97,14 @@ export class IdentityService extends HoistService {
             'User does not have right to impersonate or impersonation is disabled.'
         );
         await XH.prefService.pushPendingAsync();
-        await XH.fetchJson({
+
+        await this.newSpan('xh.client.identity.impersonate').fetchJson({
             url: 'xh/impersonate',
             params: {
                 username: username
-            },
-            span: {name: 'xh.client.identity.impersonate', caller: this}
+            }
         });
+
         XH.reloadApp();
     }
 
@@ -111,9 +112,8 @@ export class IdentityService extends HoistService {
     async endImpersonateAsync() {
         try {
             await XH.prefService?.pushPendingAsync();
-            await XH.fetchJson({
-                url: 'xh/endImpersonate',
-                span: {name: 'xh.client.identity.endImpersonate', caller: this}
+            await this.newSpan('xh.client.identity.endImpersonate').fetchJson({
+                url: 'xh/endImpersonate'
             });
             XH.reloadApp();
         } catch (e) {

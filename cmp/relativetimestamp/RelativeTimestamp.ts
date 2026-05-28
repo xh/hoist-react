@@ -89,7 +89,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
     displayName: 'RelativeTimestamp',
     className: 'xh-relative-timestamp',
 
-    render({className, bind, timestamp, ...rest}, ref) {
+    render({className, model, bind, timestamp, ...rest}, ref) {
         const impl = useLocalModel(RelativeTimestampLocalModel),
             layoutProps = getLayoutProps(rest);
         return box({
@@ -119,8 +119,9 @@ class RelativeTimestampLocalModel extends HoistModel {
     });
 
     get timestamp(): Date | number {
-        const {model} = this,
-            {timestamp, bind} = this.componentProps;
+        const {componentProps} = this,
+            {timestamp, bind} = componentProps,
+            model = componentProps.model ?? this.model;
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 

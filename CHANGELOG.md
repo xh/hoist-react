@@ -1,13 +1,74 @@
 # Changelog
 
-## 85.0.0-SNAPSOT - unreleased
+## 86.0.0-SNAPSHOT - unreleased
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above.
+* `FileChooser.accept` now takes a react-dropzone `Accept` object keyed by MIME type
+  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
+  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
+  for the new format.
+
+### 🐞 Bug Fixes
+
+* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
+  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
+* Desktop `Select` no longer hijacks `Home`/`End` keys, allowing native caret movement in the
+  input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
+* Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
+  source - the prop is now honored, falling back to the context model only when unset.
+* Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
+  reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
+  cache could be transitioning.
+
+### 🎁 New Features
+
+* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
+  concatenated through `PersistenceProvider.mergePersistOptions`. Enables hierarchical
+  namespacing of persistence so a parent model can scope all descendants (`@persist` properties,
+  `markPersist` calls, child `GridModel` / `PanelModel` / etc.) under a single shared key in one
+  backing store. See [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
+
+### ⚙️ Technical
+
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+
+### 📚 Libraries
+
+* ag-Grid `34.x → 35.x`. Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and
+  `ag-grid-react` dependencies to `35.x`. See the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+  no Hoist API changes required.
+* Removed `golden-layout` and `jquery` (replaced by the forked source above).
+    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
+      `resolutions` should now be able to remove that pin.
+* semver `7.7 → 7.8`
+* react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
+* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
+* `@azure/msal-browser` `4.29 → 5.11`. Apps passing `msalClientOptions` to `MsalClient` should
+  review the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration)
+  for breaking changes to the underlying MSAL configuration API.
+
+## 85.0.0 - 2020-04-30
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
 See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-Note that `hoist-core >= 38.1` is recommended (not required) to pair with the span-sampling and
+Note that `hoist-core >= 39.0` is recommended (not required) to pair with the span-sampling and
 app-load span changes in this release.
 
 * `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
@@ -25,7 +86,6 @@ app-load span changes in this release.
   `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
   the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
   into init-time fetch and async work.
-
 * `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
   `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
   `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
@@ -35,33 +95,37 @@ app-load span changes in this release.
   for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
   requiring full visibility into error spans for a particular set of errors should ensure they
   are sampled via the existing rules.
+* Removed several APIs that had been deprecated for one or more prior versions - including
+  `loadModel` getters across model/service/store classes, static defaults setters on `GridModel`/
+  `ChartModel`/`ExceptionHandler`/`FetchService`, and the legacy `withFilterByField`/
+  `withFilterByKey`/`replaceFilterByKey`/`withFilterByTypes` filter helpers. See the v85 upgrade
+  notes for the full list and replacements.
 
 ### 🎁 New Features
 
-* Added `HoistBase.observe()` / `HoistBase.span()` - a composable builder
-  ({@link ObservedRun}) that wraps a function with a span and/or `withInfo`/`withDebug`
-  logging in a single call, e.g. `this.span('loadPortfolio').logInfo('Loading').run(fn)`.
-  Replaces the prior `withSpan`/`withSpanAsync` helpers on `HoistBase` (see Breaking Changes).
-* Added `Span.setTag()`/`setTags()`.  Span passed to spanned functions is now non-nullable,
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
   matching the server-side API.
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
+  loadAsync().
+  This span will be made available on the LoadSpec and automatically picked up by FetchService for
+  properly nesting fetch calls.
 * `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
   argument carrying the current phase's `span`, so service init spans can nest under the caller's
-  span.
+  span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
 * `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
   `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
-* Added the `user.name` tag to all spans.  New `xh.impersonating` tag on spans shows impersonated
+* Added the `user.name` tag to all spans. New `xh.impersonating` tag on spans shows impersonated
   user, if any.
 * Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
   `xh.client.appInit`.
-* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
-  concatenated through `PersistenceProvider.mergePersistOptions`. Enables hierarchical
-  namespacing of persistence so a parent model can scope all descendants (`@persist` properties,
-  `markPersist` calls, child `GridModel` / `PanelModel` / etc.) under a single shared key in one
-  backing store. See [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
+* Added `Picker` props for richer multi-select trigger rendering: `multiSelectButtonStyle: 'values'`
+  shows comma-separated selected labels (overflow-ellipsed) instead of the default summary count,
+  and `multiSelectShowCount` adds a small selection-count badge to the left of the text. Both are
+  app-wide overridable via `Picker.defaults`.
 
 ### 🐞 Bug Fixes
 
-* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
+* Updated `HoistBase.withSpan` to auto-populate `caller` with `this`, ensuring
   emitted spans correctly stamp `code.namespace`.
 * Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
 * Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
@@ -73,17 +137,17 @@ app-load span changes in this release.
 
 ### 🤖 AI Docs + Tooling
 
-* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
-  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
-* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
-  every exported class plus every exported `*Config` interface.
-* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
-  interface. The tag is shown alongside owner names in MCP/CLI member search results.
-* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
-* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
-  `--json` flag on every matching CLI subcommand.
-* Fixed a latent member-index collision bug where two exported owners sharing a simple name
-  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+* MCP/CLI symbol and member search now support multi-word queries combining class and member names
+  (e.g. `"StoreRecord raw"`).
+* Expanded member-index coverage to every exported class and every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for attaching short hints to indexed classes/interfaces.
+* All MCP tools now expose structured output via `outputSchema` / `structuredContent`; matching
+  CLI subcommands gained a `--json` flag.
+* `hoist-get-members` surfaces `@param` and `@returns` JSDoc, including via `implements` fallback.
+* Added a disk-persisted index cache at `node_modules/.cache/hoist-mcp/`, dropping cold CLI search
+  invocations from multi-second builds to sub-second loads. `HOIST_MCP_NO_CACHE=1` to bypass.
+* Added MCP server `instructions` and disambiguating language to tool descriptions.
+* Fixed a member-index collision where same-named owners clobbered each other's `memberNames`.
 
 ### ⚙️ Technical
 
@@ -102,6 +166,15 @@ app-load span changes in this release.
 Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
 expected - none were part of the public API surface. Apps that imported these directly (relying
 on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.2 - 2026-05-13
+
+### 🐞 Bug Fixes
+
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
+  originally shipped in v85.0.0.
 
 ## 84.0.1 - 2026-04-20
 
@@ -470,6 +543,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       please review new CSS vars (below) and consider using those instead of class-based selectors.
     * Modifier classes now follow BEM conventions (e.g. `xh-form-field-invalid` is now
       `xh-form-field--invalid`).
+* Hoist v80 **upgrades CodeMirror to v6** (from v5)
+    * editorProps deprecated:
+      The v5-style editorProps object (which accepted any CodeMirror config keys) is no longer
+      supported. Most former editorProps use cases are now supported via first-class CodeInput props,
+      such as, `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+    * `mode` to set the language of code input now changed to `language` prop.
+        * Check [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts) for language string (alias and name allowed)
 * Completed the refactoring from `loadModel` to `loadObserver` started in v79:
     * Renamed `XH.appLoadModel` to `XH.appLoadObserver`. The prior getter remains as an alias but is
       deprecated and scheduled for removal in v82.
@@ -532,6 +612,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   dependency of the `golden-layout` library and is specified by that library very loosely as `*`,
   causing a break if upgraded to jQuery's new 4.x release.
     * ⚠️Apps will need to add their own resolution to ensure they stay on the last 3.x version.
+
+### 📚 Libraries
+* @codemirror/commands `6.10.3`
+* @codemirror/language `6.12.3`
+* @codemirror/language-data `6.5.2`
+* @codemirror/lint `6.9.6`
+* @codemirror/state `6.6.0`
+* @codemirror/view `6.43.0`
+* @uiw/codemirror-theme-github `4.25.10`
 
 ## 79.0.0 - 2026-01-05
 

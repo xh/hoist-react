@@ -11,9 +11,10 @@ import {
     HoistAppModel,
     HoistModel,
     IdentityInfo,
-    InitContext,
     managed,
     RootRefreshContextModel,
+    RunContext,
+    Span,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
@@ -44,7 +45,6 @@ import {
     WebSocketService
 } from '@xh/hoist/svc';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
@@ -157,28 +157,28 @@ export class AppContainerModel extends HoistModel {
             // Install TraceService first so booting traceable; it will defer sampling and export until config available
             await installServicesAsync([TraceService], {span: null});
 
-            await this.span({name: 'xh.client.load'}).run(async appLoadSpan => {
+            await this.newSpan('xh.client.load').run(async ctx => {
                 this.addGlobalListenersAndCss();
-                await installServicesAsync([FetchService], {span: appLoadSpan});
+                await installServicesAsync([FetchService], ctx);
 
                 // Check auth, falling through to interactive login if SSO returns no identity.
                 this.setAppState('AUTHENTICATING');
                 XH.authModel = createSingleton(this.appSpec.authModelClass);
-                let identity = await this.span({name: 'xh.client.auth', parent: appLoadSpan}).run(
-                    () => XH.authModel.completeAuthAsync()
-                );
+                let identity = await ctx
+                    .newSpan('xh.client.auth')
+                    .run(() => XH.authModel.completeAuthAsync());
+
                 if (!identity) {
                     throwIf(
                         !this.appSpec.enableLoginForm,
                         'Unable to complete required authentication (SSO/Auth failure).'
                     );
                     this.setAppState('LOGIN_REQUIRED');
-                    identity = await this.span({
-                        name: 'xh.client.interactiveLogin',
-                        parent: appLoadSpan
-                    }).run(() => this.awaitInteractiveLoginAsync());
+                    identity = await ctx
+                        .newSpan('xh.client.interactiveLogin')
+                        .run(() => this.awaitInteractiveLoginAsync());
                 }
-                await this.completeInitAsync(identity, appLoadSpan);
+                await this.completeInitAsync(identity, ctx.span);
             });
         } catch (e) {
             this.setAppState('LOAD_FAILED');
@@ -258,10 +258,10 @@ export class AppContainerModel extends HoistModel {
      * authenticated and known to the server (regardless of application roles at this point).
      */
     @action
-    private async completeInitAsync(identity: IdentityInfo, appLoadSpan: Span) {
+    private async completeInitAsync(identity: IdentityInfo, span: Span) {
         try {
             // Install identity and check roles
-            await installServicesAsync(IdentityService, {span: appLoadSpan});
+            await installServicesAsync(IdentityService, {span});
             XH.identityService.initIdentity(identity);
             if (!this.appStateModel.checkAccess()) {
                 this.setAppState('ACCESS_DENIED');
@@ -270,20 +270,17 @@ export class AppContainerModel extends HoistModel {
 
             // Hoist init phase
             this.setAppState('INITIALIZING_HOIST');
-            await this.span({name: 'xh.client.hoistInit', parent: appLoadSpan}).run(
-                async hoistInitSpan => {
-                    const hoistInitCtx: InitContext = {span: hoistInitSpan};
-                    await installServicesAsync(
-                        [LocalStorageService, SessionStorageService],
-                        hoistInitCtx
-                    );
+            await this.runner(span)
+                .newSpan('xh.client.hoistInit')
+                .run(async (ctx: RunContext) => {
+                    await installServicesAsync([LocalStorageService, SessionStorageService], ctx);
                     await installServicesAsync(
                         [EnvironmentService, ConfigService, PrefService, JsonBlobService],
-                        hoistInitCtx
+                        ctx
                     );
                     XH.traceService.noteConfigAvailable();
 
-                    await installServicesAsync([TrackService], hoistInitCtx);
+                    await installServicesAsync([TrackService], ctx);
                     await installServicesAsync(
                         [
                             AlertBannerService,
@@ -296,7 +293,7 @@ export class AppContainerModel extends HoistModel {
                             GridExportService,
                             WebSocketService
                         ],
-                        hoistInitCtx
+                        ctx
                     );
 
                     // init all models other than Router
@@ -327,15 +324,14 @@ export class AppContainerModel extends HoistModel {
 
                     // Delay to workaround hot-reload styling issues in dev.
                     await wait(XH.isDevelopmentMode ? 300 : 1);
-                }
-            );
+                });
 
             // App init phase
             this.setAppState('INITIALIZING_APP');
             this.appModel = createSingleton(this.appSpec.modelClass);
-            await this.span({name: 'xh.client.appInit', parent: appLoadSpan}).run(span =>
-                this.appModel.initAsync({span})
-            );
+            await this.runner()
+                .newSpan('xh.client.appInit')
+                .run(ctx => this.appModel.initAsync(ctx));
 
             this.startRouter();
             this.startOptionsDialog();

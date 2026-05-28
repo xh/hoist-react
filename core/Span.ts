@@ -85,7 +85,7 @@ export class Span {
 
     /**
      * Set the HTTP response status code tag and mark the span as 'error' when appropriate per
-     * OTel HTTP semantic conventions: client spans error on status >= 400, server spans on >= 500.
+     * OTel HTTP semantic conventions: client spans error on status ≥ 400, server spans on ≥ 500.
      */
     setHttpStatus(statusCode: number) {
         this.setTag('http.response.status_code', statusCode);
@@ -144,6 +144,8 @@ export class Span {
         };
     }
 }
+
+export type SpanConfigLike = SpanConfig | string;
 
 /**
  * Configuration for a {@link Span} - a lightweight trace span for distributed tracing.

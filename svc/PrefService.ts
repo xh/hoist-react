@@ -4,10 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH, Span} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
-import {Span} from '@xh/hoist/utils/telemetry';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
 
 /**
@@ -122,13 +121,12 @@ export class PrefService extends HoistService {
 
         this._updates = {};
 
-        await XH.postJson({
+        await this.newSpan('xh.client.prefs.set').postJson({
             url: 'xh/setPrefs',
             body: updates,
             params: {
                 clientUsername: XH.getUsername()
-            },
-            span: {name: 'xh.client.prefs.set', caller: this}
+            }
         });
     }
 
@@ -141,11 +139,12 @@ export class PrefService extends HoistService {
     }
 
     private async loadPrefsAsync(span: Span) {
-        const data = await XH.fetchJson({
-            url: 'xh/getPrefs',
-            params: {clientUsername: XH.getUsername()},
-            span: {name: 'xh.client.prefs.get', parent: span, caller: this}
-        });
+        const data = await this.runner(span)
+            .newSpan('xh.client.prefs.get')
+            .fetchJson({
+                url: 'xh/getPrefs',
+                params: {clientUsername: XH.getUsername()}
+            });
         forEach(data, v => {
             deepFreeze(v.value);
             deepFreeze(v.defaultValue);

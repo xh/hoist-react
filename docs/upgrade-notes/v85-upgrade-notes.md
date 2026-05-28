@@ -25,8 +25,16 @@ The most significant app-level impacts are:
 - **Propagate `ctx.span` into fetch and async work during init (recommended)** — doing so gives
   you per-service and per-request child spans under the `xh.client.appInit` root, making
   application load timing clearly visible in OTEL.
+- **`LoadSpecConfig` replaces `LoadSpec | Partial<LoadSpec>` as the `loadAsync()` argument** — a
+  new exported type defining the inputs callers may supply (`isRefresh`, `isAutoRefresh`, `meta`,
+  and the new `span`). Pass `span` to seed the parent trace context for spans and fetches issued
+  within the load.
 - **Swiper upgraded v11 → v12** — resolves a critical prototype pollution CVE. Apps consuming
   Swiper directly should confirm the upgrade.
+- **Long-deprecated APIs removed** — `loadModel` getters, several `GridModel`/`ChartModel`/
+  `ExceptionHandler`/`FetchService` static setters, and the `withFilterByField`/`withFilterByKey`/
+  `replaceFilterByKey`/`withFilterByTypes` filter helpers. Replacements have all shipped
+  previously, but agents performing the upgrade should grep for residual call sites — see Step 6.
 
 ## Prerequisites
 
@@ -34,7 +42,7 @@ Before starting, ensure:
 
 - [ ] Running hoist-react v84.x
 - [ ] Your package manager (**yarn** or **npm**) is available and working
-- [ ] **hoist-core** — no new minimum is required. **hoist-core >= 38.1 is recommended** to pair
+- [ ] **hoist-core** — no new minimum is required. **hoist-core >= 39.0 is recommended** to pair
   with this release's span sampling and app-load span changes, including the new
   `xhTraceConfig.sampleRules` name-based matching. See
   [Version Compatibility](../version-compatibility.md) for details.
@@ -223,15 +231,26 @@ with `this`, so the emitted span correctly carries `code.namespace`.
 
 If your `AppModel.initAsync()` does substantial setup beyond installing services — loading
 reference data, bootstrapping caches, preparing router state — give that work a named child span
-so it shows up distinctly in OTEL:
+so it shows up distinctly in OTEL.
+
+`Loadable.loadAsync()` now accepts a {@link LoadSpecConfig} - a plain config object with
+`isRefresh`, `isAutoRefresh`, `meta`, and a new `span` field (replaces the prior
+`LoadSpec | Partial<LoadSpec>` signature). Pass `ctx.span` (or a derived child span) so the
+load's `doLoadAsync` work nests correctly. The supplied span is exposed inside `doLoadAsync` as
+`loadSpec.span`; forward `loadSpec` to `FetchService` calls and any nested `loadAsync()` calls
+as before so fetches and child loads nest under it automatically.
 
 ```typescript
 override async initAsync(ctx: InitContext) {
     await super.initAsync(ctx);
     await XH.installServicesAsync([LookupService, EventService], ctx);
 
-    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async () => {
-        await this.lookupService.loadAsync();
+    // Direct: parent the load under ctx.span
+    await this.lookupService.loadAsync({span: ctx.span});
+
+    // Or wrap several related calls in a named child span
+    await this.span({name: 'loadInitialClientData', parent: ctx.span}).run(async span => {
+        await this.eventService.loadAsync({span});
     });
 }
 ```
@@ -271,6 +290,40 @@ The built-in services are the canonical examples. A few patterns worth noting:
 For application spans, prefer plain descriptive names (e.g. `loadPortfolioRefData`) — the
 `xh.*` naming convention is reserved for framework-owned spans.
 
+### 6. Remove Usage of Long-Deprecated APIs
+
+Several APIs deprecated in earlier Hoist versions (most since v82) are now removed. The
+replacements have all shipped previously, so most apps will already be off them — but agents
+performing the upgrade should sweep for any residual call sites. `tsc --noEmit` is the primary
+safety net: any remaining usages will surface as missing-property or unknown-import errors.
+
+**Find affected files:**
+```bash
+grep -rnE "\.loadModel\b|\.appLoadModel\b|applyColumnStateChanges|GridModel\.(DEFAULT_RESTORE_DEFAULTS_WARNING|DEFAULT_AUTOSIZE_MODE|defaultContextMenu)|ChartModel\.defaultContextMenu|ExceptionHandler\.(REDACT_PATHS|ALERT_TYPE|TOAST_PROPS)|FetchService\.(autoGenCorrelationIds|genCorrelationId|correlationIdHeaderKey)|withFilterByField|withFilterByKey|replaceFilterByKey|withFilterByTypes" client-app/src/
+```
+
+Replace each match per the table below:
+
+| Removed | Replacement |
+|---|---|
+| `model.loadModel` (on `HoistModel`, `HoistService`, `UrlStore`, `RestFormModel`) | `model.loadObserver` |
+| `XH.appLoadModel` | `XH.appLoadObserver` |
+| `gridModel.applyColumnStateChanges(state)` | `gridModel.updateColumnState(state)` |
+| `GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING = v` | `GridModel.defaults.restoreDefaultsWarning = v` |
+| `GridModel.DEFAULT_AUTOSIZE_MODE = v` | `GridModel.defaults.autosizeMode = v` |
+| `GridModel.defaultContextMenu` (get/set) | `GridModel.defaults.contextMenu` |
+| `ChartModel.defaultContextMenu` (get/set) | `ChartModel.defaults.contextMenu` |
+| `ExceptionHandler.REDACT_PATHS = v` | `ExceptionHandler.defaults.redactPaths = v` |
+| `ExceptionHandler.ALERT_TYPE = v` | `ExceptionHandler.defaults.alertType = v` |
+| `ExceptionHandler.TOAST_PROPS = v` | `ExceptionHandler.defaults.toastProps = v` |
+| `FetchService.autoGenCorrelationIds = v` | `FetchService.defaults.autoGenCorrelationIds = v` |
+| `FetchService.genCorrelationId = v` | `FetchService.defaults.genCorrelationId = v` |
+| `FetchService.correlationIdHeaderKey = v` | `FetchService.defaults.correlationIdHeaderKey = v` |
+| `withFilterByField(filter, newFilter, field)` | `appendFilter(filter.removeFieldFilters(field), newFilter)` |
+| `withFilterByKey(filter, newFilter, key)` | `appendFilter(filter.removeFunctionFilters(key), newFilter)` |
+| `replaceFilterByKey(filter, replacement, key)` | `appendFilter(filter.removeFunctionFilters(key), replacement)` |
+| `withFilterByTypes(filter, newFilter, types)` | Use `filter.removeFieldFilters()` / `filter.removeFunctionFilters()` combined with `appendFilter()` |
+
 ## Verification Checklist
 
 After completing all steps:
@@ -290,6 +343,8 @@ After completing all steps:
 - [ ] Forms validate and submit correctly
 - [ ] If your app consumes Swiper directly: swiper styles import is `swiper/css` (not
   `swiper/scss`), and carousels/pagers render correctly
+- [ ] No residual usages of removed deprecated APIs remain (Step 6) — the Step 6 grep returns
+  no matches under `client-app/src/`
 - [ ] (If OTEL export is enabled) App load trace in your collector shows nested
   `xh.client.load` → `xh.client.appInit` → per-service spans, with your app's init-time fetches
   appearing as children
