@@ -41,8 +41,7 @@
 // or modified for use with that component.
 *:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
 *:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
-  // Bind ag-grid's base background var to Hoist's grid bg - as of v35, ag-grid paints empty
-  // viewport areas with `--ag-background-color`, whose balham-dark default bleeds through otherwise.
+  // Bind ag-grid's base bg to Hoist's grid bg - prevents balham-dark default bleeding through.
   --ag-background-color: var(--xh-grid-bg);
 
   color: var(--xh-grid-text-color);
