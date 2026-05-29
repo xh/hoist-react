@@ -55,9 +55,12 @@
 * semver `7.7 → 7.8`
 * react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
 * react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
-* `@azure/msal-browser` `4.29 → 5.11`. Apps passing `msalClientOptions` to `MsalClient` should
-  review the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration)
-  for breaking changes to the underlying MSAL configuration API.
+* `@azure/msal-browser` `4.29 → 5.11`. Major upgrade with broad architectural changes - adds
+  robust Cross-Origin-Opener-Policy (COOP) support via a new redirect-bridge mechanism that
+  replaces v4's `window.opener` messaging for popup, ssoSilent, and silent-refresh flows.
+  Several `system` config properties were renamed - notably `iFrameHashTimeout` →
+  `iframeBridgeTimeout`. Apps passing `msalClientOptions` to `MsalClient` must review the
+  [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
 * CodeMirror upgraded to v6 - replaces the v5 monolithic `codemirror` package. See breaking change
   note above for `CodeInput` prop changes. New direct deps:
     * `@codemirror/commands` `6.10`
