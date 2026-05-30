@@ -7417,12 +7417,13 @@ path-parse@^1.0.7:
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
-path-parser@4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/path-parser/-/path-parser-4.2.0.tgz#2fbb3df2d49659a9a4cac88be7d8d5f4666814fb"
-  integrity sha512-MPPZiWTTp2I72VXmGQQfsn2ohrbd9QTbZSLYNS+HXsnQ37VbiLR/szO2R7DHaZA1V1scYxuxgyQerj+6kMTXtA==
+path-parser@6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/path-parser/-/path-parser-6.1.0.tgz#ee8a1dd7b1ffaf4069f2ddd1c20d1867c8fd3a08"
+  integrity sha512-nAB6J73z2rFcQP+870OHhpkHFj5kO4rPLc2Ol4Y3Ale7F6Hk1/cPKp7cQ8RznKF8FOSvu+YR9Xc6Gafk7DlpYA==
   dependencies:
-    search-params "2.1.3"
+    search-params "3.0.0"
+    tslib "^1.10.0"
 
 path-scurry@^2.0.2:
   version "2.0.2"
@@ -8246,31 +8247,32 @@ rimraf@~6.1.2:
     glob "^13.0.3"
     package-json-from-dist "^1.0.1"
 
-route-node@3.4.2:
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/route-node/-/route-node-3.4.2.tgz#6481fd5949c34a785bfbb9c3bcdae4d8333bbd46"
-  integrity sha512-MDIllr+xwmzSKQh49Ls1g66LIH9JisXh15WXyu4hAYW95mrTSRWr7bqc23hcrjZpehTmSNOb64ZiHBgsHUArog==
+route-node@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/route-node/-/route-node-4.1.1.tgz#9006600160982db0b19d2f093d4271f9fd7548ea"
+  integrity sha512-bJVDVEQvXYqTC/LQ/2ohNZ2gPRO4+3ZvHeafuCyRZAd63qH17yspVfxOBzasE/t7SmSO30sT/yPSEMuPDGHhSQ==
   dependencies:
-    path-parser "4.2.0"
-    search-params "2.1.3"
+    path-parser "6.1.0"
+    search-params "3.0.0"
+    tslib "^1.10.0"
 
 router5-plugin-browser@~7.0.2:
   version "7.0.2"
   resolved "https://registry.yarnpkg.com/router5-plugin-browser/-/router5-plugin-browser-7.0.2.tgz#a13376a1d72fd696b0d5da5a697e7aeb39f5fd24"
   integrity sha512-iDrHIDVj6wyvJBKo6fTTkrQor8/vKOXOJQD30HnFcWMHP0Amiu3vzEi6HwM3HjTr5L1AKVzMINBI3fonsdINkw==
 
-router5-transition-path@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-7.0.1.tgz#2e941fa2021fb1e4b301ec44a5c999635f787180"
-  integrity sha512-ZAiz78ey4T1CDjgFiOUK4fX6AF5ZC8tuw4jCpfsfHWFt5r6URtx/2Sc1ENFPkA6Yrl2crUCGxVWUZCBFwtH9GA==
+router5-transition-path@^8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-8.0.1.tgz#51bfc8adcee3e3b2b6872ac8252d74b501ae3e96"
+  integrity sha512-l7MFEUmasEhe1emrO79t7BkCqQQRZdenz4c3qJmZpe8V6BCerZQR+SYbZL5zmQ3hazY7nR264jCWuNed+cMD2A==
 
-router5@~7.0.2:
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/router5/-/router5-7.0.2.tgz#10b6ba554bfefe3233ead8b74c07f66c72b70590"
-  integrity sha512-QPTKHjJVn8pozHoPvVREGTogo06M/1dY6UHMMUyoAc7gG3UMx5QBMjyiREnqtac0U0Cp4T5RsZ0bkBXNsSjfYg==
+router5@~8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/router5/-/router5-8.0.1.tgz#8ef47dce54a3da2c05b222ba0dd0a5f35871e64d"
+  integrity sha512-LBLQAYd2ZI1FiiBqGf82oC+LRD0PUABrZqTzd6OmyK+t5N8wRs3hbIxeiy/9Zy+xI8Fdf/0WM68P41W6MH8pdQ==
   dependencies:
-    route-node "3.4.2"
-    router5-transition-path "^7.0.1"
+    route-node "4.1.1"
+    router5-transition-path "^8.0.1"
     symbol-observable "1.2.0"
 
 router@^2.2.0:
@@ -8521,10 +8523,10 @@ schema-utils@^4.0.0, schema-utils@^4.2.0, schema-utils@^4.3.0, schema-utils@^4.3
     ajv-formats "^2.1.1"
     ajv-keywords "^5.1.0"
 
-search-params@2.1.3:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/search-params/-/search-params-2.1.3.tgz#90b98964eaf3d0edef0f73e6e8307d1480020413"
-  integrity sha512-hHxU9ZGWpZ/lrFBIHndSnQae2in7ra+m+tBSoeAahSWDDgOgpZqs4bfaTZpljgNgAgTbjiQoJtZW6FKSsfEcDA==
+search-params@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/search-params/-/search-params-3.0.0.tgz#dbc7c243058e5a33ae1e9870be91f5aced4100d8"
+  integrity sha512-8CYNl/bjkEhXWbDTU/K7c2jQtrnqEffIPyOLMqygW/7/b+ym8UtQumcAZjOfMLjZKR6AxK5tOr9fChbQZCzPqg==
 
 select-hose@^2.0.0:
   version "2.0.0"
@@ -9302,7 +9304,7 @@ ts-morph@^27.0.2:
     "@ts-morph/common" "~0.28.1"
     code-block-writer "^13.0.3"
 
-tslib@^1.9.3:
+tslib@^1.10.0, tslib@^1.9.3:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
