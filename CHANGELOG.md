@@ -15,7 +15,8 @@
   for the new format.
 * `CodeInput` now uses CodeMirror v6 (upgraded from v5).
     * The `editorProps` prop has been removed. Most former use cases are now supported via
-      first-class `CodeInput` props such as `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+      first-class `CodeInput` props such as `readonly`, `language`, `lineNumbers`, and
+      `lineWrapping`.
     * Replace the `mode` prop with `language`. See
       [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts)
       for valid language strings (aliases and names are both accepted).
@@ -68,30 +69,31 @@
 
 ### 📚 Libraries
 
-* ag-Grid `34.x → 35.x`. Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and
-  `ag-grid-react` dependencies to `35.x`. See the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
-  no Hoist API changes required.
-* Removed `golden-layout` and `jquery` (replaced by the forked source above).
-    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
-      `resolutions` should now be able to remove that pin.
+* @azure/msal-browser `4.29 → 5.11`
+    * Major upgrade with broad architectural changes. Several `system` config properties were
+      renamed - notably `iFrameHashTimeout` → `iframeBridgeTimeout`. Apps passing
+      `msalClientOptions` to `MsalClient` must review
+      the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
+* @codemirror `5.x → 6.x`
+    * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
+      managed by hoist-react to maintain all supported functionality.
+    * See breaking change note above for `CodeInput` prop changes.
+* ag-grid `34.x → 35.x`.
+    * Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and `ag-grid-react`
+      dependencies to `35.x`. See
+      the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+      no Hoist API changes required.
+* golden-layout `removed`
+    * Replaced by the forked source as described above
+* jquery `removed`
+    * Was included due to golden-layouts consumer, which now no longer needs the library.
+    * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
+      be able to remove that pin.
+* react-dropzone `10.x → 15.x`
+    * See breaking change note above for the `FileChooser.accept` prop.
+* react-select `4.3 → 5.10`
+* react-windowed-select `3.1 → 5.2`
 * semver `7.7 → 7.8`
-* react-select `4.3 → 5.10` and react-windowed-select `3.1 → 5.2`. No app-level API changes.
-* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
-* `@azure/msal-browser` `4.29 → 5.11`. Major upgrade with broad architectural changes - adds
-  robust Cross-Origin-Opener-Policy (COOP) support via a new redirect-bridge mechanism that
-  replaces v4's `window.opener` messaging for popup, ssoSilent, and silent-refresh flows.
-  Several `system` config properties were renamed - notably `iFrameHashTimeout` →
-  `iframeBridgeTimeout`. Apps passing `msalClientOptions` to `MsalClient` must review the
-  [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
-* CodeMirror upgraded to v6 - replaces the v5 monolithic `codemirror` package. See breaking change
-  note above for `CodeInput` prop changes. New direct deps:
-    * `@codemirror/commands` `6.10`
-    * `@codemirror/language` `6.12`
-    * `@codemirror/language-data` `6.5`
-    * `@codemirror/lint` `6.9`
-    * `@codemirror/state` `6.6`
-    * `@codemirror/view` `6.43`
-    * `@uiw/codemirror-theme-github` `4.25`
 
 ## 85.0.0 - 2020-04-30
 
