@@ -136,7 +136,7 @@ to find the minimum hoist-react version for a given core release.
 
 A brief orientation to the major epochs of hoist-react / hoist-core development:
 
-- **Modern Era (v64+, core v20+):** Multi-instance clustering, ViewManager, Java 17, AG Grid v31+,
+- **Modern Era (v64+, core v20+):** Multi-instance clustering, ViewManager, Java 17+, AG Grid v31+,
   HoistAuthModel, Blueprint 5→6. Active support with upgrade notes for each major version.
 - **Middle Era (v44–v63, core v10–v19):** JsonBlobService, Role Management system, AG Grid
   maturation (v28→v29), DashCanvas, Persistence API, TypeScript migration.
