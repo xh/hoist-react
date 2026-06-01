@@ -9,6 +9,7 @@ import {
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     TaskObserver,
     Thunkable,
@@ -530,15 +531,13 @@ export class FilterChooserModel extends HoistModel {
         ...rootPersistWith
     }: FilterChooserPersistOptions) {
         if (persistValue) {
-            const status = {initialized: false},
-                persistWith = isObject(persistValue)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
-                    : rootPersistWith;
+            const status = {initialized: false};
             PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.value`,
-                    ...persistWith
-                },
+                persistOptions: persistOptions(
+                    {path: `${path}.value`},
+                    rootPersistWith,
+                    isObject(persistValue) ? persistValue : null
+                ),
                 target: {
                     getPersistableState: () => new PersistableState(this.value?.toJSON() ?? null),
                     setPersistableState: ({value}) =>
@@ -550,21 +549,19 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
-                    : rootPersistWith,
-                provider = PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.favorites`,
-                        ...persistWith
-                    },
-                    target: {
-                        getPersistableState: () =>
-                            new PersistableState(this.favorites.map(f => f.toJSON())),
-                        setPersistableState: ({value}) => this.setFavorites(value)
-                    },
-                    owner: this
-                });
+            const provider = PersistenceProvider.create({
+                persistOptions: persistOptions(
+                    {path: `${path}.favorites`},
+                    rootPersistWith,
+                    isObject(persistFavorites) ? persistFavorites : null
+                ),
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(this.favorites.map(f => f.toJSON())),
+                    setPersistableState: ({value}) => this.setFavorites(value)
+                },
+                owner: this
+            });
             if (provider) this.persistFavorites = true;
         }
     }

@@ -9,6 +9,7 @@ import {
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     PlainObject
 } from '@xh/hoist/core';
@@ -329,10 +330,7 @@ export class FormModel extends HoistModel {
             : (includeFields ?? allFields);
 
         PersistenceProvider.create({
-            persistOptions: {
-                path,
-                ...rootPersistWith
-            },
+            persistOptions: persistOptions({path}, rootPersistWith),
             target: {
                 getPersistableState: () =>
                     new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),

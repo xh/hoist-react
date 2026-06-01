@@ -39,6 +39,17 @@
   reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
   cache could be transitioning.
 
+### 🎁 New Features
+
+* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
+  concatenated through `persistOptions()`. Enables hierarchical namespacing of persistence so a
+  parent model can scope all descendants (`@persist` properties, `markPersist` calls, child
+  `GridModel` / `PanelModel` / etc.) under a single shared key in one backing store. See
+  [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
+* Added exported `persistOptions()` function for merging one or more `PersistOptions` objects,
+  with later arguments overriding earlier ones. Replaces the now-deprecated
+  `PersistenceProvider.mergePersistOptions`.
+
 ### ⚙️ Technical
 
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
