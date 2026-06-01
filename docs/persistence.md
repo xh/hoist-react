@@ -327,9 +327,9 @@ new FilterChooserModel({
 The `persistWith` property on `HoistBase` establishes default persistence options for the model
 and its children. Child components can inherit these defaults and override specific settings.
 
-### How `mergePersistOptions` Works
+### How `persistOptions()` Works
 
-When a child specifies persistence options, `PersistenceProvider.mergePersistOptions()` combines
+When a child specifies persistence options, the exported `persistOptions()` function combines
 the parent defaults with the child overrides using this rule:
 
 - **Type-related keys** (`prefKey`, `localStorageKey`, `viewManagerModel`, etc.) — child values
@@ -337,6 +337,10 @@ the parent defaults with the child overrides using this rule:
 - **`pathPrefix`** — child values **concatenate** with parent values, joined by `.`. This
   enables hierarchical namespacing through a chain of merges (see below).
 - **Other keys** (`path`, `debounce`, `settleTime`) — child values **merge** with parent values.
+
+`persistOptions()` accepts one or more `PersistOptions` arguments and merges them with
+later-wins semantics (`persistOptions(defaults, override1, override2)` — rightmost wins). Null
+or undefined arguments are skipped, which is useful when an override is conditional.
 
 This means a model can set `persistWith` once and all its child models inherit the same backing
 store, each using a different `path` to namespace their state:
@@ -357,21 +361,26 @@ class ReportModel extends HoistModel {
             columns: [...]
         });
         this.filterModel = new FilterChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: {prefKey: 'reportFilters'}},
+            persistWith: persistOptions(
+                this.persistWith,
+                {persistFavorites: {prefKey: 'reportFilters'}}
+            ),
             ...
         });
         // A second FilterChooserModel needs a custom path to avoid colliding
         // with the first — otherwise both would read/write 'filterChooser.value'.
         this.detailFilterModel = new FilterChooserModel({
-            persistWith: {
-                ...this.persistWith,
+            persistWith: persistOptions(this.persistWith, {
                 path: 'detailFilterChooser',
                 persistFavorites: false
-            },
+            }),
             ...
         });
         this.groupingModel = new GroupingChooserModel({
-            persistWith: {...this.persistWith, persistFavorites: {prefKey: 'reportGroupings'}},
+            persistWith: persistOptions(
+                this.persistWith,
+                {persistFavorites: {prefKey: 'reportGroupings'}}
+            ),
             ...
         });
     }
@@ -403,7 +412,7 @@ class ReportsModel extends HoistModel {
     // Sibling grid: pathPrefix carries through, `path` distinguishes the leaf
     // -> 'reports.gridB.columns', etc.
     @managed gridB = new GridModel({
-        persistWith: {...this.persistWith, path: 'gridB'},
+        persistWith: persistOptions(this.persistWith, {path: 'gridB'}),
         columns: [...]
     });
 }
@@ -429,20 +438,17 @@ class ReportsModel extends HoistModel {
 
     // Child owns a sub-namespace: 'reports.detail.foo', 'reports.detail.bar', ...
     @managed detailModel = new DetailModel({
-        persistWith: PersistenceProvider.mergePersistOptions(
-            this.persistWith,
-            {pathPrefix: 'detail'}
-        )
+        persistWith: persistOptions(this.persistWith, {pathPrefix: 'detail'})
     });
 }
 ```
 
 **Plain spread does not concatenate `pathPrefix`.** The concatenation rule applies only when
-options flow through `PersistenceProvider.mergePersistOptions` — which the framework itself
-calls internally for `@persist`, `markPersist`, and built-in model aspect setup. For `path`,
-plain spread is fine (it has always had replace-semantics). For `pathPrefix`, route through
-`mergePersistOptions` (or build the new prefix manually from the parent's existing one) so
-the parent's prefix is preserved.
+options flow through `persistOptions()` — which the framework itself calls internally for
+`@persist`, `markPersist`, and built-in model aspect setup. For `path`, plain spread is fine
+(it has always had replace-semantics). For `pathPrefix`, route through `persistOptions()` (or
+build the new prefix manually from the parent's existing one) so the parent's prefix is
+preserved.
 
 ## Timing and Construction Order
 
@@ -568,9 +574,9 @@ active tab, so persisting it would conflict. The model logs a warning if both ar
 
 | File | Contents |
 |------|----------|
-| `core/persist/PersistenceProvider.ts` | Base provider — `create()`, `bindToTarget()`, `mergePersistOptions()`, read/write/clear |
+| `core/persist/PersistenceProvider.ts` | Base provider — `create()`, `bindToTarget()`, read/write/clear |
 | `core/persist/Persistable.ts` | `Persistable` interface, `PersistableState` wrapper |
-| `core/persist/PersistOptions.ts` | `PersistOptions` interface, `PersistenceProviderType` |
+| `core/persist/PersistOptions.ts` | `PersistOptions` interface, `PersistenceProviderType`, `persistOptions()` merge function |
 | `core/HoistBase.ts` | `persistWith` property, `markPersist()` method |
 | `core/HoistBaseDecorators.ts` | `@persist`, `@persist.with` decorators, timing logic |
 | `core/persist/provider/LocalStorageProvider.ts` | Browser localStorage provider |

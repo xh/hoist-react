@@ -6,10 +6,9 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
-    compact,
     debounce as lodashDebounce,
     get,
     isArray,
@@ -18,7 +17,6 @@ import {
     isObject,
     isString,
     isUndefined,
-    omit,
     set,
     toPath
 } from 'lodash';
@@ -30,6 +28,7 @@ import {
     DashViewProvider,
     LocalStorageProvider,
     PersistOptions,
+    persistOptions,
     PrefProvider,
     SessionStorageProvider,
     ViewManagerProvider
@@ -100,39 +99,16 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /**
-     * Merge PersistOptions, respecting provider types, with later options overriding earlier ones.
-     *
-     * Most keys follow standard override semantics (later replaces earlier). Two exceptions:
-     *   - Type-related keys (`prefKey`, `localStorageKey`, `viewManagerModel`, etc.) - if any are
-     *     present in an override, ALL type-related keys are replaced together (you cannot inherit
-     *     a `localStorageKey` and add a `prefKey`).
-     *   - `pathPrefix` - concatenates parent + override with `.` rather than replacing, allowing
-     *     hierarchical namespacing through a chain of merges.
-     */
+    /** @deprecated Use the {@link persistOptions} function instead. */
     static mergePersistOptions(
         defaults: PersistOptions,
         ...overrides: PersistOptions[]
     ): PersistOptions {
-        const TYPE_RELATED_KEYS = [
-            'type',
-            'prefKey',
-            'localStorageKey',
-            'sessionStorageKey',
-            'dashViewModel',
-            'viewManagerModel',
-            'getData',
-            'setData'
-        ];
-        return compact(overrides).reduce((ret, override) => {
-            const merged = TYPE_RELATED_KEYS.some(key => override[key])
-                ? {...omit(ret, ...TYPE_RELATED_KEYS), ...override}
-                : {...ret, ...override};
-            if (ret?.pathPrefix && override.pathPrefix) {
-                merged.pathPrefix = `${ret.pathPrefix}.${override.pathPrefix}`;
-            }
-            return merged;
-        }, defaults);
+        apiDeprecated('PersistenceProvider.mergePersistOptions', {
+            v: 'v87',
+            msg: "Use the 'persistOptions' function instead."
+        });
+        return persistOptions(defaults, ...overrides);
     }
 
     /** Read persisted state at this provider's path. */

@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import {compact, omit} from 'lodash';
 import {Class} from 'type-fest';
 import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
@@ -28,8 +29,8 @@ export interface PersistOptions {
     /**
      * Inheritable, dot-delimited path prefix prepended to the resolved `path`. Concatenates
      * (rather than replaces) when merged through parent → child `persistWith` chains via
-     * {@link PersistenceProvider.mergePersistOptions}, allowing a parent model to namespace
-     * all descendant persistence under a shared key in a single backing store.
+     * {@link persistOptions}, allowing a parent model to namespace all descendant persistence
+     * under a shared key in a single backing store.
      *
      * Use `pathPrefix` when configuring a `persistWith` that will be passed down to child
      * models or shared by multiple `@persist` / `markPersist` properties. Use `path` to
@@ -37,8 +38,8 @@ export interface PersistOptions {
      *
      * Note: plain object spread does NOT concatenate `pathPrefix` - it replaces, like any
      * other key. To extend an inherited prefix, either build the new value manually from
-     * the existing one or route through `PersistenceProvider.mergePersistOptions`, which
-     * applies the concatenation rule.
+     * the existing one or route through {@link persistOptions}, which applies the
+     * concatenation rule.
      */
     pathPrefix?: string;
 
@@ -85,4 +86,46 @@ export interface PersistOptions {
      * Ignored if `prefKey`, `localStorageKey`, `dashViewModel` or 'viewManagerModel' are provided.
      */
     setData?: (data: object) => void;
+}
+
+/**
+ * Merge one or more {@link PersistOptions} into a single options object, with later arguments
+ * overriding earlier ones (i.e. leftmost provides defaults, rightmost wins). Null/undefined
+ * arguments are skipped.
+ *
+ * Typical use is in component or model setup, where parent or default options are extended with
+ * a caller-supplied `persistWith`:
+ * ```
+ * const opts = persistOptions(defaults, parentPersistWith, callerPersistWith);
+ * ```
+ *
+ * Most keys follow standard override semantics (later replaces earlier). Two exceptions:
+ *   - Type-related keys (`type`, `prefKey`, `localStorageKey`, `sessionStorageKey`,
+ *     `dashViewModel`, `viewManagerModel`, `getData`, `setData`) - if any of these are present in
+ *     an override, ALL type-related keys are replaced together (you cannot inherit a
+ *     `localStorageKey` and add a `prefKey`).
+ *   - `pathPrefix` - concatenated as `earlier.later` using `.` rather than replaced. This
+ *     supports hierarchical namespacing where an outer/parent model establishes a prefix and
+ *     inner/child options extend it.
+ */
+export function persistOptions(...options: Array<PersistOptions>): PersistOptions {
+    const TYPE_RELATED_KEYS = [
+        'type',
+        'prefKey',
+        'localStorageKey',
+        'sessionStorageKey',
+        'dashViewModel',
+        'viewManagerModel',
+        'getData',
+        'setData'
+    ];
+    return compact(options).reduce((ret, override) => {
+        const merged = TYPE_RELATED_KEYS.some(key => override[key])
+            ? {...omit(ret, ...TYPE_RELATED_KEYS), ...override}
+            : {...ret, ...override};
+        if (ret?.pathPrefix && override.pathPrefix) {
+            merged.pathPrefix = `${ret.pathPrefix}.${override.pathPrefix}`;
+        }
+        return merged;
+    }, {} as PersistOptions);
 }
