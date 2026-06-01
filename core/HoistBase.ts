@@ -40,6 +40,7 @@ import {
     LoadSpec,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     Some,
     Span,
@@ -308,10 +309,7 @@ export abstract class HoistBase {
     markPersist<P extends keyof this & string>(property: P, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         PersistenceProvider.create({
-            persistOptions: {
-                path: property,
-                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-            },
+            persistOptions: persistOptions({path: property}, this.persistWith, options),
             owner: this,
             target: {
                 getPersistableState: () => new PersistableState(this[property]),
