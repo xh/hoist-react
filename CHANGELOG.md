@@ -25,15 +25,22 @@
 * New client-side `MetricsService` (`XH.metricsService`) records named timers and counters with
   optional tags, debouncing batches to the server's `/xh/recordMetrics` endpoint where they
   flow into the Micrometer registry. Requires hoist-core >= 40.0.
-* Added a standard `CallContext` type (`Span | LoadSpec | {span?, loadSpec?}`) that applications
-  can accept and forward across call boundaries to propagate trace/load context into nested
-  loads and fetches.
+* Added `CallContext` and `CallContextLike` — a news API that applications and hoist can use to forward
+  trace/load context across call boundaries.  Applications typically pass in just a plain object
+  with either a `Span`, or a `LoadSpec`.   The framework normalizes it internally into a
+  `CallContext` class.
+* `FetchService` methods (and the `XH.fetch()` / `XH.fetchJson()` / `XH.postJson()` convenience
+  aliases) now accept an optional `CallContextLike` second argument for threading context into a
+  fetch. The legacy `FetchOptions.span` and `FetchOptions.loadSpec` fields are deprecated — pass
+  via the `CallContext` argument instead.
+* Introduced the `Runner` API: `HoistBase.runner(ctx?)` returns a fluent builder for composing
+  async work with optional spanning, logging, tracking, metering, and task linking, executed via
+  a terminal `.run(fn)` or fetch shortcut. `HoistBase.withSpan()` is now deprecated in favor of
+  this chain.
 * Span parents now accept a W3C `traceparent` string in addition to a `Span`, for chaining
   client work into a remote trace context received off-channel (WebSocket / SSE / queue
   messages).
-* Introduced the `Runner` / `RunContext` API: use `HoistBase.rootSpan()`, `runOn()`, `runOnRoot()`,
-  or `runOnOptional()` to compose spanned, logged, metered, tracked, and fetch-aware async work in a
-  fluent chain. `HoistBase.withSpan()` is now deprecated in favor of these.
+
 
 ### 🐞 Bug Fixes
 

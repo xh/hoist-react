@@ -8,6 +8,7 @@
 import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
 import {
     CallContext,
+    CallContextLike,
     ExceptionHandlerOptions,
     HoistModel,
     LoadSpec,
@@ -191,7 +192,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      */
     static async createAsync(
         config: ViewManagerConfig,
-        ctx?: CallContext
+        ctx?: CallContextLike
     ): Promise<ViewManagerModel> {
         const ret = new ViewManagerModel(config);
         await ret.initAsync(ctx);
@@ -363,8 +364,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {dataAccess, view} = this;
-        await this.runOn(loadSpec)
-            .newSpan('refresh')
+        await this.runner({loadSpec})
+            .span('refresh')
             .run(async ctx => {
                 // 1) Update views and related state
                 const {views, state} = await dataAccess.fetchDataAsync(ctx);
@@ -410,12 +411,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
 
-        return this.rootSpan('selectView').run(ctx => this.loadViewAsync(token, null, ctx));
+        return this.runner()
+            .span('selectView')
+            .run(ctx => this.loadViewAsync(token, null, ctx));
     }
 
     async saveAsAsync(spec: ViewCreateSpec): Promise<void> {
-        await this.runOnRoot()
-            .newSpan('saveAs')
+        await this.runner()
+            .span('saveAs')
             .run(async ctx => {
                 const view = await this.dataAccess.createViewAsync(spec, ctx);
                 this.noteSuccess(`Created ${view.typedName}`);
@@ -436,20 +439,24 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             return;
         }
 
-        await this.rootSpan('save').run(async ctx => {
-            const updated = await dataAccess
-                .updateViewValueAsync(view, pendingValue.value, ctx)
-                .linkTo(this.saveTask);
+        await this.runner()
+            .span('save')
+            .run(async ctx => {
+                const updated = await dataAccess
+                    .updateViewValueAsync(view, pendingValue.value, ctx)
+                    .linkTo(this.saveTask);
 
-            this.setAsView(updated);
-            this.noteSuccess(`Saved ${view.typedName}`);
+                this.setAsView(updated);
+                this.noteSuccess(`Saved ${view.typedName}`);
 
-            this.refreshAsync();
-        });
+                this.refreshAsync();
+            });
     }
 
     async resetAsync(): Promise<void> {
-        return this.rootSpan('reset').run(ctx => this.loadViewAsync(this.view.token, null, ctx));
+        return this.runner()
+            .span('reset')
+            .run(ctx => this.loadViewAsync(this.view.token, null, ctx));
     }
 
     //--------------------------------
@@ -521,32 +528,34 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     /** Update all aspects of a view's metadata.*/
     async updateViewInfoAsync(view: ViewInfo, updates: ViewUpdateSpec): Promise<View<T>> {
-        return this.rootSpan('updateInfo').run(ctx =>
-            this.dataAccess.updateViewInfoAsync(view, updates, ctx)
-        );
+        return this.runner()
+            .span('updateInfo')
+            .run(ctx => this.dataAccess.updateViewInfoAsync(view, updates, ctx));
     }
 
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
-        await this.rootSpan('delete').run(async ctx => {
-            let exception;
-            try {
-                await this.dataAccess.deleteViewsAsync(toDelete, ctx);
-            } catch (e) {
-                exception = e;
-            }
+        await this.runner()
+            .span('delete')
+            .run(async ctx => {
+                let exception;
+                try {
+                    await this.dataAccess.deleteViewsAsync(toDelete, ctx);
+                } catch (e) {
+                    exception = e;
+                }
 
-            await this.refreshAsync();
-            const {views} = this;
+                await this.refreshAsync();
+                const {views} = this;
 
-            if (
-                toDelete.some(view => view.isCurrentView) &&
-                !views.some(view => view.isCurrentView)
-            ) {
-                await this.loadViewAsync(this.initialViewSpec?.(views)?.token, null, ctx);
-            }
+                if (
+                    toDelete.some(view => view.isCurrentView) &&
+                    !views.some(view => view.isCurrentView)
+                ) {
+                    await this.loadViewAsync(this.initialViewSpec?.(views)?.token, null, ctx);
+                }
 
-            if (exception) throw exception;
-        });
+                if (exception) throw exception;
+            });
     }
 
     //------------------
@@ -571,15 +580,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //------------------
     // Implementation
     //------------------
-    private async initAsync(ctx?: CallContext) {
+    private async initAsync(ctx?: CallContextLike) {
         let {dataAccess, pendingValueStorageKey, enableDefault} = this,
             initialState: ViewUserState;
 
-        await this.runOnOptional(ctx)
-            .newSpan('init')
-            .run(async spanCtx => {
+        await this.runner(ctx)
+            .span('init')
+            .run(async ctx => {
                 // 1) Initialize views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(spanCtx);
+                const {views, state} = await dataAccess.fetchDataAsync(ctx);
                 initialState = state;
                 runInAction(() => {
                     this.views = views;
@@ -607,13 +616,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
                 // Note that the above routine failed to resolve a view, we will pass undefined here
                 // and load the in-code default, even if not enabled. We have no other choice!
-                await this.loadViewAsync(initialView?.token, this.pendingValue, spanCtx);
+                await this.loadViewAsync(initialView?.token, this.pendingValue, ctx);
             })
             .catch(e => {
                 // Always ensure at least default view is installed (other state defaults are fine)
-                this.rootSpan('fallbackLoad').run(fallbackCtx =>
-                    this.loadViewAsync(null, this.pendingValue, fallbackCtx)
-                );
+                this.runner()
+                    .span('fallbackLoad')
+                    .run(ctx => this.loadViewAsync(null, this.pendingValue, ctx));
                 this.handleException(e, {showAlert: false, logOnServer: true});
             });
 
@@ -641,7 +650,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private stateReactions(initialState: ViewUserState): ReactionSpec[] {
         const updateState = (spanName: string, update: Partial<ViewUserState>) =>
-            this.rootSpan(spanName).run(ctx => this.dataAccess.updateStateAsync(update, ctx));
+            this.runner()
+                .span(spanName)
+                .run(ctx => this.dataAccess.updateStateAsync(update, ctx));
         return [
             {
                 track: () => this.userPinned,
@@ -679,23 +690,25 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         const {pendingValue, isViewAutoSavable, view, dataAccess} = this;
         if (!isViewAutoSavable || !pendingValue) return;
 
-        await this.rootSpan('autoSave').run(async ctx => {
-            try {
-                const updated = await dataAccess
-                    .updateViewValueAsync(view, pendingValue.value, ctx)
-                    .linkTo(this.saveTask);
+        await this.runner()
+            .span('autoSave')
+            .run(async ctx => {
+                try {
+                    const updated = await dataAccess
+                        .updateViewValueAsync(view, pendingValue.value, ctx)
+                        .linkTo(this.saveTask);
 
-                this.setAsView(updated);
-            } catch (e) {
-                // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
-                // Keep count and alert server and user once at count n?
-                XH.handleException(e, {
-                    message: `Failing AutoSave for ${view.info.typedName}`,
-                    showAlert: false,
-                    logOnServer: false
-                });
-            }
-        });
+                    this.setAsView(updated);
+                } catch (e) {
+                    // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
+                    // Keep count and alert server and user once at count n?
+                    XH.handleException(e, {
+                        message: `Failing AutoSave for ${view.info.typedName}`,
+                        showAlert: false,
+                        logOnServer: false
+                    });
+                }
+            });
     }
 
     @action
@@ -747,9 +760,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
 
     private async maybeConfirmSaveAsync(view: View, pendingValue: PendingValue<T>) {
         // Get latest from server for reference (spanned independently of any user prompt below)
-        const latest = await this.rootSpan('confirmSavePrep').run(ctx =>
-                this.dataAccess.fetchViewAsync(view.token, ctx)
-            ),
+        const latest = await this.runner()
+                .span('confirmSavePrep')
+                .run(ctx => this.dataAccess.fetchViewAsync(view.token, ctx)),
             isGlobal = latest.isGlobal,
             isStale = latest.lastUpdated > pendingValue.baseUpdated;
         if (!isStale && !isGlobal) return true;

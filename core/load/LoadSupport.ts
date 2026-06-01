@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
-    CallContext,
+    CallContextLike,
     HoistBase,
     LoadSpecConfig,
     managed,
@@ -62,8 +62,9 @@ export class LoadSupport extends HoistBase implements Loadable {
      * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
      * full load/refresh lifecycle.
      */
-    async loadAsync(loadSpec: LoadSpecConfig | CallContext) {
-        // Favor any concrete loadSpec from a call context (passed along RunContext is a common case)
+    async loadAsync(loadSpec: LoadSpecConfig | CallContextLike) {
+        // Favor any concrete loadSpec from a call context (a CallContext forwarded from an
+        // upstream caller is a common case here).
         const config: LoadSpecConfig = loadSpec?.['loadSpec'] ?? loadSpec,
             newSpec = new LoadSpec(config ?? {}, this);
 

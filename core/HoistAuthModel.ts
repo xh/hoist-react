@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContext, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
+import {CallContextLike, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
 
 /**
  *  Base class for managing authentication lifecycle.
@@ -40,18 +40,18 @@ export class HoistAuthModel extends HoistModel {
      *
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async completeAuthAsync(ctx: CallContext): Promise<IdentityInfo> {
+    async completeAuthAsync(ctx: CallContextLike): Promise<IdentityInfo> {
         return this.getAuthStatusFromServerAsync(ctx);
     }
 
     /**
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async getAuthStatusFromServerAsync(ctx?: CallContext): Promise<IdentityInfo> {
-        return this.runOnOptional(ctx)
-            .newSpan('status')
+    async getAuthStatusFromServerAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
+        return this.runner(ctx)
+            .span('status')
             .run(async ctx => {
-                const {authenticated, identity} = await ctx.fetchJson({url: 'xh/authStatus'});
+                const {authenticated, identity} = await XH.fetchJson({url: 'xh/authStatus'}, ctx);
                 return authenticated ? this.parseIdentityInfo(identity) : null;
             })
             .catch(e => {
@@ -65,13 +65,18 @@ export class HoistAuthModel extends HoistModel {
      * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
     async loginWithCredentialsAsync(username: string, password: string): Promise<IdentityInfo> {
-        return this.rootSpan('login').run(async ctx => {
-            const {success, identity} = await ctx.fetchJson({
-                url: 'xh/login',
-                params: {username, password}
+        return this.runner()
+            .span('login')
+            .run(async ctx => {
+                const {success, identity} = await XH.fetchJson(
+                    {
+                        url: 'xh/login',
+                        params: {username, password}
+                    },
+                    ctx
+                );
+                return success ? this.parseIdentityInfo(identity) : null;
             });
-            return success ? this.parseIdentityInfo(identity) : null;
-        });
     }
 
     /**
@@ -81,7 +86,7 @@ export class HoistAuthModel extends HoistModel {
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
     async logoutAsync(): Promise<void> {
-        await this.rootSpan('logout').runFetchJson({url: 'xh/logout'});
+        await this.runner().span('logout').fetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -91,7 +96,7 @@ export class HoistAuthModel extends HoistModel {
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
      */
     async loadConfigAsync(): Promise<PlainObject> {
-        return this.rootSpan('config').runFetchJson({url: 'xh/authConfig'});
+        return this.runner().span('config').fetchJson({url: 'xh/authConfig'});
     }
 
     /**

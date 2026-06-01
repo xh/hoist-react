@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContext, LoadSpec, PlainObject} from '@xh/hoist/core';
+import {CallContext, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
 import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
@@ -39,8 +39,8 @@ export class RestStore extends UrlStore {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
                 await this.ensureLookupsLoadedAsync(ctx);
                 return super.doLoadAsync(ctx.loadSpec);
@@ -48,21 +48,23 @@ export class RestStore extends UrlStore {
     }
 
     async deleteRecordAsync(rec: StoreRecord) {
-        return this.rootSpan('delete')
+        return this.runner()
+            .span('delete')
             .run(async ctx => {
                 const {url} = this;
-                await ctx.fetchJson({url: `${url}/${rec.id}`, method: 'DELETE'});
+                await XH.fetchJson({url: `${url}/${rec.id}`, method: 'DELETE'}, ctx);
                 this.updateData({remove: [rec.id]});
             })
             .linkTo(this.loadObserver);
     }
 
     async bulkDeleteRecordsAsync(records: StoreRecord[]) {
-        return this.rootSpan('bulkDelete')
+        return this.runner()
+            .span('bulkDelete')
             .run(ctx => {
                 const {url} = this,
                     ids = records.map(it => it.id);
-                return ctx.fetchJson({url: `${url}/bulkDelete`, params: {ids}});
+                return XH.fetchJson({url: `${url}/bulkDelete`, params: {ids}}, ctx);
             })
             .linkTo(this.loadObserver)
             .tap(() => this.loadAsync());
@@ -77,10 +79,14 @@ export class RestStore extends UrlStore {
     }
 
     async bulkUpdateRecordsAsync(ids: StoreRecordId[], newParams: PlainObject) {
-        return this.rootSpan('bulkUpdate')
+        return this.runner()
+            .span('bulkUpdate')
             .run(ctx => {
                 const {url} = this;
-                return ctx.putJson({url: `${url}/bulkUpdate`, body: {ids, newParams}});
+                return XH.fetchService.putJson(
+                    {url: `${url}/bulkUpdate`, body: {ids, newParams}},
+                    ctx
+                );
             })
             .linkTo(this.loadObserver)
             .tap(() => this.loadAsync());
@@ -109,17 +115,20 @@ export class RestStore extends UrlStore {
         const data = this.editableDataForRecord(rec);
         if (!isNil(id)) data.id = id;
 
-        return this.rootSpan(isAdd ? 'create' : 'update').run(async ctx => {
-            const fetchMethod = isAdd ? 'postJson' : 'putJson',
-                response = await ctx[fetchMethod]({url, body: {data}}),
-                responseData = dataRoot ? response[dataRoot] : response;
+        return this.runner()
+            .span(isAdd ? 'create' : 'update')
+            .run(async ctx => {
+                const response = isAdd
+                        ? await XH.fetchService.postJson({url, body: {data}}, ctx)
+                        : await XH.fetchService.putJson({url, body: {data}}, ctx),
+                    responseData = dataRoot ? response[dataRoot] : response;
 
-            this.updateData([responseData]);
+                this.updateData([responseData]);
 
-            await this.ensureLookupsLoadedAsync(ctx);
+                await this.ensureLookupsLoadedAsync(ctx);
 
-            return this.getById(responseData.id);
-        });
+                return this.getById(responseData.id);
+            });
     }
 
     private async ensureLookupsLoadedAsync(ctx: CallContext) {
@@ -131,10 +140,10 @@ export class RestStore extends UrlStore {
             return;
         }
 
-        await this.runOn(ctx)
-            .newSpan('loadLookups')
+        await this.runner(ctx)
+            .span('loadLookups')
             .run(async ctx => {
-                const lookupData = await ctx.fetchJson({url: `${this.url}/lookupData`});
+                const lookupData = await XH.fetchJson({url: `${this.url}/lookupData`}, ctx);
                 lookupFields.forEach(f => {
                     f.lookup = lookupData[f.lookupName];
                 });

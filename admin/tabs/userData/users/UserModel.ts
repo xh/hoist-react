@@ -7,7 +7,7 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
@@ -52,14 +52,17 @@ export class UserModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const userLoad = ctx.fetchJson({
-                    url: 'userAdmin/users',
-                    params: {activeOnly: this.activeOnly}
-                });
-                const rolesLoad = ctx.fetchJson({url: 'userAdmin/roles'});
+                const userLoad = XH.fetchJson(
+                    {
+                        url: 'userAdmin/users',
+                        params: {activeOnly: this.activeOnly}
+                    },
+                    ctx
+                );
+                const rolesLoad = XH.fetchJson({url: 'userAdmin/roles'}, ctx);
 
                 const results: any = await Promise.allSettled([userLoad, rolesLoad]);
                 let users = results[0].value,

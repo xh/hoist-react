@@ -95,9 +95,10 @@ export class ImpersonationBarModel extends HoistModel {
     private ensureTargetsLoaded() {
         if (this.targets.length) return;
 
-        this.rootSpan('impersonationTargets')
+        this.runner()
+            .span('impersonationTargets')
             .run(async ctx => {
-                const targets = await ctx.fetchJson({url: 'xh/impersonationTargets'});
+                const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
                 this.setTargets(targets);
             })
             .catchDefault();

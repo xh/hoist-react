@@ -12,6 +12,8 @@ import {HoistRole} from '../Types';
 import {RoleFormModel} from './form/RoleFormModel';
 
 export class RoleEditorModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.roles';
+
     readonly roleModel: RoleModel;
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
@@ -49,14 +51,16 @@ export class RoleEditorModel extends HoistModel {
         if (!isValid) return;
 
         const method = this.role ? 'update' : 'create';
-        return this.rootSpan(`xh.client.admin.roles.${method}`)
+        return this.runner()
+            .span(method)
             .run(async ctx => {
-                const {data} = await ctx
-                    .postJson({
+                const {data} = await XH.postJson(
+                    {
                         body: this.roleFormModel.getData(),
                         url: `roleAdmin/${method}`
-                    })
-                    .linkTo(this.savingTask);
+                    },
+                    ctx
+                ).linkTo(this.savingTask);
                 this.resolve(data);
                 this.close();
             })

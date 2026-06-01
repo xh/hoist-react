@@ -86,13 +86,16 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, chartModel} = this;
 
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const resp = await ctx.fetchJson({
-                    url: 'connectionPoolMonitorAdmin/snapshots',
-                    params: {instance: this.instanceName}
-                });
+                const resp = await XH.fetchJson(
+                    {
+                        url: 'connectionPoolMonitorAdmin/snapshots',
+                        params: {instance: this.instanceName}
+                    },
+                    ctx
+                );
 
                 const {enabled, snapshots, poolConfiguration} = resp;
                 this.enabled = enabled;
@@ -138,12 +141,13 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     }
 
     async takeSnapshotAsync() {
-        await this.rootSpan('takeSnapshot')
-            .runFetchJson({
+        await this.runner()
+            .span('takeSnapshot')
+            .linkTo(this.loadObserver)
+            .fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
             })
-            .linkTo(this.loadObserver)
             .then(async () => {
                 await this.refreshAsync();
                 XH.successToast('Updated snapshot loaded.');
@@ -152,8 +156,9 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
     }
 
     async resetStatsAsync() {
-        await this.rootSpan('resetStats')
-            .runFetchJson({
+        await this.runner()
+            .span('resetStats')
+            .fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
                 params: {instance: this.instanceName}
             })

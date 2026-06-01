@@ -106,6 +106,20 @@ export interface ToastSpec {
 }
 
 /**
+ * Tracing and load state to be carried across call boundaries.
+ *
+ * Either field may be set independently or together. Pass as an object literal (e.g. `{loadSpec}`)
+ * to any framework method that accepts a call context.
+ */
+export interface CallContextLike {
+    /** Tracing span for the current call, used to correlate logs and timing across boundaries. */
+    span?: Span;
+
+    /** LoadSpec describing the triggering load, when this call originates from a load operation. */
+    loadSpec?: LoadSpec;
+}
+
+/**
  * Options for showing a modal alert, confirm, or prompt.
  */
 export interface MessageSpec {

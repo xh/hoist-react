@@ -97,10 +97,10 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        await this.runOn(loadSpec)
-            .newSpan('loadSpec')
+        await this.runner({loadSpec})
+            .span('loadSpec')
             .run(async ctx => {
-                const value = await ctx.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
+                const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}, ctx),
                     initialValues = {
                         ...value,
                         expires: value.expires ? new Date(value.expires) : null
@@ -175,18 +175,23 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async loadPresetsAsync() {
-        await this.rootSpan('loadPresets')
+        await this.runner()
+            .span('loadPresets')
             .run(async ctx => {
-                this.savedPresets = await ctx.fetchJson({
-                    url: 'alertBannerAdmin/alertPresets'
-                });
+                this.savedPresets = await XH.fetchJson(
+                    {
+                        url: 'alertBannerAdmin/alertPresets'
+                    },
+                    ctx
+                );
             })
             .catchDefault();
     }
 
     async savePresetsAsync() {
-        await this.rootSpan('savePresets')
-            .runPostJson({
+        await this.runner()
+            .span('savePresets')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
             })
@@ -292,8 +297,9 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        await this.rootSpan('saveSpec')
-            .runPostJson({
+        await this.runner()
+            .span('saveSpec')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertSpec',
                 body: spec,
                 track: {

@@ -37,7 +37,7 @@ import {
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
 import {
-    CallContext,
+    CallContextLike,
     DebounceSpec,
     PersistableState,
     PersistenceProvider,
@@ -45,7 +45,6 @@ import {
     RawSpanConfig,
     Some,
     Span,
-    SpanConfig,
     XH
 } from './';
 import {wait} from '@xh/hoist/promise';
@@ -134,11 +133,11 @@ export abstract class HoistBase {
         return withDebug<T>(messages, fn, this);
     }
 
-    /** @deprecated - use {@link rootSpan} or {@link runOn} to start a {@link Runner} chain. */
+    /** @deprecated - use {@link runner} to start a {@link Runner} chain. */
     withSpan<T>(config: string | RawSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
         apiDeprecated('HoistBase.withSpan', {
             v: 'v87',
-            msg: 'Use rootSpan() or runOnXXX() to start a Runner chain instead.',
+            msg: 'Use runner().span() to start a Runner chain instead.',
             source: this
         });
         let cfg = isString(config) ? {name: config} : config,
@@ -149,40 +148,10 @@ export abstract class HoistBase {
     }
 
     /**
-     * Create an {@link Runner} with an initial root span and this object
-     * as the caller.
+     * Create a {@link Runner} with an optional initial call context and this object as the caller.
      */
-    runOnRoot(): Runner {
-        return Runner.create(null, this);
-    }
-
-    /**
-     * Create an {@link Runner} with an initial call context and this object as the caller.
-     * Use this method in implementation methods that are passed CallContext or LoadSpec,
-     * e.g. doLoadAsync, initAsync, or other methods.
-     */
-    runOn(ctx: CallContext): Runner {
-        throwIf(
-            !ctx,
-            'runOn() requires a CallContext. Use runOnOptional(), or runOnRoot() as needed.'
-        );
+    runner(ctx: CallContextLike = {}): Runner {
         return Runner.create(ctx, this);
-    }
-
-    /**
-     * Create an {@link Runner} on the given call context if provided, otherwise on a fresh root.
-     * Convenient when a method receives an optional context but should always produce a Runner.
-     */
-    runOnOptional(ctx: CallContext | null | undefined): Runner {
-        return ctx ? this.runOn(ctx) : this.runOnRoot();
-    }
-
-    /**
-     * Create an {@link Runner} with an initial root span and this object
-     * as the caller.
-     */
-    rootSpan(span: string | SpanConfig): Runner {
-        return this.runOnRoot().newSpan(span);
     }
 
     /**

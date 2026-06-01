@@ -6,6 +6,8 @@
  */
 import {
     Awaitable,
+    CallContext,
+    CallContextLike,
     HoistService,
     LoadSpec,
     LoadSpecConfig,
@@ -14,13 +16,12 @@ import {
     XH,
     formatTraceparent,
     Span,
-    SpanConfig,
-    RunContext
+    SpanConfig
 } from '@xh/hoist/core';
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {warnIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, warnIf} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {isDate, isFunction, isNil, isObject, isString, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
@@ -38,7 +39,7 @@ export interface FetchServiceDefaults {
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
  * Typically accessed via `XH.fetchService` or the convenience methods on XH - `XH.fetch()`,
- * `XH.fetchJson()`, `XH.postJson()`, `XH.putJson()`, `XH.deleteJson()` - which delegate here.
+ * `XH.fetchJson()`, `XH.postJson()` - which delegate here.
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,
@@ -127,58 +128,60 @@ export class FetchService extends HoistService {
      *  Note that shortcut variant of this method (e.g. `fetchJson`, `postJson`) will set this
      *  flag for you.
      *
+     * @param opts - request options.
+     * @param ctx - optional {@link CallContextLike} supplying parent span and load context.
      * @returns Promise which resolves to a Response or JSON.
      */
-    async fetch(opts: FetchOptions): Promise<any> {
-        return this.fetchInternalAsync(opts);
+    async fetch(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchInternalAsync(opts, ctx);
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response has status in {@link NO_JSON_RESPONSES}.
      */
-    async fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetchInternalAsync({asJson: true, ...opts});
+    async fetchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchInternalAsync({asJson: true, ...opts}, ctx);
     }
 
     /**
      * Send a GET request and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    async getJson(opts: FetchOptions): Promise<any> {
-        return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts});
+    async getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchInternalAsync({asJson: true, method: 'GET', ...opts}, ctx);
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    async postJson(opts: FetchOptions): Promise<any> {
-        return this.sendJsonInternalAsync({method: 'POST', ...opts});
+    async postJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.sendJsonInternalAsync({method: 'POST', ...opts}, ctx);
     }
 
     /**
      * Send a PUT request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    async putJson(opts: FetchOptions): Promise<any> {
-        return this.sendJsonInternalAsync({method: 'PUT', ...opts});
+    async putJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.sendJsonInternalAsync({method: 'PUT', ...opts}, ctx);
     }
 
     /**
      * Send a PATCH request with a JSON body and decode the response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    async patchJson(opts: FetchOptions): Promise<any> {
-        return this.sendJsonInternalAsync({method: 'PATCH', ...opts});
+    async patchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.sendJsonInternalAsync({method: 'PATCH', ...opts}, ctx);
     }
 
     /**
      * Send a DELETE request with optional JSON body and decode the optional response as JSON.
      * @returns the decoded JSON object, or null if the response status is in {@link NO_JSON_RESPONSES}.
      */
-    async deleteJson(opts: FetchOptions): Promise<any> {
-        return this.sendJsonInternalAsync({method: 'DELETE', ...opts});
+    async deleteJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.sendJsonInternalAsync({method: 'DELETE', ...opts}, ctx);
     }
 
     /**
@@ -199,22 +202,34 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private async fetchInternalAsync(opts: FetchOptions): Promise<any> {
-        // 1) Apply optional span and correlation to the core work
-        const fn = (ctx: RunContext) => {
-            opts = this.withCorrelationId(opts);
-            opts = this.withTraceId(opts, ctx?.span);
-            return this.withResolvedHeadersAsync(opts, ctx?.span).then(opts =>
-                this.managedFetchAsync(opts, ctx?.span)
-            );
-        };
-        const spanConfig = this.createSpanConfig(opts),
-            parent = opts.span ?? opts.loadSpec?.span;
-        let ret = spanConfig ? this.runOnOptional(parent).newSpan(spanConfig).run(fn) : fn(null);
+    private async fetchInternalAsync(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        // Default to deprecated context
+        ctx ??= {span: opts.span, loadSpec: opts.loadSpec as LoadSpec};
+        apiDeprecated('FetchOptions.span', {
+            test: opts.span,
+            source: this,
+            msg: 'Pass a CallContextLike as the second argument instead.'
+        });
+        apiDeprecated('FetchOptions.loadSpec', {
+            test: opts.loadSpec,
+            source: this,
+            msg: 'Pass a CallContextLike as the second argument instead.'
+        });
+        opts = omit(opts, 'span', 'loadSpec');
+
+        let spanConfig = this.createSpanConfig(opts),
+            runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
+            ret = runner.run(ctx => {
+                opts = this.withCorrelationId(opts);
+                opts = this.withTraceId(opts, ctx.span);
+                return this.withResolvedHeadersAsync(opts, ctx.span).then(opts =>
+                    this.managedFetchAsync(opts, ctx)
+                );
+            });
 
         // 2) Apply tracking
         if (opts.track) {
-            const {correlationId, loadSpec, track} = opts;
+            const {correlationId, track} = opts;
             const trackOptions: TrackOptions = isString(track) ? {message: track} : track;
             warnIf(
                 trackOptions.correlationId || trackOptions.loadSpec,
@@ -223,7 +238,7 @@ export class FetchService extends HoistService {
             ret = ret.track({
                 ...trackOptions,
                 correlationId: correlationId as string,
-                loadSpec
+                loadSpec: ctx.loadSpec
             });
         }
 
@@ -238,16 +253,19 @@ export class FetchService extends HoistService {
         return ret;
     }
 
-    private sendJsonInternalAsync(opts: FetchOptions) {
-        return this.fetchInternalAsync({
-            asJson: true,
-            ...opts,
-            body: JSON.stringify(opts.body),
-            headers: {
-                'Content-Type': 'application/json',
-                ...opts.headers
-            }
-        });
+    private sendJsonInternalAsync(opts: FetchOptions, ctx?: CallContextLike) {
+        return this.fetchInternalAsync(
+            {
+                asJson: true,
+                ...opts,
+                body: JSON.stringify(opts.body),
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...opts.headers
+                }
+            },
+            ctx
+        );
     }
 
     // Resolve convenience options for Correlation ID to server-ready string
@@ -300,7 +318,7 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions, span: Span): Promise<any> {
+    private async managedFetchAsync(opts: FetchOptions, callCtx: CallContext): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
@@ -313,8 +331,8 @@ export class FetchService extends HoistService {
         }
 
         try {
-            return await this.abortableFetchAsync(opts, aborter, span)
-                .then(r => (opts.asJson ? this.parseJsonAsync(opts, r) : r))
+            return await this.abortableFetchAsync(opts, aborter, callCtx)
+                .then(r => (opts.asJson ? this.parseJsonAsync(opts, r, callCtx) : r))
                 .timeout(timeout);
         } catch (e) {
             if (e.isTimeout) {
@@ -324,14 +342,14 @@ export class FetchService extends HoistService {
                         ? timeout.message
                         : // Exception.timeout() message already includes interval - add URL here.
                           e.message + ` loading '${opts.url}'`;
-                throw this.timeoutException(opts, e, msg);
+                throw this.timeoutException(opts, callCtx, e, msg);
             }
 
             if (!e.isHoistException) {
                 // Just two other cases where we expect this to *throw* -- Typically we get a fail status
                 throw e.name === 'AbortError'
-                    ? this.abortedException(opts, e)
-                    : this.serverUnavailableException(opts, e);
+                    ? this.abortedException(opts, callCtx, e)
+                    : this.serverUnavailableException(opts, callCtx, e);
             }
             throw e;
         } finally {
@@ -344,7 +362,7 @@ export class FetchService extends HoistService {
     private async abortableFetchAsync(
         opts: FetchOptions,
         aborter: AbortController,
-        span: Span
+        callCtx: CallContext
     ): Promise<Response> {
         // 1) Prepare URL
         let {url, method, headers, body, params} = opts;
@@ -384,19 +402,28 @@ export class FetchService extends HoistService {
 
         // 4) Await underlying fetch and post-process response.
         const ret = await fetch(url, fetchOpts);
-        span?.setHttpStatus(ret.status);
+        callCtx.span?.setHttpStatus(ret.status);
 
         if (!ret.ok) {
-            throw this.exceptionFromResponse(opts, ret, await this.safeResponseTextAsync(ret));
+            throw this.exceptionFromResponse(
+                opts,
+                callCtx,
+                ret,
+                await this.safeResponseTextAsync(ret)
+            );
         }
 
         return ret;
     }
 
-    private async parseJsonAsync(opts: FetchOptions, r: Response): Promise<any> {
+    private async parseJsonAsync(
+        opts: FetchOptions,
+        r: Response,
+        callCtx: CallContext
+    ): Promise<any> {
         if (this.NO_JSON_RESPONSES.includes(r.status)) return null;
         return r.json().catchWhen('SyntaxError', e => {
-            throw this.jsonParseException(opts, e);
+            throw this.jsonParseException(opts, callCtx, e);
         });
     }
 
@@ -481,6 +508,7 @@ export class FetchService extends HoistService {
      */
     private exceptionFromResponse(
         fetchOptions: FetchOptions,
+        callContext: CallContext,
         response: Response,
         responseText: string = null
     ): FetchException {
@@ -490,7 +518,8 @@ export class FetchService extends HoistService {
                 message: statusText,
                 httpStatus: status,
                 serverDetails: responseText,
-                fetchOptions
+                fetchOptions,
+                callContext
             };
 
         if (status === 401) {
@@ -524,13 +553,18 @@ export class FetchService extends HoistService {
      * @param fetchOptions - original options passed to FetchService.
      * @param cause - object thrown by native {@link response.json}.
      */
-    private jsonParseException(fetchOptions: FetchOptions, cause: any): FetchException {
+    private jsonParseException(
+        fetchOptions: FetchOptions,
+        callContext: CallContext,
+        cause: any
+    ): FetchException {
         return this.createException({
             name: 'JSON Parsing Error',
             message:
                 'Error parsing the response body as JSON. The server may have returned an invalid ' +
                 'or empty response. Use "XH.fetch()" to process the response manually.',
             fetchOptions,
+            callContext,
             cause
         });
     }
@@ -540,13 +574,18 @@ export class FetchService extends HoistService {
      * @param fetchOptions - original options passed to FetchService.
      * @param cause - object thrown by native fetch
      */
-    private abortedException(fetchOptions: FetchOptions, cause: any): FetchException {
+    private abortedException(
+        fetchOptions: FetchOptions,
+        callContext: CallContext,
+        cause: any
+    ): FetchException {
         return this.createException({
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
             isFetchAborted: true,
             fetchOptions,
+            callContext,
             cause
         });
     }
@@ -562,6 +601,7 @@ export class FetchService extends HoistService {
      */
     private timeoutException(
         fetchOptions: FetchOptions,
+        callContext: CallContext,
         cause: TimeoutException,
         message: string
     ): FetchException & TimeoutException {
@@ -572,6 +612,7 @@ export class FetchService extends HoistService {
             isTimeout: true,
             interval: cause.interval,
             fetchOptions,
+            callContext,
             cause
         }) as FetchException & TimeoutException;
     }
@@ -581,7 +622,11 @@ export class FetchService extends HoistService {
      * @param fetchOptions - original options the app passed to FetchService.fetch
      * @param cause - object thrown by native fetch
      */
-    private serverUnavailableException(fetchOptions: FetchOptions, cause: any): FetchException {
+    private serverUnavailableException(
+        fetchOptions: FetchOptions,
+        callContext: CallContext,
+        cause: any
+    ): FetchException {
         const protocolPattern = /^[a-z]+:\/\//i,
             originPattern = /^[a-z]+:\/\/[^/]+/i,
             match = fetchOptions.url.match(originPattern),
@@ -596,6 +641,7 @@ export class FetchService extends HoistService {
             message: `Unable to contact the server at ${origin}`,
             isServerUnavailable: true,
             fetchOptions,
+            callContext,
             cause
         });
     }
@@ -704,6 +750,8 @@ export interface FetchOptions {
     /**
      * Optional metadata about the underlying request. Passed through for downstream processing by
      * utils such as {@link ExceptionHandler}.
+     *
+     * @deprecated Pass a {@link CallContextLike} as the second argument to the fetch method instead.
      */
     loadSpec?: LoadSpec | LoadSpecConfig;
 
@@ -737,6 +785,8 @@ export interface FetchOptions {
 
     /**
      * Parent span for this fetch request. Use to nest fetch calls under a business-level span.
+     *
+     * @deprecated Pass a {@link CallContextLike} as the second argument to the fetch method instead.
      */
     span?: Span;
 
@@ -759,6 +809,9 @@ export interface FetchException extends HoistException {
 
     /** Options of underlying fetch call. */
     fetchOptions: FetchOptions;
+
+    /** CallContext (parent span / load context) in effect when the fetch was issued. */
+    callContext: CallContext;
 
     /** Distributed trace ID associated with the failed request, if tracing was enabled. */
     traceId: string;

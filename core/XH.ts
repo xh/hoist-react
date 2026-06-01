@@ -52,6 +52,7 @@ import {
     BannerSpec,
     ExceptionHandler,
     ExceptionHandlerOptions,
+    CallContextLike,
     HoistAppModel,
     HoistService,
     HoistServiceClass,
@@ -284,24 +285,24 @@ export class XHApi {
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetch(opts);
+    fetch(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetch(opts, ctx);
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
      * @see FetchService.fetchJson
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetchJson(opts);
+    fetchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetchJson(opts, ctx);
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @see FetchService.postJson
      */
-    postJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.postJson(opts);
+    postJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.postJson(opts, ctx);
     }
 
     /**

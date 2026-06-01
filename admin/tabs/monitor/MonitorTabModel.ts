@@ -78,10 +78,10 @@ export class MonitorTabModel extends BaseAdminTabModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!this.isVisible) return;
 
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const results = await ctx.fetchJson({url: 'monitorResultsAdmin/results'});
+                const results = await XH.fetchJson({url: 'monitorResultsAdmin/results'}, ctx);
                 this.installResults(results);
             })
             .catch(e => {
@@ -91,9 +91,10 @@ export class MonitorTabModel extends BaseAdminTabModel {
     }
 
     async forceRunAllMonitorsAsync() {
-        return this.rootSpan('forceRunAll')
+        return this.runner()
+            .span('forceRunAll')
             .run(async ctx => {
-                await ctx.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
+                await XH.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'}, ctx);
                 XH.toast('Request received - results will be generated shortly.');
             })
             .catchDefault();

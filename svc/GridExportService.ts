@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {HoistService, RunContext, TrackOptions, XH} from '@xh/hoist/core';
+import {CallContext, HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
@@ -47,7 +47,9 @@ export class GridExportService extends HoistService {
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
     async exportAsync(gridModel: GridModel, opts: ExportOptions = {}) {
-        return this.rootSpan('gridExport').run(ctx => this.doExportAsync(gridModel, opts, ctx));
+        return this.runner()
+            .span('gridExport')
+            .run(ctx => this.doExportAsync(gridModel, opts, ctx));
     }
 
     private async doExportAsync(
@@ -59,7 +61,7 @@ export class GridExportService extends HoistService {
             track = false,
             timeout = 30 * SECONDS
         }: ExportOptions,
-        ctx: RunContext
+        ctx: CallContext
     ) {
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -122,17 +124,20 @@ export class GridExportService extends HoistService {
         formData.append('params', JSON.stringify(params));
 
         try {
-            const response = await ctx.fetch({
-                url: 'xh/export',
-                method: 'POST',
-                body: formData,
-                // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
-                // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
-                headers: {
-                    'Content-Type': null
+            const response = await XH.fetch(
+                {
+                    url: 'xh/export',
+                    method: 'POST',
+                    body: formData,
+                    // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
+                    // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
+                    headers: {
+                        'Content-Type': null
+                    },
+                    timeout
                 },
-                timeout
-            });
+                ctx
+            );
 
             const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
                 fileExt = this.getFileExtension(type);

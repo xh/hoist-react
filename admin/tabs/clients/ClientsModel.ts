@@ -77,10 +77,10 @@ export class ClientsModel extends BaseAdminTabModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const data = await ctx.fetchJson({url: 'clientAdmin/allClients'});
+                const data = await XH.fetchJson({url: 'clientAdmin/allClients'}, ctx);
                 if (loadSpec.isStale) return;
 
                 gridModel.loadData(data);
@@ -227,8 +227,9 @@ export class ClientsModel extends BaseAdminTabModel {
     }) {
         if (isEmpty(toRecs)) return;
 
-        await this.rootSpan('bulkPush')
-            .withTrack({
+        await this.runner()
+            .span('bulkPush')
+            .track({
                 category: 'Audit',
                 message: trackMessage,
                 data: {users: toRecs.map(it => it.data.user).sort()},
@@ -236,15 +237,18 @@ export class ClientsModel extends BaseAdminTabModel {
             })
             .run(ctx => {
                 const tasks = toRecs.map(rec =>
-                    ctx.fetchJson({
-                        url: 'clientAdmin/pushToClient',
-                        params: {
-                            channelKey: rec.data.key,
-                            instance: rec.data.instance,
-                            topic,
-                            message
-                        }
-                    })
+                    XH.fetchJson(
+                        {
+                            url: 'clientAdmin/pushToClient',
+                            params: {
+                                channelKey: rec.data.key,
+                                instance: rec.data.instance,
+                                topic,
+                                message
+                            }
+                        },
+                        ctx
+                    )
                 );
                 return Promise.allSettled(tasks);
             });

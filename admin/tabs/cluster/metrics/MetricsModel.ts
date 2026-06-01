@@ -167,10 +167,10 @@ export class MetricsModel extends BaseAdminTabModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const data = await ctx.fetchJson({url: 'metricsAdmin/listMetrics'});
+                const data = await XH.fetchJson({url: 'metricsAdmin/listMetrics'}, ctx);
 
                 if (loadSpec.isStale) return;
 
@@ -228,13 +228,14 @@ export class MetricsModel extends BaseAdminTabModel {
     };
 
     private async setPublishedAsync(names: string[], published: boolean) {
-        await this.rootSpan('setPublished')
-            .withTrack({
+        await this.runner()
+            .span('setPublished')
+            .track({
                 category: 'Audit',
                 message: 'Edited Metric Publishing',
                 data: {published, names}
             })
-            .runPostJson({
+            .postJson({
                 url: 'metricsAdmin/setPublished',
                 body: {names, published}
             });

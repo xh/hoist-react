@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH, CallContext} from '@xh/hoist/core';
+import {CallContextLike, HoistService, InitContext, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
@@ -120,14 +120,19 @@ export class PrefService extends HoistService {
         const updates = this._updates;
         if (isEmpty(updates)) return;
 
-        await this.rootSpan('set').run(async ctx => {
-            this._updates = {};
-            await ctx.postJson({
-                url: 'xh/setPrefs',
-                body: updates,
-                params: {clientUsername: XH.getUsername()}
+        await this.runner()
+            .span('set')
+            .run(async ctx => {
+                this._updates = {};
+                await XH.postJson(
+                    {
+                        url: 'xh/setPrefs',
+                        body: updates,
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
             });
-        });
     }
 
     //-------------------
@@ -138,14 +143,17 @@ export class PrefService extends HoistService {
         this.pushPendingAsync();
     }
 
-    private async loadPrefsAsync(ctx: CallContext) {
-        await this.runOn(ctx)
-            .newSpan('get')
+    private async loadPrefsAsync(ctx: CallContextLike) {
+        await this.runner(ctx)
+            .span('get')
             .run(async ctx => {
-                const data = await ctx.fetchJson({
-                    url: 'xh/getPrefs',
-                    params: {clientUsername: XH.getUsername()}
-                });
+                const data = await XH.fetchJson(
+                    {
+                        url: 'xh/getPrefs',
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
                 forEach(data, v => {
                     deepFreeze(v.value);
                     deepFreeze(v.defaultValue);

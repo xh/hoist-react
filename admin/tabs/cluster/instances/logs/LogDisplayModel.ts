@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, persist} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
@@ -107,20 +107,23 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        await this.runOn(loadSpec)
-            .newSpan('getFile')
+        await this.runner({loadSpec})
+            .span('getFile')
             .run(async ctx => {
-                const response = await ctx.fetchJson({
-                    url: 'logViewerAdmin/getFile',
-                    params: {
-                        filename: parent.file,
-                        startLine: this.startLine,
-                        maxLines: this.maxLines,
-                        pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                        caseSensitive: this.caseSensitive,
-                        instance: parent.instanceName
-                    }
-                });
+                const response = await XH.fetchJson(
+                    {
+                        url: 'logViewerAdmin/getFile',
+                        params: {
+                            filename: parent.file,
+                            startLine: this.startLine,
+                            maxLines: this.maxLines,
+                            pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                            caseSensitive: this.caseSensitive,
+                            instance: parent.instanceName
+                        }
+                    },
+                    ctx
+                );
                 this.updateGridData(response.content);
             });
     }

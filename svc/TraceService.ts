@@ -164,7 +164,7 @@ export class TraceService extends HoistService {
 
         this._pending = [];
         try {
-            await XH.fetchService.postJson({
+            await XH.postJson({
                 url: 'xh/submitSpans',
                 body: spans.map(s => s.toJSON()),
                 params: {

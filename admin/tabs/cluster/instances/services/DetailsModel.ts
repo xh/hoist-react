@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, lookup, PlainObject} from '@xh/hoist/core';
+import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
@@ -47,14 +47,17 @@ export class DetailsModel extends HoistModel {
 
         if (!selected) return;
 
-        await this.runOn(loadSpec)
-            .newSpan('getStats')
+        await this.runner({loadSpec})
+            .span('getStats')
             .run(async ctx => {
-                const resp = await ctx.fetchJson({
-                    url: 'serviceManagerAdmin/getStats',
-                    params: {instance: parent.instanceName, name: selected.name},
-                    autoAbortKey: 'serviceDetails'
-                });
+                const resp = await XH.fetchJson(
+                    {
+                        url: 'serviceManagerAdmin/getStats',
+                        params: {instance: parent.instanceName, name: selected.name},
+                        autoAbortKey: 'serviceDetails'
+                    },
+                    ctx
+                );
                 if (loadSpec.isStale) return;
                 this.stats = resp;
             });

@@ -293,15 +293,18 @@ export class RoleFormModel extends HoistModel {
     }
 
     private async lookupDirectoryGroupAsync(directoryGroup: string, recordId: string) {
-        return this.rootSpan('usersForDirectoryGroup')
+        return this.runner()
+            .span('usersForDirectoryGroup')
+            .linkTo(this.directoryGroupLookupTask)
             .run(async ctx => {
-                const {data} = await ctx
-                    .fetchJson({
+                const {data} = await XH.fetchJson(
+                    {
                         autoAbortKey: `roleAdmin/usersForDirectoryGroup-${recordId}`,
                         url: 'roleAdmin/usersForDirectoryGroup',
                         params: {name: directoryGroup}
-                    })
-                    .linkTo(this.directoryGroupLookupTask);
+                    },
+                    ctx
+                );
                 if (isString(data)) {
                     this.directoryGroupsGridModel.store.modifyRecords({
                         id: recordId,

@@ -7,7 +7,7 @@
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed} from '@xh/hoist/core';
+import {LoadSpec, managed, XH} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 
 /**
@@ -49,13 +49,16 @@ export class ServerEnvModel extends BaseInstanceModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const resp = await ctx.fetchJson({
-                        url: 'envAdmin',
-                        params: {instance: this.instanceName}
-                    }),
+                const resp = await XH.fetchJson(
+                        {
+                            url: 'envAdmin',
+                            params: {instance: this.instanceName}
+                        },
+                        ctx
+                    ),
                     data = [];
 
                 forOwn(resp.environment, (value, name) => {

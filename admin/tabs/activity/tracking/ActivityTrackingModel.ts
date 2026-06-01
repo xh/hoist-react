@@ -148,13 +148,16 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         const {enabled, cube, query} = this;
         if (!enabled) return;
 
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const data: PlainObject[] = await ctx.postJson({
-                    url: 'trackLogAdmin',
-                    body: query
-                });
+                const data: PlainObject[] = await XH.postJson(
+                    {
+                        url: 'trackLogAdmin',
+                        body: query
+                    },
+                    ctx
+                );
 
                 if (loadSpec.isStale) return;
 
@@ -357,9 +360,10 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        this.rootSpan('lookups')
+        this.runner()
+            .span('lookups')
             .run(async ctx => {
-                const lookups = await ctx.fetchJson({url: 'trackLogAdmin/lookups'});
+                const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'}, ctx);
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
                     const {field} = spec,

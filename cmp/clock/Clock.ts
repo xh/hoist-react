@@ -104,12 +104,16 @@ class ClockLocalModel extends HoistModel {
             return;
         }
 
-        await this.rootSpan('getTimeZoneOffset')
+        await this.runner()
+            .span('getTimeZoneOffset')
             .run(async ctx => {
-                const offsetResp = await ctx.fetchJson({
-                    url: 'xh/getTimeZoneOffset',
-                    params: {timeZoneId: timezone}
-                });
+                const offsetResp = await XH.fetchJson(
+                    {
+                        url: 'xh/getTimeZoneOffset',
+                        params: {timeZoneId: timezone}
+                    },
+                    ctx
+                );
                 this.offset = offsetResp.offset;
                 this.offsetException = null;
             })
