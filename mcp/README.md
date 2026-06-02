@@ -315,9 +315,20 @@ List all available documentation with descriptions, grouped by category.
 |-----------|------|----------|-------------|
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
 
+#### `hoist-read-doc`
+
+Read the full text of a single document by its exact ID. The tool-based equivalent of the
+`hoist://docs/{id}` resource — useful when resource fetching is unavailable or inconvenient. Returns
+the markdown body as text plus structured `{id, title, category, content}`.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Exact document ID (repo-relative path), e.g. `cmp/grid/README.md`, `docs/authentication.md` |
+
 #### `hoist-ping`
 
-Verify the MCP server is running and responsive. Takes no parameters.
+Verify the MCP server is running and responsive. Takes no parameters. Reports the indexed
+`@xh/hoist` library version.
 
 ### TypeScript Tools
 
@@ -470,6 +481,12 @@ Resources provide direct read access to documentation files via URI.
 
 The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashes in doc IDs
 (e.g. `cmp/grid`) are preserved rather than percent-encoded.
+
+Because concept-doc IDs are themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme
+prefix is also `hoist://docs/`, the strictly-correct URI doubles the segment
+(`hoist://docs/docs/routing.md`). The resource tolerates a single dropped `docs/`, so
+`hoist://docs/routing.md` resolves identically. For a friction-free read by bare ID, prefer the
+`hoist-read-doc` tool.
 
 **Discovering available documents:** The `hoist-doc` resource supports `list` and `complete`
 operations. MCP clients can enumerate all available doc IDs or get tab-completion suggestions.

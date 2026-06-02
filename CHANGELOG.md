@@ -50,6 +50,16 @@
   with later arguments overriding earlier ones. Replaces the now-deprecated
   `PersistenceProvider.mergePersistOptions`.
 
+### 🤖 AI Docs + Tooling
+
+* Added a `hoist-read-doc` MCP tool that reads a full document by exact ID, giving MCP parity with
+  the `hoist-docs read` CLI and `hoist-core`'s `hoist-core-read-doc`.
+* The `hoist://docs/{id}` resource now tolerates a dropped `docs/` segment, so
+  `hoist://docs/routing.md` resolves the same as the strictly-correct
+  `hoist://docs/docs/routing.md`.
+* Added a `hoist-docs ping` CLI subcommand mirroring the `hoist-ping` MCP tool; both now report the
+  indexed `@xh/hoist` library version.
+
 ### ⚙️ Technical
 
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported

@@ -27,8 +27,8 @@ Two interfaces are available. Both share the same underlying registries and prod
 
 **MCP Server (hoist-react)** -- When working in the hoist-react repository, an MCP server is
 configured via `.mcp.json` and is very likely already available. Use the `hoist-search-docs`,
-`hoist-list-docs`, `hoist-search-symbols`, `hoist-get-symbol`, and `hoist-get-members` tools, plus
-`hoist://docs/{id}` resources for direct document access.
+`hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`, `hoist-get-symbol`, and
+`hoist-get-members` tools, plus `hoist://docs/{id}` resources for direct document access.
 
 **CLI Tools** -- For environments without MCP support, or when you prefer shell commands. These are
 real `bin` entries in the hoist-react `package.json` — invoke them exactly as shown with `npx`:
