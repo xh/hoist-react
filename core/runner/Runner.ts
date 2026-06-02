@@ -171,7 +171,7 @@ export class Runner {
 
         if (debugMsgs != null && getLogLevel() === 'debug') {
             return ctx => withDebug(debugMsgs, () => fn(ctx), this.caller);
-        } else if (this.infoMsgs != null) {
+        } else if (infoMsgs != null) {
             return ctx => withInfo(infoMsgs, () => fn(ctx), this.caller);
         }
         return fn;
