@@ -311,6 +311,9 @@ category while all other entries continue to require INFO or above.
 #### TraceService
 **File**: `TraceService.ts` | **Access**: `XH.traceService`
 
+> See [Telemetry & Observability](../docs/telemetry.md) for the full guide to the `Runner` chain,
+> tracing, metrics, and activity tracking.
+
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
 `traceparent` headers on outgoing requests, and batches completed spans for export to the
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation

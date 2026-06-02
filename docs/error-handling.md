@@ -183,6 +183,9 @@ onSubmitClick() {
 
 ### catchDefault in Promise Chains
 
+> See [Telemetry & Observability](./telemetry.md) for the `Runner` chain (spanning, tracking,
+> masking, and metrics).
+
 `catchDefault()` should be the last handler applied. With the fluent `Runner` chain, compose
 `linkTo`/`track` as builder methods and apply `catchDefault()` to the terminal — so tracking
 still captures failures:

@@ -242,6 +242,8 @@ fetchAsync()
 
 ### Standard Load Pattern
 
+> See [Telemetry & Observability](../docs/telemetry.md) for the full `Runner` chain reference.
+
 The most common load pattern in Hoist applications — load data, mask the UI, and track for
 monitoring. Compose these via the fluent `Runner` chain on `HoistBase`, which wraps the promise
 extensions documented above (managed `doLoadAsync()` errors are handled by `LoadSupport`):
