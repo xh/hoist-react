@@ -4,7 +4,7 @@ import {FileChooserModel} from '@xh/hoist/desktop/cmp/filechooser';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';
-import filesize from 'filesize';
+import {filesize} from 'filesize';
 
 export class FileDisplayModel extends HoistModel {
     @lookup(() => FileChooserModel)

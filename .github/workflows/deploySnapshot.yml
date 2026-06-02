@@ -51,9 +51,10 @@ jobs:
           run: yarn lint:all
 
         - name: Prepare snapshot version
+          id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@155a7ff7411a249abe814bd5918a8c43b742f4c9 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@7859ec783cee69e3f26cd81cb30cd5cab5bc44b6 # master
           with:
               version: ${{ inputs.version }}
 
@@ -61,6 +62,31 @@ jobs:
           env:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           run: npm publish --tag next
+
+        - name: Write job summary
+          # Best-effort only - a summary glitch must never fail an otherwise-good publish.
+          continue-on-error: true
+          env:
+              SNAPSHOT_VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
+          run: |
+              {
+                echo "### 📦 Snapshot published to npm"
+                echo ""
+                echo "Version: [\`$SNAPSHOT_VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$SNAPSHOT_VERSION)"
+
+                # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
+                    const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+                    const mb = b => (b / 1048576).toFixed(1) + ' MB';
+                    console.log([p.entryCount.toLocaleString(), mb(p.size), mb(p.unpackedSize)].join('|'));
+                "); then
+                    IFS='|' read -r FILES TARBALL UNPACKED <<< "$STATS"
+                    echo ""
+                    echo "| Files | Tarball | Unpacked |"
+                    echo "|---|---|---|"
+                    echo "| $FILES | $TARBALL | $UNPACKED |"
+                fi
+              } >> "$GITHUB_STEP_SUMMARY"
 
         - name: Trigger Toolbox snapshot build
           env:

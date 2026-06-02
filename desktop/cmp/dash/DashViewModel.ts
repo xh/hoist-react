@@ -54,7 +54,7 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
      * Additional info that will be displayed after the title.
      * Applications can bind to this property to provide dynamic title details.
      * Value is not persisted.
-     **/
+     */
     @bindable titleDetails: string;
 
     get fullTitle(): string {

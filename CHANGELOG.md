@@ -4,50 +4,123 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
+* Deprecated `HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields, in favor of
+  the `Runner` chain (`runner().span()`) and the new `CallContext` argument to fetch methods (see
+  below for more details). Both log a warning and are scheduled for removal in v88.
+* Upgraded `CodeInput` to CodeMirror v6 (upgraded from v5).
+    * Removed `editorProps` prop - most use cases now supported via first-class `CodeInput` props
+      such as `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+    * Replaced the `mode` prop with `language`. See
+      [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts)
+      for valid language strings (aliases and names are both accepted).
+* Redesigned `FileChooser`, moving configuration from component props to the `FileChooserModel`
+  constructor config and adding a fully customizable display API.
+    * Options such as `accept` and the file-size limits are now set on `FileChooserModel` rather
+      than as `FileChooser` props. `accept` continues to take file-extension strings
+      (e.g. `['.pdf', '.doc']`), which the model maps to MIME types internally.
+    * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
+    * Removed `enableMulti` / `enableAddMulti` - use `maxCount` (set to `1` for single-file
+      selection).
+    * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
+      content props, which default to placeholder text and a file grid, respectively.
+    * Replaced the synchronous `FileChooserModel.onDrop()` with `onDropAsync()` and removed the
+      `lastRejectedCount` observable.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
   existed only to support the above.
-* `FileChooser.accept` now takes a react-dropzone `Accept` object keyed by MIME type
-  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
-  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
-  for the new format.
 
 ### 🎁 New Features
 
-* `FileChooser` now supports a `maxFiles` prop. See [#3570](https://github.com/xh/hoist-react/issues/3570).
-
-### 🐞 Bug Fixes
-
-* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
-  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxCount` limit
+  (see [#3570](https://github.com/xh/hoist-react/issues/3570)), fully customizable `emptyDisplay` /
+  `fileDisplay` content, async file validation via `validateFilesAsync`, `onFileAccepted` /
+  `onFileRejected` callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled`
+  options, and a programmatic `openFileBrowser()` method.
+* Added the `Runner` API - a fluent builder (via `HoistBase.runner()`) that composes spanning,
+  logging, activity tracking, metrics, and task-linking around async work and fetch calls. It
+  threads a shared `CallContext` (trace + load state) across call boundaries, which fetch methods
+  now accept as an optional argument.
+* Added a client-side `MetricsService` (`XH.metricsService`) for recording timers and counters,
+  batched to the server's Micrometer registry. Recording requires `hoist-core >= 40.0.1`.
+* Trace spans can now chain onto a remote `traceparent` received off-channel (e.g. a WebSocket,
+  SSE, or queue message), in addition to a local parent span.
 * Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
   defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
   `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
   where the eager default would reformat the user's text mid-typing.
+
+### 🐞 Bug Fixes
+
+* Updated the chart right-to-left "zoom out" gesture to activate for charts configured with the
+  modern `chart.zooming.type` Highcharts option, in addition to the legacy `chart.zoomType`.
+* Improved desktop `Select` to no longer hijack `Home`/`End` keys, allowing native caret movement in
+  the input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
 * Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
   for a `tags`-typed field with an active filter.
+* Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
+  source - the prop is now honored, falling back to the context model only when unset.
 * Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
   reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
   cache could be transitioning.
+
+### 🎁 New Features
+
+* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
+  concatenated through `persistOptions()`. Enables hierarchical namespacing of persistence so a
+  parent model can scope all descendants (`@persist` properties, `markPersist` calls, child
+  `GridModel` / `PanelModel` / etc.) under a single shared key in one backing store. See
+  [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
+* Added exported `persistOptions()` function for merging one or more `PersistOptions` objects,
+  with later arguments overriding earlier ones. Replaces the now-deprecated
+  `PersistenceProvider.mergePersistOptions`.
+
+### 🤖 AI Docs + Tooling
+
+* Added a `hoist-read-doc` MCP tool that reads a full document by exact ID, giving MCP parity with
+  the `hoist-docs read` CLI and `hoist-core`'s `hoist-core-read-doc`.
+* The `hoist://docs/{id}` resource now tolerates a dropped `docs/` segment, so
+  `hoist://docs/routing.md` resolves the same as the strictly-correct
+  `hoist://docs/docs/routing.md`.
+* Added a `hoist-docs ping` CLI subcommand mirroring the `hoist-ping` MCP tool; both now report the
+  indexed `@xh/hoist` library version.
+* MCP/CLI symbol JSDoc is no longer truncated at the first `@`-prefixed line inside a fenced code
+  block (e.g. an `@observable.ref` in a usage example), recovering example code, "SEE ALSO" lists,
+  and trailing prose that were previously dropped.
 
 ### ⚙️ Technical
 
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
-  See [#4336](https://github.com/xh/hoist-react/issues/4336).
 
 ### 📚 Libraries
 
-* ag-Grid `34.x → 35.x`. Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and
-  `ag-grid-react` dependencies to `35.x`. See the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
-  no Hoist API changes required.
-* Removed `golden-layout` and `jquery` (replaced by the forked source above).
-    * Note, applications with previously required `"jquery": "3.x"` pin in package.json
-      `resolutions` should now be able to remove that pin.
+* @azure/msal-browser `4.29 → 5.11`
+    * Major upgrade with broad architectural changes. Several `system` config properties were
+      renamed - notably `iFrameHashTimeout` → `iframeBridgeTimeout`. Apps passing
+      `msalClientOptions` to `MsalClient` must review
+      the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
+* @codemirror `5.x → 6.x`
+    * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
+      managed by hoist-react to maintain all supported functionality.
+    * See breaking change note above for `CodeInput` prop changes.
+* ag-grid `34.x → 35.x`.
+    * Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and `ag-grid-react`
+      dependencies to `35.x`. See
+      the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+      no Hoist API changes required.
+* golden-layout `removed`
+    * Replaced by the forked source as described above
+* jquery `removed`
+    * Was included due to golden-layouts consumer, which now no longer needs the library.
+    * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
+      be able to remove that pin.
+* react-dropzone `10.x → 15.x`
+    * See the `FileChooser` redesign note under Breaking Changes above.
+* react-select `4.3 → 5.10`
+* react-windowed-select `3.1 → 5.2`
 * semver `7.7 → 7.8`
-* react-dropzone `10.x → 15.x`. See breaking change note above for the `FileChooser.accept` prop.
 
 ## 85.0.0 - 2020-04-30
 
