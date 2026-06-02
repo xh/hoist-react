@@ -102,7 +102,7 @@ function buildMenuItems(
     return ret.filter(filterConsecutiveMenuSeparators());
 }
 
-/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. **/
+/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
 function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
     switch (token) {
         case '-':

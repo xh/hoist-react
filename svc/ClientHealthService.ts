@@ -48,7 +48,7 @@ export class ClientHealthService extends HoistService {
         };
     }
 
-    /** @returns a report, formatted for easier viewing in console. **/
+    /** @returns a report, formatted for easier viewing in console. */
     getFormattedReport(): PlainObject {
         return withFormattedTimestamps(this.getReport());
     }
