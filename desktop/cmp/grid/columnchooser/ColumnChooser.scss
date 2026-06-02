@@ -37,6 +37,28 @@
     }
   }
 
+  // Pinned buckets (top + bottom): size to content with a cap so they never crowd the center grid.
+  &__bucket--left,
+  &__bucket--right {
+    flex: 0 0 auto;
+    min-height: 56px;
+    max-height: 33%;
+    border-bottom: 1px dashed var(--xh-border-color);
+  }
+
+  &__bucket--right {
+    border-bottom: none;
+    border-top: 1px dashed var(--xh-border-color);
+  }
+
+  // Style ag-grid's no-rows overlay to read as a drop-target affordance.
+  &__bucket--left .ag-overlay-no-rows-wrapper,
+  &__bucket--right .ag-overlay-no-rows-wrapper {
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+    font-style: italic;
+  }
+
   &__description {
     padding: var(--xh-pad-px);
     border-top: 1px solid var(--xh-border-color);

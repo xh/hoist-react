@@ -15,6 +15,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
+import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 import {ColumnChooserModel} from './ColumnChooserModel';
 import './ColumnChooser.scss';
 
@@ -24,8 +25,10 @@ export interface ColumnChooserProps extends HoistProps, LayoutProps {
 }
 
 /**
- * A standalone component for managing Grid column visibility and ordering.
- * Bind to a GridModel via the `gridModel` prop or context lookup.
+ * A standalone component for managing Grid column visibility, ordering, and pinning.
+ * Renders three internal grids - pinned-left, unpinned, and pinned-right - with drag-and-drop
+ * supported both within and across grids. Bind to a GridModel via the `gridModel` prop or
+ * context lookup.
  */
 export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooserProps>({
     displayName: 'ColumnChooser',
@@ -60,11 +63,14 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                         })
                     ]
                 }),
+                bucketGrid({bucket: impl.leftBucket, side: 'left'}),
                 grid({
-                    model: impl.chooserGridModel,
+                    className: 'xh-column-chooser__bucket xh-column-chooser__bucket--center',
+                    model: impl.unpinnedBucket.chooserGridModel,
                     flex: 1,
-                    agOptions: impl.agOptions
+                    agOptions: impl.unpinnedBucket.agOptions
                 }),
+                bucketGrid({bucket: impl.rightBucket, side: 'right'}),
                 box({
                     className: 'xh-column-chooser__description',
                     omit: !impl.selectedDescription,
@@ -90,6 +96,19 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
         });
     }
 });
+
+interface BucketGridProps extends HoistProps {
+    bucket: ColumnChooserBucketModel;
+    side: 'left' | 'right';
+}
+
+const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
+    grid({
+        className: `xh-column-chooser__bucket xh-column-chooser__bucket--${side}`,
+        model: bucket.chooserGridModel,
+        agOptions: bucket.agOptions
+    })
+);
 
 function aggregateVisibilityButton(impl: ColumnChooserModel) {
     const state = impl.aggregateVisibility;

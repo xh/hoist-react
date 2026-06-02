@@ -5,19 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {findLastIndex, isEmpty} from 'lodash';
-import {useEffect, useRef} from 'react';
 
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
-import {StoreRecord} from '@xh/hoist/data';
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {RecordAction} from '@xh/hoist/data';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
-import {hoistCmp, HoistModel, HoistProps, managed} from '@xh/hoist/core';
-import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
+import type {GridContextMenuItemLike} from '@xh/hoist/cmp/grid/GridContextMenu';
+import type {HSide} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import type {
+    GetContextMenuItemsParams,
     GridOptions,
-    ICellRendererParams,
     IsRowValidDropPositionParams,
     IsRowValidDropPositionResult,
     RowDragEndEvent,
@@ -25,6 +24,8 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
+
+import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 
 /** Shape of record data in the ColumnChooser's internal grid. */
 export interface ColumnChooserData {
@@ -42,7 +43,9 @@ export interface ColumnChooserData {
 
 /**
  * Model for the ColumnChooser component. Manages an internal representation of the target
- * grid's columns and provides controls for visibility toggling and drag-and-drop reordering.
+ * grid's columns - split across three buckets by pinned state (left, none, right) - and
+ * provides controls for visibility toggling, pinning, and drag-and-drop reordering both
+ * within and across buckets.
  */
 export class ColumnChooserModel extends HoistModel {
     override xhImpl = true;
@@ -50,8 +53,9 @@ export class ColumnChooserModel extends HoistModel {
     //---------------------
     // Managed Children
     //---------------------
-    @managed
-    chooserGridModel: GridModel;
+    @managed leftBucket: ColumnChooserBucketModel;
+    @managed unpinnedBucket: ColumnChooserBucketModel;
+    @managed rightBucket: ColumnChooserBucketModel;
 
     //---------------------
     // Observable State
@@ -66,11 +70,18 @@ export class ColumnChooserModel extends HoistModel {
     //---------------------
     // Computed
     //---------------------
-    /** Description of the currently selected column, or empty string if none selected. */
+    get buckets(): ColumnChooserBucketModel[] {
+        return [this.leftBucket, this.unpinnedBucket, this.rightBucket];
+    }
+
+    /** Description of the currently selected column (across any bucket), or empty string. */
     @computed
     get selectedDescription(): string {
-        const rec = this.chooserGridModel?.selectedRecord;
-        return rec?.data.description ?? '';
+        for (const b of this.buckets) {
+            const desc = b.selectedData?.description;
+            if (desc) return desc;
+        }
+        return '';
     }
 
     /** True when the target grid has at least one column group. */
@@ -91,14 +102,12 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     /**
-     * Aggregate visibility state of all hideable leaf columns currently shown in the chooser
-     * (respects the active filter). Used to drive the "toggle all" checkbox in the toolbar.
+     * Aggregate visibility state of all hideable leaf columns currently shown across all
+     * buckets (respects the active filter). Drives the "toggle all" checkbox in the toolbar.
      */
     @computed
     get aggregateVisibility(): 'all' | 'none' | 'some' {
-        const leaves = this.chooserGridModel.store.records.filter(
-            r => !r.data.isGroup && r.data.hideable
-        );
+        const leaves = this.buckets.flatMap(b => b.hideableLeafRecords);
         if (isEmpty(leaves)) return 'all';
 
         const visibleCount = leaves.filter(r => r.data.visible).length;
@@ -107,95 +116,24 @@ export class ColumnChooserModel extends HoistModel {
         return 'some';
     }
 
-    /** ag-grid options for the internal chooser grid. */
-    @computed
-    get agOptions(): GridOptions {
-        return {
-            suppressRowDrag: !!this.filterText,
-            suppressMoveWhenRowDragging: true,
-            rowDragText: params => (params.rowNode?.data as any)?.data?.name ?? '',
-            isRowValidDropPosition: params => this.getValidDropPosition(params),
-            onRowDragEnd: event => this.handleRowDragEnd(event),
-            onCellDoubleClicked: event => {
-                // Only toggle from the name column, and not from the tree expand/collapse caret
-                if (event.column?.getColId() !== 'name') return;
-                const target = event.event?.target as HTMLElement;
-                if (target?.closest('.ag-group-expanded, .ag-group-contracted')) return;
-
-                const id = event.data?.data?.id;
-                if (id) this.toggleVisibility(id);
-            }
-        };
-    }
-
     constructor() {
         super();
         makeObservable(this);
 
-        this.chooserGridModel = new GridModel({
-            treeMode: true,
-            treeStyle: 'none',
-            expandLevel: -1,
-            store: {
-                idSpec: 'id',
-                fields: [
-                    {name: 'name', type: 'string'},
-                    {name: 'description', type: 'string'},
-                    {name: 'visible', type: 'auto'},
-                    {name: 'isGroup', type: 'bool'},
-                    {name: 'hideable', type: 'bool'},
-                    {name: 'parentId', type: 'string'},
-                    {name: 'sortOrder', type: 'int'},
-                    {name: 'leafColIds', type: 'json'}
-                ]
-            },
-            sortBy: 'sortOrder',
-            emptyText: 'No columns',
-            selModel: 'single',
-            hideHeaders: true,
-            cellBorders: true,
-            clicksToExpand: 0,
-            columns: [
-                {
-                    field: 'name',
-                    isTreeColumn: true,
-                    flex: 1,
-                    agOptions: {
-                        cellRendererParams: {
-                            // Re-specify Hoist defaults — agOptions merges shallow
-                            suppressCount: true,
-                            suppressDoubleClickExpand: true,
-                            innerRenderer: NameCell
-                        }
-                    }
-                },
-                {
-                    ...actionCol,
-                    width: calcActionColWidth(1),
-                    actions: [
-                        {
-                            icon: Icon.checkSquare(),
-                            displayFn: ({record}) => {
-                                if (!record.data.hideable) {
-                                    return {icon: Icon.lock(), disabled: true};
-                                }
-                                const {visible} = record.data;
-                                if (visible === null) {
-                                    return {icon: Icon.squareMinus()};
-                                }
-                                return visible
-                                    ? {icon: Icon.checkSquare(), intent: 'primary'}
-                                    : {icon: Icon.square(), intent: null};
-                            },
-                            actionFn: ({record}) => this.toggleVisibility(record.data.id)
-                        }
-                    ]
-                },
-                {
-                    field: 'sortOrder',
-                    hidden: true
-                }
-            ]
+        this.leftBucket = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: 'left',
+            emptyText: 'Drop a column here to pin left'
+        });
+        this.unpinnedBucket = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: null,
+            emptyText: 'No columns'
+        });
+        this.rightBucket = new ColumnChooserBucketModel({
+            parent: this,
+            pinned: 'right',
+            emptyText: 'Drop a column here to pin right'
         });
     }
 
@@ -219,33 +157,42 @@ export class ColumnChooserModel extends HoistModel {
             run: filterText => this.applyFilter(filterText),
             debounce: 200
         });
+
+        // Wire cross-bucket drag-and-drop once all three bucket grids have an ag api.
+        this.addReaction({
+            track: () => this.buckets.map(b => b.chooserGridModel.agApi),
+            run: apis => {
+                if (!this.dropZonesInstalled && apis.every(a => !!a)) {
+                    this.installCrossBucketDropZones();
+                    this.dropZonesInstalled = true;
+                }
+            }
+        });
     }
 
     //-----------------
     // Actions
     //-----------------
     /**
-     * Toggle visibility for all hideable leaf columns currently shown (respects active filter).
-     * If all are visible, hides them; otherwise shows all.
+     * Toggle visibility for all hideable leaf columns currently shown across all buckets
+     * (respects active filter). If all are visible, hides them; otherwise shows all.
      */
     toggleAllVisibility() {
         const {gridModel} = this;
         if (!gridModel) return;
 
-        const leaves = this.chooserGridModel.store.records.filter(
-            r => !r.data.isGroup && r.data.hideable
-        );
+        const leaves = this.buckets.flatMap(b => b.hideableLeafRecords);
         if (isEmpty(leaves)) return;
 
         const shouldHide = this.aggregateVisibility === 'all';
         gridModel.updateColumnState(leaves.map(r => ({colId: r.data.id, hidden: shouldHide})));
     }
 
-    toggleVisibility(recordId: string) {
+    toggleVisibility(recordId: string, bucket: ColumnChooserBucketModel) {
         const {gridModel} = this;
         if (!gridModel) return;
 
-        const record = this.chooserGridModel.store.getById(recordId);
+        const record = bucket.chooserGridModel.store.getById(recordId);
         if (!record || !record.data.hideable) return;
 
         // Hide when fully or partially visible (true/null); show when fully hidden (false)
@@ -256,11 +203,34 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     /**
-     * Validate a proposed drop position during unmanaged row dragging.
-     * Returns highlight/position info to control the ag-grid drop indicator line,
-     * or disallows the drop entirely.
+     * Update the pinned state for a set of leaf colIds. Pinned columns are normalized to
+     * the end of the target bucket's slice; unpinned columns go to the end of the unpinned
+     * bucket.
      */
-    getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
+    setPinned(leafColIds: string[], pinned: HSide | null) {
+        const {gridModel} = this;
+        if (!gridModel || isEmpty(leafColIds)) return;
+
+        const movingIds = new Set(leafColIds),
+            currentState = gridModel.columnState,
+            slices = this.bucketSlices(currentState, movingIds),
+            movingState = currentState
+                .filter(cs => movingIds.has(cs.colId))
+                .map(cs => ({...cs, pinned}));
+
+        const targetSlice = this.sliceForPinned(slices, pinned);
+        targetSlice.push(...movingState);
+
+        this.commitState(slices);
+    }
+
+    /**
+     * Validate a proposed drop position during unmanaged row dragging within a single bucket.
+     */
+    getValidDropPosition(
+        params: IsRowValidDropPositionParams,
+        bucket: ColumnChooserBucketModel
+    ): IsRowValidDropPositionResult {
         const sourceData = this.getChooserData(params.source);
         let target = params.target,
             {position} = params;
@@ -270,7 +240,7 @@ export class ColumnChooserModel extends HoistModel {
         // render under that group header instead of under the actual last leaf. Re-pin target
         // to the last displayed row.
         if (!params.overNode) {
-            const {agApi} = this.chooserGridModel,
+            const {agApi} = bucket.chooserGridModel,
                 lastIdx = (agApi?.getDisplayedRowCount() ?? 0) - 1,
                 lastRow = lastIdx >= 0 ? agApi?.getDisplayedRowAtIndex(lastIdx) : null;
             if (lastRow) {
@@ -289,14 +259,14 @@ export class ColumnChooserModel extends HoistModel {
         }
 
         // Prevent dropping a group inside itself
-        if (sourceData.isGroup && this.isDescendantOf(targetData.id, sourceData.id)) {
+        if (sourceData.isGroup && this.isDescendantOf(targetData.id, sourceData.id, bucket)) {
             return {allowed: false};
         }
 
-        // Enforce lockColumnGroups constraints
+        // Enforce lockColumnGroups constraints within this bucket
         if (
             this.gridModel.lockColumnGroups &&
-            !this.isValidLockedDrop(sourceData, targetData, position)
+            !this.isValidLockedDrop(sourceData, targetData, position, bucket)
         ) {
             return {allowed: false};
         }
@@ -304,18 +274,11 @@ export class ColumnChooserModel extends HoistModel {
         return {allowed: true, highlight: true, position, target};
     }
 
-    /**
-     * Handle row drag end. In unmanaged mode, ag-grid has NOT moved any rows — we compute
-     * the new column order from the drop target info and push it to the target GridModel.
-     */
-    handleRowDragEnd(event: RowDragEndEvent) {
-        const {gridModel} = this;
-        if (!gridModel) return;
-
+    /** Handle intra-bucket drag end. */
+    handleRowDragEnd(event: RowDragEndEvent, bucket: ColumnChooserBucketModel) {
         const sourceData = this.getChooserData(event.node);
         if (!sourceData) return;
 
-        // rowsDrop contains the validated position/target from getValidDropPosition
         const dropInfo = event.rowsDrop;
         if (!dropInfo || !dropInfo.allowed) return;
 
@@ -325,29 +288,99 @@ export class ColumnChooserModel extends HoistModel {
         const {position} = dropInfo;
         if (position === 'none') return;
 
-        // 1) Collect leaf colIds being moved (works for both leaf and group drags)
-        const movingIds = new Set(sourceData.leafColIds);
+        this.reorderWithinBucket(bucket, sourceData, targetData, position);
+    }
 
-        // 2) Split current columnState into remaining and moving entries
-        const currentState = [...gridModel.columnState],
-            remaining = currentState.filter(cs => !movingIds.has(cs.colId)),
-            movingState = currentState.filter(cs => movingIds.has(cs.colId));
+    /** Handle cross-bucket drag end via an ag-grid row drop zone. */
+    handleCrossBucketDrop(
+        event: RowDragEndEvent,
+        sourceBucket: ColumnChooserBucketModel,
+        targetBucket: ColumnChooserBucketModel
+    ) {
+        if (sourceBucket === targetBucket) return;
+        if (this.filterText) return; // drag suppressed while filtering
 
-        if (!movingState.length) return;
+        const sourceData = this.getChooserData(event.node);
+        if (!sourceData) return;
 
-        // 3) Compute insertion index and splice
-        const insertionIndex = this.computeInsertionIndex(remaining, targetData, position);
-        remaining.splice(insertionIndex, 0, ...movingState);
-
-        // 4) Pre-sync chooser grid so dropped row appears in final position immediately
-        this.syncFromGridModel(remaining);
-
-        // 5) Push reordered state — reaction re-syncs from authoritative state
-        gridModel.updateColumnState(remaining.map(cs => ({...cs})));
+        const {target, position} = this.resolveCrossBucketDropTarget(event, targetBucket);
+        this.moveAcrossBuckets(sourceBucket, targetBucket, sourceData, target, position);
     }
 
     async restoreDefaultsAsync() {
         await this.gridModel?.restoreDefaultsAsync();
+    }
+
+    /**
+     * Build `agOptions` for one bucket grid - keeps drag/drop validators routed back through
+     * the orchestrator so per-bucket grids share identical behavior with bucket-aware state.
+     */
+    buildAgOptions(bucket: ColumnChooserBucketModel): GridOptions {
+        return {
+            suppressRowDrag: !!this.filterText,
+            suppressMoveWhenRowDragging: true,
+            rowDragText: params => (params.rowNode?.data as any)?.data?.name ?? '',
+            isRowValidDropPosition: params => bucket.getValidDropPosition(params),
+            onRowDragEnd: event => bucket.handleRowDragEnd(event),
+            onCellDoubleClicked: event => {
+                // Only toggle from the name column, and not from the tree expand/collapse caret
+                if (event.column?.getColId() !== 'name') return;
+                const target = event.event?.target as HTMLElement;
+                if (target?.closest('.ag-group-expanded, .ag-group-contracted')) return;
+
+                const id = event.data?.data?.id;
+                if (id) this.toggleVisibility(id, bucket);
+            }
+        };
+    }
+
+    /** Build context-menu items for a row in a given bucket. */
+    buildContextMenuItems(
+        agParams: GetContextMenuItemsParams,
+        _gridModel: GridModel,
+        bucket: ColumnChooserBucketModel
+    ): GridContextMenuItemLike[] {
+        const data = agParams.node?.data?.data as ColumnChooserData | undefined;
+        if (!data) return [];
+
+        const {leafColIds} = data;
+        const items: GridContextMenuItemLike[] = [];
+
+        if (bucket.pinned !== 'left') {
+            items.push(
+                new RecordAction({
+                    text: 'Pin Left',
+                    icon: Icon.pin(),
+                    actionFn: () => this.setPinned(leafColIds, 'left')
+                })
+            );
+        }
+        if (bucket.pinned !== 'right') {
+            items.push(
+                new RecordAction({
+                    text: 'Pin Right',
+                    icon: Icon.pin(),
+                    actionFn: () => this.setPinned(leafColIds, 'right')
+                })
+            );
+        }
+        if (bucket.pinned != null) {
+            items.push(
+                new RecordAction({
+                    text: 'Unpin',
+                    icon: Icon.x(),
+                    actionFn: () => this.setPinned(leafColIds, null)
+                })
+            );
+        }
+        return items;
+    }
+
+    /** When a bucket gains a selection, clear selection on the other buckets. */
+    notifyBucketSelected(activeBucket: ColumnChooserBucketModel) {
+        for (const b of this.buckets) {
+            if (b !== activeBucket) b.clearSelection();
+        }
     }
 
     //-----------------
@@ -356,24 +389,43 @@ export class ColumnChooserModel extends HoistModel {
     @action
     private syncFromGridModel(columnState?: ColumnState[]) {
         if (!this.gridModel) return;
-        const data = this.buildData(columnState);
-        this.loadData(data, this.showGroups);
+        const cs = columnState ?? this.gridModel.columnState;
+        for (const bucket of this.buckets) {
+            const slice = cs.filter(c => (c.pinned ?? null) === bucket.pinned);
+            const data = this.buildData(slice);
+            this.loadBucketData(bucket, data, this.showGroups);
+        }
+    }
+
+    private applyFilter(filterText: string) {
+        const filter = filterText
+            ? rec => {
+                  const lower = filterText.toLowerCase();
+                  if (!rec.data.isGroup) {
+                      return rec.data.name?.toLowerCase().includes(lower);
+                  }
+                  return rec.data.leafColIds?.some(colId => {
+                      const leaf = rec.store.getById(colId);
+                      return leaf?.data.name?.toLowerCase().includes(lower);
+                  });
+              }
+            : null;
+
+        for (const b of this.buckets) b.chooserGridModel.store.setFilter(filter);
     }
 
     /**
-     * Build chooser records from columnState order.
+     * Build chooser records from a slice of columnState (one bucket's worth, in display order).
      *
-     * Iterates the columnState array (source of truth for display order), and for each leaf
-     * column looks up its parent group chain from the column definitions. Adjacent columns
-     * sharing the same group are merged under a single group node. Non-adjacent columns from
-     * the same group produce separate group instances (split groups).
+     * Iterates the slice (source of truth for display order within the bucket), and for each
+     * leaf column looks up its parent group chain from the column definitions. Adjacent
+     * columns sharing the same group are merged under a single group node. Non-adjacent
+     * columns from the same group produce separate group instances (split groups).
      *
      * Group records are created with empty leafColIds in the first pass — a second pass
      * populates them from actual children so split groups only contain their own leaves.
      */
-    private buildData(
-        columnState: ColumnState[] = this.gridModel.columnState
-    ): ColumnChooserData[] {
+    private buildData(columnState: ColumnState[]): ColumnChooserData[] {
         const {gridModel} = this,
             stateById = new Map(columnState.map(cs => [cs.colId, cs]));
 
@@ -484,12 +536,16 @@ export class ColumnChooserModel extends HoistModel {
         return count > 1 ? `${groupId}_${count}` : groupId;
     }
 
-    private loadData(data: ColumnChooserData[], showGroups: boolean) {
+    private loadBucketData(
+        bucket: ColumnChooserBucketModel,
+        data: ColumnChooserData[],
+        showGroups: boolean
+    ) {
         const leaves = data.filter(r => !r.isGroup),
             leafIdSet = new Set(leaves.map(r => r.id));
 
         if (!showGroups) {
-            this.chooserGridModel.store.loadData(leaves);
+            bucket.chooserGridModel.store.loadData(leaves);
             return;
         }
 
@@ -514,24 +570,7 @@ export class ColumnChooserModel extends HoistModel {
             rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
             rootData = [...rootGroups, ...rootLeaves].map(buildNested);
 
-        this.chooserGridModel.store.loadData(rootData);
-    }
-
-    private applyFilter(filterText: string) {
-        const filter = filterText
-            ? rec => {
-                  const lower = filterText.toLowerCase();
-                  if (!rec.data.isGroup) {
-                      return rec.data.name?.toLowerCase().includes(lower);
-                  }
-                  return rec.data.leafColIds?.some(colId => {
-                      const leaf = rec.store.getById(colId);
-                      return leaf?.data.name?.toLowerCase().includes(lower);
-                  });
-              }
-            : null;
-
-        this.chooserGridModel.store.setFilter(filter);
+        bucket.chooserGridModel.store.loadData(rootData);
     }
 
     /** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
@@ -556,9 +595,13 @@ export class ColumnChooserModel extends HoistModel {
         return ids;
     }
 
-    /** Check if a record is a descendant of a potential ancestor in the chooser tree. */
-    private isDescendantOf(candidateId: string, ancestorId: string): boolean {
-        const store = this.chooserGridModel.store;
+    /** Check if a record is a descendant of a potential ancestor in the bucket's chooser tree. */
+    private isDescendantOf(
+        candidateId: string,
+        ancestorId: string,
+        bucket: ColumnChooserBucketModel
+    ): boolean {
+        const store = bucket.chooserGridModel.store;
         let current = store.getById(candidateId);
         while (current?.data.parentId) {
             if (current.data.parentId === ancestorId) return true;
@@ -568,23 +611,23 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     /**
-     * Validate drop when lockColumnGroups is true.
+     * Validate drop when lockColumnGroups is true (intra-bucket only).
      *
-     * Simulates the proposed move and verifies that every column group's leaves remain
-     * contiguous in columnState. This allows moving a group to any position where doing
-     * so keeps the group structure intact — e.g. reordering sibling groups within a
-     * shared parent, even when the drop target is a leaf inside one of those siblings.
+     * Simulates the proposed move within the bucket and verifies that every column group's
+     * leaves remain contiguous. Cross-bucket drops bypass this check per spec.
      */
     private isValidLockedDrop(
         source: ColumnChooserData,
         target: ColumnChooserData,
-        position: RowDropTargetPosition
+        position: RowDropTargetPosition,
+        bucket: ColumnChooserBucketModel
     ): boolean {
-        const {gridModel} = this,
-            movingIds = new Set(source.leafColIds),
-            currentState = [...gridModel.columnState],
-            remaining = currentState.filter(cs => !movingIds.has(cs.colId)),
-            movingState = currentState.filter(cs => movingIds.has(cs.colId));
+        const movingIds = new Set(source.leafColIds),
+            bucketSlice = this.gridModel.columnState.filter(
+                cs => (cs.pinned ?? null) === bucket.pinned
+            ),
+            remaining = bucketSlice.filter(cs => !movingIds.has(cs.colId)),
+            movingState = bucketSlice.filter(cs => movingIds.has(cs.colId));
 
         const insertionIndex = this.computeInsertionIndex(remaining, target, position),
             simulated = [...remaining];
@@ -634,7 +677,7 @@ export class ColumnChooserModel extends HoistModel {
         return true;
     }
 
-    /** Compute insertion index for moved columns in the remaining columnState array. */
+    /** Compute insertion index for moved columns within a bucket's slice. */
     private computeInsertionIndex(
         remaining: {colId: string}[],
         targetData: ColumnChooserData,
@@ -655,30 +698,145 @@ export class ColumnChooserModel extends HoistModel {
         if (targetIdx === -1) return remaining.length;
         return position === 'above' ? targetIdx : targetIdx + 1;
     }
+
+    //-----------------
+    // Cross-bucket drag plumbing
+    //-----------------
+    private dropZonesInstalled = false;
+
+    private installCrossBucketDropZones() {
+        for (const source of this.buckets) {
+            const sourceApi = source.chooserGridModel.agApi;
+            if (!sourceApi) continue;
+            for (const target of this.buckets) {
+                if (target === source) continue;
+                const targetApi = target.chooserGridModel.agApi;
+                if (!targetApi) continue;
+                const params = targetApi.getRowDropZoneParams({
+                    onDragStop: e => target.handleCrossBucketDrop(e, source)
+                });
+                if (params) sourceApi.addRowDropZone(params);
+            }
+        }
+    }
+
+    /**
+     * Reorder columns within a single bucket - moving columns are spliced into their new
+     * position in this bucket's slice, the other buckets remain untouched, and the resulting
+     * normalized full state is pushed to the target GridModel.
+     */
+    private reorderWithinBucket(
+        bucket: ColumnChooserBucketModel,
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData,
+        position: RowDropTargetPosition
+    ) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const movingIds = new Set(sourceData.leafColIds),
+            slices = this.bucketSlices(gridModel.columnState, movingIds),
+            movingState = gridModel.columnState.filter(cs => movingIds.has(cs.colId));
+
+        if (!movingState.length) return;
+
+        const targetSlice = this.sliceForPinned(slices, bucket.pinned),
+            insertionIndex = this.computeInsertionIndex(targetSlice, targetData, position);
+
+        targetSlice.splice(insertionIndex, 0, ...movingState);
+
+        this.commitState(slices);
+    }
+
+    /**
+     * Move columns from one bucket into another. Updates `pinned` on the moving leaves and
+     * splices them into the target bucket's slice at the resolved drop position.
+     */
+    private moveAcrossBuckets(
+        sourceBucket: ColumnChooserBucketModel,
+        targetBucket: ColumnChooserBucketModel,
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData | null,
+        position: RowDropTargetPosition
+    ) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const movingIds = new Set(sourceData.leafColIds),
+            slices = this.bucketSlices(gridModel.columnState, movingIds),
+            movingState = gridModel.columnState
+                .filter(cs => movingIds.has(cs.colId))
+                .map(cs => ({...cs, pinned: targetBucket.pinned}));
+
+        if (!movingState.length) return;
+
+        const targetSlice = this.sliceForPinned(slices, targetBucket.pinned);
+        const insertionIndex = targetData
+            ? this.computeInsertionIndex(targetSlice, targetData, position)
+            : targetSlice.length;
+
+        targetSlice.splice(insertionIndex, 0, ...movingState);
+
+        this.commitState(slices);
+    }
+
+    /** Build per-bucket slices, optionally excluding a set of moving colIds. */
+    private bucketSlices(state: ColumnState[], excludeIds?: Set<string>) {
+        const filterFn = (cs: ColumnState) => !excludeIds?.has(cs.colId);
+        return {
+            left: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'left'),
+            none: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === null),
+            right: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'right')
+        };
+    }
+
+    private sliceForPinned(
+        slices: {left: ColumnState[]; none: ColumnState[]; right: ColumnState[]},
+        pinned: HSide | null
+    ): ColumnState[] {
+        if (pinned === 'left') return slices.left;
+        if (pinned === 'right') return slices.right;
+        return slices.none;
+    }
+
+    /** Normalize and commit slices to the target GridModel; pre-sync local chooser stores. */
+    @action
+    private commitState(slices: {left: ColumnState[]; none: ColumnState[]; right: ColumnState[]}) {
+        const newState = [...slices.left, ...slices.none, ...slices.right];
+        // Pre-sync so dropped rows appear in final position immediately, before the reaction.
+        this.syncFromGridModel(newState);
+        this.gridModel.setColumnState(newState);
+    }
+
+    /**
+     * Resolve the drop target inside `targetBucket` from a cross-grid drag event. Falls back
+     * to "append to end" when the cursor isn't over a row (e.g. empty bucket or below last).
+     */
+    private resolveCrossBucketDropTarget(
+        event: RowDragEndEvent,
+        targetBucket: ColumnChooserBucketModel
+    ): {target: ColumnChooserData | null; position: RowDropTargetPosition} {
+        const {overNode} = event;
+        if (overNode) {
+            const targetData = this.getChooserData(overNode);
+            if (targetData) {
+                // Above/below heuristic from the cursor's y vs. the row's midpoint.
+                const rowTop = overNode.rowTop ?? 0,
+                    rowHeight = overNode.rowHeight ?? 0,
+                    midpoint = rowTop + rowHeight / 2,
+                    position: RowDropTargetPosition = event.y < midpoint ? 'above' : 'below';
+                return {target: targetData, position};
+            }
+        }
+
+        // Fall back to the last displayed row in the target bucket (append).
+        const {agApi} = targetBucket.chooserGridModel;
+        const lastIdx = (agApi?.getDisplayedRowCount() ?? 0) - 1;
+        if (lastIdx >= 0) {
+            const lastRow = agApi?.getDisplayedRowAtIndex(lastIdx),
+                targetData = this.getChooserData(lastRow);
+            if (targetData) return {target: targetData, position: 'below'};
+        }
+        return {target: null, position: 'below'};
+    }
 }
-
-//------------------
-// Cell Renderers
-//------------------
-interface NameCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
-
-/** Inner renderer for the name (tree) column — grip drag handle + column name. */
-const NameCell = hoistCmp<NameCellProps>(({registerRowDragger, data: record}) => {
-    const ref = useRef<HTMLSpanElement>(null);
-
-    useEffect(() => {
-        if (ref.current) registerRowDragger(ref.current);
-    }, [registerRowDragger]);
-
-    return hbox({
-        alignItems: 'center',
-        items: [
-            span({
-                ref,
-                className: 'xh-column-chooser__drag-handle',
-                item: Icon.grip({prefix: 'fas'})
-            }),
-            record?.data.name ?? ''
-        ]
-    });
-});
