@@ -183,16 +183,19 @@ onSubmitClick() {
 
 ### catchDefault in Promise Chains
 
-When chaining multiple promise extensions, order matters. The standard pattern is:
+`catchDefault()` should be the last handler applied. With the fluent `Runner` chain, compose
+`linkTo`/`track` as builder methods and apply `catchDefault()` to the terminal — so tracking
+still captures failures:
 
 ```typescript
-XH.fetchJson({url: 'api/positions', loadSpec})
-    .linkTo(this.loadTask)        // 1. Mask UI while loading
-    .track('Loaded positions')    // 2. Track timing
-    .catchDefault();              // 3. Handle errors last
+this.runner({loadSpec})
+    .linkTo(this.loadTask)                 // mask UI while loading
+    .track('Loaded positions')             // track timing, including failures
+    .fetchJson({url: 'api/positions'})     // terminal
+    .catchDefault();                       // handle errors last
 ```
 
-Placing `catchDefault()` before `.track()` would prevent tracking from capturing failures.
+Applying `catchDefault()` before `.track()` would swallow the failure before tracking sees it.
 
 ### catchDefaultWhen
 
@@ -229,7 +232,7 @@ and auto-refresh failures.
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 
         // Always check for stale loads after async calls
         if (loadSpec.isStale) return;
@@ -597,14 +600,14 @@ path. Any code that follows will continue to run with `undefined` in place of th
 ```typescript
 // ❌ Don't: data will be undefined after a failed fetch, causing a confusing follow-on error
 async doLoadAsync(loadSpec) {
-    const data = await XH.fetchJson({url: 'api/trades', loadSpec}).catchDefault();
+    const data = await XH.fetchJson({url: 'api/trades'}, {loadSpec}).catchDefault();
     runInAction(() => this.trades = data.trades);  // TypeError: Cannot read property of undefined
 }
 
 // ✅ Do: use try/catch when subsequent code depends on the result
 async doLoadAsync(loadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/trades', loadSpec});
+        const data = await XH.fetchJson({url: 'api/trades'}, {loadSpec});
         if (loadSpec.isStale) return;
         runInAction(() => this.trades = data.trades);
     } catch (e) {

@@ -175,7 +175,7 @@ class UserListModel extends HoistModel {
     // Opt into managed loading by implementing this template method
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
-            const users = await XH.fetchJson({url: 'api/users', loadSpec});
+            const users = await XH.fetchJson({url: 'api/users'}, {loadSpec});
             runInAction(() => this.users = users);
         } catch (e) {
             XH.handleException(e);
@@ -243,7 +243,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
     if (loadSpec.isStale) return;
 
     // Pass loadSpec to fetch calls for consistent tracking
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 
@@ -850,7 +850,7 @@ the user's query.
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const users = await XH.fetchJson({url: 'api/users', loadSpec});
+        const users = await XH.fetchJson({url: 'api/users'}, {loadSpec});
         runInAction(() => this.users = users);
     } catch (e) {
         // Stale or auto-refresh failures can often be ignored silently

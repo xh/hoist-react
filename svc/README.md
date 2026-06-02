@@ -122,7 +122,7 @@ const results = await XH.fetchJson({
 
 // Pass loadSpec for consistent tracking in doLoadAsync()
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 
@@ -632,7 +632,7 @@ Always pass `loadSpec` to fetch calls for consistent tracking:
 
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
     runInAction(() => this.data = data);
 }
 ```
@@ -672,16 +672,21 @@ For operations that aren't fetch requests, use the `Promise.track()` extension t
 activity with timing. This is implemented in `/promise/` and delegates to TrackService.
 
 ```typescript
-// Track any async operation
+// Simple: track a single async operation via the Promise.track() extension
 await this.processDataAsync(records)
     .track('Processed records');
 
-// With full options
-await this.runExpensiveCalculationAsync()
+// Multi-step: compose tracking (with masking, logging, etc.) via the Runner chain on HoistBase
+await this.runner()
+    .linkTo(this.calcTask)
     .track({
         message: 'Ran portfolio calculation',
         category: 'Calculation',
         data: {portfolioCount: portfolios.length}
+    })
+    .run(async () => {
+        const inputs = await this.gatherInputsAsync();
+        return this.runCalculationAsync(inputs);
     });
 ```
 
@@ -774,7 +779,7 @@ const data = await XH.fetchJson({url: 'api/data'});
 // ✅ Correct: Handle in doLoadAsync with proper error handling
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
         runInAction(() => this.data = data);
     } catch (e) {
         if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
@@ -834,7 +839,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 // ✅ Include loadSpec
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 
