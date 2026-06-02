@@ -113,20 +113,60 @@ export class Runner {
         return this.executeWrapped(fn);
     }
 
+    /**
+     * Issue a raw fetch within the call context.
+     * @see FetchService.fetch
+     */
     fetch(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.fetch(options, ctx));
     }
 
+    /**
+     * Issue a JSON fetch within the call context.
+     * @see FetchService.fetchJson
+     */
     fetchJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.fetchJson(options, ctx));
     }
 
+    /**
+     * Issue a JSON GET within the call context.
+     * @see FetchService.getJson
+     */
     getJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.getJson(options, ctx));
     }
 
+    /**
+     * Issue a JSON POST within the call context.
+     * @see FetchService.postJson
+     */
     postJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.postJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PUT within the call context.
+     * @see FetchService.putJson
+     */
+    putJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.putJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PATCH within the call context.
+     * @see FetchService.patchJson
+     */
+    patchJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.patchJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON DELETE within the call context.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.deleteJson(options, ctx));
     }
 
     //-------------------------

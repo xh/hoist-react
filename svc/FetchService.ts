@@ -38,8 +38,8 @@ export interface FetchServiceDefaults {
 /**
  * Service for making managed HTTP requests, both to the app's own Hoist server and to remote APIs.
  *
- * Typically accessed via `XH.fetchService` or the convenience methods on XH - `XH.fetch()`,
- * `XH.fetchJson()`, `XH.postJson()` - which delegate here.
+ * Typically accessed via `XH.fetchService` or the matching convenience aliases on `XH`
+ * (`XH.fetchJson()`, `XH.postJson()`, etc.), which delegate here.
  *
  * Wraps the standard Fetch API with CORS enabled, credentials included, and redirects followed.
  * Provides JSON convenience methods (`fetchJson`, `postJson`, `putJson`, `patchJson`,

@@ -147,15 +147,10 @@ export class RoleModel extends HoistModel {
 
         await this.runner()
             .span('delete')
-            .run(ctx =>
-                XH.fetchService.deleteJson(
-                    {
-                        url: `roleAdmin/delete`,
-                        body: {name: role.name}
-                    },
-                    ctx
-                )
-            );
+            .deleteJson({
+                url: `roleAdmin/delete`,
+                body: {name: role.name}
+            });
         await this.refreshAsync();
         return true;
     }
