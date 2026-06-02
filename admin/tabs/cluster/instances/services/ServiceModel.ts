@@ -18,6 +18,8 @@ import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, isEmpty, lowerFirst} from 'lodash';
 
 export class ServiceModel extends BaseInstanceModel {
+    override telemetryPrefix = 'xh.client.admin.services';
+
     @bindable
     typeFilter: 'hoist' | 'app' | 'all' = 'all';
 
@@ -118,37 +120,42 @@ export class ServiceModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        try {
-            await XH.fetchJson({
+        await this.runner()
+            .span('clearCaches')
+            .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)
                 }
-            }).linkTo(loadObserver);
-            await this.refreshAsync();
-            XH.successToast('Service caches cleared.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('Service caches cleared.');
+            })
+            .catchDefault();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, instanceName: instance} = this;
-        try {
-            const data = await XH.fetchJson({
-                url: 'serviceManagerAdmin/listServices',
-                params: {instance},
-                loadSpec
-            });
+        return this.runner({loadSpec})
+            .span('list')
+            .run(async ctx => {
+                const data = await XH.fetchJson(
+                    {
+                        url: 'serviceManagerAdmin/listServices',
+                        params: {instance}
+                    },
+                    ctx
+                );
 
-            if (!loadSpec.isStale) {
-                gridModel.loadData(data);
-                gridModel.preSelectFirstAsync();
-            }
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+                if (!loadSpec.isStale) {
+                    gridModel.loadData(data);
+                    await gridModel.preSelectFirstAsync();
+                }
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 
     private processRawData(r: PlainObject) {

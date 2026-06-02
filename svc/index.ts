@@ -16,6 +16,7 @@ export * from './IdentityService';
 export * from './IdleService';
 export * from './InspectorService';
 export * from './JsonBlobService';
+export * from './MetricsService';
 export * from './PrefService';
 export * from './TrackService';
 export * from './TraceService';

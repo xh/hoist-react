@@ -15,6 +15,8 @@ import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.alertBanner';
+
     savedValue: AlertBannerSpec;
     @bindable.ref savedPresets: PlainObject[] = [];
 
@@ -95,14 +97,18 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
-            initialValues = {
-                ...value,
-                expires: value.expires ? new Date(value.expires) : null
-            };
+        await this.runner({loadSpec})
+            .span('loadSpec')
+            .run(async ctx => {
+                const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}, ctx),
+                    initialValues = {
+                        ...value,
+                        expires: value.expires ? new Date(value.expires) : null
+                    };
 
-        this.savedValue = value;
-        formModel.init(initialValues);
+                this.savedValue = value;
+                formModel.init(initialValues);
+            });
     }
 
     async saveAsync() {
@@ -169,22 +175,27 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async loadPresetsAsync() {
-        try {
-            this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.runner()
+            .span('loadPresets')
+            .run(async ctx => {
+                this.savedPresets = await XH.fetchJson(
+                    {
+                        url: 'alertBannerAdmin/alertPresets'
+                    },
+                    ctx
+                );
+            })
+            .catchDefault();
     }
 
     async savePresetsAsync() {
-        try {
-            await XH.fetchService.postJson({
+        await this.runner()
+            .span('savePresets')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .catchDefault();
     }
 
     //----------------
@@ -286,8 +297,9 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        try {
-            await XH.fetchService.postJson({
+        await this.runner()
+            .span('saveSpec')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertSpec',
                 body: spec,
                 track: {
@@ -296,9 +308,7 @@ export class AlertBannerModel extends HoistModel {
                     data: {active, message, intent, iconName, enableClose, clientApps},
                     logData: ['active']
                 }
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .catchDefault();
     }
 }

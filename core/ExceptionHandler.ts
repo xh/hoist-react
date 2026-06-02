@@ -266,18 +266,16 @@ export class ExceptionHandler {
             // Clean up fetchOptions for serialization.
             const {fetchOptions} = ret;
             if (fetchOptions) {
-                // Extract summary fields from verbose loadSpec, then remove it.
-                if (fetchOptions.loadSpec) {
-                    const {loadSpec} = fetchOptions;
-                    if (loadSpec instanceof LoadSpec) {
-                        fetchOptions.loadType = loadSpec.typeDisplay;
-                        fetchOptions.loadNumber = loadSpec.loadNumber;
-                    }
-                    delete fetchOptions.loadSpec;
-                }
-                // Remove Span object - not useful in serialized output.
+                delete fetchOptions.loadSpec;
                 delete fetchOptions.span;
             }
+            // Extract summary fields from verbose callContext into fetchOptions.
+            const loadSpec = ret.callContext?.loadSpec;
+            if (loadSpec instanceof LoadSpec) {
+                ret.loadType = loadSpec.typeDisplay;
+                ret.loadNumber = loadSpec.loadNumber;
+            }
+            delete ret.callContext;
 
             // 4) Redact specified values
             ExceptionHandler.defaults.redactPaths.forEach(path => {
@@ -333,7 +331,7 @@ export class ExceptionHandler {
         opts: ExceptionHandlerOptions
     ): ExceptionHandlerOptions {
         const ret = {...opts},
-            isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
+            isAutoRefresh = e.callContext?.loadSpec?.isAutoRefresh ?? false,
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
