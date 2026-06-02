@@ -64,9 +64,6 @@ export class ColumnChooserModel extends HoistModel {
     @bindable showGroups: boolean = true;
     declare setShowGroups: (v: boolean) => void;
 
-    /** Current quick-filter text. */
-    @bindable filterText: string = '';
-
     //---------------------
     // Computed
     //---------------------
@@ -89,6 +86,12 @@ export class ColumnChooserModel extends HoistModel {
     get hasColumnGroups(): boolean {
         if (!this.gridModel) return false;
         return this.gridModel.columns.some(c => c instanceof ColumnGroup);
+    }
+
+    /** True when the target grid allows column pinning - gates display of the pinned buckets. */
+    @computed
+    get enableColumnPinning(): boolean {
+        return this.gridModel?.enableColumnPinning ?? false;
     }
 
     /** The GridModel whose columns this chooser manages. */
@@ -150,12 +153,6 @@ export class ColumnChooserModel extends HoistModel {
         this.addReaction({
             track: () => this.showGroups,
             run: () => this.syncFromGridModel()
-        });
-
-        this.addReaction({
-            track: () => this.filterText,
-            run: filterText => this.applyFilter(filterText),
-            debounce: 200
         });
 
         // Wire cross-bucket drag-and-drop once all three bucket grids have an ag api.
@@ -298,7 +295,6 @@ export class ColumnChooserModel extends HoistModel {
         targetBucket: ColumnChooserBucketModel
     ) {
         if (sourceBucket === targetBucket) return;
-        if (this.filterText) return; // drag suppressed while filtering
 
         const sourceData = this.getChooserData(event.node);
         if (!sourceData) return;
@@ -317,8 +313,8 @@ export class ColumnChooserModel extends HoistModel {
      */
     buildAgOptions(bucket: ColumnChooserBucketModel): GridOptions {
         return {
-            suppressRowDrag: !!this.filterText,
             suppressMoveWhenRowDragging: true,
+            suppressGroupRowsSticky: true,
             rowDragText: params => (params.rowNode?.data as any)?.data?.name ?? '',
             isRowValidDropPosition: params => bucket.getValidDropPosition(params),
             onRowDragEnd: event => bucket.handleRowDragEnd(event),

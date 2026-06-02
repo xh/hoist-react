@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {grid} from '@xh/hoist/cmp/grid';
 import type {GridModel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {box, filler, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -45,16 +45,7 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                 toolbar({
                     className: 'xh-column-chooser__tbar',
                     items: [
-                        textInput({
-                            model: impl,
-                            bind: 'filterText',
-                            placeholder: 'Filter columns...',
-                            leftIcon: Icon.search(),
-                            enableClear: true,
-                            commitOnChange: true,
-                            width: null,
-                            flex: 1
-                        }),
+                        filler(),
                         box({
                             className: 'xh-column-chooser__toggle-all',
                             width: calcActionColWidth(1),
@@ -63,14 +54,21 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                         })
                     ]
                 }),
-                bucketGrid({bucket: impl.leftBucket, side: 'left'}),
+                bucketGrid({
+                    bucket: impl.leftBucket,
+                    side: 'left',
+                    omit: !impl.enableColumnPinning
+                }),
                 grid({
                     className: 'xh-column-chooser__bucket xh-column-chooser__bucket--center',
                     model: impl.unpinnedBucket.chooserGridModel,
-                    flex: 1,
                     agOptions: impl.unpinnedBucket.agOptions
                 }),
-                bucketGrid({bucket: impl.rightBucket, side: 'right'}),
+                bucketGrid({
+                    bucket: impl.rightBucket,
+                    side: 'right',
+                    omit: !impl.enableColumnPinning
+                }),
                 box({
                     className: 'xh-column-chooser__description',
                     omit: !impl.selectedDescription,
@@ -103,10 +101,20 @@ interface BucketGridProps extends HoistProps {
 }
 
 const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
-    grid({
-        className: `xh-column-chooser__bucket xh-column-chooser__bucket--${side}`,
-        model: bucket.chooserGridModel,
-        agOptions: bucket.agOptions
+    panel({
+        className: 'xh-column-chooser__bucket-panel',
+        modelConfig: {
+            side: side === 'left' ? 'top' : 'bottom',
+            defaultSize: 80,
+            minSize: 80,
+            collapsible: false
+        },
+        item: grid({
+            className: `xh-column-chooser__bucket xh-column-chooser__bucket--${side}`,
+            model: bucket.chooserGridModel,
+            agOptions: bucket.agOptions,
+            flex: null
+        })
     })
 );
 

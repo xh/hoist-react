@@ -1,10 +1,5 @@
 .xh-column-chooser {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--xh-border-color);
-  border-radius: var(--xh-border-radius-px);
-  background: var(--xh-bg-alt);
-  overflow: hidden;
+  background: var(--xh-bg);
 
   // Force drop indicator line to span the full row width, regardless of tree depth
   .ag-row-highlight-indent::after {
@@ -23,6 +18,31 @@
     align-items: center;
   }
 
+  &__bucket-panel {
+    --xh-panel-title-bg: var(--xh-grid-bg-odd);
+    --xh-title-compact-font-size-px: var(--xh-font-size-small-px);
+    --xh-title-icon-size-px: var(--xh-font-size-small-px);
+    --xh-panel-title-text-color: var(--xh-gray);
+
+    .xh-panel-header {
+      border-bottom: var(--xh-border-solid);
+      text-transform: uppercase;
+
+      svg {
+        margin-right: var(--xh-pad-half-px);
+      }
+    }
+  }
+
+  // Auto-height pinned column buckets
+  &__bucket--left,
+  &__bucket--right {
+    // ag-grid adding some padding here initially for some reason
+    .ag-overlay-no-rows-wrapper {
+      padding-top: 0 !important;
+    }
+  }
+
   &__drag-handle {
     display: inline-flex;
     align-items: center;
@@ -35,28 +55,6 @@
     &:active {
       cursor: grabbing;
     }
-  }
-
-  // Pinned buckets (top + bottom): size to content with a cap so they never crowd the center grid.
-  &__bucket--left,
-  &__bucket--right {
-    flex: 0 0 auto;
-    min-height: 56px;
-    max-height: 33%;
-    border-bottom: 1px dashed var(--xh-border-color);
-  }
-
-  &__bucket--right {
-    border-bottom: none;
-    border-top: 1px dashed var(--xh-border-color);
-  }
-
-  // Style ag-grid's no-rows overlay to read as a drop-target affordance.
-  &__bucket--left .ag-overlay-no-rows-wrapper,
-  &__bucket--right .ag-overlay-no-rows-wrapper {
-    font-size: var(--xh-font-size-small-px);
-    color: var(--xh-text-color-muted);
-    font-style: italic;
   }
 
   &__description {
