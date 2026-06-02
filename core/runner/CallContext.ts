@@ -6,7 +6,7 @@
  */
 import type {LoadSpec} from '../load/LoadSpec';
 import type {Span} from '../Span';
-import type {CallContextLike} from '../types/Interfaces';
+import type {CallContextLike} from '../types/Telemetry';
 
 /**
  * Normalized, framework-internal call context — carries tracing/load state across call boundaries.

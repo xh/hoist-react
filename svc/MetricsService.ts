@@ -4,14 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, MetricTags, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {isEmpty, isFinite, isString} from 'lodash';
-
-export interface MetricTags {
-    [tag: string]: string;
-}
 
 interface MetricEntry {
     type: 'timer' | 'count';
