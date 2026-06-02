@@ -8,6 +8,7 @@ import {action, computed, comparer, makeObservable, observable} from '@xh/hoist/
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {
+    CallContext,
     DefaultHoistProps,
     HoistBase,
     LoadSpecConfig,
@@ -199,7 +200,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
 
     async doLoadAsync(loadSpec: LoadSpec) {}
 
-    async loadAsync(loadSpec?: LoadSpecConfig) {
+    async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);
     }
 

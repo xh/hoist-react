@@ -12,6 +12,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 
 export class UserModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.users';
+
     override persistWith = {localStorageKey: 'xhAdminUserState'};
 
     @bindable activeOnly = true;
@@ -50,18 +52,19 @@ export class UserModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         // Knit users and roles back together again here on the admin client.
         // We could make this something the server can produce on its own...
-        const userLoad = XH.fetchJson({
-            url: 'userAdmin/users',
-            params: {activeOnly: this.activeOnly},
-            loadSpec
-        });
-        const rolesLoad = XH.fetchJson({
-            url: 'userAdmin/roles',
-            loadSpec
-        });
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const userLoad = XH.fetchJson(
+                    {
+                        url: 'userAdmin/users',
+                        params: {activeOnly: this.activeOnly}
+                    },
+                    ctx
+                );
+                const rolesLoad = XH.fetchJson({url: 'userAdmin/roles'}, ctx);
 
-        return Promise.allSettled([userLoad, rolesLoad])
-            .then((results: any) => {
+                const results: any = await Promise.allSettled([userLoad, rolesLoad]);
                 let users = results[0].value,
                     byUsername = keyBy(users, 'username'),
                     roleMappings = results[1].value;
