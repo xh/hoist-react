@@ -257,17 +257,19 @@ this.logDebug('Filter applied:', filter);
 both sync and async functions, logging elapsed time on completion:
 
 ```typescript
-// Time an async load — returns the result of the function
-const data = await this.withInfo('Loading positions', () => {
-    return XH.fetchService.fetchJson({url: 'api/positions'});
-});
-// → [PortfolioModel] | Loading positions | 342ms
+// Time an async operation — returns the awaited result
+const summary = await this.withInfo('Computing summary', () => this.computeSummaryAsync());
+// → [PortfolioModel] | Computing summary | 342ms
 
-// withDebug for lower-priority timing — no logging overhead at default level
+// withDebug for lower-priority sync timing — no logging overhead at default level
 this.withDebug('Filtering records', () => {
     this.applyFilters();
 });
 ```
+
+For fetch calls or async work you are already composing, prefer the `Runner` chain's `logInfo()` /
+`logDebug()` (e.g. `runner().logInfo('Loading positions').fetchJson({url})`) over wrapping the call
+in `withInfo()` — it reads more fluently and integrates with spanning and tracking.
 
 #### Log Levels
 

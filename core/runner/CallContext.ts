@@ -6,7 +6,7 @@
  */
 import type {LoadSpec} from '../load/LoadSpec';
 import type {Span} from '../Span';
-import type {CallContextLike} from '../types/Interfaces';
+import type {CallContextLike} from '../types/Telemetry';
 
 /**
  * Normalized, framework-internal call context — carries tracing/load state across call boundaries.
@@ -29,8 +29,8 @@ export class CallContext implements CallContextLike {
     /**
      * Return a new nested {@link CallContext} with a nested span.
      *
-     * @internal -- applications looking to create a span should use
-     * Runner.span() or 'TraceService.withSpan' instead.
+     * @internal -- applications looking to create a span should start a {@link Runner} chain
+     * via {@link HoistBase.runner} and call `.span()` instead.
      */
     cloneWithSpan(span: Span): CallContext {
         return new CallContext({span, loadSpec: this.loadSpec?.cloneWithSpan(span)});

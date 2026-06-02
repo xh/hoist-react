@@ -4,14 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, MetricTags, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {isEmpty, isFinite, isString} from 'lodash';
-
-export interface MetricTags {
-    [tag: string]: string;
-}
 
 interface MetricEntry {
     type: 'timer' | 'count';
@@ -31,6 +27,9 @@ export class MetricsService extends HoistService {
     override telemetryPrefix = 'xh.client.metrics';
 
     static instance: MetricsService;
+
+    /** Max entries to retain when pushes are failing - oldest are dropped beyond this. */
+    private static MAX_PENDING = 100;
 
     private pending: MetricEntry[] = [];
 
@@ -56,19 +55,33 @@ export class MetricsService extends HoistService {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
-        await this.runner()
-            .span('push')
-            .run(async ctx => {
-                this.pending = [];
-                await XH.postJson(
-                    {
-                        url: 'xh/recordMetrics',
-                        body: {entries: pending},
-                        params: {clientUsername: XH.getUsername()}
-                    },
-                    ctx
+        this.pending = [];
+        try {
+            await this.runner()
+                .span('push')
+                .run(ctx =>
+                    XH.postJson(
+                        {
+                            url: 'xh/recordMetrics',
+                            body: {entries: pending},
+                            params: {clientUsername: XH.getUsername()}
+                        },
+                        ctx
+                    )
                 );
-            });
+        } catch (e) {
+            if (isRetryableError(e)) {
+                // Transient failure - re-queue the batch (ahead of newer entries) to retry on the
+                // next flush, then bound the buffer in case the outage is prolonged.
+                this.pending = [...pending, ...this.pending];
+                this.enforceCap();
+                this.logError('Failed to push metrics - will retry on next flush', e);
+            } else {
+                // Permanent (client-side) rejection - drop the batch so it can't deadlock the
+                // pipe (e.g. a session mismatch or oversized payload would fail forever).
+                this.logError('Server rejected metrics batch - dropping', e);
+            }
+        }
     }
 
     //------------------
@@ -86,11 +99,35 @@ export class MetricsService extends HoistService {
         const entry: MetricEntry = {type, name, value};
         if (tags && !isEmpty(tags)) entry.tags = tags;
         this.pending.push(entry);
+        this.enforceCap();
         this.pushPendingBuffered();
+    }
+
+    /** Bound the pending buffer, silently dropping oldest entries (failed pushes are logged). */
+    private enforceCap() {
+        const {pending} = this,
+            {MAX_PENDING} = MetricsService;
+        if (pending.length > MAX_PENDING) {
+            pending.splice(0, pending.length - MAX_PENDING);
+        }
     }
 
     @debounced(10 * SECONDS)
     private pushPendingBuffered() {
         this.pushPendingAsync();
     }
+}
+
+/**
+ * Should a failed telemetry push be retried? True for transient failures (network, timeout,
+ * 5xx, aborted); false for client-side rejections (4xx) that would fail identically on retry.
+ */
+function isRetryableError(e: any): boolean {
+    return (
+        !e?.httpStatus ||
+        e.httpStatus >= 500 ||
+        e.isTimeout ||
+        e.isServerUnavailable ||
+        e.isFetchAborted
+    );
 }

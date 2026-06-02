@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, RawSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
+import {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
 import {CallContext} from './CallContext';
 import {PromiseLinkSpec} from '@xh/hoist/promise';
 import {FetchOptions} from '@xh/hoist/svc';
@@ -25,7 +25,7 @@ export class Runner {
     private readonly ctx: CallContext;
     private readonly caller: NameSource;
 
-    private spanConfig: RawSpanConfig = null;
+    private spanConfig: FullSpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
@@ -51,7 +51,8 @@ export class Runner {
         const {caller, ctx} = this,
             prefix = (caller as any)?.telemetryPrefix,
             name = prefix ? `${prefix}.${config.name}` : config.name,
-            parent = ctx.span;
+            // Explicit remote traceparent (config.parent) wins; else nest under call-context span.
+            parent = config.parent ?? ctx.span;
         this.spanConfig = {...config, name, parent, caller};
         return this;
     }
@@ -112,20 +113,60 @@ export class Runner {
         return this.executeWrapped(fn);
     }
 
+    /**
+     * Issue a raw fetch within the call context.
+     * @see FetchService.fetch
+     */
     fetch(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.fetch(options, ctx));
     }
 
+    /**
+     * Issue a JSON fetch within the call context.
+     * @see FetchService.fetchJson
+     */
     fetchJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.fetchJson(options, ctx));
     }
 
+    /**
+     * Issue a JSON GET within the call context.
+     * @see FetchService.getJson
+     */
     getJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.getJson(options, ctx));
     }
 
+    /**
+     * Issue a JSON POST within the call context.
+     * @see FetchService.postJson
+     */
     postJson(options: FetchOptions): Promise<any> {
         return this.executeWrapped(ctx => XH.fetchService.postJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PUT within the call context.
+     * @see FetchService.putJson
+     */
+    putJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.putJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PATCH within the call context.
+     * @see FetchService.patchJson
+     */
+    patchJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.patchJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON DELETE within the call context.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.deleteJson(options, ctx));
     }
 
     //-------------------------
@@ -171,7 +212,7 @@ export class Runner {
 
         if (debugMsgs != null && getLogLevel() === 'debug') {
             return ctx => withDebug(debugMsgs, () => fn(ctx), this.caller);
-        } else if (this.infoMsgs != null) {
+        } else if (infoMsgs != null) {
             return ctx => withInfo(infoMsgs, () => fn(ctx), this.caller);
         }
         return fn;

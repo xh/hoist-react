@@ -83,10 +83,7 @@ export class RestStore extends UrlStore {
             .span('bulkUpdate')
             .run(ctx => {
                 const {url} = this;
-                return XH.fetchService.putJson(
-                    {url: `${url}/bulkUpdate`, body: {ids, newParams}},
-                    ctx
-                );
+                return XH.putJson({url: `${url}/bulkUpdate`, body: {ids, newParams}}, ctx);
             })
             .linkTo(this.loadObserver)
             .tap(() => this.loadAsync());
@@ -119,8 +116,8 @@ export class RestStore extends UrlStore {
             .span(isAdd ? 'create' : 'update')
             .run(async ctx => {
                 const response = isAdd
-                        ? await XH.fetchService.postJson({url, body: {data}}, ctx)
-                        : await XH.fetchService.putJson({url, body: {data}}, ctx),
+                        ? await XH.postJson({url, body: {data}}, ctx)
+                        : await XH.putJson({url, body: {data}}, ctx),
                     responseData = dataRoot ? response[dataRoot] : response;
 
                 this.updateData([responseData]);

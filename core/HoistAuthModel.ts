@@ -38,9 +38,11 @@ export class HoistAuthModel extends HoistModel {
      * may be appropriate for fully SSO based solutions. Override to consult or
      * initialize third-party client resources such as OAuth.
      *
+     * @param ctx - tracing/load context supplied by the framework. Overrides should forward it
+     *      to any fetch calls (or `runner(ctx)`) so auth requests nest under the bootstrap trace.
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async completeAuthAsync(ctx: CallContextLike): Promise<IdentityInfo> {
+    async completeAuthAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
         return this.getAuthStatusFromServerAsync(ctx);
     }
 

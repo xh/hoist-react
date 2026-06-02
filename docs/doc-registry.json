@@ -65,7 +65,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "withSpan", "withSpanAsync", "traceparent", "distributed tracing"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "MetricsService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "Runner", "CallContext", "withSpan", "traceparent", "distributed tracing"]
         },
         {
             "id": "cmp/README.md",
@@ -314,6 +314,14 @@
             "viewerCategory": "concepts",
             "description": "Centralized exception handling, display, and logging.",
             "keywords": ["XH.handleException", "ExceptionDialog", "catchDefault", "alertType", "toast", "requireReload", "ErrorBoundary", "error boundary", "exception logging"]
+        },
+        {
+            "id": "docs/telemetry.md",
+            "title": "Telemetry & Observability",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Client-side tracing, activity tracking, metrics, and timed logging composed via the Runner chain.",
+            "keywords": ["Runner", "telemetry", "observability", "tracing", "TraceService", "span", "traceparent", "sampling", "MetricsService", "metrics", "activity tracking", "CallContext", "telemetryPrefix"]
         },
         {
             "id": "docs/test-automation.md",

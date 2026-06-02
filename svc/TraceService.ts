@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH, Span, RawSpanConfig} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
@@ -32,6 +32,9 @@ import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
  */
 export class TraceService extends HoistService {
     static instance: TraceService;
+
+    /** Max spans to retain when pushes are failing - oldest are dropped beyond this. */
+    private static MAX_PENDING = 2000;
 
     /** Spans whose sampling has been decided and are queued for export. */
     private _pending: Span[] = [];
@@ -68,7 +71,7 @@ export class TraceService extends HoistService {
      * @param fn - the async function to wrap.
      */
     override async withSpan<T>(
-        config: string | RawSpanConfig,
+        config: string | FullSpanConfig,
         fn: (span: Span) => Promise<T>
     ): Promise<T> {
         const span = this.createSpan(config);
@@ -104,8 +107,8 @@ export class TraceService extends HoistService {
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
-    private createSpan(config: string | RawSpanConfig): Span {
-        const ret: RawSpanConfig = isString(config) ? {name: config} : {...config};
+    private createSpan(config: string | FullSpanConfig): Span {
+        const ret: FullSpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
         // Remove nulls they are used in this API to just prevent defaults
@@ -146,6 +149,7 @@ export class TraceService extends HoistService {
 
         if (span.sampled) {
             this._pending.push(span);
+            this.enforceCap();
 
             // Queue the push unless its submitSpans export itself (avoid looping).
             if (!span.tags['url.full']?.endsWith('xh/submitSpans')) {
@@ -172,7 +176,26 @@ export class TraceService extends HoistService {
                 }
             });
         } catch (e) {
-            this.logError('Failed to push spans', e);
+            if (isRetryableError(e)) {
+                // Transient failure - re-queue the batch (ahead of newer spans) to retry on the
+                // next flush, then bound the buffer in case the outage is prolonged.
+                this._pending = [...spans, ...this._pending];
+                this.enforceCap();
+                this.logError('Failed to push spans - will retry on next flush', e);
+            } else {
+                // Permanent (client-side) rejection - drop the batch so it can't deadlock the
+                // pipe (e.g. a session mismatch or oversized payload would fail forever).
+                this.logError('Server rejected span batch - dropping', e);
+            }
+        }
+    }
+
+    /** Bound the pending buffer, silently dropping oldest spans (failed pushes are logged). */
+    private enforceCap() {
+        const {_pending} = this,
+            {MAX_PENDING} = TraceService;
+        if (_pending.length > MAX_PENDING) {
+            _pending.splice(0, _pending.length - MAX_PENDING);
         }
     }
 
@@ -283,4 +306,18 @@ interface TraceConfig {
 interface SampleRule {
     match: Record<string, string>;
     sampleRate: number;
+}
+
+/**
+ * Should a failed telemetry push be retried? True for transient failures (network, timeout,
+ * 5xx, aborted); false for client-side rejections (4xx) that would fail identically on retry.
+ */
+function isRetryableError(e: any): boolean {
+    return (
+        !e?.httpStatus ||
+        e.httpStatus >= 500 ||
+        e.isTimeout ||
+        e.isServerUnavailable ||
+        e.isFetchAborted
+    );
 }
