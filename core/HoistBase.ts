@@ -136,7 +136,7 @@ export abstract class HoistBase {
     /** @deprecated - use {@link runner} to start a {@link Runner} chain. */
     withSpan<T>(config: string | FullSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
         apiDeprecated('HoistBase.withSpan', {
-            v: 'v87',
+            v: 'v88',
             msg: 'Use runner().span() to start a Runner chain instead.',
             source: this
         });

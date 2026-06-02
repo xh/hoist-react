@@ -206,11 +206,13 @@ export class FetchService extends HoistService {
         // Default to deprecated context
         ctx ??= {span: opts.span, loadSpec: opts.loadSpec as LoadSpec};
         apiDeprecated('FetchOptions.span', {
+            v: 'v88',
             test: opts.span,
             source: this,
             msg: 'Pass a CallContextLike as the second argument instead.'
         });
         apiDeprecated('FetchOptions.loadSpec', {
+            v: 'v88',
             test: opts.loadSpec,
             source: this,
             msg: 'Pass a CallContextLike as the second argument instead.'
