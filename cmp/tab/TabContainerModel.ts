@@ -247,7 +247,7 @@ export class TabContainerModel extends HoistModel {
     /**
      * Remove a single tab from the container.
      * Supported for tabs that are immediate children of this container.
-     **/
+     */
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,

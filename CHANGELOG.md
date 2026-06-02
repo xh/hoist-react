@@ -59,6 +59,9 @@
   `hoist://docs/docs/routing.md`.
 * Added a `hoist-docs ping` CLI subcommand mirroring the `hoist-ping` MCP tool; both now report the
   indexed `@xh/hoist` library version.
+* MCP/CLI symbol JSDoc is no longer truncated at the first `@`-prefixed line inside a fenced code
+  block (e.g. an `@observable.ref` in a usage example), recovering example code, "SEE ALSO" lists,
+  and trailing prose that were previously dropped.
 
 ### ⚙️ Technical
 

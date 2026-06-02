@@ -135,7 +135,7 @@ export abstract class HoistBase {
      * Create an {@link Runner} builder with this object as the caller.
      *
      * @internal  - runner is an experimental beta feature.
-     **/
+     */
     runner(ctx: LoadSpec | Span = null): Runner {
         return Runner.create(ctx, this);
     }
