@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH, Span, RawSpanConfig} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
@@ -71,7 +71,7 @@ export class TraceService extends HoistService {
      * @param fn - the async function to wrap.
      */
     override async withSpan<T>(
-        config: string | RawSpanConfig,
+        config: string | FullSpanConfig,
         fn: (span: Span) => Promise<T>
     ): Promise<T> {
         const span = this.createSpan(config);
@@ -107,8 +107,8 @@ export class TraceService extends HoistService {
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
-    private createSpan(config: string | RawSpanConfig): Span {
-        const ret: RawSpanConfig = isString(config) ? {name: config} : {...config};
+    private createSpan(config: string | FullSpanConfig): Span {
+        const ret: FullSpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
         // Remove nulls they are used in this API to just prevent defaults

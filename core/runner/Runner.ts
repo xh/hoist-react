@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, RawSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
+import {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
 import {CallContext} from './CallContext';
 import {PromiseLinkSpec} from '@xh/hoist/promise';
 import {FetchOptions} from '@xh/hoist/svc';
@@ -25,7 +25,7 @@ export class Runner {
     private readonly ctx: CallContext;
     private readonly caller: NameSource;
 
-    private spanConfig: RawSpanConfig = null;
+    private spanConfig: FullSpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
@@ -51,7 +51,8 @@ export class Runner {
         const {caller, ctx} = this,
             prefix = (caller as any)?.telemetryPrefix,
             name = prefix ? `${prefix}.${config.name}` : config.name,
-            parent = ctx.span;
+            // Explicit remote traceparent (config.parent) wins; else nest under call-context span.
+            parent = config.parent ?? ctx.span;
         this.spanConfig = {...config, name, parent, caller};
         return this;
     }

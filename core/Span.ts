@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, RawSpanConfig, SpanKind} from '@xh/hoist/core';
+import {PlainObject, FullSpanConfig, SpanKind} from '@xh/hoist/core';
 import {isHoistException} from '@xh/hoist/exception';
 import {isString} from 'lodash';
 
@@ -15,8 +15,8 @@ import {isString} from 'lodash';
  * OpenTelemetry SDK. Completed spans are exported to the Hoist server,
  * which relays them to the configured collector.
  *
- * Not created directly by applications. See {@link TraceService} and
- * {@link Runner} for more information on how to instrument code with spans.
+ * Not created directly by applications. Instrument code via {@link Runner} (`runner().span()`);
+ * see also {@link TraceService} for the underlying span lifecycle and export.
  */
 export class Span {
     /** 32 hex chars (128-bit). */
@@ -60,7 +60,7 @@ export class Span {
      */
     sampled: boolean | null;
 
-    constructor(config: RawSpanConfig) {
+    constructor(config: FullSpanConfig) {
         const {parent} = config;
         this.spanId = genSpanId();
         this.name = config.name;

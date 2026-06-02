@@ -433,17 +433,31 @@ export interface SpanConfig {
 
     /** Tags attached to the span as key/value attributes. */
     tags?: PlainObject;
+
+    /**
+     * Parent under which to root this span:
+     * - a live {@link Span} for explicit in-process nesting (usually unnecessary - threading the
+     *   call context via `runner(ctx)` nests child spans automatically), or
+     * - a W3C `traceparent` string to chain onto a trace received off-channel - e.g. a
+     *   WebSocket / SSE / queue message carrying an upstream `traceparent`.
+     *
+     * Malformed traceparents are ignored and the span becomes a root. Omit to nest under the
+     * call-context span, if any.
+     */
+    parent?: Span | string;
 }
 
 /**
- * Configuration for generating a raw {@link Span} - a lightweight trace span for distributed tracing.
+ * The complete span-construction config consumed by the low-level {@link Span} constructor and
+ * {@link TraceService.withSpan}. Extends the app-facing {@link SpanConfig} with fields that
+ * the {@link Runner} layer populates on the application's behalf rather than apps supplying them.
  *
- * See {@link TraceService} for more info and a public API that creates a span using this type.
+ * Apps do not construct this directly - instrument via `runner().span()`, which assembles it from
+ * a plain {@link SpanConfig} plus the active call context.
+ *
+ * @internal
  */
-export interface RawSpanConfig extends SpanConfig {
-    /** Parent to this span, if any. May be a {@link Span} created locally, or a W3C `traceparent`. */
-    parent?: Span | string;
-
+export interface FullSpanConfig extends SpanConfig {
     /**
      * Override the span's start time (epoch ms). Use when the work being traced began before
      * the span was constructed - e.g. timing an event whose timestamp is known.
