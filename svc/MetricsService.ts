@@ -29,7 +29,7 @@ export class MetricsService extends HoistService {
     static instance: MetricsService;
 
     /** Max entries to retain when pushes are failing - oldest are dropped beyond this. */
-    private static MAX_PENDING = 5000;
+    private static MAX_PENDING = 100;
 
     private pending: MetricEntry[] = [];
 
