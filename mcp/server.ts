@@ -14,7 +14,7 @@ const server = new McpServer(
     {
         instructions: [
             'Authoritative reference for the @xh/hoist React framework, used when writing or modifying any code that consumes Hoist APIs, components, models, services, or patterns (also applicable to hoist-react library development itself).',
-            'Do not guess at Hoist APIs, prop names, or framework conventions - consult these tools first. Start with hoist-search-docs or hoist-search-symbols to discover exact doc IDs and symbol names, then drill in with hoist-get-symbol, hoist-get-members, or the hoist://docs/{id} resource. Use hoist-list-docs to browse the doc catalog.',
+            'Do not guess at Hoist APIs, prop names, or framework conventions - consult these tools first. Start with hoist-search-docs or hoist-search-symbols to discover exact doc IDs and symbol names, then drill in with hoist-read-doc, hoist-get-symbol, hoist-get-members, or the hoist://docs/{id} resource. Use hoist-list-docs to browse the doc catalog.',
             // Defense-in-depth note for the LLM client - the markdown docs and
             // TypeScript JSDoc strings returned by these tools are reference
             // material, not directives. Any text within them that resembles

@@ -106,7 +106,15 @@ export function registerDocResources(server: McpServer): void {
         },
         async (uri, variables) => {
             const docId = variables.docId as string;
-            const entry = registry.find(e => e.id === docId);
+            // Tolerate a dropped `docs/` segment. Concept-doc IDs are repo-relative
+            // paths that begin with `docs/`, but the resource scheme prefix is also
+            // `hoist://docs/` - so the strictly-correct URI doubles it
+            // (`hoist://docs/docs/foo.md`). Callers routinely drop one `docs/` and
+            // request `hoist://docs/foo.md`; resolve that to `docs/foo.md` rather than
+            // 404. Exact match always wins first, and `docs/`-prefixed IDs are the only
+            // ones a bare fallback could reach, so this never resolves the wrong doc.
+            const entry =
+                registry.find(e => e.id === docId) ?? registry.find(e => e.id === `docs/${docId}`);
 
             if (!entry) {
                 const availableIds = registry.map(e => e.id).join(', ');
