@@ -1,4 +1,4 @@
-import {a, div, placeholder} from '@xh/hoist/cmp/layout';
+import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FileChooserModel} from '@xh/hoist/desktop/cmp/filechooser';
 import {Icon} from '@xh/hoist/icon';
@@ -6,28 +6,13 @@ import {filesize} from 'filesize';
 import {flatten, isEmpty, uniq, values} from 'lodash';
 import './DefaultEmptyDisplay.scss';
 
+const DEFAULT_PROMPT = 'Drag and drop files here, or click to browse.';
+
 export const defaultEmptyDisplay = hoistCmp.factory({
     model: uses(() => FileChooserModel),
     render({model}) {
-        const {emptyDisplayText} = model;
-        return placeholder(Icon.upload(), emptyDisplayText ?? emptyPrompt(), emptyHint());
-    }
-});
-
-// Default prompt - drag-and-drop instruction paired with an inline link that opens the file
-// browser, more compact than a standalone button.
-const emptyPrompt = hoistCmp.factory({
-    model: uses(() => FileChooserModel),
-    render({model}) {
-        return div(
-            'Drag and drop files here, or ',
-            a({
-                className: 'xh-file-chooser__browse-link',
-                item: 'click to browse',
-                onClick: () => model.openFileBrowser()
-            }),
-            '.'
-        );
+        const {emptyDisplayPrompt} = model;
+        return placeholder(Icon.upload(), emptyDisplayPrompt ?? DEFAULT_PROMPT, emptyHint());
     }
 });
 
@@ -60,9 +45,10 @@ const emptyHint = hoistCmp.factory({
                 parts.push(`Accepts ${list}`);
             }
             if (maxFileSize) parts.push(`up to ${filesize(maxFileSize)} each`);
-            if (maxFiles) parts.push(maxFiles === 1 ? 'one file only' : `up to ${maxFiles} files`);
+            // Only worth surfacing a multi-file cap; a single-file limit is clear from context.
+            if (maxFiles > 1) parts.push(`up to ${maxFiles} files`);
 
-            hint = isEmpty(parts) ? null : parts.join(' · ');
+            hint = isEmpty(parts) ? null : `(${parts.join(' · ')})`;
         }
 
         return div({className: 'xh-file-chooser__empty-hint', item: hint, omit: hint == null});

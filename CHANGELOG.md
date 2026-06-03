@@ -22,7 +22,8 @@
     * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
       selection).
     * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
-      content props, which default to placeholder text and a file grid, respectively.
+      content props. The default `fileDisplay` is a file grid, or a compact card with replace /
+      remove actions when `maxFiles` is 1.
     * Replaced the synchronous `FileChooserModel.onDrop()` with `onDropAsync()` and removed the
       `lastRejectedCount` observable.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with

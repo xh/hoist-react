@@ -16,18 +16,20 @@ import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 import {defaultEmptyDisplay} from './impl/DefaultEmptyDisplay';
 import {defaultFileDisplay} from './impl/DefaultFileDisplay';
+import {singleFileDisplay} from './impl/SingleFileDisplay';
+import './FileChooser.scss';
 
 export interface FileChooserProps extends HoistProps<FileChooserModel>, BoxProps {
     /**
-     *  Content to display when any files are uploaded.
-     *  Default is a grid with columns for file name and size, and an action column to remove files.
+     *  Content to display when one or more files are selected. In single-file mode (`maxFiles: 1`)
+     *  the default is a compact card showing the selected file with options to replace or remove
+     *  it; otherwise the default is a grid of file name / size with a per-row remove action.
      */
     fileDisplay?: Content;
 
     /**
-     *  Content to display when no files are uploaded.
-     *  Default is placeholder text with a browse button. Setting to null will always show
-     *  fileDisplay.
+     *  Content to display when no files are selected. Default is a prompt to drag-and-drop or
+     *  click to browse. Setting to null will always show `fileDisplay`.
      */
     emptyDisplay?: Content;
 }
@@ -50,19 +52,19 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
     model: uses(FileChooserModel),
     className: 'xh-file-chooser',
 
-    render({
-        model,
-        emptyDisplay = defaultEmptyDisplay,
-        fileDisplay = defaultFileDisplay,
-        className,
-        ...props
-    }) {
+    render({model, emptyDisplay = defaultEmptyDisplay, fileDisplay, className, ...props}) {
         const {accept, disabled, maxFiles, maxFileSize, minFileSize, maskOnDrag, maskOnDisabled} =
                 model,
+            hasFiles = !isEmpty(model.files),
+            // Surface is click-to-browse in the empty state and in single-file mode (click to
+            // replace). Multi-file selections are not yet clickable (handled in a later phase).
+            clickable = !hasFiles || maxFiles === 1,
+            resolvedFileDisplay =
+                fileDisplay ?? (maxFiles === 1 ? singleFileDisplay : defaultFileDisplay),
             dropzoneItem =
-                isEmpty(model.files) && emptyDisplay != null
+                !hasFiles && emptyDisplay != null
                     ? elementFromContent(emptyDisplay)
-                    : elementFromContent(fileDisplay);
+                    : elementFromContent(resolvedFileDisplay);
 
         return dropzone({
             ref: model.dropzoneRef,
@@ -70,7 +72,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             disabled,
             maxFiles,
             multiple: !maxFiles || maxFiles > 1,
-            noClick: true,
+            noClick: !clickable,
             maxSize: maxFileSize,
             minSize: minFileSize,
             children: ({getRootProps, getInputProps, isDragActive}) => {
@@ -79,7 +81,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         className,
                         'xh-file-chooser__target',
                         isDragActive ? 'xh-file-chooser__target--active' : null,
-                        isEmpty(model.files) ? 'xh-file-chooser__target--empty' : null
+                        !hasFiles ? 'xh-file-chooser__target--empty' : null,
+                        clickable ? 'xh-file-chooser__target--clickable' : null
                     ),
                     items: [
                         dropzoneItem,

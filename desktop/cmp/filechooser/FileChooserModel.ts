@@ -64,7 +64,7 @@ export interface FileChooserConfig {
      * click to browse" message with an inline link that opens the file browser. Provide a custom
      * string or element to replace it.
      */
-    emptyDisplayText?: ReactNode;
+    emptyDisplayPrompt?: ReactNode;
 
     /**
      * Secondary hint line shown below the prompt in the default empty display. Defaults to a
@@ -93,7 +93,7 @@ export class FileChooserModel extends HoistModel {
     readonly minFileSize: number;
     readonly maskOnDrag: boolean;
     readonly maskOnDisabled: boolean;
-    readonly emptyDisplayText: ReactNode;
+    readonly emptyDisplayPrompt: ReactNode;
     readonly emptyDisplayHint: ReactNode;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
@@ -119,7 +119,7 @@ export class FileChooserModel extends HoistModel {
         this.rejectToastSpec = this.getRejectToastSpec(config.rejectToastSpec);
         this.maskOnDrag = withDefault(config.maskOnDrag, true);
         this.maskOnDisabled = withDefault(config.maskOnDisabled, true);
-        this.emptyDisplayText = config.emptyDisplayText;
+        this.emptyDisplayPrompt = config.emptyDisplayPrompt;
         this.emptyDisplayHint = config.emptyDisplayHint;
     }
 
@@ -154,11 +154,11 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]>) {
         const {files, maxFiles, rejectToastMessage, validateFilesAsync} = this,
-            currFileCount = files.length,
-            acceptCount = accepted.length,
-            rejectCount = rejected.length;
+            // In single-file mode, a lone valid file replaces the current selection rather than
+            // being rejected for exceeding the limit.
+            isReplace = maxFiles === 1 && accepted.length === 1;
 
-        if (currFileCount + acceptCount + rejectCount > maxFiles) {
+        if (!isReplace && maxFiles != null && files.length + accepted.length > maxFiles) {
             XH.warningToast(
                 maxFiles === 1
                     ? 'Only one file allowed for upload.'
@@ -175,6 +175,9 @@ export class FileChooserModel extends HoistModel {
             accepted = await validateFilesAsync(accepted);
         }
 
+        // Clear first only when a valid replacement survived validation, so a rejected
+        // replacement does not wipe out the existing selection.
+        if (isReplace && !isEmpty(accepted)) this.clear();
         this.addFiles(accepted);
 
         this.onFileAccepted?.(accepted);
