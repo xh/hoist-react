@@ -6,10 +6,10 @@
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {box, filler, vbox} from '@xh/hoist/cmp/layout';
+import {filler, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
+import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -45,12 +45,10 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                 toolbar({
                     className: 'xh-column-chooser__tbar',
                     items: [
-                        filler(),
-                        box({
-                            className: 'xh-column-chooser__toggle-all',
-                            width: calcActionColWidth(1),
-                            justifyContent: 'center',
-                            item: aggregateVisibilityButton(impl)
+                        gridFindField({
+                            flex: 1,
+                            gridModel: impl.unpinnedBucket.chooserGridModel,
+                            placeholder: 'Find Columns'
                         })
                     ]
                 }),
@@ -73,14 +71,17 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                     items: [
                         button({
                             omit: !impl.hasColumnGroups,
-                            icon: impl.showGroups ? Icon.treeList() : Icon.list(),
-                            text: impl.showGroups ? 'Tree' : 'Flat',
+                            icon: impl.showGroups
+                                ? Icon.checkSquare({intent: 'primary'})
+                                : Icon.square(),
+                            text: 'Show Groups',
                             onClick: () => impl.setShowGroups(!impl.showGroups)
                         }),
                         filler(),
                         button({
+                            intent: 'danger',
                             icon: Icon.reset(),
-                            tooltip: 'Restore Defaults',
+                            text: 'Restore Defaults',
                             onClick: () => impl.restoreDefaultsAsync()
                         })
                     ]
@@ -112,27 +113,3 @@ const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
         })
     })
 );
-
-function aggregateVisibilityButton(impl: ColumnChooserModel) {
-    const state = impl.aggregateVisibility;
-    let icon, intent, tooltip;
-
-    if (state === 'all') {
-        icon = Icon.checkSquare();
-        intent = 'primary';
-        tooltip = 'Hide all columns';
-    } else if (state === 'some') {
-        icon = Icon.squareMinus();
-        tooltip = 'Show all columns';
-    } else {
-        icon = Icon.square();
-        tooltip = 'Show all columns';
-    }
-
-    return button({
-        icon,
-        intent,
-        tooltip,
-        onClick: () => impl.toggleAllVisibility()
-    });
-}

@@ -98,12 +98,17 @@ export class ColumnChooserBucketModel extends HoistModel {
                 }
             },
             clicksToExpand: 0,
+            rowClassRules: {
+                'xh-column-chooser__column-row': ({data: rec}) => !rec.isSummary,
+                'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.visible === false
+            },
             columns: [
                 {
                     field: 'name',
                     isTreeColumn: true,
                     rendererIsComplex: true,
                     flex: 1,
+                    cellClass: 'xh-column-chooser__name-cell',
                     agOptions: {
                         cellRendererParams: {
                             // Re-specify Hoist defaults — agOptions merges shallow
@@ -220,25 +225,25 @@ export const NameCell = hoistCmp<NameCellProps>(({registerRowDragger, data: reco
         });
     }
 
-    // Immovable columns render a lock icon and omit the drag handle (ref unset -> never
-    // registered as a row dragger), so the row cannot be dragged.
     const movable = record?.data?.movable !== false;
-
     return hbox({
         alignItems: 'center',
         items: [
             movable
                 ? span({
                       ref,
-                      className: 'xh-column-chooser__drag-handle',
+                      className: 'xh-column-chooser__name-cell__drag-handle',
                       item: Icon.grip({prefix: 'fas'})
                   })
                 : span({
-                      className: 'xh-column-chooser__lock',
+                      className: 'xh-column-chooser__name-cell__lock',
                       item: Icon.lock()
                   }),
             tooltip({
-                item: record?.data?.name ?? '',
+                item: span({
+                    className: 'xh-column-chooser__name-cell__name',
+                    item: record?.data?.name ?? ''
+                }),
                 content: record?.data?.description,
                 minimal: true,
                 disabled: isEmpty(record?.data?.description)
