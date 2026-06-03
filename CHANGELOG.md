@@ -19,7 +19,7 @@
       than as `FileChooser` props. `accept` continues to take file-extension strings
       (e.g. `['.pdf', '.doc']`), which the model maps to MIME types internally.
     * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
-    * Removed `enableMulti` / `enableAddMulti` - use `maxCount` (set to `1` for single-file
+    * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
       selection).
     * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
       content props, which default to placeholder text and a file grid, respectively.
@@ -33,7 +33,7 @@
 
 ### 🎁 New Features
 
-* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxCount` limit
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit
   (see [#3570](https://github.com/xh/hoist-react/issues/3570)), fully customizable `emptyDisplay` /
   `fileDisplay` content, async file validation via `validateFilesAsync`, `onFileAccepted` /
   `onFileRejected` callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled`

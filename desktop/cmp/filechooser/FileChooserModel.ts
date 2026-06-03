@@ -6,7 +6,6 @@
  */
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
-import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -17,12 +16,12 @@ import mime from 'mime';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
-export interface FileChooserConf {
+export interface FileChooserConfig {
     /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
     accept?: Some<string>;
 
     /** Maximum number of overall files that can be added. Defaults to null (no limit). */
-    maxCount?: number;
+    maxFiles?: number;
 
     /** Maximum accepted file size in bytes. Defaults to null (no limit). */
     maxFileSize?: number;
@@ -60,23 +59,26 @@ export interface FileChooserConf {
     /** Mask the dropzone when disabled. Defaults to true. */
     maskOnDisabled?: boolean;
 
-    /** Text to display in the default empty display. */
+    /**
+     * Prompt shown in the default empty display. Defaults to a "drag and drop files here, or
+     * click to browse" message with an inline link that opens the file browser. Provide a custom
+     * string or element to replace it.
+     */
     emptyDisplayText?: ReactNode;
 
     /**
-     *  Config for the browse button in the default empty display. Set false to omit browse
-     *  button from default empty display.
+     * Secondary hint line shown below the prompt in the default empty display. Defaults to a
+     * summary of the configured accepted file types and size/count limits (when any are set).
+     * Pass null to suppress, or a custom string/element to replace it.
      */
-    emptyDisplayBrowseButton?: ButtonProps | boolean;
+    emptyDisplayHint?: ReactNode;
 }
 
 /**
- * Model managing file selection state for a FileChooser component.
+ * Model managing file selection state for a {@link FileChooser} component.
  *
  * Tracks selected files, supports add/remove/clear operations, and de-duplicates by filename.
  * Includes a managed GridModel to display selected files with name and size columns.
- *
- * @see FileChooser
  */
 export class FileChooserModel extends HoistModel {
     @observable.ref
@@ -86,13 +88,13 @@ export class FileChooserModel extends HoistModel {
     disabled: boolean;
 
     readonly accept: Record<string, string[]>;
-    readonly maxCount: number;
+    readonly maxFiles: number;
     readonly maxFileSize: number;
     readonly minFileSize: number;
     readonly maskOnDrag: boolean;
     readonly maskOnDisabled: boolean;
     readonly emptyDisplayText: ReactNode;
-    readonly emptyDisplayBrowseButton: ButtonProps;
+    readonly emptyDisplayHint: ReactNode;
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
@@ -102,25 +104,23 @@ export class FileChooserModel extends HoistModel {
     private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
     private readonly rejectToastSpec: Partial<ToastSpec>;
 
-    constructor(params: FileChooserConf) {
+    constructor(config: FileChooserConfig) {
         super();
         makeObservable(this);
 
-        this.accept = this.getMimesByExt(params.accept);
-        this.maxCount = params.maxCount;
-        this.maxFileSize = params.maxFileSize;
-        this.minFileSize = params.minFileSize;
-        this.validateFilesAsync = params.validateFilesAsync;
-        this.onFileAccepted = params.onFileAccepted;
-        this.onFileRejected = params.onFileRejected;
-        this.rejectToastMessage = withDefault(params.rejectToastMessage, this.defaultRejectMessage);
-        this.rejectToastSpec = this.getRejectToastSpec(params.rejectToastSpec);
-        this.maskOnDrag = withDefault(params.maskOnDrag, true);
-        this.maskOnDisabled = withDefault(params.maskOnDisabled, true);
-        this.emptyDisplayText = withDefault(params.emptyDisplayText, 'Drag and drop files here');
-        this.emptyDisplayBrowseButton = this.getEmptyDisplayBrowseButtonProps(
-            params.emptyDisplayBrowseButton
-        );
+        this.accept = this.getMimesByExt(config.accept);
+        this.maxFiles = config.maxFiles;
+        this.maxFileSize = config.maxFileSize;
+        this.minFileSize = config.minFileSize;
+        this.validateFilesAsync = config.validateFilesAsync;
+        this.onFileAccepted = config.onFileAccepted;
+        this.onFileRejected = config.onFileRejected;
+        this.rejectToastMessage = withDefault(config.rejectToastMessage, this.defaultRejectMessage);
+        this.rejectToastSpec = this.getRejectToastSpec(config.rejectToastSpec);
+        this.maskOnDrag = withDefault(config.maskOnDrag, true);
+        this.maskOnDisabled = withDefault(config.maskOnDisabled, true);
+        this.emptyDisplayText = config.emptyDisplayText;
+        this.emptyDisplayHint = config.emptyDisplayHint;
     }
 
     /** Open the file browser programmatically. Typically used in a button's onClick callback.*/
@@ -153,16 +153,16 @@ export class FileChooserModel extends HoistModel {
     // Event Handlers
     //------------------------
     async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]>) {
-        const {files, maxCount, rejectToastMessage, validateFilesAsync} = this,
+        const {files, maxFiles, rejectToastMessage, validateFilesAsync} = this,
             currFileCount = files.length,
             acceptCount = accepted.length,
             rejectCount = rejected.length;
 
-        if (currFileCount + acceptCount + rejectCount > maxCount) {
+        if (currFileCount + acceptCount + rejectCount > maxFiles) {
             XH.warningToast(
-                maxCount === 1
+                maxFiles === 1
                     ? 'Only one file allowed for upload.'
-                    : `File limit of ${maxCount} exceeded.`
+                    : `File limit of ${maxFiles} exceeded.`
             );
             return;
         }
@@ -220,19 +220,6 @@ export class FileChooserModel extends HoistModel {
         return {
             intent: 'danger',
             timeout: 10000,
-            ...params
-        };
-    }
-
-    private getEmptyDisplayBrowseButtonProps(params: Partial<ButtonProps> | boolean): ButtonProps {
-        if (params == false) return null;
-        if (params == true) params = {};
-        return {
-            text: 'Browse',
-            intent: 'primary',
-            outlined: true,
-            disabled: this.disabled,
-            onClick: () => this.openFileBrowser(),
             ...params
         };
     }

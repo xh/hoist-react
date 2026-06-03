@@ -57,7 +57,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
         className,
         ...props
     }) {
-        const {accept, disabled, maxCount, maxFileSize, minFileSize, maskOnDrag, maskOnDisabled} =
+        const {accept, disabled, maxFiles, maxFileSize, minFileSize, maskOnDrag, maskOnDisabled} =
                 model,
             dropzoneItem =
                 isEmpty(model.files) && emptyDisplay != null
@@ -68,8 +68,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
             ref: model.dropzoneRef,
             accept,
             disabled,
-            maxFiles: maxCount,
-            multiple: !maxCount || maxCount > 1,
+            maxFiles,
+            multiple: !maxFiles || maxFiles > 1,
             noClick: true,
             maxSize: maxFileSize,
             minSize: minFileSize,

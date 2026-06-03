@@ -1,0 +1,13 @@
+.xh-file-chooser__browse-link {
+  color: var(--xh-intent-primary);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.xh-file-chooser__empty-hint {
+  font-size: var(--xh-font-size-small);
+  color: var(--xh-text-color-muted);
+}
