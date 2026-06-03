@@ -107,7 +107,14 @@ export class ColumnChooserBucketModel extends HoistModel {
                             icon: Icon.checkSquare(),
                             displayFn: ({record}) => {
                                 if (!record.data.hideable) {
-                                    return {icon: Icon.lock(), disabled: true};
+                                    if (record.isSummary) {
+                                        return {hidden: true};
+                                    }
+
+                                    return {
+                                        icon: Icon.lock(),
+                                        disabled: true
+                                    };
                                 }
 
                                 const {visible} = record.data;
