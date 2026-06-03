@@ -101,6 +101,7 @@ export class ColumnChooserBucketModel extends HoistModel {
                 {
                     ...actionCol,
                     width: calcActionColWidth(1),
+                    actionsShowOnSummaryRow: true,
                     actions: [
                         {
                             icon: Icon.checkSquare(),
@@ -108,10 +109,12 @@ export class ColumnChooserBucketModel extends HoistModel {
                                 if (!record.data.hideable) {
                                     return {icon: Icon.lock(), disabled: true};
                                 }
+
                                 const {visible} = record.data;
                                 if (visible === null) {
                                     return {icon: Icon.squareMinus()};
                                 }
+
                                 return visible
                                     ? {icon: Icon.checkSquare(), intent: 'primary'}
                                     : {icon: Icon.square(), intent: null};

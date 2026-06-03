@@ -409,7 +409,7 @@ export class ColumnChooserModel extends HoistModel {
     ): ColumnChooserData {
         const {gridModel} = this,
             hideableLeaves = slice.filter(cs => {
-                const col = gridModel.findColumn(gridModel.columns, cs.colId);
+                const col = gridModel.getColumn(cs.colId);
                 return col && !col.excludeFromChooser && col.hideable;
             }),
             hiddenCount = hideableLeaves.filter(cs => cs.hidden).length,

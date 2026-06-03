@@ -521,6 +521,24 @@ export class AgGridModel extends HoistModel {
         return ret;
     }
 
+    getPinnedRowNode(id: string): IRowNode {
+        let match: IRowNode = null;
+        const {agApi} = this,
+            findMatch = (node: IRowNode) => {
+                if (node.id === id) {
+                    match = node;
+                }
+            };
+
+        agApi.forEachPinnedRow('top', findMatch);
+
+        if (match) return match;
+
+        agApi.forEachPinnedRow('bottom', findMatch);
+
+        return match;
+    }
+
     /**
      * Sets the data used for rows which appear pinned to the top of the grid
      * @param data - the data to pin at the top of the grid

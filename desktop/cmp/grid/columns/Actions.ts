@@ -41,11 +41,11 @@ export const actionCol: ColumnSpec = {
     filterable: false,
     excludeFromExport: true,
     rendererIsComplex: true,
-    renderer: (value, {record, column}) => {
-        if (!record || record?.isSummary) return null;
+    renderer: (_, {record, column}) => {
+        if (!record) return null;
 
-        const {actions, actionsShowOnHoverOnly, gridModel} = column;
-        if (isEmpty(actions)) return null;
+        const {actions, actionsShowOnHoverOnly, actionsShowOnSummaryRow, gridModel} = column;
+        if ((record.isSummary && !actionsShowOnSummaryRow) || isEmpty(actions)) return null;
 
         const buttons = actions.map(it => {
             const action = it instanceof RecordAction ? it : new RecordAction(it);
