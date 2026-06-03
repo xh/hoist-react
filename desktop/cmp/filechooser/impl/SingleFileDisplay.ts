@@ -7,9 +7,11 @@ import {filesize} from 'filesize';
 import {MouseEvent} from 'react';
 import './SingleFileDisplay.scss';
 
-// Default display for single-file mode (`maxFiles === 1`) - a compact "resolved" card that mirrors
-// the empty target but shows the selected file. The surface itself remains a click/drop target to
-// replace the file, with an explicit action to clear it back to the empty state.
+/**
+ * Default display for single-file mode (`maxFiles === 1`) - a compact "resolved" card that mirrors
+ * the empty target but shows the selected file. The surface itself remains a click/drop target to
+ * replace the file, with an explicit action to clear it back to the empty state.
+ */
 export const singleFileDisplay = hoistCmp.factory({
     model: uses(() => FileChooserModel),
     render({model}) {

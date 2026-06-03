@@ -22,8 +22,10 @@ export const defaultEmptyDisplay = hoistCmp.factory({
 const HINT_EXTS_FULL = 4;
 const HINT_EXTS_COLLAPSED = 3;
 
-// Hint line - the configured `emptyDisplayHint`, or (by default) a terse summary of the configured
-// constraints (accepted types, size and count limits). Omitted entirely when empty.
+/**
+ * Hint line - the configured `emptyDisplayHint`, or (by default) a terse summary of the configured
+ * constraints (accepted types, size and count limits). Omitted entirely when empty.
+ */
 const emptyHint = hoistCmp.factory({
     model: uses(() => FileChooserModel),
     render({model}) {
