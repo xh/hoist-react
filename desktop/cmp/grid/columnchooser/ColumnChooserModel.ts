@@ -35,6 +35,8 @@ export interface ColumnChooserData {
     visible: boolean | null;
     isGroup: boolean;
     hideable: boolean;
+    /** False to prevent drag-and-drop reordering and pinning - renders a lock icon. */
+    movable: boolean;
     parentId: string;
     sortOrder: number;
     leafColIds: string[];
@@ -342,6 +344,9 @@ export class ColumnChooserModel extends HoistModel {
         const data = agParams.node?.data?.data as ColumnChooserData | undefined;
         if (!data) return [];
 
+        // Immovable columns are fixed - no pin/unpin actions.
+        if (!data.movable) return [];
+
         const {leafColIds} = data;
         const items: GridContextMenuItemLike[] = [];
 
@@ -425,6 +430,7 @@ export class ColumnChooserModel extends HoistModel {
             visible,
             isGroup: false,
             hideable: total > 0,
+            movable: false,
             parentId: null,
             sortOrder: -1,
             leafColIds: hideableLeaves.map(cs => cs.colId)
@@ -460,7 +466,7 @@ export class ColumnChooserModel extends HoistModel {
         buildParentChains(gridModel.columns, []);
 
         // 1) Walk columnState in order, creating leaf and group records
-        const records: ColumnChooserData[] = [],
+        const data: ColumnChooserData[] = [],
             groupInstanceCounts = new Map<string, number>(),
             activeGroups: (string | null)[] = [];
 
@@ -492,13 +498,14 @@ export class ColumnChooserModel extends HoistModel {
                     parentInstanceId =
                         d > 0 ? this.getActiveGroupId(chain, d - 1, groupInstanceCounts) : null;
 
-                records.push({
+                data.push({
                     id: instanceId,
                     name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
                     description: '',
                     visible: false,
                     isGroup: true,
                     hideable: false,
+                    movable: true,
                     parentId: parentInstanceId,
                     sortOrder: i,
                     leafColIds: []
@@ -513,13 +520,14 @@ export class ColumnChooserModel extends HoistModel {
                     ? this.getActiveGroupId(chain, chain.length - 1, groupInstanceCounts)
                     : null;
 
-            records.push({
+            data.push({
                 id: cs.colId,
                 name: col.chooserName,
                 description: col.chooserDescription ?? '',
                 visible: !cs.hidden,
                 isGroup: false,
                 hideable: col.hideable,
+                movable: col.movable,
                 parentId: parentInstanceId,
                 sortOrder: i,
                 leafColIds: [cs.colId]
@@ -527,20 +535,26 @@ export class ColumnChooserModel extends HoistModel {
         }
 
         // 2) Populate group leafColIds and derive visibility from actual children
-        const recordMap = new Map(records.map(r => [r.id, r]));
-        for (const rec of records) {
-            if (!rec.isGroup) continue;
-            rec.leafColIds = this.collectLeafColIds(rec, recordMap);
+        const columnDataMap = new Map(data.map(r => [r.id, r]));
+        data.forEach(it => {
+            if (!it.isGroup) return;
 
-            const hiddenCount = rec.leafColIds.filter(id => stateById.get(id)?.hidden).length;
-            const total = rec.leafColIds.length;
-            rec.visible = hiddenCount === 0 ? true : hiddenCount === total ? false : null;
-            rec.hideable = rec.leafColIds.some(id => {
-                return gridModel.findColumn(gridModel.columns, id)?.hideable;
+            it.leafColIds = this.collectLeafColIds(it, columnDataMap);
+
+            const hiddenCount = it.leafColIds.filter(id => stateById.get(id)?.hidden).length;
+            it.visible =
+                hiddenCount === 0 ? true : hiddenCount === it.leafColIds.length ? false : null;
+
+            it.hideable = it.leafColIds.some(id => {
+                return gridModel.getColumn(id)?.hideable;
             });
-        }
 
-        return records;
+            it.movable = it.leafColIds.every(id => {
+                return gridModel.getColumn(id)?.movable;
+            });
+        });
+
+        return data;
     }
 
     private getActiveGroupId(

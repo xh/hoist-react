@@ -70,6 +70,7 @@ export class ColumnChooserBucketModel extends HoistModel {
                     {name: 'visible', type: 'auto'},
                     {name: 'isGroup', type: 'bool'},
                     {name: 'hideable', type: 'bool'},
+                    {name: 'movable', type: 'bool'},
                     {name: 'parentId', type: 'string'},
                     {name: 'sortOrder', type: 'int'},
                     {name: 'leafColIds', type: 'json'}
@@ -88,6 +89,7 @@ export class ColumnChooserBucketModel extends HoistModel {
                 {
                     field: 'name',
                     isTreeColumn: true,
+                    rendererIsComplex: true,
                     flex: 1,
                     agOptions: {
                         cellRendererParams: {
@@ -205,15 +207,24 @@ export const NameCell = hoistCmp<NameCellProps>(({registerRowDragger, data: reco
         });
     }
 
+    // Immovable columns render a lock icon and omit the drag handle (ref unset -> never
+    // registered as a row dragger), so the row cannot be dragged.
+    const movable = record?.data?.movable !== false;
+
     return hbox({
         alignItems: 'center',
         items: [
-            span({
-                ref,
-                className: 'xh-column-chooser__drag-handle',
-                item: Icon.grip({prefix: 'fas'})
-            }),
-            record?.data.name ?? ''
+            movable
+                ? span({
+                      ref,
+                      className: 'xh-column-chooser__drag-handle',
+                      item: Icon.grip({prefix: 'fas'})
+                  })
+                : span({
+                      className: 'xh-column-chooser__lock',
+                      item: Icon.lock()
+                  }),
+            record?.data?.name ?? ''
         ]
     });
 });
