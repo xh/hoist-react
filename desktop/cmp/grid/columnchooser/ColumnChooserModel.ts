@@ -6,14 +6,11 @@
  */
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
-import type {GridContextMenuItemLike} from '@xh/hoist/cmp/grid/GridContextMenu';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
-import type {HSide} from '@xh/hoist/core';
+import type {HSide, Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {RecordAction} from '@xh/hoist/data';
-import {Icon} from '@xh/hoist/icon';
+import {StoreRecordId} from '@xh/hoist/data';
 import type {
-    GetContextMenuItemsParams,
     GridOptions,
     IsRowValidDropPositionParams,
     IsRowValidDropPositionResult,
@@ -22,7 +19,7 @@ import type {
 } from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {logWithInfo, withDefault} from '@xh/hoist/utils/js';
-import {findLastIndex, isEmpty} from 'lodash';
+import {castArray, findLastIndex, isEmpty} from 'lodash';
 
 import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 
@@ -70,16 +67,6 @@ export class ColumnChooserModel extends HoistModel {
     //---------------------
     get buckets(): ColumnChooserBucketModel[] {
         return [this.leftBucket, this.unpinnedBucket, this.rightBucket];
-    }
-
-    /** Description of the currently selected column (across any bucket), or empty string. */
-    @computed
-    get selectedDescription(): string {
-        for (const b of this.buckets) {
-            const desc = b.selectedData?.description;
-            if (desc) return desc;
-        }
-        return '';
     }
 
     /** True when the target grid has at least one column group. */
@@ -190,18 +177,23 @@ export class ColumnChooserModel extends HoistModel {
     }
 
     @logWithInfo
-    toggleVisibility(recordId: string, bucket: ColumnChooserBucketModel) {
+    toggleVisibility(recordId: Some<StoreRecordId>, bucket: ColumnChooserBucketModel) {
         const {gridModel} = this;
         if (!gridModel) return;
 
-        const record = bucket.chooserGridModel.store.getById(recordId);
-        if (!record || !record.data.hideable) return;
+        const {store} = bucket.chooserGridModel,
+            updates: Partial<ColumnState>[] = [];
 
-        // Hide when fully or partially visible (true/null); show when fully hidden (false)
-        const newHidden = record.data.visible !== false,
-            {leafColIds} = record.data;
+        for (const id of castArray(recordId)) {
+            const record = store.getById(id);
+            if (!record || !record.data.hideable) continue;
 
-        gridModel.updateColumnState(leafColIds.map(colId => ({colId, hidden: newHidden})));
+            // Hide when fully or partially visible (true/null); show when fully hidden (false)
+            const newHidden = record.data.visible !== false;
+            record.data.leafColIds.forEach(colId => updates.push({colId, hidden: newHidden}));
+        }
+
+        gridModel.updateColumnState(updates);
     }
 
     /**
@@ -333,51 +325,6 @@ export class ColumnChooserModel extends HoistModel {
                 if (id) this.toggleVisibility(id, bucket);
             }
         };
-    }
-
-    /** Build context-menu items for a row in a given bucket. */
-    buildContextMenuItems(
-        agParams: GetContextMenuItemsParams,
-        _gridModel: GridModel,
-        bucket: ColumnChooserBucketModel
-    ): GridContextMenuItemLike[] {
-        const data = agParams.node?.data?.data as ColumnChooserData | undefined;
-        if (!data) return [];
-
-        // Immovable columns are fixed - no pin/unpin actions.
-        if (!data.movable) return [];
-
-        const {leafColIds} = data;
-        const items: GridContextMenuItemLike[] = [];
-
-        if (bucket.pinned !== 'left') {
-            items.push(
-                new RecordAction({
-                    text: 'Pin Left',
-                    icon: Icon.pin(),
-                    actionFn: () => this.setPinned(leafColIds, 'left')
-                })
-            );
-        }
-        if (bucket.pinned !== 'right') {
-            items.push(
-                new RecordAction({
-                    text: 'Pin Right',
-                    icon: Icon.pin(),
-                    actionFn: () => this.setPinned(leafColIds, 'right')
-                })
-            );
-        }
-        if (bucket.pinned != null) {
-            items.push(
-                new RecordAction({
-                    text: 'Unpin',
-                    icon: Icon.x(),
-                    actionFn: () => this.setPinned(leafColIds, null)
-                })
-            );
-        }
-        return items;
     }
 
     /** When a bucket gains a selection, clear selection on the other buckets. */

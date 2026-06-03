@@ -69,11 +69,6 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                     side: 'right',
                     omit: !impl.enableColumnPinning
                 }),
-                box({
-                    className: 'xh-column-chooser__description',
-                    omit: !impl.selectedDescription,
-                    item: impl.selectedDescription
-                }),
                 toolbar({
                     items: [
                         button({

@@ -17,7 +17,9 @@ import type {
     IsRowValidDropPositionParams,
     RowDragEndEvent
 } from '@xh/hoist/kit/ag-grid';
+import {tooltip} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
+import {isEmpty} from 'lodash';
 import {useEffect, useRef} from 'react';
 
 import type {ColumnChooserData, ColumnChooserModel} from './ColumnChooserModel';
@@ -79,12 +81,23 @@ export class ColumnChooserBucketModel extends HoistModel {
             sortBy: 'sortOrder',
             emptyText,
             hideEmptyTextBeforeLoad: false,
-            selModel: 'single',
+            selModel: 'multiple',
             hideHeaders: true,
-            cellBorders: true,
+            rowBorders: true,
+            onKeyDown: e => {
+                const {selectedRecords} = this.chooserGridModel;
+                if (isEmpty(selectedRecords)) return;
+
+                if (e.code === 'Space') {
+                    this.parent.toggleVisibility(
+                        selectedRecords.map(rec => rec.id),
+                        this
+                    );
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            },
             clicksToExpand: 0,
-            contextMenu: (agParams, gridModel) =>
-                parent.buildContextMenuItems(agParams, gridModel, this),
             columns: [
                 {
                     field: 'name',
@@ -224,7 +237,12 @@ export const NameCell = hoistCmp<NameCellProps>(({registerRowDragger, data: reco
                       className: 'xh-column-chooser__lock',
                       item: Icon.lock()
                   }),
-            record?.data?.name ?? ''
+            tooltip({
+                item: record?.data?.name ?? '',
+                content: record?.data?.description,
+                minimal: true,
+                disabled: isEmpty(record?.data?.description)
+            })
         ]
     });
 });
