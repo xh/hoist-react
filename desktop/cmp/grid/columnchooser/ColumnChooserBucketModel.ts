@@ -4,13 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {useEffect, useRef} from 'react';
-
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {StoreRecord} from '@xh/hoist/data';
 import type {HSide} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, HoistProps, managed} from '@xh/hoist/core';
+import {StoreRecord} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import type {
@@ -20,12 +18,15 @@ import type {
     RowDragEndEvent
 } from '@xh/hoist/kit/ag-grid';
 import {computed, makeObservable} from '@xh/hoist/mobx';
+import {useEffect, useRef} from 'react';
 
 import type {ColumnChooserData, ColumnChooserModel} from './ColumnChooserModel';
 
 export interface ColumnChooserBucketConfig {
     parent: ColumnChooserModel;
     pinned: HSide | null;
+    /** Label shown in the bucket's docked summary header row. */
+    summaryName: string;
     emptyText: string;
 }
 
@@ -39,6 +40,7 @@ export class ColumnChooserBucketModel extends HoistModel {
 
     readonly parent: ColumnChooserModel;
     readonly pinned: HSide | null;
+    readonly summaryName: string;
 
     @managed
     chooserGridModel: GridModel;
@@ -48,15 +50,17 @@ export class ColumnChooserBucketModel extends HoistModel {
         return this.parent.buildAgOptions(this);
     }
 
-    constructor({parent, pinned, emptyText}: ColumnChooserBucketConfig) {
+    constructor({parent, pinned, summaryName, emptyText}: ColumnChooserBucketConfig) {
         super();
         makeObservable(this);
         this.parent = parent;
         this.pinned = pinned;
+        this.summaryName = summaryName;
 
         this.chooserGridModel = new GridModel({
             treeMode: true,
             treeStyle: 'none',
+            showSummary: 'top',
             expandLevel: -1,
             store: {
                 idSpec: 'id',
@@ -172,6 +176,7 @@ export class ColumnChooserBucketModel extends HoistModel {
 //------------------
 // Cell Renderers
 //------------------
+
 interface NameCellProps extends HoistProps, ICellRendererParams<StoreRecord> {}
 
 /** Inner renderer for the name (tree) column - grip drag handle + column name. */
@@ -181,6 +186,14 @@ export const NameCell = hoistCmp<NameCellProps>(({registerRowDragger, data: reco
     useEffect(() => {
         if (ref.current) registerRowDragger(ref.current);
     }, [registerRowDragger]);
+
+    // Summary header rows show a styled label only - no drag handle.
+    if (record?.isSummary) {
+        return span({
+            className: 'xh-column-chooser__summary-name',
+            item: record.data.name ?? ''
+        });
+    }
 
     return hbox({
         alignItems: 'center',

@@ -4,15 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {findLastIndex, isEmpty} from 'lodash';
-
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
-import {RecordAction} from '@xh/hoist/data';
-import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import type {GridContextMenuItemLike} from '@xh/hoist/cmp/grid/GridContextMenu';
+import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import type {HSide} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
+import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import type {
     GetContextMenuItemsParams,
@@ -23,7 +21,8 @@ import type {
     RowDropTargetPosition
 } from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {withDefault} from '@xh/hoist/utils/js';
+import {logWithInfo, withDefault} from '@xh/hoist/utils/js';
+import {findLastIndex, isEmpty} from 'lodash';
 
 import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
 
@@ -126,16 +125,19 @@ export class ColumnChooserModel extends HoistModel {
         this.leftBucket = new ColumnChooserBucketModel({
             parent: this,
             pinned: 'left',
+            summaryName: 'Left Pinned',
             emptyText: 'Drop a column here to pin left'
         });
         this.unpinnedBucket = new ColumnChooserBucketModel({
             parent: this,
             pinned: null,
+            summaryName: 'Unpinned',
             emptyText: 'No columns'
         });
         this.rightBucket = new ColumnChooserBucketModel({
             parent: this,
             pinned: 'right',
+            summaryName: 'Right Pinned',
             emptyText: 'Drop a column here to pin right'
         });
     }
@@ -185,6 +187,7 @@ export class ColumnChooserModel extends HoistModel {
         gridModel.updateColumnState(leaves.map(r => ({colId: r.data.id, hidden: shouldHide})));
     }
 
+    @logWithInfo
     toggleVisibility(recordId: string, bucket: ColumnChooserBucketModel) {
         const {gridModel} = this;
         if (!gridModel) return;
@@ -300,7 +303,7 @@ export class ColumnChooserModel extends HoistModel {
         if (!sourceData) return;
 
         const {target, position} = this.resolveCrossBucketDropTarget(event, targetBucket);
-        this.moveAcrossBuckets(sourceBucket, targetBucket, sourceData, target, position);
+        this.moveAcrossBuckets(targetBucket, sourceData, target, position);
     }
 
     async restoreDefaultsAsync() {
@@ -382,6 +385,7 @@ export class ColumnChooserModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
+    @logWithInfo
     @action
     private syncFromGridModel(columnState?: ColumnState[]) {
         if (!this.gridModel) return;
@@ -389,25 +393,42 @@ export class ColumnChooserModel extends HoistModel {
         for (const bucket of this.buckets) {
             const slice = cs.filter(c => (c.pinned ?? null) === bucket.pinned);
             const data = this.buildData(slice);
-            this.loadBucketData(bucket, data, this.showGroups);
+            const summary = this.buildBucketSummary(bucket, slice);
+            this.loadBucketData(bucket, data, summary, this.showGroups);
         }
     }
 
-    private applyFilter(filterText: string) {
-        const filter = filterText
-            ? rec => {
-                  const lower = filterText.toLowerCase();
-                  if (!rec.data.isGroup) {
-                      return rec.data.name?.toLowerCase().includes(lower);
-                  }
-                  return rec.data.leafColIds?.some(colId => {
-                      const leaf = rec.store.getById(colId);
-                      return leaf?.data.name?.toLowerCase().includes(lower);
-                  });
-              }
-            : null;
+    /**
+     * Build the docked summary header record for a bucket. Its `name` labels the bucket and its
+     * `visible` field is the bucket-scoped aggregate visibility (true/false/null). Toggling it
+     * applies to all hideable leaf columns in the bucket via {@link toggleVisibility}.
+     */
+    private buildBucketSummary(
+        bucket: ColumnChooserBucketModel,
+        slice: ColumnState[]
+    ): ColumnChooserData {
+        const {gridModel} = this,
+            hideableLeaves = slice.filter(cs => {
+                const col = gridModel.findColumn(gridModel.columns, cs.colId);
+                return col && !col.excludeFromChooser && col.hideable;
+            }),
+            hiddenCount = hideableLeaves.filter(cs => cs.hidden).length,
+            total = hideableLeaves.length;
 
-        for (const b of this.buckets) b.chooserGridModel.store.setFilter(filter);
+        const visible =
+            total === 0 ? false : hiddenCount === 0 ? true : hiddenCount === total ? false : null;
+
+        return {
+            id: `summary-${bucket.pinned ?? 'none'}`,
+            name: bucket.summaryName,
+            description: '',
+            visible,
+            isGroup: false,
+            hideable: total > 0,
+            parentId: null,
+            sortOrder: -1,
+            leafColIds: hideableLeaves.map(cs => cs.colId)
+        };
     }
 
     /**
@@ -535,13 +556,14 @@ export class ColumnChooserModel extends HoistModel {
     private loadBucketData(
         bucket: ColumnChooserBucketModel,
         data: ColumnChooserData[],
+        summary: ColumnChooserData,
         showGroups: boolean
     ) {
         const leaves = data.filter(r => !r.isGroup),
             leafIdSet = new Set(leaves.map(r => r.id));
 
         if (!showGroups) {
-            bucket.chooserGridModel.store.loadData(leaves);
+            bucket.chooserGridModel.store.loadData(leaves, summary);
             return;
         }
 
@@ -566,7 +588,7 @@ export class ColumnChooserModel extends HoistModel {
             rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
             rootData = [...rootGroups, ...rootLeaves].map(buildNested);
 
-        bucket.chooserGridModel.store.loadData(rootData);
+        bucket.chooserGridModel.store.loadData(rootData, summary);
     }
 
     /** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
@@ -749,7 +771,6 @@ export class ColumnChooserModel extends HoistModel {
      * splices them into the target bucket's slice at the resolved drop position.
      */
     private moveAcrossBuckets(
-        sourceBucket: ColumnChooserBucketModel,
         targetBucket: ColumnChooserBucketModel,
         sourceData: ColumnChooserData,
         targetData: ColumnChooserData | null,

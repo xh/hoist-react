@@ -18,29 +18,18 @@
     align-items: center;
   }
 
-  &__bucket-panel {
-    --xh-panel-title-bg: var(--xh-grid-bg-odd);
-    --xh-title-compact-font-size-px: var(--xh-font-size-small-px);
-    --xh-title-icon-size-px: var(--xh-font-size-small-px);
-    --xh-panel-title-text-color: var(--xh-gray);
-
-    .xh-panel-header {
-      border-bottom: var(--xh-border-solid);
+  &__bucket {
+    .ag-row-pinned {
+      --xh-grid-bg: var(--xh-title-bg);
+      --xh-grid-total-row-bg: var(--xh-title-bg);
+      font-size: var(--xh-font-size-small-px);
       text-transform: uppercase;
-
-      svg {
-        margin-right: var(--xh-pad-half-px);
-      }
     }
   }
 
-  // Auto-height pinned column buckets
-  &__bucket--left,
-  &__bucket--right {
-    // ag-grid adding some padding here initially for some reason
-    .ag-overlay-no-rows-wrapper {
-      padding-top: 0 !important;
-    }
+  // Docked summary row acts as a bucket header band
+  .ag-floating-top {
+    background: var(--xh-grid-bg-odd);
   }
 
   &__drag-handle {
