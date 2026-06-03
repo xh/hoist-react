@@ -57,6 +57,18 @@
   "env": {
     "ENABLE_LSP_TOOL": "1"
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  },
   "attribution": {
     "commit": "",
     "pr": ""
