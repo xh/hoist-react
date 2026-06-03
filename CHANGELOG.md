@@ -34,13 +34,13 @@
 
 ### 🎁 New Features
 
-* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit
-  (see [#3570](https://github.com/xh/hoist-react/issues/3570)), fully customizable `emptyDisplay` /
-  `fileDisplay` content, async file validation via `validateFilesAsync`, `onFileAccepted` /
-  `onFileRejected` callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled`
-  options, and a programmatic `openFileBrowser()` method. In multi-file mode a persistent drop
-  target sits alongside the grid - placement set via the `dropTargetPlacement` prop (`left`, `top`,
-  or `hidden`) - so users can keep adding files until the limit is reached.
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit,
+  fully customizable `emptyDisplay` / `fileDisplay` content, async file validation via
+  `validateFilesAsync`, `onFileAccepted` / `onFileRejected` callbacks, configurable rejection
+  toasts, `maskOnDrag` / `maskOnDisabled` options, and a programmatic `openFileBrowser()` method.
+  In multi-file mode a persistent drop target sits alongside the grid - placement set via the
+  `dropTargetPlacement` prop (`left`, `top`, or `hidden`) - so users can keep adding files until
+  the limit is reached.
 * Added the `Runner` API - a fluent builder (via `HoistBase.runner()`) that composes spanning,
   logging, activity tracking, metrics, and task-linking around async work and fetch calls. It
   threads a shared `CallContext` (trace + load state) across call boundaries, which fetch methods
