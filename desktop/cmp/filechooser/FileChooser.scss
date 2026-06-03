@@ -1,3 +1,21 @@
 .xh-file-chooser__target--clickable {
   cursor: pointer;
 }
+
+.xh-file-chooser__target--disabled {
+  opacity: 0.5;
+}
+
+.xh-file-chooser__target--side-left {
+  border-right: var(--xh-border-solid);
+}
+
+.xh-file-chooser__target--side-top {
+  border-bottom: var(--xh-border-solid);
+}
+
+.xh-file-chooser__target-count {
+  margin-top: var(--xh-pad-px);
+  font-size: var(--xh-font-size-small-px);
+  color: var(--xh-text-color-muted);
+}
