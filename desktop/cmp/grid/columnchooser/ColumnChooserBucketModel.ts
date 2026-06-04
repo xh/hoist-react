@@ -4,25 +4,43 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
+import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
+import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import type {HSide} from '@xh/hoist/core';
+import type {HSide, Some} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, HoistProps, managed} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import type {
     GridOptions,
     ICellRendererParams,
     IsRowValidDropPositionParams,
-    RowDragEndEvent
+    IsRowValidDropPositionResult,
+    RowDragEndEvent,
+    RowDropTargetPosition
 } from '@xh/hoist/kit/ag-grid';
 import {tooltip} from '@xh/hoist/kit/blueprint';
-import {computed, makeObservable} from '@xh/hoist/mobx';
-import {isEmpty} from 'lodash';
+import {castArray, findLastIndex, isEmpty} from 'lodash';
 import {useEffect, useRef} from 'react';
 
-import type {ColumnChooserData, ColumnChooserModel} from './ColumnChooserModel';
+import type {ColumnChooserModel} from './ColumnChooserModel';
+
+/** Shape of record data in the ColumnChooser's internal grid. */
+export interface ColumnChooserData {
+    id: string;
+    name: string;
+    description: string;
+    /** true = all visible, false = none visible, null = indeterminate (mixed). */
+    visible: boolean | null;
+    isGroup: boolean;
+    hideable: boolean;
+    movable: boolean;
+    parentId: string;
+    sortOrder: number;
+    leafColIds: string[];
+}
 
 export interface ColumnChooserBucketConfig {
     parent: ColumnChooserModel;
@@ -34,8 +52,9 @@ export interface ColumnChooserBucketConfig {
 
 /**
  * Per-bucket model backing a single chooser grid (pinned-left, unpinned, or pinned-right).
- * The parent {@link ColumnChooserModel} drives data partitioning, mutation, and cross-cutting
- * state — buckets just own their {@link GridModel} and proxy drag/drop callbacks to the parent.
+ * Owns its slice of the target grid's columnState - building chooser records, validating and
+ * handling drag/drop, and toggling visibility. The parent {@link ColumnChooserModel}
+ * orchestrates the buckets, providing the target GridModel and the state commit chokepoint.
  */
 export class ColumnChooserBucketModel extends HoistModel {
     override xhImpl = true;
@@ -47,25 +66,438 @@ export class ColumnChooserBucketModel extends HoistModel {
     @managed
     chooserGridModel: GridModel;
 
-    @computed
+    /** The target GridModel whose columns this bucket manages. */
+    get gridModel(): GridModel {
+        return this.parent.gridModel;
+    }
+
     get agOptions(): GridOptions {
-        return this.parent.buildAgOptions(this);
+        return {
+            suppressMoveWhenRowDragging: true,
+            suppressGroupRowsSticky: true,
+            rowDragText: params => getChooserData(params.rowNode)?.name ?? '',
+            isRowValidDropPosition: params => this.getValidDropPosition(params),
+            onRowDragEnd: event => this.handleRowDragEnd(event),
+            onCellDoubleClicked: event => {
+                // Only toggle from the name column, and not from the tree expand/collapse caret
+                if (event.column?.getColId() !== 'name') return;
+                const target = event.event?.target as HTMLElement;
+                if (target?.closest('.ag-group-expanded, .ag-group-contracted')) return;
+
+                const id = event.data?.data?.id;
+                if (id) this.toggleVisibility(id);
+            }
+        };
     }
 
     constructor({parent, pinned, summaryName, emptyText}: ColumnChooserBucketConfig) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.pinned = pinned;
         this.summaryName = summaryName;
 
-        this.chooserGridModel = new GridModel({
+        this.chooserGridModel = this.createGridModel(emptyText);
+    }
+
+    /** Rebuild this bucket's chooser records from the given (full) columnState. */
+    syncFromState(columnState: ColumnState[], showGroups: boolean) {
+        const slice = columnState.filter(cs => (cs.pinned ?? null) === this.pinned);
+        this.loadData(this.buildData(slice), this.buildSummary(slice), showGroups);
+    }
+
+    toggleVisibility(recordIds: Some<StoreRecordId>) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const {store} = this.chooserGridModel,
+            updates: Partial<ColumnState>[] = [];
+
+        castArray(recordIds).forEach(id => {
+            const record = store.getById(id);
+            if (!record || !record.data.hideable) return;
+
+            // Hide when fully or partially visible (true/null); show when fully hidden (false)
+            const hidden = record.data.visible !== false;
+            record.data.leafColIds.forEach(colId => updates.push({colId, hidden}));
+        });
+
+        gridModel.updateColumnState(updates);
+    }
+
+    /**
+     * Validate a proposed drop position during unmanaged row dragging within this bucket.
+     */
+    getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
+        const sourceData = getChooserData(params.source);
+        let target = params.target,
+            {position} = params;
+
+        // When the cursor is past the last row in a tree with expanded groups, ag-grid walks
+        // target up to the outermost ancestor group — which makes the drop-indicator line
+        // render under that group header instead of under the actual last leaf. Re-pin target
+        // to the last displayed row.
+        if (!params.overNode) {
+            const lastRow = this.getLastDisplayedRow();
+            if (lastRow) {
+                target = lastRow;
+                position = 'below';
+            }
+        }
+
+        const targetData = getChooserData(target);
+        if (!sourceData || !targetData) return {allowed: false};
+        if (sourceData.id === targetData.id) return {allowed: false};
+
+        // Can't drop "inside" a leaf — treat as "below"
+        if (position === 'inside' && !targetData.isGroup) {
+            position = 'below';
+        }
+
+        // Prevent dropping a group inside itself
+        if (sourceData.isGroup && this.isDescendantOf(targetData.id, sourceData.id)) {
+            return {allowed: false};
+        }
+
+        // Enforce lockColumnGroups constraints within this bucket
+        if (
+            this.gridModel.lockColumnGroups &&
+            !this.isValidLockedDrop(sourceData, targetData, position)
+        ) {
+            return {allowed: false};
+        }
+
+        return {allowed: true, highlight: true, position, target};
+    }
+
+    /** Handle intra-bucket drag end. */
+    handleRowDragEnd(event: RowDragEndEvent) {
+        const sourceData = getChooserData(event.node);
+        if (!sourceData) return;
+
+        const dropInfo = event.rowsDrop;
+        if (!dropInfo || !dropInfo.allowed) return;
+
+        const targetData = getChooserData(dropInfo.target);
+        if (!targetData) return;
+
+        const {position} = dropInfo;
+        if (position === 'none') return;
+
+        this.moveColumns(sourceData, targetData, position);
+    }
+
+    /** Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. */
+    handleCrossBucketDrop(event: RowDragEndEvent, sourceBucket: ColumnChooserBucketModel) {
+        if (sourceBucket === this) return;
+
+        const sourceData = getChooserData(event.node);
+        if (!sourceData) return;
+
+        const {target, position} = this.resolveDropTarget(event);
+        this.moveColumns(sourceData, target, position);
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+
+    /**
+     * Build the docked summary header record for this bucket. Its `name` labels the bucket and
+     * its `visible` field is the bucket-scoped aggregate visibility (true/false/null). Toggling
+     * it applies to all hideable leaf columns in the bucket via {@link toggleVisibility}.
+     */
+    private buildSummary(slice: ColumnState[]): ColumnChooserData {
+        const {gridModel} = this,
+            hideableLeaves = slice.filter(cs => {
+                const col = gridModel.getColumn(cs.colId);
+                return col && !col.excludeFromChooser && col.hideable;
+            }),
+            hiddenCount = hideableLeaves.filter(cs => cs.hidden).length,
+            total = hideableLeaves.length;
+
+        const visible =
+            total === 0 ? false : hiddenCount === 0 ? true : hiddenCount === total ? false : null;
+
+        return {
+            id: `summary-${this.pinned ?? 'none'}`,
+            name: this.summaryName,
+            description: '',
+            visible,
+            isGroup: false,
+            hideable: total > 0,
+            movable: false,
+            parentId: null,
+            sortOrder: -1,
+            leafColIds: hideableLeaves.map(cs => cs.colId)
+        };
+    }
+
+    /**
+     * Build chooser records from a slice of columnState (this bucket's worth, in display order).
+     *
+     * Iterates the slice (source of truth for display order within the bucket), and for each
+     * leaf column looks up its parent group chain from the column definitions. Adjacent
+     * columns sharing the same group are merged under a single group node. Non-adjacent
+     * columns from the same group produce separate group instances (split groups).
+     *
+     * Group records are created with empty leafColIds in the first pass — a second pass
+     * populates them from actual children so split groups only contain their own leaves.
+     */
+    private buildData(columnState: ColumnState[]): ColumnChooserData[] {
+        const {gridModel} = this,
+            stateById = new Map(columnState.map(cs => [cs.colId, cs])),
+            parentChainMap = buildParentChainMap(gridModel.columns);
+
+        // 1) Walk columnState in order, creating leaf and group records
+        const data: ColumnChooserData[] = [],
+            groupInstanceCounts = new Map<string, number>(),
+            activeGroups: (string | null)[] = [];
+
+        columnState.forEach((state, idx) => {
+            const col = gridModel.findColumn(gridModel.columns, state.colId);
+            if (!col || col.excludeFromChooser) return;
+
+            const chain = parentChainMap.get(state.colId) ?? [];
+
+            // Determine how deep the shared active group chain extends
+            let sharedDepth = 0;
+            for (let d = 0; d < chain.length; d++) {
+                if (activeGroups[d] === chain[d].groupId) {
+                    sharedDepth = d + 1;
+                } else {
+                    break;
+                }
+            }
+            activeGroups.length = sharedDepth;
+
+            // Open new group instances for the rest of the chain
+            for (let d = sharedDepth; d < chain.length; d++) {
+                const group = chain[d],
+                    count = (groupInstanceCounts.get(group.groupId) ?? 0) + 1;
+                groupInstanceCounts.set(group.groupId, count);
+
+                const instanceId = count > 1 ? `${group.groupId}_${count}` : group.groupId,
+                    parentInstanceId =
+                        d > 0 ? getActiveGroupId(chain, d - 1, groupInstanceCounts) : null;
+
+                data.push({
+                    id: instanceId,
+                    name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
+                    description: '',
+                    visible: false,
+                    isGroup: true,
+                    hideable: false,
+                    movable: true,
+                    parentId: parentInstanceId,
+                    sortOrder: idx,
+                    leafColIds: []
+                });
+
+                activeGroups[d] = group.groupId;
+            }
+
+            // Add the leaf column chooser data
+            const parentInstanceId =
+                chain.length > 0
+                    ? getActiveGroupId(chain, chain.length - 1, groupInstanceCounts)
+                    : null;
+
+            data.push({
+                id: state.colId,
+                name: col.chooserName,
+                description: col.chooserDescription ?? '',
+                visible: !state.hidden,
+                isGroup: false,
+                hideable: col.hideable,
+                movable: col.movable,
+                parentId: parentInstanceId,
+                sortOrder: idx,
+                leafColIds: [state.colId]
+            });
+        });
+
+        // 2) Populate group leafColIds and derive visibility from actual children
+        const columnDataMap = new Map(data.map(r => [r.id, r]));
+        data.forEach(it => {
+            if (!it.isGroup) return;
+
+            it.leafColIds = collectLeafColIds(it, columnDataMap);
+
+            const hiddenCount = it.leafColIds.filter(id => stateById.get(id)?.hidden).length;
+            it.visible =
+                hiddenCount === 0 ? true : hiddenCount === it.leafColIds.length ? false : null;
+
+            it.hideable = it.leafColIds.some(id => {
+                return gridModel.getColumn(id)?.hideable;
+            });
+
+            it.movable = it.leafColIds.every(id => {
+                return gridModel.getColumn(id)?.movable;
+            });
+        });
+
+        return data;
+    }
+
+    private loadData(data: ColumnChooserData[], summary: ColumnChooserData, showGroups: boolean) {
+        const {store} = this.chooserGridModel,
+            leaves = data.filter(r => !r.isGroup),
+            leafIdSet = new Set(leaves.map(r => r.id));
+
+        if (!showGroups) {
+            store.loadData(leaves, summary);
+            return;
+        }
+
+        // Tree mode: build nested structure with groups as parents
+        const groups = data.filter(r => r.isGroup && r.leafColIds.some(id => leafIdSet.has(id))),
+            groupIdSet = new Set(groups.map(r => r.id));
+
+        const childrenMap = new Map<string, ColumnChooserData[]>();
+        [...groups, ...leaves].forEach(it => {
+            if (it.parentId && groupIdSet.has(it.parentId)) {
+                if (!childrenMap.has(it.parentId)) childrenMap.set(it.parentId, []);
+                childrenMap.get(it.parentId).push(it);
+            }
+        });
+
+        const buildNested = (r: ColumnChooserData): object => {
+            const children = childrenMap.get(r.id);
+            return children ? {...r, children: children.map(buildNested)} : {...r};
+        };
+
+        const rootGroups = groups.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
+            rootLeaves = leaves.filter(r => !r.parentId || !groupIdSet.has(r.parentId)),
+            rootData = [...rootGroups, ...rootLeaves].map(buildNested);
+
+        store.loadData(rootData, summary);
+    }
+
+    /** Check if a record is a descendant of a potential ancestor in this bucket's tree. */
+    private isDescendantOf(candidateId: string, ancestorId: string): boolean {
+        const {store} = this.chooserGridModel;
+        let current = store.getById(candidateId);
+        while (current?.data.parentId) {
+            if (current.data.parentId === ancestorId) return true;
+            current = store.getById(current.data.parentId);
+        }
+        return false;
+    }
+
+    /**
+     * Validate drop when lockColumnGroups is true (intra-bucket only).
+     *
+     * Simulates the proposed move within this bucket and verifies that every column group's
+     * leaves remain contiguous. Cross-bucket drops bypass this check per spec.
+     */
+    private isValidLockedDrop(
+        source: ColumnChooserData,
+        target: ColumnChooserData,
+        position: RowDropTargetPosition
+    ): boolean {
+        const movingIds = new Set(source.leafColIds),
+            bucketSlice = this.gridModel.columnState.filter(
+                cs => (cs.pinned ?? null) === this.pinned
+            ),
+            remaining = bucketSlice.filter(cs => !movingIds.has(cs.colId)),
+            movingState = bucketSlice.filter(cs => movingIds.has(cs.colId));
+
+        const insertionIndex = computeInsertionIndex(remaining, target, position),
+            simulated = [...remaining];
+        simulated.splice(insertionIndex, 0, ...movingState);
+
+        return areGroupsContiguous(simulated, buildParentChainMap(this.gridModel.columns));
+    }
+
+    /**
+     * Move columns into this bucket at the given drop position - from elsewhere in this bucket
+     * or from another bucket. Updates `pinned` on the moving leaves, splices them into this
+     * bucket's slice, and commits the resulting normalized full state via the parent.
+     */
+    private moveColumns(
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData | null,
+        position: RowDropTargetPosition
+    ) {
+        const {gridModel} = this;
+        if (!gridModel) return;
+
+        const movingIds = new Set(sourceData.leafColIds),
+            slices = partitionByPinned(gridModel.columnState, movingIds),
+            movingState = gridModel.columnState
+                .filter(cs => movingIds.has(cs.colId))
+                .map(cs => ({...cs, pinned: this.pinned}));
+
+        if (!movingState.length) return;
+
+        const targetSlice = slices[this.pinned ?? 'none'],
+            insertionIndex = targetData
+                ? computeInsertionIndex(targetSlice, targetData, position)
+                : targetSlice.length;
+
+        targetSlice.splice(insertionIndex, 0, ...movingState);
+
+        this.parent.commit([...slices.left, ...slices.none, ...slices.right]);
+    }
+
+    /**
+     * Resolve the drop target in this bucket from a cross-grid drag event. Falls back to
+     * "append to end" when the cursor isn't over a row (e.g. empty bucket or below last).
+     */
+    private resolveDropTarget(event: RowDragEndEvent): {
+        target: ColumnChooserData | null;
+        position: RowDropTargetPosition;
+    } {
+        const {overNode} = event;
+        if (overNode) {
+            const targetData = getChooserData(overNode);
+            if (targetData) {
+                // Above/below heuristic from the cursor's y vs. the row's midpoint.
+                const rowTop = overNode.rowTop ?? 0,
+                    rowHeight = overNode.rowHeight ?? 0,
+                    midpoint = rowTop + rowHeight / 2,
+                    position: RowDropTargetPosition = event.y < midpoint ? 'above' : 'below';
+                return {target: targetData, position};
+            }
+        }
+
+        // Fall back to the last displayed row in this bucket (append).
+        const targetData = getChooserData(this.getLastDisplayedRow());
+        return targetData
+            ? {target: targetData, position: 'below'}
+            : {target: null, position: 'below'};
+    }
+
+    private getLastDisplayedRow() {
+        const {agApi} = this.chooserGridModel,
+            lastIdx = (agApi?.getDisplayedRowCount() ?? 0) - 1;
+        return lastIdx >= 0 ? agApi?.getDisplayedRowAtIndex(lastIdx) : null;
+    }
+
+    private createGridModel(emptyText: string) {
+        return new GridModel({
             treeMode: true,
             treeStyle: 'none',
             showSummary: 'top',
+            clicksToExpand: 0,
             expandLevel: -1,
+            sortBy: 'sortOrder',
+            emptyText,
+            hideEmptyTextBeforeLoad: false,
+            selModel: 'multiple',
+            hideHeaders: true,
+            rowBorders: true,
+            onKeyDown: e => {
+                const {selectedRecords} = this.chooserGridModel;
+                if (isEmpty(selectedRecords)) return;
+
+                if (e.code === 'Space') {
+                    this.toggleVisibility(selectedRecords.map(rec => rec.id));
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            },
             store: {
-                idSpec: 'id',
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'description', type: 'string'},
@@ -78,26 +510,6 @@ export class ColumnChooserBucketModel extends HoistModel {
                     {name: 'leafColIds', type: 'json'}
                 ]
             },
-            sortBy: 'sortOrder',
-            emptyText,
-            hideEmptyTextBeforeLoad: false,
-            selModel: 'multiple',
-            hideHeaders: true,
-            rowBorders: true,
-            onKeyDown: e => {
-                const {selectedRecords} = this.chooserGridModel;
-                if (isEmpty(selectedRecords)) return;
-
-                if (e.code === 'Space') {
-                    this.parent.toggleVisibility(
-                        selectedRecords.map(rec => rec.id),
-                        this
-                    );
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
-            },
-            clicksToExpand: 0,
             rowClassRules: {
                 'xh-column-chooser__column-row': ({data: rec}) => !rec.isSummary,
                 'xh-column-chooser__column-row--hidden': ({data: rec}) => rec.data.visible === false
@@ -146,8 +558,7 @@ export class ColumnChooserBucketModel extends HoistModel {
                                     ? {icon: Icon.checkSquare(), intent: 'primary'}
                                     : {icon: Icon.square(), intent: null};
                             },
-                            actionFn: ({record}) =>
-                                this.parent.toggleVisibility(record.data.id, this)
+                            actionFn: ({record}) => this.toggleVisibility(record.data.id)
                         }
                     ]
                 },
@@ -158,49 +569,120 @@ export class ColumnChooserBucketModel extends HoistModel {
             ]
         });
     }
+}
 
-    // Selection coordination — when this bucket gains a selection, clear the others.
-    override onLinked() {
-        this.addReaction({
-            track: () => this.chooserGridModel.selectedRecord,
-            run: rec => {
-                if (rec) this.parent.notifyBucketSelected(this);
+//------------------
+// Pure helpers
+//------------------
+
+/** Extract ColumnChooserData from an ag-grid IRowNode (whose data is a StoreRecord). */
+function getChooserData(node: any): ColumnChooserData | null {
+    return node?.data?.data ?? null;
+}
+
+/** Map each leaf colId to its parent group chain (outermost to innermost). */
+function buildParentChainMap(columns: ColumnOrGroup[]): Map<string, ColumnGroup[]> {
+    const ret = new Map<string, ColumnGroup[]>();
+    const walk = (cols: ColumnOrGroup[], ancestors: ColumnGroup[]) => {
+        for (const col of cols) {
+            if (col instanceof ColumnGroup) {
+                walk(col.children, [...ancestors, col]);
+            } else {
+                ret.set(col.colId, ancestors);
             }
-        });
+        }
+    };
+    walk(columns, []);
+    return ret;
+}
+
+function getActiveGroupId(
+    chain: ColumnGroup[],
+    depth: number,
+    groupInstanceCounts: Map<string, number>
+): string {
+    const groupId = chain[depth].groupId,
+        count = groupInstanceCounts.get(groupId) ?? 1;
+    return count > 1 ? `${groupId}_${count}` : groupId;
+}
+
+/** Recursively collect leaf colIds for a group from its actual children in the record set. */
+function collectLeafColIds(
+    group: ColumnChooserData,
+    recordMap: Map<string, ColumnChooserData>
+): string[] {
+    const ids: string[] = [];
+    for (const rec of recordMap.values()) {
+        if (rec.parentId !== group.id) continue;
+        if (rec.isGroup) {
+            ids.push(...collectLeafColIds(rec, recordMap));
+        } else {
+            ids.push(rec.id);
+        }
+    }
+    return ids;
+}
+
+/** True if every column group's leaves form a contiguous range in the given state. */
+function areGroupsContiguous(
+    state: {colId: string}[],
+    parentChainMap: Map<string, ColumnGroup[]>
+): boolean {
+    // Track each group's last-seen leaf index; if we see a non-consecutive jump, it's split
+    const lastIdx = new Map<string, number>(),
+        closed = new Set<string>();
+
+    for (let i = 0; i < state.length; i++) {
+        const chain = parentChainMap.get(state[i].colId);
+        if (!chain) continue;
+
+        const currentGroupIds = new Set(chain.map(g => g.groupId));
+
+        // Any group that was active but isn't in this chain is now closed
+        for (const groupId of lastIdx.keys()) {
+            if (!currentGroupIds.has(groupId)) closed.add(groupId);
+        }
+
+        // If a group we previously closed shows up again, it's split
+        for (const groupId of currentGroupIds) {
+            if (closed.has(groupId)) return false;
+            lastIdx.set(groupId, i);
+        }
     }
 
-    //-------
-    // Wiring for parent — invoked from agOptions callbacks
-    //-------
-    getValidDropPosition(params: IsRowValidDropPositionParams) {
-        return this.parent.getValidDropPosition(params, this);
+    return true;
+}
+
+/** Compute insertion index for moved columns within a bucket's slice. */
+function computeInsertionIndex(
+    remaining: {colId: string}[],
+    targetData: ColumnChooserData,
+    position: RowDropTargetPosition
+): number {
+    const targetLeafIds = new Set(targetData.leafColIds);
+
+    if (targetData.isGroup) {
+        const firstIdx = remaining.findIndex(cs => targetLeafIds.has(cs.colId)),
+            lastIdx = findLastIndex(remaining, cs => targetLeafIds.has(cs.colId));
+
+        if (firstIdx === -1) return remaining.length;
+        if (position === 'above') return firstIdx;
+        return lastIdx + 1;
     }
 
-    handleRowDragEnd(event: RowDragEndEvent) {
-        this.parent.handleRowDragEnd(event, this);
-    }
+    const targetIdx = remaining.findIndex(cs => cs.colId === targetData.id);
+    if (targetIdx === -1) return remaining.length;
+    return position === 'above' ? targetIdx : targetIdx + 1;
+}
 
-    handleCrossBucketDrop(event: RowDragEndEvent, sourceBucket: ColumnChooserBucketModel) {
-        this.parent.handleCrossBucketDrop(event, sourceBucket, this);
-    }
-
-    /**
-     * Hideable leaf records currently shown (respects active filter).
-     * Used by parent to compute aggregateVisibility across all buckets.
-     */
-    @computed
-    get hideableLeafRecords() {
-        return this.chooserGridModel.store.records.filter(r => !r.data.isGroup && r.data.hideable);
-    }
-
-    clearSelection() {
-        this.chooserGridModel.clearSelection();
-    }
-
-    /** Get the chooser data for the row this bucket considers the "selected" row, or null. */
-    get selectedData(): ColumnChooserData | null {
-        return this.chooserGridModel.selectedRecord?.data as ColumnChooserData | null;
-    }
+/** Partition columnState by pinned side, optionally excluding a set of moving colIds. */
+function partitionByPinned(state: ColumnState[], excludeIds?: Set<string>) {
+    const filterFn = (cs: ColumnState) => !excludeIds?.has(cs.colId);
+    return {
+        left: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'left'),
+        none: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === null),
+        right: state.filter(cs => filterFn(cs) && (cs.pinned ?? null) === 'right')
+    };
 }
 
 //------------------

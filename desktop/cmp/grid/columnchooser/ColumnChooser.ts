@@ -47,25 +47,25 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                     items: [
                         gridFindField({
                             flex: 1,
-                            gridModel: impl.unpinnedBucket.chooserGridModel,
+                            gridModel: impl.unpinnedBucketModel.chooserGridModel,
                             placeholder: 'Find Columns'
                         })
                     ]
                 }),
                 bucketGrid({
-                    bucket: impl.leftBucket,
-                    side: 'left',
-                    omit: !impl.enableColumnPinning
+                    bucket: impl.leftBucketModel,
+                    side: 'left'
+                    //omit: !impl.columnPinningEnabled
                 }),
                 grid({
                     className: 'xh-column-chooser__bucket xh-column-chooser__bucket--center',
-                    model: impl.unpinnedBucket.chooserGridModel,
-                    agOptions: impl.unpinnedBucket.agOptions
+                    model: impl.unpinnedBucketModel.chooserGridModel,
+                    agOptions: impl.unpinnedBucketModel.agOptions
                 }),
                 bucketGrid({
-                    bucket: impl.rightBucket,
-                    side: 'right',
-                    omit: !impl.enableColumnPinning
+                    bucket: impl.rightBucketModel,
+                    side: 'right'
+                    //omit: !impl.columnPinningEnabled
                 }),
                 toolbar({
                     items: [
@@ -75,7 +75,7 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                                 ? Icon.checkSquare({intent: 'primary'})
                                 : Icon.square(),
                             text: 'Show Groups',
-                            onClick: () => impl.setShowGroups(!impl.showGroups)
+                            onClick: () => (impl.showGroups = !impl.showGroups)
                         }),
                         filler(),
                         button({
