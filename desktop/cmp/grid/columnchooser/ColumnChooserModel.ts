@@ -7,6 +7,7 @@
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import {HoistModel, managed} from '@xh/hoist/core';
+import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 
@@ -31,6 +32,9 @@ export class ColumnChooserModel extends HoistModel {
 
     @bindable
     showGroups: boolean = true;
+
+    /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
+    private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
 
     get bucketModels(): ColumnChooserBucketModel[] {
         return [this.leftBucketModel, this.unpinnedBucketModel, this.rightBucketModel];
@@ -94,13 +98,12 @@ export class ColumnChooserModel extends HoistModel {
             run: () => this.syncFromGridModel()
         });
 
-        // Wire cross-bucket drag-and-drop once all three bucket grids have an ag api.
+        // Wire cross-bucket drag-and-drop whenever the set of mounted bucket grids changes.
+        // Stale registrations must be removed - ag-grid only auto-cleans drop zones when the
+        // *source* grid is destroyed, leaving broken references to destroyed *target* grids.
         this.addReaction({
-            track: () => this.allBucketGridsReady,
-            run: allReady => {
-                if (!allReady) return;
-                this.installCrossBucketDropZones();
-            }
+            track: () => this.bucketModels.map(it => it.chooserGridModel.agApi),
+            run: () => this.refreshCrossBucketDropZones()
         });
     }
 
@@ -123,10 +126,6 @@ export class ColumnChooserModel extends HoistModel {
     // Implementation
     //-----------------
 
-    private get allBucketGridsReady(): boolean {
-        return this.bucketModels.every(it => it.chooserGridModel.isReady);
-    }
-
     @action
     private syncFromGridModel(columnState?: ColumnState[]) {
         if (!this.gridModel) return;
@@ -134,20 +133,40 @@ export class ColumnChooserModel extends HoistModel {
         this.bucketModels.forEach(it => it.syncFromState(cs, this.showGroups));
     }
 
-    private installCrossBucketDropZones() {
-        for (const source of this.bucketModels) {
-            const sourceApi = source.chooserGridModel.agApi;
-            if (!sourceApi) continue;
+    private refreshCrossBucketDropZones() {
+        this.clearCrossBucketDropZones();
+        this.installCrossBucketDropZones();
+    }
 
-            for (const target of this.bucketModels) {
-                if (target === source) continue;
+    private clearCrossBucketDropZones() {
+        this.dropZoneRegistrations.forEach(({sourceApi, params}) => {
+            // A destroyed source already had its zones auto-removed by ag-grid.
+            if (!sourceApi.isDestroyed()) sourceApi.removeRowDropZone(params);
+        });
+        this.dropZoneRegistrations = [];
+    }
+
+    /** Register drop zones between each pair of currently mounted bucket grids. */
+    private installCrossBucketDropZones() {
+        this.bucketModels.forEach(source => {
+            const sourceApi = source.chooserGridModel.agApi;
+            if (!sourceApi) return;
+
+            this.bucketModels.forEach(target => {
+                if (target === source) return;
+
                 const targetApi = target.chooserGridModel.agApi;
-                if (!targetApi) continue;
+                if (!targetApi) return;
+
                 const params = targetApi.getRowDropZoneParams({
                     onDragStop: e => target.handleCrossBucketDrop(e, source)
                 });
-                if (params) sourceApi.addRowDropZone(params);
-            }
-        }
+
+                if (params) {
+                    sourceApi.addRowDropZone(params);
+                    this.dropZoneRegistrations.push({sourceApi, params});
+                }
+            });
+        });
     }
 }

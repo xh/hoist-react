@@ -52,20 +52,20 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                         })
                     ]
                 }),
-                bucketGrid({
+                pinnedBucketGrid({
                     bucket: impl.leftBucketModel,
-                    side: 'left'
-                    //omit: !impl.columnPinningEnabled
+                    side: 'left',
+                    omit: !impl.columnPinningEnabled
                 }),
                 grid({
-                    className: 'xh-column-chooser__bucket xh-column-chooser__bucket--center',
+                    className: 'xh-column-chooser__bucket xh-column-chooser__bucket--unpinned',
                     model: impl.unpinnedBucketModel.chooserGridModel,
                     agOptions: impl.unpinnedBucketModel.agOptions
                 }),
-                bucketGrid({
+                pinnedBucketGrid({
                     bucket: impl.rightBucketModel,
-                    side: 'right'
-                    //omit: !impl.columnPinningEnabled
+                    side: 'right',
+                    omit: !impl.columnPinningEnabled
                 }),
                 toolbar({
                     items: [
@@ -96,7 +96,7 @@ interface BucketGridProps extends HoistProps {
     side: 'left' | 'right';
 }
 
-const bucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
+const pinnedBucketGrid = hoistCmp.factory<BucketGridProps>(({bucket, side}) =>
     panel({
         className: 'xh-column-chooser__bucket-panel',
         modelConfig: {

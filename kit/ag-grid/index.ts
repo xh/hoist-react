@@ -65,7 +65,8 @@ export type {
     RowDragCancelEvent,
     IsRowValidDropPositionParams,
     IsRowValidDropPositionResult,
-    RowDropTargetPosition
+    RowDropTargetPosition,
+    RowDropZoneParams
 } from 'ag-grid-community';
 
 export type {
