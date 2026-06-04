@@ -38,7 +38,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
-| Add distributed tracing spans to operations | [`/svc/`](../svc/README.md)                                                                                         |
+| Add tracing, metrics, or activity tracking | [Telemetry & Observability](./telemetry.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
 | Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
@@ -115,6 +115,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Authorization](./authorization.md) | Role-based authorization and config-driven feature gates | HoistUser, hasRole, hasGate, checkAccess, HOIST_ADMIN, roles, gates, Admin Console role management |
 | [Routing](./routing.md) | Client-side routing via RouterModel (Router5 wrapper) | RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel route integration, NavigatorModel |
 | [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
+| [Telemetry & Observability](./telemetry.md) | Client-side tracing, metrics, activity tracking, and timed logging composed via the Runner chain | Runner, CallContext, TraceService, MetricsService, span, traceparent, sampling, telemetryPrefix, metrics, activity tracking |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
 | [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |

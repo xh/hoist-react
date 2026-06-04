@@ -123,7 +123,7 @@ export abstract class BaseOAuthClient<
     /** ID Scopes */
     protected idScopes: string[];
 
-    /** Specification for Access Tokens **/
+    /** Specification for Access Tokens */
     protected accessSpecs: Record<string, S>;
 
     @managed private timer: Timer;

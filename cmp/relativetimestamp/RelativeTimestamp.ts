@@ -53,7 +53,7 @@ export interface RelativeTimestampOptions {
     /** String to return when timestamps are within `epsilon`. */
     equalString?: string;
 
-    /** Threshold interval (in seconds) for `equalString`. **/
+    /** Threshold interval (in seconds) for `equalString`. */
     epsilon?: number;
 
     /** String to return when timestamp is empty/falsy. */

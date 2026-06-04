@@ -27,8 +27,8 @@ Two interfaces are available. Both share the same underlying registries and prod
 
 **MCP Server (hoist-react)** -- When working in the hoist-react repository, an MCP server is
 configured via `.mcp.json` and is very likely already available. Use the `hoist-search-docs`,
-`hoist-list-docs`, `hoist-search-symbols`, `hoist-get-symbol`, and `hoist-get-members` tools, plus
-`hoist://docs/{id}` resources for direct document access.
+`hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`, `hoist-get-symbol`, and
+`hoist-get-members` tools, plus `hoist://docs/{id}` resources for direct document access.
 
 **CLI Tools** -- For environments without MCP support, or when you prefer shell commands. These are
 real `bin` entries in the hoist-react `package.json` — invoke them exactly as shown with `npx`:
@@ -313,14 +313,19 @@ speak for themselves.
 
 ## Changelog Maintenance
 
-The project changelog is `CHANGELOG.md` at the repository root. New entries go under the topmost
-`-SNAPSHOT` version heading, using emoji-prefixed section headers (e.g. `### 🎁 New Features`,
-`### 🐞 Bug Fixes`). Use past-tense, action-driven language and name specific classes, methods, and
-config keys in backticks. Keep entries concise — one bullet per change, 1-3 lines max. Upgrade notes
-provide granular detail when needed; the changelog should not. Hard-wrap changelog entries at 100
-characters (unlike commit messages and PR descriptions, which should not be wrapped). See
-[`docs/changelog-format.md`](docs/changelog-format.md) for the full format reference including
-section headers, voice guidelines, and breaking change requirements.
+**Before adding or editing any entry in `CHANGELOG.md` (at the repository root), you MUST read and
+follow [`docs/changelog-format.md`](docs/changelog-format.md)** — the authoritative reference for
+section headers, voice, the issue/PR-link policy, and breaking-change requirements. Do not rely on
+the summary below alone.
+
+The essentials: new entries go under the topmost `-SNAPSHOT` version heading, using emoji-prefixed
+section headers (e.g. `### 🎁 New Features`, `### 🐞 Bug Fixes`). Use past-tense, action-driven
+language and name specific classes, methods, and config keys in backticks. Keep entries concise —
+one bullet per change, 1-3 lines max. Upgrade notes provide granular detail when needed; the
+changelog should not. Do not add GitHub issue or PR links to entries by default — include one only
+when explicitly requested or when it points to extensive context that doesn't fit the changelog's
+scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
+entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
 
 ## Key Dependencies
 

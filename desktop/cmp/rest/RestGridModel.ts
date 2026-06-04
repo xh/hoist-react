@@ -42,7 +42,7 @@ export interface RestGridConfig extends GridConfig {
     /** Actions to display in the form toolbar. Defaults to delete. */
     formActions?: Array<RecordAction | RecordActionSpec>;
 
-    /** Show a refresh button in the toolbar. Defaults to false. **/
+    /** Show a refresh button in the toolbar. Defaults to false. */
     showRefreshButton?: boolean;
 
     /** Warning to display before actions on a selection of records. */

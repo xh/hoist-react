@@ -13,7 +13,7 @@ import {
     toSearchDocsOutput,
     toListDocsOutput
 } from '../formatters/docs.js';
-import {resolveRepoRoot} from '../util/paths.js';
+import {resolveRepoRoot, resolveHoistVersion} from '../util/paths.js';
 
 const {entries: registry, mcpCategories} = buildRegistry(resolveRepoRoot());
 const VALID_CATEGORIES = [...mcpCategories.map(c => c.id), 'all'];
@@ -52,7 +52,8 @@ Examples:
   hoist-docs list -c package                     List only package docs
   hoist-docs read cmp/grid/README.md             Read the Grid component README
   hoist-docs conventions                         Print coding conventions
-  hoist-docs index                               Print the documentation index`
+  hoist-docs index                               Print the documentation index
+  hoist-docs ping                                Confirm the CLI is wired up`
 );
 
 //----------------------------------------------------------------------
@@ -170,6 +171,19 @@ program
             process.exit(1);
         }
         process.stdout.write(loadDocContent(entry) + '\n');
+    });
+
+//----------------------------------------------------------------------
+// Subcommand: ping
+//----------------------------------------------------------------------
+program
+    .command('ping')
+    .description('Verify the hoist-docs CLI is running and the doc registry loads.')
+    .action(() => {
+        // Registry is loaded at module init above; reaching here confirms it.
+        process.stdout.write(
+            `hoist-docs CLI is running (@xh/hoist v${resolveHoistVersion()}, ${registry.length} docs indexed).\n`
+        );
     });
 
 program.parse();
