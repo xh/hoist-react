@@ -16,7 +16,7 @@ import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
 export interface FileChooserConfig {
-    /** File extension(s) to accept, e.g. `['.doc', '.docx', '.pdf']` (MIME types not supported). */
+    /** File extension(s) to accept, e.g. `['.doc', '.docx', '.pdf']` */
     accept?: Some<string>;
 
     /** Maximum number of overall files that can be added. Defaults to null (no limit). */
