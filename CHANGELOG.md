@@ -13,10 +13,16 @@
     * Replaced the `mode` prop with `language`. See
       [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts)
       for valid language strings (aliases and names are both accepted).
-* Updated `FileChooser.accept` to take a react-dropzone `Accept` object keyed by MIME type
-  (e.g. `{'application/pdf': ['.pdf']}`) rather than an extension string or string array. See the
-  [react-dropzone docs](https://react-dropzone.js.org/#section-accepting-specific-file-types)
-  for the new format.
+* Redesigned `FileChooser`, moving configuration from component props to the `FileChooserModel`
+  constructor config and adding a fully customizable display API.
+    * Options such as `accept` and the file-size limits are now set on `FileChooserModel` rather
+      than as `FileChooser` props.
+    * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
+    * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
+      selection).
+    * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
+      content props. The default `fileDisplay` is a file grid, or a compact card with replace /
+      remove actions when `maxFiles` is 1.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
@@ -25,6 +31,12 @@
 
 ### 🎁 New Features
 
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit,
+  fully customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
+  callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled` options, and a
+  programmatic `openFileBrowser()` method. In multi-file mode a persistent drop target sits
+  alongside the grid - placement set via the `dropTargetPlacement` prop (`left`, `top`, or
+  `hidden`) - so users can keep adding files until the limit is reached.
 * Added the `Runner` API - a fluent builder (via `HoistBase.runner()`) that composes spanning,
   logging, activity tracking, metrics, and task-linking around async work and fetch calls. It
   threads a shared `CallContext` (trace + load state) across call boundaries, which fetch methods
@@ -104,7 +116,7 @@
     * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
       be able to remove that pin.
 * react-dropzone `10.x → 15.x`
-    * See breaking change note above for the `FileChooser.accept` prop.
+    * See the `FileChooser` redesign note under Breaking Changes above.
 * react-select `4.3 → 5.10`
 * react-windowed-select `3.1 → 5.2`
 * semver `7.7 → 7.8`
