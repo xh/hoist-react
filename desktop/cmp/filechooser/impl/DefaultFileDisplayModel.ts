@@ -1,6 +1,6 @@
 import {fileExtCol, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, ReactionSpec} from '@xh/hoist/core';
-import {FileChooserModel} from '@xh/hoist/desktop/cmp/filechooser';
+import {FileChooserModel} from '../FileChooserModel';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {makeObservable} from '@xh/hoist/mobx';

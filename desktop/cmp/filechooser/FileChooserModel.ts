@@ -11,13 +11,12 @@ import {FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy, isFunction} from 'lodash';
-import mime from 'mime';
+import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
 export interface FileChooserConfig {
-    /** File type(s) to accept (e.g. `['.doc', '.docx', '.pdf']`). */
+    /** File extension(s) to accept, e.g. `['.doc', '.docx', '.pdf']` (MIME types not supported). */
     accept?: Some<string>;
 
     /** Maximum number of overall files that can be added. Defaults to null (no limit). */
@@ -28,12 +27,6 @@ export interface FileChooserConfig {
 
     /** Minimum accepted file size in bytes. Defaults to null (no limit). */
     minFileSize?: number;
-
-    /**
-     * Callback executed on drop event. Used for additional file validation outside of file type
-     * and size prior to updating the model's file state.
-     */
-    validateFilesAsync?: (accepted: File[]) => Promise<File[]>;
 
     /** Callback executed on drop event, invoked when files are accepted. */
     onFileAccepted?: (accepted: File[]) => void;
@@ -77,8 +70,8 @@ export interface FileChooserConfig {
 /**
  * Model managing file selection state for a {@link FileChooser} component.
  *
- * Tracks selected files, supports add/remove/clear operations, and de-duplicates by filename.
- * Includes a managed GridModel to display selected files with name and size columns.
+ * Tracks selected files and supports add/remove/clear operations. De-duplicates by filename, with
+ * a newly added file taking precedence over any existing file of the same name.
  */
 export class FileChooserModel extends HoistModel {
     @observable.ref
@@ -87,7 +80,7 @@ export class FileChooserModel extends HoistModel {
     @observable
     disabled: boolean;
 
-    readonly accept: Record<string, string[]>;
+    readonly accept: string[];
     readonly maxFiles: number;
     readonly maxFileSize: number;
     readonly minFileSize: number;
@@ -98,7 +91,6 @@ export class FileChooserModel extends HoistModel {
 
     dropzoneRef = createObservableRef<DropzoneRef>();
 
-    private readonly validateFilesAsync: (accepted: File[]) => Promise<File[]>;
     private readonly onFileAccepted: (accepted: File[]) => void;
     private readonly onFileRejected: (rejected: FileRejection[]) => void;
     private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
@@ -108,11 +100,10 @@ export class FileChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.accept = this.getMimesByExt(config.accept);
+        this.accept = isEmpty(config.accept) ? null : castArray(config.accept);
         this.maxFiles = config.maxFiles;
         this.maxFileSize = config.maxFileSize;
         this.minFileSize = config.minFileSize;
-        this.validateFilesAsync = config.validateFilesAsync;
         this.onFileAccepted = config.onFileAccepted;
         this.onFileRejected = config.onFileRejected;
         this.rejectToastMessage = withDefault(config.rejectToastMessage, this.defaultRejectMessage);
@@ -129,12 +120,13 @@ export class FileChooserModel extends HoistModel {
     }
 
     /**
-     * Add files to the selection. Files will be de-duplicated by name, with a newly added file
-     * taking precedence over any existing file with the same name.
+     * Add files to the selection.
+     *
+     * Respects the `maxFiles` limit but does NOT enforce the `accept` / file-size constraints
+     * (those are applied only on drop/browse) - use with care.
      */
-    @action
     addFiles(files: Some<File>) {
-        this.files = uniqBy(concat(files, this.files), 'name');
+        this.addFilesInternal(files);
     }
 
     /** Remove a single file from the current selection. */
@@ -152,52 +144,53 @@ export class FileChooserModel extends HoistModel {
     //------------------------
     // Event Handlers
     //------------------------
-    async onDropAsync(accepted: File[], rejected: Partial<FileRejection[]>) {
-        const {files, maxFiles, rejectToastMessage, validateFilesAsync} = this,
-            // In single-file mode, a lone valid file replaces the current selection rather than
-            // being rejected for exceeding the limit.
-            isReplace = maxFiles === 1 && accepted.length === 1;
+    onDrop(accepted: File[], rejected: FileRejection[]) {
+        const {maxFiles, rejectToastMessage} = this;
 
-        if (!isReplace && maxFiles != null && files.length + accepted.length > maxFiles) {
-            XH.warningToast(
-                maxFiles === 1
-                    ? 'Only one file allowed for upload.'
-                    : `File limit of ${maxFiles} exceeded.`
-            );
-            return;
+        if (!isEmpty(rejected)) {
+            if (this.rejectToastSpec) {
+                XH.toast({...this.rejectToastSpec, message: rejectToastMessage(rejected)});
+            }
+            this.onFileRejected?.(rejected);
         }
 
-        if (rejected.length && this.rejectToastSpec) {
-            XH.toast({...this.rejectToastSpec, message: rejectToastMessage(rejected)});
+        if (!isEmpty(accepted)) {
+            // In single-file mode, replace the current selection with the incoming file.
+            if (maxFiles === 1 && accepted.length === 1) this.clear();
+
+            if (this.addFilesInternal(accepted)) {
+                this.onFileAccepted?.(accepted);
+            }
         }
-
-        if (isFunction(validateFilesAsync) && !isEmpty(accepted)) {
-            accepted = await validateFilesAsync(accepted);
-        }
-
-        // Clear first only when a valid replacement survived validation, so a rejected
-        // replacement does not wipe out the existing selection.
-        if (isReplace && !isEmpty(accepted)) this.clear();
-        this.addFiles(accepted);
-
-        this.onFileAccepted?.(accepted);
-        this.onFileRejected?.(rejected);
     }
 
     //------------------------
     // Implementation
     //------------------------
-    private getMimesByExt(extensions: Some<string>): Record<string, string[]> {
-        if (isEmpty(extensions)) return null;
+    // De-dupe by name, then enforce `maxFiles` on the result. Warns and no-ops if exceeded;
+    // returns true if the selection was updated.
+    @action
+    private addFilesInternal(files: Some<File>): boolean {
+        const {maxFiles} = this,
+            deduped = uniqBy(concat(files, this.files), 'name');
 
-        extensions = castArray(extensions);
-        return fromPairs(extensions.map(ext => [mime.getType(ext), [ext]]));
+        if (maxFiles != null && deduped.length > maxFiles) {
+            XH.warningToast(
+                maxFiles === 1
+                    ? 'Only one file allowed for upload.'
+                    : `File limit of ${maxFiles} exceeded.`
+            );
+            return false;
+        }
+
+        this.files = deduped;
+        return true;
     }
 
     private defaultRejectMessage(rejections: FileRejection[]): ReactElement {
         // 1) Map rejected files to error messages
         const errorsByFile = fromPairs(
-            map(rejections, ({file, errors}) => [file.handle.name, map(errors, 'message')])
+            map(rejections, ({file, errors}) => [file.name, map(errors, 'message')])
         );
 
         // 2) List files with bulleted error messages
