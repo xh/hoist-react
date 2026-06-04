@@ -16,16 +16,13 @@
 * Redesigned `FileChooser`, moving configuration from component props to the `FileChooserModel`
   constructor config and adding a fully customizable display API.
     * Options such as `accept` and the file-size limits are now set on `FileChooserModel` rather
-      than as `FileChooser` props. `accept` continues to take file-extension strings
-      (e.g. `['.pdf', '.doc']`).
+      than as `FileChooser` props.
     * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
     * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
       selection).
     * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
       content props. The default `fileDisplay` is a file grid, or a compact card with replace /
       remove actions when `maxFiles` is 1.
-    * Dropped the `enableMulti` argument from `FileChooserModel.onDrop()` and removed the
-      `lastRejectedCount` observable.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
