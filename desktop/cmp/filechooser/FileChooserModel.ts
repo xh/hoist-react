@@ -11,7 +11,7 @@ import {FileRejection} from '@xh/hoist/kit/react-dropzone';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {castArray, concat, filter, isEmpty, keys, fromPairs, map, uniqBy} from 'lodash';
+import {castArray, concat, filter, isEmpty, keys, fromPairs, map, sortBy, uniqBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {DropzoneRef} from 'react-dropzone';
 
@@ -100,7 +100,7 @@ export class FileChooserModel extends HoistModel {
         super();
         makeObservable(this);
 
-        this.accept = isEmpty(config.accept) ? null : castArray(config.accept);
+        this.accept = isEmpty(config.accept) ? null : sortBy(castArray(config.accept));
         this.maxFiles = config.maxFiles;
         this.maxFileSize = config.maxFileSize;
         this.minFileSize = config.minFileSize;
