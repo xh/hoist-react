@@ -16,16 +16,13 @@
 * Redesigned `FileChooser`, moving configuration from component props to the `FileChooserModel`
   constructor config and adding a fully customizable display API.
     * Options such as `accept` and the file-size limits are now set on `FileChooserModel` rather
-      than as `FileChooser` props. `accept` continues to take file-extension strings
-      (e.g. `['.pdf', '.doc']`), which the model maps to MIME types internally.
+      than as `FileChooser` props.
     * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
     * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
       selection).
     * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
       content props. The default `fileDisplay` is a file grid, or a compact card with replace /
       remove actions when `maxFiles` is 1.
-    * Replaced the synchronous `FileChooserModel.onDrop()` with `onDropAsync()` and removed the
-      `lastRejectedCount` observable.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
@@ -35,12 +32,11 @@
 ### 🎁 New Features
 
 * `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit,
-  fully customizable `emptyDisplay` / `fileDisplay` content, async file validation via
-  `validateFilesAsync`, `onFileAccepted` / `onFileRejected` callbacks, configurable rejection
-  toasts, `maskOnDrag` / `maskOnDisabled` options, and a programmatic `openFileBrowser()` method.
-  In multi-file mode a persistent drop target sits alongside the grid - placement set via the
-  `dropTargetPlacement` prop (`left`, `top`, or `hidden`) - so users can keep adding files until
-  the limit is reached.
+  fully customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
+  callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled` options, and a
+  programmatic `openFileBrowser()` method. In multi-file mode a persistent drop target sits
+  alongside the grid - placement set via the `dropTargetPlacement` prop (`left`, `top`, or
+  `hidden`) - so users can keep adding files until the limit is reached.
 * Added the `Runner` API - a fluent builder (via `HoistBase.runner()`) that composes spanning,
   logging, activity tracking, metrics, and task-linking around async work and fetch calls. It
   threads a shared `CallContext` (trace + load state) across call boundaries, which fetch methods

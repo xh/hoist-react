@@ -1,6 +1,6 @@
 import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {FileChooserModel} from '@xh/hoist/desktop/cmp/filechooser';
+import {FileChooserModel} from '../FileChooserModel';
 import {Icon} from '@xh/hoist/icon';
 
 /**

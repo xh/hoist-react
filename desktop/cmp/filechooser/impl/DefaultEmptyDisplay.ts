@@ -1,9 +1,9 @@
 import {div, placeholder} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
-import {FileChooserModel} from '@xh/hoist/desktop/cmp/filechooser';
+import {FileChooserModel} from '../FileChooserModel';
 import {Icon} from '@xh/hoist/icon';
 import {filesize} from 'filesize';
-import {flatten, isEmpty, uniq, values} from 'lodash';
+import {isEmpty, uniq} from 'lodash';
 import './DefaultEmptyDisplay.scss';
 
 const DEFAULT_PROMPT = 'Drag and drop files here, or click to browse.';
@@ -33,7 +33,7 @@ const emptyHint = hoistCmp.factory({
 
         let hint = emptyDisplayHint;
         if (hint === undefined) {
-            const exts = accept ? uniq(flatten(values(accept))) : [],
+            const exts = accept ? uniq(accept) : [],
                 parts: string[] = [];
 
             if (!isEmpty(exts)) {
