@@ -118,6 +118,10 @@ class DateInputModel extends HoistInputModel {
         if (date && this.isOutsideRange(date)) {
             this.logDebug('Value exceeded max/minDate bounds on change - reset to null.');
             date = null;
+            // Force the native input back in sync with the reset value. When the prior value was
+            // also null, the internalValue observable does not change, so no re-render fires and
+            // the out-of-bounds entry would otherwise remain displayed in the control.
+            ev.target.value = '';
         }
         this.noteValueChange(date);
     };
