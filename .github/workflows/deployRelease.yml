@@ -44,7 +44,7 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@899c39c72b4154a3bef180e1939755a1672036c5 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@7859ec783cee69e3f26cd81cb30cd5cab5bc44b6 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
@@ -77,11 +77,11 @@ jobs:
               NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               IS_HOTFIX: ${{ inputs.is-hotfix }}
           run: |
-              TAG_FLAG=""
+              TAG_ARGS=()
               if [ "$IS_HOTFIX" = "true" ]; then
-                  TAG_FLAG="--tag hotfix"
+                  TAG_ARGS=(--tag hotfix)
               fi
-              npm publish $TAG_FLAG
+              npm publish "${TAG_ARGS[@]}"
 
         # Note: The tag intentionally points to a commit where package.json still has the
         # SNAPSHOT version. We chose not to commit the version change back to the repo to
@@ -89,9 +89,34 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@899c39c72b4154a3bef180e1939755a1672036c5 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@7859ec783cee69e3f26cd81cb30cd5cab5bc44b6 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
           env:
               GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Write job summary
+          # Best-effort only - a summary glitch must never fail an otherwise-good release.
+          continue-on-error: true
+          env:
+              VERSION: ${{ inputs.version }}
+          run: |
+              {
+                echo "### 📦 Release published to npm"
+                echo ""
+                echo "Version: [\`$VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$VERSION)"
+
+                # Pack stats are a nice-to-have - skip the table silently if anything throws.
+                if STATS=$(npm pack --dry-run --json 2>/dev/null | node -e "
+                    const [p] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+                    const mb = b => (b / 1048576).toFixed(1) + ' MB';
+                    console.log([p.entryCount.toLocaleString(), mb(p.size), mb(p.unpackedSize)].join('|'));
+                "); then
+                    IFS='|' read -r FILES TARBALL UNPACKED <<< "$STATS"
+                    echo ""
+                    echo "| Files | Tarball | Unpacked |"
+                    echo "|---|---|---|"
+                    echo "| $FILES | $TARBALL | $UNPACKED |"
+                fi
+              } >> "$GITHUB_STEP_SUMMARY"

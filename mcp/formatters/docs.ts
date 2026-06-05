@@ -167,6 +167,35 @@ export function toListDocsOutput(
     };
 }
 
+//------------------------------------------------------------------
+// Structured output: hoist-read-doc
+//------------------------------------------------------------------
+
+/**
+ * Zod schema for the structured output of `hoist-read-doc`. Returns the full
+ * document body alongside its identifying metadata, so consumers get both the
+ * raw markdown and the catalog fields without a second lookup.
+ */
+export const readDocOutputSchema = z.object({
+    id: z.string().describe('Document ID, also its path relative to the repo root.'),
+    title: z.string(),
+    category: z.string().describe('MCP category ID (e.g. "package", "concept").'),
+    content: z.string().describe('Full markdown body of the document.')
+});
+
+/** Structured output type for `hoist-read-doc`, derived from the zod schema. */
+export type ReadDocOutput = z.infer<typeof readDocOutputSchema>;
+
+/** Project a registry entry plus its loaded body into the public structured shape. */
+export function toReadDocOutput(entry: DocEntry, content: string): ReadDocOutput {
+    return {
+        id: entry.id,
+        title: entry.title,
+        category: entry.mcpCategory,
+        content
+    };
+}
+
 /** Format a document listing grouped by category. */
 export function formatDocList(
     registry: DocEntry[],

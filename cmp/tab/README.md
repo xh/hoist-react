@@ -316,7 +316,7 @@ TabContainer integrates with Hoist's refresh system via `RefreshContextModel`:
 class MyTabPanelModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         // Called based on tab's refreshMode
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
         this.setData(data);
     }
 }

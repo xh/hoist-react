@@ -67,7 +67,7 @@ export class UrlStore extends Store implements Loadable {
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;
-        let data = await XH.fetchJson({url, loadSpec});
+        let data = await XH.fetchJson({url}, {loadSpec});
         if (dataRoot) data = data[dataRoot];
         this.loadData(data);
     }

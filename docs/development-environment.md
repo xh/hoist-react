@@ -14,7 +14,7 @@ Toolbox-specific setup info.
 Development of Hoist applications requires:
 
 * Git
-* JDK 17
+* A Java JDK (version set by your application - see [Server-side prerequisites](#server-side-prerequisites) below)
 * Node (LTS or other recent) + `npm` (bundled with Node) or `yarn` (installable via `npm`)
 
 ## Git
@@ -29,12 +29,23 @@ Hoist Core is the server-side plugin powering Hoist React applications.
 See [that project's README](https://github.com/xh/hoist-core/blob/develop/README.md) for more
 detailed information about the configuration and use of Hoist's Grails server.
 
-### Java 17 JDK
+### Java JDK
 
-The one common pre-requisite for running the server-side of a Hoist project is a Java 17 JDK. Any
-common OpenJDK distribution should work. XH typically uses the JetBrains distro, which has
-improved support for hot reloading, helpful for Hoist projects with a significant amount of server-
-side development.
+Running the server-side of a Hoist project requires a Java JDK. Hoist Core supports a range of recent
+JDKs (e.g. 17, 21, 25), so the target version is set by the **application**, not by Hoist Core or
+Hoist React. By convention each Hoist app pins its version in a `majorJavaVersion` property in
+`gradle.properties`, which the Gradle Java toolchain in `build.gradle` consumes.
+
+Check your project's `gradle.properties` for the version it targets and install a matching JDK. (Note
+the daemon running Gradle itself may use a different, newer JDK than this compile/runtime target.) Any
+common OpenJDK distribution should work; XH's GitHub Actions build runners use
+[Eclipse Temurin](https://adoptium.net/).
+
+The JDK version surfaces in the production runtime too: Hoist apps deploy on XH's `xhio/xh-tomcat`
+base image, whose tag pins both the Tomcat and JDK versions - e.g. the `jdk21` in
+`xhio/xh-tomcat:latest-tc10-jdk21` - in your project's `docker/tomcat/Dockerfile`. These should all
+agree: your locally installed JDK, the `majorJavaVersion` in `gradle.properties`, and the JDK baked
+into the Tomcat container image should target the same major version.
 
 If using IntelliJ (see below), consider having the IDE download and update a JDK for you:
 
@@ -42,7 +53,7 @@ If using IntelliJ (see below), consider having the IDE download and update a JDK
   existing project open, you can also select "File > Project Structure" to modify that project.
 - Select the "SDKs" option in the navigation tree.
 - Click the + button and select "Download JDK..."
-- Select version 17 and a distro of your choice (JetBrains Runtime is a good default).
+- Select the version matching your project's `majorJavaVersion` and a distro of your choice.
 
 ### Server-side instance configuration
 

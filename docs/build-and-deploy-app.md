@@ -121,7 +121,7 @@ The Grails server component is deployed within a Tomcat container. The app shoul
 
 ```dockerfile
 # Update the tag below to a fixed version for stability, or next to get a regularly updated build
-FROM xhio/xh-tomcat:next-jdk17
+FROM xhio/xh-tomcat:next-tc10-jdk21
 COPY setenv.sh bin/
 COPY *.war webapps/ROOT.war
 ```

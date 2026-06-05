@@ -7,22 +7,25 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {buildRegistry, searchDocs} from '../data/doc-registry.js';
+import {buildRegistry, searchDocs, loadDocContent} from '../data/doc-registry.js';
 import {
     formatSearchResults,
     formatDocList,
     searchDocsOutputSchema,
     toSearchDocsOutput,
     listDocsOutputSchema,
-    toListDocsOutput
+    toListDocsOutput,
+    readDocOutputSchema,
+    toReadDocOutput
 } from '../formatters/docs.js';
-import {resolveRepoRoot} from '../util/paths.js';
+import {resolveRepoRoot, resolveHoistVersion} from '../util/paths.js';
 
 /**
  * Register all documentation tools on the given MCP server.
  *
  * - `hoist-search-docs`: Search across all docs by keyword.
  * - `hoist-list-docs`: List all available docs with descriptions.
+ * - `hoist-read-doc`: Read the full body of a single doc by ID.
  * - `hoist-ping`: Connectivity test.
  */
 export function registerDocTools(server: McpServer): void {
@@ -43,7 +46,7 @@ export function registerDocTools(server: McpServer): void {
         {
             title: 'Search Hoist Documentation',
             description:
-                'Search across all hoist-react documentation (package READMEs, concept docs, upgrade notes, conventions) by keyword. Returns matching documents with short context snippets showing where terms appear — not full document text. To read a specific doc in full, fetch the hoist://docs/{id} resource using an ID from the results. To browse the catalog without a query, call hoist-list-docs. For TypeScript type information rather than narrative docs, use hoist-search-symbols.',
+                'Search across all hoist-react documentation (package READMEs, concept docs, upgrade notes, conventions) by keyword. Returns matching documents with short context snippets showing where terms appear — not full document text. To read a specific doc in full, call hoist-read-doc with an ID from the results (or fetch the hoist://docs/{id} resource). To browse the catalog without a query, call hoist-list-docs. For TypeScript type information rather than narrative docs, use hoist-search-symbols.',
             inputSchema: z.object({
                 query: z
                     .string()
@@ -89,7 +92,7 @@ export function registerDocTools(server: McpServer): void {
         {
             title: 'List Hoist Documentation',
             description:
-                'List all available hoist-react documentation grouped by category, with title and description for each entry. Returns the catalog only — not full document text. To read a specific doc, fetch the hoist://docs/{id} resource. For keyword-based discovery across doc content, use hoist-search-docs instead.',
+                'List all available hoist-react documentation grouped by category, with title and description for each entry. Returns the catalog only — not full document text. To read a specific doc, call hoist-read-doc with its ID (or fetch the hoist://docs/{id} resource). For keyword-based discovery across doc content, use hoist-search-docs instead.',
             inputSchema: z.object({
                 category: categoryEnum
             }),
@@ -113,17 +116,69 @@ export function registerDocTools(server: McpServer): void {
     );
 
     //------------------------------------------------------------------
+    // Tool: hoist-read-doc
+    //------------------------------------------------------------------
+    server.registerTool(
+        'hoist-read-doc',
+        {
+            title: 'Read Hoist Documentation',
+            description:
+                'Read the full text of a single hoist-react document by its exact ID (e.g. "cmp/grid/README.md", "docs/authentication.md"). Get IDs from hoist-search-docs or hoist-list-docs. This is the tool-based equivalent of the hoist://docs/{id} resource — prefer it when resource fetching is unavailable or inconvenient. For keyword discovery rather than a known ID, use hoist-search-docs.',
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe(
+                        'Exact document ID (its repo-relative path) from search or list output, e.g. "cmp/grid/README.md" or "docs/authentication.md".'
+                    )
+            }),
+            outputSchema: readDocOutputSchema,
+            annotations: {
+                readOnlyHint: true,
+                destructiveHint: false,
+                idempotentHint: true,
+                openWorldHint: false
+            }
+        },
+        async ({id}) => {
+            const entry = registry.find(e => e.id === id);
+            if (!entry) {
+                return {
+                    content: [
+                        {
+                            type: 'text' as const,
+                            text: `Unknown document ID: "${id}". Call hoist-list-docs to see valid IDs, or hoist-search-docs to find one by keyword.`
+                        }
+                    ],
+                    isError: true
+                };
+            }
+
+            const content = loadDocContent(entry);
+            return {
+                content: [{type: 'text' as const, text: content}],
+                structuredContent: toReadDocOutput(entry, content)
+            };
+        }
+    );
+
+    //------------------------------------------------------------------
     // Tool: hoist-ping
     //------------------------------------------------------------------
     server.registerTool(
         'hoist-ping',
         {
             title: 'Hoist Ping',
-            description: 'Verify the Hoist MCP server is running and responsive',
+            description:
+                'Verify the Hoist MCP server is running and responsive. Reports the indexed @xh/hoist library version.',
             inputSchema: z.object({})
         },
         async () => ({
-            content: [{type: 'text' as const, text: 'Hoist MCP server is running.'}]
+            content: [
+                {
+                    type: 'text' as const,
+                    text: `Hoist MCP server is running (@xh/hoist v${resolveHoistVersion()}).`
+                }
+            ]
         })
     );
 }
