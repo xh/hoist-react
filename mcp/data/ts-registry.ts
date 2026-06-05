@@ -25,6 +25,7 @@ import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
 import {resolveRepoRoot} from '../util/paths.js';
+import {computeFingerprint, loadCache, writeCache} from './index-cache.js';
 
 //------------------------------------------------------------------
 // Types
@@ -74,6 +75,14 @@ export interface SymbolDetail {
     constructorType?: string;
 }
 
+/** A method parameter, with optional description sourced from a `@param` JSDoc tag. */
+export interface MemberParameter {
+    name: string;
+    type: string;
+    /** Description from a matching `@param` JSDoc tag, when present. */
+    description?: string;
+}
+
 /** A member (property or method) of a class or interface. */
 export interface MemberInfo {
     name: string;
@@ -83,9 +92,32 @@ export interface MemberInfo {
     isOptional?: boolean;
     decorators: string[];
     jsDoc: string;
-    parameters?: Array<{name: string; type: string}>;
+    parameters?: MemberParameter[];
     returnType?: string;
+    /**
+     * Return-value info sourced from a `@returns` JSDoc tag. Distinct from
+     * `returnType` (which carries only the static type) — `returns.description`
+     * carries the author's prose explanation. Omitted when no `@returns` tag
+     * is present.
+     */
+    returns?: {type: string; description: string};
+    /**
+     * Parent class name when this member is inherited via the `extends` chain
+     * - both the member and its behavior come from the named ancestor.
+     * Existing behavior from #4284. Orthogonal to {@link jsDocInheritedFrom}:
+     * a subclass member that is inherited from a parent class AND whose docs
+     * the parent itself inherits from an implemented interface will have both
+     * fields populated.
+     */
     inheritedFrom?: string;
+    /**
+     * Interface name when this member's JSDoc was inherited from an
+     * implemented interface because no class in the surfaced extends chain
+     * declares own JSDoc on this member. The member itself is declared on a
+     * class (named via {@link inheritedFrom} when inherited, or the surfaced
+     * class when not) - the interface only contributes documentation.
+     */
+    jsDocInheritedFrom?: string;
 }
 
 /** Lightweight index entry for a class member, enabling search by member name. */
@@ -665,26 +697,155 @@ function indexPromiseExtensions(
 /** Promise for in-flight initialization, used to coordinate eager and on-demand init. */
 let initPromise: Promise<void> | null = null;
 
-/** Synchronous init — heavy lifting, runs on a microtask when kicked off eagerly. */
-function doInitialize(): void {
-    if (project) return;
+/**
+ * Populate the symbol/member indexes - via the on-disk cache when source files
+ * haven't changed, otherwise via a fresh ts-morph build. The live `Project` is
+ * NOT built here on cache hit; detail extraction calls (`getSymbolDetail`,
+ * `getMembers`) construct it lazily via `ensureProject` when AST access is
+ * actually needed.
+ */
+function loadOrBuildIndexes(): void {
+    if (symbolIndex) return;
 
+    const repoRoot = resolveRepoRoot();
+    const cacheStart = Date.now();
+    const cached = loadCache(repoRoot);
+    if (cached) {
+        symbolIndex = cached.symbols;
+        memberIndex = cached.members;
+        promiseExtensionDetails = cached.promiseExtensions;
+        log.info(
+            `TypeScript registry loaded from cache in ${Date.now() - cacheStart}ms ` +
+                `(${cached.symbols.size} symbol keys, ${cached.members.size} member keys)`
+        );
+        return;
+    }
+
+    buildIndexesFresh(repoRoot);
+}
+
+/**
+ * Build the symbol/member indexes from scratch via ts-morph and persist the
+ * result to disk. Called when no valid cache exists.
+ */
+function buildIndexesFresh(repoRoot: string): void {
     const startMs = Date.now();
+    const proj = ensureProject();
+    const projectMs = Date.now() - startMs;
 
+    const buildStart = Date.now();
+    const result = buildSymbolIndex(proj);
+    symbolIndex = result.symbols;
+    memberIndex = result.members;
+    const buildMs = Date.now() - buildStart;
+
+    // Second pass: now that the symbol index is fully populated, fill in
+    // member-index JSDoc from `implements` for class members with no own
+    // JSDoc. Has to run after `symbolIndex`/`memberIndex` are assigned
+    // because the fallback resolves interfaces via `findIndexEntry`.
+    const enrichStart = Date.now();
+    enrichMemberIndexFromImplements(proj);
+    const enrichMs = Date.now() - enrichStart;
+
+    const elapsed = Date.now() - startMs;
+    log.info(
+        `TypeScript registry built in ${elapsed}ms ` +
+            `(project=${projectMs}ms build=${buildMs}ms enrich=${enrichMs}ms)`
+    );
+    if (elapsed > 5000) {
+        log.warn(`TypeScript registry build exceeded 5s target (${elapsed}ms)`);
+    }
+
+    try {
+        writeCache(repoRoot, computeFingerprint(repoRoot), {
+            symbols: symbolIndex,
+            members: memberIndex,
+            promiseExtensions: promiseExtensionDetails ?? new Map()
+        });
+    } catch (e) {
+        log.warn(`Failed to persist registry cache: ${e}`);
+    }
+}
+
+/**
+ * Lazily construct the ts-morph `Project`. Required for any path that needs
+ * live AST access (detail extraction, member walks, the index build itself).
+ * Pure search calls served from the cached index never trigger this.
+ */
+function ensureProject(): Project {
+    if (project) return project;
+    const start = Date.now();
     project = new Project({
         tsConfigFilePath: resolve(resolveRepoRoot(), 'tsconfig.json'),
         skipFileDependencyResolution: true
     });
     project.resolveSourceFileDependencies();
+    log.info(`ts-morph Project initialized in ${Date.now() - start}ms`);
+    return project;
+}
 
-    const result = buildSymbolIndex(project);
-    symbolIndex = result.symbols;
-    memberIndex = result.members;
+/**
+ * Post-build pass that walks every member-indexed class with an `implements`
+ * clause and, for each public member with empty own JSDoc, copies the
+ * matching interface member's JSDoc into the corresponding `MemberIndexEntry`
+ * (mutating in place). Mirrors the on-demand fallback in
+ * {@link extractClassMembersWithInheritance} so that the member index
+ * surfaces the same JSDoc text the `getMembers` path produces - critical
+ * for `searchMembers` queries that match against JSDoc content.
+ *
+ * Runs once at init, after the main `buildSymbolIndex` pass populates
+ * `symbolIndex` and `memberIndex`. Trivially cheap relative to the main
+ * build (only touches classes with implements clauses + members with empty
+ * JSDoc).
+ */
+function enrichMemberIndexFromImplements(proj: Project): void {
+    const repoRoot = resolveRepoRoot();
 
-    const elapsed = Date.now() - startMs;
-    log.info(`TypeScript registry initialized in ${elapsed}ms`);
-    if (elapsed > 5000) {
-        log.warn(`TypeScript registry initialization exceeded 5s target (${elapsed}ms)`);
+    for (const sourceFile of proj.getSourceFiles()) {
+        const filePath = sourceFile.getFilePath();
+        const relPath = filePath.startsWith(repoRoot + '/')
+            ? filePath.slice(repoRoot.length)
+            : null;
+        if (
+            !relPath ||
+            relPath.startsWith('/node_modules/') ||
+            relPath.includes('/build/') ||
+            relPath.includes('/mcp/')
+        ) {
+            continue;
+        }
+
+        for (const cls of sourceFile.getClasses()) {
+            if (!shouldIndexClassMembers(cls)) continue;
+            if (cls.getImplements().length === 0) continue;
+
+            const ownerName = cls.getName();
+            if (!ownerName) continue;
+
+            let members: MemberInfo[];
+            try {
+                members = extractClassMembers(sourceFile, ownerName);
+            } catch {
+                continue;
+            }
+
+            for (const m of members) {
+                if (m.jsDoc) continue;
+                if (isPrivateMember(m, cls)) continue;
+
+                const fallback = findImplementsJsDocFallback(cls, m);
+                if (!fallback) continue;
+
+                const key = m.name.toLowerCase();
+                const entries = memberIndex!.get(key);
+                if (!entries) continue;
+                for (const entry of entries) {
+                    if (entry.ownerName === ownerName && entry.filePath === filePath) {
+                        entry.jsDoc = fallback.jsDoc;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -692,27 +853,31 @@ function doInitialize(): void {
  * Begin TypeScript registry initialization in the background.
  *
  * Call this after server startup to warm the index asynchronously, so the
- * first tool invocation doesn't pay the full init cost. Safe to call
- * multiple times — subsequent calls are no-ops.
+ * first tool invocation doesn't pay the full init cost. On a cache hit this
+ * completes in ~100ms; on a cache miss it runs the full ts-morph build.
+ * Safe to call multiple times — subsequent calls are no-ops.
  */
 export function beginInitialization(): void {
-    if (project || initPromise) return;
+    if (symbolIndex || initPromise) return;
     initPromise = Promise.resolve().then(() => {
-        doInitialize();
+        loadOrBuildIndexes();
         initPromise = null;
     });
 }
 
 /**
- * Ensure the ts-morph Project and symbol index are initialized.
+ * Ensure the symbol and member indexes are populated (from cache or via a
+ * fresh build). Pure search paths (`searchSymbols`, `searchMembers`) only need
+ * this; detail-extraction paths additionally call {@link ensureProject} to
+ * construct the live ts-morph `Project` on demand.
  *
  * If {@link beginInitialization} was called, awaits the in-flight init.
  * Otherwise initializes synchronously. Safe to call multiple times.
  */
 export async function ensureInitialized(): Promise<void> {
-    if (project) return;
+    if (symbolIndex) return;
     if (initPromise) return initPromise;
-    doInitialize();
+    loadOrBuildIndexes();
 }
 
 /**
@@ -845,6 +1010,12 @@ export async function getSymbolDetail(
     const entry = findIndexEntry(name, filePath);
     if (!entry) return null;
 
+    // Pre-computed Promise prototype extensions don't need the live Project;
+    // skip the AST construction in that case.
+    if (!promiseExtensionDetails?.has(entry.name)) {
+        ensureProject();
+    }
+
     try {
         return extractSymbolDetail(entry);
     } catch (e) {
@@ -921,6 +1092,8 @@ export async function getMembers(
     if (!entry) return null;
     if (entry.kind !== 'class' && entry.kind !== 'interface') return null;
 
+    ensureProject();
+
     try {
         const detail = extractSymbolDetail(entry);
         if (!detail) return null;
@@ -953,6 +1126,13 @@ export async function getMembers(
  *
  * Deduplicates by member name — if a subclass overrides a parent member, only
  * the subclass version is included.
+ *
+ * Implements-JSDoc fallback: at each level, if a member has no own JSDoc,
+ * walks the class's `implements` clause (declaration order) and inherits the
+ * matching interface member's JSDoc, parameter descriptions, and `@returns`.
+ * Recorded as `jsDocInheritedFrom` rather than `inheritedFrom` because only
+ * the docs cross the boundary - the member itself is declared on the class.
+ * See {@link findImplementsJsDocFallback}.
  */
 function extractClassMembersWithInheritance(filePath: string, name: string): MemberInfo[] {
     const allMembers: MemberInfo[] = [];
@@ -970,7 +1150,7 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
         if (!cls) break;
 
         const members = extractClassMembers(sourceFile, currentName);
-        const inheritedFrom = isFirst ? undefined : currentName;
+        const classChainInheritedFrom = isFirst ? undefined : currentName;
 
         for (const m of members) {
             // Skip private members at this level
@@ -981,7 +1161,34 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
             if (seen.has(key)) continue;
             seen.add(key);
 
-            allMembers.push({...m, inheritedFrom});
+            const enriched: MemberInfo = {...m, inheritedFrom: classChainInheritedFrom};
+
+            // Implements-fallback: when a member declares no own JSDoc, surface
+            // matching JSDoc from the first interface (in declaration order) that
+            // declares it. Recorded separately as `jsDocInheritedFrom` because
+            // the member itself is declared on the class - only the docs are
+            // inherited, not the member or its behavior.
+            if (!enriched.jsDoc) {
+                const fallback = findImplementsJsDocFallback(cls, m);
+                if (fallback) {
+                    enriched.jsDoc = fallback.jsDoc;
+                    enriched.jsDocInheritedFrom = fallback.inheritedFrom;
+                    if (m.kind === 'method' && enriched.parameters) {
+                        enriched.parameters = enriched.parameters.map(p => {
+                            const desc = fallback.paramDescriptions.get(p.name);
+                            return desc ? {...p, description: desc} : p;
+                        });
+                    }
+                    if (m.kind === 'method' && fallback.returns) {
+                        enriched.returns = {
+                            type: enriched.returnType ?? 'void',
+                            description: fallback.returns
+                        };
+                    }
+                }
+            }
+
+            allMembers.push(enriched);
         }
 
         // Walk up to the parent class
@@ -999,6 +1206,87 @@ function extractClassMembersWithInheritance(filePath: string, name: string): Mem
     }
 
     return allMembers;
+}
+
+/**
+ * For a class member with no own JSDoc, walk the class's `implements` clause
+ * (declaration order) and return the JSDoc + tag info from the first interface
+ * that declares a matching member with non-empty JSDoc.
+ *
+ * Only inspects the given class's direct implements clause - does not walk up
+ * the extends chain to inspect ancestor implements (that case is naturally
+ * handled by the outer chain walk, since each level applies its own fallback
+ * before dedup excludes it).
+ *
+ * Interface-side `extends` is also NOT walked - if a class implements `Derived`
+ * where `interface Derived extends Base`, the lookup only finds members
+ * declared on `Derived` itself, not on `Base`. In practice this is rarely a
+ * problem because Hoist classes that need members from a base interface tend
+ * to list both in their `implements` clause directly. Worth knowing if a future
+ * call site silently fails to surface inherited interface members.
+ *
+ * Static class members are skipped entirely - TS interfaces declare only
+ * instance members, so a class static with the same name as an interface
+ * member is unrelated and must not pick up the interface's JSDoc.
+ *
+ * Multi-interface case: a class may `implements A, B`. Resolution is
+ * deterministic by declaration order - the first interface with a JSDoc-bearing
+ * matching member wins.
+ *
+ * Returns null when no match is found, including when interfaces resolve to
+ * something outside our index (e.g. React's HTMLAttributes).
+ */
+function findImplementsJsDocFallback(
+    cls: ClassDeclaration,
+    member: MemberInfo
+): {
+    jsDoc: string;
+    paramDescriptions: Map<string, string>;
+    returns: string;
+    inheritedFrom: string;
+} | null {
+    // Static members never inherit from interfaces (interfaces declare instance
+    // members only). Bail before doing any lookup work.
+    if (member.isStatic) return null;
+
+    for (const impExpr of cls.getImplements()) {
+        const ifaceName = impExpr.getExpression().getText();
+        const ifaceEntry = findIndexEntry(ifaceName);
+        if (!ifaceEntry || ifaceEntry.kind !== 'interface') continue;
+
+        const sf = project!.getSourceFile(ifaceEntry.filePath);
+        if (!sf) continue;
+        const iface = sf.getInterface(ifaceEntry.name);
+        if (!iface) continue;
+
+        if (member.kind === 'method') {
+            const target = iface.getMethod(member.name);
+            if (!target) continue;
+            const jsDoc = extractJsDoc(target);
+            if (!jsDoc) continue;
+            const tags = extractJsDocTags(target);
+            return {
+                jsDoc,
+                paramDescriptions: tags.paramDescriptions,
+                returns: tags.returns,
+                inheritedFrom: ifaceEntry.name
+            };
+        }
+
+        // Properties + accessors both map to interface property declarations
+        // (TS interfaces don't distinguish accessors from properties).
+        const target = iface.getProperty(member.name);
+        if (!target) continue;
+        const jsDoc = extractJsDoc(target);
+        if (!jsDoc) continue;
+        return {
+            jsDoc,
+            paramDescriptions: new Map(),
+            returns: '',
+            inheritedFrom: ifaceEntry.name
+        };
+    }
+    return null;
 }
 
 /**
@@ -1139,17 +1427,140 @@ function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
     }
 }
 
+/**
+ * Extract the human-readable description from one JSDoc block, fence-aware.
+ *
+ * `JSDoc.getDescription()` returns the text before the first JSDoc block tag,
+ * but the TS parser treats ANY line whose first non-whitespace char is `@` as a
+ * tag boundary - even inside a fenced ``` code block. So a canonical-usage
+ * example containing e.g. `@observable.ref` silently truncates the description
+ * mid-example, dropping everything after it (further examples, "SEE ALSO"
+ * lists, trailing prose). See #4352.
+ *
+ * Instead we take the full inner text and cut at the first block-tag line that
+ * is NOT inside a fenced code block. This is behaviorally identical to
+ * `getDescription()` for well-formed JSDoc (both stop at the first real tag),
+ * but preserves fenced `@`-lines. Real trailing tags (`@param`, `@returns`,
+ * `@mcpHint`, `@see`, ...) fall after the cut, so they never leak into the
+ * description - they are surfaced through their own structured channels
+ * ({@link extractJsDocTags}, {@link extractMcpHint}).
+ *
+ * Falls back to `getDescription()` if `getInnerText` is unavailable.
+ */
+function descriptionFromJsDoc(doc: {
+    getInnerText?: () => string;
+    getDescription: () => string;
+}): string {
+    const inner = doc.getInnerText?.();
+    if (inner == null) return doc.getDescription();
+
+    const out: string[] = [];
+    let inFence = false;
+    for (const line of inner.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+            inFence = !inFence;
+            out.push(line);
+            continue;
+        }
+        // First real (non-fenced) block tag ends the description.
+        if (!inFence && /^@\w/.test(trimmed)) break;
+        out.push(line);
+    }
+    // `getInnerText()` retains a stray trailing `*` from comments mistakenly
+    // closed with `**/` instead of `*/` (e.g. `/** Foo **/`); `getDescription()`
+    // drops it. Strip it to avoid a cosmetic regression. The required leading
+    // whitespace means real prose is unaffected, and a fenced block always ends
+    // with its closing ``` fence rather than ` *`.
+    return out.join('\n').replace(/\s+\*+\s*$/, '');
+}
+
 /** Extract JSDoc description from a node that supports getJsDocs(). */
-function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => string}>}): string {
+function extractJsDoc(node: {
+    getJsDocs?: () => Array<{getInnerText?: () => string; getDescription: () => string}>;
+}): string {
     try {
         const docs = node.getJsDocs?.() ?? [];
-        return docs
-            .map(d => d.getDescription())
-            .join('\n')
-            .trim();
+        return docs.map(descriptionFromJsDoc).join('\n').trim();
     } catch {
         return '';
     }
+}
+
+/**
+ * Per-parameter and return-value text sourced from `@param` / `@returns` JSDoc tags.
+ *
+ * The TS compiler's `tag.getCommentText()` handles both simple string comments and
+ * mixed comment + `{@link ...}` NodeArrays uniformly: link-bearing tag bodies come
+ * back as the rendered string `... {@link Foo} ...` (verified empirically across
+ * single-line, multi-line, and link-bearing JSDoc in the repo). Multi-line `@param`
+ * continuations (`*     ...`) are joined with `\n` and the leading indent is dropped
+ * by the parser, so consumers get clean lines without further whitespace handling.
+ *
+ * Each comment is normalized via {@link normalizeTagComment} to strip the leading
+ * TSDoc separator (`- ` after the param name) which is purely a syntactic
+ * convention, not part of the author's intended description.
+ */
+interface JsDocTagInfo {
+    paramDescriptions: Map<string, string>;
+    returns: string;
+}
+
+/**
+ * Extract structured `@param` / `@returns` info from a JSDocable node.
+ *
+ * The base description (preamble before any `@`-tag) is intentionally not returned
+ * here - it's already extracted by {@link extractJsDoc} via `getDescription()`,
+ * which excludes tag content. This helper is a complement, not a replacement.
+ */
+function extractJsDocTags(node: {getJsDocs?: () => unknown[]}): JsDocTagInfo {
+    const paramDescriptions = new Map<string, string>();
+    let returns = '';
+
+    try {
+        const docs = (node.getJsDocs?.() ?? []) as Array<{getTags?: () => unknown[]}>;
+        for (const doc of docs) {
+            const tags = (doc.getTags?.() ?? []) as Array<{
+                getTagName?: () => string;
+                getCommentText?: () => string | undefined;
+                compilerNode?: {name?: {getText?: () => string}};
+            }>;
+            for (const tag of tags) {
+                const tagName = tag.getTagName?.();
+                if (!tagName) continue;
+
+                const raw = tag.getCommentText?.();
+                const text = normalizeTagComment(raw);
+                if (!text) continue;
+
+                if (tagName === 'param') {
+                    const paramName = tag.compilerNode?.name?.getText?.();
+                    if (paramName) paramDescriptions.set(paramName, text);
+                } else if (tagName === 'returns' || tagName === 'return') {
+                    if (!returns) returns = text;
+                }
+            }
+        }
+    } catch {
+        // Best-effort - return whatever was collected before the failure
+    }
+
+    return {paramDescriptions, returns};
+}
+
+/**
+ * Normalize a JSDoc tag comment for surfacing to consumers.
+ *
+ * Trims surrounding whitespace and strips a leading TSDoc-style separator
+ * (`- ` / `– ` / `— ` after the param name). The separator is purely a
+ * syntactic convention - authors who write `@param foo - description.` mean
+ * the description to read "description.", not "- description.". A leading
+ * dash on its own line would also render as a markdown bullet for tools that
+ * interpret the output, which is not what was intended.
+ */
+function normalizeTagComment(text: string | undefined): string {
+    if (!text) return '';
+    return text.trim().replace(/^[-–—]\s+/, '');
 }
 
 /**
@@ -1517,10 +1928,16 @@ function extractInterfaceMembers(sourceFile: SourceFile, name: string): MemberIn
     // Methods
     for (const method of iface.getMethods()) {
         try {
-            const params = method.getParameters().map(p => ({
-                name: p.getName(),
-                type: fastGetTypeText(p, p)
-            }));
+            const tags = extractJsDocTags(method);
+            const params: MemberParameter[] = method.getParameters().map(p => {
+                const pName = p.getName();
+                const desc = tags.paramDescriptions.get(pName);
+                return {
+                    name: pName,
+                    type: fastGetTypeText(p, p),
+                    ...(desc ? {description: desc} : {})
+                };
+            });
 
             // Prefer the declared return-type annotation (cheap AST lookup) and only
             // fall through to the checker's `getReturnType()` when unavailable.
@@ -1544,7 +1961,8 @@ function extractInterfaceMembers(sourceFile: SourceFile, name: string): MemberIn
                 decorators: [],
                 jsDoc: extractJsDoc(method),
                 parameters: params,
-                returnType
+                returnType,
+                ...(tags.returns ? {returns: {type: returnType, description: tags.returns}} : {})
             });
         } catch (e) {
             log.warn(`Failed to extract interface method from ${name}: ${e}`);
@@ -1559,10 +1977,16 @@ function extractMethodInfo(
     method: ReturnType<ClassDeclaration['getInstanceMethods']>[number],
     isStatic: boolean
 ): MemberInfo {
-    const params = method.getParameters().map(p => ({
-        name: p.getName(),
-        type: fastGetTypeText(p, p)
-    }));
+    const tags = extractJsDocTags(method);
+    const params: MemberParameter[] = method.getParameters().map(p => {
+        const pName = p.getName();
+        const desc = tags.paramDescriptions.get(pName);
+        return {
+            name: pName,
+            type: fastGetTypeText(p, p),
+            ...(desc ? {description: desc} : {})
+        };
+    });
 
     // Prefer the declared return-type annotation. Falling back to the checker's
     // `getReturnType()` is ~order-of-magnitude slower and drives most of the
@@ -1587,7 +2011,8 @@ function extractMethodInfo(
         decorators: getNodeDecorators(method),
         jsDoc: extractJsDoc(method),
         parameters: params,
-        returnType
+        returnType,
+        ...(tags.returns ? {returns: {type: returnType, description: tags.returns}} : {})
     };
 }
 

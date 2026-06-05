@@ -17,7 +17,6 @@ import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
 
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
-import {SpanConfig} from '@xh/hoist/utils/telemetry';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
 
 /**
@@ -93,14 +92,6 @@ declare global {
          * @param options - TrackOptions, or simply a message string.
          */
         track(options: TrackOptions | string): Promise<T>;
-
-        /**
-         * Wrap this promise in a tracing span. The span starts when `.span()` is called
-         * and ends when the promise settles (resolves or rejects).
-         *
-         * @param config - span name string, or a SpanConfig.
-         */
-        span(config: SpanConfig | string): Promise<T>;
     }
 }
 
@@ -157,6 +148,54 @@ export function waitFor(
         };
         resolveOnMet();
     });
+}
+
+/**
+ * Wrap a promise-returning function with trailing-edge debounce semantics. Calls made within
+ * `wait` ms of each other share a single pending Promise; when the quiet period elapses, the
+ * underlying function is invoked once with the args from the most recent call, and the shared
+ * Promise resolves (or rejects) with that result.
+ *
+ * Useful for search-as-you-type inputs and similar flows where only the latest call's result
+ * matters and intermediate calls can be coalesced.
+ *
+ * Adapted from the (unmaintained) `debounce-promise` package by Bjorn Tipling,
+ * https://github.com/bjoerge/debounce-promise - MIT licensed.
+ */
+export function debouncePromise<A extends any[], R>(
+    fn: (...args: A) => R | Promise<R>,
+    wait: number
+): (...args: A) => Promise<R> {
+    let timer: ReturnType<typeof setTimeout> = null,
+        pending: {resolve: (r: R) => void; reject: (e: unknown) => void; promise: Promise<R>} =
+            null,
+        lastArgs: A = null;
+
+    return function (this: any, ...args: A): Promise<R> {
+        lastArgs = args;
+        if (!pending) {
+            let resolve: (r: R) => void, reject: (e: unknown) => void;
+            const promise = new Promise<R>((res, rej) => {
+                resolve = res;
+                reject = rej;
+            });
+            pending = {resolve, reject, promise};
+        }
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(() => {
+            const {resolve, reject} = pending,
+                args = lastArgs;
+            timer = null;
+            pending = null;
+            lastArgs = null;
+            try {
+                Promise.resolve(fn.apply(this, args)).then(resolve, reject);
+            } catch (e) {
+                reject(e);
+            }
+        }, wait);
+        return pending.promise;
+    };
 }
 
 /**
@@ -255,27 +294,6 @@ const enhancePromise = promisePrototype => {
                     throw t;
                 }
             );
-        },
-
-        span<T>(config: SpanConfig | string): Promise<T> {
-            const svc = XH.traceService,
-                span = svc?.createSpan(config);
-
-            if (!span) return this;
-
-            return this.then(
-                (v: T) => {
-                    span.end('ok');
-                    return v;
-                },
-                (e: unknown) => {
-                    span.recordError(e);
-                    span.end('error');
-                    throw e;
-                }
-            ).finally(() => {
-                svc.exportSpan(span);
-            });
         },
 
         tap<T>(onFulfillment: (value: T) => any): Promise<T> {

@@ -114,9 +114,17 @@ lookup.
 
 **Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
 is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
-in the background while the client sets up. The CLI pays this cost on each invocation -- acceptable
-for a 2-3s cold start. In both cases, `ensureInitialized()` awaits in-flight work if a query arrives
-before init completes.
+in the background while the client sets up. In both cases, `ensureInitialized()` awaits in-flight
+work if a query arrives before init completes.
+
+**Disk-persisted index cache.** A serialized snapshot of the symbol and member indexes is written
+to `node_modules/.cache/hoist-mcp/index-v1.json` after each fresh build. Subsequent invocations
+load it in ~10-20ms when the file set hasn't changed, making CLI search calls sub-second on
+remote/slow workstations where ts-morph builds otherwise dominate. Invalidation is automatic: a
+fingerprint over every indexable file's path/mtime/size (plus `package.json`) is recomputed at
+startup and any drift triggers a rebuild. The live ts-morph `Project` is constructed lazily via
+`ensureProject()` only when detail/member extraction needs AST access -- pure search calls served
+from the cache skip it entirely. Set `HOIST_MCP_NO_CACHE=1` to bypass for debugging.
 
 **Resources for nouns, tools for verbs.** Following MCP protocol design guidance: resources serve
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
@@ -133,6 +141,15 @@ system), so they stop at types outside hoist-react's index. Members are deduplic
 child declarations winning. Inherited members are tagged with their declaring type in the formatted
 output. The same `_`-prefix and `private` filtering applied by the member search index is also
 applied here, so `getMembers()` and `searchMembers()` show a consistent public API view.
+
+For class members with no own JSDoc, the walker also looks up the class's `implements` clause and
+inherits the JSDoc -- including `@param` and `@returns` content -- from the first interface (in
+declaration order) that declares a matching member with documentation. The structured output
+records this with `jsDocInheritedFrom`, distinct from `inheritedFrom` (which remains reserved for
+the `extends` chain). Both fields can be set together when a subclass inherits a member from a
+parent class whose docs the parent itself inherited from an interface. A second pass at index
+build-time mirrors this fallback into the member-name search index so JSDoc-content searches
+(e.g. `"refresh background"`) reach impl members that single-source their docs on an interface.
 
 **Promise extension indexing via AST navigation.** Hoist's Promise prototype extensions are declared
 in a `declare global { interface Promise<T> { ... } }` block, which standard ts-morph APIs like
@@ -298,9 +315,20 @@ List all available documentation with descriptions, grouped by category.
 |-----------|------|----------|-------------|
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
 
+#### `hoist-read-doc`
+
+Read the full text of a single document by its exact ID. The tool-based equivalent of the
+`hoist://docs/{id}` resource — useful when resource fetching is unavailable or inconvenient. Returns
+the markdown body as text plus structured `{id, title, category, content}`.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Exact document ID (repo-relative path), e.g. `cmp/grid/README.md`, `docs/authentication.md` |
+
 #### `hoist-ping`
 
-Verify the MCP server is running and responsive. Takes no parameters.
+Verify the MCP server is running and responsive. Takes no parameters. Reports the indexed
+`@xh/hoist` library version.
 
 ### TypeScript Tools
 
@@ -395,6 +423,14 @@ framework classes with deep hierarchies -- e.g. `DashContainerModel` inherits ke
 `BaseFieldModel` -- and for Props interfaces that compose multiple parent interfaces (e.g.
 `PlaceholderProps` extends `HoistProps` and `BoxProps`).
 
+For methods, the structured output exposes `@param` descriptions via `parameters[].description`
+(rendered as a `Parameters:` block in text output) and `@returns` via a top-level
+`returns: {type, description}` field (rendered as a `Returns:` line). Class methods that declare
+no own JSDoc inherit it -- including `@param` and `@returns` content -- from the first matching
+member on an implemented interface, with the source interface recorded in `jsDocInheritedFrom`.
+This lets impl classes single-source their docs on the interface they implement without losing
+fidelity in MCP/CLI output.
+
 Members prefixed with `_` and those with the `private` keyword are excluded from the output,
 matching the member-index search behavior.
 
@@ -428,7 +464,10 @@ looks up the base class in the symbol index, and extracts its members. For inter
 BFS traversal of the `extends` chain, handling multiple parents. In both cases, deduplication ensures
 that if a child overrides a parent member, only the child version appears. The walk stops when it
 reaches a type not in the index (e.g. a third-party class or React's `HTMLAttributes`) or a type
-with no `extends` clause.
+with no `extends` clause. For class members at any level of the chain that declare no own JSDoc,
+the tool additionally consults that class's `implements` clause (declaration order) and inherits
+the JSDoc from the first interface that declares a matching member with non-empty docs. Static
+members are exempt from this fallback (interfaces declare instance members only).
 
 ## MCP Resources
 
@@ -442,6 +481,12 @@ Resources provide direct read access to documentation files via URI.
 
 The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashes in doc IDs
 (e.g. `cmp/grid`) are preserved rather than percent-encoded.
+
+Because concept-doc IDs are themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme
+prefix is also `hoist://docs/`, the strictly-correct URI doubles the segment
+(`hoist://docs/docs/routing.md`). The resource tolerates a single dropped `docs/`, so
+`hoist://docs/routing.md` resolves identically. For a friction-free read by bare ID, prefer the
+`hoist-read-doc` tool.
 
 **Discovering available documents:** The `hoist-doc` resource supports `list` and `complete`
 operations. MCP clients can enumerate all available doc IDs or get tab-completion suggestions.

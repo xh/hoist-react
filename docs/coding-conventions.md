@@ -487,6 +487,13 @@ Factories also accept children as direct arguments when no other props are neede
 hbox(leftPanel(), rightPanel())
 ```
 
+**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
+component, the render function receives those values as the standard React `children` prop, not as
+`items`. The canonical container pattern is to destructure `children` from props and pass them on
+to an inner factory as `items`. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation.
+
 ## Export Patterns
 
 ### Named Exports Only
@@ -607,13 +614,29 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
  */
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
+Match the existing comment density and style in the file. Comments should describe intent for a
+future reader who has no knowledge of any particular edit, or the history of the code in question.
+Rarely should comments reference what changed, what was removed, or what's new.
 
-### Avoid Unicode in Code Comments
+Generally, class- and method-level (TSDoc) comments should focus on the **public API surface** -
+what a caller needs to know to use the component, model, service, or method correctly - rather
+than narrating implementation details. Implementation notes belong in inline code comments next
+to the code they describe.
 
-Use plain ASCII in code comments and JSDoc. In particular, use ` - ` (spaced hyphen) rather
-than em dashes (`—`) for parenthetical asides. Unicode characters can cause encoding issues with
-tooling (e.g. grep, MCP tools) and offer no benefit in a monospace code context. Em dashes are
-fine in prose-style `.md` documentation where they render naturally.
+This is especially important for **Hoist library code itself**, which is consumed by downstream
+applications: the TSDoc on a public type or method is effectively its contract, and should be
+written from the caller's perspective.
+
+### Avoid Em Dashes in Code Comments
+
+Use ` - ` (spaced hyphen) rather than em dashes (`—`) for parenthetical asides in `.ts`
+code comments and JSDoc. Em dashes can cause encoding issues with tooling (e.g. grep, MCP
+tools) and offer no benefit in a monospace code context. Em dashes are fine in prose-style
+`.md` documentation where they render naturally.
+
+Other Unicode characters (arrows like `→`, accented letters, math symbols, etc.) are fine in
+code comments when they aid clarity. The em-dash rule is specifically about the ambiguity
+and tooling friction that character introduces, not a blanket ban on Unicode.
 
 ### Observable Annotation Comments
 

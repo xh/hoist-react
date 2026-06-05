@@ -11,7 +11,7 @@ import ReactGridLayout, {
     getCompactor
 } from 'react-grid-layout';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
-import composeRefs from '@seznam/compose-react-refs';
+import {composeRefs} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {
     elementFactory,

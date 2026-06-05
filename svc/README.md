@@ -122,7 +122,7 @@ const results = await XH.fetchJson({
 
 // Pass loadSpec for consistent tracking in doLoadAsync()
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 
@@ -137,7 +137,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
 | `autoAbortKey` | string | Cancel previous requests with same key                                                |
 | `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
-| `span` | `Span \| string \| SpanConfig` | Parent span for tracing. Accepts an existing `Span`, a `SpanConfig`, or a string name |
+| `span` | Span | Parent span for tracing. Typically supplied via a `Runner` chain (`runner.fetchJson(...)`) rather than set directly |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
@@ -311,6 +311,9 @@ category while all other entries continue to require INFO or above.
 #### TraceService
 **File**: `TraceService.ts` | **Access**: `XH.traceService`
 
+> See [Telemetry & Observability](../docs/telemetry.md) for the full guide to the `Runner` chain,
+> tracing, metrics, and activity tracking.
+
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
 `traceparent` headers on outgoing requests, and batches completed spans for export to the
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
@@ -318,50 +321,68 @@ with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires
 
 Spans are sampled at creation time using `xhTraceConfig.sampleRules` — an ordered list of
 tag-matching rules with glob pattern support. Child spans inherit their parent's sampling
-decision. Unsampled spans are dropped before export unless they end in error and
-`alwaysSampleErrors` is enabled. The `traceparent` header propagates the sampling flag to
-the server. See the hoist-core tracing documentation for full sampling configuration details.
+decision. The `traceparent` header propagates the sampling flag to the server. See the
+hoist-core tracing documentation for full sampling configuration details.
+
+Applications instrument code via the `Runner` chain on `HoistBase`: `runner(ctx?)` starts
+a chain, optionally seeded with a `CallContextLike` (`{span?, loadSpec?}`) — pass one through
+from an upstream call to continue an existing trace / load, or call with no arg to start
+fresh. Add a span with `.span(name)` and execute via the terminal methods — `run(fn)`,
+`fetch()`, `fetchJson()`, `postJson()`, etc. — which run the work inside the configured span,
+with optional `logInfo()` / `logDebug()` / `track()` middleware composed in.
 
 ```typescript
-// Wrap an async operation in a span (from any HoistBase subclass)
-await this.withSpanAsync({name: 'loadPortfolio', caller: this}, async span => {
-    const positions = await this.loadPositionsAsync();
+// Start a fresh chain with a span and run an async fn. `caller` is auto-set to `this`.
+await this.runner().span('loadPortfolio').run(async ctx => {
+    const positions = await this.loadPositionsAsync(ctx);
     this.setPositions(positions);
 });
 
-// Wrap a sync operation
-const result = this.withSpan({name: 'computeTotals', caller: this}, span => {
-    return this.computeTotals();
-});
+// Issue a fetch under a span, no manual span management.
+const data = await this.runner().span('loadPortfolio').fetchJson({url: 'api/portfolio'});
 
-// Simple string-only config
-await this.withSpanAsync('loadData', async span => { ... });
+// Continue an existing context (e.g. from a doLoadAsync loadSpec) and nest a child span.
+async doLoadAsync(loadSpec) {
+    const data = await this.runner({loadSpec})
+        .span('refData')
+        .fetchJson({url: 'api/ref'});
+}
 
-// Nest a fetch call under a parent span without manual span management.
-// FetchService accepts a string, SpanConfig, or existing Span as the `span` option.
-const data = await XH.fetchJson({
-    url: 'api/portfolio',
-    span: 'loadPortfolio'
-});
-const data = await XH.fetchJson({
-    url: 'api/portfolio',
-    span: {name: 'loadPortfolio', tags: {portfolioId: id}, caller: this}
-});
+// Forward a CallContext received from an upstream caller.
+async fetchUserAsync(ctx: CallContext) {
+    return this.runner(ctx).span('user').fetchJson({url: 'api/user'});
+}
+
+// Compose with logging - times completion via withInfo/withDebug as appropriate.
+await this.runner().span('loadPortfolio').logInfo('Loading portfolio').run(async ctx => { ... });
+
+// Configure tags / kind via SpanConfig instead of a bare string.
+await this.runner().span({name: 'loadPortfolio', tags: {portfolioId: id}}).run(async ctx => { ... });
 ```
 
-**SpanConfig:**
+**SpanConfig** (passed to `.span()`):
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `name` | string | Span name (required) |
-| `kind` | SpanKind | `'internal'` \| `'client'` \| `'server'` \| `'producer'` \| `'consumer'` |
-| `tags` | PlainObject | Key-value attributes on the span |
-| `parent` | Span | Explicit parent span for concurrent async nesting |
-| `caller` | NameSource | Object or string — auto-sets `code.namespace` attribute |
+| Option | Type      | Description                                                                  |
+|--------|-----------|------------------------------------------------------------------------------|
+| `name` | string    | Span name (required)                                                         |
+| `kind` | SpanKind  | `'internal'` \| `'client'` \| `'server'` \| `'producer'` \| `'consumer'`     |
+| `tags` | PlainObject | Key-value attributes on the span                                           |
 
-The `caller` property mirrors hoist-core's server-side `caller` parameter. Pass `this` from a
-model or service to automatically tag the span with the class name, or pass a string for
-standalone functions.
+The framework wires `parent` and `caller` automatically from the `Runner` chain — `parent`
+comes from the chain's `CallContext` (with `span` derived from `loadSpec.span` when not set
+explicitly), `caller` defaults to the `HoistBase` that started the chain (driving the
+`code.namespace` tag).
+
+The `fetch*` methods on `FetchService` (and the convenience aliases `XH.fetch()`,
+`XH.fetchJson()`, `XH.postJson()`) also accept an optional `CallContextLike` as a second
+argument — useful when threading context through a fetch without an enclosing `Runner` chain:
+
+```typescript
+const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
+``` To join a trace started upstream (e.g. a
+`traceparent` propagated via WebSocket / SSE / queue messages), pass the string to a span
+created directly via `XH.traceService.withSpan({name, parent: traceparent}, fn)` — the new
+span adopts the remote `traceId`, `parentSpanId`, and `sampled` decision.
 
 #### ClientHealthService
 **File**: `ClientHealthService.ts` | **Access**: `XH.clientHealthService`
@@ -614,7 +635,7 @@ Always pass `loadSpec` to fetch calls for consistent tracking:
 
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
     runInAction(() => this.data = data);
 }
 ```
@@ -654,16 +675,21 @@ For operations that aren't fetch requests, use the `Promise.track()` extension t
 activity with timing. This is implemented in `/promise/` and delegates to TrackService.
 
 ```typescript
-// Track any async operation
+// Simple: track a single async operation via the Promise.track() extension
 await this.processDataAsync(records)
     .track('Processed records');
 
-// With full options
-await this.runExpensiveCalculationAsync()
+// Multi-step: compose tracking (with masking, logging, etc.) via the Runner chain on HoistBase
+await this.runner()
+    .linkTo(this.calcTask)
     .track({
         message: 'Ran portfolio calculation',
         category: 'Calculation',
         data: {portfolioCount: portfolios.length}
+    })
+    .run(async () => {
+        const inputs = await this.gatherInputsAsync();
+        return this.runCalculationAsync(inputs);
     });
 ```
 
@@ -756,7 +782,7 @@ const data = await XH.fetchJson({url: 'api/data'});
 // ✅ Correct: Handle in doLoadAsync with proper error handling
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
         runInAction(() => this.data = data);
     } catch (e) {
         if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
@@ -764,6 +790,27 @@ override async doLoadAsync(loadSpec: LoadSpec) {
         XH.handleException(e, {alertType: 'toast'});
     }
 }
+```
+
+### `params` Triggers a POST When Method Is Not Specified
+
+When `params` is passed without an explicit `method`, `FetchService` issues a **POST** and sends
+the params as `application/x-www-form-urlencoded` in the request body -- not as a URL query
+string on a GET. This is rarely what callers intend.
+
+**Always specify `method: 'GET'` (or use `XH.fetchService.getJson()`) when you intend a GET with
+query parameters.** Omitting the method changes the verb, the wire format, and the server-side
+route hit.
+
+```typescript
+// ❌ Surprising: sends POST with form-encoded params in the body
+await XH.fetchJson({url: 'api/users', params: {role: 'admin'}});
+
+// ✅ Explicit GET with query string ?role=admin
+await XH.fetchJson({url: 'api/users', params: {role: 'admin'}, method: 'GET'});
+
+// ✅ Or use the dedicated getJson() helper
+await XH.fetchService.getJson({url: 'api/users', params: {role: 'admin'}});
 ```
 
 ### Using Native `fetch` Instead of FetchService
@@ -795,7 +842,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 // ✅ Include loadSpec
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 

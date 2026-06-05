@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+/// <reference path="../../assets.d.ts" />
 import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {img} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';

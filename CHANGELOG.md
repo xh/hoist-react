@@ -1,37 +1,260 @@
 # Changelog
 
-## 85.0.0-SNAPSHOT - unreleased
+## 86.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
+* Deprecated `HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields, in favor of
+  the `Runner` chain (`runner().span()`) and the new `CallContext` argument to fetch methods (see
+  below for more details). Both log a warning and are scheduled for removal in v88.
+* Upgraded `CodeInput` to CodeMirror v6 (upgraded from v5).
+    * Removed `editorProps` prop - most use cases now supported via first-class `CodeInput` props
+      such as `readonly`, `language`, `lineNumbers`, and `lineWrapping`.
+    * Replaced the `mode` prop with `language`. See
+      [language-data](https://github.com/codemirror/language-data/blob/main/src/language-data.ts)
+      for valid language strings (aliases and names are both accepted).
+* Redesigned `FileChooser`, moving configuration from component props to the `FileChooserModel`
+  constructor config and adding a fully customizable display API.
+    * Options such as `accept` and the file-size limits are now set on `FileChooserModel` rather
+      than as `FileChooser` props.
+    * Renamed `maxSize` / `minSize` to `maxFileSize` / `minFileSize`.
+    * Removed `enableMulti` / `enableAddMulti` - use `maxFiles` (set to `1` for single-file
+      selection).
+    * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
+      content props. The default `fileDisplay` is a file grid, or a compact card with replace /
+      remove actions when `maxFiles` is 1.
+* `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
+  `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
+  `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
+* Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
+  existed only to support the above.
 * Replaced the mobile `DateInput`'s picker with the browser's native `<input type="date">`,
   dropping the abandoned `react-dates` dependency. Removed the obsolete `formatString`,
   `initialMonth`, `placeholder`, and `singleDatePickerProps` props from `DateInputProps`.
 
 ### 🎁 New Features
 
-* Improved `withSpan`/`withSpanAsync` to always provide a non-nullable `Span`, matching the
-  server-side API. Added `Span.setTag()`/`setTags()`.
+* `FileChooser` gained extensive new capabilities as part of its redesign: a `maxFiles` limit,
+  fully customizable `emptyDisplay` / `fileDisplay` content, `onFileAccepted` / `onFileRejected`
+  callbacks, configurable rejection toasts, `maskOnDrag` / `maskOnDisabled` options, and a
+  programmatic `openFileBrowser()` method. In multi-file mode a persistent drop target sits
+  alongside the grid - placement set via the `dropTargetPlacement` prop (`left`, `top`, or
+  `hidden`) - so users can keep adding files until the limit is reached.
+* Added the `Runner` API - a fluent builder (via `HoistBase.runner()`) that composes spanning,
+  logging, activity tracking, metrics, and task-linking around async work and fetch calls. It
+  threads a shared `CallContext` (trace + load state) across call boundaries, which fetch methods
+  now accept as an optional argument.
+* Added a client-side `MetricsService` (`XH.metricsService`) for recording timers and counters,
+  batched to the server's Micrometer registry. Recording requires `hoist-core >= 40.0.1`.
+* Trace spans can now chain onto a remote `traceparent` received off-channel (e.g. a WebSocket,
+  SSE, or queue message), in addition to a local parent span.
+* Desktop `DateInput` now supports a `commitOnChange` prop (default `true`). Set to `false` to
+  defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
+  `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
+  where the eager default would reformat the user's text mid-typing.
 
 ### 🐞 Bug Fixes
 
-* Added the `user.name` tag to all spans, matching the server-side convention.
-* Updated `HoistBase.withSpan`/`withSpanAsync` to auto-populate `caller` with `this`, ensuring
-  emitted spans correctly stamp `code.namespace`.
+* Updated the chart right-to-left "zoom out" gesture to activate for charts configured with the
+  modern `chart.zooming.type` Highcharts option, in addition to the legacy `chart.zoomType`.
+* Improved desktop `Select` to no longer hijack `Home`/`End` keys, allowing native caret movement in
+  the input. See [#3930](https://github.com/xh/hoist-react/issues/3930).
+* Fixed `GridFilter` column header values tab crashing with a duplicate-ID error when re-opened
+  for a `tags`-typed field with an active filter.
+* Fixed `RelativeTimestamp` ignoring an explicitly passed `model` prop when resolving its `bind`
+  source - the prop is now honored, falling back to the context model only when unset.
+* Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
+  reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
+  cache could be transitioning.
+
+### 🎁 New Features
+
+* Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
+  concatenated through `persistOptions()`. Enables hierarchical namespacing of persistence so a
+  parent model can scope all descendants (`@persist` properties, `markPersist` calls, child
+  `GridModel` / `PanelModel` / etc.) under a single shared key in one backing store. See
+  [`docs/persistence.md`](docs/persistence.md#hierarchical-namespacing-with-pathprefix).
+* Added exported `persistOptions()` function for merging one or more `PersistOptions` objects,
+  with later arguments overriding earlier ones. Replaces the now-deprecated
+  `PersistenceProvider.mergePersistOptions`.
 
 ### 🤖 AI Docs + Tooling
 
-* Improved MCP/CLI symbol and member search to support multi-word queries that combine a class
-  name with a member name or concept (e.g. `"StoreRecord raw"`, `"GridModel column state"`).
-* Expanded MCP/CLI member-index coverage from a hand-curated 18-class list to a rule-based set:
-  every exported class plus every exported `*Config` interface.
-* Added an `@mcpHint` JSDoc tag for framework authors to attach a short hint to a class or
-  interface. The tag is shown alongside owner names in MCP/CLI member search results.
-* Added server `instructions` and sibling-disambiguating language to each MCP tool's description.
-* Added structured output to all MCP tools via `outputSchema` / `structuredContent`, plus a
-  `--json` flag on every matching CLI subcommand.
-* Fixed a latent member-index collision bug where two exported owners sharing a simple name
-  would clobber each other's `memberNames` augmentation, causing spurious symbol-search hits.
+* Added a `hoist-read-doc` MCP tool that reads a full document by exact ID, giving MCP parity with
+  the `hoist-docs read` CLI and `hoist-core`'s `hoist-core-read-doc`.
+* The `hoist://docs/{id}` resource now tolerates a dropped `docs/` segment, so
+  `hoist://docs/routing.md` resolves the same as the strictly-correct
+  `hoist://docs/docs/routing.md`.
+* Added a `hoist-docs ping` CLI subcommand mirroring the `hoist-ping` MCP tool; both now report the
+  indexed `@xh/hoist` library version.
+* MCP/CLI symbol JSDoc is no longer truncated at the first `@`-prefixed line inside a fenced code
+  block (e.g. an `@observable.ref` in a usage example), recovering example code, "SEE ALSO" lists,
+  and trailing prose that were previously dropped.
+
+### ⚙️ Technical
+
+* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
+  jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+* Replaced unmaintained `@seznam/compose-react-refs` with a Hoist-owned `composeRefs` utility
+  exported from `@xh/hoist/utils/react`. Behavior unchanged.
+* Replaced unmaintained `clipboard-copy` with a Hoist-owned `copyToClipboard` utility exported
+  from `@xh/hoist/utils/js`. Behavior unchanged (async Clipboard API with `execCommand` fallback).
+* Replaced unmaintained `debounce-promise` with a Hoist-owned `debouncePromise` utility exported
+  from `@xh/hoist/promise`. Behavior unchanged for the trailing-edge / shared-promise usage
+  Hoist relies on; leading-edge and accumulate modes were not used and have been omitted.
+
+### 📚 Libraries
+
+* @azure/msal-browser `4.29 → 5.11`
+    * Major upgrade with broad architectural changes. Several `system` config properties were
+      renamed - notably `iFrameHashTimeout` → `iframeBridgeTimeout`. Apps passing
+      `msalClientOptions` to `MsalClient` must review
+      the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
+* @codemirror `5.x → 6.x`
+    * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
+      managed by hoist-react to maintain all supported functionality.
+    * See breaking change note above for `CodeInput` prop changes.
+* ag-grid `34.x → 35.x`.
+    * Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and `ag-grid-react`
+      dependencies to `35.x`. See
+      the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
+      no Hoist API changes required.
+* golden-layout `removed`
+    * Replaced by the forked source as described above
+* jquery `removed`
+    * Was included due to golden-layouts consumer, which now no longer needs the library.
+    * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
+      be able to remove that pin.
+* react-dropzone `10.x → 15.x`
+    * See the `FileChooser` redesign note under Breaking Changes above.
+* react-select `4.3 → 5.10`
+* react-windowed-select `3.1 → 5.2`
+* semver `7.7 → 7.8`
+
+## 85.0.0 - 2020-04-30
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+See [`docs/upgrade-notes/v85-upgrade-notes.md`](docs/upgrade-notes/v85-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+Note that `hoist-core >= 39.0` is recommended (not required) to pair with the span-sampling and
+app-load span changes in this release.
+
+* `XH.installServicesAsync()` no longer accepts the spread-args form. Callers must pass an
+  array of service classes plus the current phase's `InitContext`:
+  ```ts
+  // before
+  await XH.installServicesAsync(MyServiceA, MyServiceB);
+  // after
+  await XH.installServicesAsync([MyServiceA, MyServiceB], ctx);
+  ```
+  The `ctx` is the one passed to your `AppModel.initAsync(ctx)` override. Forwarding it
+  ensures service-init spans nest under the current phase's root span (e.g. `xh.client.appInit`
+  for app-level services, `xh.client.hoistInit` for Hoist-internal services).
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` signatures now take an
+  `InitContext` argument. Override signatures must be updated to `initAsync(ctx: InitContext)` -
+  the upgrade notes cover the mechanical changes and recommended ways to forward `ctx.span`
+  into init-time fetch and async work.
+* `HoistBase.withSpan()` / `withSpanAsync()` have been removed in favor of the new
+  `HoistBase.span()` builder. Replace `this.withSpanAsync(cfg, fn)` with
+  `this.span(cfg).run(fn)`. The underlying `XH.traceService.withSpan()` API remains for
+  advanced use - now a single async method (the prior sync `withSpan` and async
+  `withSpanAsync` on `TraceService` have been merged).
+* `TraceService` no longer supports the `alwaysSampleErrors` flag, which was deemed inappropriate
+  for head-based sampling. This change is consistent with a similar update in hoist-core v39. Apps
+  requiring full visibility into error spans for a particular set of errors should ensure they
+  are sampled via the existing rules.
+* Removed several APIs that had been deprecated for one or more prior versions - including
+  `loadModel` getters across model/service/store classes, static defaults setters on `GridModel`/
+  `ChartModel`/`ExceptionHandler`/`FetchService`, and the legacy `withFilterByField`/
+  `withFilterByKey`/`replaceFilterByKey`/`withFilterByTypes` filter helpers. See the v85 upgrade
+  notes for the full list and replacements.
+
+### 🎁 New Features
+
+* Added `Span.setTag()`/`setTags()`. Span passed to spanned functions is now non-nullable,
+  matching the server-side API.
+* `LoadSpecConfig.span` lets callers seed the parent trace context for a managed load via
+  loadAsync().
+  This span will be made available on the LoadSpec and automatically picked up by FetchService for
+  properly nesting fetch calls.
+* `HoistService.initAsync()` and `HoistAppModel.initAsync()` now receive an `InitContext`
+  argument carrying the current phase's `span`, so service init spans can nest under the caller's
+  span. Pass it along to any `loadAsync()` calls via `LoadSpecConfig.span` to continue the chain.
+* `sampleRules` in `xhTraceConfig` now support matching against the span's name via the reserved
+  `name` key (same syntax as tag-value patterns). Matches addition in hoist-core.
+* Added the `user.name` tag to all spans. New `xh.impersonating` tag on spans shows impersonated
+  user, if any.
+* Improved, properly nested spans for app loading: `xh.client.load`, `xh.client.hoistInit`, and
+  `xh.client.appInit`.
+* Added `Picker` props for richer multi-select trigger rendering: `multiSelectButtonStyle: 'values'`
+  shows comma-separated selected labels (overflow-ellipsed) instead of the default summary count,
+  and `multiSelectShowCount` adds a small selection-count badge to the left of the text. Both are
+  app-wide overridable via `Picker.defaults`.
+
+### 🐞 Bug Fixes
+
+* Updated `HoistBase.withSpan` to auto-populate `caller` with `this`, ensuring
+  emitted spans correctly stamp `code.namespace`.
+* Fixes to built-in fetch CLIENT span:  install `http.response.status_code` and `url.full` tags.
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were
+  not reachable from consumer tsconfigs with narrower `include` patterns.
+* Upgraded Swiper `11 → 12` to resolve CVE-2026-27212, a critical prototype pollution
+  vulnerability in `Swiper.extendDefaults()`. Apps consuming Swiper's own SCSS should update
+  imports from `swiper/scss` to `swiper/css` - Swiper 12 ships CSS sources only.
+
+### 🤖 AI Docs + Tooling
+
+* MCP/CLI symbol and member search now support multi-word queries combining class and member names
+  (e.g. `"StoreRecord raw"`).
+* Expanded member-index coverage to every exported class and every exported `*Config` interface.
+* Added an `@mcpHint` JSDoc tag for attaching short hints to indexed classes/interfaces.
+* All MCP tools now expose structured output via `outputSchema` / `structuredContent`; matching
+  CLI subcommands gained a `--json` flag.
+* `hoist-get-members` surfaces `@param` and `@returns` JSDoc, including via `implements` fallback.
+* Added a disk-persisted index cache at `node_modules/.cache/hoist-mcp/`, dropping cold CLI search
+  invocations from multi-second builds to sub-second loads. `HOIST_MCP_NO_CACHE=1` to bypass.
+* Added MCP server `instructions` and disambiguating language to tool descriptions.
+* Fixed a member-index collision where same-named owners clobbered each other's `memberNames`.
+
+### ⚙️ Technical
+
+* Improvements to the naming and tagging of hoist-created spans for consistency with hoist-core
+  and easier tag-based sampling.
+* Suppressed `Trace ID` display in exception dialogs/toasts for routine or unsampled exceptions.
+
+### 📚 Libraries
+
+* swiper `11.2 → 12.1`
+* @onsenui/fastclick `removed`
+* @popperjs/core `removed`
+* react-transition-group `removed`
+* resize-observer-polyfill `removed`
+
+Removed dependencies were obsolete or no longer used by hoist-react internals. No app impact
+expected - none were part of the public API surface. Apps that imported these directly (relying
+on them as transitive hoist-react dependencies) must add their own direct dependencies.
+
+## 84.0.2 - 2026-05-13
+
+### 🐞 Bug Fixes
+
+* Fixed downstream app type-check failures on hoist-react asset imports by adding triple-slash
+  references to `assets.d.ts` from the files that import PNGs. The ambient declarations were not
+  reachable from consumer tsconfigs with narrower `include` patterns. Backport of the fix
+  originally shipped in v85.0.0.
+
+## 84.0.1 - 2026-04-20
+
+### 🐞 Bug Fixes
+
+* Fixed an unrecoverable crash when calling `XH.prompt()` (and any other `FormField` rendered
+  without an explicit `model` prop). `InstanceManager.registerModelWithTestId()` dereferenced a
+  null model when a `testId` was supplied, introduced by the v84 expansion of `testId` coverage on
+  built-in appcontainer components.
 
 ## 84.0.0 - 2026-04-15
 
@@ -54,9 +277,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   configured globally via `Spinner.defaults` or per-instance via props. A `usePng` flag is
   available to preserve the original PNG appearance if desired.
 * Added client-side span sampling to `TraceService`. Evaluates `xhTraceConfig.sampleRules` at span
-  creation, with child spans inheriting their parent's decision. Error spans are always exported
-  when `alwaysSampleErrors` is enabled. The `traceparent` header now propagates the sampling flag to
-  the server.
+  creation, with child spans inheriting their parent's decision. The `traceparent` header now
+  propagates the sampling flag to the server.
 * `FetchOptions.span` now accepts a `string` or `SpanConfig` in addition to an existing `Span`.
   When a string or config is provided, `FetchService` creates and manages the parent span
   internally, simplifying a common tracing pattern for fetch calls.

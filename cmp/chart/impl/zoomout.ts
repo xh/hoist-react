@@ -14,9 +14,11 @@ export function installZoomoutGesture(Highcharts) {
     Highcharts.wrap(Highcharts.Chart.prototype, 'init', function (proceed) {
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-        const {container} = this;
+        const {container} = this,
+            {chart} = this.options,
+            zoomType = chart.zooming?.type ?? chart.zoomType;
 
-        if (this.options.chart.zoomType != 'x') return;
+        if (zoomType != 'x') return;
 
         let selectFrom, selectTo, pixelDiff;
         Highcharts.addEvent(container, 'mousedown', e => {

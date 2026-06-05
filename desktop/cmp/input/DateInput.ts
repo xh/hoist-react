@@ -31,6 +31,9 @@ import './DateInput.scss';
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
 
+    /** True to commit eagerly whenever typed input parses to a new valid date. Default true. */
+    commitOnChange?: boolean;
+
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
     dayPickerProps?: ReactDayPickerSingleProps['dayPickerProps'];
 
@@ -210,6 +213,10 @@ class DateInputModel extends HoistInputModel {
         return withDefault(this.componentProps.strictInputParsing, false);
     }
 
+    override get commitOnChange() {
+        return withDefault(this.componentProps.commitOnChange, true);
+    }
+
     constructor() {
         super();
         makeObservable(this);
@@ -290,6 +297,8 @@ class DateInputModel extends HoistInputModel {
     };
 
     onInputChange = value => {
+        // Skip mid-typing parses to avoid reformatting in-progress text via formatDate.
+        if (!this.commitOnChange) return;
         if (!value && !trim(value)) this.onDateChange(null);
         const date = this.parseDate(value, true);
         if (date) this.onDateChange(date);

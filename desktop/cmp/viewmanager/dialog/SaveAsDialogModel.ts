@@ -6,10 +6,10 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {p, strong} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {makeObservable, action, observable} from '@xh/hoist/mobx';
+import {fragment, p, strong} from '@xh/hoist/cmp/layout';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {some} from 'lodash';
 
 /**
@@ -95,14 +95,13 @@ export class SaveAsDialogModel extends HoistModel {
         if (!isValid) return;
 
         if (isGlobal) {
-            const message = [
-                p(
-                    `This ${typeDisplayName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`
-                ),
-                p(strong('Are you sure you want to proceed?'))
-            ];
             const confirmed = await XH.confirm({
-                message,
+                message: fragment(
+                    p(
+                        `This ${typeDisplayName} will become a ${globalDisplayName} ${typeDisplayName} visible to all other ${XH.appName} users.`
+                    ),
+                    p(strong('Are you sure you want to proceed?'))
+                ),
                 confirmProps: {
                     text: `Yes, save ${globalDisplayName} ${typeDisplayName}`,
                     outlined: true,

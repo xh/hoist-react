@@ -41,7 +41,7 @@ export const exceptionDialog = hoistCmp.factory({
                 items: [
                     dialogBody(options.message),
                     div({
-                        omit: !exception.traceId,
+                        omit: !exception.traceId || exception.isRoutine,
                         className: 'xh-exception-dialog__trace-id',
                         item: `Trace ID: ${exception.traceId}`
                     }),

@@ -65,7 +65,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "withSpan", "withSpanAsync", "traceparent", "distributed tracing"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "MetricsService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "Runner", "CallContext", "withSpan", "traceparent", "distributed tracing"]
         },
         {
             "id": "cmp/README.md",
@@ -316,6 +316,14 @@
             "keywords": ["XH.handleException", "ExceptionDialog", "catchDefault", "alertType", "toast", "requireReload", "ErrorBoundary", "error boundary", "exception logging"]
         },
         {
+            "id": "docs/telemetry.md",
+            "title": "Telemetry & Observability",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Client-side tracing, activity tracking, metrics, and timed logging composed via the Runner chain.",
+            "keywords": ["Runner", "telemetry", "observability", "tracing", "TraceService", "span", "traceparent", "sampling", "MetricsService", "metrics", "activity tracking", "CallContext", "telemetryPrefix"]
+        },
+        {
             "id": "docs/test-automation.md",
             "title": "Test Automation",
             "mcpCategory": "concept",
@@ -466,6 +474,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v83.x to v84.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v84", "v83", "getClassName"]
+        },
+        {
+            "id": "docs/upgrade-notes/v85-upgrade-notes.md",
+            "title": "v85 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
         }
     ]
 }

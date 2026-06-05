@@ -6,7 +6,7 @@
  */
 import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
-import {apiDeprecated, logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
+import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
 import {LoadSpec, PlainObject, XH} from './';
@@ -124,7 +124,7 @@ export class ExceptionHandler {
                         span({
                             className: 'xh-toast__trace-id',
                             item: `Trace ID: ${e.traceId}`,
-                            omit: !e.traceId
+                            omit: !e.traceId || e.isRoutine
                         })
                     ),
                     actionButtonProps: {
@@ -266,18 +266,16 @@ export class ExceptionHandler {
             // Clean up fetchOptions for serialization.
             const {fetchOptions} = ret;
             if (fetchOptions) {
-                // Extract summary fields from verbose loadSpec, then remove it.
-                if (fetchOptions.loadSpec) {
-                    const {loadSpec} = fetchOptions;
-                    if (loadSpec instanceof LoadSpec) {
-                        fetchOptions.loadType = loadSpec.typeDisplay;
-                        fetchOptions.loadNumber = loadSpec.loadNumber;
-                    }
-                    delete fetchOptions.loadSpec;
-                }
-                // Remove Span object - not useful in serialized output.
+                delete fetchOptions.loadSpec;
                 delete fetchOptions.span;
             }
+            // Extract summary fields from verbose callContext into fetchOptions.
+            const loadSpec = ret.callContext?.loadSpec;
+            if (loadSpec instanceof LoadSpec) {
+                ret.loadType = loadSpec.typeDisplay;
+                ret.loadNumber = loadSpec.loadNumber;
+            }
+            delete ret.callContext;
 
             // 4) Redact specified values
             ExceptionHandler.defaults.redactPaths.forEach(path => {
@@ -333,7 +331,7 @@ export class ExceptionHandler {
         opts: ExceptionHandlerOptions
     ): ExceptionHandlerOptions {
         const ret = {...opts},
-            isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
+            isAutoRefresh = e.callContext?.loadSpec?.isAutoRefresh ?? false,
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
@@ -387,42 +385,5 @@ export class ExceptionHandler {
         });
 
         return ret;
-    }
-
-    //------------------------------
-    // Deprecated static setters
-    //------------------------------
-    /** @deprecated - use `ExceptionHandler.defaults.redactPaths` */
-    static get REDACT_PATHS(): string[] {
-        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
-            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
-            v: '85.0'
-        });
-        return ExceptionHandler.defaults.redactPaths;
-    }
-    static set REDACT_PATHS(v: string[]) {
-        apiDeprecated('ExceptionHandler.REDACT_PATHS', {
-            msg: 'Use ExceptionHandler.defaults.redactPaths instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.redactPaths = v;
-    }
-
-    /** @deprecated - use `ExceptionHandler.defaults.alertType` */
-    static set ALERT_TYPE(v: 'dialog' | 'toast') {
-        apiDeprecated('ExceptionHandler.ALERT_TYPE', {
-            msg: 'Use ExceptionHandler.defaults.alertType instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.alertType = v;
-    }
-
-    /** @deprecated - use `ExceptionHandler.defaults.toastProps` */
-    static set TOAST_PROPS(v: object) {
-        apiDeprecated('ExceptionHandler.TOAST_PROPS', {
-            msg: 'Use ExceptionHandler.defaults.toastProps instead.',
-            v: '85.0'
-        });
-        ExceptionHandler.defaults.toastProps = v;
     }
 }
