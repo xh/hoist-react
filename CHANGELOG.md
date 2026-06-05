@@ -28,6 +28,9 @@
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
 * Removed the `serializeIcon()` / `deserializeIcon()` helpers from `@xh/hoist/icon`, which
   existed only to support the above.
+* Replaced the mobile `DateInput`'s picker with the browser's native `<input type="date">`,
+  dropping the abandoned `react-dates` dependency. Removed the obsolete `formatString`,
+  `initialMonth`, `placeholder`, and `singleDatePickerProps` props from `DateInputProps`.
 
 ### 🎁 New Features
 
