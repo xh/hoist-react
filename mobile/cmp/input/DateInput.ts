@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {box, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {input} from '@xh/hoist/kit/onsen';
@@ -133,6 +133,12 @@ class DateInputModel extends HoistInputModel {
         if (maxDate && stamped > maxDate) return true;
         return false;
     }
+
+    // No-op on browsers without showPicker() (pre-16.4 Safari); tapping the field still opens it.
+    showPicker() {
+        if (this.componentProps.disabled) return;
+        (this.inputEl as HTMLInputElement)?.showPicker?.();
+    }
 }
 
 const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref) => {
@@ -168,7 +174,12 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 onBlur: model.onBlur
             }),
             clearButton(),
-            rightIcon
+            rightIcon &&
+                box({
+                    className: 'xh-date-input__picker-button',
+                    onClick: () => model.showPicker(),
+                    item: rightIcon
+                })
         ]
     });
 });
