@@ -123,6 +123,10 @@
     * Was included due to golden-layouts consumer, which now no longer needs the library.
     * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
       be able to remove that pin.
+* react-beautiful-dnd `removed`
+    * Replaced by `@hello-pangea/dnd` 18.0, a maintained, React 19-ready, drop-in fork. The
+      now-archived `react-beautiful-dnd` will receive no further updates. No Hoist or app API
+      changes - drag-and-drop behavior is unchanged.
 * react-dropzone `10.x → 15.x`
     * See the `FileChooser` redesign note under Breaking Changes above.
 * react-select `4.3 → 5.10`
