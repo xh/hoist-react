@@ -19,9 +19,16 @@
     appearance: none;
     -webkit-appearance: none;
 
+    // Center the value vertically within the fixed-height control. On iOS the formatted value sits
+    // in ::-webkit-date-and-time-value, which carries a default margin and aligns to the top of the
+    // content box - line-height centers it (single line, no vertical padding) without disturbing
+    // the horizontal text-align driven by the textAlign prop.
+    line-height: var(--xh-mobile-input-height-px);
+
     // Value sits in this pseudo, which ignores text-align unless inherited.
     &::-webkit-date-and-time-value {
       text-align: inherit;
+      margin: 0;
     }
 
     &:disabled {
