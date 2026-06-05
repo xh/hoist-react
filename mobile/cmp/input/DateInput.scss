@@ -7,20 +7,19 @@
     flex: none;
   }
 
-  &__input {
-    flex: 1;
-    min-width: 0;
+  // Size onsen's inner input + label, matching sibling text/number inputs.
+  .text-input,
+  .text-input__label {
     height: var(--xh-mobile-input-height-px);
     padding: 0 var(--xh-pad-px);
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--xh-text-color);
-    font: inherit;
+  }
+
+  // Strip native date chrome - Icon.calendar() is the sole affordance.
+  .text-input {
     appearance: none;
     -webkit-appearance: none;
 
-    // iOS Safari leaves its own inner shadow / rounded box; strip it.
+    // Value sits in this pseudo, which ignores text-align unless inherited.
     &::-webkit-date-and-time-value {
       text-align: inherit;
     }
@@ -29,6 +28,11 @@
       color: var(--xh-text-color-muted);
       opacity: 1;
     }
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
   }
 
   &__clear-button {
