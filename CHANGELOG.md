@@ -92,6 +92,14 @@
 
 * Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
   jQuery to native DOM, and folded existing monkey-patches into the source.
+  See [#4336](https://github.com/xh/hoist-react/issues/4336).
+* Replaced unmaintained `@seznam/compose-react-refs` with a Hoist-owned `composeRefs` utility
+  exported from `@xh/hoist/utils/react`. Behavior unchanged.
+* Replaced unmaintained `clipboard-copy` with a Hoist-owned `copyToClipboard` utility exported
+  from `@xh/hoist/utils/js`. Behavior unchanged (async Clipboard API with `execCommand` fallback).
+* Replaced unmaintained `debounce-promise` with a Hoist-owned `debouncePromise` utility exported
+  from `@xh/hoist/promise`. Behavior unchanged for the trailing-edge / shared-promise usage
+  Hoist relies on; leading-edge and accumulate modes were not used and have been omitted.
 
 ### 📚 Libraries
 
