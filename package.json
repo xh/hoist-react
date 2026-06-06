@@ -97,11 +97,11 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "react": "~18.2.0",
+    "react": "~19.2.7",
     "react-dom": "~18.2.0"
   },
   "devDependencies": {
-    "@types/react": "18.x",
+    "@types/react": "19.x",
     "@types/react-dom": "18.x",
     "@xh/hoist-dev-utils": "12.x",
     "ag-grid-community": "35.x",
@@ -114,7 +114,7 @@
     "lint-staged": "17.x",
     "postcss": "8.x",
     "prettier": "3.x",
-    "react": "~18.2.0",
+    "react": "~19.2.7",
     "react-dom": "~18.2.0",
     "stylelint": "17.x",
     "stylelint-config-standard-scss": "17.x",
@@ -122,7 +122,7 @@
     "typescript": "~5.9.3"
   },
   "resolutions": {
-    "@types/react": "18.x",
+    "@types/react": "19.x",
     "@types/react-dom": "18.x",
     "core-js": "3.x"
   },
