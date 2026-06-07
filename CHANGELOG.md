@@ -7,6 +7,11 @@
 * Removed the last internal use of the deprecated React `findDOMNode` API (in
   `HoistInputModel.domEl`) in preparation for React 19, which removes it. All `HoistInput`
   implementations already root their `domRef` on a DOM element, so behavior is unchanged.
+* Migrated the Blueprint `Popover` kit wrapper to Blueprint's Floating UI-based `PopoverNext`,
+  which (unlike the legacy `Popover`) is React 19 compatible. The `popover` factory keeps its
+  existing `PopoverProps` API — `position`, `modifiers`, `minimal`, and `boundary` are mapped
+  internally and the legacy `shouldReturnFocusOnClose` default is preserved — so no call-site or
+  application changes are required.
 
 ## 86.0.0-SNAPSHOT - unreleased
 
