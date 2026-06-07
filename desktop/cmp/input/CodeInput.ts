@@ -589,7 +589,10 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
             div({
                 className: 'xh-code-input__inner-wrapper',
                 // We pass the container via ref to createCodeEditor, which initializes the editor inside it.
-                ref: model.createCodeEditor
+                // Wrapped to return void — React 19 treats a ref callback's return value as a cleanup fn.
+                ref: el => {
+                    model.createCodeEditor(el);
+                }
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],

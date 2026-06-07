@@ -22,6 +22,9 @@
   Floating UI (`@floating-ui/react`, the same library already pulled in by Blueprint's
   `PopoverNext`), removing `react-popper` as a direct dependency. Positioning behavior is
   preserved.
+* Applied forward-compatible type adjustments anticipating React 19's stricter `@types/react`
+  (an explicit `useRef` initial arg, `cloneElement` element typing, element `props` access, ref
+  callbacks returning void, and narrowing a few render-fn results). No behavior change on React 18.
 
 ## 86.0.0-SNAPSHOT - unreleased
 
