@@ -103,6 +103,9 @@
 * Replaced unmaintained `debounce-promise` with a Hoist-owned `debouncePromise` utility exported
   from `@xh/hoist/promise`. Behavior unchanged for the trailing-edge / shared-promise usage
   Hoist relies on; leading-edge and accumulate modes were not used and have been omitted.
+* Removed the last internal use of the deprecated React `findDOMNode` API (in
+  `HoistInputModel.domEl`) in preparation for React 19, which removes it. All `HoistInput`
+  implementations already root their `domRef` on a DOM element, so behavior is unchanged.
 
 ### 📚 Libraries
 
