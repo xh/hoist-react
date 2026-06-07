@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, fragment} from '@xh/hoist/cmp/layout';
 import {
-    Content,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    PlainObject,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+    autoPlacement,
+    autoUpdate,
+    flip,
+    type Placement,
+    shift,
+    useFloating
+} from '@floating-ui/react';
+import {div, fragment} from '@xh/hoist/cmp/layout';
+import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
@@ -21,7 +21,6 @@ import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
 import {ReactPortal} from 'react';
 import ReactDom from 'react-dom';
-import {usePopper} from 'react-popper';
 
 import './Popover.scss';
 
@@ -62,18 +61,15 @@ export interface PopoverProps extends HoistProps {
 
     /** Optional className applied to the popover content wrapper. */
     popoverClassName?: string;
-
-    /** Escape hatch to provide additional options to the PopperJS implementation */
-    popperOptions?: PlainObject;
 }
 
 /**
  * Popovers display floating content next to a target element.
  *
  * The API is based on a stripped-down version of Blueprint's Popover component
- * that is used on Desktop. Popover is built on top of the Popper.js library.
+ * that is used on Desktop. Popover is built on top of the Floating UI library.
  *
- * @see https://popper.js.org/
+ * @see https://floating-ui.com/
  */
 export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     displayName: 'Popover',
@@ -86,23 +82,17 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
         disabled = false,
         backdrop = false,
         position = 'auto',
-        popoverClassName,
-        popperOptions
+        popoverClassName
     }) {
         const impl = useLocalModel(PopoverModel),
-            popper = usePopper(impl.targetEl, impl.contentEl, {
-                placement: impl.menuPositionToPlacement(position),
+            placement = impl.menuPositionToPlacement(position),
+            isAuto = placement === 'auto',
+            {floatingStyles} = useFloating({
+                placement: isAuto ? undefined : (placement as Placement),
                 strategy: 'fixed',
-                modifiers: [
-                    {
-                        name: 'preventOverflow',
-                        options: {
-                            padding: 10,
-                            boundary: 'viewport'
-                        } as any
-                    }
-                ],
-                ...popperOptions
+                middleware: [isAuto ? autoPlacement() : flip(), shift({padding: 10})],
+                whileElementsMounted: autoUpdate,
+                elements: {reference: impl.targetEl, floating: impl.contentEl}
             });
 
         return div({
@@ -123,7 +113,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                         items: [
                             div({
                                 ref: impl.contentRef,
-                                style: popper?.styles?.popper,
+                                style: floatingStyles,
                                 className: classNames(
                                     'xh-popover__content-wrapper',
                                     popoverClassName

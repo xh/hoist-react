@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+
+* Removed the `popperOptions` escape-hatch prop from the mobile `Popover`, which exposed
+  Popper.js-specific internals that no longer exist after its migration to Floating UI (see
+  Technical). This prop was not used within Hoist.
+
 ### ⚙️ Technical
 
 * Removed the last internal use of the deprecated React `findDOMNode` API (in
@@ -12,6 +18,10 @@
   existing `PopoverProps` API — `position`, `modifiers`, `minimal`, and `boundary` are mapped
   internally and the legacy `shouldReturnFocusOnClose` default is preserved — so no call-site or
   application changes are required.
+* Migrated the mobile `Popover` from the deprecated, React-18-capped `react-popper` (Popper.js) to
+  Floating UI (`@floating-ui/react`, the same library already pulled in by Blueprint's
+  `PopoverNext`), removing `react-popper` as a direct dependency. Positioning behavior is
+  preserved.
 
 ## 86.0.0-SNAPSHOT - unreleased
 
