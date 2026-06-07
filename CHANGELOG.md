@@ -8,6 +8,12 @@
   Popper.js-specific internals that no longer exist after its migration to Floating UI (see
   Technical). This prop was not used within Hoist.
 
+### 🎁 New Features
+
+* Added support for React 19. The framework now type-checks and runs against React 19 while
+  retaining React 18 compatibility — the `react` / `react-dom` peer dependency is widened to
+  `~18.2.0 || ^19.0.0`.
+
 ### ⚙️ Technical
 
 * Removed the last internal use of the deprecated React `findDOMNode` API (in
