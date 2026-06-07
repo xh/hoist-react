@@ -214,8 +214,8 @@ class PopoverModel extends HoistModel {
     }
 
     /**
-     * Convert a menu position to a Popper.js placement.
-     * This allows us to the same position names as desktop, and is inspired
+     * Convert a menu position to a Floating UI placement (the vocabulary is shared with
+     * Popper.js). This allows us to use the same position names as desktop, and is inspired
      * by Blueprint's similar implementation:
      * https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/popover/popoverMigrationUtils.ts
      */
