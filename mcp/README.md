@@ -49,7 +49,8 @@ mcp/
 │   ├── docs.ts                # CLI entry point for hoist-docs
 │   └── ts.ts                  # CLI entry point for hoist-ts
 ├── data/
-│   ├── doc-registry.ts        # Hardcoded documentation inventory with metadata and search
+│   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
+│   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
 │   └── ts-registry.ts         # Lazy ts-morph symbol index with on-demand type extraction
 ├── formatters/
 │   ├── docs.ts                # Shared doc formatting (used by MCP tools and CLI)
@@ -96,6 +97,16 @@ chains from app entry points. As long as no browser-targeted hoist code imports 
 MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, etc.) will never
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the
 type-checking level, and all MCP dependencies are `devDependencies` in the root `package.json`.
+
+**Tolerant doc-id resolution.** `data/doc-id-resolver.ts` accepts shortened or
+slightly-off doc IDs that agents naturally try (e.g. `grid` → `cmp/grid/README.md`,
+`core` → `core/README.md`, `authentication` → `docs/authentication.md`, `v85` → the
+v85 upgrade notes) and resolves them to the canonical id when unambiguous. The
+canonical id always wins (Tier 0); shortenings are tried in declared tiers; when
+multiple docs could match, the resolver fails closed with "did you mean?"
+candidates rather than guessing. Each registry entry may declare optional
+`aliases` in `doc-registry.json` for semantic synonyms that auto-rules wouldn't
+produce. See the module header for the full tier ordering.
 
 **Hardcoded doc registry over filesystem scanning.** The doc registry (`data/doc-registry.ts`)
 defines each documentation entry in code rather than discovering files on disk. This was chosen
@@ -317,13 +328,17 @@ List all available documentation with descriptions, grouped by category.
 
 #### `hoist-read-doc`
 
-Read the full text of a single document by its exact ID. The tool-based equivalent of the
-`hoist://docs/{id}` resource — useful when resource fetching is unavailable or inconvenient. Returns
-the markdown body as text plus structured `{id, title, category, content}`.
+Read the full text of a single document. Accepts the canonical ID (repo-relative path) and also
+tolerates common shortenings via `data/doc-id-resolver.ts` — a bare subsystem (`core`), a path
+without README (`cmp/grid`), a docs-doc without the `docs/` prefix (`authentication`), a
+last-segment shortcut (`grid`), or a version code for upgrade notes (`v85`). The tool-based
+equivalent of the `hoist://docs/{id}` resource — useful when resource fetching is unavailable or
+inconvenient. Returns the markdown body as text plus structured `{id, title, category, content,
+matchedAs?}` (`matchedAs` is set only when the input differed from the canonical id).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | Yes | Exact document ID (repo-relative path), e.g. `cmp/grid/README.md`, `docs/authentication.md` |
+| `id` | string | Yes | Canonical document ID (repo-relative path), e.g. `cmp/grid/README.md` — or a tolerated shortening (see above). |
 
 #### `hoist-ping`
 
@@ -482,11 +497,12 @@ Resources provide direct read access to documentation files via URI.
 The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashes in doc IDs
 (e.g. `cmp/grid`) are preserved rather than percent-encoded.
 
-Because concept-doc IDs are themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme
-prefix is also `hoist://docs/`, the strictly-correct URI doubles the segment
-(`hoist://docs/docs/routing.md`). The resource tolerates a single dropped `docs/`, so
-`hoist://docs/routing.md` resolves identically. For a friction-free read by bare ID, prefer the
-`hoist-read-doc` tool.
+The resource resolves `docId` through the same tolerant resolver used by `hoist-read-doc` (see
+`data/doc-id-resolver.ts`), so the URI accepts canonical ids (`hoist://docs/cmp/grid/README.md`)
+and the same set of shortenings tolerated by the tool. Notably, because concept-doc IDs are
+themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme prefix is also `hoist://docs/`,
+`hoist://docs/routing.md` and `hoist://docs/docs/routing.md` both resolve to the same entry. For
+a friction-free read by bare ID, prefer the `hoist-read-doc` tool.
 
 **Discovering available documents:** The `hoist-doc` resource supports `list` and `complete`
 operations. MCP clients can enumerate all available doc IDs or get tab-completion suggestions.
@@ -505,7 +521,10 @@ The doc registry is the single source of truth for all documentation that both t
 and CLI tools can search and serve. It is a JSON file loaded at startup by
 `mcp/data/doc-registry.ts`. Each entry in the `entries` array specifies an `id` (which doubles
 as the file path relative to repo root), `title`, `mcpCategory`, `viewerCategory`,
-`description`, and `keywords` array.
+`description`, and `keywords` array. Entries may optionally declare an `aliases` array of
+curated short names consumed by the tolerant doc-id resolver
+(`mcp/data/doc-id-resolver.ts`) — only needed for synonyms that the resolver's auto-rules
+don't already produce (e.g. `components` for `cmp/README.md`, `services` for `svc/README.md`).
 
 **When to update:**
 - A new README or concept doc is added to hoist-react
@@ -675,6 +694,14 @@ Add a new entry to the `entries` array in `docs/doc-registry.json`:
 **MCP categories:** `package`, `concept`, `devops`, `conventions`, `index`.
 **Viewer categories:** `overview`, `concepts`, `core`, `components`, `desktop`, `mobile`,
 `utilities`, `supporting`, `devops`, `upgrade`.
+
+**Optional `aliases`:** add `"aliases": ["short-name", "synonym"]` to make those strings
+resolve to this entry via `hoist-read-doc` and the `hoist://docs/{id}` resource. The
+resolver already auto-generates safe shortenings (the bare path without `/README.md`, the
+last path segment, the docs/-stripped form, version codes for upgrade notes) -- explicit
+aliases are only needed for semantic synonyms the auto-rules wouldn't produce. Auto-aliases
+that would map to more than one entry are dropped at build time as ambiguous; explicit
+aliases that collide with another entry's canonical id are logged as unreachable and skipped.
 
 ## Common Pitfalls
 

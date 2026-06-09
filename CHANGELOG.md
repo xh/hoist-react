@@ -82,9 +82,9 @@
 
 * Added a `hoist-read-doc` MCP tool that reads a full document by exact ID, giving MCP parity with
   the `hoist-docs read` CLI and `hoist-core`'s `hoist-core-read-doc`.
-* The `hoist://docs/{id}` resource now tolerates a dropped `docs/` segment, so
-  `hoist://docs/routing.md` resolves the same as the strictly-correct
-  `hoist://docs/docs/routing.md`.
+* `hoist-read-doc`, the `hoist://docs/{id}` resource, and `hoist-docs read` now tolerate common
+  doc-ID shortenings (e.g. `grid`, `core`, `v85`), resolving to the canonical ID or suggesting
+  candidates when ambiguous.
 * Added a `hoist-docs ping` CLI subcommand mirroring the `hoist-ping` MCP tool; both now report the
   indexed `@xh/hoist` library version.
 * MCP/CLI symbol JSDoc is no longer truncated at the first `@`-prefixed line inside a fenced code
