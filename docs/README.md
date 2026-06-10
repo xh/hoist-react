@@ -187,9 +187,9 @@ breaking changes, before/after code examples, and verification checklists.
 - [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
   (documentation, testing). Not indexed here — these are project management artifacts, not
   hoist-react reference material.
-- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
-- [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
-  versions prior to v56
+- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v64+)
+- [`archive/CHANGELOG-archive.md`](./archive/CHANGELOG-archive.md) — Archived changelog for
+  older versions (v63 and earlier)
 - [`changelog-format.md`](./changelog-format.md) — Conventions for writing and reviewing
   hoist-react library CHANGELOG entries
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
