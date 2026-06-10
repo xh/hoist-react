@@ -88,19 +88,6 @@
   block (e.g. an `@observable.ref` in a usage example), recovering example code, "SEE ALSO" lists,
   and trailing prose that were previously dropped.
 
-### ⚙️ Technical
-
-* Forked unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`. Removed unused code, ported
-  jQuery to native DOM, and folded existing monkey-patches into the source.
-  See [#4336](https://github.com/xh/hoist-react/issues/4336).
-* Replaced unmaintained `@seznam/compose-react-refs` with a Hoist-owned `composeRefs` utility
-  exported from `@xh/hoist/utils/react`. Behavior unchanged.
-* Replaced unmaintained `clipboard-copy` with a Hoist-owned `copyToClipboard` utility exported
-  from `@xh/hoist/utils/js`. Behavior unchanged (async Clipboard API with `execCommand` fallback).
-* Replaced unmaintained `debounce-promise` with a Hoist-owned `debouncePromise` utility exported
-  from `@xh/hoist/promise`. Behavior unchanged for the trailing-edge / shared-promise usage
-  Hoist relies on; leading-edge and accumulate modes were not used and have been omitted.
-
 ### 📚 Libraries
 
 * @azure/msal-browser `4.29 → 5.11`
@@ -112,14 +99,26 @@
     * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
       managed by hoist-react to maintain all supported functionality.
     * See breaking change note above for `CodeInput` prop changes.
+* @seznam/compose-react-refs `removed`
+    * Replaced by a Hoist-owned `composeRefs` utility exported from `@xh/hoist/utils/react`.
+      Behavior unchanged.
 * @xh/hoist-dev-utils `12.x → 13.x`
 * ag-grid `34.x → 35.x`.
     * Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and `ag-grid-react`
       dependencies to `35.x`. See
       the [AG Grid v35 upgrade guide](https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-35/);
       no Hoist API changes required.
+* clipboard-copy `removed`
+    * Replaced by a Hoist-owned `copyToClipboard` utility exported from `@xh/hoist/utils/js`.
+      Behavior unchanged (async Clipboard API with `execCommand` fallback).
+* debounce-promise `removed`
+    * Replaced by a Hoist-owned `debouncePromise` utility exported from `@xh/hoist/promise`.
+      Behavior unchanged for the trailing-edge / shared-promise usage Hoist relies on; leading-edge
+      and accumulate modes were not used and have been omitted.
 * golden-layout `removed`
-    * Replaced by the forked source as described above
+    * Forked the unmaintained `golden-layout` 1.5.9 into `kit/golden-layout/`, removing unused code,
+      porting jQuery usage to native DOM, and folding existing monkey-patches into the source.
+      See [#4336](https://github.com/xh/hoist-react/issues/4336).
 * jquery `removed`
     * Was included due to golden-layouts consumer, which now no longer needs the library.
     * Apps with previously required `"jquery": "3.x"` pin in package.json `resolutions` should now
@@ -128,6 +127,9 @@
     * Replaced by `@hello-pangea/dnd` 18.0, a maintained, React 19-ready, drop-in fork. The
       now-archived `react-beautiful-dnd` will receive no further updates. No Hoist or app API
       changes - drag-and-drop behavior is unchanged.
+* react-dates `removed`
+    * The mobile `DateInput` now uses the browser's native `<input type="date">`. See the breaking
+      change note above.
 * react-dropzone `10.x → 15.x`
     * See the `FileChooser` redesign note under Breaking Changes above.
 * react-select `4.3 → 5.10`
