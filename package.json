@@ -103,7 +103,7 @@
   "devDependencies": {
     "@types/react": "18.x",
     "@types/react-dom": "18.x",
-    "@xh/hoist-dev-utils": "12.x",
+    "@xh/hoist-dev-utils": "13.x",
     "ag-grid-community": "35.x",
     "ag-grid-react": "35.x",
     "csstype": "3.x",

@@ -115,6 +115,7 @@
     * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
       managed by hoist-react to maintain all supported functionality.
     * See breaking change note above for `CodeInput` prop changes.
+* @xh/hoist-dev-utils `12.x → 13.x`
 * ag-grid `34.x → 35.x`.
     * Apps must bump their `ag-grid-community`, `ag-grid-enterprise`, and `ag-grid-react`
       dependencies to `35.x`. See
