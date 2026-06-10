@@ -384,7 +384,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     - Automated app-load spans covering pre-auth, hoist init, and app init phases.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection. Consider as replacement for
-  `ButtonGroupInput`.
+  `ButtonGroupInput`. Supports a per-option `intent` (in addition to the control-level default),
+  so individual options can render with their own coloring (e.g. flagging a destructive choice).
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
   existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
   mobile versions for custom icon support.
