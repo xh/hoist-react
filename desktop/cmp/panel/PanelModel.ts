@@ -27,6 +27,12 @@ import {createRef} from 'react';
 import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
 import {ErrorBoundaryConfig, ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
+/**
+ * Configuration for a {@link PanelModel} - controls resizing, collapsing, and modal behavior
+ * of a desktop {@link Panel}. Created automatically by Panel when not provided explicitly.
+ *
+ * @see PanelModel
+ */
 export interface PanelConfig {
     /** Can panel be resized? */
     resizable?: boolean;
@@ -113,8 +119,12 @@ export interface PanelPersistState {
 }
 
 /**
- * PanelModel supports configuration and state-management for user-driven Panel resizing and
- * expand/collapse, along with support for saving this state via a configured PersistenceProvider.
+ * PanelModel supports configuration and state-management for user-driven {@link Panel} resizing
+ * and expand/collapse, along with support for saving this state via a configured
+ * PersistenceProvider.
+ *
+ * See the panel package README (`desktop/cmp/panel/README.md`) for sizing, collapsing,
+ * and modal support documentation.
  */
 export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;

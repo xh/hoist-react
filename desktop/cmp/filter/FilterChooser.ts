@@ -158,13 +158,14 @@ const fieldOption = hoistCmp.factory({
     observer: false,
     memo: false,
     render({fieldSpec}) {
-        const {displayName, ops, example} = fieldSpec;
+        const {displayName, ops, example} = fieldSpec,
+            displayOps = [...ops, 'is']; // Always include the 'is' pseudo-operator so users know to try to use it.
         return hframe({
             className: 'xh-filter-chooser-option__field',
             items: [
                 div({className: 'prefix', item: 'e.g.'}),
                 div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '[ ' + ops.join(', ') + ' ]'}),
+                div({className: 'operators', item: '[ ' + displayOps.join(', ') + ' ]'}),
                 div({className: 'example', item: example})
             ]
         });

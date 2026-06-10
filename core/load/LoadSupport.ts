@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    CallContextLike,
     HoistBase,
     LoadSpecConfig,
     managed,
@@ -14,8 +15,8 @@ import {
 } from '../';
 import {LoadSpec, Loadable} from './';
 import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
-import {isPlainObject, pull} from 'lodash';
+import {logDebug, logError} from '@xh/hoist/utils/js';
+import {pull} from 'lodash';
 
 /**
  * Provides support for objects that participate in Hoist's loading/refresh lifecycle.
@@ -51,13 +52,33 @@ export class LoadSupport extends HoistBase implements Loadable {
         this.target = target;
     }
 
-    async loadAsync(loadSpec?: LoadSpecConfig) {
-        throwIf(
-            loadSpec && !(loadSpec instanceof LoadSpec || isPlainObject(loadSpec)),
-            'Unexpected param passed to loadAsync().  If triggered via a reaction ' +
-                'ensure call is wrapped in a closure.'
-        );
-        const newSpec = new LoadSpec(loadSpec ?? {}, this);
+    /**
+     * Trigger a managed load through the target's {@link doLoadAsync} template method. Use this
+     * (or {@link refreshAsync}/{@link autoRefreshAsync}) - do not call `doLoadAsync` directly,
+     * so that Hoist creates a fresh {@link LoadSpec} and tracks the request.
+     *
+     * Accepts an optional config to set `isRefresh`/`isAutoRefresh` flags or app-specific `meta`.
+     *
+     * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
+     * full load/refresh lifecycle.
+     */
+    async loadAsync(loadSpec?: LoadSpecConfig | CallContextLike) {
+        // Guard against clearly-invalid input - e.g. loadAsync wired directly as a reaction
+        // handler, which would pass the reaction's tracked value (often a primitive) as this arg.
+        // Log rather than throw, then proceed with a default spec.
+        if (loadSpec != null && (typeof loadSpec !== 'object' || Array.isArray(loadSpec))) {
+            this.logError(
+                'Invalid argument passed to loadAsync() - ignoring. If triggered via a reaction, ' +
+                    'ensure the call is wrapped in a closure.',
+                loadSpec
+            );
+            loadSpec = null;
+        }
+
+        // Favor any concrete loadSpec from a call context (a CallContext forwarded from an
+        // upstream caller is a common case here).
+        const config: LoadSpecConfig = loadSpec?.['loadSpec'] ?? loadSpec,
+            newSpec = new LoadSpec(config ?? {}, this);
 
         return this.doLoadAsync(newSpec);
     }
@@ -70,6 +91,18 @@ export class LoadSupport extends HoistBase implements Loadable {
         return this.loadAsync({meta, isAutoRefresh: true});
     }
 
+    /**
+     * Run the managed-load lifecycle for the target: short-circuits redundant
+     * auto-refreshes, links the load to the `loadObserver`, delegates to
+     * `target.doLoadAsync(loadSpec)`, and updates `lastLoadCompleted` /
+     * `lastLoadException` on completion.
+     *
+     * Application code should not override or call this directly - it is the
+     * orchestrator that the public entry points (`loadAsync`/`refreshAsync`/
+     * `autoRefreshAsync`) ultimately invoke. Application templates that opt
+     * into managed loading override `doLoadAsync` on their own model/service
+     * class instead (see {@link Loadable.doLoadAsync}).
+     */
     async doLoadAsync(loadSpec: LoadSpec) {
         let {target, loadObserver} = this;
 

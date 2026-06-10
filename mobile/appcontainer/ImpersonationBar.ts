@@ -37,11 +37,13 @@ export const impersonationBar = hoistCmp.factory({
                     enableFullscreen: true,
                     placeholder: 'Select a user to impersonate...',
                     createMessageFn: q => `Impersonate new user "${q}"`,
+                    testId: 'xh-impersonation-target',
                     onCommit: model.onCommit
                 }),
                 button({
                     icon: Icon.close(),
                     minimal: true,
+                    testId: 'xh-impersonation-exit-btn',
                     onClick: model.onClose
                 })
             ]

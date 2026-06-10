@@ -27,6 +27,7 @@ export const versionBar = hoistCmp.factory({
             alignItems: 'center',
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
+            testId: 'xh-version-bar',
             items: [
                 [env, version, tabId].join(' • '),
                 button({

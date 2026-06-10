@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Always returns null. Useful for fields that should not be aggregated. */
 export class NullAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         return null;

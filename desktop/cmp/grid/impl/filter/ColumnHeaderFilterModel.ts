@@ -24,6 +24,10 @@ export class ColumnHeaderFilterModel extends HoistModel {
         return !isEmpty(filters);
     }
 
+    get activeFilterIcon() {
+        return this.filterModel.activeFilterIcon;
+    }
+
     constructor(filterModel: GridFilterModel, column: Column) {
         super();
         makeObservable(this);

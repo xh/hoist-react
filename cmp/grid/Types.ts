@@ -90,6 +90,13 @@ export interface GridModelPersistOptions extends PersistOptions {
     persistExpandToLevel?: boolean | PersistOptions;
 }
 
+/**
+ * Configuration for a {@link GridFilterModel} - the model powering column-header filter menus.
+ * Passed via the `filterModel` config on {@link GridConfig}.
+ *
+ * @see GridFilterModel
+ * @see GridFilterFieldSpec
+ */
 export interface GridFilterModelConfig {
     /**
      * Target (typically a {@link Store} or Cube {@link View}) to be filtered as column filters
@@ -113,6 +120,13 @@ export interface GridFilterModelConfig {
 
     /** Default properties to be assigned to all fieldSpecs created by this model. */
     fieldSpecDefaults?: Omit<GridFilterFieldSpecConfig, 'field'>;
+
+    /**
+     * Icon element rendered in the column header when a filter is active on that column.
+     * Use to customize the icon's appearance with e.g. a specific intent or prefix.
+     * Defaults to `Icon.filter()` (the standard funnel icon in regular/outline style).
+     */
+    activeFilterIcon?: ReactElement;
 }
 
 /**
@@ -128,6 +142,13 @@ export interface GridFilterBindTarget extends FilterBindTarget, FilterValueSourc
  */
 export type GroupRowRenderer = (context: ICellRendererParams) => ReactNode;
 
+/**
+ * Configuration for a {@link ColChooserModel} - the model backing the grid column chooser UI.
+ * Passed via the `colChooserModel` config on {@link GridConfig}, or set app-wide via
+ * `GridModel.defaults.colChooserModel`.
+ *
+ * @see ColChooserModel
+ */
 export interface ColChooserConfig {
     /** GridModel to bind to. Not required if creating via `GridModel.colChooserModel` */
     gridModel?: GridModel;
@@ -352,6 +373,10 @@ export type ColumnGetValueFn<T = any> = (params: {
     gridModel: GridModel;
 }) => T;
 
+/**
+ * Entry within a {@link ColumnSpec.sortingOrder} array, defining one step in the sort cycle
+ * applied by successive clicks on a column header.
+ */
 export interface ColumnSortSpec {
     /** Direction to sort, either 'asc' or 'desc', or null to remove sort. */
     sort: 'asc' | 'desc' | null;

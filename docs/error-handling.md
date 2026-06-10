@@ -112,7 +112,7 @@ try {
 | `showAsError` | `boolean` | `true` (false if `isRoutine`) | Treat as an unexpected error -- affects styling, console log level, and server logging default |
 | `logOnServer` | `boolean` | `true` when `showAsError` and not auto-refresh | Send the exception to the server for Admin Console review |
 | `showAlert` | `boolean` | `true` (false for auto-refresh and aborted fetches) | Display any alert to the user |
-| `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.ALERT_TYPE` |
+| `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.defaults.alertType` |
 | `requireReload` | `boolean` | `false` (true for session mismatches) | Force user to reload the app to dismiss the error |
 | `hideParams` | `string[]` | none | Parameter names to redact from the exception log and alert display |
 
@@ -142,7 +142,7 @@ application, set the static property on `ExceptionHandler`:
 import {ExceptionHandler} from '@xh/hoist/core';
 
 // In AppModel.initAsync() or similar startup code
-ExceptionHandler.ALERT_TYPE = 'toast';
+ExceptionHandler.defaults.alertType = 'toast';
 ```
 
 Individual calls to `XH.handleException()` can still override this with `alertType: 'dialog'`
@@ -183,16 +183,22 @@ onSubmitClick() {
 
 ### catchDefault in Promise Chains
 
-When chaining multiple promise extensions, order matters. The standard pattern is:
+> See [Telemetry & Observability](./telemetry.md) for the `Runner` chain (spanning, tracking,
+> masking, and metrics).
+
+`catchDefault()` should be the last handler applied. With the fluent `Runner` chain, compose
+`linkTo`/`track` as builder methods and apply `catchDefault()` to the terminal — so tracking
+still captures failures:
 
 ```typescript
-XH.fetchJson({url: 'api/positions', loadSpec})
-    .linkTo(this.loadTask)        // 1. Mask UI while loading
-    .track('Loaded positions')    // 2. Track timing
-    .catchDefault();              // 3. Handle errors last
+this.runner({loadSpec})
+    .linkTo(this.loadTask)                 // mask UI while loading
+    .track('Loaded positions')             // track timing, including failures
+    .fetchJson({url: 'api/positions'})     // terminal
+    .catchDefault();                       // handle errors last
 ```
 
-Placing `catchDefault()` before `.track()` would prevent tracking from capturing failures.
+Applying `catchDefault()` before `.track()` would swallow the failure before tracking sees it.
 
 ### catchDefaultWhen
 
@@ -229,7 +235,7 @@ and auto-refresh failures.
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 
         // Always check for stale loads after async calls
         if (loadSpec.isStale) return;
@@ -478,6 +484,7 @@ Console's activity tracking log with a `'Client Error'` category.
 The logged payload includes:
 - Exception name, message, and stack trace
 - HTTP status and server details (for fetch exceptions)
+- Distributed trace ID, when tracing is enabled (for correlation with server-side traces)
 - Fetch request details (URL, params, headers -- with sensitive values redacted)
 - App version, username, and browser metadata
 - Whether the user was shown an alert
@@ -486,11 +493,11 @@ The logged payload includes:
 ### Sensitive Data Redaction
 
 The handler automatically redacts values at paths listed in
-`ExceptionHandler.REDACT_PATHS`. By default this includes `Authorization` headers. Applications
+`ExceptionHandler.defaults.redactPaths`. By default this includes `Authorization` headers. Applications
 can add additional paths:
 
 ```typescript
-ExceptionHandler.REDACT_PATHS.push('fetchOptions.params.apiKey');
+ExceptionHandler.defaults.redactPaths.push('fetchOptions.params.apiKey');
 ```
 
 The `hideParams` option provides per-call redaction of specific request parameters:
@@ -508,6 +515,13 @@ when the error occurred, plus a "Send" button to submit this report. The report 
 `ExceptionHandler.logOnServerAsync()` and includes the user's message alongside the full
 exception details. The support email displayed on failure is configured via the `xhEmailSupport`
 soft config.
+
+## Trace ID Correlation
+
+When distributed tracing is enabled, exceptions include a `traceId` property — the 32-character
+hex trace identifier for correlating client-side errors with server-side traces. Set automatically
+by `FetchService` and `TraceService.withSpan()`. Displayed in the error details dialog header
+when present.
 
 ## FetchService Exception Integration
 
@@ -589,14 +603,14 @@ path. Any code that follows will continue to run with `undefined` in place of th
 ```typescript
 // ❌ Don't: data will be undefined after a failed fetch, causing a confusing follow-on error
 async doLoadAsync(loadSpec) {
-    const data = await XH.fetchJson({url: 'api/trades', loadSpec}).catchDefault();
+    const data = await XH.fetchJson({url: 'api/trades'}, {loadSpec}).catchDefault();
     runInAction(() => this.trades = data.trades);  // TypeError: Cannot read property of undefined
 }
 
 // ✅ Do: use try/catch when subsequent code depends on the result
 async doLoadAsync(loadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/trades', loadSpec});
+        const data = await XH.fetchJson({url: 'api/trades'}, {loadSpec});
         if (loadSpec.isStale) return;
         runInAction(() => this.trades = data.trades);
     } catch (e) {

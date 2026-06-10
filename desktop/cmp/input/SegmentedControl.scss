@@ -25,23 +25,49 @@
     // Selected option - solid button standing out from the tray.
     > .bp6-button:not(.bp6-minimal) {
       border-radius: var(--xh-segmented-control-border-radius-px);
-
-      &:not(.bp6-intent-primary) {
-        background-color: var(--xh-segmented-control-selected-bg);
-        color: var(--xh-segmented-control-selected-text-color);
-      }
-
-      // Override Blueprint's intent colors to use Hoist theme variables.
-      &.bp6-intent-primary {
-        --bp-intent-primary-rest: var(--xh-intent-primary);
-        --bp-intent-primary-hover: var(--xh-intent-primary-darker);
-        --bp-intent-primary-active: var(--xh-intent-primary-darkest);
-      }
+      background-color: var(--xh-segmented-control-selected-bg);
+      color: var(--xh-segmented-control-selected-text-color);
     }
 
     // Unselected options - minimal buttons receding into the tray.
     > .bp6-button.bp6-minimal {
       color: var(--xh-segmented-control-text-color);
+    }
+
+    // Per-option intents - colors keyed off the className applied to each button. Renders the
+    // selected option as a solid fill in the intent color, and tints unselected options' text
+    // so an intent (e.g. danger) reads as such even before it is chosen.
+    @each $intent in (primary, success, warning, danger) {
+      > .bp6-button.xh-segmented-control-option--#{$intent} {
+        &.bp6-minimal {
+          color: var(--xh-intent-#{$intent}-text-color);
+        }
+
+        &:not(.bp6-minimal) {
+          background-color: var(--xh-intent-#{$intent});
+          color: var(--xh-white);
+
+          &:hover {
+            background-color: var(--xh-intent-#{$intent}-darker);
+          }
+
+          &:active {
+            background-color: var(--xh-intent-#{$intent}-darkest);
+          }
+        }
+      }
+    }
+  }
+
+  // Outlined mode - border around control tray with no inner background.
+  &--outlined .bp6-segmented-control {
+    background-color: transparent;
+    border: 1px solid var(--xh-border-color);
+  }
+
+  @each $intent in (primary, success, warning, danger) {
+    &--outlined#{&}--#{$intent} .bp6-segmented-control {
+      border-color: var(--xh-intent-#{$intent});
     }
   }
 
@@ -60,6 +86,13 @@
         margin-right: 4px;
       }
     }
+  }
+
+  // Compact + outlined - shrink buttons to account for the border.
+  &--compact#{&}--outlined .bp6-segmented-control > .bp6-button {
+    --compact-btn-h: calc(var(--xh-tbar-compact-item-height-px) - 2px);
+    min-height: var(--compact-btn-h);
+    max-height: var(--compact-btn-h);
   }
 
   // Validation borders

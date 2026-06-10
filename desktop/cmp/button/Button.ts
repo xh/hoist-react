@@ -42,20 +42,30 @@ export interface ButtonProps<M extends HoistModel = null>
     tooltip?: string;
 }
 
+export interface ButtonDefaults {
+    minimal?: boolean;
+    outlined?: boolean;
+}
+
 /**
  * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
  * and adds layout support for top-level sizing and margin/padding props.
  *
  * Relays all other props supported by Blueprint's button.
  */
-export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
+export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults>({
     displayName: 'Button',
     model: false,
     className: 'xh-button',
+    defaults: {
+        minimal: true,
+        outlined: false
+    },
 
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
-            classes = [];
+            classes = [],
+            {defaults} = Button;
 
         const {
             autoFocus,
@@ -63,9 +73,9 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             disabled,
             icon,
             intent,
-            minimal = true,
+            minimal = defaults.minimal,
             onClick,
-            outlined,
+            outlined = defaults.outlined,
             rightIcon,
             style,
             text,

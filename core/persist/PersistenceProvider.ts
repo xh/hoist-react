@@ -6,10 +6,9 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
-    compact,
     debounce as lodashDebounce,
     get,
     isArray,
@@ -18,7 +17,6 @@ import {
     isObject,
     isString,
     isUndefined,
-    omit,
     set,
     toPath
 } from 'lodash';
@@ -30,6 +28,7 @@ import {
     DashViewProvider,
     LocalStorageProvider,
     PersistOptions,
+    persistOptions,
     PrefProvider,
     SessionStorageProvider,
     ViewManagerProvider
@@ -100,33 +99,16 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /**
-     * Merge PersistOptions, respecting provider types, with later options overriding earlier ones.
-     */
+    /** @deprecated Use the {@link persistOptions} function instead. */
     static mergePersistOptions(
         defaults: PersistOptions,
         ...overrides: PersistOptions[]
     ): PersistOptions {
-        const TYPE_RELATED_KEYS = [
-            'type',
-            'prefKey',
-            'localStorageKey',
-            'sessionStorageKey',
-            'dashViewModel',
-            'viewManagerModel',
-            'getData',
-            'setData'
-        ];
-        return compact(overrides).reduce(
-            (ret, override) =>
-                TYPE_RELATED_KEYS.some(key => override[key])
-                    ? {
-                          ...omit(ret, ...TYPE_RELATED_KEYS),
-                          ...override
-                      }
-                    : {...ret, ...override},
-            defaults
-        );
+        apiDeprecated('PersistenceProvider.mergePersistOptions', {
+            v: 'v87',
+            msg: "Use the 'persistOptions' function instead."
+        });
+        return persistOptions(defaults, ...overrides);
     }
 
     /** Read persisted state at this provider's path. */
@@ -177,10 +159,10 @@ export abstract class PersistenceProvider<S = any> {
         const {owner, persistOptions} = cfg;
         this.owner = owner;
 
-        const {path, debounce = 250, settleTime} = persistOptions;
+        const {path, pathPrefix, debounce = 250, settleTime} = persistOptions;
         throwIf(!path, 'Path not specified in PersistenceProvider.');
 
-        this.path = path;
+        this.path = pathPrefix ? `${pathPrefix}.${path}` : path;
         this.debounce = debounce;
         this.settleTime = settleTime;
         this.owner.markManaged(this);

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
@@ -16,12 +16,14 @@ import {isEmpty, isNil, isString} from 'lodash';
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {
+    override telemetryPrefix = 'xh.client.track';
+
     static instance: TrackService;
 
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         window.addEventListener('beforeunload', () => this.pushPendingAsync());
     }
 
@@ -98,12 +100,19 @@ export class TrackService extends HoistService {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
-        this.pending = [];
-        await XH.fetchService.postJson({
-            url: 'xh/track',
-            body: {entries: pending},
-            params: {clientUsername: XH.getUsername()}
-        });
+        await this.runner()
+            .span('push')
+            .run(async ctx => {
+                this.pending = [];
+                await XH.postJson(
+                    {
+                        url: 'xh/track',
+                        body: {entries: pending},
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
+            });
     }
 
     //------------------

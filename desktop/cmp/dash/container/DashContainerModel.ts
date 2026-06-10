@@ -17,7 +17,7 @@ import {
     XH
 } from '@xh/hoist/core';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
-import {convertIconToHtml, deserializeIcon, ResolvedIconProps} from '@xh/hoist/icon';
+import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -50,6 +50,15 @@ import {
 } from './impl/DashContainerUtils';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 
+/**
+ * Configuration for a {@link DashContainerModel} - a tab-and-stack based dashboard layout
+ * with draggable, resizable views powered by GoldenLayout.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashContainerModel
+ * @see DashViewSpec
+ */
 export interface DashContainerConfig extends DashConfig<
     DashContainerViewSpec,
     DashContainerViewState
@@ -71,6 +80,11 @@ export interface DashContainerConfig extends DashConfig<
      * @see http://golden-layout.com/docs/Config.html
      */
     goldenLayoutSettings?: PlainObject;
+}
+
+export interface DashContainerModelDefaults {
+    margin?: number;
+    showMenuButton?: boolean;
 }
 
 // TODO - review other state inserted by library, determine if we want to model here
@@ -144,6 +158,12 @@ export class DashContainerModel
     extends DashModel<DashContainerViewSpec, DashContainerViewState, DashContainerViewModel>
     implements Persistable<{state: DashContainerViewState[]}>
 {
+    /** App-level defaults for DashContainerModel. Instance config takes precedence. */
+    static defaults: DashContainerModelDefaults = {
+        margin: 6,
+        showMenuButton: false
+    };
+
     //---------------------
     // Settable State
     //----------------------
@@ -179,8 +199,8 @@ export class DashContainerModel
         layoutLocked = false,
         contentLocked = false,
         renameLocked = false,
-        showMenuButton = false,
-        margin = 6,
+        showMenuButton = DashContainerModel.defaults.showMenuButton,
+        margin = DashContainerModel.defaults.margin,
         goldenLayoutSettings,
         persistWith = null,
         emptyText = 'No views have been added to the container.',
@@ -467,7 +487,7 @@ export class DashContainerModel
         stack.on('activeContentItemChanged', () => this.onStackActiveItemChange(stack));
 
         // Add menu button to stack header, being sure to preserve any controls that GL has installed
-        const controlsContainerEl = stack.header.controlsContainer[0],
+        const controlsContainerEl = stack.header.controlsContainer,
             menuContainerEl = document.createElement('div');
 
         controlsContainerEl.appendChild(menuContainerEl);
@@ -475,17 +495,28 @@ export class DashContainerModel
         const menuRoot = createRoot(menuContainerEl);
         menuRoot.render(dashContainerMenuButton({dashContainerModel: this, stack}));
 
-        // Add context menu listener for adding components
-        const $el = stack.header.element;
-        $el.off('contextmenu').contextmenu(e => {
-            this.showContextMenu(e, $el, stack);
-            return false;
-        });
+        // Add context menu listener for adding components.
+        // Replace any handler set by a previous render so we never stack handlers.
+        const headerEl = stack.header.element as HTMLElement & {
+            _xhContextMenuHandler?: EventListener;
+        };
+        if (headerEl._xhContextMenuHandler) {
+            headerEl.removeEventListener('contextmenu', headerEl._xhContextMenuHandler);
+        }
+        const handler: EventListener = e => {
+            this.showContextMenu(e as MouseEvent, headerEl, stack);
+            // Match the original `return false` from the jQuery handler:
+            // prevents the browser default menu and stops propagation.
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        headerEl.addEventListener('contextmenu', handler);
+        headerEl._xhContextMenuHandler = handler;
     }
 
     private showContextMenu(
         e: MouseEvent,
-        $target: any,
+        target: HTMLElement,
         stack: any,
         viewModel?: DashContainerViewModel,
         index?: number
@@ -495,8 +526,11 @@ export class DashContainerModel
         // If event does not contain co-ordinates, fallback to showing context menu below target
         let offset = {left: e.clientX, top: e.clientY};
         if (isNil(offset.left) || isNil(offset.top)) {
-            offset = $target.offset();
-            offset.top += 30;
+            const rect = target.getBoundingClientRect();
+            offset = {
+                left: rect.left + window.scrollX,
+                top: rect.top + window.scrollY + 30
+            };
         }
 
         const menu = dashContainerContextMenu({
@@ -543,75 +577,96 @@ export class DashContainerModel
             const viewModel = this.getViewModel(getViewModelId(item));
             if (!viewModel) return;
 
-            const $el = item.tab.element, // Note: this is a jquery element
+            const tabEl = item.tab.element as HTMLElement & {
+                    _xhContextMenuHandler?: EventListener;
+                },
                 stack = item.parent,
-                $titleEl = this.getTitleElement($el),
+                titleEl = this.getTitleElement(tabEl) as HTMLElement & {
+                    _xhDblClickHandler?: EventListener;
+                },
                 iconSelector = 'svg.svg-inline--fa',
                 viewSpec = this.getViewSpec(item.config.component),
                 {icon} = viewModel;
 
-            $el.off('contextmenu').contextmenu(e => {
+            // Replace any prior contextmenu handler so we never stack listeners.
+            if (tabEl._xhContextMenuHandler) {
+                tabEl.removeEventListener('contextmenu', tabEl._xhContextMenuHandler);
+            }
+            const ctxHandler: EventListener = e => {
                 const index = stack.contentItems.indexOf(item);
-                this.showContextMenu(e, $el, stack, viewModel, index);
-                return false;
-            });
+                this.showContextMenu(e as MouseEvent, tabEl, stack, viewModel, index);
+                // stopPropagation is critical here: without it, the event
+                // bubbles to the stack header's contextmenu handler which
+                // would replace this tab-specific menu with the stack-level
+                // "Add view" menu and lose the Remove/Rename/Refresh items.
+                e.preventDefault();
+                e.stopPropagation();
+            };
+            tabEl.addEventListener('contextmenu', ctxHandler);
+            tabEl._xhContextMenuHandler = ctxHandler;
 
             if (icon) {
-                const $currentIcon = $el.find(iconSelector).first(),
-                    currentIconType = $currentIcon ? $currentIcon?.data('icon') : null,
+                const currentIcon = tabEl.querySelector(iconSelector) as HTMLElement | null,
+                    currentIconType = currentIcon?.dataset.icon ?? null,
                     newIconType = (icon.props as ResolvedIconProps).iconName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToHtml(icon);
-                    $el.find(iconSelector).remove();
-                    $titleEl.before(iconSvg);
+                    if (currentIcon) currentIcon.remove();
+                    titleEl.insertAdjacentHTML('beforebegin', iconSvg);
                 }
             }
 
             if (viewSpec.allowRename) {
-                this.insertTitleForm($el, viewModel);
-                $titleEl.off('dblclick').dblclick(() => this.showTitleForm($el, viewModel));
+                this.insertTitleForm(tabEl, viewModel);
+                if (titleEl._xhDblClickHandler) {
+                    titleEl.removeEventListener('dblclick', titleEl._xhDblClickHandler);
+                }
+                const dblClickHandler: EventListener = () => this.showTitleForm(tabEl, viewModel);
+                titleEl.addEventListener('dblclick', dblClickHandler);
+                titleEl._xhDblClickHandler = dblClickHandler;
             }
         });
     }
 
-    private insertTitleForm($el, viewModel: DashContainerViewModel) {
-        const formSelector = '.title-form';
-        if ($el.find(formSelector).length) return;
+    private insertTitleForm(tabEl: HTMLElement, viewModel: DashContainerViewModel) {
+        if (tabEl.querySelector('.title-form')) return;
 
-        // Create and insert form
-        const $titleEl = this.getTitleElement($el);
-        $titleEl.after(`<form class="title-form"><input type="text"/></form>`);
+        // Create and insert form right after the title element.
+        const titleEl = this.getTitleElement(tabEl);
+        titleEl.insertAdjacentHTML(
+            'afterend',
+            `<form class="title-form"><input type="text"/></form>`
+        );
 
-        // Attach listeners
-        const $formEl = $el.find(formSelector).first(),
-            $inputEl = $formEl.find('input').first();
+        const formEl = tabEl.querySelector('.title-form') as HTMLFormElement,
+            inputEl = formEl.querySelector('input') as HTMLInputElement;
 
-        $inputEl.blur(() => this.hideTitleForm($el));
-        $formEl.submit(() => {
-            const title = $inputEl.val();
+        inputEl.addEventListener('blur', () => this.hideTitleForm(tabEl));
+        formEl.addEventListener('submit', e => {
+            e.preventDefault();
+            const title = inputEl.value;
             if (title.length) {
                 viewModel.title = title;
             }
-
-            this.hideTitleForm($el);
-            return false;
+            this.hideTitleForm(tabEl);
         });
     }
 
-    private showTitleForm($tabEl, viewModel: DashContainerViewModel) {
+    private showTitleForm(tabEl: HTMLElement, viewModel: DashContainerViewModel) {
         if (this.renameLocked) return;
 
-        const $inputEl = $tabEl.find('.title-form input').first(),
+        const inputEl = tabEl.querySelector('.title-form input') as HTMLInputElement,
             currentTitle = viewModel.title;
 
-        $tabEl.addClass('show-title-form');
-        $inputEl.val(currentTitle);
-        $inputEl.focus().select();
+        tabEl.classList.add('show-title-form');
+        inputEl.value = currentTitle;
+        inputEl.focus();
+        inputEl.select();
     }
 
-    private hideTitleForm($tabEl) {
-        $tabEl.removeClass('show-title-form');
+    private hideTitleForm(tabEl: HTMLElement) {
+        tabEl.classList.remove('show-title-form');
     }
 
     //-----------------
@@ -645,8 +700,6 @@ export class DashContainerModel
         viewSpecs.forEach(viewSpec => {
             ret.registerComponent(viewSpec.id, data => {
                 const {viewModelId, title, viewState} = data;
-                let icon = data.icon;
-                if (icon) icon = deserializeIcon(icon);
 
                 let model = this.viewModels.find(it => it.id === viewModelId);
                 if (model) {
@@ -655,7 +708,6 @@ export class DashContainerModel
                     model = new DashContainerViewModel({
                         id: viewModelId,
                         viewSpec,
-                        icon,
                         title,
                         viewState,
                         containerModel: this
@@ -665,9 +717,9 @@ export class DashContainerModel
                         track: () => model.fullTitle,
                         run: () => {
                             const item = this.getItemByViewModel(viewModelId),
-                                $titleEl = this.getTitleElement(item.tab.element);
+                                titleEl = this.getTitleElement(item.tab.element);
 
-                            $titleEl.text(model.fullTitle);
+                            titleEl.textContent = model.fullTitle;
                         }
                     });
 
@@ -685,8 +737,8 @@ export class DashContainerModel
         return ret;
     }
 
-    private getTitleElement($el) {
-        return $el.find('.lm_title').first();
+    private getTitleElement(tabEl: HTMLElement): HTMLElement {
+        return tabEl.querySelector('.lm_title') as HTMLElement;
     }
 
     /**

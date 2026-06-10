@@ -9,8 +9,14 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {ExportOptions} from '@xh/hoist/svc';
-import {logError, withDefault} from '@xh/hoist/utils/js';
+import {logError} from '@xh/hoist/utils/js';
 import {button, ButtonProps} from '../Button';
+
+const EXPORT_TYPE_LABELS: Record<Required<ExportOptions>['type'], string> = {
+    excel: 'Excel',
+    excelTable: 'Excel',
+    csv: 'CSV'
+};
 
 export interface ExportButtonProps extends ButtonProps {
     /** GridModel to which this button should bind. Will find nearest in context if not provided. */
@@ -36,13 +42,13 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
     model: false,
 
     render(
-        {className, icon, title, onClick, gridModel, exportOptions = {}, disabled, ...rest},
+        {className, title, tooltip, onClick, gridModel, exportOptions = {}, disabled, ...rest},
         ref
     ) {
         const contextGridModel = useContextModel(GridModel);
 
         if (!onClick) {
-            gridModel = withDefault(gridModel, contextGridModel);
+            gridModel = gridModel ?? contextGridModel;
 
             // Validate bound model available and suitable for use.
             if (!gridModel) {
@@ -62,11 +68,17 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
             }
         }
 
+        if (!title && !tooltip) {
+            const exportType = exportOptions.type ?? gridModel?.exportOptions?.type ?? 'excelTable';
+            tooltip = `Export to ${EXPORT_TYPE_LABELS[exportType]}`;
+        }
+
         return button({
             ref,
-            icon: withDefault(icon, Icon.download()),
-            title: withDefault(title, 'Export'),
-            disabled: withDefault(disabled, gridModel && gridModel.empty),
+            icon: Icon.download(),
+            title,
+            tooltip,
+            disabled: disabled ?? gridModel?.empty,
             className,
             onClick,
             ...rest

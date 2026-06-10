@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -23,6 +22,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
 import {logError, logWithDebug} from '@xh/hoist/utils/js';
 import {
+    composeRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,

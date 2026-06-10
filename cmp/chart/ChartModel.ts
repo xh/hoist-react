@@ -28,10 +28,38 @@ interface ChartConfig {
     xhImpl?: boolean;
 }
 
+export interface ChartModelDefaults {
+    contextMenu?: ChartMenuToken[];
+}
+
 /**
- * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ * Model for a Highcharts-based {@link Chart} component. Holds the Highcharts configuration
+ * object and data series, providing observable state that drives chart rendering.
+ *
+ * Set `highchartsConfig` for chart-level options (chart type, axes, legend, etc.) and
+ * `series` for the data to display. Both are observable and can be updated at any time
+ * via their setters to trigger a re-render.
+ *
+ * The underlying Highcharts instance is available via the `highchart` property for
+ * read-only access - mutations should go through `setHighchartsConfig` or `setSeries`.
+ *
+ * @see Chart
  */
 export class ChartModel extends HoistModel {
+    /** App-level defaults for ChartModel. Instance config takes precedence. */
+    static defaults: ChartModelDefaults = {
+        contextMenu: [
+            'viewFullscreen',
+            '-',
+            'copyToClipboard',
+            'printChart',
+            '-',
+            'downloadPNG',
+            'downloadSVG',
+            'downloadCSV'
+        ]
+    };
+
     @observable.ref
     highchartsConfig: PlainObject = {};
 
@@ -39,17 +67,6 @@ export class ChartModel extends HoistModel {
     series: any[] = [];
 
     contextMenu: ChartContextMenuSpec;
-
-    static defaultContextMenu: ChartMenuToken[] = [
-        'viewFullscreen',
-        '-',
-        'copyToClipboard',
-        'printChart',
-        '-',
-        'downloadPNG',
-        'downloadSVG',
-        'downloadCSV'
-    ];
 
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
@@ -115,7 +132,7 @@ export class ChartModel extends HoistModel {
 
     private parseContextMenu(spec: ChartContextMenuSpec): ChartContextMenuSpec {
         if (spec === false || !XH.isDesktop) return null;
-        if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
+        if (isNil(spec) || spec === true) spec = ChartModel.defaults.contextMenu;
 
         return (e: MouseEvent | PointerEvent) => {
             // Convert hoverpoints to points for use in actionFn.

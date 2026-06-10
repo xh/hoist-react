@@ -15,6 +15,7 @@ is essential for working effectively with any part of hoist-react.
 | `/` (root) | 1 | AGENTS.md provides AI-focused project guidance | [Done](../../AGENTS.md) |
 | `/core/` | 48 | HoistBase, HoistModel, HoistService, XH singleton, component factory | [Done](../../core/README.md) |
 | `/data/` | 45 | Store, StoreRecord, Field, Filter, validation - data layer infrastructure | [Done](../../data/README.md) |
+| `/data/cube/` | 10 | Cube aggregation engine - dimensions, measures, Views, Queries | [Done](../../data/cube/README.md) |
 | `/svc/` | 20 | Services architecture and built-in services (Fetch, Config, Pref, etc.) | [Done](../../svc/README.md) |
 
 ## Priority 2 - Component System
@@ -70,6 +71,7 @@ patterns and systems that span multiple packages.
 | Routing | Client-side routing via RouterModel (Router5 wrapper). Covers route configuration in `getRoutes()`, route parameters, navigation, route-based tab integration, and observable route state via `XH.routerState`. | 📝 [Draft](../routing.md) |
 | Error Handling | Centralized exception handling via `XH.handleException()`. Covers ExceptionDialog, `Promise.catchDefault()`, `alertType` options (dialog vs toast), server-side logging, `requireReload`, and patterns for handling errors in `doLoadAsync` and async workflows. | [Done](../error-handling.md) |
 | Test Automation | How Hoist supports test automation via `testId` and `TestSupportProps`. Covers `data-testid` attribute propagation, `getTestId()` utility, and how forms and inputs automatically generate testable selectors from field names. | [Done](../test-automation.md) |
+| Telemetry & Observability | Client-side tracing, activity tracking, metrics, and timed logging composed via the `Runner` chain on `HoistBase`. Covers TraceService, spans, sampling, `traceparent` propagation, MetricsService, CallContext threading, `telemetryPrefix`, and the deprecation of `withSpan` / `FetchOptions.span`/`loadSpec`. | [Done](../telemetry.md) |
 | Coding Conventions | Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming. | [Done](../coding-conventions.md) |
 | Version Compatibility | A reference document mapping hoist-react releases to their required hoist-core versions, covering approximately the last 5-10 major versions. Helps developers ensure compatible pairings when upgrading and provides AI assistants with context about version requirements. | [Done](../version-compatibility.md) |
 

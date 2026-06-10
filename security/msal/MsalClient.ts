@@ -23,6 +23,12 @@ import {flatMap, union, uniq} from 'lodash';
 import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
 import {AccessTokenSpec, TokenMap} from '../Types';
 
+/**
+ * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
+ * Extends {@link BaseOAuthClientConfig} with MSAL-specific options.
+ *
+ * @see MsalClient
+ */
 export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
     /**
      * Authority for your organization's tenant: `https://login.microsoftonline.com/[tenantId]`.
@@ -151,14 +157,16 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         }
 
         // 0) Handle redirect return
-        const redirectResp = await client.handleRedirectPromise();
-        if (redirectResp) {
-            this.logDebug('Completing Redirect login');
-            this.setAccount(redirectResp.account);
-            this.restoreRedirectState(redirectResp.state);
-            const ret = this.fetchAllTokensAsync({eagerOnly: true});
-            this.noteAuthComplete('loginRedirect');
-            return ret;
+        if (this.loginMethod === 'REDIRECT') {
+            const redirectResp = await client.handleRedirectPromise();
+            if (redirectResp) {
+                this.logDebug('Completing Redirect login');
+                this.setAccount(redirectResp.account);
+                this.restoreRedirectState(redirectResp.state);
+                const ret = this.fetchAllTokensAsync({eagerOnly: true});
+                this.noteAuthComplete('loginRedirect');
+                return ret;
+            }
         }
 
         // 1) If we can identify the "selected" account, try to just reload tokens silently.
@@ -215,11 +223,14 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
 
     protected override async doLoginPopupAsync(): Promise<void> {
         try {
-            const ret = await this.client.acquireTokenPopup(this.authRequestCore());
+            const ret = await this.client.acquireTokenPopup({
+                ...this.authRequestCore(),
+                overrideInteractionInProgress: true
+            });
             this.setAccount(ret.account);
             this.noteAuthComplete('loginPopup');
         } catch (e) {
-            if (e.message?.toLowerCase().includes('popup window')) {
+            if (e.errorCode === 'popup_window_error' || e.errorCode === 'empty_window_error') {
                 throw XH.exception({
                     name: 'Azure Login Error',
                     message: this.popupBlockerErrorMessage,
@@ -400,8 +411,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loggerOptions: {
                     loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
-                },
-                iframeHashTimeout: 3000 // Prevent long pauses for sso failures.
+                }
             },
             cache: {
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.
@@ -413,7 +423,7 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
             conf.telemetry = {client: new BrowserPerformanceClient(conf)};
         }
 
-        return msal.PublicClientApplication.createPublicClientApplication(conf);
+        return msal.createStandardPublicClientApplication(conf);
     }
 
     private logFromMsal(level: LogLevel, message: string) {

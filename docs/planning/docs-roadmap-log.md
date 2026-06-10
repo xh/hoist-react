@@ -523,3 +523,27 @@
   - Linked `/cmp/filter/` reference in Related Packages section to the new README
 - Updated `cmp/README.md`:
   - Enhanced `/filter/` catalog entry description and linked to new README
+
+### 2026-04-14
+- Split Cube documentation out of `data/README.md` into dedicated `data/cube/README.md`:
+  - Expanded querying section with patterns for grand totals (`includeRoot`), leaf drill-down
+    (`includeLeaves`), programmatic leaf access (`provideLeaves`), flat aggregation, dynamic
+    query updates (`updateQuery`/`setFilter`), and one-shot `executeQuery()` usage
+  - Added table of contents, overview with class table, and Related Packages section
+  - Data README retains a brief pointer to the Cube doc
+- Updated `docs/README.md` index: added `/data/cube/` to Quick Reference and Core Framework table
+- Added `data/cube/README.md` entry to `docs/doc-registry.json`
+- Added `/data/cube/` entry to `docs/planning/docs-roadmap.md` Priority 1 table
+
+### 2026-06-02
+- Created `docs/telemetry.md` (Telemetry & Observability concept doc) covering the `Runner` chain
+  on `HoistBase`, tracing/`TraceService`, sampling, `traceparent` propagation, activity tracking,
+  `MetricsService` (recommended-only), `CallContext`/`CallContextLike`, `telemetryPrefix`, best
+  practices, and pitfalls (orphaned spans, deprecated `withSpan`/`FetchOptions.span`/`loadSpec`)
+- Indexed it: added a Concepts row to `docs/README.md`, repointed the "tracing" Quick Reference
+  row to the new doc, added a `docs/planning/docs-roadmap.md` Concepts entry ([Done]), and
+  registered it in `docs/doc-registry.json`
+- Fixed a stale `svc/README.md` registry keyword (`withSpanAsync`, no longer exists); added
+  `MetricsService`, `Runner`, `CallContext`
+- Added cross-links to `docs/telemetry.md` from related docs (svc/README, promise/README,
+  error-handling) where tracing/Runner topics are already discussed

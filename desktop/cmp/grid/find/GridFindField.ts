@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs/composeRefs';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
@@ -14,7 +13,7 @@ import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 

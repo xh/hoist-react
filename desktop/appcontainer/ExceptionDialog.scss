@@ -6,10 +6,20 @@
  */
 .xh-exception-dialog {
   max-height: 80vh;
+  gap: 0;
 
   .bp6-dialog-body {
     max-height: inherit;
     overflow-y: auto;
+  }
+
+  &__trace-id {
+    padding-right: var(--xh-pad-px);
+    padding-bottom: var(--xh-pad-half-px);
+    text-align: right;
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg);
+    color: var(--xh-text-color-muted);
   }
 
   &__details {

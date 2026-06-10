@@ -47,17 +47,17 @@ class CheckboxButtonInputModel extends HoistInputModel {
 // Implementation
 //----------------------------------
 const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
-    ({model, text, checkedIcon, uncheckedIcon, iconSide, ...props}, ref) => {
+    ({model, text, icon, rightIcon, checkedIcon, uncheckedIcon, iconSide, ...props}, ref) => {
         const checked = !!model.renderValue,
-            iconEl = checked
+            toggleIcon = checked
                 ? withDefault(checkedIcon, Icon.checkSquare({prefix: 'fas', intent: 'primary'}))
                 : withDefault(uncheckedIcon, Icon.square({prefix: 'fal'})),
             onRight = iconSide === 'right';
 
         return button({
             text: withDefault(text, model.getField()?.displayName),
-            icon: onRight ? null : iconEl,
-            rightIcon: onRight ? iconEl : null,
+            icon: onRight ? icon : toggleIcon,
+            rightIcon: onRight ? toggleIcon : rightIcon,
             outlined: true,
             onClick: () => model.noteValueChange(!checked),
             ...props,

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, PlainObject, XH} from '@xh/hoist/core';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -84,7 +84,7 @@ export class WebSocketService extends HoistService {
         makeObservable(this);
     }
 
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         if (!this.enabled) return;
 
         const {environmentService} = XH;
@@ -345,7 +345,7 @@ export class WebSocketService extends HoistService {
     private buildWebSocketUrl() {
         const protocol = window.location.protocol == 'https:' ? 'wss:' : 'ws:',
             endpoint = `xhWebSocket?${this.METADATA_FOR_HANDSHAKE.map(key => `${key}=${XH[key]}`).join('&')}`;
-        return XH.isDevelopmentMode
+        return XH.baseUrl.includes('//')
             ? `${protocol}//${XH.baseUrl.split('//')[1]}${endpoint}`
             : `${protocol}//${window.location.host}${XH.baseUrl}${endpoint}`;
     }

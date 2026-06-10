@@ -14,6 +14,8 @@ import {createRef} from 'react';
  *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.identity';
+
     override xhImpl = true;
 
     @observable showRequested: boolean = false;
@@ -93,10 +95,10 @@ export class ImpersonationBarModel extends HoistModel {
     private ensureTargetsLoaded() {
         if (this.targets.length) return;
 
-        XH.fetchJson({
-            url: 'xh/impersonationTargets'
-        })
-            .then(targets => {
+        this.runner()
+            .span('impersonationTargets')
+            .run(async ctx => {
+                const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
                 this.setTargets(targets);
             })
             .catchDefault();

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import bpPkg from '@blueprintjs/core/package.json';
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
@@ -22,6 +22,8 @@ import {MIN_HOIST_CORE_VERSION} from '../core/XH';
  * other technical information.
  */
 export class EnvironmentService extends HoistService {
+    override telemetryPrefix = 'xh.client';
+
     static instance: EnvironmentService;
 
     /**
@@ -49,46 +51,50 @@ export class EnvironmentService extends HoistService {
     private pollConfig: PollConfig;
     private pollTimer: Timer;
 
-    override async initAsync() {
-        const {pollConfig, instanceName, alertBanner, ...serverEnv} = await XH.fetchJson({
-                url: 'xh/environment'
-            }),
-            clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
-            clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
+    override async initAsync(ctx: InitContext) {
+        await this.runner(ctx)
+            .span('init')
+            .run(async ctx => {
+                const env = await XH.fetchJson({url: 'xh/environment'}, ctx),
+                    {pollConfig, instanceName, alertBanner, ...serverEnv} = env,
+                    clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
+                    clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
-        // Favor client-side data injected via Webpack build or otherwise determined locally,
-        // then apply all other env data sourced from the server.
-        this.data = deepFreeze(
-            defaults(
-                {
-                    appCode: XH.appCode,
-                    appName: XH.appName,
-                    clientVersion: XH.appVersion,
-                    clientBuild: XH.appBuild,
-                    reactVersion,
-                    hoistReactVersion: hoistPkg.version,
-                    agGridVersion,
-                    mobxVersion: mobxPkg.version,
-                    blueprintCoreVersion: bpPkg.version,
-                    clientTimeZone,
-                    clientTimeZoneOffset
-                },
-                serverEnv
-            )
-        );
+                // Favor client-side data injected via Webpack build or otherwise determined locally,
+                // then apply all other env data sourced from the server.
+                this.data = deepFreeze(
+                    defaults(
+                        {
+                            appCode: XH.appCode,
+                            appName: XH.appName,
+                            clientVersion: XH.appVersion,
+                            clientBuild: XH.appBuild,
+                            reactVersion,
+                            hoistReactVersion: hoistPkg.version,
+                            agGridVersion,
+                            mobxVersion: mobxPkg.version,
+                            blueprintCoreVersion: bpPkg.version,
+                            clientTimeZone,
+                            clientTimeZoneOffset
+                        },
+                        serverEnv
+                    )
+                );
 
-        this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
+                this.setServerInfo(instanceName, serverEnv.appVersion, serverEnv.appBuild);
 
-        this.ensureVersionRunnable();
+                this.ensureVersionRunnable();
 
-        this.pollConfig = pollConfig;
-        this.addReaction({
-            when: () => XH.appIsRunning,
-            run: () => {
-                XH.alertBannerService.updateBanner(alertBanner);
-                this.startPolling();
-            }
-        });
+                this.pollConfig = pollConfig;
+
+                this.addReaction({
+                    when: () => XH.appIsRunning,
+                    run: () => {
+                        XH.alertBannerService.updateBanner(alertBanner);
+                        this.startPolling();
+                    }
+                });
+            });
     }
 
     get(key: string): any {
@@ -108,48 +114,47 @@ export class EnvironmentService extends HoistService {
     }
 
     /**
-     * Update critical environment information from server, including current app version + build,
+     * Update critical environment information from the server, including current app version + build,
      * upgrade prompt mode, and alert banner.
      *
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        let data;
-        try {
-            data = await XH.fetchJson({url: 'xh/environmentPoll'});
-        } catch (e) {
-            this.logError('Error polling server environment', e);
-            return;
-        }
+        await this.runner()
+            .span('envPoll')
+            .run(async ctx => {
+                const data = await XH.fetchJson({url: 'xh/environmentPoll'}, ctx);
 
-        // Update config/interval, server info, and alert banner.
-        const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
-        this.pollConfig = pollConfig;
-        this.pollTimer.setInterval(this.pollIntervalMs);
-        this.setServerInfo(instanceName, appVersion, appBuild);
-        XH.alertBannerService.updateBanner(alertBanner);
+                // Update config/interval, server info, and alert banner.
+                const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;
+                this.pollConfig = pollConfig;
+                this.pollTimer.setInterval(this.pollIntervalMs);
+                this.setServerInfo(instanceName, appVersion, appBuild);
+                XH.alertBannerService.updateBanner(alertBanner);
 
-        // Handle version change - compare to constants baked into client build.
-        if (appVersion != XH.appVersion || appBuild != XH.appBuild) {
-            // force the user to refresh or prompt the user to refresh via the banner according to config
-            // build checked to trigger refresh across SNAPSHOT updates in lower environments
-            const {onVersionChange} = pollConfig;
-            switch (onVersionChange) {
-                case 'promptReload':
-                    XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
-                    return;
-                case 'forceReload':
-                    XH.suspendApp({
-                        reason: 'APP_UPDATE',
-                        message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
-                    });
-                    return;
-                default:
-                    this.logWarn(
-                        `New version ${appVersion} reported by server, onVersionChange is ${onVersionChange} - ignoring.`
-                    );
-            }
-        }
+                // Handle version change - compare to constants baked into client build.
+                if (appVersion != XH.appVersion || appBuild != XH.appBuild) {
+                    // force the user to refresh or prompt the user to refresh via the banner according to config
+                    // build checked to trigger refresh across SNAPSHOT updates in lower environments
+                    const {onVersionChange} = pollConfig;
+                    switch (onVersionChange) {
+                        case 'promptReload':
+                            XH.appContainerModel.showUpdateBanner(appVersion, appBuild);
+                            return;
+                        case 'forceReload':
+                            XH.suspendApp({
+                                reason: 'APP_UPDATE',
+                                message: `A new version of ${XH.clientAppName} is now available (${appVersion}) and requires an immediate update.`
+                            });
+                            return;
+                        default:
+                            this.logWarn(
+                                `New version ${appVersion} reported by server, onVersionChange is ${onVersionChange} - ignoring.`
+                            );
+                    }
+                }
+            })
+            .catch(e => this.logError('Error polling server environment', e));
     }
 
     //------------------------------
@@ -162,16 +167,18 @@ export class EnvironmentService extends HoistService {
 
     private ensureVersionRunnable() {
         const hcVersion = this.get('hoistCoreVersion'),
-            clientVersion = this.get('appVersion'),
-            serverVersion = this.serverVersion;
+            // This app version value is sourced by the network call to 'xh/environment'.
+            serverAppVersion = this.get('appVersion'),
+            // This app version value is packaged from configureWebpack -> appVersion.
+            clientAppVersion = this.get('clientVersion');
 
         // Check for client/server mismatch version.  It's an ok transitory state *during* the
         // client app lifetime, but app should *never* start this way, would indicate caching issue.
         throwIf(
-            clientVersion != serverVersion,
+            clientAppVersion != serverAppVersion,
             XH.exception(
-                `The version of this client (${clientVersion}) is out of sync with the
-                available server (${serverVersion}). Please reload to continue.`
+                `The version of this client (${clientAppVersion}) is out of sync with the
+                available server (${serverAppVersion}). Please reload to continue.`
             )
         );
 

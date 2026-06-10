@@ -26,12 +26,14 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
+    MetricsService,
     PrefService,
     SessionStorageService,
     TrackService,
+    TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {apiDeprecated, getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -50,15 +52,18 @@ import {
     BannerSpec,
     ExceptionHandler,
     ExceptionHandlerOptions,
+    CallContextLike,
     HoistAppModel,
     HoistService,
     HoistServiceClass,
+    InitContext,
     HoistUser,
     MessageSpec,
     PageState,
     PlainObject,
     ReloadAppOptions,
     SizingMode,
+    Some,
     TaskObserver,
     Theme,
     ToastSpec,
@@ -85,6 +90,8 @@ declare const xhIsDevelopmentMode: boolean;
  * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
+ *
+ * @mcpHint singleton (XH) providing global framework services
  */
 export class XHApi {
     /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
@@ -154,9 +161,11 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
+    metricsService: MetricsService;
     prefService: PrefService;
     sessionStorageService: SessionStorageService;
     trackService: TrackService;
+    traceService: TraceService;
     webSocketService: WebSocketService;
 
     //----------------------------
@@ -168,14 +177,6 @@ export class XHApi {
      */
     get appLoadObserver(): TaskObserver {
         return this.acm.appLoadObserver;
-    }
-
-    get appLoadModel(): TaskObserver {
-        apiDeprecated('XH.appLoadModel', {
-            v: 'v82',
-            msg: 'Use XH.appLoadObserver instead.'
-        });
-        return this.appLoadObserver;
     }
 
     /** Root level application model. */
@@ -278,32 +279,67 @@ export class XHApi {
     }
 
     //----------------------------------------
-    // Delegating methods
+    // Delegating methods - Fetch
     //----------------------------------------
     /**
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetch(opts);
+    fetch(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetch(opts, ctx);
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
      * @see FetchService.fetchJson
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetchJson(opts);
+    fetchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetchJson(opts, ctx);
+    }
+
+    /**
+     * Send a GET request and decode the response as JSON.
+     * @see FetchService.getJson
+     */
+    getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.getJson(opts, ctx);
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @see FetchService.postJson
      */
-    postJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.postJson(opts);
+    postJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.postJson(opts, ctx);
     }
 
+    /**
+     * Send a PUT request with a JSON body and decode the response as JSON.
+     * @see FetchService.putJson
+     */
+    putJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.putJson(opts, ctx);
+    }
+
+    /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @see FetchService.patchJson
+     */
+    patchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.patchJson(opts, ctx);
+    }
+
+    /**
+     * Send a DELETE request with optional JSON body and decode the optional response as JSON.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.deleteJson(opts, ctx);
+    }
+
+    //----------------------------------------
+    // Delegating methods - Config & Preferences
+    //----------------------------------------
     /**
      * Read soft configuration values.
      * @see ConfigService.get
@@ -328,6 +364,9 @@ export class XHApi {
         return this.prefService.set(key, val);
     }
 
+    //----------------------------------------
+    // Delegating methods - Activity Tracking
+    //----------------------------------------
     /**
      * Track user activity.
      * @see TrackService.track
@@ -336,6 +375,9 @@ export class XHApi {
         return this.trackService?.track(opts);
     }
 
+    //----------------------------------------
+    // Delegating methods - Environment
+    //----------------------------------------
     /**
      * Read an environment property.
      * @see EnvironmentService.get
@@ -344,6 +386,9 @@ export class XHApi {
         return this.environmentService?.get(key) ?? null;
     }
 
+    //----------------------------------------
+    // Delegating methods - Identity & Auth
+    //----------------------------------------
     /**
      * @returns the current acting user.
      * @see IdentityService.user
@@ -374,6 +419,9 @@ export class XHApi {
         this.reloadApp();
     }
 
+    //----------------------------------------
+    // Delegating methods - Logging
+    //----------------------------------------
     /**
      * Current minimum severity for Hoist log utils (default 'info').
      * Messages logged via managed Hoist log utils with lower severity will be ignored.
@@ -766,10 +814,16 @@ export class XHApi {
      * Applications must choose a unique name of the form xxxService to avoid naming collisions.
      * If naming collisions are detected, an error will be thrown.
      *
-     * @param serviceClasses - classes extending HoistService
+     * @param serviceClasses - one or more classes extending HoistService.
+     * @param ctx - init context for the current phase (typically the `ctx` passed to
+     *      `AppModel.initAsync()`). Forwarded to each service's `initAsync()` so spans created
+     *      during init nest under this phase's root span.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    async installServicesAsync(
+        serviceClasses: Some<HoistServiceClass>,
+        ctx: InitContext
+    ): Promise<void> {
+        return installServicesAsync(serviceClasses, ctx);
     }
 
     /**

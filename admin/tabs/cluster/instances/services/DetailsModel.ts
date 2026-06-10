@@ -9,6 +9,8 @@ import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.services';
+
     @lookup(ServiceModel)
     parent: ServiceModel;
 
@@ -45,13 +47,19 @@ export class DetailsModel extends HoistModel {
 
         if (!selected) return;
 
-        const resp = await XH.fetchJson({
-            url: 'serviceManagerAdmin/getStats',
-            params: {instance: parent.instanceName, name: selected.name},
-            autoAbortKey: 'serviceDetails',
-            loadSpec
-        });
-        if (loadSpec.isStale) return;
-        this.stats = resp;
+        await this.runner({loadSpec})
+            .span('getStats')
+            .run(async ctx => {
+                const resp = await XH.fetchJson(
+                    {
+                        url: 'serviceManagerAdmin/getStats',
+                        params: {instance: parent.instanceName, name: selected.name},
+                        autoAbortKey: 'serviceDetails'
+                    },
+                    ctx
+                );
+                if (loadSpec.isStale) return;
+                this.stats = resp;
+            });
     }
 }

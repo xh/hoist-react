@@ -14,6 +14,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type DateEditorProps = EditorProps<DateInputProps>;
 
+/** Date picker inline cell editor with calendar popover rendered within the grid viewport. */
 export const [DateEditor, dateEditor] = hoistCmp.withFactory<DateEditorProps>({
     displayName: 'DateEditor',
     className: 'xh-date-editor',
