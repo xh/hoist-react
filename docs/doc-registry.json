@@ -486,6 +486,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
+        },
+        {
+            "id": "docs/upgrade-notes/v86-upgrade-notes.md",
+            "title": "v86 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v85.x to v86.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v86", "v85", "editorProps", "serializeIcon", "deserializeIcon", "enableMulti", "showFileGrid", "singleDatePickerProps", "react-dates", "golden-layout"]
         }
     ]
 }

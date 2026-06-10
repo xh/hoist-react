@@ -2,7 +2,10 @@
 
 ## 86.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - library upgrades + component API changes)
+
+See [`docs/upgrade-notes/v86-upgrade-notes.md`](docs/upgrade-notes/v86-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Deprecated `HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields, in favor of
   the `Runner` chain (`runner().span()`) and the new `CallContext` argument to fetch methods (see
@@ -23,6 +26,8 @@
     * Removed `targetText` and `showFileGrid` - customize via the new `emptyDisplay` / `fileDisplay`
       content props. The default `fileDisplay` is a file grid, or a compact card with replace /
       remove actions when `maxFiles` is 1.
+    * Removed the `onFilesChange()` model hook - react to the observable `files` array or use the
+      new `onFileAccepted` / `onFileRejected` callbacks.
 * `DashContainerModel` no longer persists per-view `icon` in its layout state, aligning with
   `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
   `DashViewModel.icon` at runtime still see it render, but the override is no longer saved.
@@ -52,6 +57,10 @@
   defer parsing and value commit until blur, Enter, or picker selection. Useful when configuring
   `parseStrings` such that one format is a prefix of another (e.g. `MM/DD/YY` and `MM/DD/YYYY`),
   where the eager default would reformat the user's text mid-typing.
+* `SegmentedControl` now supports a per-option `intent`, with an option's own intent taking
+  precedence over the control-level default. Its control-level `intent` prop was widened from
+  `'none' | 'primary'` to `'none' | Intent`, now accepting `success` / `warning` / `danger` as
+  well (a backward-compatible widening).
 * Added `pathPrefix` to `PersistOptions` - an inheritable prefix prepended to the resolved `path`,
   concatenated through `persistOptions()`. Enables hierarchical namespacing of persistence so a
   parent model can scope all descendants (`@persist` properties, `markPersist` calls, child
@@ -91,10 +100,11 @@
 ### 📚 Libraries
 
 * @azure/msal-browser `4.29 → 5.11`
-    * Major upgrade with broad architectural changes. Several `system` config properties were
-      renamed - notably `iFrameHashTimeout` → `iframeBridgeTimeout`. Apps passing
-      `msalClientOptions` to `MsalClient` must review
-      the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration).
+    * Major upgrade with broad architectural changes. Hoist no longer hard-codes
+      `system.iframeHashTimeout`; apps that override MSAL `system` / `cache` / `auth` options via
+      `msalClientOptions` on `MsalClient` must review
+      the [v4 → v5 migration guide](https://learn.microsoft.com/en-us/entra/msal/javascript/browser/v4-migration)
+      for renamed or removed keys.
 * @codemirror `5.x → 6.x`
     * Replaces the v5 monolithic `codemirror` package, with several new direct dependencies now
       managed by hoist-react to maintain all supported functionality.
@@ -384,8 +394,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     - Automated app-load spans covering pre-auth, hoist init, and app init phases.
 * Added `SegmentedControl` desktop input component — a toggle group for mutually exclusive options
   with strong visual differentiation of the active selection. Consider as replacement for
-  `ButtonGroupInput`. Supports a per-option `intent` (in addition to the control-level default),
-  so individual options can render with their own coloring (e.g. flagging a destructive choice).
+  `ButtonGroupInput`.
 * Added `CheckboxButton` desktop input component — a button-based boolean toggle matching the
   existing mobile component. Added `checkedIcon` and `uncheckedIcon` props to both desktop and
   mobile versions for custom icon support.
