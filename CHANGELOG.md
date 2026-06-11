@@ -83,6 +83,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `UniqueAggregator` permanently caching `null` on grouped cube rows after a diverge →
   reconverge sequence of child updates; the aggregator now falls back to a sibling re-scan when the
   cache could be transitioning.
+* Fixed a set of view title-handling bugs in the Dash components: `DashCanvasModel.loadState()`
+  wiped titles omitted from state entries, `DashContainerModel` ignored incoming titles when
+  reloading state over existing views (e.g. failing to reset renames on `restoreDefaultsAsync()`),
+  and `DashContainer` tab headers lost renames after a drag. Omitted titles now reset to the
+  `DashViewSpec` default in both components.
+* Fixed `DashCanvasModel` not publishing layout-only state changes - e.g. `restoreDefaults()` after
+  a user had only moved or resized widgets - leaving persisted state stale.
+* Fixed the `DashCanvas` view menu showing a `Replace` option with an empty fly-out when no view
+  specs remain available - the option is now hidden, matching the handling of `Add`.
 
 ### 🤖 AI Docs + Tooling
 
