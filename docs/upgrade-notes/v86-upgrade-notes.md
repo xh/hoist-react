@@ -52,8 +52,8 @@ Before starting, ensure:
 
 ### 1. Update `package.json`
 
-Bump hoist-react to v86, bump `@xh/hoist-dev-utils` to `13.x` (v86's expected build tooling), and
-bump your app's AG Grid dependencies (any `34.x`) to `35.x` to match.
+Bump hoist-react to v86, bump `@xh/hoist-dev-utils` to `13.x` (resolving to **13.0.1** or later -
+see below), and bump your app's AG Grid dependencies (any `34.x`) to `35.x` to match.
 
 **File:** `package.json`
 
@@ -74,6 +74,21 @@ After:
 "ag-grid-react": "~35.3.0",
 "@xh/hoist-dev-utils": "13.x",   // in devDependencies
 ```
+
+> **Strongly recommended: pick up `@xh/hoist-dev-utils` 13.0.1.** v86 does not strictly require
+> v13 - hoist-react itself still runs on v12 - but a Hoist major upgrade is the natural time to
+> refresh build tooling, and 13.0.1 ships a fix worth taking: a `'process.env': '{}'` fallback in
+> the Webpack `DefinePlugin` that resolves a runtime crash in `DashCanvas` drag/resize (introduced
+> upstream by `react-draggable` 4.6.0, a transitive dep of `react-grid-layout`). The `13.x` range
+> resolves to 13.0.1 on a fresh install; if your lockfile pins an older `13.0.0`, update it.
+>
+> v13's one breaking change is minor or N/A for most apps: `.md` imports now resolve to the file's
+> raw **text content** rather than a URL. This matches the `*.md` module declaration hoist-react
+> already ships, so passing an imported `.md` straight to the `markdown` component just works. Only
+> apps that previously *fetched* the imported value to read it (`fetch(imported).then(r =>
+> r.text())`) need to drop the fetch and use the import directly; opt a specific import back to URL
+> behavior with `import url from './big.md?url'`. v13 also sets a minimum Node version of
+> `>=22.11.0` (the `lts/*` floor already used across Hoist repos).
 
 If your `package.json` carries a `jquery` pin in `resolutions` (added in a prior version to satisfy
 `golden-layout`), you can now **remove just that line** - Hoist forked `golden-layout` and dropped
@@ -329,7 +344,7 @@ dateInput({
 ### 5. Remove Usage of `serializeIcon()` / `deserializeIcon()` (rare)
 
 The `serializeIcon()` and `deserializeIcon()` helpers were removed from `@xh/hoist/icon`. They
-existed only to support `DashContainer` icon persistence (see Step 7) and have no known app
+existed only to support `DashContainer` icon persistence (see Step 8) and have no known app
 consumers. If your app imported them directly, replace with the equivalent inline calls:
 
 **Find affected files:**
@@ -433,7 +448,37 @@ override async completeAuthAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
 }
 ```
 
-### 7. `DashContainerModel` Icon Persistence (no action required)
+### 7. Replace `PersistenceProvider.mergePersistOptions()` with `persistOptions()` (rare)
+
+`PersistenceProvider.mergePersistOptions()` is **deprecated** (it logs a warning and is scheduled
+for removal in **v87**). It is replaced by the exported `persistOptions()` function from
+`@xh/hoist/core`, which has an identical signature - so this is a straight find-and-replace. Few
+apps call this directly; it is used mostly inside Hoist when composing parent/caller `persistWith`
+options into a single `PersistOptions`.
+
+**Find affected files:**
+```bash
+grep -rn "mergePersistOptions" client-app/src/
+```
+
+Before (deprecated in v86):
+```typescript
+import {PersistenceProvider} from '@xh/hoist/core';
+
+const opts = PersistenceProvider.mergePersistOptions(defaults, parentPersistWith, persistWith);
+```
+
+After (v86):
+```typescript
+import {persistOptions} from '@xh/hoist/core';
+
+const opts = persistOptions(defaults, parentPersistWith, persistWith);
+```
+
+`persistOptions()` also picks up the new `pathPrefix` support (concatenated rather than replaced
+across arguments) - see the [persistence doc](../persistence.md) for hierarchical namespacing.
+
+### 8. `DashContainerModel` Icon Persistence (no action required)
 
 `DashContainerModel` no longer persists a per-view `icon` in its saved layout state, aligning it
 with `DashCanvasModel`. Icons now always come from the `DashViewSpec`. Apps that set
@@ -502,6 +547,8 @@ After completing all steps:
   unrelated and unaffected)
 - [ ] No removed mobile `DateInput` props remain:
   `grep -rn "initialMonth\|singleDatePickerProps" client-app/src/`
+- [ ] No `PersistenceProvider.mergePersistOptions()` calls remain (swapped to `persistOptions()`):
+  `grep -rn "mergePersistOptions" client-app/src/`
 - [ ] Grids render and function correctly (sorting, filtering, grouping)
 - [ ] Code editors render with the correct syntax highlighting and light/dark theme
 - [ ] File choosers accept, reject, and display files correctly
