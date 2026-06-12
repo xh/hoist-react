@@ -1,6 +1,6 @@
 # Changelog
 
-## 86.0.0-SNAPSHOT - unreleased
+## 86.0.0 - 2026-06-12
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - library upgrades + component API changes)
 
