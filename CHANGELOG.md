@@ -90,6 +90,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `DashViewSpec` default in both components.
 * Fixed `DashCanvasModel` not publishing layout-only state changes - e.g. `restoreDefaults()` after
   a user had only moved or resized widgets - leaving persisted state stale.
+* Fixed `GridModel.beginEditAsync()` ignoring a specified `record` with the id `0`.
 * Fixed the `DashCanvas` view menu showing a `Replace` option with an empty fly-out when no view
   specs remain available - the option is now hidden, matching the handling of `Add`.
 
