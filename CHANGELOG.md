@@ -2,10 +2,6 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 📚 Libraries
-
-* Pinned `react-draggable` to `4.5.0` - its `4.6.0` build throws on an undefined `process` global.
-
 ## 86.0.0 - 2026-06-12
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - library upgrades + component API changes)
