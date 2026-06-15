@@ -16,7 +16,7 @@ import {div, fragment} from '@xh/hoist/cmp/layout';
 import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {createObservableRef, elementFromContent} from '@xh/hoist/utils/react';
+import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
 import {ReactPortal} from 'react';
@@ -87,19 +87,23 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
         const impl = useLocalModel(PopoverModel),
             placement = impl.menuPositionToPlacement(position),
             isAuto = placement === 'auto',
-            {floatingStyles} = useFloating({
+            // Use Floating UI's own `refs.setReference`/`setFloating` callback refs rather than
+            // the controlled `elements` option. This lets Floating UI manage the element state
+            // (and trigger its own re-renders/repositioning) internally, instead of relying on a
+            // MobX observer re-render when an observable ref is set during the commit phase - a
+            // dependency that does not reliably fire under React 19 for the portaled content.
+            {refs, floatingStyles} = useFloating({
                 placement: isAuto ? undefined : (placement as Placement),
                 strategy: 'fixed',
                 middleware: [isAuto ? autoPlacement() : flip(), shift({padding: 10})],
-                whileElementsMounted: autoUpdate,
-                elements: {reference: impl.targetEl, floating: impl.contentEl}
+                whileElementsMounted: autoUpdate
             });
 
         return div({
             className,
             items: [
                 div({
-                    ref: impl.targetRef,
+                    ref: refs.setReference,
                     className: 'xh-popover__target-wrapper',
                     items: children,
                     onClick: () => {
@@ -112,7 +116,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                         omit: !impl.isOpen,
                         items: [
                             div({
-                                ref: impl.contentRef,
+                                ref: refs.setFloating,
                                 style: floatingStyles,
                                 className: classNames(
                                     'xh-popover__content-wrapper',
@@ -139,20 +143,10 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 class PopoverModel extends HoistModel {
     override xhImpl = true;
 
-    targetRef = createObservableRef<HTMLElement>();
-    contentRef = createObservableRef<HTMLElement>();
     @observable isOpen;
 
     _onInteraction;
     _controlledMode = false;
-
-    get targetEl() {
-        return this.targetRef.current;
-    }
-
-    get contentEl() {
-        return this.contentRef.current;
-    }
 
     constructor() {
         super();

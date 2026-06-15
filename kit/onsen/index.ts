@@ -8,7 +8,7 @@ import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
 import 'onsenui/css/onsen-css-components.css';
 import 'onsenui/css/onsenui.css';
-import {createElement, forwardRef, FunctionComponent} from 'react';
+import {createElement, forwardRef, FunctionComponent, useLayoutEffect, useRef} from 'react';
 import * as ons from 'react-onsenui';
 import {omitBy} from 'lodash';
 import './styles.scss';
@@ -30,12 +30,12 @@ export const [button, Button] = wrappedCmp(ons.Button),
 //---------------------
 // Container Components
 //----------------------
-export const [dialog, Dialog] = wrappedCmp(ons.Dialog),
+export const [dialog, Dialog] = wrappedOverlayCmp(ons.Dialog),
     [listItem, ListItem] = wrappedCmp(ons.ListItem),
     [page, Page] = wrappedCmp(ons.Page),
     [tab, Tab] = wrappedCmp(ons.Tab),
     [tabbar, Tabbar] = wrappedCmp(ons.Tabbar),
-    [toast, Toast] = wrappedCmp(ons.Toast),
+    [toast, Toast] = wrappedOverlayCmp(ons.Toast),
     [toolbar, Toolbar] = wrappedCmp(ons.Toolbar),
     [bottomToolbar, BottomToolbar] = wrappedCmp(ons.BottomToolbar);
 
@@ -58,6 +58,45 @@ function wrappedCmp(rawCmp): [ElementFactory, FunctionComponent] {
     const cmp = forwardRef((props, ref) => {
         const safeProps = omitBy(props, it => it instanceof HoistModel);
         if (ref) safeProps.ref = ref;
+        return createElement(rawCmp, safeProps);
+    });
+    return [elementFactory(cmp), cmp];
+}
+
+// Onsen's deprecated boolean prop aliases - react-onsenui remaps these to the real custom-element
+// property names before assigning. We replicate it here since we bypass that step for booleans.
+const ONSEN_BOOL_ALIASES = {isOpen: 'visible', isCancelable: 'cancelable', isDisabled: 'disabled'};
+
+/**
+ * Variant of {@link wrappedCmp} for Onsen overlay components (Dialog, Toast).
+ *
+ * react-onsenui encodes boolean props (e.g. `visible`) as `''`, which React 19 assigns as a falsy
+ * *property* on the custom element rather than a truthy *attribute* (as in React <=18), leaving
+ * overlays hidden. We strip booleans and apply them imperatively as real booleans via a ref.
+ */
+function wrappedOverlayCmp(rawCmp): [ElementFactory, FunctionComponent] {
+    const cmp = forwardRef((props, ref) => {
+        const elemRef = useRef(null),
+            safeProps = omitBy(props, it => it instanceof HoistModel),
+            boolProps = {};
+
+        for (const key of Object.keys(safeProps)) {
+            if (typeof safeProps[key] === 'boolean') {
+                boolProps[ONSEN_BOOL_ALIASES[key] ?? key] = safeProps[key];
+                delete safeProps[key];
+            }
+        }
+
+        useLayoutEffect(() => {
+            const el = elemRef.current;
+            if (!el) return;
+            Object.assign(el, boolProps);
+            if (typeof ref === 'function') ref(el);
+            else if (ref) ref.current = el;
+        });
+
+        // Pass an object ref - react-onsenui reads `ref.current` internally.
+        safeProps.ref = elemRef;
         return createElement(rawCmp, safeProps);
     });
     return [elementFactory(cmp), cmp];

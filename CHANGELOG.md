@@ -4,9 +4,10 @@
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW)
 
-* Removed the `popperOptions` escape-hatch prop from the mobile `Popover`, which exposed
-  Popper.js-specific internals that no longer exist after its migration to Floating UI (see
-  Technical). This prop was not used within Hoist.
+* Apply any type adjustments needed to meet React 19's stricter typing. See
+  https://react.dev/blog/2024/04/25/react-19-upgrade-guide#typescript-changes for more info.
+* Removed the `popperOptions` `popper.js` escape-hatch prop from the mobile `Popover`. Popper.js
+  is not React 19 compatible and is being removed in this release (see below).
 
 ### 🎁 New Features
 
@@ -15,15 +16,12 @@
   `~18.2.0 || ^19.0.0`.
 
 ### ⚙️ Technical
-* Migrated the Blueprint `Popover` kit wrapper to Blueprint's Floating UI-based `PopoverNext`,
-  which (unlike the legacy `Popover`) is React 19 compatible. The `popover` factory keeps its
-  existing `PopoverProps` API — `position`, `modifiers`, `minimal`, and `boundary` are mapped
-  internally and the legacy `shouldReturnFocusOnClose` default is preserved — so no call-site or
-  application changes are required.
-* Migrated the mobile `Popover` from the deprecated, React-18-capped `react-popper` (Popper.js) to
-  Floating UI (`@floating-ui/react`, the same library already pulled in by Blueprint's
-  `PopoverNext`).
-* Applied forward-compatible type adjustments anticipating React 19's stricter `@types/react`
+* Moved both popover implementations off the deprecated, React-18-capped Popper.js onto Floating UI
+  for React 19 compatibility. The desktop `Popover` kit wrapper now uses Blueprint's Floating
+  UI-based `PopoverNext`; the `popover` factory keeps its existing `PopoverProps` API, so no
+  call-site changes are required.
+* Migrated the mobile `Popover` from `react-popper` to Floating UI.
+* Applied type adjustments to meet React 19's stricter `@types/react` typing
   (an explicit `useRef` initial arg, `cloneElement` element typing, element `props` access, ref
   callbacks returning void, and narrowing a few render-fn results). No behavior change on React 18.
 
