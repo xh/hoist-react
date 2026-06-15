@@ -2,6 +2,10 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `TrackService` now flushes pending activity-tracking entries reliably when the page is hidden or unloaded, issuing the flush via `fetch({keepalive: true})` and reacting to `XH.pageState` (replacing the unreliable `beforeunload` + normal-fetch approach, which dropped the final batch on mobile and during teardown).
+
 ### 📚 Libraries
 
 * Pinned `react-draggable` to `4.5.0` - its `4.6.0` build throws on an undefined `process` global.

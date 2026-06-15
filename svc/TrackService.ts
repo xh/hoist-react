@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
@@ -23,8 +23,20 @@ export class TrackService extends HoistService {
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
-    override async initAsync(ctx: InitContext) {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+    override async initAsync() {
+        // Reliably flush pending entries when the page is hidden or unloaded. PageState transitions
+        // synchronously within its DOM handlers, so this (non-delayed) reaction fires while the page
+        // is still alive, and `keepalive` carries the issued request across teardown - unlike the
+        // prior `beforeunload` + normal-fetch approach, which the browser cancelled mid-teardown and
+        // which never fired at all for discarded mobile tabs.
+        this.addReaction({
+            track: () => XH.pageState,
+            run: state => {
+                if (state === 'hidden' || state === 'frozen' || state === 'terminated') {
+                    this.pushPendingAsync({keepalive: true});
+                }
+            }
+        });
     }
 
     get conf(): ActivityTrackingConfig {
@@ -94,9 +106,13 @@ export class TrackService extends HoistService {
 
     /**
      * Flush the queue of pending activity tracking messages to the server.
+     * @param opts - flush options.
+     *      `keepalive` - issue the request with `fetch({keepalive: true})` so it survives a page
+     *      teardown. Used by the page-hidden/unload flush; not for normal use, as keepalive requests
+     *      are subject to a 64KB body cap.
      * @internal - apps should generally allow this service to manage w/its internal debounce.
      */
-    async pushPendingAsync() {
+    async pushPendingAsync(opts?: {keepalive?: boolean}) {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
@@ -108,7 +124,8 @@ export class TrackService extends HoistService {
                     {
                         url: 'xh/track',
                         body: {entries: pending},
-                        params: {clientUsername: XH.getUsername()}
+                        params: {clientUsername: XH.getUsername()},
+                        fetchOpts: opts?.keepalive ? {keepalive: true} : undefined
                     },
                     ctx
                 );
