@@ -269,6 +269,12 @@ fans out independent units of work, the go-ahead to commit comes from that plan 
 rather than a per-commit prompt, and agents are expected to make their own discrete, well-scoped
 commits as directed.
 
+A skill or third-party plugin instructing you to commit (e.g. "make a small commit after each
+step") does NOT by itself authorize a commit — that is a default baked into the tool, not the
+developer's request. This guidance takes precedence: pause and ask. The door stays open for a
+workflow to commit autonomously, but only when the developer has explicitly opted into that for
+the workflow at hand — the authorization must come from the developer, not the skill's defaults.
+
 ### Creating branches
 
 Once the user has asked for a branch (per the "ask first" rule above, don't create one
@@ -310,6 +316,9 @@ structure: separate logical points into bullet lists, use blank lines between pa
 after the subject line. Keep PR descriptions concise — XH developers review these regularly, so favor
 brief summaries over exhaustive detail. Bullet the key changes and let the diff and any upgrade notes
 speak for themselves.
+
+Do not add AI-generated attribution lines to commit messages or PR descriptions — no
+`Generated with ...` line and no `🤖 Generated with [Claude Code]` footer. Leave them out entirely.
 
 ## Changelog Maintenance
 

@@ -527,3 +527,12 @@
   `MetricsService`, `Runner`, `CallContext`
 - Added cross-links to `docs/telemetry.md` from related docs (svc/README, promise/README,
   error-handling) where tracing/Runner topics are already discussed
+
+### 2026-06-10
+- CHANGELOG archival: moved the remaining Middle-Era entries (v56–v63) out of the main `CHANGELOG.md`
+  into the archive, so the main file now holds the Modern era onward (v64+). Reduced main CHANGELOG
+  from ~2,620 to ~1,890 lines.
+- Renamed the archive `docs/archive/CHANGELOG-pre-v56.md` → `docs/archive/CHANGELOG-archive.md`
+  (era-neutral name to avoid renaming on each future archival) and updated its header.
+- Updated references: main CHANGELOG footer (now "prior to v64"), and the `docs/README.md` Additional
+  Resources entries (CHANGELOG range and archive link/description).
