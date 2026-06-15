@@ -44,7 +44,7 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@7859ec783cee69e3f26cd81cb30cd5cab5bc44b6 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@52a7e7ef6c04a01ee43c66463f92080eebb75179 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
@@ -89,7 +89,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@7859ec783cee69e3f26cd81cb30cd5cab5bc44b6 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@52a7e7ef6c04a01ee43c66463f92080eebb75179 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
