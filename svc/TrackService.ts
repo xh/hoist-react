@@ -116,11 +116,14 @@ export class TrackService extends HoistService {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
+        // Clear synchronously with the capture, before any `await`,
+        // so overlapping flushes cannot post the same entries twice.
+        this.pending = [];
+
         await this.runner()
             .span('push')
-            .run(async ctx => {
-                this.pending = [];
-                await XH.postJson(
+            .run(ctx =>
+                XH.postJson(
                     {
                         url: 'xh/track',
                         body: {entries: pending},
@@ -128,8 +131,8 @@ export class TrackService extends HoistService {
                         fetchOpts: opts?.keepalive ? {keepalive: true} : undefined
                     },
                     ctx
-                );
-            });
+                )
+            );
     }
 
     //------------------
