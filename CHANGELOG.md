@@ -1,6 +1,12 @@
 # Changelog
 
-## 87.0.0-SNAPSHOT - unreleased
+## 86.0.1 - 2026-06-16
+
+### 🐞 Bug Fixes
+
+* Fixed a circular import introduced in v86 (`utils/js` → `core` via `ClipboardUtils`) that caused
+  problems for apps using @ComputeOnce.
+* Fixed a regression to icon size for GroupingChooser.
 
 ### 🐞 Bug Fixes
 

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {LayoutProps, ResolvedLayoutProps, PlainObject} from '@xh/hoist/core';
+import type {LayoutProps, ResolvedLayoutProps, PlainObject} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
 const XH_PAD_VAR = 'var(--xh-pad-px)';

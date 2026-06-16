@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
 import {isString} from 'lodash';
 
 /**
