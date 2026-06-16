@@ -166,7 +166,16 @@ export class ColumnChooserBucketModel extends HoistModel {
             return {allowed: false};
         }
 
-        return {allowed: true, highlight: true, position, target};
+        // Suppress the indicator when the drop would leave the order unchanged.
+        if (this.isNoOpMove(sourceData, targetData, position)) {
+            return {allowed: false};
+        }
+
+        // Pin the indicator to a single canonical row by mapping the real insertion point to the
+        // row that will follow it (see getDropHighlight). This removes the ~1px above/below flicker
+        // between adjacent rows and ensures a drop landing before a group renders above the group
+        // header, not above its first child (the dropped column lands before the group in the tree).
+        return this.getDropHighlight(sourceData, targetData, position, target);
     }
 
     /** Handle intra-bucket drag end. */
@@ -402,7 +411,7 @@ export class ColumnChooserBucketModel extends HoistModel {
             remaining = bucketSlice.filter(cs => !movingIds.has(cs.colId)),
             movingState = bucketSlice.filter(cs => movingIds.has(cs.colId));
 
-        const insertionIndex = computeInsertionIndex(remaining, target, position),
+        const insertionIndex = computeInsertionIndex(bucketSlice, movingIds, target, position),
             simulated = [...remaining];
         simulated.splice(insertionIndex, 0, ...movingState);
 
@@ -424,6 +433,7 @@ export class ColumnChooserBucketModel extends HoistModel {
 
         const movingIds = new Set(sourceData.leafColIds),
             slices = partitionByPinned(gridModel.columnState, movingIds),
+            fullSlice = gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
             movingState = gridModel.columnState
                 .filter(cs => movingIds.has(cs.colId))
                 .map(cs => ({...cs, pinned: this.pinned}));
@@ -432,7 +442,7 @@ export class ColumnChooserBucketModel extends HoistModel {
 
         const targetSlice = slices[this.pinned ?? 'none'],
             insertionIndex = targetData
-                ? computeInsertionIndex(targetSlice, targetData, position)
+                ? computeInsertionIndex(fullSlice, movingIds, targetData, position)
                 : targetSlice.length;
 
         targetSlice.splice(insertionIndex, 0, ...movingState);
@@ -472,6 +482,88 @@ export class ColumnChooserBucketModel extends HoistModel {
         const {agApi} = this.chooserGridModel,
             lastIdx = (agApi?.getDisplayedRowCount() ?? 0) - 1;
         return lastIdx >= 0 ? agApi?.getDisplayedRowAtIndex(lastIdx) : null;
+    }
+
+    /**
+     * True if dropping the moving leaves at the given target/position would reproduce the bucket's
+     * current order - i.e. the drop is a no-op. Mirrors {@link moveColumns} (splice moving block
+     * into the remaining slice at the computed index) and compares the result to the original.
+     */
+    private isNoOpMove(
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData,
+        position: RowDropTargetPosition
+    ): boolean {
+        const movingIds = new Set(sourceData.leafColIds),
+            slice = this.gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
+            movingState = slice.filter(cs => movingIds.has(cs.colId));
+
+        // Cross-bucket source has no leaves in this slice - never a no-op for this bucket.
+        if (!movingState.length) return false;
+
+        const remaining = slice.filter(cs => !movingIds.has(cs.colId)),
+            insertIdx = computeInsertionIndex(slice, movingIds, targetData, position),
+            result = [...remaining];
+        result.splice(insertIdx, 0, ...movingState);
+
+        return result.every((cs, i) => cs.colId === slice[i].colId);
+    }
+
+    /**
+     * Drop-indicator highlight (locked or unlocked). The insertion index is computed exactly as the
+     * move will perform it, then mapped to the row that follows it - shown as 'above' that row. When
+     * that following column is a group's first leaf, the indicator climbs to the group header so
+     * "before the group" renders as one line above the header rather than flipping with "above the
+     * first child" - the dropped column lands before the group in the tree. Positions within a group
+     * (the following column is not its group's first leaf) stay fine-grained, supporting split-group
+     * drops when unlocked. Drops past the end pin to the bottom of the last displayed row.
+     */
+    private getDropHighlight(
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData,
+        position: RowDropTargetPosition,
+        fallbackTarget: any
+    ): IsRowValidDropPositionResult {
+        const {agApi} = this.chooserGridModel,
+            movingIds = new Set(sourceData.leafColIds),
+            slice = this.gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
+            remaining = slice.filter(cs => !movingIds.has(cs.colId)),
+            insertIdx = computeInsertionIndex(slice, movingIds, targetData, position);
+
+        // Dropping past the last column - pin to the bottom of the final row.
+        if (insertIdx >= remaining.length) {
+            return {
+                allowed: true,
+                highlight: true,
+                position: 'below',
+                target: this.getLastDisplayedRow()
+            };
+        }
+
+        const followingRec = this.getGroupBoundaryRecord(remaining[insertIdx].colId, movingIds),
+            node = followingRec ? agApi?.getRowNode(followingRec.agId) : null;
+        return node
+            ? {allowed: true, highlight: true, position: 'above', target: node}
+            : {allowed: true, highlight: true, position, target: fallbackTarget};
+    }
+
+    /**
+     * Resolve the row to highlight 'above' for an insertion that precedes the given column. Climbs
+     * to the outermost enclosing group whose first leaf is this column (a true group boundary);
+     * otherwise returns the column's own record (a position within a group). Stops short of any
+     * group the dragged column belongs to - it stays inside that group, so the indicator should sit
+     * above its first child, not above the group header.
+     */
+    private getGroupBoundaryRecord(colId: StoreRecordId, movingIds: Set<string>): StoreRecord {
+        const {store} = this.chooserGridModel;
+        let rec = store.getById(colId);
+        while (rec?.data.parentId) {
+            const parent = store.getById(rec.data.parentId);
+            if (!parent || parent.data.leafColIds[0] !== colId) break;
+            if (parent.data.leafColIds.some((id: string) => movingIds.has(id))) break;
+            rec = parent;
+        }
+        return rec;
     }
 
     private createGridModel(emptyText: string) {
@@ -653,26 +745,40 @@ function areGroupsContiguous(
     return true;
 }
 
-/** Compute insertion index for moved columns within a bucket's slice. */
+/**
+ * Compute where the moving columns should be spliced into the bucket's moving-excluded slice.
+ *
+ * Anchors on the FULL slice - where the target's columns always exist, even when the moving block
+ * is the only remaining leaf of a (split) group instance - then translates that anchor to an index
+ * into the excluded array by counting the non-moving columns before it. Anchoring on `remaining`
+ * instead would lose the target's position when its leaves are all excluded, wrongly collapsing to
+ * an append-at-end. `slice.length` is returned only as a defensive fallback for a target that is
+ * genuinely absent from the slice.
+ */
 function computeInsertionIndex(
-    remaining: {colId: string}[],
+    slice: {colId: string}[],
+    movingIds: Set<string>,
     targetData: ColumnChooserData,
     position: RowDropTargetPosition
 ): number {
-    const targetLeafIds = new Set(targetData.leafColIds);
-
+    // Anchor: the full-slice index before which the moving block lands.
+    let anchor: number;
     if (targetData.isGroup) {
-        const firstIdx = remaining.findIndex(cs => targetLeafIds.has(cs.colId)),
-            lastIdx = findLastIndex(remaining, cs => targetLeafIds.has(cs.colId));
-
-        if (firstIdx === -1) return remaining.length;
-        if (position === 'above') return firstIdx;
-        return lastIdx + 1;
+        const ids = new Set(targetData.leafColIds),
+            firstIdx = slice.findIndex(cs => ids.has(cs.colId)),
+            lastIdx = findLastIndex(slice, cs => ids.has(cs.colId));
+        anchor = firstIdx === -1 ? slice.length : position === 'above' ? firstIdx : lastIdx + 1;
+    } else {
+        const targetIdx = slice.findIndex(cs => cs.colId === targetData.id);
+        anchor = targetIdx === -1 ? slice.length : position === 'above' ? targetIdx : targetIdx + 1;
     }
 
-    const targetIdx = remaining.findIndex(cs => cs.colId === targetData.id);
-    if (targetIdx === -1) return remaining.length;
-    return position === 'above' ? targetIdx : targetIdx + 1;
+    // Translate to the moving-excluded array: count non-moving columns preceding the anchor.
+    let idx = 0;
+    for (let i = 0; i < anchor; i++) {
+        if (!movingIds.has(slice[i].colId)) idx++;
+    }
+    return idx;
 }
 
 /** Partition columnState by pinned side, optionally excluding a set of moving colIds. */
