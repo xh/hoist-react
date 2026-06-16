@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 
 /**
  * Copy the given text to the system clipboard.
@@ -53,5 +53,5 @@ function copyViaExecCommand(text: string): void {
         selection.removeAllRanges();
         document.body.removeChild(span);
     }
-    if (!success) throw XH.exception('Clipboard copy not allowed');
+    if (!success) throw Exception.create('Clipboard copy not allowed');
 }

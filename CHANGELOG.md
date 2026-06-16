@@ -2,13 +2,18 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 🐞 Bug Fixes
+### ⚙️ Technical
 
 * `TrackService` now flushes pending activity-tracking entries reliably when the page is hidden or unloaded, issuing the flush via `fetch({keepalive: true})` and reacting to `XH.pageState` (replacing the unreliable `beforeunload` + normal-fetch approach, which dropped the final batch on mobile and during teardown).
 
-### 📚 Libraries
 
-* Pinned `react-draggable` to `4.5.0` - its `4.6.0` build throws on an undefined `process` global.
+## 86.0.1 - 2026-06-16
+
+### 🐞 Bug Fixes
+
+* Fixed a circular import introduced in v86 that caused problems for apps using `@ComputeOnce`.
+* Fixed a regression to favorites icon size for `FilterChooser.`
+
 
 ## 86.0.0 - 2026-06-12
 
