@@ -4,13 +4,9 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed a circular import introduced in v86 (`utils/js` → `core` via `ClipboardUtils`) that caused
-  problems for apps using @ComputeOnce.
-* Fixed a regression to icon size for GroupingChooser.
+* Fixed a circular import introduced in v86 that caused problems for apps using `@ComputeOnce`.
+* Fixed a regression to favorites icon size for `FilterChooser.`
 
-### 🐞 Bug Fixes
-
-* Fixed `FilterChooser` favorites icon size
 
 ## 86.0.0 - 2026-06-12
 
