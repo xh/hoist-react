@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
+import {HoistService, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
+import {every, forEach, groupBy, isEmpty, isString, omitBy, takeRight} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Client-side distributed tracing service for Hoist applications.
@@ -48,8 +49,14 @@ export class TraceService extends HoistService {
     //------------------
     // Initialization
     //------------------
-    override async initAsync(ctx: InitContext) {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+    override async initAsync() {
+        // Flush on page teardown while the page is still alive.
+        this.addReaction({
+            track: () => XH.pageState,
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingInternalAsync();
+            }
+        });
     }
 
     //------------------
@@ -159,44 +166,11 @@ export class TraceService extends HoistService {
     }
 
     /**
-     * Push all pending spans to the server.
-     * Called on debounced interval and on page unload.
+     * Flush the queue of pending spans to the server.
+     * @internal - apps should generally allow this service to manage w/its internal debounce.
      */
     async pushPendingAsync() {
-        const spans = this._pending;
-        if (isEmpty(spans)) return;
-
-        this._pending = [];
-        try {
-            await XH.postJson({
-                url: 'xh/submitSpans',
-                body: spans.map(s => s.toJSON()),
-                params: {
-                    clientUsername: XH.getUsername()
-                }
-            });
-        } catch (e) {
-            if (isRetryableError(e)) {
-                // Transient failure - re-queue the batch (ahead of newer spans) to retry on the
-                // next flush, then bound the buffer in case the outage is prolonged.
-                this._pending = [...spans, ...this._pending];
-                this.enforceCap();
-                this.logError('Failed to push spans - will retry on next flush', e);
-            } else {
-                // Permanent (client-side) rejection - drop the batch so it can't deadlock the
-                // pipe (e.g. a session mismatch or oversized payload would fail forever).
-                this.logError('Server rejected span batch - dropping', e);
-            }
-        }
-    }
-
-    /** Bound the pending buffer, silently dropping oldest spans (failed pushes are logged). */
-    private enforceCap() {
-        const {_pending} = this,
-            {MAX_PENDING} = TraceService;
-        if (_pending.length > MAX_PENDING) {
-            _pending.splice(0, _pending.length - MAX_PENDING);
-        }
+        return this.pushPendingInternalAsync();
     }
 
     /**
@@ -237,7 +211,45 @@ export class TraceService extends HoistService {
 
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        void this.pushPendingAsync();
+        void this.pushPendingInternalAsync();
+    }
+
+    /** Flush all pending spans to the server. */
+    private async pushPendingInternalAsync() {
+        const spans = this._pending;
+        if (isEmpty(spans)) return;
+
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
+        this._pending = [];
+        try {
+            await terminationSafePostJson({
+                url: 'xh/submitSpans',
+                body: spans.map(s => s.toJSON()),
+                params: {
+                    clientUsername: XH.getUsername()
+                }
+            });
+        } catch (e) {
+            if (isRetryableError(e)) {
+                // Transient failure - re-queue the batch (ahead of newer spans) to retry on the
+                // next flush, then bound the buffer in case the outage is prolonged.
+                this._pending = [...spans, ...this._pending];
+                this.enforceCap();
+                this.logError('Failed to push spans - will retry on next flush', e);
+            } else {
+                // Permanent (client-side) rejection - drop the batch so it can't deadlock the
+                // pipe (e.g. a session mismatch or oversized payload would fail forever).
+                this.logError('Server rejected span batch - dropping', e);
+            }
+        }
+    }
+
+    /** Bound the pending buffer, silently dropping oldest spans (failed pushes are logged). */
+    private enforceCap() {
+        const {MAX_PENDING} = TraceService;
+        if (this._pending.length > MAX_PENDING) {
+            this._pending = takeRight(this._pending, MAX_PENDING);
+        }
     }
 
     /**
