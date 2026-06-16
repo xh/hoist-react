@@ -8,6 +8,7 @@ import {CallContextLike, HoistService, InitContext, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Service to read and set user-specific preference values.
@@ -34,14 +35,11 @@ export class PrefService extends HoistService {
     private _updates = {};
 
     override async initAsync(ctx: InitContext) {
-        // Flush reliably on page teardown: pageState fires synchronously while the page is still
-        // alive, and `keepalive` carries the request across unload.
+        // Flush on page teardown while the page is still alive.
         this.addReaction({
             track: () => XH.pageState,
-            run: state => {
-                if (state === 'hidden' || state === 'frozen' || state === 'terminated') {
-                    this.pushPendingInternalAsync(true);
-                }
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingAsync();
             }
         });
         return this.loadPrefsAsync(ctx);
@@ -121,29 +119,12 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Push any pending buffered updates to persist newly set values to server.
-     * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
-     * changes and option and then immediately hits a (browser) refresh.
+     * Push any pending buffered updates to persist newly set values to the server.
+     *
+     * Not typically called by applications.  Called automatically by the framework after changes
+     * and when page is hidden/terminated.
      */
     async pushPendingAsync() {
-        return this.pushPendingInternalAsync();
-    }
-
-    //-------------------
-    //  Implementation
-    //-------------------
-    @debounced(5 * SECONDS)
-    private pushPendingBuffered() {
-        return this.pushPendingInternalAsync();
-    }
-
-    /**
-     * Flush the queue of pending preference updates to the server.
-     * @param keepalive - issue the request with `fetch({keepalive: true})` so it survives a page
-     *      teardown. Used by the page-unload flush; not for normal use, as keepalive requests are
-     *      subject to a 64KB body cap.
-     */
-    private async pushPendingInternalAsync(keepalive: boolean = false) {
         const updates = this._updates;
         if (isEmpty(updates)) return;
 
@@ -153,16 +134,23 @@ export class PrefService extends HoistService {
         await this.runner()
             .span('set')
             .run(ctx =>
-                XH.postJson(
+                terminationSafePostJson(
                     {
                         url: 'xh/setPrefs',
                         body: updates,
-                        params: {clientUsername: XH.getUsername()},
-                        fetchOpts: keepalive ? {keepalive: true} : undefined
+                        params: {clientUsername: XH.getUsername()}
                     },
                     ctx
                 )
             );
+    }
+
+    //-------------------
+    //  Implementation
+    //-------------------
+    @debounced(5 * SECONDS)
+    private pushPendingBuffered() {
+        void this.pushPendingAsync();
     }
 
     private async loadPrefsAsync(ctx: CallContextLike) {

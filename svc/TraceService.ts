@@ -8,6 +8,7 @@ import {HoistService, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/cor
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy, takeRight} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Client-side distributed tracing service for Hoist applications.
@@ -49,14 +50,11 @@ export class TraceService extends HoistService {
     // Initialization
     //------------------
     override async initAsync() {
-        // Flush reliably on page teardown: pageState fires synchronously while the page is still
-        // alive, and `keepalive` carries the request across unload.
+        // Flush on page teardown while the page is still alive.
         this.addReaction({
             track: () => XH.pageState,
-            run: state => {
-                if (state === 'hidden' || state === 'frozen' || state === 'terminated') {
-                    this.pushPendingInternalAsync(true);
-                }
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingInternalAsync();
             }
         });
     }
@@ -216,26 +214,20 @@ export class TraceService extends HoistService {
         void this.pushPendingInternalAsync();
     }
 
-    /**
-     * Flush all pending spans to the server.
-     * @param keepalive - issue the request with `fetch({keepalive: true})` so it survives a page
-     *      teardown. Used by the page-unload flush; not for normal use, as keepalive requests are
-     *      subject to a 64KB body cap.
-     */
-    private async pushPendingInternalAsync(keepalive: boolean = false) {
+    /** Flush all pending spans to the server. */
+    private async pushPendingInternalAsync() {
         const spans = this._pending;
         if (isEmpty(spans)) return;
 
         // Clear synchronously with the capture, so overlapping flushes cannot post twice.
         this._pending = [];
         try {
-            await XH.postJson({
+            await terminationSafePostJson({
                 url: 'xh/submitSpans',
                 body: spans.map(s => s.toJSON()),
                 params: {
                     clientUsername: XH.getUsername()
-                },
-                fetchOpts: keepalive ? {keepalive: true} : undefined
+                }
             });
         } catch (e) {
             if (isRetryableError(e)) {
