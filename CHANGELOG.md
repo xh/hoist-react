@@ -1,5 +1,6 @@
 # Changelog
 
+## 87.0.0-SNAPSHOT - unreleased
 
 ## 86.0.1 - 2026-06-16
 
@@ -13,7 +14,6 @@
 * `TrackService`, `PrefService`, and `TraceService` now flush their pending entries reliably when
   the page is hidden or unloaded, reacting to `XH.pageState` and issuing the flush via
   `fetch({keepalive: true})` (replacing the less reliable `beforeunload` + normal-fetch approach).
-
 
 ## 86.0.0 - 2026-06-12
 
