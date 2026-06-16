@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, uses} from '@xh/hoist/core';
+import {columnChooser} from '@xh/hoist/desktop/cmp/grid/columnchooser/ColumnChooser';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {colChooser} from './ColChooser';
 import {ColChooserModel} from './ColChooserModel';
 
 export const colChooserDialog = hoistCmp.factory({
@@ -15,7 +15,7 @@ export const colChooserDialog = hoistCmp.factory({
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {
-        const {isOpen, width} = model;
+        const {isOpen, gridModel, showRestoreDefaults, width, height} = model;
         if (!isOpen) return null;
 
         return dialog({
@@ -23,7 +23,7 @@ export const colChooserDialog = hoistCmp.factory({
             title: 'Choose Columns',
             isOpen: true,
             onClose: () => model.close(),
-            item: colChooser({model}),
+            item: columnChooser({gridModel, showRestoreDefaults, width, height}),
             className,
             style: {width}
         });

@@ -7,7 +7,7 @@
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
+import {columnChooser} from '@xh/hoist/desktop/cmp/grid/columnchooser/ColumnChooser';
 import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -71,7 +71,12 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 onDoubleClick: stopPropagation,
                 items: [
                     div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
-                    colChooser({model: colChooserModel})
+                    columnChooser({
+                        gridModel,
+                        showRestoreDefaults: colChooserModel.showRestoreDefaults,
+                        width: colChooserModel.width,
+                        height: colChooserModel.height
+                    })
                 ]
             }),
             onInteraction: willOpen => {

@@ -22,6 +22,9 @@ import './ColumnChooser.scss';
 export interface ColumnChooserProps extends HoistProps, LayoutProps {
     /** GridModel whose columns this chooser manages. Falls back to context lookup. */
     gridModel?: GridModel;
+
+    /** True (default) to show the Restore Defaults button. */
+    showRestoreDefaults?: boolean;
 }
 
 /**
@@ -34,7 +37,7 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
     displayName: 'ColumnChooser',
     className: 'xh-column-chooser',
 
-    render({className, ...props}) {
+    render({className, showRestoreDefaults, ...props}) {
         const impl = useLocalModel(ColumnChooserModel),
             [layoutProps] = splitLayoutProps(props);
 
@@ -79,6 +82,7 @@ export const [ColumnChooser, columnChooser] = hoistCmp.withFactory<ColumnChooser
                         }),
                         filler(),
                         button({
+                            omit: showRestoreDefaults === false,
                             intent: 'danger',
                             icon: Icon.reset(),
                             text: 'Restore Defaults',
