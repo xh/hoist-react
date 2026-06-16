@@ -24,14 +24,13 @@ export class TrackService extends HoistService {
     private pending: PlainObject[] = [];
 
     override async initAsync() {
-        // Reliably flush pending entries when the page is hidden or unloaded. PageState transitions
-        // synchronously within its DOM handlers, so this (non-delayed) reaction fires while the page
-        // is still alive, and `keepalive` carries the issued request across teardown.
+        // Flush reliably on page teardown: pageState fires synchronously while the page is still
+        // alive, and `keepalive` carries the request across unload.
         this.addReaction({
             track: () => XH.pageState,
             run: state => {
                 if (state === 'hidden' || state === 'frozen' || state === 'terminated') {
-                    this.pushPendingAsync({keepalive: true});
+                    this.pushPendingInternalAsync(true);
                 }
             }
         });
@@ -104,18 +103,31 @@ export class TrackService extends HoistService {
 
     /**
      * Flush the queue of pending activity tracking messages to the server.
-     * @param opts - flush options.
-     *      `keepalive` - issue the request with `fetch({keepalive: true})` so it survives a page
-     *      teardown. Used by the page-hidden/unload flush; not for normal use, as keepalive requests
-     *      are subject to a 64KB body cap.
      * @internal - apps should generally allow this service to manage w/its internal debounce.
      */
-    async pushPendingAsync(opts?: {keepalive?: boolean}) {
+    async pushPendingAsync() {
+        return this.pushPendingInternalAsync();
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    @debounced(10 * SECONDS)
+    private pushPendingBuffered() {
+        return this.pushPendingInternalAsync();
+    }
+
+    /**
+     * Flush the queue of pending activity tracking messages to the server.
+     * @param keepalive - issue the request with `fetch({keepalive: true})` so it survives a page
+     *      teardown. Used by the page-hidden/unload flush; not for normal use, as keepalive
+     *      requests are subject to a 64KB body cap.
+     */
+    private async pushPendingInternalAsync(keepalive: boolean = false) {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
-        // Clear synchronously with the capture, before any `await`,
-        // so overlapping flushes cannot post the same entries twice.
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
         this.pending = [];
 
         await this.runner()
@@ -126,19 +138,11 @@ export class TrackService extends HoistService {
                         url: 'xh/track',
                         body: {entries: pending},
                         params: {clientUsername: XH.getUsername()},
-                        fetchOpts: opts?.keepalive ? {keepalive: true} : undefined
+                        fetchOpts: keepalive ? {keepalive: true} : undefined
                     },
                     ctx
                 )
             );
-    }
-
-    //------------------
-    // Implementation
-    //------------------
-    @debounced(10 * SECONDS)
-    private pushPendingBuffered() {
-        this.pushPendingAsync();
     }
 
     private toServerJson(options: TrackOptions): PlainObject {

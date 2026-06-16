@@ -34,7 +34,16 @@ export class PrefService extends HoistService {
     private _updates = {};
 
     override async initAsync(ctx: InitContext) {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+        // Flush reliably on page teardown: pageState fires synchronously while the page is still
+        // alive, and `keepalive` carries the request across unload.
+        this.addReaction({
+            track: () => XH.pageState,
+            run: state => {
+                if (state === 'hidden' || state === 'frozen' || state === 'terminated') {
+                    this.pushPendingInternalAsync(true);
+                }
+            }
+        });
         return this.loadPrefsAsync(ctx);
     }
 
@@ -117,22 +126,7 @@ export class PrefService extends HoistService {
      * changes and option and then immediately hits a (browser) refresh.
      */
     async pushPendingAsync() {
-        const updates = this._updates;
-        if (isEmpty(updates)) return;
-
-        await this.runner()
-            .span('set')
-            .run(async ctx => {
-                this._updates = {};
-                await XH.postJson(
-                    {
-                        url: 'xh/setPrefs',
-                        body: updates,
-                        params: {clientUsername: XH.getUsername()}
-                    },
-                    ctx
-                );
-            });
+        return this.pushPendingInternalAsync();
     }
 
     //-------------------
@@ -140,7 +134,35 @@ export class PrefService extends HoistService {
     //-------------------
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        this.pushPendingAsync();
+        return this.pushPendingInternalAsync();
+    }
+
+    /**
+     * Flush the queue of pending preference updates to the server.
+     * @param keepalive - issue the request with `fetch({keepalive: true})` so it survives a page
+     *      teardown. Used by the page-unload flush; not for normal use, as keepalive requests are
+     *      subject to a 64KB body cap.
+     */
+    private async pushPendingInternalAsync(keepalive: boolean = false) {
+        const updates = this._updates;
+        if (isEmpty(updates)) return;
+
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
+        this._updates = {};
+
+        await this.runner()
+            .span('set')
+            .run(ctx =>
+                XH.postJson(
+                    {
+                        url: 'xh/setPrefs',
+                        body: updates,
+                        params: {clientUsername: XH.getUsername()},
+                        fetchOpts: keepalive ? {keepalive: true} : undefined
+                    },
+                    ctx
+                )
+            );
     }
 
     private async loadPrefsAsync(ctx: CallContextLike) {
