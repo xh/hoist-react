@@ -1,10 +1,12 @@
 # Changelog
 
-## 87.0.0-SNAPSHOT - unreleased
+## 86.0.1 - 2026-06-16
 
 ### 🐞 Bug Fixes
 
-* Fixed `FilterChooser` favorites icon size
+* Fixed a circular import introduced in v86 that caused problems for apps using `@ComputeOnce`.
+* Fixed a regression to favorites icon size for `FilterChooser.`
+
 
 ## 86.0.0 - 2026-06-12
 
