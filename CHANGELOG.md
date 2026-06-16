@@ -6,7 +6,7 @@
 
 * `TrackService` now flushes pending activity-tracking entries reliably when the page is hidden or
   unloaded, issuing the flush via `fetch({keepalive: true})` and reacting to `XH.pageState`
-  (replacing less unreliable `beforeunload` + normal-fetch approach).
+  (replacing less reliable `beforeunload` + normal-fetch approach).
 
 
 ## 86.0.1 - 2026-06-16

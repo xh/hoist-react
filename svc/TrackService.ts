@@ -26,9 +26,7 @@ export class TrackService extends HoistService {
     override async initAsync() {
         // Reliably flush pending entries when the page is hidden or unloaded. PageState transitions
         // synchronously within its DOM handlers, so this (non-delayed) reaction fires while the page
-        // is still alive, and `keepalive` carries the issued request across teardown - unlike the
-        // prior `beforeunload` + normal-fetch approach, which the browser cancelled mid-teardown and
-        // which never fired at all for discarded mobile tabs.
+        // is still alive, and `keepalive` carries the issued request across teardown.
         this.addReaction({
             track: () => XH.pageState,
             run: state => {
