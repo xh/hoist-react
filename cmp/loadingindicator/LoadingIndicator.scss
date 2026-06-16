@@ -72,6 +72,10 @@
     flex-wrap: nowrap;
   }
 
+  .xh-spinner {
+    color: var(--xh-loading-indicator-spinner-color);
+  }
+
   &__message {
     height: var(--height);
     line-height: var(--height);

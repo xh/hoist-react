@@ -444,7 +444,7 @@ Both hooks can be composed together via `composeRefs` when a component needs to 
 both resize and visibility:
 
 ```typescript
-import composeRefs from '@seznam/compose-react-refs';
+import {composeRefs} from '@xh/hoist/utils/react';
 
 const ref = composeRefs(
     useOnVisibleChange(v => model.visible = v),

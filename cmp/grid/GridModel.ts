@@ -1506,8 +1506,8 @@ export class GridModel extends HoistModel {
         const {store, agGridModel, agApi, selectedRecords} = this;
 
         let recToEdit;
-        if (record) {
-            // Normalize specified record, if any.
+        if (!isNil(record)) {
+            // Normalize specified record, if any - note a StoreId may be 0, so check for nil.
             recToEdit = record instanceof StoreRecord ? record : store.getById(record);
         } else {
             if (!isEmpty(selectedRecords)) {
@@ -1524,7 +1524,7 @@ export class GridModel extends HoistModel {
         if (isNil(rowIndex) || rowIndex < 0) {
             this.logWarn(
                 'Unable to start editing',
-                record ? 'specified record not found' : 'no records found'
+                !isNil(record) ? 'specified record not found' : 'no records found'
             );
             return;
         }

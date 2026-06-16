@@ -1,86 +1,58 @@
-// Input
 .xh-date-input {
-  display: flex;
-  align-items: stretch;
   background: var(--xh-input-bg);
+  align-items: center;
 
   & > svg {
-    margin: 8px 0;
+    margin: 0 6px;
+    flex: none;
+  }
 
-    &:first-child {
-      margin-left: 6px;
+  // Size onsen's inner input + label, matching sibling text/number inputs.
+  .text-input,
+  .text-input__label {
+    height: var(--xh-mobile-input-height-px);
+    padding: 0 var(--xh-pad-px);
+  }
+
+  // Strip native date chrome - Icon.calendar() is the sole affordance.
+  .text-input {
+    appearance: none;
+    -webkit-appearance: none;
+
+    // Center the value vertically within the fixed-height control. On iOS the formatted value sits
+    // in ::-webkit-date-and-time-value, which carries a default margin and aligns to the top of the
+    // content box - line-height centers it (single line, no vertical padding) without disturbing
+    // the horizontal text-align driven by the textAlign prop.
+    line-height: var(--xh-mobile-input-height-px);
+
+    // Value sits in this pseudo, which ignores text-align unless inherited.
+    &::-webkit-date-and-time-value {
+      text-align: inherit;
+      margin: 0;
     }
 
-    &:last-child {
-      margin-right: 6px;
+    &:disabled {
+      color: var(--xh-text-color-muted);
+      opacity: 1;
     }
   }
 
-  .SingleDatePicker {
+  &__input {
     flex: 1;
-
-    & * {
-      width: 100%;
-      background-color: transparent;
-    }
-
-    .DateInput_input {
-      height: var(--xh-mobile-input-height-px);
-      padding: 0 var(--xh-pad-px);
-    }
-
-    .SingleDatePickerInput_clearDate {
-      margin-right: 0;
-      width: 30px;
-    }
+    min-width: 0;
   }
-}
 
-// Popover and mask
-.SingleDatePicker_picker__portal {
-  background-color: var(--xh-backdrop-bg);
+  &__picker-button {
+    flex: none;
+    margin: 0 6px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
 
-  .DayPicker {
-    background-color: var(--xh-bg);
-    border: var(--xh-border-solid);
-
-    &_weekHeader {
-      color: var(--xh-text-color-muted);
-    }
-
-    .DayPickerNavigation_button {
-      background-color: transparent;
-      color: var(--xh-text-color-muted);
-      border-color: var(--xh-border-color);
-    }
-
-    .CalendarMonthGrid,
-    .CalendarMonth {
-      background-color: transparent;
-      color: var(--xh-text-color);
-
-      &_caption {
-        color: var(--xh-text-color);
-      }
-
-      .CalendarDay {
-        background-color: transparent;
-        border-color: var(--xh-border-color);
-
-        &__default {
-          color: var(--xh-text-color);
-        }
-
-        &__blocked_out_of_range {
-          color: var(--xh-text-color-muted);
-        }
-
-        &__selected {
-          color: white;
-          background: var(--xh-accent-color);
-          border-color: var(--xh-accent-color);
-        }
-      }
-    }
+  &__clear-button {
+    padding-right: 8px;
+    padding-left: 0;
+    color: var(--xh-text-color-muted) !important;
   }
 }

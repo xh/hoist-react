@@ -25,7 +25,8 @@
             "mcpCategory": "index",
             "viewerCategory": "overview",
             "description": "Primary catalog of all hoist-react documentation with descriptions and key topics for fast, targeted retrieval.",
-            "keywords": ["index", "catalog", "documentation", "quick reference", "packages", "concepts", "devops"]
+            "keywords": ["index", "catalog", "documentation", "quick reference", "packages", "concepts", "devops"],
+            "aliases": ["index"]
         },
         {
             "id": "docs/coding-conventions.md",
@@ -33,7 +34,8 @@
             "mcpCategory": "conventions",
             "viewerCategory": "overview",
             "description": "Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming.",
-            "keywords": ["conventions", "code style", "imports", "naming", "TypeScript", "class structure", "component patterns", "hoistCmp", "exports", "null", "undefined", "async", "await", "error handling", "logging", "equality", "CSS", "BEM", "section dividers", "declare config"]
+            "keywords": ["conventions", "code style", "imports", "naming", "TypeScript", "class structure", "component patterns", "hoistCmp", "exports", "null", "undefined", "async", "await", "error handling", "logging", "equality", "CSS", "BEM", "section dividers", "declare config"],
+            "aliases": ["conventions"]
         },
         {
             "id": "core/README.md",
@@ -65,7 +67,8 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "MetricsService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "Runner", "CallContext", "withSpan", "traceparent", "distributed tracing"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "MetricsService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "Runner", "CallContext", "withSpan", "traceparent", "distributed tracing"],
+            "aliases": ["services"]
         },
         {
             "id": "cmp/README.md",
@@ -73,7 +76,8 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"]
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"],
+            "aliases": ["components"]
         },
         {
             "id": "cmp/grid/README.md",
@@ -482,6 +486,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
             "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
+        },
+        {
+            "id": "docs/upgrade-notes/v86-upgrade-notes.md",
+            "title": "v86 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v85.x to v86.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v86", "v85", "editorProps", "serializeIcon", "deserializeIcon", "enableMulti", "showFileGrid", "singleDatePickerProps", "react-dates", "golden-layout"]
         }
     ]
 }

@@ -703,6 +703,7 @@ body {
   --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
   --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
+  --xh-loading-indicator-spinner-color: var(--loading-indicator-spinner-color, var(--xh-loading-indicator-color));
 
   &.xh-dark {
     --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));

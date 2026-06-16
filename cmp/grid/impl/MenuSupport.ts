@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import copy from 'clipboard-copy';
+import {copyToClipboard} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
@@ -129,7 +129,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                 column,
                                 node
                             });
-                        copy(value);
+                        copyToClipboard(value);
                     }
                 }
             });

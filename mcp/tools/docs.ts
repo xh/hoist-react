@@ -8,6 +8,7 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import {buildRegistry, searchDocs, loadDocContent} from '../data/doc-registry.js';
+import {resolveDocId} from '../data/doc-id-resolver.js';
 import {
     formatSearchResults,
     formatDocList,
@@ -123,12 +124,12 @@ export function registerDocTools(server: McpServer): void {
         {
             title: 'Read Hoist Documentation',
             description:
-                'Read the full text of a single hoist-react document by its exact ID (e.g. "cmp/grid/README.md", "docs/authentication.md"). Get IDs from hoist-search-docs or hoist-list-docs. This is the tool-based equivalent of the hoist://docs/{id} resource — prefer it when resource fetching is unavailable or inconvenient. For keyword discovery rather than a known ID, use hoist-search-docs.',
+                'Read the full text of a single hoist-react document. Accepts the canonical ID (e.g. "cmp/grid/README.md", "docs/authentication.md") and also tolerates common shortenings: a bare subsystem ("core" → "core/README.md"), a path without README ("cmp/grid"), a docs/ path without prefix ("authentication"), a last-segment shortcut ("grid"), or a version code for upgrade notes ("v85"). For keyword discovery rather than a known ID, use hoist-search-docs.',
             inputSchema: z.object({
                 id: z
                     .string()
                     .describe(
-                        'Exact document ID (its repo-relative path) from search or list output, e.g. "cmp/grid/README.md" or "docs/authentication.md".'
+                        'Document ID. Prefer the canonical repo-relative path from search or list output (e.g. "cmp/grid/README.md"). The resolver also accepts common shortenings -- see the tool description.'
                     )
             }),
             outputSchema: readDocOutputSchema,
@@ -140,23 +141,29 @@ export function registerDocTools(server: McpServer): void {
             }
         },
         async ({id}) => {
-            const entry = registry.find(e => e.id === id);
-            if (!entry) {
+            const result = resolveDocId(registry, id);
+            if (result.kind === 'unknown') {
+                const tail =
+                    result.suggestions.length > 0
+                        ? ` Did you mean one of: ${result.suggestions.map(s => `"${s}"`).join(', ')}?`
+                        : ' Call hoist-list-docs to see valid IDs, or hoist-search-docs to find one by keyword.';
                 return {
                     content: [
                         {
                             type: 'text' as const,
-                            text: `Unknown document ID: "${id}". Call hoist-list-docs to see valid IDs, or hoist-search-docs to find one by keyword.`
+                            text: `Unknown document ID: "${id}".${tail}`
                         }
                     ],
                     isError: true
                 };
             }
 
+            const entry = result.entry;
+            const matchedAs = result.kind === 'normalized' ? result.matchedAs : undefined;
             const content = loadDocContent(entry);
             return {
                 content: [{type: 'text' as const, text: content}],
-                structuredContent: toReadDocOutput(entry, content)
+                structuredContent: toReadDocOutput(entry, content, matchedAs)
             };
         }
     );
