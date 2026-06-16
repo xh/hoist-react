@@ -26,7 +26,8 @@
   }
 
   &__column-row {
-    &--hidden {
+    // Dim the cell content, not the row - opacity on the row dims its drop-indicator ::after too.
+    &--hidden .ag-cell {
       opacity: 0.5;
     }
   }
