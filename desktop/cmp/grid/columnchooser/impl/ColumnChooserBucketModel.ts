@@ -62,7 +62,9 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         return {
             suppressMoveWhenRowDragging: true,
             suppressGroupRowsSticky: true,
-            rowDragText: params => getChooserData(params.rowNode)?.name ?? '',
+            rowDragMultiRow: true,
+            rowDragText: (params, count) =>
+                count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? ''),
             isRowValidDropPosition: params => this.getValidDropPosition(params),
             onRowDragEnd: event => this.handleRowDragEnd(event),
             onCellDoubleClicked: event => {
@@ -120,7 +122,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * Validate a proposed drop position during unmanaged row dragging within this bucket.
      */
     getValidDropPosition(params: IsRowValidDropPositionParams): IsRowValidDropPositionResult {
-        const sourceData = getChooserData(params.source);
+        const payload = buildDragPayload(params.rows ?? [params.source]);
         let target = params.target,
             {position} = params;
 
@@ -137,10 +139,10 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         }
 
         const targetData = getChooserData(target);
-        if (!sourceData || !targetData) return {allowed: false};
-        // A row can't be dropped onto itself - except a drop from the Column Library onto the same
-        // column's inline (hidden) row, which is a real op: it unhides the column in place.
-        if (sourceData.id === targetData.id && !sourceData.fromLibrary) return {allowed: false};
+        if (!payload || !targetData) return {allowed: false};
+        // A row can't be dropped onto one of the dragged rows themselves - except a drop from the
+        // Column Library onto the same column's inline (hidden) row, which unhides it in place.
+        if (payload.recordIds.has(targetData.id) && !payload.fromLibrary) return {allowed: false};
 
         if (targetData.isGroup) {
             // Hovering a group row always means "before the group" - getDropHighlight then resolves
@@ -154,22 +156,22 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
             position = 'below';
         }
 
-        // Prevent dropping a group inside itself
-        if (sourceData.isGroup && this.isDescendantOf(targetData.id, sourceData.id)) {
+        // Prevent dropping a dragged group inside itself
+        if (payload.groupIds.some(gid => this.isDescendantOf(targetData.id, gid))) {
             return {allowed: false};
         }
 
         // Reject (and don't preview) drops the commit will refuse - splitting a locked group - so
         // the drag indicator agrees with what a drop actually does. This callback runs on the
         // target grid for cross-bucket drags too, so it gates those. A drop from the library unhides
-        // its column, so validate against that to gate it like the commit will.
-        if (this.isDropDisallowed(sourceData, targetData, position, !!sourceData.fromLibrary)) {
+        // its columns, so validate against that to gate it like the commit will.
+        if (this.isDropDisallowed(payload.leafColIds, targetData, position, payload.fromLibrary)) {
             return {allowed: false};
         }
 
         // Suppress the indicator when the drop would leave the order unchanged. A drop from the
         // Column Library always changes state (it unhides), so it is never a no-op.
-        if (!sourceData.fromLibrary && this.isNoOpMove(sourceData, targetData, position)) {
+        if (!payload.fromLibrary && this.isNoOpMove(payload.leafColIds, targetData, position)) {
             return {allowed: false};
         }
 
@@ -177,13 +179,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // row that will follow it (see getDropHighlight). This removes the ~1px above/below flicker
         // between adjacent rows and ensures a drop landing before a group renders above the group
         // header, not above its first child (the dropped column lands before the group in the tree).
-        return this.getDropHighlight(sourceData, targetData, position, target);
+        return this.getDropHighlight(payload.leafColIds, targetData, position, target);
     }
 
     /** Handle intra-bucket drag end. */
     handleRowDragEnd(event: RowDragEndEvent) {
-        const sourceData = getChooserData(event.node);
-        if (!sourceData) return;
+        const payload = buildDragPayload(event.nodes);
+        if (!payload) return;
 
         const dropInfo = event.rowsDrop;
         if (!dropInfo || !dropInfo.allowed) return;
@@ -194,7 +196,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         const {position} = dropInfo;
         if (position === 'none') return;
 
-        this.moveColumns(sourceData, targetData, position);
+        this.moveColumns(payload.leafColIds, targetData, position);
     }
 
     /**
@@ -207,25 +209,25 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
         if (source === this) return;
 
-        const sourceData = getChooserData(event.node);
-        if (!sourceData) return;
+        const payload = buildDragPayload(event.nodes);
+        if (!payload) return;
 
-        // A drop arriving from the Column Library means "show" the column - clear its hidden flag as
-        // it lands in this (visible) bucket. Inter-bucket drags keep their hidden state.
+        // A drop arriving from the Column Library means "show" the columns - clear their hidden flag
+        // as they land in this (visible) bucket. Inter-bucket drags keep their hidden state.
         const makeVisible = source === this.parent.libraryModel;
 
         const dropInfo = event.rowsDrop;
         if (dropInfo?.allowed && dropInfo.position !== 'none') {
             const targetData = getChooserData(dropInfo.target);
             if (targetData) {
-                this.moveColumns(sourceData, targetData, dropInfo.position, makeVisible);
+                this.moveColumns(payload.leafColIds, targetData, dropInfo.position, makeVisible);
                 return;
             }
         }
 
         // No valid row under the cursor (empty bucket / below the last row) - append. A drop rejected
         // over an actual row (hidden/locked/no-op) falls through to a no-op; moveColumns re-validates.
-        if (!event.overNode) this.moveColumns(sourceData, null, 'below', makeVisible);
+        if (!event.overNode) this.moveColumns(payload.leafColIds, null, 'below', makeVisible);
     }
 
     /**
@@ -442,15 +444,15 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * full resulting state, so it also gates cross-bucket moves.
      */
     private isDropDisallowed(
-        sourceData: ColumnChooserData,
+        movingLeafColIds: string[],
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ): boolean {
         if (this.targetGridModel.lockColumnGroups) {
-            // Validate the state the move will actually produce - including unhiding a column
+            // Validate the state the move will actually produce - including unhiding columns
             // dropped from the library - so the visible-contiguity check matches the real result.
-            const newState = this.simulateMove(sourceData, targetData, position, makeVisible);
+            const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
             if (
                 newState &&
                 !areGroupsContiguous(newState, buildParentChainMap(this.targetGridModel.columns))
@@ -468,13 +470,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * both validating a drop ({@link isDropDisallowed}) and performing it ({@link moveColumns}).
      */
     private simulateMove(
-        sourceData: ColumnChooserData,
+        movingLeafColIds: string[],
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ): ColumnState[] | null {
         const {targetGridModel: gridModel} = this,
-            movingIds = new Set(sourceData.leafColIds),
+            movingIds = new Set(movingLeafColIds),
             movingState = gridModel.columnState
                 .filter(cs => movingIds.has(cs.colId))
                 .map(cs => ({...cs, pinned: this.pinned, ...(makeVisible ? {hidden: false} : {})}));
@@ -498,15 +500,15 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * No-ops if the drop is disallowed (see {@link isDropDisallowed}).
      */
     private moveColumns(
-        sourceData: ColumnChooserData,
+        movingLeafColIds: string[],
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition,
         makeVisible: boolean = false
     ) {
         if (!this.targetGridModel) return;
-        if (this.isDropDisallowed(sourceData, targetData, position, makeVisible)) return;
+        if (this.isDropDisallowed(movingLeafColIds, targetData, position, makeVisible)) return;
 
-        const newState = this.simulateMove(sourceData, targetData, position, makeVisible);
+        const newState = this.simulateMove(movingLeafColIds, targetData, position, makeVisible);
         if (newState) this.parent.commit(newState);
     }
 
@@ -522,11 +524,11 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * into the remaining slice at the computed index) and compares the result to the original.
      */
     private isNoOpMove(
-        sourceData: ColumnChooserData,
+        movingLeafColIds: string[],
         targetData: ColumnChooserData,
         position: RowDropTargetPosition
     ): boolean {
-        const movingIds = new Set(sourceData.leafColIds),
+        const movingIds = new Set(movingLeafColIds),
             slice = this.targetGridModel.columnState.filter(
                 cs => (cs.pinned ?? null) === this.pinned
             ),
@@ -553,13 +555,13 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
      * drops when unlocked. Drops past the end pin to the bottom of the last displayed row.
      */
     private getDropHighlight(
-        sourceData: ColumnChooserData,
+        movingLeafColIds: string[],
         targetData: ColumnChooserData,
         position: RowDropTargetPosition,
         fallbackTarget: any
     ): IsRowValidDropPositionResult {
         const {agApi} = this.chooserGridModel,
-            movingIds = new Set(sourceData.leafColIds),
+            movingIds = new Set(movingLeafColIds),
             slice = this.targetGridModel.columnState.filter(
                 cs => (cs.pinned ?? null) === this.pinned
             ),
@@ -580,7 +582,7 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         // same group is recognized even though its members live in a different bucket's instance.
         const parentChainMap = buildParentChainMap(this.targetGridModel.columns),
             sourceGroupIds = new Set<string>();
-        sourceData.leafColIds.forEach(id =>
+        movingLeafColIds.forEach(id =>
             parentChainMap.get(id)?.forEach(g => sourceGroupIds.add(g.groupId))
         );
 
@@ -776,6 +778,38 @@ function getActiveGroupId(
     const groupId = chain[depth].groupId,
         count = groupInstanceCounts.get(groupId) ?? 1;
     return count > 1 ? `${groupId}_${count}` : groupId;
+}
+
+/**
+ * The columns being dragged, aggregated across one or more selected rows (a row may itself be a
+ * group representing many leaves). The move/validation engine is driven entirely by `leafColIds`;
+ * `recordIds`/`groupIds` gate the self-drop and group-inside-itself checks; `fromLibrary` flags a
+ * drag out of the Column Library (which unhides on drop).
+ */
+interface DragPayload {
+    leafColIds: string[];
+    recordIds: Set<string>;
+    groupIds: string[];
+    fromLibrary: boolean;
+}
+
+/** Aggregate the dragged ag-grid row nodes into a single {@link DragPayload}. */
+function buildDragPayload(nodes: any[]): DragPayload | null {
+    const records = (nodes ?? []).map(getChooserData).filter(Boolean) as ColumnChooserData[];
+    if (!records.length) return null;
+
+    const leafColIds = new Set<string>(),
+        recordIds = new Set<string>(),
+        groupIds: string[] = [];
+    let fromLibrary = false;
+    records.forEach(rec => {
+        rec.leafColIds.forEach(id => leafColIds.add(id));
+        recordIds.add(rec.id);
+        if (rec.isGroup) groupIds.push(rec.id);
+        if (rec.fromLibrary) fromLibrary = true;
+    });
+
+    return {leafColIds: [...leafColIds], recordIds, groupIds, fromLibrary};
 }
 
 /** Recursively collect leaf colIds for a group from its actual children in the record set. */

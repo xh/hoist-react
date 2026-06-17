@@ -40,7 +40,9 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
         return {
             suppressGroupChangesColumnVisibility: true,
             suppressMoveWhenRowDragging: true,
-            rowDragText: params => getChooserData(params.rowNode)?.name ?? ''
+            rowDragMultiRow: true,
+            rowDragText: (params, count) =>
+                count > 1 ? `${count} columns` : (getChooserData(params.rowNode)?.name ?? '')
         };
     }
 
@@ -84,13 +86,14 @@ export class ColumnLibraryModel extends HoistModel implements ColumnChooserDropP
     handleCrossBucketDrop(event: RowDragEndEvent, source: ColumnChooserDropParticipant) {
         if (source === this) return;
 
-        const sourceData = getChooserData(event.node);
-        if (!sourceData) return;
+        const hideIds = new Set(
+            (event.nodes ?? []).flatMap(node => getChooserData(node)?.leafColIds ?? [])
+        );
+        if (!hideIds.size) return;
 
-        const hideIds = new Set(sourceData.leafColIds),
-            newState = this.targetGridModel.columnState.map(cs =>
-                hideIds.has(cs.colId) ? {...cs, hidden: true} : cs
-            );
+        const newState = this.targetGridModel.columnState.map(cs =>
+            hideIds.has(cs.colId) ? {...cs, hidden: true} : cs
+        );
         this.parent.commit(newState);
     }
 
