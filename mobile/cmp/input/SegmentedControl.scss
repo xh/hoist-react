@@ -70,6 +70,18 @@
     &.xh-segmented-control--outlined {
       background-color: transparent;
       border: 1px solid var(--xh-border-color);
+
+      // Reserve border space on every option so selecting one does not shift the row. The
+      // transparent tray offers no recessed backdrop to set a filled tile against, so indicate
+      // selection with a ring instead - currentColor keeps it in step with the option's
+      // text / intent color.
+      .xh-button.xh-segmented-control-option {
+        border: 1px solid transparent;
+      }
+
+      .xh-button.xh-segmented-control-option--selected {
+        border-color: currentColor;
+      }
     }
 
     @each $intent in (primary, success, warning, danger) {
