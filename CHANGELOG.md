@@ -5,6 +5,8 @@
 ### 🐞 Bug Fixes
 
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
+* `GridModel` now preserves the `pinned` state of hidden columns in persisted column state, so a
+  column's pin survives being hidden and is restored when it is shown again.
 
 ## 86.0.1 - 2026-06-16
 

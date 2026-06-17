@@ -165,9 +165,9 @@ export class ColumnChooserBucketModel extends HoistModel {
             return {allowed: false};
         }
 
-        // Reject (and don't preview) drops the commit will refuse - pinning a hidden column or
-        // splitting a locked group - so the drag indicator agrees with what a drop actually does.
-        // This callback runs on the target grid for cross-bucket drags too, so it gates those.
+        // Reject (and don't preview) drops the commit will refuse - splitting a locked group - so
+        // the drag indicator agrees with what a drop actually does. This callback runs on the
+        // target grid for cross-bucket drags too, so it gates those.
         if (this.isDropDisallowed(sourceData, targetData, position)) {
             return {allowed: false};
         }
@@ -231,8 +231,7 @@ export class ColumnChooserBucketModel extends HoistModel {
     /**
      * Drag-image icon name for a cross-bucket drag hovering this bucket's grid. ag-grid hardcodes
      * the external drop-zone icon to 'move' regardless of `isRowValidDropPosition`; ColumnChooserModel
-     * injects this as the zone's getIconName. Only a hidden column dropped into a pinned bucket is
-     * truly un-pinnable ('not-allowed'); an allowed drop into a pinned bucket shows 'pinned', the
+     * injects this as the zone's getIconName. A drop into a pinned bucket shows 'pinned', the
      * unpinned bucket shows 'move'. Group locking is NOT checked here: it constrains the drop
      * position, not whether a column is pinnable (a non-splitting position always exists), and is
      * enforced per-position by the in-grid indicator and the commit.
@@ -241,7 +240,6 @@ export class ColumnChooserBucketModel extends HoistModel {
         const node = draggingEvent?.dragItem?.rowNode ?? draggingEvent?.dragItem?.rowNodes?.[0],
             sourceData = getChooserData(node);
         if (!sourceData) return 'move';
-        if (this.pinned && this.hasHiddenLeaf(sourceData)) return 'notAllowed';
         return this.pinned ? 'pinned' : 'move';
     }
 
@@ -435,18 +433,15 @@ export class ColumnChooserBucketModel extends HoistModel {
     /**
      * Whether a proposed drop must be rejected. The single validation predicate shared by the
      * drag-preview path ({@link getValidDropPosition}) and the commit path ({@link moveColumns}),
-     * so the indicator always agrees with what a drop will do. Rejects:
-     *  - pinning a hidden column (its pinned state isn't persisted, see GridModel.cleanColumnState)
-     *  - any move that would leave a column group's leaves non-contiguous while lockColumnGroups is
-     *    set - evaluated against the full resulting state, so it also gates cross-bucket moves.
+     * so the indicator always agrees with what a drop will do. Rejects any move that would leave a
+     * column group's leaves non-contiguous while lockColumnGroups is set - evaluated against the
+     * full resulting state, so it also gates cross-bucket moves.
      */
     private isDropDisallowed(
         sourceData: ColumnChooserData,
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition
     ): boolean {
-        if (this.pinned && this.hasHiddenLeaf(sourceData)) return true;
-
         if (this.gridModel.lockColumnGroups) {
             const newState = this.simulateMove(sourceData, targetData, position);
             if (
@@ -458,12 +453,6 @@ export class ColumnChooserBucketModel extends HoistModel {
         }
 
         return false;
-    }
-
-    /** True if any of the chooser record's leaf columns are currently hidden. */
-    private hasHiddenLeaf(data: ColumnChooserData): boolean {
-        const ids = new Set(data.leafColIds);
-        return this.gridModel.columnState.some(cs => ids.has(cs.colId) && cs.hidden);
     }
 
     /**
