@@ -16,10 +16,10 @@
  *     foo: T = ...;                       accessor foo: T = ...;
  *
  * Usage:
- *   node docs/planning/tc39-decorators/codemod-add-accessor.mjs [--dry] [path ...]
+ *   node docs/codemod/v87/codemod-add-accessor.mjs [--dry] [path ...]
  *
  * Paths default to the hoist-react repo root. Files are walked recursively, scanning .ts/.tsx.
- * Skips node_modules, build/, .git/, and the spike sandbox (its own local tsconfig).
+ * Skips node_modules, build/, and .git/.
  *
  * After running, `tsc --build` is the authoritative check — any missed site surfaces as a
  * decorator-signature mismatch error.
@@ -32,7 +32,7 @@ const SELF_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SELF_DIR, '../../..');
 
 const EXCLUDED_DIRS = new Set(['node_modules', 'build', '.git', '.idea', '.husky']);
-const EXCLUDED_PREFIXES = [path.join(REPO_ROOT, 'docs/planning/tc39-decorators/spike')];
+const EXCLUDED_PREFIXES = [];
 
 const ACCESS_MODIFIERS = '(?:public|private|protected|static|override)';
 const DECORATOR = '@(?:observable(?:\\.\\w+)?|bindable(?:\\.\\w+)?)';

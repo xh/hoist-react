@@ -4,7 +4,7 @@
  * (body contains only `super(...)` ± blank lines), and trims `makeObservable` from any import
  * that no longer references it.
  *
- * Scope: hoist-react .ts/.tsx except docs/planning/tc39-decorators/spike.
+ * Scope: hoist-react .ts/.tsx.
  *
  * Leaves JSDoc examples of `makeObservable(this)` intact — those must be updated by hand since
  * they're illustrating a pattern, not calling the function.
@@ -16,7 +16,7 @@ import {fileURLToPath} from 'node:url';
 const SELF_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SELF_DIR, '../../..');
 const EXCLUDED_DIRS = new Set(['node_modules', 'build', '.git', '.idea', '.husky']);
-const EXCLUDED_PREFIXES = [path.join(REPO_ROOT, 'docs/planning/tc39-decorators/spike')];
+const EXCLUDED_PREFIXES = [];
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
