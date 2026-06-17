@@ -158,11 +158,10 @@ export class ColumnChooserBucketModel extends HoistModel {
             return {allowed: false};
         }
 
-        // Enforce lockColumnGroups constraints within this bucket
-        if (
-            this.gridModel.lockColumnGroups &&
-            !this.isValidLockedDrop(sourceData, targetData, position)
-        ) {
+        // Reject (and don't preview) drops the commit will refuse - pinning a hidden column or
+        // splitting a locked group - so the drag indicator agrees with what a drop actually does.
+        // This callback runs on the target grid for cross-bucket drags too, so it gates those.
+        if (this.isDropDisallowed(sourceData, targetData, position)) {
             return {allowed: false};
         }
 
@@ -204,6 +203,23 @@ export class ColumnChooserBucketModel extends HoistModel {
 
         const {target, position} = this.resolveDropTarget(event);
         this.moveColumns(sourceData, target, position);
+    }
+
+    /**
+     * Drag-image icon name for a cross-bucket drag hovering this bucket's grid. ag-grid hardcodes
+     * the external drop-zone icon to 'move' regardless of `isRowValidDropPosition`; ColumnChooserModel
+     * injects this as the zone's getIconName. Only a hidden column dropped into a pinned bucket is
+     * truly un-pinnable ('not-allowed'); an allowed drop into a pinned bucket shows 'pinned', the
+     * unpinned bucket shows 'move'. Group locking is NOT checked here: it constrains the drop
+     * position, not whether a column is pinnable (a non-splitting position always exists), and is
+     * enforced per-position by the in-grid indicator and the commit.
+     */
+    getCrossBucketDropIcon(draggingEvent: any): string {
+        const node = draggingEvent?.dragItem?.rowNode ?? draggingEvent?.dragItem?.rowNodes?.[0],
+            sourceData = getChooserData(node);
+        if (!sourceData) return 'move';
+        if (this.pinned && this.hasHiddenLeaf(sourceData)) return 'notAllowed';
+        return this.pinned ? 'pinned' : 'move';
     }
 
     //-----------------
@@ -394,60 +410,83 @@ export class ColumnChooserBucketModel extends HoistModel {
     }
 
     /**
-     * Validate drop when lockColumnGroups is true (intra-bucket only).
-     *
-     * Simulates the proposed move within this bucket and verifies that every column group's
-     * leaves remain contiguous. Cross-bucket drops bypass this check per spec.
+     * Whether a proposed drop must be rejected. The single validation predicate shared by the
+     * drag-preview path ({@link getValidDropPosition}) and the commit path ({@link moveColumns}),
+     * so the indicator always agrees with what a drop will do. Rejects:
+     *  - pinning a hidden column (its pinned state isn't persisted, see GridModel.cleanColumnState)
+     *  - any move that would leave a column group's leaves non-contiguous while lockColumnGroups is
+     *    set - evaluated against the full resulting state, so it also gates cross-bucket moves.
      */
-    private isValidLockedDrop(
-        source: ColumnChooserData,
-        target: ColumnChooserData,
+    private isDropDisallowed(
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData | null,
         position: RowDropTargetPosition
     ): boolean {
-        const movingIds = new Set(source.leafColIds),
-            bucketSlice = this.gridModel.columnState.filter(
-                cs => (cs.pinned ?? null) === this.pinned
-            ),
-            remaining = bucketSlice.filter(cs => !movingIds.has(cs.colId)),
-            movingState = bucketSlice.filter(cs => movingIds.has(cs.colId));
+        if (this.pinned && this.hasHiddenLeaf(sourceData)) return true;
 
-        const insertionIndex = computeInsertionIndex(bucketSlice, movingIds, target, position),
-            simulated = [...remaining];
-        simulated.splice(insertionIndex, 0, ...movingState);
+        if (this.gridModel.lockColumnGroups) {
+            const newState = this.simulateMove(sourceData, targetData, position);
+            if (
+                newState &&
+                !areGroupsContiguous(newState, buildParentChainMap(this.gridModel.columns))
+            ) {
+                return true;
+            }
+        }
 
-        return areGroupsContiguous(simulated, buildParentChainMap(this.gridModel.columns));
+        return false;
+    }
+
+    /** True if any of the chooser record's leaf columns are currently hidden. */
+    private hasHiddenLeaf(data: ColumnChooserData): boolean {
+        const ids = new Set(data.leafColIds);
+        return this.gridModel.columnState.some(cs => ids.has(cs.colId) && cs.hidden);
+    }
+
+    /**
+     * Build the full column state a move would produce (across all buckets), re-pinning the moving
+     * leaves to this bucket. Returns null if nothing would move. The single source of truth for
+     * both validating a drop ({@link isDropDisallowed}) and performing it ({@link moveColumns}).
+     */
+    private simulateMove(
+        sourceData: ColumnChooserData,
+        targetData: ColumnChooserData | null,
+        position: RowDropTargetPosition
+    ): ColumnState[] | null {
+        const {gridModel} = this,
+            movingIds = new Set(sourceData.leafColIds),
+            movingState = gridModel.columnState
+                .filter(cs => movingIds.has(cs.colId))
+                .map(cs => ({...cs, pinned: this.pinned}));
+
+        if (!movingState.length) return null;
+
+        const slices = partitionByPinned(gridModel.columnState, movingIds),
+            fullSlice = gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
+            targetSlice = slices[this.pinned ?? 'none'],
+            insertionIndex = targetData
+                ? computeInsertionIndex(fullSlice, movingIds, targetData, position)
+                : targetSlice.length;
+
+        targetSlice.splice(insertionIndex, 0, ...movingState);
+        return [...slices.left, ...slices.none, ...slices.right];
     }
 
     /**
      * Move columns into this bucket at the given drop position - from elsewhere in this bucket
-     * or from another bucket. Updates `pinned` on the moving leaves, splices them into this
-     * bucket's slice, and commits the resulting normalized full state via the parent.
+     * or from another bucket - committing the resulting normalized full state via the parent.
+     * No-ops if the drop is disallowed (see {@link isDropDisallowed}).
      */
     private moveColumns(
         sourceData: ColumnChooserData,
         targetData: ColumnChooserData | null,
         position: RowDropTargetPosition
     ) {
-        const {gridModel} = this;
-        if (!gridModel) return;
+        if (!this.gridModel) return;
+        if (this.isDropDisallowed(sourceData, targetData, position)) return;
 
-        const movingIds = new Set(sourceData.leafColIds),
-            slices = partitionByPinned(gridModel.columnState, movingIds),
-            fullSlice = gridModel.columnState.filter(cs => (cs.pinned ?? null) === this.pinned),
-            movingState = gridModel.columnState
-                .filter(cs => movingIds.has(cs.colId))
-                .map(cs => ({...cs, pinned: this.pinned}));
-
-        if (!movingState.length) return;
-
-        const targetSlice = slices[this.pinned ?? 'none'],
-            insertionIndex = targetData
-                ? computeInsertionIndex(fullSlice, movingIds, targetData, position)
-                : targetSlice.length;
-
-        targetSlice.splice(insertionIndex, 0, ...movingState);
-
-        this.parent.commit([...slices.left, ...slices.none, ...slices.right]);
+        const newState = this.simulateMove(sourceData, targetData, position);
+        if (newState) this.parent.commit(newState);
     }
 
     /**
@@ -540,7 +579,19 @@ export class ColumnChooserBucketModel extends HoistModel {
             };
         }
 
-        const followingRec = this.getGroupBoundaryRecord(remaining[insertIdx].colId, movingIds),
+        // Groups the source belongs to (by groupId, not instance) - so a cross-bucket drag from the
+        // same group is recognized even though its members live in a different bucket's instance.
+        const parentChainMap = buildParentChainMap(this.gridModel.columns),
+            sourceGroupIds = new Set<string>();
+        sourceData.leafColIds.forEach(id =>
+            parentChainMap.get(id)?.forEach(g => sourceGroupIds.add(g.groupId))
+        );
+
+        const followingRec = this.getGroupBoundaryRecord(
+                remaining[insertIdx].colId,
+                sourceGroupIds,
+                parentChainMap
+            ),
             node = followingRec ? agApi?.getRowNode(followingRec.agId) : null;
         return node
             ? {allowed: true, highlight: true, position: 'above', target: node}
@@ -551,17 +602,26 @@ export class ColumnChooserBucketModel extends HoistModel {
      * Resolve the row to highlight 'above' for an insertion that precedes the given column. Climbs
      * to the outermost enclosing group whose first leaf is this column (a true group boundary);
      * otherwise returns the column's own record (a position within a group). Stops short of any
-     * group the dragged column belongs to - it stays inside that group, so the indicator should sit
-     * above its first child, not above the group header.
+     * group the dragged column belongs to - it stays inside that group, so the indicator sits above
+     * its first child, not above the group header. Membership is by groupId (via the chain), so this
+     * holds for a cross-bucket drag from the same group, whose target-bucket instance has different
+     * leaves.
      */
-    private getGroupBoundaryRecord(colId: StoreRecordId, movingIds: Set<string>): StoreRecord {
-        const {store} = this.chooserGridModel;
-        let rec = store.getById(colId);
-        while (rec?.data.parentId) {
+    private getGroupBoundaryRecord(
+        colId: string,
+        sourceGroupIds: Set<string>,
+        parentChainMap: Map<string, ColumnGroup[]>
+    ): StoreRecord {
+        const {store} = this.chooserGridModel,
+            chain = parentChainMap.get(colId) ?? [];
+        let rec = store.getById(colId),
+            depth = chain.length - 1; // innermost group enclosing colId; climbs outward
+        while (rec?.data.parentId && depth >= 0) {
             const parent = store.getById(rec.data.parentId);
             if (!parent || parent.data.leafColIds[0] !== colId) break;
-            if (parent.data.leafColIds.some((id: string) => movingIds.has(id))) break;
+            if (sourceGroupIds.has(chain[depth].groupId)) break;
             rec = parent;
+            depth--;
         }
         return rec;
     }
@@ -715,17 +775,38 @@ function collectLeafColIds(
     return ids;
 }
 
-/** True if every column group's leaves form a contiguous range in the given state. */
+/**
+ * True if every column group's leaves are contiguous within each pinned section.
+ *
+ * Group locking is enforced per-bucket: a group MAY span pinned sections (e.g. one member pinned
+ * while the rest stay unpinned - pinning never breaks group locking), but within each section the
+ * group's leaves must be contiguous. So we check each section ([left], [none], [right]) on its own;
+ * a group split across the boundary is allowed, a group split inside a single section is not.
+ */
 function areGroupsContiguous(
-    state: {colId: string}[],
+    state: {colId: string; pinned?: HSide | null}[],
     parentChainMap: Map<string, ColumnGroup[]>
 ): boolean {
-    // Track each group's last-seen leaf index; if we see a non-consecutive jump, it's split
+    const sides: Array<HSide | null> = ['left', null, 'right'];
+    return sides.every(side =>
+        isSectionContiguous(
+            state.filter(cs => (cs.pinned ?? null) === side),
+            parentChainMap
+        )
+    );
+}
+
+/** True if every column group's leaves form a contiguous range within a single bucket's slice. */
+function isSectionContiguous(
+    section: {colId: string}[],
+    parentChainMap: Map<string, ColumnGroup[]>
+): boolean {
+    // Track each group's last-seen leaf index; a non-consecutive jump means it's split.
     const lastIdx = new Map<string, number>(),
         closed = new Set<string>();
 
-    for (let i = 0; i < state.length; i++) {
-        const chain = parentChainMap.get(state[i].colId);
+    for (let i = 0; i < section.length; i++) {
+        const chain = parentChainMap.get(section[i].colId);
         if (!chain) continue;
 
         const currentGroupIds = new Set(chain.map(g => g.groupId));

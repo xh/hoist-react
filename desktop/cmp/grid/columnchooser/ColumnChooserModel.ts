@@ -163,6 +163,11 @@ export class ColumnChooserModel extends HoistModel {
                 });
 
                 if (params) {
+                    // ag-grid hardcodes the external drop-zone drag icon to 'move'. Our params carry
+                    // fromGrid:true so they pass through verbatim - an injected getIconName overrides
+                    // that default, letting us flag drops the target bucket would reject (e.g. pinning
+                    // a hidden column) with the 'not-allowed' icon.
+                    (params as any).getIconName = (e: any) => target.getCrossBucketDropIcon(e);
                     sourceApi.addRowDropZone(params);
                     this.dropZoneRegistrations.push({sourceApi, params});
                 }
