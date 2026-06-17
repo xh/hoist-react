@@ -142,9 +142,10 @@ export class LoadSupport extends HoistBase implements Loadable {
             .linkTo(loadObserver)
             .catch(async e => {
                 if (skip(e)) {
-                    // Log non-timing errors on the server.
+                    // Superseded/auto-refresh load - do not alert the user, but still log
+                    // genuine (non-abort) errors on the server for diagnostics.
                     skipped = true;
-                    if (!e.isAborted) XH.handleException(e);
+                    if (!e.isAborted) XH.handleException(e, {showAlert: false});
                 } else {
                     await target.handleLoadException(e, loadSpec);
                     exception = e;
@@ -175,7 +176,7 @@ export class LoadSupport extends HoistBase implements Loadable {
             });
     }
 
-    handleLoadException(e: unknown, loadSpec: LoadSpec): void {
+    handleLoadException(e: unknown): void {
         XH.handleException(e);
     }
 }

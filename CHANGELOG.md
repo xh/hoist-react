@@ -2,6 +2,13 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes
+
+* Renamed the `isFetchAborted` exception flag to `isAborted` (on `FetchException` and related
+  `HoistException`s). The flag is now also set by the new `LoadAbortedException`. Update any
+  references from `e.isFetchAborted` to `e.isAborted` (e.g. in `catchWhen`/`catchDefaultWhen`
+  predicates).
+
 ### 🎁 New Features
 
 * `Loadable` lifecycle improvements - less boilerplate and more consistent handling of stale,
@@ -13,6 +20,12 @@
       raised during an auto-refresh are silenced rather than routed to `handleLoadException`.
     * New `Loadable.handleLoadException(e, loadSpec)` hook - called only for surface-worthy
       failures not skipped via the flags above.  Default delegates to `XH.handleException(e)`.
+
+### ⚙️ Typescript API Adjustments
+
+* `Loadable.handleLoadException(e, loadSpec)` is now a required member of the `Loadable`
+  interface. Classes that implement `Loadable` directly (rather than extending `HoistModel` or
+  `HoistService`, which provide a default) must add this method.
 
 ## 86.0.1 - 2026-06-16
 

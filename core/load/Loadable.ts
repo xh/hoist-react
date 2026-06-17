@@ -47,7 +47,8 @@ export interface Loadable {
      * this behavior via well-placed calls to LoadSpec.abortIfNeeded() in doLoadAsync().
      *
      * If true, the framework will also skip passing any exceptions for stale loads to
-     * `handleLoadException`. Such exceptions are silently swallowed (no alert, no server log).
+     * `handleLoadException`. Such exceptions are not surfaced to the user (no alert), but any
+     * genuine (non-abort) error is still logged on the server for diagnostics.
      */
     skipStaleLoads?: boolean;
 
@@ -55,8 +56,9 @@ export interface Loadable {
      * Should this loadable skip handling errors that occurred during auto-refresh?
      * Defaults to true.  Set to false if you wish to handle these errors in your application.
      *
-     * If true, exceptions are silently swallowed (no alert, no server log) rather than routed
-     * to `handleLoadException`.
+     * If true, exceptions are not routed to `handleLoadException` and are not surfaced to the
+     * user (no alert). Note that auto-refresh errors are also excluded from the server log by
+     * `ExceptionHandler`'s standard defaults.
      */
     skipAutoRefreshErrors?: boolean;
 
