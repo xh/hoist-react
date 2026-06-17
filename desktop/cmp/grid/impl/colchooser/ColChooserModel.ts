@@ -26,12 +26,14 @@ export class ColChooserModel extends HoistModel {
     @observable isPopoverOpen = false;
 
     showRestoreDefaults: boolean;
+    showColumnLibrary: boolean;
     width: string | number;
     height: string | number;
 
     constructor({
         gridModel,
         showRestoreDefaults = true,
+        showColumnLibrary = false,
         width = 300,
         height = 600
     }: ColChooserConfig) {
@@ -40,6 +42,7 @@ export class ColChooserModel extends HoistModel {
 
         this.gridModel = gridModel;
         this.showRestoreDefaults = showRestoreDefaults;
+        this.showColumnLibrary = showColumnLibrary;
         this.width = width;
         this.height = height;
     }

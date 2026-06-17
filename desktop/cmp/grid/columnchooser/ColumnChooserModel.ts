@@ -11,7 +11,9 @@ import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 
-import {ColumnChooserBucketModel} from './ColumnChooserBucketModel';
+import {ColumnChooserBucketModel} from './impl/ColumnChooserBucketModel';
+import {ColumnLibraryModel} from './impl/ColumnLibraryModel';
+import type {ColumnChooserDropParticipant} from './impl/ColumnChooserUtils';
 
 /**
  * Model for the ColumnChooser component. Orchestrates three {@link ColumnChooserBucketModel}s -
@@ -30,14 +32,42 @@ export class ColumnChooserModel extends HoistModel {
     @managed
     readonly rightBucketModel: ColumnChooserBucketModel;
 
+    /** Library of hidden columns - rendered and wired only when {@link columnLibraryEnabled}. */
+    @managed
+    readonly libraryModel: ColumnLibraryModel;
+
     @bindable
     showGroups: boolean = true;
+
+    /**
+     * Show hidden columns inline in the bucket grids. Only toggleable when the Column Library is
+     * enabled (otherwise hidden columns must stay inline to remain un-hideable); defaults false in
+     * that case, so hidden columns live in the library rather than the buckets.
+     */
+    @bindable
+    showHidden: boolean = true;
+
+    /** Show the Column Library panel (runtime toggle; only relevant when {@link columnLibraryEnabled}). */
+    @bindable
+    showLibrary: boolean = true;
 
     /** Cross-bucket drop zone registrations, retained for removal on bucket grid unmount. */
     private dropZoneRegistrations: Array<{sourceApi: GridApi; params: RowDropZoneParams}> = [];
 
     get bucketModels(): ColumnChooserBucketModel[] {
         return [this.leftBucketModel, this.unpinnedBucketModel, this.rightBucketModel];
+    }
+
+    /** Grids participating in cross-grid drag-and-drop - the buckets, plus the library if enabled. */
+    get dropParticipants(): ColumnChooserDropParticipant[] {
+        return this.columnLibraryEnabled
+            ? [...this.bucketModels, this.libraryModel]
+            : this.bucketModels;
+    }
+
+    @computed
+    get columnLibraryEnabled(): boolean {
+        return !!this.componentProps?.showColumnLibrary;
     }
 
     @computed
@@ -84,9 +114,14 @@ export class ColumnChooserModel extends HoistModel {
             summaryName: 'Right Pinned',
             emptyText: 'Drop a column here to pin right'
         });
+
+        this.libraryModel = new ColumnLibraryModel({parent: this});
     }
 
     override onLinked() {
+        // When the library is enabled, hidden columns live there - default them out of the buckets.
+        if (this.columnLibraryEnabled) this.showHidden = false;
+
         this.addReaction({
             track: () => [this.gridModel?.columnState, this.gridModel?.columns],
             run: () => this.syncFromGridModel(),
@@ -94,15 +129,15 @@ export class ColumnChooserModel extends HoistModel {
         });
 
         this.addReaction({
-            track: () => this.showGroups,
+            track: () => [this.showGroups, this.showHidden],
             run: () => this.syncFromGridModel()
         });
 
-        // Wire cross-bucket drag-and-drop whenever the set of mounted bucket grids changes.
+        // Wire cross-grid drag-and-drop whenever the set of mounted participant grids changes.
         // Stale registrations must be removed - ag-grid only auto-cleans drop zones when the
         // *source* grid is destroyed, leaving broken references to destroyed *target* grids.
         this.addReaction({
-            track: () => this.bucketModels.map(it => it.chooserGridModel.agApi),
+            track: () => this.dropParticipants.map(it => it.chooserGridModel.agApi),
             run: () => this.refreshCrossBucketDropZones()
         });
     }
@@ -130,7 +165,8 @@ export class ColumnChooserModel extends HoistModel {
     private syncFromGridModel(columnState?: ColumnState[]) {
         if (!this.gridModel) return;
         const cs = columnState ?? this.gridModel.columnState;
-        this.bucketModels.forEach(it => it.syncFromState(cs, this.showGroups));
+        this.bucketModels.forEach(it => it.syncFromState(cs, this.showGroups, this.showHidden));
+        if (this.columnLibraryEnabled) this.libraryModel.syncFromState(cs);
     }
 
     private refreshCrossBucketDropZones() {
@@ -146,13 +182,13 @@ export class ColumnChooserModel extends HoistModel {
         this.dropZoneRegistrations = [];
     }
 
-    /** Register drop zones between each pair of currently mounted bucket grids. */
+    /** Register drop zones between each pair of currently mounted participant grids. */
     private installCrossBucketDropZones() {
-        this.bucketModels.forEach(source => {
+        this.dropParticipants.forEach(source => {
             const sourceApi = source.chooserGridModel.agApi;
             if (!sourceApi) return;
 
-            this.bucketModels.forEach(target => {
+            this.dropParticipants.forEach(target => {
                 if (target === source) return;
 
                 const targetApi = target.chooserGridModel.agApi;
@@ -165,8 +201,8 @@ export class ColumnChooserModel extends HoistModel {
                 if (params) {
                     // ag-grid hardcodes the external drop-zone drag icon to 'move'. Our params carry
                     // fromGrid:true so they pass through verbatim - an injected getIconName overrides
-                    // that default, letting us flag drops the target bucket would reject (e.g. pinning
-                    // a hidden column) with the 'not-allowed' icon.
+                    // that default, letting us flag drops the target would reject (e.g. a position
+                    // that splits a locked column group) with the 'notAllowed' icon.
                     (params as any).getIconName = (e: any) => target.getCrossBucketDropIcon(e);
                     sourceApi.addRowDropZone(params);
                     this.dropZoneRegistrations.push({sourceApi, params});

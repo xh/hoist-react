@@ -179,6 +179,14 @@ export interface ColChooserConfig {
 
     /** Mode to use when filtering (default 'startWord'). Desktop only. */
     filterMatchMode?: FilterMatchMode;
+
+    /**
+     * Show the Column Library - a docked panel listing hidden columns (grouped by `chooserGroup`)
+     * that users drag onto the chooser's bucket grids to show, and onto which they drag columns to
+     * hide. When enabled, hidden columns are removed from the buckets by default. Default false.
+     * Desktop only.
+     */
+    showColumnLibrary?: boolean;
 }
 
 export type ColumnOrGroup = Column | ColumnGroup;

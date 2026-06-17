@@ -15,7 +15,7 @@ export const colChooserDialog = hoistCmp.factory({
     className: 'xh-col-chooser-dialog',
 
     render({model, className}) {
-        const {isOpen, gridModel, showRestoreDefaults, width, height} = model;
+        const {isOpen, gridModel, showRestoreDefaults, showColumnLibrary, width, height} = model;
         if (!isOpen) return null;
 
         return dialog({
@@ -23,7 +23,7 @@ export const colChooserDialog = hoistCmp.factory({
             title: 'Choose Columns',
             isOpen: true,
             onClose: () => model.close(),
-            item: columnChooser({gridModel, showRestoreDefaults, width, height}),
+            item: columnChooser({gridModel, showRestoreDefaults, showColumnLibrary, width, height}),
             className,
             style: {width}
         });

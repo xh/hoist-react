@@ -74,6 +74,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                     columnChooser({
                         gridModel,
                         showRestoreDefaults: colChooserModel.showRestoreDefaults,
+                        showColumnLibrary: colChooserModel.showColumnLibrary,
                         width: colChooserModel.width,
                         height: colChooserModel.height
                     })

@@ -12,6 +12,15 @@
     background-color: var(--xh-bg);
   }
 
+  // Left-docked panel listing hidden columns, grouped by chooserGroup.
+  &__library {
+    border-right: var(--xh-border-solid);
+
+    .xh-toolbar {
+      background-color: var(--xh-bg);
+    }
+  }
+
   .ag-floating-top-container {
     background: var(--xh-bg-alt);
   }
