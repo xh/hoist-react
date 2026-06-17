@@ -25,6 +25,18 @@
   (an explicit `useRef` initial arg, `cloneElement` element typing, element `props` access, ref
   callbacks returning void, and narrowing a few render-fn results). No behavior change on React 18.
 
+## 86.0.1 - 2026-06-16
+
+### 🐞 Bug Fixes
+
+* Fixed a circular import introduced in v86 that caused problems for apps using `@ComputeOnce`.
+* Fixed a regression to favorites icon size for `FilterChooser.`
+
+### ⚙️ Technical
+
+* `TrackService`, `PrefService`, and `TraceService` now flush their pending entries reliably when
+  the page is hidden or unloaded, reacting to `XH.pageState` and issuing the flush via
+  `fetch({keepalive: true})` (replacing the less reliable `beforeunload` + normal-fetch approach).
 
 ## 86.0.0 - 2026-06-12
 
