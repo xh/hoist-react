@@ -17,6 +17,7 @@ module.exports = defineConfig([
         'node_modules/**/*',
         'mcp/**/*',
         'bin/**/*',
-        'kit/golden-layout/impl/**/*'
+        'kit/golden-layout/impl/**/*',
+        'public/msal-redirect-bridge.min.js'
     ])
 ]);

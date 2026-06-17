@@ -149,8 +149,8 @@ export class DifferModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (loadSpec.isAutoRefresh || (!this.remoteHost && !this.clipboardContent)) return;
 
-        await this.runOn(loadSpec)
-            .newSpan('load')
+        await this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
                 const remoteHost = trimEnd(this.remoteHost, '/'),
                     // Assume default /api/ baseUrl during local dev, since actual baseUrl will be localhost:8080
@@ -159,10 +159,10 @@ export class DifferModel extends HoistModel {
                     {entityName, url} = this;
 
                 const resp = await Promise.all([
-                    ctx.fetchJson({url: `${url}/${entityName}s`}),
+                    XH.fetchJson({url: `${url}/${entityName}s`}, ctx),
                     this.clipboardContent
                         ? Promise.resolve(cloneDeep(this.clipboardContent))
-                        : ctx.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`})
+                        : XH.fetchJson({url: `${remoteBaseUrl}${url}/${entityName}s`}, ctx)
                 ]);
                 this.processResponse(resp);
             })
@@ -345,7 +345,8 @@ export class DifferModel extends HoistModel {
     }
 
     doApplyRemote(records) {
-        this.rootSpan('applyRemote')
+        this.runner()
+            .span('applyRemote')
             .run(async ctx => {
                 const recsForPost = records.map(rec => {
                     const ret = {
@@ -356,10 +357,13 @@ export class DifferModel extends HoistModel {
                     });
                     return ret;
                 });
-                await ctx.fetchJson({
-                    url: `${this.url}/applyRemoteValues`,
-                    params: {records: JSON.stringify(recsForPost)}
-                });
+                await XH.fetchJson(
+                    {
+                        url: `${this.url}/applyRemoteValues`,
+                        params: {records: JSON.stringify(recsForPost)}
+                    },
+                    ctx
+                );
             })
             .finally(() => {
                 this.loadAsync();
@@ -389,11 +393,13 @@ export class DifferModel extends HoistModel {
     }
 
     async fetchLocalAsync() {
-        return this.rootSpan('fetchLocal').run(async ctx => {
-            const {entityName, url} = this,
-                resp = await ctx.fetchJson({url: `${url}/${entityName}s`});
-            return JSON.stringify(resp);
-        });
+        return this.runner()
+            .span('fetchLocal')
+            .run(async ctx => {
+                const {entityName, url} = this,
+                    resp = await XH.fetchJson({url: `${url}/${entityName}s`}, ctx);
+                return JSON.stringify(resp);
+            });
     }
 
     private async readConfigFromClipboardAsync() {

@@ -120,8 +120,9 @@ export class ServiceModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        await this.rootSpan('clearCaches')
-            .runFetchJson({
+        await this.runner()
+            .span('clearCaches')
+            .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
                 params: {
                     instance: entireCluster ? null : instanceName,
@@ -138,13 +139,16 @@ export class ServiceModel extends BaseInstanceModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel, instanceName: instance} = this;
-        return this.runOn(loadSpec)
-            .newSpan('list')
+        return this.runner({loadSpec})
+            .span('list')
             .run(async ctx => {
-                const data = await ctx.fetchJson({
-                    url: 'serviceManagerAdmin/listServices',
-                    params: {instance}
-                });
+                const data = await XH.fetchJson(
+                    {
+                        url: 'serviceManagerAdmin/listServices',
+                        params: {instance}
+                    },
+                    ctx
+                );
                 gridModel.loadData(data);
                 await gridModel.preSelectFirstAsync();
             });

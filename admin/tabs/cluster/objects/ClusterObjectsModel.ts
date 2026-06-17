@@ -145,8 +145,9 @@ export class ClusterObjectsModel extends HoistModel {
 
         if (!confirmed) return;
 
-        await this.rootSpan('clearHibernateCachesByName')
-            .runPostJson({
+        await this.runner()
+            .span('clearHibernateCachesByName')
+            .postJson({
                 url: 'clusterObjectsAdmin/clearHibernateCaches',
                 body: {
                     names: cacheRecords.map(it => it.id)
@@ -178,8 +179,9 @@ export class ClusterObjectsModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        await this.rootSpan('clearHibernateCaches')
-            .runFetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
+        await this.runner()
+            .span('clearHibernateCaches')
+            .fetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
             .linkTo(this.loadObserver)
             .then(async () => {
                 await this.refreshAsync();
@@ -189,12 +191,15 @@ export class ClusterObjectsModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.runOn(loadSpec)
-            .newSpan('load')
+        return this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                const report = await ctx.fetchJson({
-                    url: 'clusterObjectsAdmin/getClusterObjectsReport'
-                });
+                const report = await XH.fetchJson(
+                    {
+                        url: 'clusterObjectsAdmin/getClusterObjectsReport'
+                    },
+                    ctx
+                );
 
                 this.gridModel.loadData(this.processReport(report));
                 runInAction(() => {

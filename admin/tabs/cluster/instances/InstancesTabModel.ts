@@ -57,16 +57,19 @@ export class InstancesTabModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
-        await this.runOn(loadSpec)
-            .newSpan('load')
+        await this.runner({loadSpec})
+            .span('load')
             .run(async ctx => {
-                let data = await ctx.fetchJson({
-                    url: 'clusterAdmin/allInstances',
-                    // Tighter default timeout for background auto-refresh, to ensure we report connectivity
-                    // issues promptly. This call should be quick, but still allow full default timeout for
-                    // a manual refresh.
-                    timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined
-                });
+                let data = await XH.fetchJson(
+                    {
+                        url: 'clusterAdmin/allInstances',
+                        // Tighter default timeout for background auto-refresh, to ensure we report connectivity
+                        // issues promptly. This call should be quick, but still allow full default timeout for
+                        // a manual refresh.
+                        timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined
+                    },
+                    ctx
+                );
 
                 data = data.map(row => ({
                     ...row,
@@ -235,8 +238,9 @@ export class InstancesTabModel extends HoistModel {
         )
             return;
 
-        await this.rootSpan('shutdown')
-            .runFetchJson({
+        await this.runner()
+            .span('shutdown')
+            .fetchJson({
                 url: 'clusterAdmin/shutdownInstance',
                 params: {instance: instance.name}
             })

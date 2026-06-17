@@ -122,7 +122,7 @@ const results = await XH.fetchJson({
 
 // Pass loadSpec for consistent tracking in doLoadAsync()
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 
@@ -311,6 +311,9 @@ category while all other entries continue to require INFO or above.
 #### TraceService
 **File**: `TraceService.ts` | **Access**: `XH.traceService`
 
+> See [Telemetry & Observability](../docs/telemetry.md) for the full guide to the `Runner` chain,
+> tracing, metrics, and activity tracking.
+
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
 `traceparent` headers on outgoing requests, and batches completed spans for export to the
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
@@ -321,36 +324,43 @@ tag-matching rules with glob pattern support. Child spans inherit their parent's
 decision. The `traceparent` header propagates the sampling flag to the server. See the
 hoist-core tracing documentation for full sampling configuration details.
 
-Applications instrument code via the `Runner` chain on `HoistBase`: `rootSpan(name)` starts
-a chain rooted at a fresh span, while `runOn(ctx)` / `runOnOptional(ctx)` continues the
-caller's existing context (typically a `LoadSpec` or parent `Span` received as a
-`CallContext`). The chain's terminal methods — `run(fn)`, `fetch()`, `fetchJson()`,
-`postJson()`, etc. — execute the work inside the configured span, with optional
-`logInfo()` / `logDebug()` / `track()` middleware composed in.
+Applications instrument code via the `Runner` chain on `HoistBase`: `runner(ctx?)` starts
+a chain, optionally seeded with a `CallContextLike` (`{span?, loadSpec?}`) — pass one through
+from an upstream call to continue an existing trace / load, or call with no arg to start
+fresh. Add a span with `.span(name)` and execute via the terminal methods — `run(fn)`,
+`fetch()`, `fetchJson()`, `postJson()`, etc. — which run the work inside the configured span,
+with optional `logInfo()` / `logDebug()` / `track()` middleware composed in.
 
 ```typescript
-// Start a fresh root span and run an async fn. `caller` is auto-set to `this`.
-await this.rootSpan('loadPortfolio').run(async ctx => {
+// Start a fresh chain with a span and run an async fn. `caller` is auto-set to `this`.
+await this.runner().span('loadPortfolio').run(async ctx => {
     const positions = await this.loadPositionsAsync(ctx);
     this.setPositions(positions);
 });
 
 // Issue a fetch under a span, no manual span management.
-const data = await this.rootSpan('loadPortfolio').fetchJson({url: 'api/portfolio'});
+const data = await this.runner().span('loadPortfolio').fetchJson({url: 'api/portfolio'});
 
-// Add another span under one already in context (e.g. from a doLoadAsync ctx).
+// Continue an existing context (e.g. from a doLoadAsync loadSpec) and nest a child span.
 async doLoadAsync(loadSpec) {
-    const data = await this.runOn(loadSpec).newSpan('refData').fetchJson({url: 'api/ref'});
+    const data = await this.runner({loadSpec})
+        .span('refData')
+        .fetchJson({url: 'api/ref'});
+}
+
+// Forward a CallContext received from an upstream caller.
+async fetchUserAsync(ctx: CallContext) {
+    return this.runner(ctx).span('user').fetchJson({url: 'api/user'});
 }
 
 // Compose with logging - times completion via withInfo/withDebug as appropriate.
-await this.rootSpan('loadPortfolio').logInfo('Loading portfolio').run(async ctx => { ... });
+await this.runner().span('loadPortfolio').logInfo('Loading portfolio').run(async ctx => { ... });
 
 // Configure tags / kind via SpanConfig instead of a bare string.
-await this.rootSpan({name: 'loadPortfolio', tags: {portfolioId: id}}).run(async ctx => { ... });
+await this.runner().span({name: 'loadPortfolio', tags: {portfolioId: id}}).run(async ctx => { ... });
 ```
 
-**SpanConfig** (passed to `rootSpan()` / `newSpan()`):
+**SpanConfig** (passed to `.span()`):
 
 | Option | Type      | Description                                                                  |
 |--------|-----------|------------------------------------------------------------------------------|
@@ -359,8 +369,17 @@ await this.rootSpan({name: 'loadPortfolio', tags: {portfolioId: id}}).run(async 
 | `tags` | PlainObject | Key-value attributes on the span                                           |
 
 The framework wires `parent` and `caller` automatically from the `Runner` chain — `parent`
-comes from the chain's `CallContext`, `caller` defaults to the `HoistBase` that started the
-chain (driving the `code.namespace` tag). To join a trace started upstream (e.g. a
+comes from the chain's `CallContext` (with `span` derived from `loadSpec.span` when not set
+explicitly), `caller` defaults to the `HoistBase` that started the chain (driving the
+`code.namespace` tag).
+
+The `fetch*` methods on `FetchService` (and the convenience aliases `XH.fetch()`,
+`XH.fetchJson()`, `XH.postJson()`) also accept an optional `CallContextLike` as a second
+argument — useful when threading context through a fetch without an enclosing `Runner` chain:
+
+```typescript
+const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
+``` To join a trace started upstream (e.g. a
 `traceparent` propagated via WebSocket / SSE / queue messages), pass the string to a span
 created directly via `XH.traceService.withSpan({name, parent: traceparent}, fn)` — the new
 span adopts the remote `traceId`, `parentSpanId`, and `sampled` decision.
@@ -616,7 +635,7 @@ Always pass `loadSpec` to fetch calls for consistent tracking:
 
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
     runInAction(() => this.data = data);
 }
 ```
@@ -656,16 +675,21 @@ For operations that aren't fetch requests, use the `Promise.track()` extension t
 activity with timing. This is implemented in `/promise/` and delegates to TrackService.
 
 ```typescript
-// Track any async operation
+// Simple: track a single async operation via the Promise.track() extension
 await this.processDataAsync(records)
     .track('Processed records');
 
-// With full options
-await this.runExpensiveCalculationAsync()
+// Multi-step: compose tracking (with masking, logging, etc.) via the Runner chain on HoistBase
+await this.runner()
+    .linkTo(this.calcTask)
     .track({
         message: 'Ran portfolio calculation',
         category: 'Calculation',
         data: {portfolioCount: portfolios.length}
+    })
+    .run(async () => {
+        const inputs = await this.gatherInputsAsync();
+        return this.runCalculationAsync(inputs);
     });
 ```
 
@@ -758,7 +782,7 @@ const data = await XH.fetchJson({url: 'api/data'});
 // ✅ Correct: Handle in doLoadAsync with proper error handling
 override async doLoadAsync(loadSpec: LoadSpec) {
     try {
-        const data = await XH.fetchJson({url: 'api/data', loadSpec});
+        const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
         runInAction(() => this.data = data);
     } catch (e) {
         if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
@@ -818,7 +842,7 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 // ✅ Include loadSpec
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'api/data', loadSpec});
+    const data = await XH.fetchJson({url: 'api/data'}, {loadSpec});
 }
 ```
 

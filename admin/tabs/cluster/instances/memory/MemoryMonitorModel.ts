@@ -55,8 +55,9 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     async takeSnapshotAsync() {
-        await this.rootSpan('takeSnapshot')
-            .runFetchJson({
+        await this.runner()
+            .span('takeSnapshot')
+            .fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
                 params: {instance: this.instanceName}
             })
@@ -69,12 +70,13 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     async requestGcAsync() {
-        await this.rootSpan('requestGc')
-            .runFetchJson({
+        await this.runner()
+            .span('requestGc')
+            .linkTo(this.loadObserver)
+            .fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
                 params: {instance: this.instanceName}
             })
-            .linkTo(this.loadObserver)
             .then(async () => {
                 await this.loadAsync();
                 XH.successToast('GC run complete');
@@ -95,15 +97,16 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             });
         if (!filename) return;
 
-        await this.rootSpan('dumpHeap')
-            .runFetchJson({
+        await this.runner()
+            .span('dumpHeap')
+            .linkTo(this.loadObserver)
+            .fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
                 params: {
                     instance: this.instanceName,
                     filename
                 }
             })
-            .linkTo(this.loadObserver)
             .then(async () => {
                 await this.loadAsync();
                 XH.successToast('Heap dumped successfully to ' + filename);
@@ -187,13 +190,16 @@ export class MemoryMonitorModel extends BaseInstanceModel {
         const action = pastInstance ? `snapshotsForPastInstance` : 'snapshots',
             instance = pastInstance ? pastInstance.name : this.instanceName;
 
-        await this.runOn(loadSpec)
-            .newSpan('loadSnapshots')
+        await this.runner({loadSpec})
+            .span('loadSnapshots')
             .run(async ctx => {
-                const snapsByTimestamp = await ctx.fetchJson({
-                    url: 'memoryMonitorAdmin/' + action,
-                    params: {instance}
-                });
+                const snapsByTimestamp = await XH.fetchJson(
+                    {
+                        url: 'memoryMonitorAdmin/' + action,
+                        params: {instance}
+                    },
+                    ctx
+                );
 
                 // Server returns map by timestamp - flatted to array and load into grid records.
                 let snaps = [];
@@ -252,12 +258,15 @@ export class MemoryMonitorModel extends BaseInstanceModel {
     }
 
     private async loadPastInstancesAsync(loadSpec: LoadSpec) {
-        await this.runOn(loadSpec)
-            .newSpan('loadPastInstances')
+        await this.runner({loadSpec})
+            .span('loadPastInstances')
             .run(async ctx => {
-                const instances = await ctx.fetchJson({
-                    url: 'memoryMonitorAdmin/availablePastInstances'
-                });
+                const instances = await XH.fetchJson(
+                    {
+                        url: 'memoryMonitorAdmin/availablePastInstances'
+                    },
+                    ctx
+                );
                 runInAction(() => {
                     this.pastInstances = orderBy(instances, ['lastUpdated'], ['desc']);
                 });

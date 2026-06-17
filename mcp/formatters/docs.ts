@@ -167,6 +167,52 @@ export function toListDocsOutput(
     };
 }
 
+//------------------------------------------------------------------
+// Structured output: hoist-read-doc
+//------------------------------------------------------------------
+
+/**
+ * Zod schema for the structured output of `hoist-read-doc`. Returns the full
+ * document body alongside its identifying metadata, so consumers get both the
+ * raw markdown and the catalog fields without a second lookup.
+ */
+export const readDocOutputSchema = z.object({
+    id: z.string().describe('Canonical document ID, also its path relative to the repo root.'),
+    title: z.string(),
+    category: z.string().describe('MCP category ID (e.g. "package", "concept").'),
+    content: z.string().describe('Full markdown body of the document.'),
+    matchedAs: z
+        .string()
+        .optional()
+        .describe(
+            'The original input as passed by the caller, set only when it differed from the canonical id (e.g. caller passed "grid" and the resolver matched "cmp/grid/README.md"). Diagnostic field for programmatic consumers; absent on exact-match calls.'
+        )
+});
+
+/** Structured output type for `hoist-read-doc`, derived from the zod schema. */
+export type ReadDocOutput = z.infer<typeof readDocOutputSchema>;
+
+/**
+ * Project a registry entry plus its loaded body into the public structured shape.
+ *
+ * Pass `matchedAs` only when the caller's original input differed from the
+ * canonical id (i.e. the resolver normalized the input via a shortening or
+ * alias). Omit on exact matches.
+ */
+export function toReadDocOutput(
+    entry: DocEntry,
+    content: string,
+    matchedAs?: string
+): ReadDocOutput {
+    return {
+        id: entry.id,
+        title: entry.title,
+        category: entry.mcpCategory,
+        content,
+        ...(matchedAs != null ? {matchedAs} : {})
+    };
+}
+
 /** Format a document listing grouped by category. */
 export function formatDocList(
     registry: DocEntry[],

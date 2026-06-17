@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
@@ -26,7 +25,7 @@ import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
 import {computed} from 'mobx';

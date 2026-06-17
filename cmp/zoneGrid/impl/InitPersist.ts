@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import {isObject} from 'lodash';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneGridModelPersistOptions} from '../Types';
@@ -24,14 +24,12 @@ export function initPersist(
     }: ZoneGridModelPersistOptions
 ) {
     if (persistMappings) {
-        const persistWith = isObject(persistMappings)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistMappings)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.mappings`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.mappings`},
+                rootPersistWith,
+                isObject(persistMappings) ? persistMappings : null
+            ),
             target: {
                 getPersistableState: () => new PersistableState(zoneGridModel.mappings),
                 setPersistableState: ({value}) => zoneGridModel.setMappings(value)
@@ -41,14 +39,12 @@ export function initPersist(
     }
 
     if (persistGrouping) {
-        const persistWith = isObject(persistGrouping)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistGrouping)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.groupBy`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.groupBy`},
+                rootPersistWith,
+                isObject(persistGrouping) ? persistGrouping : null
+            ),
             target: {
                 getPersistableState: () => new PersistableState(zoneGridModel.groupBy),
                 setPersistableState: ({value}) => zoneGridModel.setGroupBy(value)
@@ -58,14 +54,12 @@ export function initPersist(
     }
 
     if (persistSort) {
-        const persistWith = isObject(persistSort)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistSort)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.sortBy`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.sortBy`},
+                rootPersistWith,
+                isObject(persistSort) ? persistSort : null
+            ),
             target: {
                 getPersistableState: () => new PersistableState(zoneGridModel.sortBy?.toString()),
                 setPersistableState: ({value}) => zoneGridModel.setSortBy(value)

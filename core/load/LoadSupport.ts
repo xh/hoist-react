@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
-    CallContext,
+    CallContextLike,
     HoistBase,
     LoadSpecConfig,
     managed,
@@ -73,8 +73,21 @@ export class LoadSupport extends HoistBase implements Loadable {
      * See the lifecycle doc (`docs/lifecycle-models-and-services.md#loading-doloadasync`) for the
      * full load/refresh lifecycle.
      */
-    async loadAsync(loadSpec: LoadSpecConfig | CallContext) {
-        // Favor any concrete loadSpec from a call context (passed along RunContext is a common case)
+    async loadAsync(loadSpec?: LoadSpecConfig | CallContextLike) {
+        // Guard against clearly-invalid input - e.g. loadAsync wired directly as a reaction
+        // handler, which would pass the reaction's tracked value (often a primitive) as this arg.
+        // Log rather than throw, then proceed with a default spec.
+        if (loadSpec != null && (typeof loadSpec !== 'object' || Array.isArray(loadSpec))) {
+            this.logError(
+                'Invalid argument passed to loadAsync() - ignoring. If triggered via a reaction, ' +
+                    'ensure the call is wrapped in a closure.',
+                loadSpec
+            );
+            loadSpec = null;
+        }
+
+        // Favor any concrete loadSpec from a call context (a CallContext forwarded from an
+        // upstream caller is a common case here).
         const config: LoadSpecConfig = loadSpec?.['loadSpec'] ?? loadSpec,
             newSpec = new LoadSpec(config ?? {}, this);
 

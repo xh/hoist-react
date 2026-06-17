@@ -52,6 +52,7 @@ import {
     BannerSpec,
     ExceptionHandler,
     ExceptionHandlerOptions,
+    CallContextLike,
     HoistAppModel,
     HoistService,
     HoistServiceClass,
@@ -278,32 +279,67 @@ export class XHApi {
     }
 
     //----------------------------------------
-    // Delegating methods
+    // Delegating methods - Fetch
     //----------------------------------------
     /**
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetch(opts);
+    fetch(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetch(opts, ctx);
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
      * @see FetchService.fetchJson
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetchJson(opts);
+    fetchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetchJson(opts, ctx);
+    }
+
+    /**
+     * Send a GET request and decode the response as JSON.
+     * @see FetchService.getJson
+     */
+    getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.getJson(opts, ctx);
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @see FetchService.postJson
      */
-    postJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.postJson(opts);
+    postJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.postJson(opts, ctx);
     }
 
+    /**
+     * Send a PUT request with a JSON body and decode the response as JSON.
+     * @see FetchService.putJson
+     */
+    putJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.putJson(opts, ctx);
+    }
+
+    /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @see FetchService.patchJson
+     */
+    patchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.patchJson(opts, ctx);
+    }
+
+    /**
+     * Send a DELETE request with optional JSON body and decode the optional response as JSON.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.deleteJson(opts, ctx);
+    }
+
+    //----------------------------------------
+    // Delegating methods - Config & Preferences
+    //----------------------------------------
     /**
      * Read soft configuration values.
      * @see ConfigService.get
@@ -328,6 +364,9 @@ export class XHApi {
         return this.prefService.set(key, val);
     }
 
+    //----------------------------------------
+    // Delegating methods - Activity Tracking
+    //----------------------------------------
     /**
      * Track user activity.
      * @see TrackService.track
@@ -336,6 +375,9 @@ export class XHApi {
         return this.trackService?.track(opts);
     }
 
+    //----------------------------------------
+    // Delegating methods - Environment
+    //----------------------------------------
     /**
      * Read an environment property.
      * @see EnvironmentService.get
@@ -344,6 +386,9 @@ export class XHApi {
         return this.environmentService?.get(key) ?? null;
     }
 
+    //----------------------------------------
+    // Delegating methods - Identity & Auth
+    //----------------------------------------
     /**
      * @returns the current acting user.
      * @see IdentityService.user
@@ -374,6 +419,9 @@ export class XHApi {
         this.reloadApp();
     }
 
+    //----------------------------------------
+    // Delegating methods - Logging
+    //----------------------------------------
     /**
      * Current minimum severity for Hoist log utils (default 'info').
      * Messages logged via managed Hoist log utils with lower severity will be ignored.

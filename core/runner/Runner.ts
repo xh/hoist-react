@@ -4,24 +4,28 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some, TrackOptions, XH, Span, SpanConfig, RawSpanConfig, CallContext} from '@xh/hoist/core';
+import {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
+import {CallContext} from './CallContext';
 import {PromiseLinkSpec} from '@xh/hoist/promise';
 import {FetchOptions} from '@xh/hoist/svc';
 import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
-import {RunContext} from './RunContext';
 
-export type RunFunction<T> = (ctx: RunContext) => Promise<T>;
+export type RunFunction<T> = (ctx: CallContext) => Promise<T>;
 
 /**
- * Builder used to execute a function within a {@link LoadSpec} or {@link Span}, with optional
- * logging, tracking, and span configuration. Produces a {@link RunContext} for the wrapped
- * function.
+ * Fluent builder used to execute async work inside a {@link CallContext}, with optional spanning,
+ * logging, tracking, metering, and link-to-task observability composed via chained methods.
+ *
+ * Constructed via {@link HoistBase.runner} - apps don't instantiate directly. The chain ends
+ * with a terminal method (`run(fn)` or one of the fetch shortcuts), which executes the work
+ * under the configured `CallContext`.
  */
 export class Runner {
-    private readonly ctx: RunContext;
+    private readonly ctx: CallContext;
+    private readonly caller: NameSource;
 
-    private spanConfig: RawSpanConfig = null;
+    private spanConfig: FullSpanConfig = null;
     private infoMsgs: Some<unknown> = null;
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
@@ -29,24 +33,27 @@ export class Runner {
     private counterMetric: {name: string; tags?: Record<string, string>} = null;
     private timerMetric: {name: string; tags?: Record<string, string>} = null;
 
-    static create(ctx: CallContext, caller: NameSource) {
+    static create(ctx: CallContextLike = null, caller?: NameSource) {
         return new Runner(ctx, caller);
     }
 
-    constructor(ctx: CallContext, caller: NameSource) {
-        this.ctx = new RunContext(ctx, caller);
+    private constructor(ctx: CallContextLike, caller?: NameSource) {
+        this.ctx = ctx instanceof CallContext ? ctx : new CallContext(ctx);
+        this.caller = caller;
     }
 
     //---------------------------
     // Span configuration
     //---------------------------
     /** Configure a new trace span within this context. */
-    newSpan(config: string | SpanConfig): this {
+    span(config: string | SpanConfig): this {
         config = isString(config) ? {name: config} : config;
-        const {ctx} = this,
-            prefix = (ctx.caller as any)?.telemetryPrefix,
-            name = prefix ? `${prefix}.${config.name}` : config.name;
-        this.spanConfig = {...config, name, parent: ctx.span, caller: ctx.caller};
+        const {caller, ctx} = this,
+            prefix = (caller as any)?.telemetryPrefix,
+            name = prefix ? `${prefix}.${config.name}` : config.name,
+            // Explicit remote traceparent (config.parent) wins; else nest under call-context span.
+            parent = config.parent ?? ctx.span;
+        this.spanConfig = {...config, name, parent, caller};
         return this;
     }
 
@@ -54,25 +61,25 @@ export class Runner {
     // Log/Track configuration
     //---------------------------
     /** Time and log completion at info level via {@link withInfo}. */
-    withInfo(msgs: Some<unknown>): this {
+    logInfo(msgs: Some<unknown>): this {
         this.infoMsgs = msgs;
         return this;
     }
 
     /** Time and log completion at debug level via {@link withDebug}. */
-    withDebug(msgs: Some<unknown>): this {
+    logDebug(msgs: Some<unknown>): this {
         this.debugMsgs = msgs;
         return this;
     }
 
     /** Track via Hoist activity tracking. */
-    withTrack(opts: TrackOptions | string): this {
+    track(opts: TrackOptions | string): this {
         this.trackOptions = isString(opts) ? {message: opts} : opts;
         return this;
     }
 
     /** Link execution to a {@link TaskObserver} for masking and progress messages. */
-    withObserver(spec: PromiseLinkSpec): this {
+    linkTo(spec: PromiseLinkSpec): this {
         this.linkSpec = spec;
         return this;
     }
@@ -81,7 +88,7 @@ export class Runner {
     // Metrics configuration
     //---------------------------
     /**
-     * Increment a counter metric on completion of the wrapped fn. An `xh.outcome` tag is
+     * Increment a metric counter on completion of the wrapped fn. An `xh.outcome` tag is
      * added with value `success` or `failure` based on whether the fn threw.
      */
     counter(name: string, tags?: Record<string, string>): this {
@@ -106,14 +113,60 @@ export class Runner {
         return this.executeWrapped(fn);
     }
 
-    runFetchJson(options: FetchOptions): Promise<any> {
-        const fn = (ctx: RunContext) => ctx.fetchJson(options);
-        return this.executeWrapped(fn);
+    /**
+     * Issue a raw fetch within the call context.
+     * @see FetchService.fetch
+     */
+    fetch(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.fetch(options, ctx));
     }
 
-    runPostJson(options: FetchOptions): Promise<any> {
-        const fn = (ctx: RunContext) => ctx.postJson(options);
-        return this.executeWrapped(fn);
+    /**
+     * Issue a JSON fetch within the call context.
+     * @see FetchService.fetchJson
+     */
+    fetchJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.fetchJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON GET within the call context.
+     * @see FetchService.getJson
+     */
+    getJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.getJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON POST within the call context.
+     * @see FetchService.postJson
+     */
+    postJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.postJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PUT within the call context.
+     * @see FetchService.putJson
+     */
+    putJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.putJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON PATCH within the call context.
+     * @see FetchService.patchJson
+     */
+    patchJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.patchJson(options, ctx));
+    }
+
+    /**
+     * Issue a JSON DELETE within the call context.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(options: FetchOptions): Promise<any> {
+        return this.executeWrapped(ctx => XH.fetchService.deleteJson(options, ctx));
     }
 
     //-------------------------
@@ -127,7 +180,7 @@ export class Runner {
 
         const {spanConfig, ctx} = this;
         return spanConfig
-            ? XH.traceService.withSpan(spanConfig, span => fn(this.getNestedCtx(span)))
+            ? XH.traceService.withSpan(spanConfig, span => fn(ctx.cloneWithSpan(span)))
             : fn(ctx);
     }
 
@@ -158,9 +211,9 @@ export class Runner {
         const {debugMsgs, infoMsgs} = this;
 
         if (debugMsgs != null && getLogLevel() === 'debug') {
-            return ctx => withDebug(debugMsgs, () => fn(ctx), ctx.caller);
-        } else if (this.infoMsgs != null) {
-            return ctx => withInfo(infoMsgs, () => fn(ctx), ctx.caller);
+            return ctx => withDebug(debugMsgs, () => fn(ctx), this.caller);
+        } else if (infoMsgs != null) {
+            return ctx => withInfo(infoMsgs, () => fn(ctx), this.caller);
         }
         return fn;
     }
@@ -175,11 +228,5 @@ export class Runner {
         const {linkSpec} = this;
         if (!linkSpec) return fn;
         return ctx => fn(ctx).linkTo(linkSpec);
-    }
-
-    private getNestedCtx(span: Span): RunContext {
-        const {caller, loadSpec} = this.ctx;
-        const nestedCtx = {span, loadSpec: loadSpec?.cloneWithSpan(span)};
-        return new RunContext(nestedCtx, caller);
     }
 }

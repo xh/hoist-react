@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH, CallContext} from '@xh/hoist/core';
+import {CallContextLike, HoistService, InitContext, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {cloneDeep, forEach, isEmpty, isEqual} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Service to read and set user-specific preference values.
@@ -34,7 +35,13 @@ export class PrefService extends HoistService {
     private _updates = {};
 
     override async initAsync(ctx: InitContext) {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+        // Flush on page teardown while the page is still alive.
+        this.addReaction({
+            track: () => XH.pageState,
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingAsync();
+            }
+        });
         return this.loadPrefsAsync(ctx);
     }
 
@@ -112,22 +119,30 @@ export class PrefService extends HoistService {
     }
 
     /**
-     * Push any pending buffered updates to persist newly set values to server.
-     * Called automatically by this app on page unload to avoid dropping changes when e.g. a user
-     * changes and option and then immediately hits a (browser) refresh.
+     * Push any pending buffered updates to persist newly set values to the server.
+     *
+     * Not typically called by applications.  Called automatically by the framework after changes
+     * and when page is hidden/terminated.
      */
     async pushPendingAsync() {
         const updates = this._updates;
         if (isEmpty(updates)) return;
 
-        await this.rootSpan('set').run(async ctx => {
-            this._updates = {};
-            await ctx.postJson({
-                url: 'xh/setPrefs',
-                body: updates,
-                params: {clientUsername: XH.getUsername()}
-            });
-        });
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
+        this._updates = {};
+
+        await this.runner()
+            .span('set')
+            .run(ctx =>
+                terminationSafePostJson(
+                    {
+                        url: 'xh/setPrefs',
+                        body: updates,
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                )
+            );
     }
 
     //-------------------
@@ -135,17 +150,20 @@ export class PrefService extends HoistService {
     //-------------------
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        this.pushPendingAsync();
+        void this.pushPendingAsync();
     }
 
-    private async loadPrefsAsync(ctx: CallContext) {
-        await this.runOn(ctx)
-            .newSpan('get')
+    private async loadPrefsAsync(ctx: CallContextLike) {
+        await this.runner(ctx)
+            .span('get')
             .run(async ctx => {
-                const data = await ctx.fetchJson({
-                    url: 'xh/getPrefs',
-                    params: {clientUsername: XH.getUsername()}
-                });
+                const data = await XH.fetchJson(
+                    {
+                        url: 'xh/getPrefs',
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
                 forEach(data, v => {
                     deepFreeze(v.value);
                     deepFreeze(v.defaultValue);

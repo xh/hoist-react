@@ -2,6 +2,7 @@ export * from './enums/RefreshMode';
 export * from './enums/RenderMode';
 export * from './enums/SizingMode';
 export * from './types/Interfaces';
+export * from './types/Telemetry';
 export * from './types/Types';
 export * from './types/AppState';
 export * from './elem';

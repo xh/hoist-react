@@ -73,13 +73,13 @@ export class RoleModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        return this.runOn(loadSpec)
-            .newSpan('list')
+        return this.runner({loadSpec})
+            .span('list')
             .run(async ctx => {
                 await this.ensureInitializedAsync(ctx);
                 if (!this.moduleConfig.enabled) return;
 
-                const {data} = await ctx.fetchJson({url: 'roleAdmin/list'});
+                const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
 
                 runInAction(() => {
                     this.allRoles = this.processRolesFromServer(data);
@@ -144,12 +144,12 @@ export class RoleModel extends HoistModel {
         });
         if (!confirm) return false;
 
-        await this.rootSpan('delete').run(ctx =>
-            ctx.deleteJson({
+        await this.runner()
+            .span('delete')
+            .deleteJson({
                 url: `roleAdmin/delete`,
                 body: {name: role.name}
-            })
-        );
+            });
         await this.refreshAsync();
         return true;
     }
@@ -237,7 +237,7 @@ export class RoleModel extends HoistModel {
     private async ensureInitializedAsync(ctx: CallContext) {
         if (this.moduleConfig) return;
 
-        const config = await this.runOn(ctx).runFetchJson({url: 'roleAdmin/config'});
+        const config = await this.runner(ctx).fetchJson({url: 'roleAdmin/config'});
         runInAction(() => {
             this.moduleConfig = config;
             if (config.enabled) {

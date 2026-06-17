@@ -32,3 +32,7 @@ AGENTS.md
 CLAUDE.md
 CLAUDE.local.md
 SECURITY.md
+
+# Internal docs - not served by the MCP doc registry, not useful to consumers
+docs/planning
+docs/archive

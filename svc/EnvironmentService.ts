@@ -52,10 +52,10 @@ export class EnvironmentService extends HoistService {
     private pollTimer: Timer;
 
     override async initAsync(ctx: InitContext) {
-        await this.runOn(ctx)
-            .newSpan('init')
+        await this.runner(ctx)
+            .span('init')
             .run(async ctx => {
-                const env = await ctx.fetchJson({url: 'xh/environment'}),
+                const env = await XH.fetchJson({url: 'xh/environment'}, ctx),
                     {pollConfig, instanceName, alertBanner, ...serverEnv} = env,
                     clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
                     clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
@@ -120,9 +120,10 @@ export class EnvironmentService extends HoistService {
      * @internal - not for app use. Called by `pollTimer` and as needed by Hoist code.
      */
     async pollServerAsync() {
-        await this.rootSpan('envPoll')
+        await this.runner()
+            .span('envPoll')
             .run(async ctx => {
-                const data = await ctx.fetchJson({url: 'xh/environmentPoll'});
+                const data = await XH.fetchJson({url: 'xh/environmentPoll'}, ctx);
 
                 // Update config/interval, server info, and alert banner.
                 const {pollConfig, instanceName, alertBanner, appVersion, appBuild} = data;

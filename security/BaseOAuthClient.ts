@@ -123,7 +123,7 @@ export abstract class BaseOAuthClient<
     /** ID Scopes */
     protected idScopes: string[];
 
-    /** Specification for Access Tokens **/
+    /** Specification for Access Tokens */
     protected accessSpecs: Record<string, S>;
 
     @managed private timer: Timer;
@@ -280,7 +280,7 @@ export abstract class BaseOAuthClient<
     }
 
     protected popupBlockerErrorMessage: String =
-        'Login popup window blocked. Please check your browser for a blocked popup notification ' +
+        'Login popup window may have been blocked. Please check your browser for a blocked popup notification ' +
         '(typically within the URL bar). Allow all popups from this site, then refresh this page ' +
         'in your browser to try again.';
 

@@ -87,13 +87,16 @@ export class LogViewerModel extends BaseInstanceModel {
         const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
-        return this.runOn(loadSpec)
-            .newSpan('listFiles')
+        return this.runner({loadSpec})
+            .span('listFiles')
             .run(async ctx => {
-                const data = await ctx.fetchJson({
-                    url: 'logViewerAdmin/listFiles',
-                    params: {instance: instanceName}
-                });
+                const data = await XH.fetchJson(
+                    {
+                        url: 'logViewerAdmin/listFiles',
+                        params: {instance: instanceName}
+                    },
+                    ctx
+                );
 
                 const files = instanceOnly
                     ? data.files.filter(f => f.filename.includes(instanceName))
@@ -129,16 +132,19 @@ export class LogViewerModel extends BaseInstanceModel {
         });
         if (!confirmed) return;
 
-        await this.rootSpan('deleteFiles')
+        await this.runner()
+            .span('deleteFiles')
+            .linkTo({observer: this.loadObserver, message: 'Deleting files'})
             .run(async ctx => {
                 const filenames = recs.map(r => r.data.filename);
-                await ctx
-                    .postJson({
+                await XH.postJson(
+                    {
                         url: 'logViewerAdmin/deleteFiles',
                         body: filenames,
                         params: {filenames, instance: this.instanceName}
-                    })
-                    .linkTo({observer: this.loadObserver, message: 'Deleting files'});
+                    },
+                    ctx
+                );
             })
             .then(() => this.refreshAsync())
             .catchDefault();
@@ -149,15 +155,19 @@ export class LogViewerModel extends BaseInstanceModel {
         if (!selectedRecord) return;
 
         const {filename} = selectedRecord.data;
-        return this.rootSpan('download')
+        return this.runner()
+            .span('download')
             .run(async ctx => {
-                const response = await ctx.fetch({
-                    url: 'logViewerAdmin/download',
-                    params: {
-                        filename,
-                        instance: this.instanceName
-                    }
-                });
+                const response = await XH.fetch(
+                    {
+                        url: 'logViewerAdmin/download',
+                        params: {
+                            filename,
+                            instance: this.instanceName
+                        }
+                    },
+                    ctx
+                );
 
                 const blob = await response.blob();
                 downloadBlob(blob, filename);

@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PlainObject, XH, Span, RawSpanConfig} from '@xh/hoist/core';
+import {HoistService, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseNameSource} from '@xh/hoist/utils/js';
-import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
+import {every, forEach, groupBy, isEmpty, isString, omitBy, takeRight} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Client-side distributed tracing service for Hoist applications.
@@ -33,6 +34,9 @@ import {every, forEach, groupBy, isEmpty, isString, omitBy} from 'lodash';
 export class TraceService extends HoistService {
     static instance: TraceService;
 
+    /** Max spans to retain when pushes are failing - oldest are dropped beyond this. */
+    private static MAX_PENDING = 2000;
+
     /** Spans whose sampling has been decided and are queued for export. */
     private _pending: Span[] = [];
 
@@ -45,8 +49,14 @@ export class TraceService extends HoistService {
     //------------------
     // Initialization
     //------------------
-    override async initAsync(ctx: InitContext) {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+    override async initAsync() {
+        // Flush on page teardown while the page is still alive.
+        this.addReaction({
+            track: () => XH.pageState,
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingInternalAsync();
+            }
+        });
     }
 
     //------------------
@@ -68,7 +78,7 @@ export class TraceService extends HoistService {
      * @param fn - the async function to wrap.
      */
     override async withSpan<T>(
-        config: string | RawSpanConfig,
+        config: string | FullSpanConfig,
         fn: (span: Span) => Promise<T>
     ): Promise<T> {
         const span = this.createSpan(config);
@@ -104,8 +114,8 @@ export class TraceService extends HoistService {
      *
      * @param config - span name string, or a SpanConfig with name and optional tags.
      */
-    private createSpan(config: string | RawSpanConfig): Span {
-        const ret: RawSpanConfig = isString(config) ? {name: config} : {...config};
+    private createSpan(config: string | FullSpanConfig): Span {
+        const ret: FullSpanConfig = isString(config) ? {name: config} : {...config};
 
         // Apply default tags - safe to call even before identity is resolved (getUsername is null).
         // Remove nulls they are used in this API to just prevent defaults
@@ -146,6 +156,7 @@ export class TraceService extends HoistService {
 
         if (span.sampled) {
             this._pending.push(span);
+            this.enforceCap();
 
             // Queue the push unless its submitSpans export itself (avoid looping).
             if (!span.tags['url.full']?.endsWith('xh/submitSpans')) {
@@ -155,25 +166,11 @@ export class TraceService extends HoistService {
     }
 
     /**
-     * Push all pending spans to the server.
-     * Called on debounced interval and on page unload.
+     * Flush the queue of pending spans to the server.
+     * @internal - apps should generally allow this service to manage w/its internal debounce.
      */
     async pushPendingAsync() {
-        const spans = this._pending;
-        if (isEmpty(spans)) return;
-
-        this._pending = [];
-        try {
-            await XH.fetchService.postJson({
-                url: 'xh/submitSpans',
-                body: spans.map(s => s.toJSON()),
-                params: {
-                    clientUsername: XH.getUsername()
-                }
-            });
-        } catch (e) {
-            this.logError('Failed to push spans', e);
-        }
+        return this.pushPendingInternalAsync();
     }
 
     /**
@@ -214,7 +211,45 @@ export class TraceService extends HoistService {
 
     @debounced(5 * SECONDS)
     private pushPendingBuffered() {
-        void this.pushPendingAsync();
+        void this.pushPendingInternalAsync();
+    }
+
+    /** Flush all pending spans to the server. */
+    private async pushPendingInternalAsync() {
+        const spans = this._pending;
+        if (isEmpty(spans)) return;
+
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
+        this._pending = [];
+        try {
+            await terminationSafePostJson({
+                url: 'xh/submitSpans',
+                body: spans.map(s => s.toJSON()),
+                params: {
+                    clientUsername: XH.getUsername()
+                }
+            });
+        } catch (e) {
+            if (isRetryableError(e)) {
+                // Transient failure - re-queue the batch (ahead of newer spans) to retry on the
+                // next flush, then bound the buffer in case the outage is prolonged.
+                this._pending = [...spans, ...this._pending];
+                this.enforceCap();
+                this.logError('Failed to push spans - will retry on next flush', e);
+            } else {
+                // Permanent (client-side) rejection - drop the batch so it can't deadlock the
+                // pipe (e.g. a session mismatch or oversized payload would fail forever).
+                this.logError('Server rejected span batch - dropping', e);
+            }
+        }
+    }
+
+    /** Bound the pending buffer, silently dropping oldest spans (failed pushes are logged). */
+    private enforceCap() {
+        const {MAX_PENDING} = TraceService;
+        if (this._pending.length > MAX_PENDING) {
+            this._pending = takeRight(this._pending, MAX_PENDING);
+        }
     }
 
     /**
@@ -283,4 +318,14 @@ interface TraceConfig {
 interface SampleRule {
     match: Record<string, string>;
     sampleRate: number;
+}
+
+/**
+ * Should a failed telemetry push be retried? True for transient failures (network, timeout,
+ * 5xx, aborted); false for client-side rejections (4xx) that would fail identically on retry.
+ */
+function isRetryableError(e: any): boolean {
+    return (
+        !e?.httpStatus || e.httpStatus >= 500 || e.isTimeout || e.isServerUnavailable || e.isAborted
+    );
 }

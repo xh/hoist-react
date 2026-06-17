@@ -242,21 +242,20 @@ fetchAsync()
 
 ### Standard Load Pattern
 
-The most common promise chain in Hoist applications — load data, link to a mask, and track for
-monitoring:
+> See [Telemetry & Observability](../docs/telemetry.md) for the full `Runner` chain reference.
+
+The most common load pattern in Hoist applications — load data, mask the UI, and track for
+monitoring. Compose these via the fluent `Runner` chain on `HoistBase`, which wraps the promise
+extensions documented above (managed `doLoadAsync()` errors are handled by `LoadSupport`):
 
 ```typescript
-async doLoadAsync() {
-    try {
-        const data = await XH.fetchService
-            .fetchJson({url: 'api/positions'})
-            .linkTo(this.loadTask)
-            .track({category: 'Portfolio', message: 'Loaded positions'});
+async doLoadAsync(loadSpec) {
+    const data = await this.runner({loadSpec})
+        .linkTo(this.loadTask)
+        .track({category: 'Portfolio', message: 'Loaded positions'})
+        .fetchJson({url: 'api/positions'});
 
-        runInAction(() => this.updatePositions(data));
-    } catch (e) {
-        XH.handleException(e);
-    }
+    runInAction(() => this.updatePositions(data));
 }
 ```
 
