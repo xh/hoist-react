@@ -9,6 +9,7 @@ import {
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     TaskObserver,
     Thunkable,
@@ -284,21 +285,24 @@ export class FilterChooserModel extends HoistModel {
         const rsSelectCmp = (this.inputRef.current as any)?.reactSelectRef?.current;
         if (!rsSelectCmp) return;
 
-        const currentVal = rsSelectCmp.select.state.inputValue,
+        // Push the suggestion text back into the Select's filter input, then re-open the menu.
+        const currentVal = (rsSelectCmp.props?.inputValue as string) ?? '',
             newVal = value.displayName,
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
-        rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
+        rsSelectCmp.props.onInputChange(inputValue, {
+            action: 'input-change',
+            prevInputValue: currentVal
+        });
+
         wait()
             .then(() => {
                 rsSelectCmp.focus();
-                rsSelectCmp.handleInputChange(inputValue);
+                rsSelectCmp.openMenu('first');
             })
             .thenAction(() => {
-                // Setting the Select's `inputValue` state above has the side-effect of modifying
-                // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
-                // to get it back inline. Note we're intentionally not using `setSelectValue()`,
-                // which returns early if the actual filter value hasn't changed.
+                // Force-resync our bound selectValue in case state manager nudged react-select's
+                // internal selection. Not via setSelectValue() (early-returns when unchanged).
                 this.selectValue = cloneDeep(this.selectValue);
             });
     }
@@ -526,15 +530,13 @@ export class FilterChooserModel extends HoistModel {
         ...rootPersistWith
     }: FilterChooserPersistOptions) {
         if (persistValue) {
-            const status = {initialized: false},
-                persistWith = isObject(persistValue)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
-                    : rootPersistWith;
+            const status = {initialized: false};
             PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.value`,
-                    ...persistWith
-                },
+                persistOptions: persistOptions(
+                    {path: `${path}.value`},
+                    rootPersistWith,
+                    isObject(persistValue) ? persistValue : null
+                ),
                 target: {
                     getPersistableState: () => new PersistableState(this.value?.toJSON() ?? null),
                     setPersistableState: ({value}) =>
@@ -546,21 +548,19 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
-                    : rootPersistWith,
-                provider = PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.favorites`,
-                        ...persistWith
-                    },
-                    target: {
-                        getPersistableState: () =>
-                            new PersistableState(this.favorites.map(f => f.toJSON())),
-                        setPersistableState: ({value}) => this.setFavorites(value)
-                    },
-                    owner: this
-                });
+            const provider = PersistenceProvider.create({
+                persistOptions: persistOptions(
+                    {path: `${path}.favorites`},
+                    rootPersistWith,
+                    isObject(persistFavorites) ? persistFavorites : null
+                ),
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(this.favorites.map(f => f.toJSON())),
+                    setPersistableState: ({value}) => this.setFavorites(value)
+                },
+                owner: this
+            });
             if (provider) this.persistFavorites = true;
         }
     }

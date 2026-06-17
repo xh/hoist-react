@@ -1,8 +1,17 @@
 /**
  * Document registry for the Hoist MCP server.
  *
- * Loads documentation inventory from docs/doc-registry.json, the single source
- * of truth shared with the hoist-core MCP server and the toolbox doc viewer.
+ * Loads documentation inventory from `docs/doc-registry.json` -- the single
+ * source of truth for hoist-react's documentation catalog. The same file is
+ * also read by the toolbox doc viewer (toolbox's Grails `DocsService` resolves
+ * it from a sibling checkout in local development or from a GitHub tarball in
+ * production, then serves entries to the toolbox client).
+ *
+ * Hoist-core maintains a *separate* registry of server-side docs at its own
+ * `docs/doc-registry.json`, consumed by its own (Groovy) MCP server. The two
+ * registries use the same JSON schema, but the files and entries are
+ * independent -- changes here do not propagate there and vice versa.
+ *
  * Provides metadata, file loading, and keyword-based search.
  */
 import {existsSync, readFileSync} from 'node:fs';
@@ -34,6 +43,13 @@ export interface DocEntry {
     description: string;
     /** Key topics/keywords for search matching. */
     keywords: string[];
+    /**
+     * Optional curated shortcut IDs accepted by the doc-id resolver. Use only
+     * when the doc has an obvious short name that would otherwise be ambiguous
+     * across multiple entries -- the resolver auto-generates safe shortenings
+     * for unambiguous cases.
+     */
+    aliases: string[];
 }
 
 /** A search result with match context. */
@@ -66,6 +82,7 @@ interface RegistryJson {
         viewerCategory: string;
         description: string;
         keywords: string[];
+        aliases?: string[];
     }>;
 }
 
@@ -113,7 +130,8 @@ export function buildRegistry(repoRoot: string): RegistryData {
             filePath,
             mcpCategory: raw.mcpCategory,
             description: raw.description,
-            keywords: raw.keywords ?? []
+            keywords: raw.keywords ?? [],
+            aliases: raw.aliases ?? []
         });
     }
 

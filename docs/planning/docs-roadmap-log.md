@@ -514,3 +514,25 @@
 - Updated `docs/README.md` index: added `/data/cube/` to Quick Reference and Core Framework table
 - Added `data/cube/README.md` entry to `docs/doc-registry.json`
 - Added `/data/cube/` entry to `docs/planning/docs-roadmap.md` Priority 1 table
+
+### 2026-06-02
+- Created `docs/telemetry.md` (Telemetry & Observability concept doc) covering the `Runner` chain
+  on `HoistBase`, tracing/`TraceService`, sampling, `traceparent` propagation, activity tracking,
+  `MetricsService` (recommended-only), `CallContext`/`CallContextLike`, `telemetryPrefix`, best
+  practices, and pitfalls (orphaned spans, deprecated `withSpan`/`FetchOptions.span`/`loadSpec`)
+- Indexed it: added a Concepts row to `docs/README.md`, repointed the "tracing" Quick Reference
+  row to the new doc, added a `docs/planning/docs-roadmap.md` Concepts entry ([Done]), and
+  registered it in `docs/doc-registry.json`
+- Fixed a stale `svc/README.md` registry keyword (`withSpanAsync`, no longer exists); added
+  `MetricsService`, `Runner`, `CallContext`
+- Added cross-links to `docs/telemetry.md` from related docs (svc/README, promise/README,
+  error-handling) where tracing/Runner topics are already discussed
+
+### 2026-06-10
+- CHANGELOG archival: moved the remaining Middle-Era entries (v56–v63) out of the main `CHANGELOG.md`
+  into the archive, so the main file now holds the Modern era onward (v64+). Reduced main CHANGELOG
+  from ~2,620 to ~1,890 lines.
+- Renamed the archive `docs/archive/CHANGELOG-pre-v56.md` → `docs/archive/CHANGELOG-archive.md`
+  (era-neutral name to avoid renaming on each future archival) and updated its header.
+- Updated references: main CHANGELOG footer (now "prior to v64"), and the `docs/README.md` Additional
+  Resources entries (CHANGELOG range and archive link/description).

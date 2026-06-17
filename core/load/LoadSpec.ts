@@ -83,7 +83,7 @@ export class LoadSpec {
 
     /** True if a more recent request to load this object's owner has *started*. */
     get isStale(): boolean {
-        return this !== this.owner.lastRequested;
+        return this.owner.lastRequested?.loadNumber > this.loadNumber;
     }
 
     /** True if a more recent request to load this object's owner has *successfully completed*. */

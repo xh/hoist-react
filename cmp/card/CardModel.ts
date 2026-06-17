@@ -10,6 +10,7 @@ import {
     Persistable,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     RenderMode
 } from '@xh/hoist/core';
@@ -81,10 +82,7 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
 
         if (persistWith) {
             PersistenceProvider.create({
-                persistOptions: {
-                    path: 'card',
-                    ...persistWith
-                },
+                persistOptions: persistOptions({path: 'card'}, persistWith),
                 target: this
             });
         }

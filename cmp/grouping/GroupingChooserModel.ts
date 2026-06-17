@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, PersistableState, PersistenceProvider, PersistOptions} from '@xh/hoist/core';
+import {
+    HoistModel,
+    PersistableState,
+    PersistenceProvider,
+    PersistOptions,
+    persistOptions
+} from '@xh/hoist/core';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {Field, genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, observable} from '@xh/hoist/mobx';
@@ -324,14 +330,12 @@ export class GroupingChooserModel extends HoistModel {
         ...rootPersistWith
     }: GroupingChooserPersistOptions) {
         if (persistValue) {
-            const persistWith = isObject(persistValue)
-                ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
-                : rootPersistWith;
             PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.value`,
-                    ...persistWith
-                },
+                persistOptions: persistOptions(
+                    {path: `${path}.value`},
+                    rootPersistWith,
+                    isObject(persistValue) ? persistValue : null
+                ),
                 target: {
                     getPersistableState: () => new PersistableState(this.value),
                     setPersistableState: ({value}) => this.setValue(value)
@@ -341,20 +345,18 @@ export class GroupingChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
-                    : rootPersistWith,
-                provider = PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.favorites`,
-                        ...persistWith
-                    },
-                    target: {
-                        getPersistableState: () => new PersistableState(this.favorites),
-                        setPersistableState: ({value}) => this.setFavorites(value)
-                    },
-                    owner: this
-                });
+            const provider = PersistenceProvider.create({
+                persistOptions: persistOptions(
+                    {path: `${path}.favorites`},
+                    rootPersistWith,
+                    isObject(persistFavorites) ? persistFavorites : null
+                ),
+                target: {
+                    getPersistableState: () => new PersistableState(this.favorites),
+                    setPersistableState: ({value}) => this.setFavorites(value)
+                },
+                owner: this
+            });
             if (provider) this.persistFavorites = true;
         }
     }

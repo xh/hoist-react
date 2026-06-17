@@ -142,7 +142,7 @@ export class HoistInputModel extends HoistModel {
         return true;
     }
 
-    /** The value to be rendered internally by control. **/
+    /** The value to be rendered internally by control. */
     @computed
     get renderValue(): any {
         return this.hasFocus ? this.internalValue : this.internalFromExternal();

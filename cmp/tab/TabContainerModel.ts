@@ -14,6 +14,7 @@ import {
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
@@ -244,7 +245,7 @@ export class TabContainerModel extends HoistModel {
     /**
      * Remove a single tab from the container.
      * Supported for tabs that are immediate children of this container.
-     **/
+     */
     @action
     removeTab(tab: TabModel | string) {
         const {tabs, activeTab} = this,
@@ -429,14 +430,12 @@ export class TabContainerModel extends HoistModel {
             if (this.route) {
                 this.logWarn('persistActiveTabId and route cannot both be specified.');
             } else {
-                const persistWith = isObject(persistActiveTabId)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistActiveTabId)
-                    : rootPersistWith;
                 PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.activeTabId`,
-                        ...persistWith
-                    },
+                    persistOptions: persistOptions(
+                        {path: `${path}.activeTabId`},
+                        rootPersistWith,
+                        isObject(persistActiveTabId) ? persistActiveTabId : null
+                    ),
                     target: {
                         getPersistableState: () => new PersistableState(this.activeTabId),
                         setPersistableState: ({value}) => this.setActiveTabId(value)
@@ -453,17 +452,12 @@ export class TabContainerModel extends HoistModel {
                     'persistFavoriteTabIds is set but no DynamicTabSwitcherModel is present.'
                 );
             } else {
-                const persistWith = isObject(persistFavoriteTabIds)
-                    ? PersistenceProvider.mergePersistOptions(
-                          rootPersistWith,
-                          persistFavoriteTabIds
-                      )
-                    : rootPersistWith;
                 PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.favoriteTabIds`,
-                        ...persistWith
-                    },
+                    persistOptions: persistOptions(
+                        {path: `${path}.favoriteTabIds`},
+                        rootPersistWith,
+                        isObject(persistFavoriteTabIds) ? persistFavoriteTabIds : null
+                    ),
                     target: {
                         getPersistableState: () =>
                             new PersistableState(dynamicTabSwitcherModel.favoriteTabIds),

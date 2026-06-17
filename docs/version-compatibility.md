@@ -54,6 +54,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
+| 86.0 | -- | 40.0.1 | 40.0.1 | Client `MetricsService`, `Runner` API, remote-`traceparent` spans | [Notes](./upgrade-notes/v86-upgrade-notes.md) |
 | 85.0 | -- | 39.0 | 39.0 | Nested app-load spans, `InitContext`, name-based `sampleRules` | [Notes](./upgrade-notes/v85-upgrade-notes.md) |
 | 84.0 | 38.0 | | 38.0 | Span sampling, OTEL tag alignment, log level overrides | [Notes](./upgrade-notes/v84-upgrade-notes.md) |
 | 83.0 | 37.0 | | 37.0 | OTEL tracing, static defaults, metrics publishing | [Notes](./upgrade-notes/v83-upgrade-notes.md) |
@@ -110,6 +111,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 40.0 | 86.0 recommended | Client metrics `/xh/recordMetrics` endpoint (added in 40.0.1). No hard hoist-react bump; needed only by apps recording client metrics. |
 | 39.0 | 85.0 recommended | Telemetry package restructuring, typed `ConfigSpec`/`PreferenceSpec`/`RoleSpec`, JDK 25 toolchain. No hard hoist-react bump from 38.0; v85 is the natural pairing. |
 | 38.0 | 84.0 | Span sampling, OTEL tag alignment, log level overrides |
 | 37.0 | 83.0 | OTEL tracing, metrics publishing |
@@ -136,7 +138,7 @@ to find the minimum hoist-react version for a given core release.
 
 A brief orientation to the major epochs of hoist-react / hoist-core development:
 
-- **Modern Era (v64+, core v20+):** Multi-instance clustering, ViewManager, Java 17, AG Grid v31+,
+- **Modern Era (v64+, core v20+):** Multi-instance clustering, ViewManager, Java 17+, AG Grid v31+,
   HoistAuthModel, Blueprint 5→6. Active support with upgrade notes for each major version.
 - **Middle Era (v44–v63, core v10–v19):** JsonBlobService, Role Management system, AG Grid
   maturation (v28→v29), DashCanvas, Persistence API, TypeScript migration.

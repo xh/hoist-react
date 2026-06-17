@@ -151,6 +151,54 @@ export function waitFor(
 }
 
 /**
+ * Wrap a promise-returning function with trailing-edge debounce semantics. Calls made within
+ * `wait` ms of each other share a single pending Promise; when the quiet period elapses, the
+ * underlying function is invoked once with the args from the most recent call, and the shared
+ * Promise resolves (or rejects) with that result.
+ *
+ * Useful for search-as-you-type inputs and similar flows where only the latest call's result
+ * matters and intermediate calls can be coalesced.
+ *
+ * Adapted from the (unmaintained) `debounce-promise` package by Bjorn Tipling,
+ * https://github.com/bjoerge/debounce-promise - MIT licensed.
+ */
+export function debouncePromise<A extends any[], R>(
+    fn: (...args: A) => R | Promise<R>,
+    wait: number
+): (...args: A) => Promise<R> {
+    let timer: ReturnType<typeof setTimeout> = null,
+        pending: {resolve: (r: R) => void; reject: (e: unknown) => void; promise: Promise<R>} =
+            null,
+        lastArgs: A = null;
+
+    return function (this: any, ...args: A): Promise<R> {
+        lastArgs = args;
+        if (!pending) {
+            let resolve: (r: R) => void, reject: (e: unknown) => void;
+            const promise = new Promise<R>((res, rej) => {
+                resolve = res;
+                reject = rej;
+            });
+            pending = {resolve, reject, promise};
+        }
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(() => {
+            const {resolve, reject} = pending,
+                args = lastArgs;
+            timer = null;
+            pending = null;
+            lastArgs = null;
+            try {
+                Promise.resolve(fn.apply(this, args)).then(resolve, reject);
+            } catch (e) {
+                reject(e);
+            }
+        }, wait);
+        return pending.promise;
+    };
+}
+
+/**
  * Return a promise that resolves immediately.
  * @param value - the value to be returned by the resulting Promise.
  */

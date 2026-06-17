@@ -23,7 +23,7 @@ export class ViewInfo {
     /** User-supplied descriptive name. */
     readonly name: string;
 
-    /** Description of the view. **/
+    /** Description of the view. */
     readonly description: string;
 
     /** User owning this view. Null if the view is global.*/

@@ -26,6 +26,8 @@ import {ReactNode} from 'react';
  * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.app';
+
     /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
@@ -103,13 +105,20 @@ export class HoistAppModel extends HoistModel {
      * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
-        const XH = window['XH'];
-        await XH.fetchJson({
-            url: 'xh/clearUserState',
-            params: {clientUsername: XH.getUsername()}
-        });
-        XH.localStorageService.clear();
-        XH.sessionStorageService.clear();
+        await this.runner()
+            .span('restoreDefaults')
+            .run(async ctx => {
+                const XH = window['XH'];
+                await XH.fetchJson(
+                    {
+                        url: 'xh/clearUserState',
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
+                XH.localStorageService.clear();
+                XH.sessionStorageService.clear();
+            });
     }
 }
 

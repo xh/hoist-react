@@ -4,12 +4,15 @@
  * Provides repo root resolution (via `import.meta.url`) and safe path
  * construction that prevents directory traversal outside the repository.
  */
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {resolve, dirname, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 /** Cached repo root -- resolved once and reused. */
 let cachedRepoRoot: string | undefined;
+
+/** Cached hoist library version -- resolved once and reused. */
+let cachedHoistVersion: string | undefined;
 
 /**
  * Resolve the hoist-react repo root by walking up from this file's location.
@@ -34,6 +37,22 @@ export function resolveRepoRoot(): string {
 
     cachedRepoRoot = repoRoot;
     return repoRoot;
+}
+
+/**
+ * Resolve the `@xh/hoist` library version from the repo root `package.json`.
+ *
+ * Used by the connectivity-check surfaces (`hoist-ping` tool, `hoist-docs ping`
+ * CLI) so a sanity check also reports which hoist version is being indexed.
+ * The result is cached after the first call.
+ */
+export function resolveHoistVersion(): string {
+    if (cachedHoistVersion) return cachedHoistVersion;
+
+    const pkgPath = resolve(resolveRepoRoot(), 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {version?: string};
+    cachedHoistVersion = pkg.version ?? 'unknown';
+    return cachedHoistVersion;
 }
 
 /**

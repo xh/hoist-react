@@ -19,6 +19,8 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.log';
+
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
@@ -103,19 +105,25 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        const response = await XH.fetchJson({
-            url: 'logViewerAdmin/getFile',
-            params: {
-                filename: parent.file,
-                startLine: this.startLine,
-                maxLines: this.maxLines,
-                pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                caseSensitive: this.caseSensitive,
-                instance: parent.instanceName
-            },
-            loadSpec
-        });
-        this.updateGridData(response.content);
+        await this.runner({loadSpec})
+            .span('getFile')
+            .run(async ctx => {
+                const response = await XH.fetchJson(
+                    {
+                        url: 'logViewerAdmin/getFile',
+                        params: {
+                            filename: parent.file,
+                            startLine: this.startLine,
+                            maxLines: this.maxLines,
+                            pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                            caseSensitive: this.caseSensitive,
+                            instance: parent.instanceName
+                        }
+                    },
+                    ctx
+                );
+                this.updateGridData(response.content);
+            });
     }
 
     async scrollToTail() {

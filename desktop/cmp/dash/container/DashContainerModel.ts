@@ -278,7 +278,13 @@ export class DashContainerModel
         await this.loadStateAsync(restoreState.initialState);
     }
 
-    /** Load state into the DashContainer, recreating its layout and contents */
+    /**
+     * Load state into the DashContainer, recreating its layout and contents.
+     *
+     * Note this applies full replace (not patch) semantics, at both levels: views not present in
+     * the given state are removed, and entries fully replace each matched view's state - omitted
+     * properties (e.g. `title`, `state`) reset to their defaults.
+     */
     async loadStateAsync(state: DashContainerViewState[]) {
         const ids = new Set<string>(),
             stateWithViewModelIds = this.withIds(state, ids);
@@ -604,6 +610,10 @@ export class DashContainerModel
             tabEl.addEventListener('contextmenu', ctxHandler);
             tabEl._xhContextMenuHandler = ctxHandler;
 
+            // Reconcile title text - GL rebuilds tabs from its own config on e.g. drag/drop,
+            // which does not track runtime title changes (renames) made on the view model.
+            titleEl.textContent = viewModel.fullTitle;
+
             if (icon) {
                 const currentIcon = tabEl.querySelector(iconSelector) as HTMLElement | null,
                     currentIconType = currentIcon?.dataset.icon ?? null,
@@ -702,7 +712,11 @@ export class DashContainerModel
 
                 let model = this.viewModels.find(it => it.id === viewModelId);
                 if (model) {
+                    // Reused on a fresh GL generation (e.g. saved-view switch, restoreDefaults).
+                    // Apply incoming values with replace semantics, matching newly-created models
+                    // below - `title` arrives pre-resolved to the state title or spec default.
                     model.setViewState(viewState);
+                    model.title = title;
                 } else {
                     model = new DashContainerViewModel({
                         id: viewModelId,
@@ -715,10 +729,12 @@ export class DashContainerModel
                     model.addReaction({
                         track: () => model.fullTitle,
                         run: () => {
-                            const item = this.getItemByViewModel(viewModelId),
-                                titleEl = this.getTitleElement(item.tab.element);
+                            // Item lookup requires a mounted react component and can miss during
+                            // a GL (re)build - loadStateAsync calls updateTabHeaders to cover.
+                            const item = this.getItemByViewModel(viewModelId);
+                            if (!item?.tab) return;
 
-                            titleEl.textContent = model.fullTitle;
+                            this.getTitleElement(item.tab.element).textContent = model.fullTitle;
                         }
                     });
 

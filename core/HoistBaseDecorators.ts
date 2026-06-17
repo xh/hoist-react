@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {throwIf} from '@xh/hoist/utils/js';
-import {PersistableState, PersistenceProvider, PersistOptions} from './';
+import {throwIf} from '../utils/js';
+import {PersistableState, PersistenceProvider, PersistOptions, persistOptions} from './';
 
 type FieldOrAccessorOrGetterContext =
     | ClassFieldDecoratorContext
@@ -97,13 +97,8 @@ function createPersistResult(
                 '@persist decorator should be applied to an instance of HoistBase'
             );
 
-            const persistOptions = {
-                path: name as string,
-                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-            };
-
             PersistenceProvider.create({
-                persistOptions,
+                persistOptions: persistOptions({path: name as string}, this.persistWith, options),
                 owner: this,
                 target: {
                     getPersistableState: () => new PersistableState(this[name]),

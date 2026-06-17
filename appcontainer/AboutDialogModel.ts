@@ -8,8 +8,7 @@ import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
 import {AboutDialogItem, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {warnIf} from '@xh/hoist/utils/js';
-import copy from 'clipboard-copy';
+import {copyToClipboard, warnIf} from '@xh/hoist/utils/js';
 import {isNull} from 'lodash';
 import {Icon} from '../icon';
 
@@ -55,7 +54,7 @@ export class AboutDialogModel extends HoistModel {
                         const val = it.value?.toString();
                         if (val === 'null' || val === '[object Object]') return;
 
-                        copy(val);
+                        copyToClipboard(val);
                         XH.toast({
                             icon: Icon.clipboard(),
                             message: `Copied ${val} to clipboard`

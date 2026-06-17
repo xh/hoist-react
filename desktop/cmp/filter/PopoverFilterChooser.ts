@@ -87,7 +87,7 @@ class PopoverFilterChooserLocalModel extends HoistModel {
             run: () => {
                 const inputRef = this.model.inputRef.current;
                 inputRef.focus();
-                (inputRef as any).reactSelectRef.current.select.onMenuOpen();
+                (inputRef as any).reactSelectRef.current?.openMenu('first');
             }
         });
     }
