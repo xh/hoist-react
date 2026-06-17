@@ -99,6 +99,11 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
         this.loadData(this.buildData(slice), this.buildSummary(slice), showGroups);
     }
 
+    /** Show or hide this bucket's per-row visibility action column. */
+    setActionColumnVisible(visible: boolean) {
+        this.chooserGridModel.setColumnVisible(actionCol.colId, visible);
+    }
+
     toggleVisibility(recordIds: Some<StoreRecordId>) {
         const {targetGridModel: gridModel} = this;
         if (!gridModel) return;
@@ -720,12 +725,6 @@ export class ColumnChooserBucketModel extends HoistModel implements ColumnChoose
                                         icon: Icon.lock(),
                                         disabled: true
                                     };
-                                }
-
-                                // Library mode: hidden columns live in the Column Library, so every
-                                // displayed row is visible and the action can only ever hide.
-                                if (this.parent.showHidden === false) {
-                                    return {icon: Icon.eyeSlash()};
                                 }
 
                                 const {visible} = record.data;

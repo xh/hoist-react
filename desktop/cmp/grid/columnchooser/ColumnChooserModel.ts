@@ -70,6 +70,15 @@ export class ColumnChooserModel extends HoistModel {
         return !!this.componentProps?.showColumnLibrary;
     }
 
+    /**
+     * True when the Column Library panel is on screen. The buckets hide their per-row visibility
+     * action in this state - columns are hidden by dragging them to the library instead.
+     */
+    @computed
+    get isLibraryShown(): boolean {
+        return this.columnLibraryEnabled && this.showLibrary;
+    }
+
     @computed
     get hasColumnGroups(): boolean {
         if (!this.gridModel) return false;
@@ -131,6 +140,13 @@ export class ColumnChooserModel extends HoistModel {
         this.addReaction({
             track: () => [this.showGroups, this.showHidden],
             run: () => this.syncFromGridModel()
+        });
+
+        // Hide the buckets' per-row visibility action while the library panel is shown.
+        this.addReaction({
+            track: () => this.isLibraryShown,
+            run: shown => this.bucketModels.forEach(it => it.setActionColumnVisible(!shown)),
+            fireImmediately: true
         });
 
         // Wire cross-grid drag-and-drop whenever the set of mounted participant grids changes.
