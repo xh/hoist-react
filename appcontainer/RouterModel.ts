@@ -9,10 +9,9 @@ import {action, observable, makeObservable} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
-// Side-effect import preserved in emitted .d.ts so downstream consumers pick up
-// router5-plugin-browser's Router augmentation (buildUrl, matchUrl, etc.).
-import 'router5-plugin-browser';
 import browserPlugin from 'router5-plugin-browser';
+// Required so downstream consumers pick up Router TS augmentation (buildUrl, etc.).
+import 'router5-plugin-browser';
 
 /**
  * Top-level model for managing application routing in Hoist.
