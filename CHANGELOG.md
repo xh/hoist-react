@@ -2,6 +2,14 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed downstream TypeScript error `Property 'buildUrl' does not exist on type 'Router'`
+  (and similarly for `matchUrl`, `replaceHistoryState`, `lastKnownState`)
+  when consuming the published `@xh/hoist` declaration output. The `router5-plugin-browser` module
+  augmentation was being stripped from `RouterModel.d.ts` because its only import was a value-only
+  default that `tsc` removes when emitting declarations; a side-effect import now preserves it.
+
 ## 86.0.1 - 2026-06-16
 
 ### 🐞 Bug Fixes
