@@ -61,9 +61,12 @@
       }
     }
 
-    // Fill mode (default) - distribute options equally across the available width.
+    // Fill mode (default) - options grow to fill the available width. Basis is `auto` (content)
+    // rather than 0 so each option keeps at least its content width and only the leftover space
+    // is shared out - a wider label is not starved into truncation by narrower siblings. Options
+    // still shrink + ellipsis (see below) when the set genuinely cannot fit.
     &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
-      flex: 1 1 0;
+      flex: 1 1 auto;
     }
 
     // Outlined mode - border around the tray with no inner background fill.
