@@ -148,8 +148,15 @@ export class ColumnChooserBucketModel extends HoistModel {
         if (!sourceData || !targetData) return {allowed: false};
         if (sourceData.id === targetData.id) return {allowed: false};
 
-        // Can't drop "inside" a leaf — treat as "below"
-        if (position === 'inside' && !targetData.isGroup) {
+        if (targetData.isGroup) {
+            // Hovering a group row always means "before the group" - getDropHighlight then resolves
+            // to the group's first child (when the dragged column belongs to the group) or above the
+            // group header (when it doesn't). ag-grid otherwise uses the cursor's half over the group
+            // row to mean before vs. after the whole group, which behaves differently for cross-bucket
+            // drags (cursor-relative) than in-bucket drags - this normalizes both.
+            position = 'above';
+        } else if (position === 'inside') {
+            // Can't drop "inside" a leaf — treat as "below"
             position = 'below';
         }
 
@@ -194,15 +201,31 @@ export class ColumnChooserBucketModel extends HoistModel {
         this.moveColumns(sourceData, targetData, position);
     }
 
-    /** Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. */
+    /**
+     * Handle a drop into this bucket from another bucket, via an ag-grid row drop zone. Reuses the
+     * target/position our {@link getValidDropPosition} already computed for the drag (event.rowsDrop)
+     * - the same group-aware logic as an intra-bucket drop - rather than re-deriving from the cursor,
+     * so cross-bucket drops over groups behave identically. Falls back to "append to end" only when
+     * there's no row under the cursor (empty bucket or below the last row).
+     */
     handleCrossBucketDrop(event: RowDragEndEvent, sourceBucket: ColumnChooserBucketModel) {
         if (sourceBucket === this) return;
 
         const sourceData = getChooserData(event.node);
         if (!sourceData) return;
 
-        const {target, position} = this.resolveDropTarget(event);
-        this.moveColumns(sourceData, target, position);
+        const dropInfo = event.rowsDrop;
+        if (dropInfo?.allowed && dropInfo.position !== 'none') {
+            const targetData = getChooserData(dropInfo.target);
+            if (targetData) {
+                this.moveColumns(sourceData, targetData, dropInfo.position);
+                return;
+            }
+        }
+
+        // No valid row under the cursor (empty bucket / below the last row) - append. A drop rejected
+        // over an actual row (hidden/locked/no-op) falls through to a no-op; moveColumns re-validates.
+        if (!event.overNode) this.moveColumns(sourceData, null, 'below');
     }
 
     /**
@@ -487,34 +510,6 @@ export class ColumnChooserBucketModel extends HoistModel {
 
         const newState = this.simulateMove(sourceData, targetData, position);
         if (newState) this.parent.commit(newState);
-    }
-
-    /**
-     * Resolve the drop target in this bucket from a cross-grid drag event. Falls back to
-     * "append to end" when the cursor isn't over a row (e.g. empty bucket or below last).
-     */
-    private resolveDropTarget(event: RowDragEndEvent): {
-        target: ColumnChooserData | null;
-        position: RowDropTargetPosition;
-    } {
-        const {overNode} = event;
-        if (overNode) {
-            const targetData = getChooserData(overNode);
-            if (targetData) {
-                // Above/below heuristic from the cursor's y vs. the row's midpoint.
-                const rowTop = overNode.rowTop ?? 0,
-                    rowHeight = overNode.rowHeight ?? 0,
-                    midpoint = rowTop + rowHeight / 2,
-                    position: RowDropTargetPosition = event.y < midpoint ? 'above' : 'below';
-                return {target: targetData, position};
-            }
-        }
-
-        // Fall back to the last displayed row in this bucket (append).
-        const targetData = getChooserData(this.getLastDisplayedRow());
-        return targetData
-            ? {target: targetData, position: 'below'}
-            : {target: null, position: 'below'};
     }
 
     private getLastDisplayedRow() {
