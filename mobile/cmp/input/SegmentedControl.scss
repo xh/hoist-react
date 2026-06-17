@@ -66,28 +66,6 @@
       flex: 1 1 0;
     }
 
-    // Scrollable mode - when the options cannot all fit, scroll the tray horizontally rather than
-    // truncating labels. Options size to their content and never shrink, so the row overflows and
-    // scrolls; in fill mode they still grow to fill the width when there is room to spare.
-    &.xh-segmented-control--scrollable {
-      overflow-x: auto;
-      // Hide the scrollbar for a clean, native-feeling swipe (content is discoverable by dragging).
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
-
-      .xh-button.xh-segmented-control-option {
-        flex: 0 0 auto;
-      }
-
-      &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
-        flex: 1 0 auto;
-      }
-    }
-
     // Outlined mode - border around the tray with no inner background fill.
     &.xh-segmented-control--outlined {
       background-color: transparent;

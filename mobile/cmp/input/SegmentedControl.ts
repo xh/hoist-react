@@ -47,13 +47,6 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     options: Array<SegmentedControlOption | SegmentedControlNullOption | OptionPrimitive>;
 
     /**
-     * True to let the options scroll horizontally when they cannot all fit at once, preserving
-     * full labels (swipe the tray to reach off-screen options). When false (default), options
-     * stay on a single row and labels truncate with an ellipsis if space is tight.
-     */
-    scrollable?: boolean;
-
-    /**
      * True to render with an outlined style - a border around the control tray
      * with no inner background fill. Border color follows the current intent.
      */
@@ -158,7 +151,6 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         fill = true,
         intent,
         outlined,
-        scrollable,
         testId,
         ...rest
     } = getNonLayoutProps(props);
@@ -196,8 +188,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             className,
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
-            fill && 'xh-segmented-control--fill',
-            scrollable && 'xh-segmented-control--scrollable'
+            fill && 'xh-segmented-control--fill'
         ),
         ref,
         onFocus: model.onFocus,
