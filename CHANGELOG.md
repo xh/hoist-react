@@ -2,6 +2,10 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Ensure publication of `router5-plugin-browser` TS module augmentation.
+
 ## 86.0.1 - 2026-06-16
 
 ### 🐞 Bug Fixes
