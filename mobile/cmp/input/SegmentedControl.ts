@@ -12,13 +12,13 @@ import {
     SegmentedControlOption,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
-import {div} from '@xh/hoist/cmp/layout';
+import {hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
-import '@xh/hoist/desktop/register';
-import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import '@xh/hoist/mobile/register';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
+import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
@@ -26,9 +26,6 @@ import './SegmentedControl.scss';
 export type {OptionPrimitive, SegmentedControlOption, SegmentedControlNullOption};
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
-    /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
-    compact?: boolean;
-
     /**
      * True (default) to stretch the control to fill available width,
      * distributing space equally among options.
@@ -61,11 +58,10 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  * rendered as a group of toggle buttons with clear visual indication of the active
  * selection.
  *
- * Similar to ButtonGroupInput but driven by an `options` prop (like Select/RadioInput)
- * rather than Button children, and with stronger visual differentiation between selected
- * and unselected states.
- *
- * Built on Blueprint's SegmentedControl component.
+ * Similar to ButtonGroupInput but driven by an `options` prop (like Select) rather than Button
+ * children, and with stronger visual differentiation between selected and unselected states.
+ * The mobile counterpart to the desktop SegmentedControl, built on Hoist's mobile Button
+ * (no Blueprint dependency).
  */
 export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
     displayName: 'SegmentedControl',
@@ -109,7 +105,7 @@ class SegmentedControlModel extends HoistInputModel {
         });
     }
 
-    /** Map the current render value to the string key used by the Blueprint control. */
+    /** Map the current render value to the string key used to identify the selected option. */
     @computed
     get selectedKey(): string {
         const {renderValue, normalizedOptions} = this;
@@ -142,7 +138,7 @@ class SegmentedControlModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props}, ref) => {
     const {
-        // HoistInput props - exclude from passthrough to BP
+        // HoistInput props - consumed here or by the model, not passed to the tray
         bind,
         disabled,
         onChange,
@@ -150,51 +146,49 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         tabIndex,
         value,
         commitOnChange,
-        // Consumed by model
         options,
         // Consumed by this component
-        compact,
+        fill = true,
         intent,
         outlined,
         testId,
-        // Remainder passed to BP SegmentedControl
-        ...bpProps
+        ...rest
     } = getNonLayoutProps(props);
 
-    // Resolve the effective intent per option (own intent wins over control-level default),
-    // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
-    const defaultIntent = intent && intent !== 'none' ? intent : null,
-        bpOptions = model.normalizedOptions.map(opt => {
-            const optIntent = opt.intent ?? defaultIntent;
-            return {
-                value: opt._key,
-                label: opt.label,
-                icon: opt.icon,
-                disabled: opt.disabled,
-                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null
-            };
-        });
+    const {selectedKey} = model,
+        defaultIntent = intent && intent !== 'none' ? intent : null;
 
-    return div({
+    const buttons = model.normalizedOptions.map(opt => {
+        const optIntent = opt.intent ?? defaultIntent,
+            selected = opt._key === selectedKey;
+        return button({
+            key: opt._key,
+            text: opt.label,
+            icon: opt.icon,
+            disabled: disabled || opt.disabled,
+            minimal: true,
+            className: classNames(
+                'xh-segmented-control-option',
+                selected && 'xh-segmented-control-option--selected',
+                optIntent && `xh-segmented-control-option--${optIntent}`
+            ),
+            onClick: () => model.onValueChange(opt._key)
+        });
+    });
+
+    return hbox({
         className: classNames(
             className,
-            compact && 'xh-segmented-control--compact',
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
-            outlined && 'xh-segmented-control--outlined'
+            outlined && 'xh-segmented-control--outlined',
+            fill && 'xh-segmented-control--fill'
         ),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         ...getLayoutProps(props),
-        [TEST_ID]: props.testId,
-        item: bpSegmentedControl({
-            ...bpProps,
-            fill: bpProps.fill ?? true,
-            size: compact ? 'small' : undefined,
-            options: bpOptions,
-            value: model.selectedKey,
-            onValueChange: model.onValueChange,
-            disabled
-        })
+        [TEST_ID]: testId,
+        items: buttons,
+        ...rest
     });
 });
