@@ -23,8 +23,6 @@ import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
-export type {OptionPrimitive, SegmentedControlOption, SegmentedControlNullOption};
-
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     /**
      * True (default) to stretch the control to fill available width,

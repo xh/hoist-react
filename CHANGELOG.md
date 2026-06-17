@@ -7,6 +7,8 @@
 * Added a mobile `SegmentedControl` input - the mobile counterpart to the desktop component, with a
   matching `options`-driven API for selecting a single value from a set of mutually exclusive
   choices. Built on Hoist's mobile `Button` (no Blueprint dependency).
+    * The shared `SegmentedControlOption` option types now export from `@xh/hoist/cmp/input` rather
+      than the desktop `SegmentedControl` module; update any direct type imports.
 
 ### 🐞 Bug Fixes
 
