@@ -12,7 +12,7 @@ import {
     SegmentedControlOption,
     useHoistInputModel
 } from '@xh/hoist/cmp/input';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {hbox, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
@@ -161,9 +161,16 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     const buttons = model.normalizedOptions.map(opt => {
         const optIntent = opt.intent ?? defaultIntent,
             selected = opt._key === selectedKey;
+        // Wrap the label so it can truncate with an ellipsis when the segment is too narrow,
+        // rather than hard-clipping mid-character. Pass null for icon-only options so the Button
+        // renders the icon alone (an empty span would suppress that).
+        const label = opt.label
+            ? span({className: 'xh-segmented-control-option__label', item: opt.label})
+            : null;
+
         return button({
             key: opt._key,
-            text: opt.label,
+            text: label,
             icon: opt.icon,
             disabled: disabled || opt.disabled,
             minimal: true,

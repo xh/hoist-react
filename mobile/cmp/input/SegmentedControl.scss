@@ -20,9 +20,25 @@
     // the tray background shows through and our segmented text color applies.
     .xh-button.xh-segmented-control-option {
       flex: 0 0 auto;
+      // Allow the button to shrink below its content width so the label can ellipsis-truncate
+      // (flex items default to min-width: auto, which forces overflow / hard clipping instead).
+      min-width: 0;
       border-radius: var(--xh-segmented-control-border-radius-px);
       background-color: transparent;
       color: var(--xh-segmented-control-text-color);
+
+      // Keep icons at full size - only the label gives way when space is tight.
+      > svg {
+        flex: 0 0 auto;
+      }
+    }
+
+    // Label - truncate with an ellipsis when its segment is too narrow to fit the full text.
+    .xh-segmented-control-option__label {
+      overflow: hidden;
+      min-width: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     // Selected option - a solid tile standing out from the tray.
