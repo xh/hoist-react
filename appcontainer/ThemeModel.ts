@@ -31,6 +31,12 @@ export class ThemeModel extends HoistModel {
         const classList = document.body.classList;
         classList.toggle('xh-dark', value);
         classList.toggle('bp6-dark', value);
+
+        // Set color-scheme on the document root (<html>) so browser chrome and overscroll / safe-area
+        // regions match the theme - the theme class only reaches <body>, leaving the root light.
+        // See https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme
+        document.documentElement.style.colorScheme = value ? 'dark' : 'light';
+
         this.darkTheme = value;
     }
 

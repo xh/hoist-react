@@ -11,9 +11,16 @@
       than the desktop `SegmentedControl` module; update any direct type imports.
 
 ### 🐞 Bug Fixes
+
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
+
+### ✨ Styles
+
+* Applied the active theme's `color-scheme` onto the document root (`<html>`), so browser chrome and
+  overscroll / safe-area regions match a dark app instead of rendering a light band (most visible in
+  mobile Safari).
 
 ## 86.0.1 - 2026-06-16
 
