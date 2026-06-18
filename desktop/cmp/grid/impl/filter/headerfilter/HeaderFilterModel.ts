@@ -175,8 +175,8 @@ export class HeaderFilterModel extends HoistModel {
         if (close) {
             this.parent.close();
         } else {
-            // We must wait before resetting as GridFilterModel.setFilter() is async
-            wait().then(() => this.resetTabModels());
+            // Wait as setFilter is async.
+            wait().then(() => this.syncWithFilter());
         }
     }
 
