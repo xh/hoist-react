@@ -27,6 +27,8 @@
 * Applied the active theme's `color-scheme` onto the document root (`<html>`), so browser chrome and
   overscroll / safe-area regions match a dark app instead of rendering a light band (most visible in
   mobile Safari).
+* Added a `theme-color` meta tag matching the active theme's app-bar color. This tints browser
+  chrome to match the app - e.g. Android Chrome's status bar and desktop installed PWAs.
 
 ## 86.0.1 - 2026-06-16
 

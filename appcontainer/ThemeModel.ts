@@ -38,6 +38,7 @@ export class ThemeModel extends HoistModel {
         document.documentElement.style.colorScheme = value ? 'dark' : 'light';
 
         this.darkTheme = value;
+        this.syncThemeColorMeta();
     }
 
     @action
@@ -69,5 +70,39 @@ export class ThemeModel extends HoistModel {
                 this.setDarkTheme(event.matches);
             }
         });
+    }
+
+    /**
+     * Sync the `<meta name="theme-color">` tag to the active theme's app-bar color, creating it if
+     * needed. This tints browser chrome to match the app - e.g. Android Chrome's status bar and task
+     * switcher, and desktop installed PWAs. Hoist's theme is independent of the OS color scheme, so
+     * the tag's content must be updated on each theme change rather than relying on the static
+     * `media="(prefers-color-scheme)"` form. Note Safari 26+ ignores `theme-color`, instead deriving
+     * its chrome color from the page background (see the companion `color-scheme` handling above).
+     */
+    private syncThemeColorMeta() {
+        // Resolve --xh-appbar-bg (a chain of var() fallbacks) to a concrete color via a throwaway
+        // probe - reading computed `color` fully substitutes the var chain.
+        const probe = document.createElement('div');
+        probe.style.cssText = 'display: none; color: var(--xh-appbar-bg)';
+        document.body.appendChild(probe);
+        const color = window.getComputedStyle(probe).color;
+        probe.remove();
+
+        // Bail if the color failed to resolve (e.g. styles not yet applied) rather than write a
+        // bad value - the next theme change will sync it.
+        if (!color) return;
+
+        // Maintain our own tag, marked so we can find it again on subsequent theme changes. If an
+        // app has hand-authored any theme-color tag, defer to it entirely.
+        let meta = document.querySelector('meta[name=theme-color][data-xh-managed]');
+        if (!meta) {
+            if (document.querySelector('meta[name=theme-color]')) return;
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'theme-color');
+            meta.setAttribute('data-xh-managed', '');
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', color);
     }
 }
