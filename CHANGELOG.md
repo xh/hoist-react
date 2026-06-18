@@ -24,8 +24,7 @@
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
-* Applied an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure,
-  now that `postcss-flexbugs-fixes`has been removed from `hoist-dev-utils v13.x` webpack configuration,
+* Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure
   that the `0` is not interpreted as a `0px` basis, which can prevent the tab container from expanding.
   * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
     verify that their flex layouts continue to work as expected and add an explicit unit if
