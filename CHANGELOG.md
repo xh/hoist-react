@@ -11,8 +11,6 @@
       than the desktop `SegmentedControl` module; update any direct type imports.
 
 ### 🐞 Bug Fixes
-* Chart right-to-left "zoom out" gesture now activates for charts configured with the modern
-  `chart.zooming.type = 'x'` Highcharts option, in addition to the legacy `chart.zoomType = 'x'`.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
