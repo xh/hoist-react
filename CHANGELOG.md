@@ -17,8 +17,7 @@
   comparing against midnight only. Filter field specs now default a `date` source field to
   `fieldType: 'localDate'`; set `fieldType: 'date'` explicitly to filter by exact timestamp. Applies
   to in-browser `FieldFilter` evaluation; server-side filtering is unaffected.
-* `parseFieldValue` now coerces `Date`/number inputs to `localDate` (via `LocalDate.from`) instead
-  of throwing, so enumerated timestamp values render correctly for `localDate`-typed filter specs.
+* `parseFieldValue` coerces `Date`/number to `localDate` via `LocalDate.from` instead of throwing.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
