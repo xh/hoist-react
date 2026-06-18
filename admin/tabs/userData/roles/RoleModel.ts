@@ -12,12 +12,10 @@ import {fragment, p} from '@xh/hoist/cmp/layout';
 import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, mapValues} from 'lodash';
-import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
 
@@ -397,23 +395,7 @@ export class RoleModel extends HoistModel {
                 config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
-                {
-                    field: 'lastUpdated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
-                }
+                'lastUpdated'
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });
