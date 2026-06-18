@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
 import {isOpen} from '@xh/hoist/admin/columns';
 import {activityDetailView} from '@xh/hoist/admin/tabs/activity/tracking/detail/ActivityDetailView';
 import {ClientDetailModel} from './ClientDetailModel';
@@ -54,7 +60,7 @@ const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
             panel({
                 item: activityDetailView(),
                 mask: mask({
-                    bind: model.loadModel,
+                    bind: model.loadObserver,
                     spinner: true,
                     message: 'Loading activity...'
                 })

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject, Some} from '@xh/hoist/core';
@@ -152,11 +152,13 @@ export abstract class BaseRow {
                 if (appliedDimensions.hasOwnProperty(name)) {
                     ret[name] = false;
                 } else {
-                    const {aggregator, canAggregateFn} = field;
+                    const {aggregator, canAggregateFn} = field,
+                        ctx = view._aggContext;
+
                     ret[name] =
                         aggregator &&
                         (!canAggregateFn ||
-                            canAggregateFn(dimOrBucketName, val, appliedDimensions));
+                            canAggregateFn(dimOrBucketName, val, appliedDimensions, ctx));
                 }
                 return ret;
             },

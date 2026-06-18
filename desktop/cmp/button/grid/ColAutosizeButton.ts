@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -58,8 +58,8 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
 
         return button({
             ref,
-            icon: withDefault(icon, Icon.arrowsLeftRight()),
-            title: withDefault(title, 'Autosize Columns'),
+            icon: withDefault(icon, Icon.magic()),
+            title: withDefault(title, 'Autosize columns'),
             disabled: withDefault(disabled, gridModel?.empty),
             className,
             onClick,

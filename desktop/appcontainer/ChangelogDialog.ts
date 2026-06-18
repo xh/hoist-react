@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ChangelogDialogModel} from '@xh/hoist/appcontainer/ChangelogDialogModel';
 import {div, filler, h2, h3, li, ul} from '@xh/hoist/cmp/layout';
@@ -44,6 +44,7 @@ const changelogContents = hoistCmp.factory<ChangelogDialogModel>(({model}) => {
             button({
                 text: 'Close',
                 intent: 'primary',
+                testId: 'xh-changelog-close-btn',
                 onClick: () => model.hide()
             })
         ]

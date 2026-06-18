@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {badge} from '@xh/hoist/cmp/badge';
 import {ColumnSpec, dateTimeSec} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import copy from 'clipboard-copy';
+import {copyToClipboard} from '@xh/hoist/utils/js';
 
 export const badgeCol: ColumnSpec = {
     autosizable: false,
@@ -25,7 +25,7 @@ export function badgeRenderer(v) {
               style: {cursor: 'copy'},
               title: 'Double-click to copy',
               onDoubleClick: () => {
-                  copy(v);
+                  copyToClipboard(v);
                   XH.toast({
                       icon: Icon.copy(),
                       message: `Copied ${v}`

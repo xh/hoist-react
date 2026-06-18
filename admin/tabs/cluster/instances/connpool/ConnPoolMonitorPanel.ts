@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {ConnPoolMonitorModel} from '@xh/hoist/admin/tabs/cluster/instances/connpool/ConnPoolMonitorModel';
@@ -90,7 +90,7 @@ const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
                 width: '100%',
                 enableSearch: true,
                 showFullscreenButton: false,
-                editorProps: {lineNumbers: false},
+                lineNumbers: false,
                 value: JSON.stringify(model.poolConfiguration, null, 2)
             })
         });

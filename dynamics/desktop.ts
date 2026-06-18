@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -18,6 +18,7 @@
 export let ColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
+export let DashContainerViewModel = null;
 export let colChooser = null;
 export let zoneMapper = null;
 export let columnHeaderFilter = null;
@@ -29,7 +30,8 @@ export let tabContainerImpl = null;
 export let useContextMenu = null;
 export let errorMessageImpl = null;
 export let maskImpl = null;
-
+export let DynamicTabSwitcherModel = null;
+export let cardHeaderImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -39,6 +41,7 @@ export function installDesktopImpls(impls) {
     ColChooserModel = impls.ColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;
+    DashContainerViewModel = impls.DashContainerViewModel;
     colChooser = impls.colChooser;
     zoneMapper = impls.zoneMapper;
     columnHeaderFilter = impls.columnHeaderFilter;
@@ -50,4 +53,6 @@ export function installDesktopImpls(impls) {
     useContextMenu = impls.useContextMenu;
     errorMessageImpl = impls.errorMessageImpl;
     maskImpl = impls.maskImpl;
+    DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
+    cardHeaderImpl = impls.cardHeaderImpl;
 }

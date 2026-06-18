@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Exception, HoistException} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
 import {forOwn, has, isArray, isNil, isObject, omitBy, pick, set} from 'lodash';
-import {PlainObject, XH} from './';
+import {LoadSpec, PlainObject, XH} from './';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
@@ -37,7 +37,8 @@ export interface ExceptionHandlerOptions {
     showAlert?: boolean;
 
     /**
-     * If `showAlert`, which type of alert to display. Defaults to ExceptionHandler.ALERT_TYPE.
+     * If `showAlert`, which type of alert to display.
+     * Defaults to ExceptionHandler.defaults.alertType.
      */
     alertType?: 'dialog' | 'toast';
 
@@ -67,26 +68,22 @@ export interface ExceptionHandlerLoggingOptions {
     userMessage?: string;
 }
 
+export interface ExceptionHandlerDefaults {
+    alertType?: 'dialog' | 'toast';
+    redactPaths?: string[];
+    toastProps?: object;
+}
+
 /**
  * Provides Centralized Exception Handling for Hoist Application.
  * Manages the logging and display of exceptions.
  */
 export class ExceptionHandler {
-    /**
-     * Property paths within error details JSON to replace with '******'
-     */
-    static REDACT_PATHS: string[] = ['fetchOptions.headers.Authorization'];
-
-    /**
-     * Default type of alert to use to display exceptions with `showAlert`.
-     */
-    static ALERT_TYPE: 'dialog' | 'toast' = 'dialog';
-
-    /**
-     * Default props provided to toast, when alert type is 'toast'
-     */
-    static TOAST_PROPS: object = {
-        timeout: 10000
+    /** App-level defaults for ExceptionHandler. Instance options take precedence. */
+    static defaults: ExceptionHandlerDefaults = {
+        alertType: 'dialog',
+        redactPaths: ['fetchOptions.headers.Authorization'],
+        toastProps: {timeout: 10000}
     };
 
     /**
@@ -123,14 +120,19 @@ export class ExceptionHandler {
                 XH.toast({
                     message: fragment(
                         span({className: 'xh-toast__title', item: title, omit: !title}),
-                        span({className: 'xh-toast__body', item: message})
+                        span({className: 'xh-toast__body', item: message}),
+                        span({
+                            className: 'xh-toast__trace-id',
+                            item: `Trace ID: ${e.traceId}`,
+                            omit: !e.traceId || e.isRoutine
+                        })
                     ),
                     actionButtonProps: {
                         icon: Icon.search(),
                         onClick: () => exceptionDialogModel.showDetails(e, opts)
                     },
                     intent: showAsError ? 'danger' : 'primary',
-                    ...ExceptionHandler.TOAST_PROPS
+                    ...ExceptionHandler.defaults.toastProps
                 });
             } else {
                 exceptionDialogModel.show(e, opts);
@@ -183,6 +185,9 @@ export class ExceptionHandler {
      * @returns true if message was successfully sent to server.
      */
     async logOnServerAsync(options: ExceptionHandlerLoggingOptions): Promise<boolean> {
+        // Simply can't log on server if this happened too early in life cycle.
+        if (!XH.trackService) return false;
+
         const {exception, userAlerted, userMessage} = options;
         try {
             const username = XH.getUsername();
@@ -258,16 +263,22 @@ export class ExceptionHandler {
                 delete serverDetails.lineNumber;
             }
 
-            // Remove verbose loadSpec from fetchOptions
+            // Clean up fetchOptions for serialization.
             const {fetchOptions} = ret;
-            if (fetchOptions?.loadSpec) {
-                fetchOptions.loadType = fetchOptions.loadSpec.typeDisplay;
-                fetchOptions.loadNumber = fetchOptions.loadSpec.loadNumber;
+            if (fetchOptions) {
                 delete fetchOptions.loadSpec;
+                delete fetchOptions.span;
             }
+            // Extract summary fields from verbose callContext into fetchOptions.
+            const loadSpec = ret.callContext?.loadSpec;
+            if (loadSpec instanceof LoadSpec) {
+                ret.loadType = loadSpec.typeDisplay;
+                ret.loadNumber = loadSpec.loadNumber;
+            }
+            delete ret.callContext;
 
             // 4) Redact specified values
-            ExceptionHandler.REDACT_PATHS.forEach(path => {
+            ExceptionHandler.defaults.redactPaths.forEach(path => {
                 if (has(ret, path)) set(ret, path, '******');
             });
 
@@ -320,7 +331,7 @@ export class ExceptionHandler {
         opts: ExceptionHandlerOptions
     ): ExceptionHandlerOptions {
         const ret = {...opts},
-            isAutoRefresh = e.fetchOptions?.loadSpec?.isAutoRefresh ?? false,
+            isAutoRefresh = e.callContext?.loadSpec?.isAutoRefresh ?? false,
             isRoutine = e.isRoutine ?? false,
             isFetchAborted = e.isFetchAborted ?? false;
 
@@ -328,7 +339,7 @@ export class ExceptionHandler {
         ret.logOnServer = ret.logOnServer ?? (ret.showAsError && !isAutoRefresh);
         ret.showAlert = ret.showAlert ?? (!isAutoRefresh && !isFetchAborted);
         ret.requireReload = ret.requireReload ?? !!e.requireReload;
-        ret.alertType = ret.alertType ?? ExceptionHandler.ALERT_TYPE;
+        ret.alertType = ret.alertType ?? ExceptionHandler.defaults.alertType;
 
         ret.title = ret.title || (ret.showAsError ? 'Error' : 'Alert');
         ret.message = ret.message || e.message || e.name || 'An unknown error occurred.';

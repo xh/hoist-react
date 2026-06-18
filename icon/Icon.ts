@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {FontAwesomeIconProps} from '@fortawesome/react-fontawesome';
@@ -10,7 +10,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {HoistProps, Intent, Thunkable} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {last, pickBy, split, toLower} from 'lodash';
+import {last, split, toLower} from 'lodash';
 import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
@@ -277,6 +277,9 @@ export const Icon = {
     },
     circle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'circle'});
+    },
+    circleNotch(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'circle-notch'});
     },
     clipboard(p?: IconProps) {
         return Icon.icon({...p, iconName: 'clipboard'});
@@ -657,8 +660,17 @@ export const Icon = {
     slashedCircle(p?: IconProps) {
         return Icon.icon({...p, iconName: 'ban'});
     },
+    sparkles(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'sparkles'});
+    },
     spinner(p?: IconProps) {
         return Icon.icon({...p, iconName: 'spinner'});
+    },
+    spinnerScale(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-scale'});
+    },
+    spinnerThird(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'spinner-third'});
     },
     square(p?: IconProps) {
         return Icon.icon({...p, iconName: 'square'});
@@ -783,6 +795,9 @@ export const Icon = {
     },
     add(p?: IconProps) {
         return Icon.plus(p);
+    },
+    ai(p?: IconProps) {
+        return Icon.sparkles(p);
     },
     analytics(p?: IconProps) {
         return Icon.mixedChart(p);
@@ -942,33 +957,6 @@ export function convertIconToHtml(iconElem: ReactElement): string {
         'Icon not provided, or not created by a Hoist Icon factory - cannot convert to HTML/SVG.'
     );
     return iconHtml(iconElem.props as ResolvedIconProps);
-}
-
-/**
- * Serialize an icon into a JSON format with relevant props for persistence.
- *
- * @param iconElem - React element representing a Hoist Icon component.
- *      Must be created by Hoist's built-in Icon factories.
- * @returns JSON representation of icon.
- */
-export function serializeIcon(iconElem: ReactElement): any {
-    throwIf(
-        !(iconElem?.type as any)?.isHoistComponent,
-        'Icon not provided, or not created by a Hoist Icon factory - cannot serialize.'
-    );
-
-    return pickBy(iconElem.props as ResolvedIconProps);
-}
-
-/**
- * Deserialize an icon - the inverse operation of {@link serializeIcon}.
- *
- * @param iconDef - JSON  representation of icon, produced by serializeIcon.
- * @returns React element representing a Hoist Icon component.
- *      This is the form of element created by Hoist's built-in Icon class factories.
- */
-export function deserializeIcon(iconDef: any): ReactElement | string {
-    return Icon.icon(iconDef);
 }
 
 //-----------------------------

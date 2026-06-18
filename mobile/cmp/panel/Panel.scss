@@ -1,16 +1,6 @@
 .xh-panel {
   background-color: var(--xh-panel-bg);
 
-  &__content {
-    flex: 1;
-  }
-
-  &--scrollable {
-    .xh-panel__content {
-      overflow-y: auto;
-    }
-  }
-
   .xh-panel-header {
     align-items: center;
     color: var(--xh-panel-title-text-color);

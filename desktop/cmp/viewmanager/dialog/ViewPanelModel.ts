@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
@@ -27,7 +27,7 @@ export class ViewPanelModel extends HoistModel {
     }
 
     get loadTask(): TaskObserver {
-        return this.parent.loadModel;
+        return this.parent.loadObserver;
     }
 
     constructor(parent: ManageDialogModel) {

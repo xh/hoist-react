@@ -2,18 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {throwIf} from '@xh/hoist/utils/js';
+import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
     difference,
     escapeRegExp,
     first,
     isArray,
+    isEmpty,
     isEqual,
     isNil,
     isString,
@@ -26,6 +27,8 @@ import {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
 import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
 
+const _warnedFields = new Set<string>();
+
 /**
  * Filters by comparing the value of a given field to one or more given candidate values using one
  * of several supported operators.
@@ -36,8 +39,8 @@ import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FieldFilter extends Filter {
-    get isFieldFilter() {
-        return true;
+    static isFieldFilter(obj: unknown): obj is FieldFilter {
+        return obj instanceof FieldFilter;
     }
 
     readonly field: string;
@@ -54,7 +57,9 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
@@ -64,7 +69,9 @@ export class FieldFilter extends Filter {
         'like',
         'not like',
         'begins',
+        'not begins',
         'ends',
+        'not ends',
         'includes',
         'excludes'
     ];
@@ -106,35 +113,87 @@ export class FieldFilter extends Filter {
     // Overrides
     //-----------------
     override getTestFn(store?: Store): FilterTestFn {
-        let {field, op, value} = this,
-            regExps;
+        const {field, op, value} = this;
 
+        let storeFieldType: FieldType;
         if (store) {
             const storeField = store.getField(field);
-            if (!storeField) return () => true; // Ignore (do not filter out) if field not in store
+            if (!storeField) {
+                if (!_warnedFields.has(field)) {
+                    _warnedFields.add(field);
+                    logWarn(
+                        `Unknown field '${field}' - not found in the target store. This filter will be ignored.`,
+                        this
+                    );
+                }
+                return () => true;
+            }
+            storeFieldType = storeField.type;
+        }
 
-            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
+        const opFn = this.getOpFn(op, value, storeFieldType);
+
+        if (!store) return r => opFn(r[field]);
+
+        return (r: StoreRecord) => {
+            const val = r.get(field);
+            if (opFn(val)) return true;
+
+            // Maximize chances of matching. Always pass adds ...
+            if (r.isAdd) return true;
+
+            // ... and check any differing original value as well
+            const committedVal = r.committedData[field];
+            return committedVal !== val && opFn(committedVal);
+        };
+    }
+
+    private getOpFn(
+        op: FieldFilterOperator,
+        value: any,
+        storeFieldType?: FieldType
+    ): (v: any) => boolean {
+        const RANGE_OPS = FieldFilter.RANGE_LIKE_OPERATORS,
+            ARR_OPS = FieldFilter.ARRAY_OPERATORS;
+
+        // Day-aware filtering for LocalDate value(s) over a timestamp field - compares against
+        // full calendar-day bounds for range and equality operators (#3338).
+        const firstVal = isArray(value) ? value[0] : value;
+        if (
+            storeFieldType === 'date' &&
+            LocalDate.isLocalDate(firstVal) &&
+            (RANGE_OPS.includes(op) || op === '=' || op === '!=')
+        ) {
+            return this.getDayBoundedOpFn(op, value);
+        }
+
+        // Coerce candidate value(s) to the store field's type when filtering against a store.
+        if (storeFieldType) {
+            const fieldType = storeFieldType === 'tags' ? 'string' : storeFieldType;
             value = isArray(value)
                 ? value.map(v => parseFieldValue(v, fieldType))
                 : parseFieldValue(value, fieldType);
         }
-
-        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
+        if (ARR_OPS.includes(op)) {
             value = castArray(value);
         }
 
-        let opFn: (v: any) => boolean;
+        // Treat null, empty string, and empty array (blank `tags`) alike as "blank".
+        const isBlank = (v: any) => isNil(v) || v === '' || (isArray(v) && isEmpty(v));
+
+        let regExps, opFn: (v: any) => boolean;
         switch (op) {
             case '=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return value.some(it => isEqual(v, it));
+                    if (isBlank(v)) v = null;
+                    // A blank filter (empty `value`) matches only blank record values.
+                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return !value.some(it => isEqual(v, it));
+                    if (isBlank(v)) v = null;
+                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':
@@ -161,9 +220,17 @@ export class FieldFilter extends Filter {
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
                 opFn = v => regExps.some(re => re.test(v));
                 break;
+            case 'not begins':
+                regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
+                break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
                 opFn = v => regExps.some(re => re.test(v));
+                break;
+            case 'not ends':
+                regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
+                opFn = v => regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 opFn = v => !isNil(v) && v.some(it => value.includes(it));
@@ -174,20 +241,45 @@ export class FieldFilter extends Filter {
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }
+        return opFn;
+    }
 
-        if (!store) return r => opFn(r[field]);
+    // Compare a timestamp against full calendar-day bounds `[dayStart, nextDayStart)` so a
+    // LocalDate value filters by date part. Supports range and equality operators (#3338).
+    private getDayBoundedOpFn(
+        op: FieldFilterOperator,
+        value: LocalDate | LocalDate[]
+    ): (v: any) => boolean {
+        const toMillis = (v: any) => (v instanceof Date ? v.getTime() : v);
 
-        return (r: StoreRecord) => {
-            const val = r.get(field);
-            if (opFn(val)) return true;
+        // Equality ops test the date part against any of the candidate day(s).
+        if (op === '=' || op === '!=') {
+            const ranges = castArray(value).map(d => [
+                    d.date.getTime(),
+                    d.nextDay().date.getTime()
+                ]),
+                inAnyDay = (t: number) => ranges.some(([start, next]) => t >= start && t < next);
+            return op === '='
+                ? v => !isNil(v) && inAnyDay(toMillis(v))
+                : v => isNil(v) || !inAnyDay(toMillis(v));
+        }
 
-            // Maximize chances of matching. Always pass adds ...
-            if (r.isAdd) return true;
-
-            // ... and check any differing original value as well
-            const committedVal = r.committedData[field];
-            return committedVal !== val && opFn(committedVal);
-        };
+        // Range ops compare against the bounds of a single day.
+        const day = value as LocalDate,
+            dayStart = day.date.getTime(),
+            nextDayStart = day.nextDay().date.getTime();
+        switch (op) {
+            case '>':
+                return v => !isNil(v) && toMillis(v) >= nextDayStart;
+            case '>=':
+                return v => !isNil(v) && toMillis(v) >= dayStart;
+            case '<':
+                return v => !isNil(v) && toMillis(v) < dayStart;
+            case '<=':
+                return v => !isNil(v) && toMillis(v) < nextDayStart;
+            default:
+                throw XH.exception(`Unsupported calendar-day operator: ${op}`);
+        }
     }
 
     override equals(other: Filter): boolean {
@@ -206,6 +298,14 @@ export class FieldFilter extends Filter {
     override toJSON(): FieldFilterSpec {
         const {field, op, value, serializedValueType} = this;
         return {field, op, value, ...(serializedValueType ? {valueType: serializedValueType} : {})};
+    }
+
+    override removeFieldFilters(field: string = null): Filter {
+        return !field || this.field === field ? null : this;
+    }
+
+    override removeFunctionFilters(key: string = null): Filter {
+        return this;
     }
 
     //-----------------

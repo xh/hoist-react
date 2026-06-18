@@ -9,7 +9,7 @@
     "lib": ["dom", "es2022"],
 
     "jsx": "react",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
 
     "allowSyntheticDefaultImports": true,
@@ -23,5 +23,5 @@
     }
   },
   "include": ["./**/*", "package.json"],
-  "exclude": ["node_modules", "build"]
+  "exclude": ["node_modules", "build", "mcp"]
 }

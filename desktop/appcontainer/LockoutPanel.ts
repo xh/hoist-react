@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {box, div, filler, hbox, hspacer, p, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -27,6 +27,7 @@ export const lockoutPanel = hoistCmp.factory({
                 filler(),
                 box({
                     className: 'xh-lockout-panel',
+                    testId: 'xh-lockout-panel',
                     item: unauthorizedMessage()
                 }),
                 filler()
@@ -60,7 +61,8 @@ const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
                 logoutButton({
                     text: 'Logout',
                     intent: null,
-                    minimal: false
+                    minimal: false,
+                    testId: 'xh-lockout-logout-btn'
                 }),
                 hspacer(5),
                 button({
@@ -68,6 +70,7 @@ const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
                     icon: Icon.impersonate(),
                     text: 'End Impersonation',
                     minimal: false,
+                    testId: 'xh-lockout-end-impersonation-btn',
                     onClick: () => identityService.endImpersonateAsync()
                 }),
                 filler()

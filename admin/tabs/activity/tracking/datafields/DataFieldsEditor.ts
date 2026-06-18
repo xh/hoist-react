@@ -1,3 +1,9 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
 import {DataFieldsEditorModel} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {form, FormModel} from '@xh/hoist/cmp/form';
 import {br, filler, hbox, hspacer, placeholder, span, vspacer} from '@xh/hoist/cmp/layout';
@@ -28,7 +34,7 @@ export const dataFieldsEditor = hoistCmp.factory({
                 onClick: () => model.show()
             }),
             content: formPanel(),
-            popoverClassName: 'xh-popup xh-popup--framed',
+            popoverClassName: 'xh-popup',
             onClose: () => model.close()
         });
     }

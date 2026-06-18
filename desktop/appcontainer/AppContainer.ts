@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
@@ -11,6 +11,7 @@ import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
+import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -20,12 +21,13 @@ import {ColumnHeaderFilterModel} from '@xh/hoist/desktop/cmp/grid/impl/filter/Co
 import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilterDialog';
 import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
+import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
-import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
@@ -58,8 +60,11 @@ installDesktopImpls({
     ColumnHeaderFilterModel,
     useContextMenu,
     ModalSupportModel,
+    DashContainerViewModel,
     errorMessageImpl,
-    maskImpl
+    maskImpl,
+    DynamicTabSwitcherModel,
+    cardHeaderImpl
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -170,7 +175,7 @@ const appContainerView = hoistCmp.factory({
 });
 
 const appLoadMask = hoistCmp.factory<AppContainerModel>(({model}) =>
-    mask({bind: model.appLoadModel, spinner: true})
+    mask({bind: model.appLoadObserver, spinner: true})
 );
 
 const suspendedView = hoistCmp.factory(() => viewport(suspendPanel(), appLoadMask()));

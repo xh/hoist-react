@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
@@ -69,7 +69,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
             });
 
             return popover({
-                popoverClassName: 'xh-expand-to-level-button__popover xh-popup--framed',
+                popoverClassName: 'xh-expand-to-level-button__popover',
                 position: withDefault(popoverPosition, 'auto'),
                 item: button({
                     icon,

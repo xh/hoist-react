@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     DefaultHoistProps,
@@ -39,10 +39,12 @@ export interface FormContextType {
 export const FormContext = createContext<FormContextType>({});
 const formContextProvider = elementFactory(FormContext.Provider);
 
-export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
+export interface FormProps<M extends FormModel = FormModel>
+    extends HoistProps<M>, TestSupportProps {
     /**
      * Defaults for certain props on child/nested FormFields.
-     * @see FormField (note there are both desktop and mobile implementations).
+     * Note there are both desktop and mobile implementations of FormField.
+     * @see FormField
      */
     fieldDefaults?: Partial<BaseFormFieldProps> & DefaultHoistProps;
 }
@@ -56,10 +58,10 @@ export interface FormProps extends HoistProps<FormModel>, TestSupportProps {
  * primarily designed to apply defaults to and manage data binding for FormField components, which
  * can be nested at any level below this parent component.
  *
- * @see FormModel - top-level model for Hoist form support, which holds a collection of...
- * @see FieldModel - field-level model, which manages field-level specs/data to be rendered by a...
- * @see FormField - field-level wrapper component, which labels and displays info for a...
- * @see HoistInput - superclass for the data entry components themselves.
+ * @see FormModel
+ * @see FieldModel
+ * @see FormField
+ * @see HoistInput
  */
 export const [Form, form] = hoistCmp.withFactory<FormProps>({
     displayName: 'Form',

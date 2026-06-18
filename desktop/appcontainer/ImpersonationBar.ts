@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {a, filler, fragment, h3, hspacer, li, p, span, ul} from '@xh/hoist/cmp/layout';
@@ -41,6 +41,7 @@ export const impersonationBar = hoistCmp.factory({
 
         return toolbar({
             className: 'xh-impersonation-bar',
+            testId: 'xh-impersonation-bar',
             items: [
                 Icon.impersonate(),
                 span(msg),
@@ -49,6 +50,7 @@ export const impersonationBar = hoistCmp.factory({
                     text: 'Important Reminders',
                     icon: Icon.warning(),
                     outlined: true,
+                    testId: 'xh-impersonation-reminders-btn',
                     onClick: showUseResponsiblyAlert
                 }),
                 hspacer(),
@@ -64,12 +66,14 @@ export const impersonationBar = hoistCmp.factory({
                     maxWidth: 350,
                     menuWidth: 350,
                     flex: 1,
+                    testId: 'xh-impersonation-target',
                     onCommit: model.onCommit,
                     ref: model.inputRef
                 }),
                 button({
                     text: isImpersonating ? 'Exit Impersonation' : 'Cancel',
                     outlined: true,
+                    testId: 'xh-impersonation-exit-btn',
                     onClick: model.onClose
                 })
             ]

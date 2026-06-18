@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
@@ -25,6 +25,8 @@ import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
+    override telemetryPrefix = 'xh.client.admin.tracking';
+
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -146,22 +148,27 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         const {enabled, cube, query} = this;
         if (!enabled) return;
 
-        try {
-            const data: PlainObject[] = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: query,
-                loadSpec
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const data: PlainObject[] = await XH.postJson(
+                    {
+                        url: 'trackLogAdmin',
+                        body: query
+                    },
+                    ctx
+                );
+
+                if (loadSpec.isStale) return;
+
+                data.forEach(it => this.processRawTrackLog(it));
+                await cube.loadDataAsync(data);
+            })
+            .catch(async e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                await cube.clearAsync();
+                XH.handleException(e);
             });
-
-            if (loadSpec.isStale) return;
-
-            data.forEach(it => this.processRawTrackLog(it));
-            await cube.loadDataAsync(data);
-        } catch (e) {
-            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-            await cube.clearAsync();
-            XH.handleException(e);
-        }
     }
 
     @action
@@ -293,6 +300,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.appVersion.field,
             Col.browser.field,
             Col.category.field,
+            Col.clientAppCode.field,
             Col.correlationId.field,
             {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
             Col.data.field,
@@ -344,6 +352,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'msg', displayName: 'Message'},
                 {field: 'severity', values: ['DEBUG', 'INFO', 'WARN', 'ERROR']},
                 {field: 'tabId'},
+                {field: 'clientAppCode'},
                 {field: 'userAgent'},
                 {field: 'username', displayName: 'User'},
                 {field: 'url', displayName: 'URL'}
@@ -351,8 +360,10 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        try {
-            XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
+        this.runner()
+            .span('lookups')
+            .run(async ctx => {
+                const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'}, ctx);
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
                     const {field} = spec,
@@ -364,10 +375,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                         spec.hasExplicitValues = true;
                     }
                 });
-            });
-        } catch (e) {
-            XH.handleException(e, {title: 'Error loading lookups for filtering'});
-        }
+            })
+            .catchDefault({title: 'Error loading lookups for filtering'});
 
         return ret;
     }
@@ -424,6 +433,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'count', chooserGroup: 'Core Data', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.clientAppCode, hidden},
                 {...Col.loadId, hidden},
                 {...Col.tabId, hidden},
                 {...Col.url, hidden},

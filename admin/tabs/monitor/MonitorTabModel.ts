@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
 import {LoadSpec, managed, persist, XH} from '@xh/hoist/core';
@@ -15,6 +15,8 @@ import {filter, isEqual, minBy, sortBy} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class MonitorTabModel extends BaseAdminTabModel {
+    override telemetryPrefix = 'xh.client.admin.monitor';
+
     override persistWith = {localStorageKey: 'xhAdminClientMonitorState'};
 
     @observable.ref results: MonitorResults[] = [];
@@ -76,22 +78,26 @@ export class MonitorTabModel extends BaseAdminTabModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         if (!this.isVisible) return;
 
-        try {
-            const results = await XH.fetchJson({url: 'monitorResultsAdmin/results', loadSpec});
-            this.installResults(results);
-        } catch (e) {
-            this.installResults([]);
-            throw e;
-        }
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const results = await XH.fetchJson({url: 'monitorResultsAdmin/results'}, ctx);
+                this.installResults(results);
+            })
+            .catch(e => {
+                this.installResults([]);
+                throw e;
+            });
     }
 
     async forceRunAllMonitorsAsync() {
-        try {
-            await XH.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'});
-            XH.toast('Request received - results will be generated shortly.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+        return this.runner()
+            .span('forceRunAll')
+            .run(async ctx => {
+                await XH.fetchJson({url: 'monitorResultsAdmin/forceRunAllMonitors'}, ctx);
+                XH.toast('Request received - results will be generated shortly.');
+            })
+            .catchDefault();
     }
 
     //-------------------

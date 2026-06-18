@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
@@ -13,6 +13,7 @@ import {useInlineEditorModel} from './impl/InlineEditorModel';
 
 export type TextEditorProps = EditorProps<TextInputProps>;
 
+/** Text input inline cell editor for string values in a Grid. */
 export const [TextEditor, textEditor] = hoistCmp.withFactory<TextEditorProps>({
     displayName: 'TextEditor',
     className: 'xh-text-editor',

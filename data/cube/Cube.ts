@@ -2,24 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField, CubeFieldSpec} from './CubeField';
-import {ViewRowData} from './ViewRowData';
-import {Query, QueryConfig} from './Query';
-import {View} from './View';
+import {defaultsDeep, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
-import {AggregateRow} from './row/AggregateRow';
-import {BucketRow} from './row/BucketRow';
-import {BaseRow} from './row/BaseRow';
 import {BucketSpec} from './BucketSpec';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {CubeField, CubeFieldSpec} from './CubeField';
+import {Query, QueryConfig} from './Query';
+import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
+import {BucketRow} from './row/BucketRow';
+import {View} from './View';
+import {ViewRowData} from './ViewRowData';
 
+/**
+ * Configuration for a {@link Cube}. Provide `fields` (including at least one dimension
+ * and one or more measures with aggregators) and load data via `data` or
+ * `Cube.loadDataAsync()`.
+ *
+ * See the Cube package README (`data/cube/README.md`) for aggregator options and usage patterns.
+ *
+ * @see Cube
+ * @see CubeFieldSpec
+ */
 export interface CubeConfig {
     fields: CubeField[] | CubeFieldSpec[];
 
@@ -82,18 +92,30 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * aggregations and create an unwanted "Open" grouping.
  *
  * @param rows - the rows being checked for bucketing
- * @returns BucketSpec for configuring dynamic sub-aggregations, or null to perform no bucketing.
+ * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
 export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
 
 /**
- * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
+ * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.
  *
- * This object is a wrapper around a "flat" Store containing leaf-level facts. It supports creating
- * Views on that data via structured Queries that can filter, group, and aggregate the flat source
- * data and produce a hierarchical result ready for use in (e.g.) tree grids and maps. Views can
- * be transiently created to run a Query once, on demand, or can be retained to provide efficient,
- * auto-updating results in response to updates to the underlying data.
+ * A Cube wraps a flat {@link Store} of leaf-level records and supports creating {@link View}s
+ * via structured {@link Query} objects. Each View filters, groups, and aggregates the source
+ * data into a hierarchical result for use in tree grids, treemaps, and other visualizations.
+ *
+ * Fields are defined as {@link CubeField}s - each marked as either a dimension (groupable)
+ * or a measure with an {@link Aggregator} (e.g. SUM, AVG, MIN, MAX). Views can be transient
+ * (run a query once) or connected for efficient, auto-updating results as source data changes.
+ *
+ * See the Cube package README (`data/cube/README.md`) for full documentation including
+ * aggregator options, querying patterns, and View integration with Store/GridModel.
+ *
+ * @see CubeConfig
+ * @see CubeField
+ * @see View
+ * @see Query
+ *
+ * @mcpHint multi-dimensional data store with aggregation and views
  */
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';
@@ -155,9 +177,18 @@ export class Cube extends HoistBase {
         return this.store.empty;
     }
 
+    /** Timestamp (ms) of when the Cube data was last updated */
+    get lastUpdated(): number {
+        return this.store.lastUpdated;
+    }
+
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;
+    }
+
+    getField(name: string): CubeField {
+        return this.store.getField(name) as CubeField;
     }
 
     //------------------
@@ -221,6 +252,18 @@ export class Cube extends HoistBase {
     /** Cease pushing further updates to this Cube's data into a previously connected View. */
     disconnectView(view: View) {
         this._connectedViews.delete(view);
+    }
+
+    /** Connect a View to this Cube for live updates. */
+    connectView(view: View) {
+        if (this.viewIsConnected(view)) return;
+
+        this._connectedViews.add(view);
+
+        // If the view is not up-to-date with the current cube data, then reload the view
+        if (view.cubeUpdated !== this.lastUpdated) {
+            view.noteCubeLoaded();
+        }
     }
 
     //-------------------

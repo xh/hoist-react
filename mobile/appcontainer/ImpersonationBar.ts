@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {div} from '@xh/hoist/cmp/layout';
@@ -37,11 +37,13 @@ export const impersonationBar = hoistCmp.factory({
                     enableFullscreen: true,
                     placeholder: 'Select a user to impersonate...',
                     createMessageFn: q => `Impersonate new user "${q}"`,
+                    testId: 'xh-impersonation-target',
                     onCommit: model.onCommit
                 }),
                 button({
                     icon: Icon.close(),
                     minimal: true,
+                    testId: 'xh-impersonation-exit-btn',
                     onClick: model.onClose
                 })
             ]

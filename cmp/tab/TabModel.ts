@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     XH,
@@ -21,6 +21,13 @@ import {isArray, isUndefined, startCase} from 'lodash';
 import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
 import {ReactElement, ReactNode} from 'react';
 
+/**
+ * Configuration for a {@link TabModel} - a single tab within a {@link TabContainerModel}.
+ * Passed as entries in the `tabs` array of a {@link TabContainerConfig}.
+ *
+ * @see TabModel
+ * @see TabContainerConfig
+ */
 export interface TabConfig {
     /** Unique ID, used by container for locating tabs and generating routes. */
     id: string;
@@ -141,7 +148,7 @@ export class TabModel extends HoistModel {
     }
 
     activate() {
-        this.containerModel.activateTab(this.id);
+        this.containerModel.setActiveTabId(this.id);
     }
 
     get renderMode(): RenderMode {
@@ -164,7 +171,7 @@ export class TabModel extends HoistModel {
                 tab = containerModel.tabs.find(tab => tab.id !== this.id && !tab.disabled);
 
             throwIf(!tab, 'Cannot disable last enabled tab.');
-            containerModel.activateTab(tab.id);
+            containerModel.setActiveTabId(tab.id);
         }
 
         this.disabled = disabled;
@@ -174,6 +181,8 @@ export class TabModel extends HoistModel {
     // Implementation
     //------------------
     private parseContent(content: Content | TabContainerConfig | TabConfig[]): Content {
+        if (!content) return null;
+
         // Recognize if content is a child container spec.
         let childConfig: TabContainerConfig = null;
         if (isArray(content)) {
@@ -194,7 +203,6 @@ export class TabModel extends HoistModel {
             renderMode: parent.renderMode,
             refreshMode: parent.refreshMode,
             emptyText: parent.emptyText,
-            switcher: parent.switcher,
             track: parent.track,
             ...childConfig
         };
@@ -209,7 +217,7 @@ export class TabModel extends HoistModel {
             };
         }
 
-        this.childContainerModel = new TabContainerModel(childConfig);
+        this.childContainerModel = new TabContainerModel(childConfig, parent.depth + 1);
         return tabContainer({model: this.childContainerModel});
     }
 }

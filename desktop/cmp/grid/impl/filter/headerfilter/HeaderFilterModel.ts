@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {Column, GridFilterFieldSpec, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
@@ -98,10 +98,15 @@ export class HeaderFilterModel extends HoistModel {
 
     @computed
     get isCustomFilter() {
-        const {columnCompoundFilter, columnFilters} = this;
+        const {columnCompoundFilter, columnFilters, fieldType} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(it => !['=', '!=', 'includes'].includes(it.op));
+        return columnFilters.some(it => {
+            const isValuesTabOp = ['=', '!=', 'includes'].includes(it.op),
+                isTagsBlank =
+                    fieldType === 'tags' && ['=', '!='].includes(it.op) && it.value == null;
+            return !isValuesTabOp || isTagsBlank;
+        });
     }
 
     get commitOnChange() {
@@ -116,7 +121,6 @@ export class HeaderFilterModel extends HoistModel {
         this.valuesTabModel = enableValues ? new ValuesTabModel(this) : null;
         this.customTabModel = new CustomTabModel(this);
         this.tabContainerModel = new TabContainerModel({
-            switcher: false,
             tabs: [
                 {
                     id: 'valuesFilter',
@@ -171,8 +175,8 @@ export class HeaderFilterModel extends HoistModel {
         if (close) {
             this.parent.close();
         } else {
-            // We must wait before resetting as GridFilterModel.setFilter() is async
-            wait().then(() => this.resetTabModels());
+            // Wait as setFilter is async.
+            wait().then(() => this.syncWithFilter());
         }
     }
 
@@ -189,7 +193,7 @@ export class HeaderFilterModel extends HoistModel {
         this.resetTabModels();
         toTab.syncWithFilter();
 
-        tabContainerModel.activateTab(toTabId);
+        tabContainerModel.setActiveTabId(toTabId);
     }
 
     private setColumnFilters(filters) {

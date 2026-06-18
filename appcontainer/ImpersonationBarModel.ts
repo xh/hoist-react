@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel} from '@xh/hoist/cmp/input';
 import {HoistModel, XH} from '@xh/hoist/core';
@@ -14,6 +14,8 @@ import {createRef} from 'react';
  *  @internal
  */
 export class ImpersonationBarModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.identity';
+
     override xhImpl = true;
 
     @observable showRequested: boolean = false;
@@ -93,10 +95,10 @@ export class ImpersonationBarModel extends HoistModel {
     private ensureTargetsLoaded() {
         if (this.targets.length) return;
 
-        XH.fetchJson({
-            url: 'xh/impersonationTargets'
-        })
-            .then(targets => {
+        this.runner()
+            .span('impersonationTargets')
+            .run(async ctx => {
+                const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
                 this.setTargets(targets);
             })
             .catchDefault();

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
 import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
@@ -13,9 +13,19 @@ import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
 import {ReactNode} from 'react';
 import {GridModel} from '../GridModel';
-import {ColumnHeaderClassFn, ColumnHeaderNameFn} from '../Types';
+import {ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
+/**
+ * Configuration for a {@link ColumnGroup} - a hierarchical grouping of columns that renders
+ * as a multi-level header in the grid. Nest {@link ColumnSpec} and/or additional
+ * ColumnGroupSpec objects within `children`.
+ *
+ * The `groupId` must be unique across the grid, defaulting to `headerName` when not set.
+ *
+ * @see ColumnGroup
+ * @see ColumnSpec
+ */
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
     children: Array<ColumnGroupSpec | ColumnSpec>;
@@ -51,7 +61,7 @@ export interface ColumnGroupSpec {
  * Provided to GridModels as plain configuration objects.
  */
 export class ColumnGroup {
-    readonly children: Array<ColumnGroup | Column>;
+    readonly children: ColumnOrGroup[];
     readonly gridModel: GridModel;
     readonly groupId: string;
     readonly headerName: ReactNode | ColumnHeaderNameFn;
@@ -79,11 +89,7 @@ export class ColumnGroup {
      *
      * @internal
      */
-    constructor(
-        config: ColumnGroupSpec,
-        gridModel: GridModel,
-        children: Array<Column | ColumnGroup>
-    ) {
+    constructor(config: ColumnGroupSpec, gridModel: GridModel, children: ColumnOrGroup[]) {
         const {
             children: childrenSpecs,
             groupId,

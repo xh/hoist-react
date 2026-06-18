@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import copy from 'clipboard-copy';
+import {copyToClipboard} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
@@ -102,7 +102,7 @@ function buildMenuItems(
     return ret.filter(filterConsecutiveMenuSeparators());
 }
 
-/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. **/
+/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
 function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
     switch (token) {
         case '-':
@@ -110,7 +110,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
         case 'autosizeColumns':
             return new RecordAction({
                 text: 'Autosize Columns',
-                icon: Icon.arrowsLeftRight(),
+                icon: Icon.magic(),
                 hidden: !gridModel?.autosizeEnabled,
                 actionFn: () => gridModel.autosizeAsync({showMask: true})
             });
@@ -129,7 +129,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                 column,
                                 node
                             });
-                        copy(value);
+                        copyToClipboard(value);
                     }
                 }
             });

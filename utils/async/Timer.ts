@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
@@ -172,6 +172,12 @@ export class Timer {
     }
 }
 
+/**
+ * Configuration for a {@link Timer} - a managed interval that runs a function repeatedly
+ * with configurable delay, timeout, and app-config-driven intervals.
+ *
+ * @see Timer
+ */
 export interface TimerSpec {
     /**
      * Function to run.

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
@@ -19,6 +19,8 @@ import {LogViewerModel} from './LogViewerModel';
  * @internal
  */
 export class LogDisplayModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.log';
+
     override persistWith = {localStorageKey: 'xhAdminLogViewerState'};
 
     parent: LogViewerModel;
@@ -105,19 +107,25 @@ export class LogDisplayModel extends HoistModel {
             return;
         }
 
-        const response = await XH.fetchJson({
-            url: 'logViewerAdmin/getFile',
-            params: {
-                filename: parent.file,
-                startLine: this.startLine,
-                maxLines: this.maxLines,
-                pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
-                caseSensitive: this.caseSensitive,
-                instance: parent.instanceName
-            },
-            loadSpec
-        });
-        this.updateGridData(response.content);
+        await this.runner({loadSpec})
+            .span('getFile')
+            .run(async ctx => {
+                const response = await XH.fetchJson(
+                    {
+                        url: 'logViewerAdmin/getFile',
+                        params: {
+                            filename: parent.file,
+                            startLine: this.startLine,
+                            maxLines: this.maxLines,
+                            pattern: this.regexOption ? this.pattern : escapeRegExp(this.pattern),
+                            caseSensitive: this.caseSensitive,
+                            instance: parent.instanceName
+                        }
+                    },
+                    ctx
+                );
+                this.updateGridData(response.content);
+            });
     }
 
     async scrollToTail() {
@@ -203,7 +211,7 @@ export class LogDisplayModel extends HoistModel {
         if (
             tailActive &&
             olderThan(this.lastLoadCompleted, 5 * SECONDS) &&
-            !this.loadModel.isPending &&
+            !this.loadObserver.isPending &&
             this.parent.isVisible
         ) {
             this.loadLog();

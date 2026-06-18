@@ -2,10 +2,27 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import {HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
+import {
+    Field,
+    FieldSpec,
+    Filter,
+    FilterBindTarget,
+    FilterLike,
+    FilterValueSource,
+    parseFilter,
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreValidationMessagesMap,
+    StoreValidationResultsMap,
+    ValidationResult
+} from '@xh/hoist/data';
+import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {logWithDebug, throwIf, warnIf} from '@xh/hoist/utils/js';
 import equal from 'fast-deep-equal';
@@ -13,6 +30,7 @@ import {
     castArray,
     defaultsDeep,
     differenceBy,
+    first,
     flatMapDeep,
     isArray,
     isEmpty,
@@ -20,22 +38,29 @@ import {
     isNil,
     isNull,
     isString,
-    values,
+    partition,
     remove as lodashRemove,
-    uniq,
-    first,
     some,
-    partition
+    uniq,
+    values
 } from 'lodash';
-import {Field, FieldSpec} from './Field';
-import {parseFilter} from './filter/Utils';
-import {RecordSet} from './impl/RecordSet';
-import {StoreErrorMap, StoreValidator} from './impl/StoreValidator';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
 import {instanceManager} from '../core/impl/InstanceManager';
-import {Filter} from './filter/Filter';
-import {FilterLike} from './filter/Types';
+import {RecordSet} from './impl/RecordSet';
 
+/**
+ * Configuration for a {@link Store}. At minimum, provide `fields` (or let them be inferred
+ * from GridModel columns). Data can be supplied at construction via `data`, or loaded later
+ * via `Store.loadData()`.
+ *
+ * Can also be passed inline as the `store` config on {@link GridConfig}, where it will be
+ * used to construct a Store automatically.
+ *
+ * See the data package README (`data/README.md`) for tree data, filtering, validation, and
+ * performance tuning guidance.
+ *
+ * @see Store
+ * @see FieldSpec
+ */
 export interface StoreConfig {
     /** Field names, configs, or instances. */
     fields?: Array<string | FieldSpec | Field>;
@@ -103,12 +128,21 @@ export interface StoreConfig {
     idEncodesTreePath?: boolean;
 
     /**
-     * Set to true to indicate that records can be cached and reused based on id and the
-     * raw data object they refer to.  This is a useful optimization for large datasets with
-     * immutable raw data, allowing them to avoid equality checks, object creation, and raw
-     * data processing when reloading reference-identical data. Should not be used if a
-     * processRawData function that depends on external state is provided, as this function
-     * will be circumvented on subsequent reloads.  Default false.
+     * Performance optimization for large datasets with immutable raw data objects.
+     *
+     * By default, Store reuses existing StoreRecord instances when new data is loaded with
+     * matching IDs and identical field values (determined via deep equality comparison). This
+     * preserves row state in grids for unchanged records.
+     *
+     * When `reuseRecords` is true, the Store skips the fieldwise comparison and instead reuses
+     * records when the raw data object itself is **reference-identical** to the previously loaded
+     * object. This avoids equality checks, record creation, and raw data processing overhead.
+     *
+     * Only use this when your data source provides stable object references for unchanged records.
+     * Should not be used with a `processRawData` function that depends on external state, as that
+     * function will be bypassed on subsequent reloads of reference-identical data.
+     *
+     * Default false.
      */
     reuseRecords?: boolean;
 
@@ -123,6 +157,10 @@ export interface StoreConfig {
      *  testing, but are not yet part of the Hoist API.
      */
     experimental?: PlainObject;
+}
+
+export interface StoreDefaults {
+    freezeData?: boolean;
 }
 
 /**
@@ -179,12 +217,44 @@ export interface ChildRawData {
 export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
 
 /**
- * A managed and observable set of local, in-memory Records.
+ * A managed, observable collection of in-memory {@link StoreRecord}s - the core data container
+ * in Hoist. Used directly by applications and as the data source for {@link GridModel},
+ * {@link DataViewModel}, and other data-bound components.
+ *
+ * Stores provide:
+ * - Observable record collections with filtering via composable {@link Filter} objects
+ * - Hierarchical/tree data with parent-child navigation
+ * - Local modification tracking (add/modify/remove) with commit/revert
+ * - Record reuse across data reloads to preserve grid row state
+ * - Pluggable validation via {@link Field} rules
+ *
+ * Data is loaded via `loadData()` (full replacement) or `updateData()` (transactional). Fields
+ * can be defined explicitly or inferred from GridModel columns. `Store.defaults` provides
+ * app-wide configuration.
+ *
+ * See the data package README (`data/README.md`) for full documentation including tree data,
+ * filtering patterns, validation, and common pitfalls.
+ *
+ * @see StoreConfig
+ * @see StoreRecord
+ * @see Field
+ *
+ * @mcpHint in-memory data store used by grids and other data components
  */
-export class Store extends HoistBase {
-    get isStore() {
-        return true;
+export class Store
+    extends HoistBase
+    implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
+{
+    /** App-level defaults for Store. Instance config takes precedence. */
+    static defaults: StoreDefaults = {
+        freezeData: true
+    };
+
+    static isStore(obj: unknown): obj is Store {
+        return obj instanceof Store;
     }
+
+    readonly isFilterValueSource = true;
 
     fields: Field[] = null;
     idSpec: (data: PlainObject) => StoreRecordId;
@@ -252,7 +322,7 @@ export class Store extends HoistBase {
         loadTreeData = true,
         loadTreeDataFrom = 'children',
         loadRootAsSummary = false,
-        freezeData = true,
+        freezeData = Store.defaults.freezeData,
         idEncodesTreePath = false,
         reuseRecords = false,
         validationIsComplex = false,
@@ -515,10 +585,12 @@ export class Store extends HoistBase {
 
             return new StoreRecord({
                 id,
-                data: parsedData,
                 store: this,
+                raw: null,
+                data: parsedData,
+                committedData: null,
                 parent,
-                committedData: null
+                isSummary: false
             });
         });
 
@@ -585,13 +657,22 @@ export class Store extends HoistBase {
             const currentRec = this.getOrThrow(id),
                 updatedData = this.parseUpdate(currentRec.data, mod);
 
+            // If after parsing, data is deep equal, its a no-op
+            if (equal(updatedData, currentRec.data)) return;
+
+            // Previously updated record might now be reverted to clean, normalize
+            const committedData =
+                currentRec.isModified && equal(currentRec.committedData, updatedData)
+                    ? updatedData
+                    : currentRec.committedData;
+
             const updatedRec = new StoreRecord({
                 id: currentRec.id,
+                store: currentRec.store,
                 raw: currentRec.raw,
                 data: updatedData,
+                committedData: committedData,
                 parent: currentRec.parent,
-                store: currentRec.store,
-                committedData: currentRec.committedData,
                 isSummary: currentRec.isSummary
             });
 
@@ -752,7 +833,10 @@ export class Store extends HoistBase {
     /** True if the store has changes which need to be committed. */
     @computed
     get isDirty(): boolean {
-        return this._current !== this._committed || this.summaryRecords?.some(it => it.isModified);
+        return (
+            this._current !== this._committed ||
+            (this.summaryRecords?.some(it => it.isModified) ?? false)
+        );
     }
 
     /** Alias for {@link Store.isDirty} */
@@ -795,6 +879,31 @@ export class Store extends HoistBase {
     recordIsFiltered(recOrId: StoreRecordOrId): boolean {
         const id = recOrId instanceof StoreRecord ? recOrId.id : recOrId;
         return !this.getById(id, true) && !!this.getById(id, false);
+    }
+
+    getValuesForFieldFilter(fieldName: string, filter?: Filter): any[] {
+        const field = this.getField(fieldName);
+        if (!field) return [];
+
+        let recs = this.allRecords;
+        if (filter) {
+            const testFn = filter.getTestFn(this);
+            recs = recs.filter(testFn);
+        }
+
+        const ret = new Set();
+        recs.forEach(rec => {
+            const val = rec.get(fieldName);
+            if (isNil(val)) {
+                ret.add(null);
+            } else if (field.type === 'tags') {
+                val.forEach(it => ret.add(it));
+            } else {
+                ret.add(val);
+            }
+        });
+
+        return Array.from(ret);
     }
 
     /**
@@ -845,8 +954,12 @@ export class Store extends HoistBase {
         return this._current.maxDepth; // maxDepth should not be effected by filtering.
     }
 
-    get errors(): StoreErrorMap {
+    get errors(): StoreValidationMessagesMap {
         return this.validator.errors;
+    }
+
+    get validationResults(): StoreValidationResultsMap {
+        return this.validator.validationResults;
     }
 
     /** Count of all validation errors for the store. */
@@ -857,6 +970,11 @@ export class Store extends HoistBase {
     /** Array of all errors for this store. */
     get allErrors(): string[] {
         return uniq(flatMapDeep(this.errors, values));
+    }
+
+    /** Array of all ValidationResults for this store. */
+    get allValidationResults(): ValidationResult[] {
+        return uniq(flatMapDeep(this.validationResults, values));
     }
 
     /**
@@ -931,7 +1049,7 @@ export class Store extends HoistBase {
         return this.validator.isNotValid;
     }
 
-    /** Recompute validations for all records and return true if the store is valid. */
+    /** Recompute ValidationResults for all records and return true if the store is valid. */
     async validateAsync(): Promise<boolean> {
         return this.validator.validateAsync();
     }
@@ -1036,7 +1154,15 @@ export class Store extends HoistBase {
         }
 
         data = this.parseRaw(data);
-        const ret = new StoreRecord({id, data, raw, parent, store: this, isSummary});
+        const ret = new StoreRecord({
+            id,
+            store: this,
+            raw,
+            data,
+            committedData: data,
+            parent,
+            isSummary
+        });
 
         // Finalize summary only.  Non-summary finalized by RecordSet
         if (isSummary) ret.finalize();
@@ -1093,7 +1219,7 @@ export class Store extends HoistBase {
         return ret;
     }
 
-    private parseUpdate(data, update) {
+    private parseUpdate(data: PlainObject, update: PlainObject): PlainObject {
         const {_fieldMap} = this;
 
         // a) clone the existing object
@@ -1149,11 +1275,15 @@ export class Store extends HoistBase {
             const recToRevert = records.find(it => it.id === summaryRec.id);
             if (!recToRevert) return summaryRec;
 
+            // StoreRecordConfig requires data to be a "new object dedicated to this StoreRecord".
+            const data = {...recToRevert.committedData};
             const ret = new StoreRecord({
                 id: recToRevert.id,
-                raw: recToRevert.raw,
-                data: {...recToRevert.committedData},
                 store: this,
+                raw: recToRevert.raw,
+                data,
+                committedData: data,
+                parent: null,
                 isSummary: true
             });
             ret.finalize();

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
@@ -18,6 +18,8 @@ import {ErrorBoundaryModel} from './ErrorBoundaryModel';
  * This wrapper will automatically only catch and handle exceptions that occur during the React
  * lifecycle, but applications that wish to use this component to display other caught exceptions
  * may explicitly use it to handle those exceptions.
+ *
+ * @see ErrorBoundaryModel
  */
 export const [ErrorBoundary, errorBoundary] = hoistCmp.withFactory<ErrorBoundaryModel>({
     displayName: 'ErrorBoundary',

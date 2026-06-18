@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     PlainObject
 } from '@xh/hoist/core';
@@ -36,6 +37,15 @@ import {FieldModel} from './field/FieldModel';
 import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
+/**
+ * Configuration for a {@link FormModel}. Provide `fields` to define the form's data schema
+ * and validation rules. Optionally supply `initialValues` to pre-populate the form.
+ *
+ * See the form package README (`cmp/form/README.md`) for usage patterns and validation.
+ *
+ * @see FormModel
+ * @see BaseFieldConfig
+ */
 export interface FormConfig {
     /** FieldModels, or configs to create them, for all data fields managed by the model. */
     fields?: Array<BaseFieldModel | BaseFieldConfig | SubformsFieldConfig | SubformsFieldModel>;
@@ -87,6 +97,11 @@ export interface FormValidateOptions {
  * where each split has its own internal fields for broker, quantity, and time).
  *
  * See {@link FieldModel} for details on state/validation maintained at the individual field level.
+ *
+ * See the form package README (`cmp/form/README.md`) for full documentation including field
+ * configuration, validation patterns, and FormField component binding.
+ *
+ * @mcpHint model for form state, field values, and validation
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/
@@ -256,7 +271,7 @@ export class FormModel extends HoistModel {
 
     /** True if all fields are valid. */
     get isValid(): boolean {
-        return this.validationState == 'Valid';
+        return this.validationState === 'Valid';
     }
 
     /** List of all validation errors for this form. */
@@ -264,7 +279,7 @@ export class FormModel extends HoistModel {
         return flatMap(this.fields, s => s.allErrors);
     }
 
-    /** Recompute all validations and return true if the form is valid. */
+    /** Recompute all ValidationResults and return true if the form is valid. */
     async validateAsync(opts?: FormValidateOptions): Promise<boolean> {
         const {display = true} = opts ?? {},
             promises = map(this.fields, m => m.validateAsync({display}));
@@ -315,10 +330,7 @@ export class FormModel extends HoistModel {
             : (includeFields ?? allFields);
 
         PersistenceProvider.create({
-            persistOptions: {
-                path,
-                ...rootPersistWith
-            },
+            persistOptions: persistOptions({path}, rootPersistWith),
             target: {
                 getPersistableState: () =>
                     new PersistableState(this.serialize(pick(this.getData(), fieldNamesToPersist))),

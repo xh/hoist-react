@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
@@ -60,11 +60,15 @@ export type {
     CellEditingStoppedEvent
 } from 'ag-grid-community';
 
-export type {CustomCellEditorProps, CustomMenuItemProps} from 'ag-grid-react';
+export type {
+    CustomCellEditorProps,
+    CustomCellRendererProps,
+    CustomMenuItemProps
+} from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 
-const MIN_VERSION = '34.2.0';
-const MAX_VERSION = '34.*.*';
+const MIN_VERSION = '35.3.0';
+const MAX_VERSION = '35.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

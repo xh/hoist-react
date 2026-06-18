@@ -2,12 +2,18 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
 import {observable} from 'mobx';
 import {logError, throwIf} from '../utils/js';
-import {HoistBaseClass, PersistableState, PersistenceProvider, PersistOptions} from './';
+import {
+    HoistBaseClass,
+    PersistableState,
+    PersistenceProvider,
+    persistOptions,
+    PersistOptions
+} from './';
 
 /**
  * Decorator to make a property "managed". Managed properties are designed to hold objects that
@@ -79,13 +85,9 @@ function createPersistDescriptor(
             let ret = codeValue?.call(this);
 
             // Property is not available on the instance until after the next tick.
-            const propertyAvailable = observable.box(false),
-                persistOptions = {
-                    path: property,
-                    ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-                };
+            const propertyAvailable = observable.box(false);
             PersistenceProvider.create({
-                persistOptions,
+                persistOptions: persistOptions({path: property}, this.persistWith, options),
                 owner: this,
                 target: {
                     getPersistableState: () =>

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppOptionSpec, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
@@ -13,9 +13,9 @@ import '@xh/hoist/mobile/register';
 
 interface ThemeAppOptionSpec {
     /** Props for nested FormField */
-    formFieldProps?: FormFieldProps;
+    formFieldProps?: Partial<FormFieldProps>;
     /** Props for nested ButtonGroupInput */
-    inputProps?: ButtonGroupInputProps;
+    inputProps?: Partial<ButtonGroupInputProps>;
 }
 
 /**

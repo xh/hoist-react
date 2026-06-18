@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {OptionsDialogModel} from '@xh/hoist/appcontainer/OptionsDialogModel';
 import {form} from '@xh/hoist/cmp/form';
@@ -51,10 +51,11 @@ export const optionsDialog = hoistCmp.factory({
                         })
                     ),
                     bbar: [
-                        restoreDefaultsButton(),
+                        restoreDefaultsButton({testId: 'xh-options-restore-defaults-btn'}),
                         filler(),
                         button({
                             text: 'Cancel',
+                            testId: 'xh-options-cancel-btn',
                             onClick: () => model.hide()
                         }),
                         button({
@@ -62,6 +63,7 @@ export const optionsDialog = hoistCmp.factory({
                             text: reloadRequired ? 'Save & Reload' : 'Save',
                             icon: reloadRequired ? Icon.refresh() : Icon.check(),
                             intent: 'success',
+                            testId: 'xh-options-save-btn',
                             onClick: () => model.saveAsync()
                         })
                     ]

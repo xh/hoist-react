@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnGroup, GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -16,8 +16,7 @@ import {ReactNode} from 'react';
 import type {AgProvidedColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnGroupHeaderProps
-    extends HoistProps<ColumnGroupHeaderModel>,
-        IHeaderGroupParams {
+    extends HoistProps<ColumnGroupHeaderModel>, IHeaderGroupParams {
     gridModel: GridModel;
     xhColumnGroup: ColumnGroup;
 }

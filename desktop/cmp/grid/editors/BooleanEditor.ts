@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {useEffect} from 'react';
 import {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
@@ -25,6 +25,7 @@ export interface BooleanEditorProps extends EditorProps<CheckboxProps> {
     quickToggle?: boolean;
 }
 
+/** Checkbox-based inline cell editor for boolean values in a Grid. */
 export const [BooleanEditor, booleanEditor] = hoistCmp.withFactory<BooleanEditorProps>({
     displayName: 'BooleanEditor',
     className: 'xh-boolean-editor',

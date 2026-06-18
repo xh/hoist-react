@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
 import {div, filler, form} from '@xh/hoist/cmp/layout';
@@ -26,15 +26,16 @@ export const loginPanel = hoistCmp.factory({
 
     render({model}) {
         const {loginMessage} = XH.appSpec,
-            {isValid, loadModel, warning, loginInProgress} = model;
+            {isValid, loadObserver, warning, loginInProgress} = model;
 
         return panel({
             className: 'xh-login',
+            testId: 'xh-login',
             items: [
                 toolbar(filler(), XH.clientAppName, filler()),
                 panel({
                     className: 'xh-login__body',
-                    mask: loadModel,
+                    mask: loadObserver,
                     items: [
                         form({
                             className: 'xh-login__fields',
@@ -44,14 +45,16 @@ export const loginPanel = hoistCmp.factory({
                                     placeholder: 'Username',
                                     autoComplete: 'username',
                                     autoCapitalize: 'none',
-                                    commitOnChange: true
+                                    commitOnChange: true,
+                                    testId: 'xh-login-username'
                                 }),
                                 textInput({
                                     bind: 'password',
                                     placeholder: 'Password',
                                     autoComplete: 'current-password',
                                     type: 'password',
-                                    commitOnChange: true
+                                    commitOnChange: true,
+                                    testId: 'xh-login-password'
                                 })
                             ]
                         }),
@@ -69,7 +72,8 @@ export const loginPanel = hoistCmp.factory({
                             icon: Icon.login(),
                             text: loginInProgress ? 'Please wait...' : 'Login',
                             disabled: !isValid || loginInProgress,
-                            onClick: () => model.submitAsync()
+                            onClick: () => model.submitAsync(),
+                            testId: 'xh-login-btn'
                         })
                     ]
                 })

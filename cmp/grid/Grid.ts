@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
-import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
@@ -29,7 +28,8 @@ import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
 import {
     colChooser as desktopColChooser,
     gridFilterDialog,
-    ModalSupportModel
+    ModalSupportModel,
+    DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
@@ -45,7 +45,7 @@ import type {
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
 import './Grid.scss';
@@ -54,7 +54,8 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
 
-export interface GridProps extends HoistProps<GridModel>, LayoutProps, TestSupportProps {
+export interface GridProps<M extends GridModel = GridModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
      *
@@ -188,7 +189,8 @@ export class GridLocalModel extends HoistModel {
             this.rowHeightReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
-            this.modalReaction()
+            this.modalReaction(),
+            this.dashContainerReaction()
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
@@ -196,19 +198,20 @@ export class GridLocalModel extends HoistModel {
 
     private createDefaultAgOptions(): GridOptions {
         const {model} = this,
-            {clicksToEdit, selModel} = model;
+            {clicksToEdit, selModel, deltaSort} = model;
 
         let ret: GridOptions = {
+            deltaSort,
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
             defaultColDef: {
                 sortable: true,
                 resizable: true,
-                suppressHeaderContextMenu: true,
                 suppressHeaderMenuButton: true,
                 menuTabs: ['filterMenuTab']
             },
+            getMainMenuItems: () => [],
             popupParent: document.querySelector('body'),
             suppressAggFuncInHeader: true,
             icons: {
@@ -442,6 +445,7 @@ export class GridLocalModel extends HoistModel {
         // when node is rendered in viewport.
         const {model, agOptions} = this;
         return (
+            !model.disableScrollOptimization &&
             agOptions.getRowHeight &&
             !agOptions.rowHeight &&
             !model.getVisibleLeafColumns().some(c => c.autoHeight)
@@ -450,6 +454,7 @@ export class GridLocalModel extends HoistModel {
 
     applyScrollOptimization() {
         if (!this.useScrollOptimization) return;
+
         const {agApi} = this.model,
             {getRowHeight} = this.agOptions,
             params = {api: agApi, context: null} as any;
@@ -589,6 +594,22 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    dashContainerReaction() {
+        // Force Grid to redraw rows when parent DashContainer view ref changes
+        const dashContainerViewModel = DashContainerViewModel
+            ? this.lookupModel(DashContainerViewModel)
+            : null;
+        if (!dashContainerViewModel) return null;
+
+        return {
+            track: () => (dashContainerViewModel as any).viewRef.current,
+            run: elem => {
+                if (elem) this.model.agApi.redrawRows();
+            },
+            debounce: 0
+        };
+    }
+
     updatePinnedSummaryRowData() {
         const {model} = this,
             {store, showSummary, agGridModel} = model,
@@ -603,6 +624,14 @@ export class GridLocalModel extends HoistModel {
             } else {
                 pinnedTopRowData.unshift(...store.summaryRecords);
             }
+        }
+
+        // Early out if the data hasn't actually changed
+        if (
+            isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
+            isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
+        ) {
+            return;
         }
 
         agApi.updateGridOptions({
@@ -690,7 +719,9 @@ export class GridLocalModel extends HoistModel {
             model.autosizeAsync({columns});
         }
 
-        model.noteAgExpandStateChange();
+        if (model.treeMode || !isEmpty(model.groupBy)) {
+            model.noteAgExpandStateChange();
+        }
 
         this.prevRs = newRs;
         this.applyScrollOptimization();

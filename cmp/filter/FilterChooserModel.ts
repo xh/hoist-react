@@ -2,26 +2,28 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
+    persistOptions,
     PersistOptions,
     TaskObserver,
     Thunkable,
     XH
 } from '@xh/hoist/core';
 import {
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
-    parseFilter,
-    Store,
-    View,
-    withFilterByTypes
+    FilterBindTarget,
+    FilterValueSource,
+    isFilterValueSource,
+    parseFilter
 } from '@xh/hoist/data';
 import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -54,6 +56,12 @@ import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChoo
 import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
+/**
+ * Configuration for a {@link FilterChooserModel} - an interactive, tokenized filter builder
+ * that binds to a {@link Store} or Cube {@link View}.
+ *
+ * @see FilterChooserModel
+ */
 export interface FilterChooserConfig {
     /**
      * Specifies the fields this model supports for filtering and customizes how their available values
@@ -66,17 +74,26 @@ export interface FilterChooserConfig {
     fieldSpecDefaults?: Partial<FilterChooserFieldSpecConfig>;
 
     /**
-     * Store or cube View that should actually be filtered as this model's value changes.
-     * This may be the same as `valueSource`. Leave undefined if you wish to combine this model's values
-     * with other filters, send it to the server, or otherwise observe and handle value changes manually.
+     * Target (typically a {@link Store} or Cube {@link View}) to which this model's filter should
+     * be automatically applied as it changes.
+     *
+     * Note this binding is bi-directional - the target's filter will also be *set onto* this model
+     * if it changes on the target, to support e.g. sync'd filtering between a FilterChooser and
+     * Grid filtering bound to the same target Store.
+     *
+     * Leave undefined if you wish to combine this model's values with other filters, send it to
+     * the server, or otherwise observe and handle value changes manually.
      */
-    bind?: Store | View;
+    bind?: FilterBindTarget;
 
     /**
-     * Store or cube View to be used to lookup matching Field-level defaults for `fieldSpecs` and to
-     * provide suggested data values (if so configured) from user input. Defaults to `bind` if provided.
+     * Source (typically a {@link Store} or Cube {@link View}) from which this model can lookup
+     * matching Field-level defaults for `fieldSpecs` and provide suggested data values (if so
+     * configured) from user input.
+     *
+     * Defaults to {@link bind} if the a bind target is provided and is a valid source.
      */
-    valueSource?: Store | View;
+    valueSource?: FilterValueSource;
 
     /**
      * Configuration for a filter appropriate to be rendered and managed by FilterChooser, or a function
@@ -121,11 +138,29 @@ export interface FilterChooserConfig {
     persistWith?: FilterChooserPersistOptions;
 }
 
+/**
+ * Model for a Select-based filter control that allows users to search for and compose filters
+ * across multiple data fields.
+ *
+ * Manages the current filter value, user-managed favorites, and available field specs. Supports
+ * bidirectional binding to a {@link Store} or Cube {@link View} via the `bind` config - filters
+ * are automatically applied to the target as they change, and external filter changes on the
+ * target are reflected back into this model.
+ *
+ * Field specs define which fields are available for filtering and how their values are parsed
+ * and displayed. If a `valueSource` is provided, field specs can be auto-populated from the
+ * source's fields.
+ *
+ * Supports persistence of both the current filter value and favorites via `persistWith`.
+ *
+ * @see FilterChooser
+ * @see FilterChooserFieldSpec
+ */
 export class FilterChooserModel extends HoistModel {
     @observable.ref value: FilterChooserFilter = null;
     @observable.ref favorites: FilterChooserFilter[] = [];
-    bind: Store | View;
-    valueSource: Store | View;
+    bind: FilterBindTarget;
+    valueSource: FilterValueSource;
 
     @managed fieldSpecs: FilterChooserFieldSpec[] = [];
 
@@ -155,7 +190,7 @@ export class FilterChooserModel extends HoistModel {
         fieldSpecs,
         fieldSpecDefaults,
         bind = null,
-        valueSource = bind,
+        valueSource,
         initialValue = null,
         initialFavorites = [],
         suggestFieldsWhenEmpty = true,
@@ -169,7 +204,12 @@ export class FilterChooserModel extends HoistModel {
         makeObservable(this);
 
         this.bind = bind;
+
         this.valueSource = valueSource;
+        if (!this.valueSource && isFilterValueSource(bind)) {
+            this.valueSource = bind;
+        }
+
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
         this.suggestFieldsWhenEmpty = !!suggestFieldsWhenEmpty;
         this.sortFieldSuggestions = sortFieldSuggestions;
@@ -186,11 +226,13 @@ export class FilterChooserModel extends HoistModel {
         this.updateSelectValueAndBind();
 
         if (bind) {
+            // Inbound sync: when the bind target's filter changes externally (e.g. via
+            // Grid column filters on the same Store), update this model's value to match.
+            // FunctionFilters are stripped as they are unsupported by FilterChooser.
             this.addReaction({
                 track: () => bind.filter,
                 run: filter => {
-                    const value = withFilterByTypes(filter, null, 'FunctionFilter');
-                    this.setValue(value);
+                    this.setValue(filter?.removeFunctionFilters());
                 }
             });
         }
@@ -244,21 +286,24 @@ export class FilterChooserModel extends HoistModel {
         const rsSelectCmp = (this.inputRef.current as any)?.reactSelectRef?.current;
         if (!rsSelectCmp) return;
 
-        const currentVal = rsSelectCmp.select.state.inputValue,
+        // Push the suggestion text back into the Select's filter input, then re-open the menu.
+        const currentVal = (rsSelectCmp.props?.inputValue as string) ?? '',
             newVal = value.displayName,
             inputValue = newVal.length > currentVal.length ? newVal : currentVal;
 
-        rsSelectCmp.select.setState({inputValue, menuIsOpen: true});
+        rsSelectCmp.props.onInputChange(inputValue, {
+            action: 'input-change',
+            prevInputValue: currentVal
+        });
+
         wait()
             .then(() => {
                 rsSelectCmp.focus();
-                rsSelectCmp.handleInputChange(inputValue);
+                rsSelectCmp.openMenu('first');
             })
             .thenAction(() => {
-                // Setting the Select's `inputValue` state above has the side-effect of modifying
-                // it's internal `value`. Force synchronise its `value` to our bound `selectValue`
-                // to get it back inline. Note we're intentionally not using `setSelectValue()`,
-                // which returns early if the actual filter value hasn't changed.
+                // Force-resync our bound selectValue in case state manager nudged react-select's
+                // internal selection. Not via setSelectValue() (early-returns when unchanged).
                 this.selectValue = cloneDeep(this.selectValue);
             });
     }
@@ -486,15 +531,13 @@ export class FilterChooserModel extends HoistModel {
         ...rootPersistWith
     }: FilterChooserPersistOptions) {
         if (persistValue) {
-            const status = {initialized: false},
-                persistWith = isObject(persistValue)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistValue)
-                    : rootPersistWith;
+            const status = {initialized: false};
             PersistenceProvider.create({
-                persistOptions: {
-                    path: `${path}.value`,
-                    ...persistWith
-                },
+                persistOptions: persistOptions(
+                    {path: `${path}.value`},
+                    rootPersistWith,
+                    isObject(persistValue) ? persistValue : null
+                ),
                 target: {
                     getPersistableState: () => new PersistableState(this.value?.toJSON() ?? null),
                     setPersistableState: ({value}) =>
@@ -506,21 +549,19 @@ export class FilterChooserModel extends HoistModel {
         }
 
         if (persistFavorites) {
-            const persistWith = isObject(persistFavorites)
-                    ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistFavorites)
-                    : rootPersistWith,
-                provider = PersistenceProvider.create({
-                    persistOptions: {
-                        path: `${path}.favorites`,
-                        ...persistWith
-                    },
-                    target: {
-                        getPersistableState: () =>
-                            new PersistableState(this.favorites.map(f => f.toJSON())),
-                        setPersistableState: ({value}) => this.setFavorites(value)
-                    },
-                    owner: this
-                });
+            const provider = PersistenceProvider.create({
+                persistOptions: persistOptions(
+                    {path: `${path}.favorites`},
+                    rootPersistWith,
+                    isObject(persistFavorites) ? persistFavorites : null
+                ),
+                target: {
+                    getPersistableState: () =>
+                        new PersistableState(this.favorites.map(f => f.toJSON())),
+                    setPersistableState: ({value}) => this.setFavorites(value)
+                },
+                owner: this
+            });
             if (provider) this.persistFavorites = true;
         }
     }
@@ -589,12 +630,11 @@ export class FilterChooserModel extends HoistModel {
                     }
                 );
 
-                // Round-trip value to bound filter
+                // Outbound sync: replace the FieldFilter portion of the bind target's
+                // filter with this model's value, preserving any FunctionFilters
+                // installed by other components (e.g. StoreFilterField).
                 if (bind) {
-                    const filter = withFilterByTypes(bind.filter, value, [
-                        'FieldFilter',
-                        'CompoundFilter'
-                    ]);
+                    const filter = appendFilter(bind.filter?.removeFieldFilters(), value);
                     bind.setFilter(filter);
                 }
             })

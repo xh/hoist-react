@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
 
@@ -14,6 +14,9 @@ export interface HoistException extends Error {
 
     /** Correlation ID associated with this exception, if any. */
     correlationId?: string;
+
+    /** Distributed trace ID associated with this exception, if any. */
+    traceId?: string;
 
     /**
      * Is the exception an expected, normal behavior of the app?

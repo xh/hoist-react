@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
 import {flatMap} from 'lodash';
@@ -10,6 +10,8 @@ import {flatMap} from 'lodash';
 /**
  * Grouped node data, as returned by {@link Cube.executeQuery} or exposed via {@link View.result}.
  * Designed for direct consumption by hierarchical stores and their associated tree grids.
+ *
+ * @mcpHint row shape returned by Cube queries and View results
  */
 export class ViewRowData {
     constructor(id: string) {

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     hoistCmp,
@@ -27,7 +27,7 @@ export interface MaskProps extends HoistProps {
     isDisplayed?: boolean;
     /** Optional text to be displayed. */
     message?: ReactNode;
-    /** Click handler **/
+    /** Click handler */
     onClick?: (e: MouseEvent) => void;
     /** True to display a spinning image.  Default false. */
     spinner?: boolean;

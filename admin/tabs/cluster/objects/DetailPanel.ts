@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {placeholder} from '@xh/hoist/cmp/layout';
@@ -42,7 +42,7 @@ export const detailPanel = hoistCmp.factory({
                         width: '100%',
                         height: '100%',
                         showFullscreenButton: false,
-                        editorProps: {lineNumbers: false},
+                        lineNumbers: false,
                         value: fmtJson(selectedAdminStats, {replacer: timestampReplacer()})
                     })
                 })

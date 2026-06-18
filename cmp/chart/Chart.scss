@@ -2,17 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 // Allows inside of chart navigator mask to be draggable.
-.bp5-dialog .xh-chart {
+.bp6-dialog .xh-chart {
   pointer-events: auto;
 }
 
 // Ensure tooltips using the 'outside' flag render on top of other elements
 .highcharts-tooltip-container {
   z-index: 9999 !important;
+}
+
+// Default Highcharts font to match Hoist standard
+svg.highcharts-root {
+  font-family: var(--xh-chart-font-family) !important;
 }
 
 // Convenience class for optional use when specifying custom chart tooltips.

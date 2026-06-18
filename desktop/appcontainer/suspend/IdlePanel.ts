@@ -2,16 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+/// <reference path="../../../assets.d.ts" />
+import {div, img, p, viewport} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {viewport, div, img, p, filler} from '@xh/hoist/cmp/layout';
-import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-
 import './IdlePanel.scss';
-// @ts-ignore
 import idleImage from './IdlePanelImage.png';
 
 /**
@@ -33,26 +32,31 @@ export const idlePanel = hoistCmp.factory({
                 title: `${XH.clientAppName} is sleeping`,
                 icon: Icon.moon(),
                 className: 'xh-idle-panel',
+                testId: 'xh-idle-panel',
                 item: div(
                     img({
                         src: idleImage,
                         width: 300,
                         height: 180
                     }),
-                    p('This application is sleeping due to inactivity.'),
-                    p('Please click below to reload it.')
+                    p(
+                        `${XH.clientAppName} is sleeping due to inactivity - this helps conserve resources and reduce load on both your computer and back-end systems.`
+                    ),
+                    p('Please click anywhere to reload.')
                 ),
                 bbar: [
-                    filler(),
                     button({
                         text: "I'm back!",
                         intent: 'primary',
                         minimal: false,
                         autoFocus: true,
+                        width: '100%',
+                        testId: 'xh-idle-reactivate-btn',
                         onClick: onReactivate
                     })
                 ]
-            })
+            }),
+            onClick: onReactivate
         });
     }
 });

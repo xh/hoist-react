@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
@@ -93,7 +93,7 @@ class PopoverFilterChooserLocalModel extends HoistModel {
             run: () => {
                 const inputRef = this.model.inputRef.current;
                 inputRef.focus();
-                (inputRef as any).reactSelectRef.current.select.onMenuOpen();
+                (inputRef as any).reactSelectRef.current?.openMenu('first');
             }
         });
     }

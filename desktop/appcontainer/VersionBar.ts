@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
@@ -26,6 +26,7 @@ export const versionBar = hoistCmp.factory({
 
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
+            testId: 'xh-version-bar',
             items: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 span({

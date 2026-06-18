@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
@@ -15,6 +15,12 @@ import {ReactNode} from 'react';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
+/**
+ * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
+ * column mappings. Passed via the `zoneMapperModel` config on {@link ZoneGridConfig}.
+ *
+ * @see ZoneGridModel
+ */
 export interface ZoneMapperConfig {
     /** The ZoneGridModel to be configured. */
     zoneGridModel: ZoneGridModel;
@@ -91,6 +97,10 @@ export class ZoneMapperModel extends HoistModel {
                 const {field, displayName} = it;
                 return {value: field, label: displayName};
             });
+    }
+
+    get headersAreHidden(): boolean {
+        return this.zoneGridModel.gridModel.hideHeaders;
     }
 
     constructor(config: ZoneMapperConfig) {

@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    # Group routine version bumps to keep the PR volume manageable. Major
+    # bumps are excluded so they always surface as their own PR for review.
+    groups:
+      production-minor-and-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-minor-and-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
