@@ -395,7 +395,7 @@ export class RoleModel extends HoistModel {
                 config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
-                {field: 'lastUpdated', fieldType: 'localDate'} //for usable day-aware filtering.
+                'lastUpdated'
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });

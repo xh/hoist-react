@@ -22,9 +22,10 @@ export interface BaseFilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;
     /**
-     * Type of field, will default from related field on source if provided, or 'auto'.
-     * Set to 'localDate' on a field backed by a `date` (timestamp) to filter by calendar day -
-     * range and equality operators then compare against full-day bounds rather than midnight.
+     * Type of field, will default from related field on source if provided, or 'auto'. A `date`
+     * (timestamp) source defaults to 'localDate' so filtering compares by calendar day (range and
+     * equality operators use full-day bounds). Set explicitly to 'date' to filter by exact
+     * timestamp instead.
      */
     fieldType?: FieldType;
     /** DisplayName, will default from related field on source if provided */
@@ -81,7 +82,11 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.source = source;
 
         const sourceField = this.sourceField;
-        this.fieldType = fieldType ?? sourceField?.type ?? 'auto';
+        // Default a `date` (timestamp) source to `localDate` so filtering compares by calendar day
+        // rather than against midnight (#3338). Apps wanting exact-timestamp filtering can set
+        // `fieldType: 'date'` explicitly.
+        this.fieldType =
+            fieldType ?? (sourceField?.type === 'date' ? 'localDate' : sourceField?.type) ?? 'auto';
         this.displayName = displayName ?? sourceField?.displayName ?? genDisplayName(field);
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
