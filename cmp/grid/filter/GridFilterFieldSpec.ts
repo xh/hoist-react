@@ -90,7 +90,11 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // survive as `['foo']` and dedupe incorrectly.
         const colFilterVals = flatMap(columnFilters, filter => {
             return castArray(filter.value).flatMap(val => sourceField.parseVal(val));
-        }).map(it => this.toDisplayValue(it));
+        })
+            // A blank ('is blank'/'is not blank') `tags` filter carries a null value that is not a
+            // real tag and should not appear as a selectable value in the list.
+            .filter(it => sourceField.type !== 'tags' || it != null)
+            .map(it => this.toDisplayValue(it));
 
         // Combine + unique - these are all values that *could* be shown in the filter UI.
         const allValues = uniqBy([...allSrcVals, ...colFilterVals], this.getUniqueValue);

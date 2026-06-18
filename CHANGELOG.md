@@ -18,6 +18,9 @@
 
 
 ### 🐞 Bug Fixes
+* Fixed the "Is blank" / "Is not blank" grid column filters for `tags`-typed fields - empty tag
+  arrays now correctly match "Is blank", and such filters are edited on the Custom tab rather than
+  producing a phantom blank entry in the Values list.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
