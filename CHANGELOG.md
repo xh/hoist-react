@@ -13,7 +13,7 @@
   comparing against full-day bounds for range and equality operators rather than midnight - e.g.
   `> 2023-05-31` excludes the 31st and `= 2023-05-31` matches any time that day. Filter specs now
   default a `date` source field to `fieldType: 'localDate'`; set `fieldType: 'date'` for exact
-  timestamps. Applies to in-browser `FieldFilter` evaluation only.
+  timestamps.
 
 
 ### 🐞 Bug Fixes
