@@ -21,7 +21,11 @@ import {FieldFilterOperator} from './Types';
 export interface BaseFilterFieldSpecConfig {
     /** Identifying field name to filter on. */
     field: string;
-    /** Type of field, will default from related field on source if provided, or 'auto'. */
+    /**
+     * Type of field, will default from related field on source if provided, or 'auto'.
+     * Set to 'localDate' on a field backed by a `date` (timestamp) to filter by calendar day -
+     * range and equality operators then compare against full-day bounds rather than midnight.
+     */
     fieldType?: FieldType;
     /** DisplayName, will default from related field on source if provided */
     displayName?: string;
