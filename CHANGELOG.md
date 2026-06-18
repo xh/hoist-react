@@ -17,6 +17,9 @@
 * Applied an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure,
   now that `postcss-flexbugs-fixes`has been removed from `hoist-dev-utils v13.x` webpack configuration,
   that the `0` is not interpreted as a `0px` basis, which can prevent the tab container from expanding.
+  * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
+    verify that their flex layouts continue to work as expected and add an explicit unit if
+    not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
 
 ## 86.0.1 - 2026-06-16
 
