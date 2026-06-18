@@ -9,15 +9,14 @@
   choices. Built on Hoist's mobile `Button` (no Blueprint dependency).
     * The shared `SegmentedControlOption` option types now export from `@xh/hoist/cmp/input` rather
       than the desktop `SegmentedControl` module; update any direct type imports.
+* `FilterChooser` and grid column filters on a timestamp (`date`) field now filter by calendar day,
+  comparing against full-day bounds for range and equality operators rather than midnight - e.g.
+  `> 2023-05-31` excludes the 31st and `= 2023-05-31` matches any time that day. Filter specs now
+  default a `date` source field to `fieldType: 'localDate'`; set `fieldType: 'date'` for exact
+  timestamps. Applies to in-browser `FieldFilter` evaluation only.
+
 
 ### 🐞 Bug Fixes
-* `FilterChooser` and grid column filters on a timestamp (`date`) field now filter by calendar day
-  by default, comparing against full-day bounds for both range and equality operators - e.g.
-  `> 2023-05-31` excludes all of the 31st, and `= 2023-05-31` matches any time that day, rather than
-  comparing against midnight only. Filter field specs now default a `date` source field to
-  `fieldType: 'localDate'`; set `fieldType: 'date'` explicitly to filter by exact timestamp. Applies
-  to in-browser `FieldFilter` evaluation; server-side filtering is unaffected.
-* `parseFieldValue` coerces `Date`/number to `localDate` via `LocalDate.from` instead of throwing.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
