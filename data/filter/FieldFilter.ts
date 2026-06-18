@@ -14,6 +14,7 @@ import {
     escapeRegExp,
     first,
     isArray,
+    isEmpty,
     isEqual,
     isNil,
     isString,
@@ -177,18 +178,22 @@ export class FieldFilter extends Filter {
             value = castArray(value);
         }
 
+        // Treat null, empty string, and empty array (blank `tags`) alike as "blank".
+        const isBlank = (v: any) => isNil(v) || v === '' || (isArray(v) && isEmpty(v));
+
         let regExps, opFn: (v: any) => boolean;
         switch (op) {
             case '=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return value.some(it => isEqual(v, it));
+                    if (isBlank(v)) v = null;
+                    // A blank filter (empty `value`) matches only blank record values.
+                    return (v == null && isEmpty(value)) || value.some(it => isEqual(v, it));
                 };
                 break;
             case '!=':
                 opFn = v => {
-                    if (isNil(v) || v === '') v = null;
-                    return !value.some(it => isEqual(v, it));
+                    if (isBlank(v)) v = null;
+                    return (v != null || !isEmpty(value)) && !value.some(it => isEqual(v, it));
                 };
                 break;
             case '>':
