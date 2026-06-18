@@ -101,13 +101,12 @@ export class HeaderFilterModel extends HoistModel {
         const {columnCompoundFilter, columnFilters, fieldType} = this;
         if (columnCompoundFilter) return true;
         if (isEmpty(columnFilters)) return false;
-        return columnFilters.some(
-            it =>
-                !['=', '!=', 'includes'].includes(it.op) ||
-                // 'Is blank'/'Is not blank' on a `tags` field is only representable on the custom
-                // tab - the values tab uses 'includes' and has no way to express a null tag value.
-                (fieldType === 'tags' && ['=', '!='].includes(it.op) && it.value == null)
-        );
+        return columnFilters.some(it => {
+            const isValuesTabOp = ['=', '!=', 'includes'].includes(it.op),
+                isTagsBlank =
+                    fieldType === 'tags' && ['=', '!='].includes(it.op) && it.value == null;
+            return !isValuesTabOp || isTagsBlank;
+        });
     }
 
     get commitOnChange() {

@@ -87,12 +87,11 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // Values from current column filter. `flatMap` here unwraps the array `parseVal` returns
         // for `tags`-typed fields, lining those values up with the scalar values produced by
         // `Store.getValuesForFieldFilter` above. Without this, a filter value like `'foo'` would
-        // survive as `['foo']` and dedupe incorrectly.
+        // survive as `['foo']` and dedupe incorrectly. The `filter` drops the non-selectable null
+        // value carried by a blank `tags` filter.
         const colFilterVals = flatMap(columnFilters, filter => {
             return castArray(filter.value).flatMap(val => sourceField.parseVal(val));
         })
-            // A blank ('is blank'/'is not blank') `tags` filter carries a null value that is not a
-            // real tag and should not appear as a selectable value in the list.
             .filter(it => sourceField.type !== 'tags' || it != null)
             .map(it => this.toDisplayValue(it));
 
