@@ -11,6 +11,7 @@ export * from './CheckboxButton';
 export * from './DateInput';
 export * from './NumberInput';
 export * from './SearchInput';
+export * from './SegmentedControl';
 export * from './Select';
 export * from './SwitchInput';
 export * from './TextInput';

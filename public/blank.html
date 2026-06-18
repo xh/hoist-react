@@ -1,1 +1,14 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Authenticating...</title>
+    <meta http-equiv="Cache-Control" content="no-store">
+    <script src="msal-redirect-bridge.min.js"></script>
+    <script>
+        // Required by @azure/msal-browser v5+ to relay auth responses from popup/iframe
+        // flows back to the main app via BroadcastChannel.
+        msalRedirectBridge.broadcastResponseToMainFrame().catch(console.error);
+    </script>
+</head>
+<body></body>
+</html>

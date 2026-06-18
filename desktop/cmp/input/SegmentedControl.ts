@@ -4,21 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    HoistInputModel,
+    HoistInputProps,
+    OptionPrimitive,
+    SegmentedControlNullOption,
+    SegmentedControlOption,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed, makeObservable} from '@xh/hoist/mobx';
-import {LocalDate} from '@xh/hoist/utils/datetime';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
-import {ReactElement} from 'react';
 import './SegmentedControl.scss';
-
-type OptionPrimitive = string | number | boolean | LocalDate;
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
@@ -31,10 +34,11 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     fill?: boolean;
 
     /**
-     * Visual intent applied to the selected option. Only `'primary'` is supported
-     * (in addition to the default `'none'`).
+     * Default visual intent applied to the selected option, and as a subtle text-color hint
+     * to options when not selected. Serves as the default for any option that does not specify
+     * its own `intent`. Defaults to `'none'`.
      */
-    intent?: 'none' | 'primary';
+    intent?: 'none' | Intent;
 
     /**
      * Array of available options. Each entry may be a SegmentedControlOption object
@@ -48,38 +52,6 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * with no inner background fill. Border color follows the current intent.
      */
     outlined?: boolean;
-}
-
-export interface SegmentedControlOption {
-    /** Value for this option. */
-    value: OptionPrimitive;
-
-    /** Display label. Defaults to `value.toString()` if omitted. */
-    label?: string;
-
-    /** Icon element, displayed before the label. */
-    icon?: ReactElement;
-
-    /** True to disable this individual option. */
-    disabled?: boolean;
-}
-
-/**
- * Variant of SegmentedControlOption for representing a null/"no value" selection.
- * Label is required to force use case to override default js 'null' toString rendering.
- */
-export interface SegmentedControlNullOption {
-    /** Null value for this option. */
-    value: null;
-
-    /** Display label - required for null options. */
-    label: string;
-
-    /** Icon element, displayed before the label. */
-    icon?: ReactElement;
-
-    /** True to disable this individual option. */
-    disabled?: boolean;
 }
 
 /**
@@ -107,6 +79,7 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 //-----------------------
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
+    intent?: Intent;
     _key: string;
 }
 
@@ -119,12 +92,13 @@ class SegmentedControlModel extends HoistInputModel {
         return options.map((o: any, idx: number) => {
             const key = String(idx);
             if (isObject(o)) {
-                const {label, value, icon, disabled} = o as SegmentedControlOption;
+                const {label, value, icon, disabled, intent} = o as SegmentedControlOption;
                 return {
                     value: this.toInternal(value),
                     label: label ?? (icon ? '' : String(value)),
                     icon,
                     disabled,
+                    intent,
                     _key: key
                 };
             } else {
@@ -185,18 +159,25 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...bpProps
     } = getNonLayoutProps(props);
 
-    const bpOptions = model.normalizedOptions.map(opt => ({
-        value: opt._key,
-        label: opt.label,
-        icon: opt.icon,
-        disabled: opt.disabled
-    }));
+    // Resolve the effective intent per option (own intent wins over control-level default),
+    // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
+    const defaultIntent = intent && intent !== 'none' ? intent : null,
+        bpOptions = model.normalizedOptions.map(opt => {
+            const optIntent = opt.intent ?? defaultIntent;
+            return {
+                value: opt._key,
+                label: opt.label,
+                icon: opt.icon,
+                disabled: opt.disabled,
+                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null
+            };
+        });
 
     return div({
         className: classNames(
             className,
             compact && 'xh-segmented-control--compact',
-            intent === 'primary' && 'xh-segmented-control--primary',
+            defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined'
         ),
         ref,
@@ -206,7 +187,6 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         [TEST_ID]: props.testId,
         item: bpSegmentedControl({
             ...bpProps,
-            intent,
             fill: bpProps.fill ?? true,
             size: compact ? 'small' : undefined,
             options: bpOptions,

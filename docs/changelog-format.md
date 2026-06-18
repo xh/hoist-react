@@ -155,6 +155,10 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
   to know about should be accounted for. Trivial changes (formatting, internal refactors with no
   behavioral impact, tooling updates) do not need to be included.
 - **No duplication**: Don't repeat the same change across sections. Pick the most relevant section.
+- **Issue/PR links**: Don't add GitHub issue or PR links (e.g. `[#1234]`) to entries by default.
+  Include one only when explicitly requested, or when it points to extensive context that genuinely
+  doesn't fit the changelog's scope. Issue/PR references normally belong in the commit message and
+  PR description, not the changelog.
 - **Punctuation**: End each bullet with a period.
 - **Line wrapping**: Hard-wrap list item text at 100 characters. Use two-space indentation for
   continuation lines. This keeps the raw Markdown readable in editors and diffs.

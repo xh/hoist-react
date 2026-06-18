@@ -1427,14 +1427,61 @@ function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
     }
 }
 
+/**
+ * Extract the human-readable description from one JSDoc block, fence-aware.
+ *
+ * `JSDoc.getDescription()` returns the text before the first JSDoc block tag,
+ * but the TS parser treats ANY line whose first non-whitespace char is `@` as a
+ * tag boundary - even inside a fenced ``` code block. So a canonical-usage
+ * example containing e.g. `@observable.ref` silently truncates the description
+ * mid-example, dropping everything after it (further examples, "SEE ALSO"
+ * lists, trailing prose). See #4352.
+ *
+ * Instead we take the full inner text and cut at the first block-tag line that
+ * is NOT inside a fenced code block. This is behaviorally identical to
+ * `getDescription()` for well-formed JSDoc (both stop at the first real tag),
+ * but preserves fenced `@`-lines. Real trailing tags (`@param`, `@returns`,
+ * `@mcpHint`, `@see`, ...) fall after the cut, so they never leak into the
+ * description - they are surfaced through their own structured channels
+ * ({@link extractJsDocTags}, {@link extractMcpHint}).
+ *
+ * Falls back to `getDescription()` if `getInnerText` is unavailable.
+ */
+function descriptionFromJsDoc(doc: {
+    getInnerText?: () => string;
+    getDescription: () => string;
+}): string {
+    const inner = doc.getInnerText?.();
+    if (inner == null) return doc.getDescription();
+
+    const out: string[] = [];
+    let inFence = false;
+    for (const line of inner.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+            inFence = !inFence;
+            out.push(line);
+            continue;
+        }
+        // First real (non-fenced) block tag ends the description.
+        if (!inFence && /^@\w/.test(trimmed)) break;
+        out.push(line);
+    }
+    // `getInnerText()` retains a stray trailing `*` from comments mistakenly
+    // closed with `**/` instead of `*/` (e.g. `/** Foo **/`); `getDescription()`
+    // drops it. Strip it to avoid a cosmetic regression. The required leading
+    // whitespace means real prose is unaffected, and a fenced block always ends
+    // with its closing ``` fence rather than ` *`.
+    return out.join('\n').replace(/\s+\*+\s*$/, '');
+}
+
 /** Extract JSDoc description from a node that supports getJsDocs(). */
-function extractJsDoc(node: {getJsDocs?: () => Array<{getDescription: () => string}>}): string {
+function extractJsDoc(node: {
+    getJsDocs?: () => Array<{getInnerText?: () => string; getDescription: () => string}>;
+}): string {
     try {
         const docs = node.getJsDocs?.() ?? [];
-        return docs
-            .map(d => d.getDescription())
-            .join('\n')
-            .trim();
+        return docs.map(descriptionFromJsDoc).join('\n').trim();
     } catch {
         return '';
     }

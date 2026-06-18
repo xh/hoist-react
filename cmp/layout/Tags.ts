@@ -30,6 +30,7 @@ export const br = elementFactory('br');
 export const code = elementFactory('code');
 export const div = elementFactory('div');
 export const fieldset = elementFactory('fieldset');
+export const em = elementFactory('em');
 export const form = elementFactory('form');
 export const hr = elementFactory('hr');
 export const h1 = elementFactory('h1');

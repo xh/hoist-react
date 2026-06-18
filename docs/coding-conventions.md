@@ -487,6 +487,13 @@ Factories also accept children as direct arguments when no other props are neede
 hbox(leftPanel(), rightPanel())
 ```
 
+**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
+component, the render function receives those values as the standard React `children` prop, not as
+`items`. The canonical container pattern is to destructure `children` from props and pass them on
+to an inner factory as `items`. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation.
+
 ## Export Patterns
 
 ### Named Exports Only
@@ -607,6 +614,18 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
  */
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
+Match the existing comment density and style in the file. Comments should describe intent for a
+future reader who has no knowledge of any particular edit, or the history of the code in question.
+Rarely should comments reference what changed, what was removed, or what's new.
+
+Generally, class- and method-level (TSDoc) comments should focus on the **public API surface** -
+what a caller needs to know to use the component, model, service, or method correctly - rather
+than narrating implementation details. Implementation notes belong in inline code comments next
+to the code they describe.
+
+This is especially important for **Hoist library code itself**, which is consumed by downstream
+applications: the TSDoc on a public type or method is effectively its contract, and should be
+written from the caller's perspective.
 
 ### Avoid Em Dashes in Code Comments
 

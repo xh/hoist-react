@@ -4,13 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, refreshContextView, TestSupportProps, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {useOnResize} from '@xh/hoist/utils/react';
+import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
 import './DashContainer.scss';
 import {createPortal} from 'react-dom';
 import {DashContainerModel} from './DashContainerModel';
