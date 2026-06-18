@@ -11,7 +11,8 @@
       than the desktop `SegmentedControl` module; update any direct type imports.
 
 ### 🐞 Bug Fixes
-
+* Fixed an issue where `Grid` column headers could fall out of sync with body content during
+  horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
 * `GridModel` now preserves the `pinned` state of hidden columns in persisted column state, so a
   column's pin survives being hidden and is restored when it is shown again.
