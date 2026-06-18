@@ -11,6 +11,11 @@
       than the desktop `SegmentedControl` module; update any direct type imports.
 
 ### 🐞 Bug Fixes
+* Client-side filtering of a timestamp (`date`) field by calendar day now behaves intuitively. Set
+  `fieldType: 'localDate'` on a `FilterChooser` or grid column filter spec to compare against
+  full-day bounds for both range and equality operators - e.g. `> 2023-05-31` excludes all of the
+  31st, and `= 2023-05-31` matches any time that day, rather than comparing against midnight only.
+  Applies to in-browser `FieldFilter` evaluation; server-side filtering is unaffected.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.

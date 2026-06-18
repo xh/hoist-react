@@ -183,7 +183,12 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
             : ['>', '>=', '<', '<=', '=', '!='];
     }
 
+    private get isLocalDateFilteringTimestamp(): boolean {
+        return this.fieldType === 'localDate' && this.sourceField?.type === 'date';
+    }
+
     private get isEnumerableByDefault(): boolean {
+        if (this.isLocalDateFilteringTimestamp) return false;
         switch (this.fieldType) {
             case 'int':
             case 'number':

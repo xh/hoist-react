@@ -112,9 +112,9 @@ export class FieldFilter extends Filter {
     // Overrides
     //-----------------
     override getTestFn(store?: Store): FilterTestFn {
-        let {field, op, value} = this,
-            regExps;
+        const {field, op, value} = this;
 
+        let storeFieldType: FieldType;
         if (store) {
             const storeField = store.getField(field);
             if (!storeField) {
@@ -127,18 +127,57 @@ export class FieldFilter extends Filter {
                 }
                 return () => true;
             }
+            storeFieldType = storeField.type;
+        }
 
-            const fieldType = storeField.type === 'tags' ? 'string' : storeField.type;
+        const opFn = this.getOpFn(op, value, storeFieldType);
+
+        if (!store) return r => opFn(r[field]);
+
+        return (r: StoreRecord) => {
+            const val = r.get(field);
+            if (opFn(val)) return true;
+
+            // Maximize chances of matching. Always pass adds ...
+            if (r.isAdd) return true;
+
+            // ... and check any differing original value as well
+            const committedVal = r.committedData[field];
+            return committedVal !== val && opFn(committedVal);
+        };
+    }
+
+    private getOpFn(
+        op: FieldFilterOperator,
+        value: any,
+        storeFieldType?: FieldType
+    ): (v: any) => boolean {
+        const RANGE_OPS = FieldFilter.RANGE_LIKE_OPERATORS,
+            ARR_OPS = FieldFilter.ARRAY_OPERATORS;
+
+        // Day-aware filtering for LocalDate value(s) over a timestamp field - compares against
+        // full calendar-day bounds for range and equality operators (#3338).
+        const firstVal = isArray(value) ? value[0] : value;
+        if (
+            storeFieldType === 'date' &&
+            LocalDate.isLocalDate(firstVal) &&
+            (RANGE_OPS.includes(op) || op === '=' || op === '!=')
+        ) {
+            return this.getDayBoundedOpFn(op, value);
+        }
+
+        // Coerce candidate value(s) to the store field's type when filtering against a store.
+        if (storeFieldType) {
+            const fieldType = storeFieldType === 'tags' ? 'string' : storeFieldType;
             value = isArray(value)
                 ? value.map(v => parseFieldValue(v, fieldType))
                 : parseFieldValue(value, fieldType);
         }
-
-        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
+        if (ARR_OPS.includes(op)) {
             value = castArray(value);
         }
 
-        let opFn: (v: any) => boolean;
+        let regExps, opFn: (v: any) => boolean;
         switch (op) {
             case '=':
                 opFn = v => {
@@ -197,20 +236,45 @@ export class FieldFilter extends Filter {
             default:
                 throw XH.exception(`Unknown operator: ${op}`);
         }
+        return opFn;
+    }
 
-        if (!store) return r => opFn(r[field]);
+    // Compare a timestamp against full calendar-day bounds `[dayStart, nextDayStart)` so a
+    // LocalDate value filters by date part. Supports range and equality operators (#3338).
+    private getDayBoundedOpFn(
+        op: FieldFilterOperator,
+        value: LocalDate | LocalDate[]
+    ): (v: any) => boolean {
+        const toMillis = (v: any) => (v instanceof Date ? v.getTime() : v);
 
-        return (r: StoreRecord) => {
-            const val = r.get(field);
-            if (opFn(val)) return true;
+        // Equality ops test the date part against any of the candidate day(s).
+        if (op === '=' || op === '!=') {
+            const ranges = castArray(value).map(d => [
+                    d.date.getTime(),
+                    d.nextDay().date.getTime()
+                ]),
+                inAnyDay = (t: number) => ranges.some(([start, next]) => t >= start && t < next);
+            return op === '='
+                ? v => !isNil(v) && inAnyDay(toMillis(v))
+                : v => isNil(v) || !inAnyDay(toMillis(v));
+        }
 
-            // Maximize chances of matching. Always pass adds ...
-            if (r.isAdd) return true;
-
-            // ... and check any differing original value as well
-            const committedVal = r.committedData[field];
-            return committedVal !== val && opFn(committedVal);
-        };
+        // Range ops compare against the bounds of a single day.
+        const day = value as LocalDate,
+            dayStart = day.date.getTime(),
+            nextDayStart = day.nextDay().date.getTime();
+        switch (op) {
+            case '>':
+                return v => !isNil(v) && toMillis(v) >= nextDayStart;
+            case '>=':
+                return v => !isNil(v) && toMillis(v) >= dayStart;
+            case '<':
+                return v => !isNil(v) && toMillis(v) < dayStart;
+            case '<=':
+                return v => !isNil(v) && toMillis(v) < nextDayStart;
+            default:
+                throw XH.exception(`Unsupported calendar-day operator: ${op}`);
+        }
     }
 
     override equals(other: Filter): boolean {
