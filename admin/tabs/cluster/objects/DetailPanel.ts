@@ -17,7 +17,7 @@ export const detailPanel = hoistCmp.factory({
     model: creates(DetailModel),
 
     render({model}) {
-        const {instanceName, selectedAdminStats, objectName, objectType} = model;
+        const {instanceName, objectName, objectType} = model;
         if (!objectName) return placeholder(Icon.grip(), 'Select an object to view details...');
 
         return panel({
@@ -35,7 +35,7 @@ export const detailPanel = hoistCmp.factory({
                         defaultSize: '80%',
                         collapsible: false
                     },
-                    item: adminJsonDisplay({value: selectedAdminStats})
+                    item: adminJsonDisplay({bind: 'selectedAdminStats'})
                 })
             ]
         });
