@@ -91,7 +91,8 @@ const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
                 enableSearch: true,
                 showFullscreenButton: false,
                 lineNumbers: false,
-                value: model.poolConfiguration
+                model,
+                bind: 'poolConfiguration'
             })
         });
     }
