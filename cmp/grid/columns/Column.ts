@@ -1062,9 +1062,6 @@ export class Column {
                     ref
                 };
                 // Can be a component or elem factory/ ad-hoc render function.
-                // Cast the ad-hoc render result to ReactElement: React 19 widened the
-                // function-component return to a `ReactNode` that includes `Promise`, which is
-                // not assignable to forwardRef's render-function return type.
                 if ((editor as any).isHoistComponent) return createElement(editor, props);
                 if (isFunction(editor)) return editor(props) as ReactElement;
                 throw XH.exception('Column editor must be a HoistComponent or a render function');
