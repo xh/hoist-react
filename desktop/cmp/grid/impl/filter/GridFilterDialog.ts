@@ -147,7 +147,7 @@ class GridFilterDialogLocalModel extends HoistModel {
     loadForm() {
         const filter = this.model.filter?.removeFunctionFilters();
         this.formModel.init({
-            filter: JSON.stringify(filter?.toJSON() ?? null, undefined, 2)
+            filter: JSON.stringify(filter ?? null, undefined, 2)
         });
     }
 
