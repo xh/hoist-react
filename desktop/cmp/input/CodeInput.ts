@@ -63,10 +63,9 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
     autoFocus?: boolean;
 
     /**
-     * True to automatically format the code based on the provided "formatter".
-     * Requires the "formatter" prop to be configured.
-     * Requires the input to be readonly to avoid any possible formatting
-     *   side effects in user edits
+     * True to automatically format content for display using the configured `formatter`.
+     * Applies only to `readonly` inputs (formatting an editable input would clobber user edits)
+     * and defaults to true when `readonly` - set false to opt out.
      */
     autoFormat?: boolean;
 
@@ -272,6 +271,14 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override onLinked() {
+        const {autoFormat, readonly} = this.componentProps;
+        if (autoFormat && !readonly) {
+            logWarn(
+                '`autoFormat` applies only to `readonly` inputs and will have no effect.',
+                this
+            );
+        }
+
         this.addReaction(
             {
                 track: () => XH.darkTheme,
@@ -329,9 +336,14 @@ class CodeInputModel extends HoistInputModel {
         this.editor = new EditorView({state, parent: container});
     };
 
+    /** True to auto-format content for display - defaults on for `readonly` inputs. */
+    get autoFormat(): boolean {
+        const {autoFormat, readonly} = this.componentProps;
+        return !!readonly && withDefault(autoFormat, true);
+    }
+
     override toInternal(val: any) {
-        const {readonly, autoFormat} = this.componentProps;
-        return readonly && autoFormat ? this.tryPrettyPrint(val) : val;
+        return this.autoFormat ? this.tryPrettyPrint(val) : val;
     }
 
     private formatAndSetEditorValue() {
