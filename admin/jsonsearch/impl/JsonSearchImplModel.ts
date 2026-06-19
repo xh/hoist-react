@@ -137,7 +137,8 @@ export class JsonSearchImplModel extends HoistModel {
         const {json} = this.selectedRecord.data;
 
         if (this.readerContentType === 'document') {
-            this.readerContent = JSON.stringify(JSON.parse(json), null, 2);
+            // Readonly jsonInput auto-formats for display - no need to pretty-print here.
+            this.readerContent = json;
             return;
         }
 
@@ -162,7 +163,7 @@ export class JsonSearchImplModel extends HoistModel {
                         value
                     };
                 });
-                this.readerContent = JSON.stringify(nodes, null, 2);
+                this.readerContent = JSON.stringify(nodes);
             });
     }
 
