@@ -85,15 +85,15 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
         popoverClassName
     }) {
         const impl = useLocalModel(PopoverModel),
-            placement = impl.menuPositionToPlacement(position),
-            isAuto = placement === 'auto',
+            isAuto = position === 'auto',
+            placement = isAuto ? undefined : impl.menuPositionToPlacement(position),
             // Use Floating UI's own `refs.setReference`/`setFloating` callback refs rather than
             // the controlled `elements` option. This lets Floating UI manage the element state
             // (and trigger its own re-renders/repositioning) internally, instead of relying on a
             // MobX observer re-render when an observable ref is set during the commit phase - a
             // dependency that does not reliably fire under React 19 for the portaled content.
             {refs, floatingStyles} = useFloating({
-                placement: isAuto ? undefined : (placement as Placement),
+                placement,
                 strategy: 'fixed',
                 middleware: [isAuto ? autoPlacement() : flip(), shift({padding: 10})],
                 whileElementsMounted: autoUpdate
@@ -213,7 +213,7 @@ class PopoverModel extends HoistModel {
      * by Blueprint's similar implementation:
      * https://github.com/palantir/blueprint/blob/develop/packages/core/src/components/popover/popoverMigrationUtils.ts
      */
-    menuPositionToPlacement(position) {
+    menuPositionToPlacement(position: string): Placement {
         switch (position) {
             case 'top-left':
                 return 'top-start';
@@ -232,7 +232,7 @@ class PopoverModel extends HoistModel {
             case 'left-bottom':
                 return 'left-end';
             default:
-                return position;
+                return position as Placement;
         }
     }
 }
