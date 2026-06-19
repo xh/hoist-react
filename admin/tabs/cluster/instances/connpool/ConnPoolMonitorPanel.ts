@@ -84,10 +84,7 @@ const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
                 defaultSize: 450,
                 defaultCollapsed: true
             },
-            item: adminJsonDisplay({
-                enableSearch: true,
-                bind: 'poolConfiguration'
-            })
+            item: adminJsonDisplay({enableSearch: true, bind: 'poolConfiguration'})
         });
     }
 });

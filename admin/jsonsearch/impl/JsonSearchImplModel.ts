@@ -137,7 +137,6 @@ export class JsonSearchImplModel extends HoistModel {
         const {json} = this.selectedRecord.data;
 
         if (this.readerContentType === 'document') {
-            // Readonly jsonInput auto-formats for display - no need to pretty-print here.
             this.readerContent = json;
             return;
         }

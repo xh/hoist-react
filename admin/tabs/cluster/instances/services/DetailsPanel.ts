@@ -49,11 +49,6 @@ const stats = hoistCmp.factory<DetailsModel>({
                       ? []
                       : [Icon.questionCircle(), 'This service does not report any admin stats.'])
               )
-            : panel(
-                  adminJsonDisplay({
-                      enableSearch: true,
-                      bind: 'stats'
-                  })
-              );
+            : panel(adminJsonDisplay({enableSearch: true, bind: 'stats'}));
     }
 });
