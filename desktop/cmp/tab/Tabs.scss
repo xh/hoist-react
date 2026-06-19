@@ -10,13 +10,17 @@
   max-width: 100%;
   max-height: 100%;
   flex-direction: column;
-  flex: 1 1 0;
+  //noinspection CssRedundantUnit
+  flex: 1 1 0%;
+  // % unit used to avoid browser fallback to px,
+  // which prevents container expansion
 
   .xh-tab-wrapper {
     display: flex;
     min-width: 0;
     min-height: 0;
-    flex: 1 1 0;
+    //noinspection CssRedundantUnit
+    flex: 1 1 0%;
   }
 }
 

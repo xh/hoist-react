@@ -10,6 +10,8 @@ import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createRouter, Router, State} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
+// Required so downstream consumers pick up Router TS augmentation (buildUrl, etc.).
+import 'router5-plugin-browser';
 
 /**
  * Top-level model for managing application routing in Hoist.
