@@ -17,9 +17,9 @@
   behavior and rely on Hoist default behavior.
 * `CodeInput` / `JsonInput` now auto-format `readonly` content for display via their configured
   `formatter`, removing the need to pre-format values (e.g. JSON) before passing them in. Controlled
-  by a new `autoFormat` prop that defaults to true when `readonly`; set false to opt out. The
-  configured `formatter` is invoked within a try/catch, so a formatter that throws (e.g. on invalid
-  JSON) leaves the original content unchanged.
+  by a new `autoFormat` prop that defaults to true when `readonly`. Applications binding a
+  `JsonInput` to read-only content may be able to drop their pre-formatting logic and bind directly
+  to the source value, simplifying call sites substantially.
 
 
 ### 🐞 Bug Fixes
