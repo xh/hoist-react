@@ -50,7 +50,7 @@ import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
+import {logError, logWarn, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
@@ -272,12 +272,10 @@ class CodeInputModel extends HoistInputModel {
 
     override onLinked() {
         const {autoFormat, readonly} = this.componentProps;
-        if (autoFormat && !readonly) {
-            logWarn(
-                '`autoFormat` applies only to `readonly` inputs and will have no effect.',
-                this
-            );
-        }
+        warnIf(
+            autoFormat && !readonly,
+            '`autoFormat` applies only to `readonly` inputs and will have no effect.'
+        );
 
         this.addReaction(
             {
