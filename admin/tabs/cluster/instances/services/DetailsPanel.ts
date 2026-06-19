@@ -52,7 +52,7 @@ const stats = hoistCmp.factory<DetailsModel>({
             : panel(
                   adminJsonDisplay({
                       enableSearch: true,
-                      value: stats
+                      bind: 'stats'
                   })
               );
     }
