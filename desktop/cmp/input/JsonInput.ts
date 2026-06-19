@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {safeFmtJson} from '@xh/hoist/format';
+import {fmtJson} from '@xh/hoist/format';
 import {codeInput, CodeInputProps} from './CodeInput';
 import {jsonlint} from './impl/jsonlint.js';
 
@@ -21,7 +21,7 @@ export const [JsonInput, jsonInput] = hoistCmp.withFactory<JsonInputProps>({
     render(props, ref) {
         return codeInput({
             linter,
-            formatter: safeFmtJson,
+            formatter: fmtJson,
             language: 'json',
             ...props,
             ref
