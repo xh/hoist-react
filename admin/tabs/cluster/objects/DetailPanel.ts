@@ -43,7 +43,8 @@ export const detailPanel = hoistCmp.factory({
                         height: '100%',
                         showFullscreenButton: false,
                         lineNumbers: false,
-                        value: fmtJson(selectedAdminStats, {replacer: timestampReplacer()})
+                        value: selectedAdminStats,
+                        formatter: v => fmtJson(v, {replacer: timestampReplacer()})
                     })
                 })
             ]

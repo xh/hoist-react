@@ -58,7 +58,8 @@ const stats = hoistCmp.factory<DetailsModel>({
                       enableSearch: true,
                       showFullscreenButton: false,
                       lineNumbers: false,
-                      value: fmtJson(stats, {replacer: timestampReplacer()})
+                      value: stats,
+                      formatter: v => fmtJson(v, {replacer: timestampReplacer()})
                   })
               );
     }
