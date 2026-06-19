@@ -35,10 +35,7 @@ export const detailPanel = hoistCmp.factory({
                         defaultSize: '80%',
                         collapsible: false
                     },
-                    item: adminJsonDisplay({
-                        flex: 1,
-                        value: selectedAdminStats
-                    })
+                    item: adminJsonDisplay({value: selectedAdminStats})
                 })
             ]
         });
