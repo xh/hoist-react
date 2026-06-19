@@ -61,12 +61,21 @@
       }
     }
 
-    // Fill mode (default) - options grow to fill the available width. Basis is `auto` (content)
-    // rather than 0 so each option keeps at least its content width and only the leftover space
-    // is shared out - a wider label is not starved into truncation by narrower siblings. Options
-    // still shrink + ellipsis (see below) when the set genuinely cannot fit.
+    // Fill mode (default) - options grow to fill the available width. The basis set here is `auto`
+    // (content), so without `equalSegmentWidths` each option keeps its content width and only the
+    // leftover space is shared out - a wider label yields a wider segment. The equal-widths rule
+    // below (the default) overrides this basis. Options still shrink + ellipsis (see above) when
+    // the set genuinely cannot fit.
     &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
       flex: 1 1 auto;
+    }
+
+    // Equal-width segments (default, via the `equalSegmentWidths` prop) - a 0 flex-basis divides
+    // the row into equal parts regardless of label length, the conventional segmented-control
+    // appearance. Higher specificity than the content-basis rule above, so it wins when applied.
+    &.xh-segmented-control--fill.xh-segmented-control--equal-widths
+      .xh-button.xh-segmented-control-option {
+      flex-basis: 0;
     }
 
     // Outlined mode - border around the tray with no inner background fill.
