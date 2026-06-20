@@ -36,5 +36,7 @@
 }
 
 .xh-mobile .xh-error-message__inner {
+  flex: 1;
+  max-width: none;
   margin: 0 var(--xh-pad-px);
 }
