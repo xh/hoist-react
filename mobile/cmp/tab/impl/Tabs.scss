@@ -23,9 +23,13 @@
   align-items: stretch;
   flex-direction: column;
   transform: translateX(0);
-  // Default tab content to the themed app background. Onsen's page default is an opaque light
-  // color, which leaves themed text unreadable in dark mode when tab content is not itself a
-  // panel (or other element that paints its own background).
+}
+
+// Theme the page backdrop. Onsen renders an opaque, light-by-default `.page__background` behind
+// each page's content, and the content itself is forced transparent (so the app background shows
+// through). That leaves the light backdrop visible for tab content that is not itself a panel,
+// rendering themed text unreadable in dark mode - so paint the backdrop with the app background.
+.xh-tab-page .page__background {
   background-color: var(--xh-bg);
 }
 
