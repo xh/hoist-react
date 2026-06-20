@@ -9,6 +9,7 @@
   choices. Built on Hoist's mobile `Button` (no Blueprint dependency).
     * The shared `SegmentedControlOption` option types now export from `@xh/hoist/cmp/input` rather
       than the desktop `SegmentedControl` module; update any direct type imports.
+* Added a `leftIcon` prop to mobile `TextInput`.
 * `FilterChooser` and grid column filters on a timestamp (`date`) field now filter by calendar day,
   comparing against full-day bounds for range and equality operators rather than midnight - e.g.
   `> 2023-05-31` excludes the 31st and `= 2023-05-31` matches any time that day. Filter specs now
@@ -16,8 +17,8 @@
   timestamps. Applications using workarounds to provide similar behavior may be able to unwind that
   behavior and rely on Hoist default behavior.
 
-
 ### 🐞 Bug Fixes
+
 * Fixed the "Is blank" / "Is not blank" grid column filters for `tags`-typed fields - empty tag
   arrays now correctly match "Is blank", and such filters are edited on the Custom tab rather than
   producing a phantom blank entry in the Values list.
@@ -25,10 +26,10 @@
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
 * Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure
-  that the `0` is not interpreted as a `0px` basis, which can prevent the tab container from expanding.
-  * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
-    verify that their flex layouts continue to work as expected and add an explicit unit if
-    not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
+  that the `0` is not interpreted as a `0px` basis and that the container sizes as expected.
+    * ⚠️Apps that upgrade to `hoist-dev-utils v13.x` and use `flex: 1 1 0` or `flex-basis: 0` should
+      verify that their flex layouts continue to work as expected and add an explicit unit if
+      not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
 
 ### ✨ Styles
 
