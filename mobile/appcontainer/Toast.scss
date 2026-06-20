@@ -31,6 +31,13 @@ ons-toast.xh-toast {
       }
     }
 
+    .xh-toast__trace-id {
+      display: block;
+      margin-top: var(--xh-pad-half-px);
+      font-size: var(--xh-font-size-small-px);
+      opacity: 0.7;
+    }
+
     .xh-button {
       --xh-text-color: rgba(255, 255, 255, 0.7);
     }

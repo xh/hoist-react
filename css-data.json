@@ -95,11 +95,11 @@
     },
     {
       "name": "--xh-pos-val-color",
-      "description": "Pos val color. Defaults to `--xh-green`."
+      "description": "Pos val color. Defaults to `--xh-intent-success-text-color`."
     },
     {
       "name": "--xh-neg-val-color",
-      "description": "Neg val color. Defaults to `--xh-red`."
+      "description": "Neg val color. Defaults to `--xh-intent-danger-text-color`."
     },
     {
       "name": "--xh-neutral-val-color",
@@ -466,6 +466,10 @@
       "description": "Background highlight color for selections, hovers, and emphasis."
     },
     {
+      "name": "--xh-bg-highlight-alt",
+      "description": "Alternate background highlight color for secondary emphasis."
+    },
+    {
       "name": "--xh-badge-bg",
       "description": "Badge background. Defaults to `--xh-blue-gray`."
     },
@@ -531,23 +535,23 @@
     },
     {
       "name": "--xh-button-bg",
-      "description": "Button background. Defaults to `--xh-intent-neutral`."
+      "description": "Button background."
     },
     {
       "name": "--xh-button-bg-darker",
-      "description": "Button bg darker. Defaults to `--xh-intent-neutral-darker`."
+      "description": "Button bg darker."
     },
     {
       "name": "--xh-button-bg-darkest",
-      "description": "Button bg darkest. Defaults to `--xh-intent-neutral-darkest`."
+      "description": "Button bg darkest."
     },
     {
       "name": "--xh-button-bg-lighter",
-      "description": "Button bg lighter. Defaults to `--xh-intent-neutral-lighter`."
+      "description": "Button bg lighter."
     },
     {
       "name": "--xh-button-bg-lightest",
-      "description": "Button bg lightest. Defaults to `--xh-intent-neutral-lightest`."
+      "description": "Button bg lightest."
     },
     {
       "name": "--xh-button-border-radius-px",
@@ -1146,6 +1150,26 @@
       "description": "Grid text color. Defaults to `--xh-text-color`."
     },
     {
+      "name": "--xh-grid-tooltip-bg",
+      "description": "Grid tooltip background. Defaults to `--xh-bg-alt`."
+    },
+    {
+      "name": "--xh-grid-tooltip-border",
+      "description": "Grid tooltip border. Defaults to `--xh-border-solid`."
+    },
+    {
+      "name": "--xh-grid-tooltip-border-radius",
+      "description": "Grid tooltip border radius. Defaults to `--xh-border-radius-px`."
+    },
+    {
+      "name": "--xh-grid-tooltip-max-width",
+      "description": "Grid tooltip max width."
+    },
+    {
+      "name": "--xh-grid-tooltip-padding",
+      "description": "Grid tooltip padding. Defaults to `--xh-pad-half-px`."
+    },
+    {
       "name": "--xh-grid-tree-indent",
       "description": "Grid tree indent."
     },
@@ -1326,6 +1350,38 @@
       "description": "Input disabled checkmark svg."
     },
     {
+      "name": "--xh-segmented-control-bg",
+      "description": "Segmented control background."
+    },
+    {
+      "name": "--xh-segmented-control-selected-bg",
+      "description": "Segmented control selected background. Defaults to `--xh-bg`."
+    },
+    {
+      "name": "--xh-segmented-control-text-color",
+      "description": "Segmented control text color."
+    },
+    {
+      "name": "--xh-segmented-control-selected-text-color",
+      "description": "Segmented control selected text color. Defaults to `--xh-text-color`."
+    },
+    {
+      "name": "--xh-segmented-control-border-radius",
+      "description": "Segmented control border radius. Defaults to `--xh-border-radius`."
+    },
+    {
+      "name": "--xh-segmented-control-border-radius-px",
+      "description": "Pixel value of `--xh-segmented-control-border-radius`. Derived — override `--xh-segmented-control-border-radius` instead."
+    },
+    {
+      "name": "--xh-segmented-control-pad",
+      "description": "Segmented control pad."
+    },
+    {
+      "name": "--xh-segmented-control-pad-px",
+      "description": "Pixel value of `--xh-segmented-control-pad`. Derived — override `--xh-segmented-control-pad` instead."
+    },
+    {
       "name": "--xh-mask-bg",
       "description": "Mask background."
     },
@@ -1352,6 +1408,10 @@
     {
       "name": "--xh-loading-indicator-color",
       "description": "LoadingIndicator color."
+    },
+    {
+      "name": "--xh-loading-indicator-spinner-color",
+      "description": "LoadingIndicator spinner color. Defaults to `--xh-loading-indicator-color`."
     },
     {
       "name": "--xh-popover-backdrop-bg",
@@ -1520,6 +1580,10 @@
     {
       "name": "--xh-scrollbar-size-px",
       "description": "Scrollbar size px."
+    },
+    {
+      "name": "--xh-spinner-color",
+      "description": "Spinner color."
     },
     {
       "name": "--xh-tab-text-color",

@@ -63,7 +63,11 @@ export interface FieldSpec {
     enableXssProtection?: boolean;
 }
 
-/** Metadata for an individual data field within a {@link StoreRecord}. */
+/**
+ * Metadata for an individual data field within a {@link StoreRecord}.
+ *
+ * @mcpHint metadata for a data field within a Store or Cube
+ */
 export class Field {
     get isField() {
         return true;
@@ -162,7 +166,9 @@ export function parseFieldValue(
         case 'date':
             return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
         case 'localDate':
-            return isLocalDate(val) ? val : LocalDate.get(val);
+            if (isLocalDate(val)) return val;
+            // `get` parses strict 'YYYYMMDD'/'YYYY-MM-DD' strings; `from` coerces Date/number/moment.
+            return isString(val) ? LocalDate.get(val) : LocalDate.from(val);
     }
 
     throw XH.exception(`Unknown field type '${type}'`);

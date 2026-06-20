@@ -12,6 +12,12 @@ import {Icon} from '@xh/hoist/icon';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
 import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
+/**
+ * Configuration for a {@link LeftRightChooserModel} - a dual-list control for moving items
+ * between "available" (left) and "selected" (right) collections.
+ *
+ * @see LeftRightChooserModel
+ */
 export interface LeftRightChooserConfig {
     data?: LeftRightChooserItem[];
 
@@ -41,6 +47,7 @@ export interface LeftRightChooserConfig {
     rightGroupingExpanded?: boolean;
     rightEmptyText?: string;
 
+    /** @internal */
     xhImpl?: boolean;
 }
 
@@ -100,7 +107,7 @@ export class LeftRightChooserModel extends HoistModel {
      * Note that this will *not* affect the actual 'value' property, which will continue
      * to include unfiltered records.
      *
-     * @see LeftRightChooserFilter - a component to easily control this field.
+     * @see LeftRightChooserFilter
      * @param fn - predicate function for filtering.
      */
     setDisplayFilter(fn: FilterTestFn) {

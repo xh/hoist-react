@@ -44,6 +44,7 @@ const changelogContents = hoistCmp.factory<ChangelogDialogModel>(({model}) => {
             button({
                 text: 'Close',
                 intent: 'primary',
+                testId: 'xh-changelog-close-btn',
                 onClick: () => model.hide()
             })
         ]

@@ -27,7 +27,7 @@ export interface MaskProps extends HoistProps {
     isDisplayed?: boolean;
     /** Optional text to be displayed. */
     message?: ReactNode;
-    /** Click handler **/
+    /** Click handler */
     onClick?: (e: MouseEvent) => void;
     /** True to display a spinning image.  Default false. */
     spinner?: boolean;

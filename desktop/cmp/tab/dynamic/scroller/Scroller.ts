@@ -1,10 +1,9 @@
-import composeRefs from '@seznam/compose-react-refs';
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
 import {BoxProps, creates, hoistCmp, HoistProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
-import {useOnResize} from '@xh/hoist/utils/react';
+import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
 import React, {Ref} from 'react';
 
 /**

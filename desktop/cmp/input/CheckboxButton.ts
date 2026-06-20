@@ -21,6 +21,9 @@ export interface CheckboxButtonProps extends Omit<ButtonProps, 'onChange'>, Hois
 
     /** Icon to display when unchecked. Defaults to a light outlined square icon. */
     uncheckedIcon?: ReactElement;
+
+    /** Side of the button on which to render the checkbox icon. Default 'left'. */
+    iconSide?: 'left' | 'right';
 }
 
 /**
@@ -44,13 +47,17 @@ class CheckboxButtonInputModel extends HoistInputModel {
 // Implementation
 //----------------------------------
 const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
-    ({model, text, checkedIcon, uncheckedIcon, ...props}, ref) => {
-        const checked = !!model.renderValue;
-        return button({
-            text: withDefault(text, model.getField()?.displayName),
-            icon: checked
+    ({model, text, icon, rightIcon, checkedIcon, uncheckedIcon, iconSide, ...props}, ref) => {
+        const checked = !!model.renderValue,
+            toggleIcon = checked
                 ? withDefault(checkedIcon, Icon.checkSquare({prefix: 'fas', intent: 'primary'}))
                 : withDefault(uncheckedIcon, Icon.square({prefix: 'fal'})),
+            onRight = iconSide === 'right';
+
+        return button({
+            text: withDefault(text, model.getField()?.displayName),
+            icon: onRight ? icon : toggleIcon,
+            rightIcon: onRight ? toggleIcon : rightIcon,
             outlined: true,
             onClick: () => model.noteValueChange(!checked),
             ...props,

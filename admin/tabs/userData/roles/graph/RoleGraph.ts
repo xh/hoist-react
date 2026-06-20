@@ -8,8 +8,7 @@ import {chart} from '@xh/hoist/cmp/chart';
 import {errorBoundary} from '@xh/hoist/cmp/error';
 import {div, filler, placeholder, span} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput, slider, switchInput} from '@xh/hoist/desktop/cmp/input';
+import {segmentedControl, slider, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
@@ -43,17 +42,17 @@ export const roleGraph = hoistCmp.factory({
             }),
             bbar: toolbar({
                 items: [
-                    buttonGroupInput({
+                    segmentedControl({
                         bind: 'relationship',
-                        items: [
-                            button({
+                        options: [
+                            {
                                 value: 'effective',
-                                text: `Granted to ${pluralize('role', role?.effectiveRoles.length, true)}`
-                            }),
-                            button({
+                                label: `Granted to ${pluralize('role', role?.effectiveRoles.length, true)}`
+                            },
+                            {
                                 value: 'inherited',
-                                text: `Inheriting from ${pluralize('role', role?.inheritedRoles.length, true)}`
-                            })
+                                label: `Inheriting from ${pluralize('role', role?.inheritedRoles.length, true)}`
+                            }
                         ]
                     }),
                     filler(),
@@ -73,17 +72,12 @@ export const roleGraph = hoistCmp.factory({
                         labelRenderer: false
                     }),
                     '-',
-                    buttonGroupInput({
+                    segmentedControl({
                         bind: 'inverted',
-                        items: [
-                            button({
-                                value: true,
-                                icon: Icon.treeGraph()
-                            }),
-                            button({
-                                value: false,
-                                icon: Icon.treeGraph({rotation: 270})
-                            })
+                        fill: false,
+                        options: [
+                            {value: true, icon: Icon.treeGraph()},
+                            {value: false, icon: Icon.treeGraph({rotation: 270})}
                         ]
                     })
                 ],

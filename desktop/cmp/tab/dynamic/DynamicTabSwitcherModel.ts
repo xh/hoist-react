@@ -83,7 +83,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
     }
 
     activate(tabId: string) {
-        this.tabContainerModel.activateTab(tabId);
+        this.tabContainerModel.setActiveTabId(tabId);
     }
 
     @action
@@ -96,7 +96,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
                     visitableTabs[
                         activeTabIdx + (activeTabIdx === visitableTabs.length - 1 ? -1 : 1)
                     ];
-            if (toActivate) tabContainerModel.activateTab(toActivate);
+            if (toActivate) tabContainerModel.setActiveTabId(toActivate.id);
         }
         this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
     }

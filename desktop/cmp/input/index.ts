@@ -7,6 +7,7 @@ export * from './JsonInput';
 export * from './NumberInput';
 export * from './Picker';
 export * from './RadioInput';
+export * from './SegmentedControl';
 export * from './Select';
 export * from './Slider';
 export * from './SwitchInput';

@@ -25,7 +25,8 @@
             "mcpCategory": "index",
             "viewerCategory": "overview",
             "description": "Primary catalog of all hoist-react documentation with descriptions and key topics for fast, targeted retrieval.",
-            "keywords": ["index", "catalog", "documentation", "quick reference", "packages", "concepts", "devops"]
+            "keywords": ["index", "catalog", "documentation", "quick reference", "packages", "concepts", "devops"],
+            "aliases": ["index"]
         },
         {
             "id": "docs/coding-conventions.md",
@@ -33,7 +34,8 @@
             "mcpCategory": "conventions",
             "viewerCategory": "overview",
             "description": "Comprehensive coding conventions for hoist-react: imports, TypeScript style, naming, class structure, component patterns, exports, null handling, async patterns, error handling, logging, equality, and CSS naming.",
-            "keywords": ["conventions", "code style", "imports", "naming", "TypeScript", "class structure", "component patterns", "hoistCmp", "exports", "null", "undefined", "async", "await", "error handling", "logging", "equality", "CSS", "BEM", "section dividers", "declare config"]
+            "keywords": ["conventions", "code style", "imports", "naming", "TypeScript", "class structure", "component patterns", "hoistCmp", "exports", "null", "undefined", "async", "await", "error handling", "logging", "equality", "CSS", "BEM", "section dividers", "declare config"],
+            "aliases": ["conventions"]
         },
         {
             "id": "core/README.md",
@@ -48,8 +50,16 @@
             "title": "Data Layer",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Observable data layer with filtering, validation, and aggregation.",
-            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "Cube", "View", "tree data", "loadData", "processRawData"]
+            "description": "Observable data layer with Store, Field, filtering, validation, and tree data.",
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData"]
+        },
+        {
+            "id": "data/cube/README.md",
+            "title": "Cube Aggregation",
+            "mcpCategory": "package",
+            "viewerCategory": "core",
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
         },
         {
             "id": "svc/README.md",
@@ -57,7 +67,8 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Built-in singleton services for data access and app-wide operations.",
-            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService"]
+            "keywords": ["FetchService", "ConfigService", "PrefService", "IdentityService", "TrackService", "TraceService", "MetricsService", "WebSocketService", "JsonBlobService", "GridExportService", "GridAutosizeService", "IdleService", "AutoRefreshService", "EnvironmentService", "Runner", "CallContext", "withSpan", "traceparent", "distributed tracing"],
+            "aliases": ["services"]
         },
         {
             "id": "cmp/README.md",
@@ -65,7 +76,8 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"]
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"],
+            "aliases": ["components"]
         },
         {
             "id": "cmp/grid/README.md",
@@ -137,7 +149,7 @@
             "mcpCategory": "package",
             "viewerCategory": "desktop",
             "description": "Desktop-specific components and app container.",
-            "keywords": ["desktop components", "Blueprint wrappers", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
+            "keywords": ["desktop components", "Blueprint wrappers", "dialog", "modal", "toolbar", "Select", "DateInput", "NumberInput", "TextArea", "Picker", "Checkbox", "SwitchInput", "RadioInput", "Slider", "CodeInput", "JsonInput", "LeftRightChooser", "dropdown"]
         },
         {
             "id": "mobile/README.md",
@@ -308,6 +320,14 @@
             "keywords": ["XH.handleException", "ExceptionDialog", "catchDefault", "alertType", "toast", "requireReload", "ErrorBoundary", "error boundary", "exception logging"]
         },
         {
+            "id": "docs/telemetry.md",
+            "title": "Telemetry & Observability",
+            "mcpCategory": "concept",
+            "viewerCategory": "concepts",
+            "description": "Client-side tracing, activity tracking, metrics, and timed logging composed via the Runner chain.",
+            "keywords": ["Runner", "telemetry", "observability", "tracing", "TraceService", "span", "traceparent", "sampling", "MetricsService", "metrics", "activity tracking", "CallContext", "telemetryPrefix"]
+        },
+        {
             "id": "docs/test-automation.md",
             "title": "Test Automation",
             "mcpCategory": "concept",
@@ -360,8 +380,24 @@
             "title": "Changelog Format",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "CHANGELOG entry format conventions and section headers.",
+            "description": "Conventions for writing and reviewing CHANGELOG entries in the hoist-react library CHANGELOG — section headers, voice/tense, difficulty ratings, breaking changes, libraries.",
             "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
+        },
+        {
+            "id": "docs/upgrade-notes/v73-upgrade-notes.md",
+            "title": "v73 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v72.x to v73.0.1. Low difficulty — hoist-core >= 31, makeObservable enforcement, ESLint 9.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v73", "v72"]
+        },
+        {
+            "id": "docs/upgrade-notes/v74-upgrade-notes.md",
+            "title": "v74 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v73.x to v74.1.2. Low difficulty — ViewManagerModel.settleTime removal, ChartModel.showContextMenu replaced.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v74", "v73", "settleTime", "showContextMenu"]
         },
         {
             "id": "docs/upgrade-notes/v75-upgrade-notes.md",
@@ -369,7 +405,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v74.x to v75.0.1. Low difficulty — removed deprecated APIs, Cube View row data changes.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v75", "v74", "deprecation", "ViewRowData", "cube"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v75", "v74", "ViewRowData"]
         },
         {
             "id": "docs/upgrade-notes/v76-upgrade-notes.md",
@@ -377,7 +413,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v75.x to v76.0.0. Medium difficulty — AG Grid v31→v34, new module registration.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v76", "v75", "ag-grid", "ag grid", "module registration", "groupRowRenderer"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v76", "v75", "groupRowRenderer"]
         },
         {
             "id": "docs/upgrade-notes/v77-upgrade-notes.md",
@@ -385,7 +421,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v76.x to v77.1.1. Medium difficulty — Highcharts v12, XSS protection API rename.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v77", "v76", "highcharts", "xss", "enableXssProtection"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v77", "v76", "disableXssProtection"]
         },
         {
             "id": "docs/upgrade-notes/v78-upgrade-notes.md",
@@ -393,7 +429,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v77.x to v78.0.0. Trivial difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v78", "v77", "setColumnState"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v78", "v77"]
         },
         {
             "id": "docs/upgrade-notes/v79-upgrade-notes.md",
@@ -401,7 +437,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v78.x to v79.0.0. Medium difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v79", "v78", "Blueprint 6", "moduleResolution"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v79", "v78"]
         },
         {
             "id": "docs/upgrade-notes/v80-upgrade-notes.md",
@@ -409,7 +445,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v79.x to v80.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v80", "v79", "FormField", "appLoadObserver"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v80", "v79", "appLoadModel"]
         },
         {
             "id": "docs/upgrade-notes/v81-upgrade-notes.md",
@@ -417,7 +453,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v80.x to v81.0.2. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v81", "v80", "Panel CSS", "BpCard"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v81", "v80"]
         },
         {
             "id": "docs/upgrade-notes/v82-upgrade-notes.md",
@@ -425,7 +461,39 @@
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v81.x to v82.0.0. Low difficulty.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "Picker", "DashCanvas", "MCP", "Filter"]
+            "keywords": ["upgrade", "migration", "breaking changes", "v82", "v81", "xh-popup--framed"]
+        },
+        {
+            "id": "docs/upgrade-notes/v83-upgrade-notes.md",
+            "title": "v83 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v82.x to v83.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v83", "v82", "downloadjs"]
+        },
+        {
+            "id": "docs/upgrade-notes/v84-upgrade-notes.md",
+            "title": "v84 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v83.x to v84.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v84", "v83", "getClassName"]
+        },
+        {
+            "id": "docs/upgrade-notes/v85-upgrade-notes.md",
+            "title": "v85 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v84.x to v85.0.0. Low difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v85", "v84"]
+        },
+        {
+            "id": "docs/upgrade-notes/v86-upgrade-notes.md",
+            "title": "v86 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v85.x to v86.0.0. Medium difficulty.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v86", "v85", "editorProps", "serializeIcon", "deserializeIcon", "enableMulti", "showFileGrid", "singleDatePickerProps", "react-dates", "golden-layout"]
         }
     ]
 }

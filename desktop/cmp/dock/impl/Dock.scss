@@ -31,7 +31,7 @@
     }
   }
 
-  .xh-modal-support__inline {
+  > .xh-modal-support__inline {
     // Don't flex-shrink docked dock views, allowing them to clip the container.
     flex: none;
     // Workaround for this class getting `width: 100%` for 1 frame while waiting for

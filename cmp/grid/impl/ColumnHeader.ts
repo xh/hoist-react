@@ -70,7 +70,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: model.isAgFiltered ? Icon.filter() : Icon.columnMenu(),
+                item: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
                 onClick: e => {
                     e.stopPropagation();
@@ -227,6 +227,10 @@ class ColumnHeaderModel extends HoistModel {
 
     get isFiltered() {
         return this.isAgFiltered || this.columnHeaderFilterModel?.isFiltered;
+    }
+
+    get activeFilterIcon() {
+        return this.gridModel?.filterModel?.activeFilterIcon ?? Icon.filter();
     }
 
     // Ag-Grid's filter callback

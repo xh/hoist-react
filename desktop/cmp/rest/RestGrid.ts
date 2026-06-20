@@ -53,6 +53,16 @@ export interface RestGridProps
     tbar?: ReactNode;
 }
 
+/**
+ * A full-featured Grid with a built-in toolbar, record editing form, and refresh support,
+ * designed for CRUD operations against REST-style server endpoints.
+ *
+ * Intended to pair with `RestController` from hoist-core, which provides standard CRUD
+ * endpoints for a GORM domain class. RestGrid's underlying {@link RestStore} maps directly
+ * to the controller's create/read/update/delete/bulk operations and lookup data support.
+ *
+ * @see RestGridModel
+ */
 export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
     displayName: 'RestGrid',
     model: uses(RestGridModel, {publishMode: 'limited'}),

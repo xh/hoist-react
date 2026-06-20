@@ -67,7 +67,6 @@ import {wait, waitFor} from '@xh/hoist/promise';
 import {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
-    apiDeprecated,
     deepFreeze,
     executeIfFunction,
     logWithDebug,
@@ -107,7 +106,7 @@ import {
 import {computed} from 'mobx';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
-import {GridContextMenuSpec} from './GridContextMenu';
+import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {initPersist} from './impl/InitPersist';
 import {managedRenderer} from './impl/Utils';
@@ -120,6 +119,16 @@ import {
     RowClassRuleFn
 } from './Types';
 
+/**
+ * Configuration for a {@link GridModel} - the primary model backing the Hoist Grid component.
+ *
+ * At minimum, provide `columns` (an array of {@link ColumnSpec} or {@link ColumnGroupSpec}
+ * objects). A {@link Store} can be provided or will be auto-created with fields inferred
+ * from the column configs. Use `colDefaults` to apply shared settings across all columns.
+ *
+ * @see GridModel
+ * @see ColumnSpec
+ */
 export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
@@ -388,8 +397,32 @@ interface GridExperimentalFlags {
     disableScrollOptimization?: boolean;
 }
 
+export interface GridModelDefaults {
+    autosizeMode?: GridAutosizeMode;
+    cellBorders?: boolean;
+    clicksToExpand?: number | null;
+    colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | boolean | null;
+    colDefaults?: Partial<ColumnSpec> | null;
+    contextMenu?: GridContextMenuItemLike[];
+    emptyText?: ReactNode | null;
+    enableColumnPinning?: boolean;
+    enableExport?: boolean;
+    enableFullWidthScroll?: boolean;
+    exportOptions?: ExportOptions;
+    headerMenuDisplay?: 'always' | 'hover';
+    lockColumnGroups?: boolean;
+    restoreDefaultsWarning?: ReactNode;
+    rowBorders?: boolean | null;
+    showCellFocus?: boolean;
+    showGroupRowCounts?: boolean;
+    showHover?: boolean;
+    sizingMode?: SizingMode | null;
+    stripeRows?: boolean | null;
+    treeStyle?: TreeStyle;
+}
+
 /**
- * Core Model for a Grid, specifying the grid's data store, column definitions,
+ * Core Model for a {@link Grid}, specifying the grid's data store, column definitions,
  * sorting/grouping/selection state, and context menu configuration.
  *
  * This is the primary application entry-point for specifying Grid component options and behavior.
@@ -400,16 +433,60 @@ interface GridExperimentalFlags {
  *   3) Include a single column with `isTreeColumn: true`. This column will provide expand /
  *      collapse controls and indent child columns in addition to displaying its own data.
  *
+ * See the grid package README (`cmp/grid/README.md`) for full documentation including column
+ * configuration, renderers, filtering, sorting, and common pitfalls.
+ *
+ * @see Grid
+ * @see DataView
+ *
+ * @mcpHint model backing all grid components
  */
 export class GridModel extends HoistModel {
-    static DEFAULT_RESTORE_DEFAULTS_WARNING = fragment(
-        p(
-            'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+    /** App-level defaults for GridModel. Instance config takes precedence. */
+    static defaults: GridModelDefaults = {
+        autosizeMode: 'onSizingModeChange',
+        cellBorders: false,
+        clicksToExpand: null,
+        colChooserModel: null,
+        colDefaults: null,
+        contextMenu: [
+            'filter',
+            '-',
+            'copy',
+            'copyWithHeaders',
+            'copyCell',
+            '-',
+            'expandCollapse',
+            '-',
+            'exportExcel',
+            'exportCsv',
+            '-',
+            'restoreDefaults',
+            '-',
+            'colChooser',
+            'autosizeColumns'
+        ],
+        emptyText: null,
+        enableColumnPinning: true,
+        enableExport: false,
+        enableFullWidthScroll: false,
+        exportOptions: {},
+        headerMenuDisplay: 'always',
+        lockColumnGroups: true,
+        restoreDefaultsWarning: fragment(
+            p(
+                'This action will clear any customizations you have made to this grid, including filters, column selection, ordering, and sizing.'
+            ),
+            p('OK to proceed?')
         ),
-        p('OK to proceed?')
-    );
-
-    static DEFAULT_AUTOSIZE_MODE: GridAutosizeMode = 'onSizingModeChange';
+        rowBorders: null,
+        showCellFocus: false,
+        showGroupRowCounts: true,
+        showHover: false,
+        sizingMode: null,
+        stripeRows: null,
+        treeStyle: 'highlights'
+    };
 
     //------------------------
     // Immutable public properties
@@ -491,23 +568,6 @@ export class GridModel extends HoistModel {
      */
     @observable isInEditingMode: boolean = false;
 
-    static defaultContextMenu = [
-        'filter',
-        '-',
-        'copy',
-        'copyWithHeaders',
-        'copyCell',
-        '-',
-        'expandCollapse',
-        '-',
-        'exportExcel',
-        'exportCsv',
-        '-',
-        'restoreDefaults',
-        '-',
-        'colChooser',
-        'autosizeColumns'
-    ];
     @observable.ref private editingCell: {colId: string; rowIndex: number} = null;
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
@@ -545,28 +605,28 @@ export class GridModel extends HoistModel {
             showSummary = false,
             selModel,
             filterModel,
-            colChooserModel,
-            emptyText = null,
+            colChooserModel = GridModel.defaults.colChooserModel,
+            emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
             sortBy = [],
             groupBy = null,
-            showGroupRowCounts = true,
+            showGroupRowCounts = GridModel.defaults.showGroupRowCounts,
             externalSort = false,
             persistWith,
-            sizingMode,
-            showHover = false,
-            rowBorders = XH.isMobileApp,
+            sizingMode = GridModel.defaults.sizingMode,
+            showHover = GridModel.defaults.showHover,
+            rowBorders = GridModel.defaults.rowBorders ?? XH.isMobileApp,
             rowClassFn = null,
             rowClassRules = {},
-            cellBorders = false,
-            treeStyle = 'highlights',
-            stripeRows = !treeMode || treeStyle === 'none',
-            showCellFocus = false,
+            cellBorders = GridModel.defaults.cellBorders,
+            treeStyle = GridModel.defaults.treeStyle,
+            stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
+            showCellFocus = GridModel.defaults.showCellFocus,
             hideHeaders = false,
-            headerMenuDisplay = 'always',
-            lockColumnGroups = true,
-            enableColumnPinning = true,
-            enableExport = false,
+            headerMenuDisplay = GridModel.defaults.headerMenuDisplay,
+            lockColumnGroups = GridModel.defaults.lockColumnGroups,
+            enableColumnPinning = GridModel.defaults.enableColumnPinning,
+            enableExport = GridModel.defaults.enableExport,
             exportOptions = {},
             groupRowHeight,
             groupRowRenderer,
@@ -577,18 +637,18 @@ export class GridModel extends HoistModel {
             onCellClicked,
             onCellDoubleClicked,
             onCellContextMenu,
-            clicksToExpand = XH.isMobileApp ? 1 : 2,
+            clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
             useVirtualColumns = false,
             autosizeOptions = {},
             restoreDefaultsFn,
-            restoreDefaultsWarning = GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING,
+            restoreDefaultsWarning = GridModel.defaults.restoreDefaultsWarning,
             fullRowEditing = false,
             clicksToEdit = 2,
             expandLevel = treeMode ? 0 : 1,
             levelLabels,
             highlightRowOnClick = XH.isMobileApp,
-            enableFullWidthScroll = false,
+            enableFullWidthScroll = GridModel.defaults.enableFullWidthScroll,
             experimental,
             appData,
             xhImpl,
@@ -612,14 +672,14 @@ export class GridModel extends HoistModel {
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaultContextMenu);
+            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         this.enableFullWidthScroll = enableFullWidthScroll;
         this.autosizeOptions = defaults(
             {...autosizeOptions},
             {
-                mode: GridModel.DEFAULT_AUTOSIZE_MODE,
+                mode: GridModel.defaults.autosizeMode,
                 renderedRowsOnly: false,
                 includeCollapsedChildren: false,
                 showMask: false,
@@ -647,11 +707,11 @@ export class GridModel extends HoistModel {
         this.lockColumnGroups = lockColumnGroups;
         this.enableColumnPinning = enableColumnPinning;
         this.enableExport = enableExport;
-        this.exportOptions = exportOptions;
+        this.exportOptions = defaultsDeep({}, exportOptions, GridModel.defaults.exportOptions);
 
         Object.assign(this, rest);
 
-        this.colDefaults = colDefaults;
+        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
@@ -1282,16 +1342,6 @@ export class GridModel extends HoistModel {
         }
     }
 
-    /** @deprecated - use {@link updateColumnState} instead. */
-    applyColumnStateChanges(colStateChanges: Partial<ColumnState>[]): void {
-        apiDeprecated('GridModel.applyColumnStateChanges()', {
-            msg: 'Use updateColumnState() instead.',
-            v: '82',
-            source: GridModel
-        });
-        this.updateColumnState(colStateChanges);
-    }
-
     getColumn(colId: string): Column {
         return this.findColumn(this.columns, colId);
     }
@@ -1456,8 +1506,8 @@ export class GridModel extends HoistModel {
         const {store, agGridModel, agApi, selectedRecords} = this;
 
         let recToEdit;
-        if (record) {
-            // Normalize specified record, if any.
+        if (!isNil(record)) {
+            // Normalize specified record, if any - note a StoreId may be 0, so check for nil.
             recToEdit = record instanceof StoreRecord ? record : store.getById(record);
         } else {
             if (!isEmpty(selectedRecords)) {
@@ -1474,7 +1524,7 @@ export class GridModel extends HoistModel {
         if (isNil(rowIndex) || rowIndex < 0) {
             this.logWarn(
                 'Unable to start editing',
-                record ? 'specified record not found' : 'no records found'
+                !isNil(record) ? 'specified record not found' : 'no records found'
             );
             return;
         }

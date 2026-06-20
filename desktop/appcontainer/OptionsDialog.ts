@@ -51,10 +51,11 @@ export const optionsDialog = hoistCmp.factory({
                         })
                     ),
                     bbar: [
-                        restoreDefaultsButton(),
+                        restoreDefaultsButton({testId: 'xh-options-restore-defaults-btn'}),
                         filler(),
                         button({
                             text: 'Cancel',
+                            testId: 'xh-options-cancel-btn',
                             onClick: () => model.hide()
                         }),
                         button({
@@ -62,6 +63,7 @@ export const optionsDialog = hoistCmp.factory({
                             text: reloadRequired ? 'Save & Reload' : 'Save',
                             icon: reloadRequired ? Icon.refresh() : Icon.check(),
                             intent: 'success',
+                            testId: 'xh-options-save-btn',
                             onClick: () => model.saveAsync()
                         })
                     ]

@@ -16,6 +16,16 @@ import {GridModel} from '../GridModel';
 import {ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
 import {Column, ColumnSpec} from './Column';
 
+/**
+ * Configuration for a {@link ColumnGroup} - a hierarchical grouping of columns that renders
+ * as a multi-level header in the grid. Nest {@link ColumnSpec} and/or additional
+ * ColumnGroupSpec objects within `children`.
+ *
+ * The `groupId` must be unique across the grid, defaulting to `headerName` when not set.
+ *
+ * @see ColumnGroup
+ * @see ColumnSpec
+ */
 export interface ColumnGroupSpec {
     /** Column or ColumnGroup configs for children of this group.*/
     children: Array<ColumnGroupSpec | ColumnSpec>;

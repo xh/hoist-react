@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -23,6 +22,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {logError, mergeDeep} from '@xh/hoist/utils/js';
 import {
+    composeRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -52,8 +52,8 @@ export interface ChartProps<M extends ChartModel = ChartModel>
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
- * as well as configuration and theme defaults. The chart's core configuration should be sourced
- * from a ChartModel prop passed to this component.
+ * as well as configuration and theme defaults. Sourced from a {@link ChartModel}, either
+ * passed directly via the `model` prop or resolved from context.
  */
 export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     displayName: 'Chart',

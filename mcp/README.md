@@ -1,5 +1,17 @@
 # MCP Server and CLI Tools
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Purpose, audience, and design rationale |
+| [Architecture](#architecture) | Directory structure, data flow, and design decisions |
+| [CLI Tools](#cli-tools) | `hoist-docs` and `hoist-ts` shell commands |
+| [MCP Server Setup](#mcp-server-setup) | Prerequisites, startup methods, and debug logging |
+| [MCP Tools Reference](#mcp-tools-reference) | Documentation and TypeScript tool APIs |
+| [MCP Resources](#mcp-resources) | Direct URI-based access to documentation files |
+| [Maintaining the Developer Tools](#maintaining-the-developer-tools) | Registry sync, maintenance checklist, and update points |
+| [Extending the Developer Tools](#extending-the-developer-tools) | Adding new tools, resources, and doc registry entries |
+| [Common Pitfalls](#common-pitfalls) | Stdout corruption, path traversal, and naming conventions |
+
 ## Overview
 
 The Hoist developer tools give AI coding assistants structured access to hoist-react's documentation
@@ -37,7 +49,8 @@ mcp/
 │   ├── docs.ts                # CLI entry point for hoist-docs
 │   └── ts.ts                  # CLI entry point for hoist-ts
 ├── data/
-│   ├── doc-registry.ts        # Hardcoded documentation inventory with metadata and search
+│   ├── doc-registry.ts        # Documentation inventory loader (reads docs/doc-registry.json)
+│   ├── doc-id-resolver.ts     # Tolerant doc-id resolver (canonical + shortenings + aliases)
 │   └── ts-registry.ts         # Lazy ts-morph symbol index with on-demand type extraction
 ├── formatters/
 │   ├── docs.ts                # Shared doc formatting (used by MCP tools and CLI)
@@ -85,6 +98,16 @@ MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, et
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the
 type-checking level, and all MCP dependencies are `devDependencies` in the root `package.json`.
 
+**Tolerant doc-id resolution.** `data/doc-id-resolver.ts` accepts shortened or
+slightly-off doc IDs that agents naturally try (e.g. `grid` → `cmp/grid/README.md`,
+`core` → `core/README.md`, `authentication` → `docs/authentication.md`, `v85` → the
+v85 upgrade notes) and resolves them to the canonical id when unambiguous. The
+canonical id always wins (Tier 0); shortenings are tried in declared tiers; when
+multiple docs could match, the resolver fails closed with "did you mean?"
+candidates rather than guessing. Each registry entry may declare optional
+`aliases` in `doc-registry.json` for semantic synonyms that auto-rules wouldn't
+produce. See the module header for the full tier ordering.
+
 **Hardcoded doc registry over filesystem scanning.** The doc registry (`data/doc-registry.ts`)
 defines each documentation entry in code rather than discovering files on disk. This was chosen
 because the documentation corpus is bounded and well-known (~40 files), and each entry needs
@@ -102,9 +125,17 @@ lookup.
 
 **Eager async TypeScript initialization.** Parsing hoist-react's ~700 TypeScript files with ts-morph
 is expensive (~2-3s). The MCP server calls `beginInitialization()` after connect so the index builds
-in the background while the client sets up. The CLI pays this cost on each invocation -- acceptable
-for a 2-3s cold start. In both cases, `ensureInitialized()` awaits in-flight work if a query arrives
-before init completes.
+in the background while the client sets up. In both cases, `ensureInitialized()` awaits in-flight
+work if a query arrives before init completes.
+
+**Disk-persisted index cache.** A serialized snapshot of the symbol and member indexes is written
+to `node_modules/.cache/hoist-mcp/index-v1.json` after each fresh build. Subsequent invocations
+load it in ~10-20ms when the file set hasn't changed, making CLI search calls sub-second on
+remote/slow workstations where ts-morph builds otherwise dominate. Invalidation is automatic: a
+fingerprint over every indexable file's path/mtime/size (plus `package.json`) is recomputed at
+startup and any drift triggers a rebuild. The live ts-morph `Project` is constructed lazily via
+`ensureProject()` only when detail/member extraction needs AST access -- pure search calls served
+from the cache skip it entirely. Set `HOIST_MCP_NO_CACHE=1` to bypass for debugging.
 
 **Resources for nouns, tools for verbs.** Following MCP protocol design guidance: resources serve
 passive, addressable content (individual docs by URI), while tools handle dynamic computation
@@ -121,6 +152,15 @@ system), so they stop at types outside hoist-react's index. Members are deduplic
 child declarations winning. Inherited members are tagged with their declaring type in the formatted
 output. The same `_`-prefix and `private` filtering applied by the member search index is also
 applied here, so `getMembers()` and `searchMembers()` show a consistent public API view.
+
+For class members with no own JSDoc, the walker also looks up the class's `implements` clause and
+inherits the JSDoc -- including `@param` and `@returns` content -- from the first interface (in
+declaration order) that declares a matching member with documentation. The structured output
+records this with `jsDocInheritedFrom`, distinct from `inheritedFrom` (which remains reserved for
+the `extends` chain). Both fields can be set together when a subclass inherits a member from a
+parent class whose docs the parent itself inherited from an interface. A second pass at index
+build-time mirrors this fallback into the member-name search index so JSDoc-content searches
+(e.g. `"refresh background"`) reach impl members that single-source their docs on an interface.
 
 **Promise extension indexing via AST navigation.** Hoist's Promise prototype extensions are declared
 in a `declare global { interface Promise<T> { ... } }` block, which standard ts-morph APIs like
@@ -169,14 +209,15 @@ Run `npx hoist-docs --help` for full usage.
 ### `hoist-ts` -- TypeScript Symbol Exploration
 
 ```bash
-# Search for symbols and class members by name
+# Search for symbols by name, keyword, or multi-word query
 npx hoist-ts search GridModel
 npx hoist-ts search lastLoadCompleted
 npx hoist-ts search Store --kind class
+npx hoist-ts search "panel modal"           # Matches name + JSDoc content
 
 # Get detailed type information for a symbol
 npx hoist-ts symbol GridModel
-npx hoist-ts symbol HoistModel
+npx hoist-ts symbol View --file data/cube/View.ts   # Disambiguate by file path
 
 # List all members of a class or interface
 npx hoist-ts members GridModel
@@ -285,29 +326,56 @@ List all available documentation with descriptions, grouped by category.
 |-----------|------|----------|-------------|
 | `category` | enum | No | Filter: `package`, `concept`, `devops`, `conventions`, `all` (default) |
 
+#### `hoist-read-doc`
+
+Read the full text of a single document. Accepts the canonical ID (repo-relative path) and also
+tolerates common shortenings via `data/doc-id-resolver.ts` — a bare subsystem (`core`), a path
+without README (`cmp/grid`), a docs-doc without the `docs/` prefix (`authentication`), a
+last-segment shortcut (`grid`), or a version code for upgrade notes (`v85`). The tool-based
+equivalent of the `hoist://docs/{id}` resource — useful when resource fetching is unavailable or
+inconvenient. Returns the markdown body as text plus structured `{id, title, category, content,
+matchedAs?}` (`matchedAs` is set only when the input differed from the canonical id).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Canonical document ID (repo-relative path), e.g. `cmp/grid/README.md` — or a tolerated shortening (see above). |
+
 #### `hoist-ping`
 
-Verify the MCP server is running and responsive. Takes no parameters.
+Verify the MCP server is running and responsive. Takes no parameters. Reports the indexed
+`@xh/hoist` library version.
 
 ### TypeScript Tools
 
 #### `hoist-search-symbols`
 
-Search for TypeScript classes, interfaces, types, and functions by name. Also searches public
-members (properties, methods, accessors) of key framework classes, returning results in two sections:
-matching symbols and matching members with their owning class and role description.
+Search for TypeScript classes, interfaces, types, and functions by name, JSDoc content, and own
+member names. Multi-word queries split into tokens matched with AND logic against the combined
+searchable text, so queries like `"panel modal"` find `ModalSupportModel` (which mentions Panel
+in its JSDoc) and `"StoreRecord raw"` finds the `StoreRecord` class (which has a `raw` property).
+Results are ranked with name matches above JSDoc/member-only matches. Also searches public members
+(properties, methods, accessors) of every exported class and every exported `*Config` interface,
+matching against the combined owner name, member name, and member JSDoc.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `query` | string | Yes | Symbol or member name to search for (e.g. `"GridModel"`, `"lastLoadCompleted"`, `"setSortBy"`) |
+| `query` | string | Yes | Search query - a symbol name (e.g. `"GridModel"`), keyword (e.g. `"tooltip"`), a class + member name (e.g. `"StoreRecord raw"`), or multiple terms (e.g. `"panel modal"`, `"cube view store"`) |
 | `kind` | enum | No | Filter symbols by kind: `class`, `interface`, `type`, `function`, `const`, `enum`. Does not affect member results. |
 | `exported` | boolean | No | Exported symbols only. Default: `true` |
 | `limit` | number | No | Max symbol results, 1-50. Default: 20. Member results have a separate cap of 15. |
 
-**Member-indexed classes:** HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField, View, FormModel,
-BaseFieldModel, FieldModel, TabContainerModel. Only public members are indexed (private members and
-those prefixed with `_` are excluded).
+**Member-indexed owners:** Public members of every *exported class* and every exported interface
+whose name ends in `Config` (e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`) are
+indexed for search. The `*Config` rule captures the configuration-object shapes consumed by Hoist
+class constructors, so queries like `"groupSortFn"` or `"omitFn"` reach both the class property
+and the corresponding config-interface field. Only public members are indexed (members with
+`private` scope or names starting with `_` are excluded).
+
+Key framework classes and interfaces carry a short hint shown alongside their name in member
+search results, sourced from an optional `@mcpHint` JSDoc tag on the declaration (e.g.
+`@mcpHint model backing all grid components` on `GridModel`). Owners without the tag are still
+searchable; their results just display without the extra hint. See
+[Member-Indexed Owners](#member-indexed-owners) for how to add or revise a hint.
 
 **Promise prototype extensions:** Hoist augments `Promise.prototype` with methods like
 `catchDefault`, `track`, `linkTo`, `timeout`, `tap`, `wait`, `thenAction`, `catchWhen`, and
@@ -327,6 +395,10 @@ and source location. Use `hoist-search-symbols` first to find the exact name.
 For classes that use the config-object constructor pattern (e.g. `GridModel`, `FormModel`, `Store`),
 the output includes a `Constructor:` line showing the config type name. This gives agents a natural
 follow-up: call `hoist-get-members` on the config interface to see available options.
+
+When multiple exported symbols share the same name (e.g. `View` in both `cmp/viewmanager` and
+`data/cube`), the output appends a disambiguation note listing alternates with their file paths.
+Pass `filePath` to select a specific one. Dynamics stubs are excluded from the alternates list.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -366,6 +438,14 @@ framework classes with deep hierarchies -- e.g. `DashContainerModel` inherits ke
 `BaseFieldModel` -- and for Props interfaces that compose multiple parent interfaces (e.g.
 `PlaceholderProps` extends `HoistProps` and `BoxProps`).
 
+For methods, the structured output exposes `@param` descriptions via `parameters[].description`
+(rendered as a `Parameters:` block in text output) and `@returns` via a top-level
+`returns: {type, description}` field (rendered as a `Returns:` line). Class methods that declare
+no own JSDoc inherit it -- including `@param` and `@returns` content -- from the first matching
+member on an implemented interface, with the source interface recorded in `jsDocInheritedFrom`.
+This lets impl classes single-source their docs on the interface they implement without losing
+fidelity in MCP/CLI output.
+
 Members prefixed with `_` and those with the `private` keyword are excluded from the output,
 matching the member-index search behavior.
 
@@ -399,7 +479,10 @@ looks up the base class in the symbol index, and extracts its members. For inter
 BFS traversal of the `extends` chain, handling multiple parents. In both cases, deduplication ensures
 that if a child overrides a parent member, only the child version appears. The walk stops when it
 reaches a type not in the index (e.g. a third-party class or React's `HTMLAttributes`) or a type
-with no `extends` clause.
+with no `extends` clause. For class members at any level of the chain that declare no own JSDoc,
+the tool additionally consults that class's `implements` clause (declaration order) and inherits
+the JSDoc from the first interface that declares a matching member with non-empty docs. Static
+members are exempt from this fallback (interfaces declare instance members only).
 
 ## MCP Resources
 
@@ -414,6 +497,13 @@ Resources provide direct read access to documentation files via URI.
 The `hoist-doc` template uses RFC 6570 reserved expansion (`{+docId}`) so slashes in doc IDs
 (e.g. `cmp/grid`) are preserved rather than percent-encoded.
 
+The resource resolves `docId` through the same tolerant resolver used by `hoist-read-doc` (see
+`data/doc-id-resolver.ts`), so the URI accepts canonical ids (`hoist://docs/cmp/grid/README.md`)
+and the same set of shortenings tolerated by the tool. Notably, because concept-doc IDs are
+themselves `docs/`-prefixed (e.g. `docs/routing.md`) and the scheme prefix is also `hoist://docs/`,
+`hoist://docs/routing.md` and `hoist://docs/docs/routing.md` both resolve to the same entry. For
+a friction-free read by bare ID, prefer the `hoist-read-doc` tool.
+
 **Discovering available documents:** The `hoist-doc` resource supports `list` and `complete`
 operations. MCP clients can enumerate all available doc IDs or get tab-completion suggestions.
 
@@ -425,11 +515,16 @@ are needed.
 
 ### Doc Registry Entries
 
-**File:** `mcp/data/doc-registry.ts` (function `getRawEntries()`)
+**File:** `docs/doc-registry.json`
 
-The doc registry is the single source of truth for all documentation that both the MCP server and
-CLI tools can search and serve. Each entry specifies an `id`, `title`, `file` path, `category`,
-`description`, and `keywords` array.
+The doc registry is the single source of truth for all documentation that both the MCP server
+and CLI tools can search and serve. It is a JSON file loaded at startup by
+`mcp/data/doc-registry.ts`. Each entry in the `entries` array specifies an `id` (which doubles
+as the file path relative to repo root), `title`, `mcpCategory`, `viewerCategory`,
+`description`, and `keywords` array. Entries may optionally declare an `aliases` array of
+curated short names consumed by the tolerant doc-id resolver
+(`mcp/data/doc-id-resolver.ts`) — only needed for synonyms that the resolver's auto-rules
+don't already produce (e.g. `components` for `cmp/README.md`, `services` for `svc/README.md`).
 
 **When to update:**
 - A new README or concept doc is added to hoist-react
@@ -438,9 +533,9 @@ CLI tools can search and serve. Each entry specifies an `id`, `title`, `file` pa
 - A documentation file is removed
 - The description or key topics for a doc change significantly
 
-**How to update:** Add, modify, or remove the corresponding `RawEntry` object in the
-`getRawEntries()` function. The `file` path is relative to the repo root. The `keywords` string
-is comma-separated and split automatically.
+**How to update:** Add, modify, or remove the corresponding entry object in the `entries` array
+of `docs/doc-registry.json`. The `id` field is the file path relative to the repo root (e.g.
+`cmp/grid/README.md`). Keywords are a JSON array of strings.
 
 **Automated support:** The `xh-update-doc-links` Claude Code skill
 (`.claude/skills/xh-update-doc-links/`) includes a dedicated step that reconciles the doc registry
@@ -468,34 +563,56 @@ const TOP_LEVEL_PACKAGES = [
 ];
 ```
 
-### Member-Indexed Classes
+### Member-Indexed Owners
 
-**File:** `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`)
+**File:** `mcp/data/ts-registry.ts` (functions `shouldIndexClassMembers`,
+`shouldIndexInterfaceMembers`, and `extractMcpHint`)
 
-This map lists classes whose public members are indexed for search by member name via
-`hoist-search-symbols` / `hoist-ts search`. Each entry maps a class name to a brief role
-description shown alongside member search results.
+Which owners have their public members indexed is determined by rule, not a hand-maintained list:
+
+- **Every exported class** (`shouldIndexClassMembers` returns `cls.isExported()`)
+- **Every exported interface whose name ends in `Config`** (`shouldIndexInterfaceMembers`)
+
+The `Config` suffix rule captures configuration-object shapes consumed by Hoist class constructors
+(e.g. `GridConfig`, `StoreConfig`, `CubeConfig`, `QueryConfig`), so member search surfaces both a
+class property and its corresponding config-interface field for the same query. Other interface
+kinds (`*Props`, `*Spec`) are intentionally excluded -- indexing them floods generic queries like
+`"label"`, `"title"`, `"disabled"` with component-prop hits that dilute more specific results.
+
+**Owner hints via the `@mcpHint` JSDoc tag.** Framework authors attach an optional `@mcpHint`
+tag to the class or interface JSDoc block to give a short hint shown alongside the owner name in
+member search results. Example:
+
+```ts
+/**
+ * Core Model for a Grid, specifying the grid's data store and column definitions.
+ *
+ * @mcpHint model backing all grid components
+ */
+export class GridModel extends HoistModel { ... }
+```
+
+Collocating the hint with the declaration avoids the name-collision and maintenance-drift problems
+of a separate hand-curated registry, and lets framework authors add or revise the hint right where
+they're writing the class. Owners without an `@mcpHint` tag still appear in search results -- they
+just display without the extra hint. The `@mcpHint` tag is declared in the project-root
+`tsdoc.json` so the tsdoc ESLint plugin treats it as a known tag.
 
 **When to update:**
-- A new key base class is added to the framework and should have its members searchable
-- A member-indexed class is renamed or removed
-- The role description of a class should be clarified
-
-**Current value:**
-```
-HoistBase, HoistModel, HoistService, XHApi, GridModel, Column, Store,
-StoreRecord, StoreSelectionModel, Field, RecordAction, Cube, CubeField,
-View, FormModel, BaseFieldModel, FieldModel, TabContainerModel
-```
+- Add or revise `@mcpHint` on the class/interface JSDoc block directly in its source file. No
+  edit to `ts-registry.ts` is required.
+- Edit `shouldIndexClassMembers` / `shouldIndexInterfaceMembers` only if the indexing rule itself
+  needs to change (e.g. adding `*Spec` interfaces, or scoping out a noisy subtree).
 
 ### Summary: Maintenance Checklist
 
 | Change | Files to Update |
 |--------|----------------|
-| Add/rename/remove a documentation file | `mcp/data/doc-registry.ts`, `docs/README.md` |
-| Add upgrade notes for a new major version | `mcp/data/doc-registry.ts`, `docs/README.md` |
+| Add/rename/remove a documentation file | `docs/doc-registry.json`, `docs/README.md` |
+| Add upgrade notes for a new major version | `docs/doc-registry.json`, `docs/README.md` |
 | Add/rename/remove a top-level package | `mcp/data/ts-registry.ts` |
-| Add/rename/remove a member-indexed class | `mcp/data/ts-registry.ts` (constant `MEMBER_INDEXED_CLASSES`) |
+| Add or revise the search-result hint for a key framework class | `@mcpHint` tag on the class/interface JSDoc (in its source file) |
+| Change which owners have members indexed | `mcp/data/ts-registry.ts` (`shouldIndexClassMembers` / `shouldIndexInterfaceMembers`) |
 
 ## Extending the Developer Tools
 
@@ -561,22 +678,30 @@ server.registerResource(
 
 ### Adding a Doc Registry Entry
 
-Add a new `RawEntry` to the `getRawEntries()` function in `mcp/data/doc-registry.ts`:
+Add a new entry to the `entries` array in `docs/doc-registry.json`:
 
-```typescript
+```json
 {
-    id: 'my-package',
-    title: 'My Package',
-    file: 'my-package/README.md',        // Relative to repo root
-    category: 'package',
-    packageName: 'my-package',
-    description: 'What this package does.',
-    keywords: splitKeywords('keyword1, keyword2, keyword3')
-},
+    "id": "my-package/README.md",
+    "title": "My Package",
+    "mcpCategory": "package",
+    "viewerCategory": "components",
+    "description": "What this package does.",
+    "keywords": ["keyword1", "keyword2", "keyword3"]
+}
 ```
 
-**Categories:** `package` (package READMEs), `concept` (cross-cutting docs), `devops` (build/deploy
-docs), `conventions` (AGENTS.md), `index` (docs/README.md).
+**MCP categories:** `package`, `concept`, `devops`, `conventions`, `index`.
+**Viewer categories:** `overview`, `concepts`, `core`, `components`, `desktop`, `mobile`,
+`utilities`, `supporting`, `devops`, `upgrade`.
+
+**Optional `aliases`:** add `"aliases": ["short-name", "synonym"]` to make those strings
+resolve to this entry via `hoist-read-doc` and the `hoist://docs/{id}` resource. The
+resolver already auto-generates safe shortenings (the bare path without `/README.md`, the
+last path segment, the docs/-stripped form, version codes for upgrade notes) -- explicit
+aliases are only needed for semantic synonyms the auto-rules wouldn't produce. Auto-aliases
+that would map to more than one entry are dropped at build time as ambiguous; explicit
+aliases that collide with another entry's canonical id are logged as unreachable and skipped.
 
 ## Common Pitfalls
 

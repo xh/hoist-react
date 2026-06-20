@@ -84,10 +84,16 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
         // All possible values for this field from our source.
         const allSrcVals = source.getValuesForFieldFilter(field).map(it => this.toDisplayValue(it));
 
-        // Values from current column filter.
+        // Values from current column filter. `flatMap` here unwraps the array `parseVal` returns
+        // for `tags`-typed fields, lining those values up with the scalar values produced by
+        // `Store.getValuesForFieldFilter` above. Without this, a filter value like `'foo'` would
+        // survive as `['foo']` and dedupe incorrectly. The `filter` drops the non-selectable null
+        // value carried by a blank `tags` filter.
         const colFilterVals = flatMap(columnFilters, filter => {
-            return castArray(filter.value).map(val => sourceField.parseVal(val));
-        }).map(it => this.toDisplayValue(it));
+            return castArray(filter.value).flatMap(val => sourceField.parseVal(val));
+        })
+            .filter(it => sourceField.type !== 'tags' || it != null)
+            .map(it => this.toDisplayValue(it));
 
         // Combine + unique - these are all values that *could* be shown in the filter UI.
         const allValues = uniqBy([...allSrcVals, ...colFilterVals], this.getUniqueValue);

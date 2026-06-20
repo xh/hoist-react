@@ -1,28 +1,51 @@
 # Hoist React v83 Upgrade Notes
 
-> **From:** v82.x → v83.0.0 | **Released:** unreleased | **Difficulty:** 🟢 LOW
+> **From:** v82.x → v83.0.0 | **Released:** 2026-03-xx | **Difficulty:** 🟢 LOW
 
 ## Overview
 
-Hoist React v83 removes the two-tier CSS custom property override system. Previously, Hoist
-defined framework variables like `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, where the
-unprefixed `--grid-bg` served as an app-level override hook. Applications now override the
-`--xh-` prefixed variables directly — simpler, IDE-friendly, and consistent with modern CSS
-variable conventions.
+Hoist React v83 is a major release paired with hoist-core v37. The headline addition is
+client-side distributed tracing via `TraceService`, providing OTEL-based end-to-end observability
+across browser and server. Traced exceptions now include a `traceId` for correlation with
+server-side traces, displayed in both error dialogs and toasts. This release also introduces the
+`static defaults` pattern for app-level configuration overrides across several core models, new
+`SegmentedControl` and `CheckboxButton` input components, and Admin Console support for opt-in
+metrics publishing.
 
-This is a **mechanical migration** for most apps. The majority of overrides simply need an `xh-`
-prefix added. A small number of unprefixed names differed from their `--xh-` counterparts — see
-the mapping table below.
+The `downloadjs` third-party dependency has been removed and replaced with built-in utilities.
+Apps that imported `downloadjs` directly (relying on it as a transitive hoist-react dependency)
+must update those usages.
+
+Apps should also take the opportunity to migrate deprecated static
+properties to the new `ModelClassName.defaults` pattern (scheduled for removal in v85).
 
 ## Prerequisites
 
 Before starting, ensure:
 
 - [ ] Running hoist-react v82.x
+- [ ] **hoist-core** upgraded to >= v37.0 (**required** — TraceService and metrics publishing
+  depend on new server-side infrastructure)
 
 ## Upgrade Steps
 
-### 1. Update `package.json`
+### 1. Update `hoistCoreVersion` in `gradle.properties`
+
+Hoist React v83 **requires** hoist-core >= v37.0.
+
+**File:** `gradle.properties`
+
+Before:
+```properties
+hoistCoreVersion=36.3.1
+```
+
+After:
+```properties
+hoistCoreVersion=37.0.0
+```
+
+### 2. Update `package.json`
 
 Bump hoist-react to v83.
 
@@ -40,117 +63,179 @@ After:
 
 Then run `yarn install` or `npm install` to update dependencies.
 
-### 2. Migrate Unprefixed CSS Variable Overrides
+### 3. Migrate Deprecated Static Properties to `static defaults` (recommended)
 
-Find all SCSS files where your app sets unprefixed CSS variables that previously served as Hoist
-override hooks. These are typically in your app's root stylesheet (e.g. `App.scss`) and
-occasionally in component-specific SCSS files.
+Several models previously exposed ad-hoc static properties for app-level configuration (e.g.
+`GridModel.DEFAULT_AUTOSIZE_MODE`). These have been replaced by a unified `static defaults`
+pattern. The old properties still function but log deprecation warnings and are scheduled for
+removal in v85.
 
 **Find affected files:**
 ```bash
-# Search for unprefixed overrides of known Hoist hooks
-grep -rn '\-\-pad:\|--bg:\|--bg-alt:\|--bg-highlight:\|--font-size:\|--font-family:\|--border-color:\|--text-color' \
-  --include="*.scss" client-app/src/
+grep -rE "GridModel\.(DEFAULT_AUTOSIZE_MODE|DEFAULT_RESTORE_DEFAULTS_WARNING|defaultContextMenu)|ChartModel\.defaultContextMenu|ExceptionHandler\.(REDACT_PATHS|ALERT_TYPE|TOAST_PROPS)|FetchService\.(autoGenCorrelationIds|genCorrelationId|correlationIdHeaderKey)" client-app/src/
 ```
 
-For a more thorough search, look for any CSS custom property declaration that doesn't use the
-`--xh-` prefix and isn't an app-specific variable (e.g. your `--myapp-*` vars):
-```bash
-grep -rn '\-\-[a-z][a-z-]*:' --include="*.scss" client-app/src/ | grep -v '\-\-xh-\|--ag-\|--myapp-'
-```
-
-**For most variables**, the migration is simply adding the `xh-` prefix:
+#### GridModel
 
 Before:
-```scss
-body.xh-app {
-  --font-feature-settings: 'tnum', 'zero', 'ss01';
-  --border-color: #cccccc;
-  --grid-group-bg: hsl(206, 20%, 65%);
-  --text-color-muted: #5d5d5d;
-  --tbar-compact-min-size: 32;
+```typescript
+import {GridModel} from '@xh/hoist/cmp/grid';
 
-  &.xh-dark {
-    --border-color: #37474f;
-    --text-color-muted: #acacac;
-  }
-}
+GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+GridModel.DEFAULT_RESTORE_DEFAULTS_WARNING = 'Reset all grid settings?';
 ```
 
 After:
-```scss
-body.xh-app {
-  --xh-font-feature-settings: 'tnum', 'zero', 'ss01';
-  --xh-border-color: #cccccc;
-  --xh-grid-group-bg: hsl(206, 20%, 65%);
-  --xh-text-color-muted: #5d5d5d;
-  --xh-tbar-compact-min-size: 32;
+```typescript
+import {GridModel} from '@xh/hoist/cmp/grid';
 
-  &.xh-dark {
-    --xh-border-color: #37474f;
-    --xh-text-color-muted: #acacac;
-  }
-}
+GridModel.defaults.autosizeMode = 'managed';
+GridModel.defaults.restoreDefaultsWarning = 'Reset all grid settings?';
 ```
 
-### 3. Handle Naming Mismatches
+See `GridModelDefaults` for the full set of available defaults including `cellBorders`,
+`colChooserModel`, `contextMenu`, `enableColumnPinning`, `enableExport`, `rowBorders`,
+`showGroupRowCounts`, `sizingMode`, `stripeRows`, and more.
 
-A small number of unprefixed override hooks had names that differed from their `--xh-` variable.
-If your app overrode any of these, use the `--xh-` name from the right column:
+#### ChartModel
 
-| Old unprefixed hook | New `--xh-` variable |
-|---|---|
-| `--grid-cell-bg-highlight` | `--xh-grid-cell-change-bg-highlight` |
-| `--grid-header-cell-lr-pad` | `--xh-grid-header-lr-pad` |
-| `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
-| `--popover-backdrop` | `--xh-popover-backdrop-bg` |
-| `--popover-shadow` | `--xh-popover-box-shadow` |
-| `--zone-grid-cell-pad-px` | `--xh-zone-grid-cell-lr-pad-px` |
+Before:
+```typescript
+import {ChartModel} from '@xh/hoist/cmp/chart';
+
+const menu = ChartModel.defaultContextMenu;
+```
+
+After:
+```typescript
+import {ChartModel} from '@xh/hoist/cmp/chart';
+
+const menu = ChartModel.defaults.contextMenu;
+```
+
+#### ExceptionHandler
+
+Before:
+```typescript
+import {ExceptionHandler} from '@xh/hoist/core';
+
+ExceptionHandler.ALERT_TYPE = 'toast';
+ExceptionHandler.TOAST_PROPS = {timeout: 5000};
+```
+
+After:
+```typescript
+import {ExceptionHandler} from '@xh/hoist/core';
+
+ExceptionHandler.defaults.alertType = 'toast';
+ExceptionHandler.defaults.toastProps = {timeout: 5000};
+```
+
+#### FetchService
+
+Before (in `Bootstrap.ts`):
+```typescript
+import {FetchService} from '@xh/hoist/svc';
+
+FetchService.autoGenCorrelationIds = true;
+```
+
+After:
+```typescript
+import {FetchService} from '@xh/hoist/svc';
+
+FetchService.defaults.autoGenCorrelationIds = true;
+```
+
+### 4. Replace `downloadjs` Imports (if applicable)
+
+The `downloadjs` third-party package has been removed from hoist-react's dependencies. Hoist
+itself has migrated to new built-in utilities. If your app imported `downloadjs` directly (relying
+on it as a transitive dependency of hoist-react), you must replace those usages with the new
+`downloadBlob()` or `downloadViaUrl()` utilities from `@xh/hoist/utils/js`.
 
 **Find affected files:**
 ```bash
-grep -rn 'grid-cell-bg-highlight\|grid-header-cell-lr-pad\|input-placeholder-color\|popover-backdrop\|popover-shadow\|zone-grid-cell-pad-px' \
-  --include="*.scss" client-app/src/
+grep -rE "from 'downloadjs'|from \"downloadjs\"|require\('downloadjs'\)" client-app/src/
 ```
 
-### 4. Check for Unitless Number Overrides
+Before:
+```typescript
+import download from 'downloadjs';
 
-If your app overrides any size-related variables that use Hoist's unitless number convention
-(e.g. `--xh-pad`, `--xh-font-size`, `--xh-tbar-min-size`), continue to set them as **unitless
-numbers**. This has not changed:
-
-```scss
-// Still correct — unitless numbers for size variables
-body.xh-app {
-  --xh-pad: 8;
-  --xh-font-size: 14;
-  --xh-appbar-height: 48;
-}
+const blob = await response.blob();
+download(blob, 'export.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 ```
 
-### 5. Note on Intent Text Color Hooks (Bug Fix)
+After:
+```typescript
+import {downloadBlob} from '@xh/hoist/utils/js';
 
-In previous versions, the override hooks for `--xh-intent-primary-text-color`,
-`--xh-intent-success-text-color`, and `--xh-intent-warning-text-color` all incorrectly referenced
-`--intent-danger-text-color` due to a copy-paste bug. If your app was setting
-`--intent-danger-text-color` expecting it to affect only the danger intent, be aware that in v83
-these variables are now directly overridable via their `--xh-` names and no longer share a single
-hook.
+const blob = await response.blob();
+downloadBlob(blob, 'export.xlsx');
+```
+
+For URL-based downloads (where you have a URL rather than a Blob):
+```typescript
+import {downloadViaUrl} from '@xh/hoist/utils/js';
+
+downloadViaUrl('/api/export/report', 'report.pdf');
+```
+
+Note that these utilities do not require a content type parameter — the browser infers the type
+from the Blob or URL.
+
+### 5. Migrate Deprecated Filter Utilities (recommended)
+
+If you have not yet migrated from the deprecated standalone filter utilities (`withFilterByField`,
+`withFilterByKey`, `replaceFilterByKey`, `withFilterByTypes`), do so now. These were deprecated
+in v82 and are scheduled for removal in v85. See the
+[v82 upgrade notes](./v82-upgrade-notes.md#5-migrate-deprecated-filter-utilities) for detailed
+before/after examples.
+
+**Find affected files:**
+```bash
+grep -rE "withFilterByField|withFilterByKey|replaceFilterByKey|withFilterByTypes" client-app/src/
+```
+
+### 6. Consider `SegmentedControl` as a `ButtonGroupInput` Alternative (optional)
+
+v83 introduces `SegmentedControl`, a new desktop input component for mutually exclusive option
+sets. It provides stronger visual differentiation of the active selection compared to
+`ButtonGroupInput` and is well-suited for small, fixed option groups (e.g. sizing modes, view
+toggles, status filters).
+
+This is **not** a required migration — `ButtonGroupInput` remains fully supported. However, if
+your app uses `ButtonGroupInput` for small toggle groups, `SegmentedControl` may be a worthwhile
+improvement worth exploring.
+
+**Find potential candidates:**
+```bash
+grep -rE "buttonGroupInput|ButtonGroupInput" client-app/src/
+```
+
+Review each usage and consider whether the use case is a small set of mutually exclusive options
+that would benefit from the segmented control style. `SegmentedControl` supports the same `bind`
+pattern as other Hoist inputs and works with both model binding and `onChange` callbacks.
 
 ## Verification Checklist
 
 After completing all steps:
 
+- [ ] `hoistCoreVersion` in `gradle.properties` is >= 37.0.0
 - [ ] `yarn install` / `npm install` completes without errors
+- [ ] `yarn lint` / `npm run lint` passes (or only pre-existing warnings remain)
+- [ ] `npx tsc --noEmit` passes
 - [ ] Application loads without console errors
-- [ ] Custom colors, spacing, and typography render correctly in both light and dark themes
-- [ ] No unprefixed Hoist override hooks remain:
-  ```bash
-  # This should return only your app's own custom vars (--myapp-*, --dl-*, etc.)
-  grep -rn '\-\-[a-z][a-z-]*:' --include="*.scss" client-app/src/ | grep -v '\-\-xh-\|--ag-'
-  ```
+- [ ] No `downloadjs` imports remain:
+  `grep -rE "from 'downloadjs'|from \"downloadjs\"" client-app/src/`
+- [ ] No deprecated static property warnings in console:
+  `grep -rE "DEFAULT_AUTOSIZE_MODE|DEFAULT_RESTORE_DEFAULTS_WARNING|defaultContextMenu|REDACT_PATHS|ALERT_TYPE|TOAST_PROPS" client-app/src/`
+- [ ] No deprecated filter utilities remain:
+  `grep -rE "withFilterByField|withFilterByKey|replaceFilterByKey|withFilterByTypes" client-app/src/`
+- [ ] Grids, charts, and dashboards render correctly
+- [ ] Admin Console Metrics tab loads (if hoist-core v37+ with metrics configured)
 
 ## Reference
 
 - [Toolbox on GitHub](https://github.com/xh/toolbox) — canonical example of a Hoist app
-- [`styles/README.md`](../../styles/README.md) — CSS variable system documentation

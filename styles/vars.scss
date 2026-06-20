@@ -67,8 +67,8 @@ body {
   //-------------------------------
   // Positive/Negative Value Colors
   //-------------------------------
-  --xh-pos-val-color: var(--xh-green);
-  --xh-neg-val-color: var(--xh-red);
+  --xh-pos-val-color: var(--xh-intent-success-text-color);
+  --xh-neg-val-color: var(--xh-intent-danger-text-color);
   --xh-neutral-val-color: var(--xh-gray);
 
   //--------------------------------------------------------
@@ -207,9 +207,9 @@ body {
 
   &.xh-dark {
     --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
-    --xh-intent-success-text-color: var(--xh-intent-success-lighter);
+    --xh-intent-success-text-color: hsl(123, 60%, 55%);
     --xh-intent-warning-text-color: var(--xh-intent-warning-lighter);
-    --xh-intent-danger-text-color: var(--xh-intent-danger-lighter);
+    --xh-intent-danger-text-color: hsl(356, 85%, 62%);
   }
 
 
@@ -265,11 +265,14 @@ body {
   --xh-bg-alt: var(--xh-blue-gray-light);
   /// Background highlight color for selections, hovers, and emphasis.
   --xh-bg-highlight: hsl(205, 85%, 85%);
+  /// Alternate background highlight color for secondary emphasis.
+  --xh-bg-highlight-alt: hsl(45, 100%, 70%);
 
   &.xh-dark {
     --xh-bg: var(--xh-black);
     --xh-bg-alt: var(--xh-blue-gray-dark);
-    --xh-bg-highlight: hsl(200, 50%, 27%);
+    --xh-bg-highlight: hsl(200, 40%, 20%);
+    --xh-bg-highlight-alt: hsl(45, 80%, 35%);
   }
 
   //-----------------------------------------
@@ -310,11 +313,11 @@ body {
   // Buttons
   //------------------------
   --xh-button-border-color: var(--xh-border-color);
-  --xh-button-bg: var(--xh-intent-neutral);
-  --xh-button-bg-darker: var(--xh-intent-neutral-darker);
-  --xh-button-bg-darkest: var(--xh-intent-neutral-darkest);
-  --xh-button-bg-lighter: var(--xh-intent-neutral-lighter);
-  --xh-button-bg-lightest: var(--xh-intent-neutral-lightest);
+  --xh-button-bg: hsl(200, 8%, 88%);
+  --xh-button-bg-darker: hsl(200, 8%, 82%);
+  --xh-button-bg-darkest: hsl(200, 8%, 76%);
+  --xh-button-bg-lighter: hsl(200, 8%, 93%);
+  --xh-button-bg-lightest: hsl(200, 8%, 97%);
   --xh-button-border-radius-px: var(--xh-border-radius-px);
   --xh-button-disabled-opacity: 0.4;
   --xh-button-font-family: var(--xh-font-family);
@@ -328,6 +331,12 @@ body {
   --xh-button-active-box-shadow: #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)};
 
   &.xh-dark {
+    --xh-button-bg: hsl(200, 8%, 22%);
+    --xh-button-bg-darker: hsl(200, 8%, 18%);
+    --xh-button-bg-darkest: hsl(200, 8%, 14%);
+    --xh-button-bg-lighter: hsl(200, 8%, 30%);
+    --xh-button-bg-lightest: hsl(200, 8%, 38%);
+
     // This breaks the standard of having the active button bg default to the pressed bg, but in
     // dark mode having the active button take the darkest color simply does not read as "active" -
     // especially for buttonGroupInputs with only two buttons. So we flip it on its head and make
@@ -577,6 +586,11 @@ body {
   --xh-grid-selected-row-text-color: var(--xh-grid-text-color);
   --xh-grid-summary-row-border-color: var(--xh-grid-border-color);
   --xh-grid-text-color: var(--xh-text-color);
+  --xh-grid-tooltip-bg: var(--xh-bg-alt);
+  --xh-grid-tooltip-border: var(--xh-border-solid);
+  --xh-grid-tooltip-border-radius: var(--xh-border-radius-px);
+  --xh-grid-tooltip-max-width: 400px;
+  --xh-grid-tooltip-padding: var(--xh-pad-half-px);
   --xh-grid-tree-indent: 1.2em;
   --xh-grid-tree-icon-px: 10px;
 
@@ -671,6 +685,24 @@ body {
   }
 
   //------------------------
+  // Segmented Control
+  //------------------------
+  --xh-segmented-control-bg: #{color.mix(mc('blue-grey', '100'), mc('blue-grey', '50'))};
+  --xh-segmented-control-selected-bg: var(--xh-bg);
+  --xh-segmented-control-text-color: color-mix(in srgb, var(--xh-text-color) 75%, var(--xh-segmented-control-bg));
+  --xh-segmented-control-selected-text-color: var(--xh-text-color);
+  --xh-segmented-control-border-radius: var(--xh-border-radius);
+  --xh-segmented-control-border-radius-px: calc(var(--xh-segmented-control-border-radius) * 1px);
+  --xh-segmented-control-pad: 3;
+  --xh-segmented-control-pad-px: calc(var(--xh-segmented-control-pad) * 1px);
+
+  &.xh-dark {
+    --xh-segmented-control-bg: #{color.mix(mc('blue-grey', '800'), mc('blue-grey', '900'))};
+    --xh-segmented-control-selected-bg: #{mc('blue-grey', '700')};
+  }
+
+
+  //------------------------
   // Mask + LoadingIndicator
   //------------------------
   --xh-mask-bg: rgba(255, 255, 255, 0.4);
@@ -680,6 +712,7 @@ body {
   --xh-loading-indicator-bg: #{mc('blue-grey', '100')};
   --xh-loading-indicator-border-color: var(--xh-border-color);
   --xh-loading-indicator-color: #{mc('blue-grey', '600')};
+  --xh-loading-indicator-spinner-color: var(--xh-loading-indicator-color);
 
   &.xh-dark {
     --xh-mask-bg: rgba(0, 0, 0, 0.4);
@@ -796,6 +829,15 @@ body {
 
 
   //------------------------
+  // Spinner
+  //------------------------
+  --xh-spinner-color: #{mc('blue-grey', '400')};
+
+  &.xh-dark {
+    --xh-spinner-color: var(--xh-blue-gray);
+  }
+
+  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--xh-text-color);
@@ -830,7 +872,7 @@ body {
     --xh-text-color: white;
     --xh-text-color-accent: var(--xh-orange);
     --xh-text-color-highlight: white;
-    --xh-text-color-muted: #{mc('grey', '600')};
+    --xh-text-color-muted: #{mc('grey', '500')};
   }
 
 

@@ -15,7 +15,7 @@ patterns for specific hoist-react features. Start with the [Core Framework](#cor
 for foundational concepts, then drill into [Components](#components) or [Utilities](#utilities).
 
 **Library developers:** In addition to the docs below, see
-[`/AGENTS.md`](../AGENTS.md) for architecture patterns and AI assistant guidance, and
+[`/CLAUDE.md`](../CLAUDE.md) for architecture patterns and AI assistant guidance, and
 [Coding Conventions](./coding-conventions.md) for detailed code style and naming conventions.
 See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage tracking and conventions.
 
@@ -36,7 +36,9 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
+| Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
+| Add tracing, metrics, or activity tracking | [Telemetry & Observability](./telemetry.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
 | Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
@@ -51,6 +53,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Use timers, decorators, LocalDate, or utility hooks | [`/utils/`](../utils/README.md)                                                                                     |
 | Understand app shell, dialogs, toasts, or theming | [`/appcontainer/`](../appcontainer/README.md)                                                                       |
 | Use icons in buttons, menus, and grids | [`/icon/`](../icon/README.md)                                                                                       |
+| Customize the spinner icon or animation | [`/icon/`](../icon/README.md#spinner-component)                                                                     |
 | Configure OAuth authentication (Auth0 or MSAL) | [`/security/`](../security/README.md) + [Authentication](./authentication.md)                                       |
 | Debug model instances or detect memory leaks | [`/inspector/`](../inspector/README.md)                                                                             |
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
@@ -69,8 +72,9 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with filtering, validation, and aggregation | Store, StoreRecord, Field, Filter, Cube, View, tree data, loadData, processRawData |
-| [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, WebSocketService |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
+| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
+| [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components
 
@@ -111,6 +115,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Authorization](./authorization.md) | Role-based authorization and config-driven feature gates | HoistUser, hasRole, hasGate, checkAccess, HOIST_ADMIN, roles, gates, Admin Console role management |
 | [Routing](./routing.md) | Client-side routing via RouterModel (Router5 wrapper) | RouterModel, getRoutes, XH.routerState, XH.navigate, route parameters, TabContainerModel route integration, NavigatorModel |
 | [Error Handling](./error-handling.md) | Centralized exception handling, display, and logging | XH.handleException, ExceptionDialog, catchDefault, alertType, toast, requireReload, ErrorBoundary, doLoadAsync |
+| [Telemetry & Observability](./telemetry.md) | Client-side tracing, metrics, activity tracking, and timed logging composed via the Runner chain | Runner, CallContext, TraceService, MetricsService, span, traceparent, sampling, telemetryPrefix, metrics, activity tracking |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
 | [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |
@@ -119,7 +124,7 @@ Cross-cutting documentation that spans multiple packages:
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, serializeIcon |
+| [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
 | [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
@@ -160,6 +165,10 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v86](./upgrade-notes/v86-upgrade-notes.md) | TBD | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
+| [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |
+| [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
+| [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |
 | [v82](./upgrade-notes/v82-upgrade-notes.md) | 2026-02-25 | 🟢 LOW | `FetchService` static correlation IDs, `xh-popup--framed` removal, DashContainer CSS wrapper |
 | [v81](./upgrade-notes/v81-upgrade-notes.md) | 2026-02-12 | 🟢 LOW | Panel CSS rename, `completeAuthAsync` return type, Blueprint `Card` → `BpCard` |
 | [v80](./upgrade-notes/v80-upgrade-notes.md) | 2026-01-27 | 🟢 LOW | FormField BEM CSS classes, `appLoadModel` → `appLoadObserver`, jQuery resolution |
@@ -168,20 +177,20 @@ breaking changes, before/after code examples, and verification checklists.
 | [v77](./upgrade-notes/v77-upgrade-notes.md) | 2025-10-29 | 🟠 MEDIUM | Highcharts v11→v12, `disableXssProtection` → `enableXssProtection`, AG Grid context menu markup |
 | [v76](./upgrade-notes/v76-upgrade-notes.md) | 2025-09-26 | 🟠 MEDIUM | AG Grid v31→v34, new package names and module registration, `groupRowRenderer` value change |
 | [v75](./upgrade-notes/v75-upgrade-notes.md) | 2025-08-11 | 🟢 LOW | Removed deprecated APIs, Cube View row data `_meta`/`buckets` removal |
+| [v74](./upgrade-notes/v74-upgrade-notes.md) | 2025-06-11 | 🟢 LOW | `ViewManagerModel.settleTime` removal, `ChartModel.showContextMenu` → `contextMenu` |
+| [v73](./upgrade-notes/v73-upgrade-notes.md) | 2025-05-16 | 🟢 LOW | `hoist-core >= 31`, `makeObservable` enforcement, admin `initAsync` super call, ESLint 9 |
 
 ## Additional Resources
 
-- [`/AGENTS.md`](../AGENTS.md) — AI coding assistant guidance: architecture patterns and key
+- [`/CLAUDE.md`](../CLAUDE.md) — AI coding assistant guidance: architecture patterns and key
   dependencies
-- [`docs/coding-conventions.md`](./coding-conventions.md) — Detailed coding conventions: imports,
-  naming, class structure, component patterns, null handling, async, error handling, logging, CSS
 - [`planning/`](./planning/) — Roadmaps and progress tracking for active library initiatives
   (documentation, testing). Not indexed here — these are project management artifacts, not
   hoist-react reference material.
-- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v56+)
-- [`archive/CHANGELOG-pre-v56.md`](./archive/CHANGELOG-pre-v56.md) — Archived changelog for
-  versions prior to v56
-- [`changelog-format.md`](./changelog-format.md) — CHANGELOG entry format conventions and
-  section headers
+- [`/CHANGELOG.md`](../CHANGELOG.md) — Version history and release notes (v64+)
+- [`archive/CHANGELOG-archive.md`](./archive/CHANGELOG-archive.md) — Archived changelog for
+  older versions (v63 and earlier)
+- [`changelog-format.md`](./changelog-format.md) — Conventions for writing and reviewing
+  hoist-react library CHANGELOG entries
 - [Toolbox](https://github.com/xh/toolbox) — XH's example application showcasing hoist-react
   patterns and components
