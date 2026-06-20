@@ -39,6 +39,10 @@
 * Added a `theme-color` meta tag matching the active theme's app-bar color. This tints browser
   chrome to match the app - e.g. Android Chrome's status bar and desktop installed PWAs.
 
+### 📚 Libraries
+
+* @azure/msal-browser `5.13 → 5.14`
+
 ## 86.0.1 - 2026-06-16
 
 ### 🐞 Bug Fixes
@@ -51,6 +55,11 @@
 * `TrackService`, `PrefService`, and `TraceService` now flush their pending entries reliably when
   the page is hidden or unloaded, reacting to `XH.pageState` and issuing the flush via
   `fetch({keepalive: true})` (replacing the less reliable `beforeunload` + normal-fetch approach).
+
+### 📚 Libraries
+
+* @azure/msal-browser `5.11 → 5.13`
+* mobx `6.15 → 6.16`
 
 ## 86.0.0 - 2026-06-12
 
