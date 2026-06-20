@@ -23,6 +23,10 @@
   align-items: stretch;
   flex-direction: column;
   transform: translateX(0);
+  // Default tab content to the themed app background. Onsen's page default is an opaque light
+  // color, which leaves themed text unreadable in dark mode when tab content is not itself a
+  // panel (or other element that paints its own background).
+  background-color: var(--xh-bg);
 }
 
 .xh-tab-container {
