@@ -11,6 +11,11 @@
     // The tray - a recessed container the selected option rises out of.
     display: flex;
     align-items: stretch;
+    // Size the whole control (tray padding included) to one standard control height, so it matches
+    // a button / input rather than standing taller. Options stretch to fill the tray (below) rather
+    // than each taking the full button height, which - plus the tray padding - would overshoot.
+    box-sizing: border-box;
+    height: var(--xh-button-height);
     background-color: var(--xh-segmented-control-bg);
     border-radius: var(--xh-segmented-control-border-radius-px);
     padding: var(--xh-segmented-control-pad-px);
@@ -20,6 +25,9 @@
     // the tray background shows through and our segmented text color applies.
     .xh-button.xh-segmented-control-option {
       flex: 0 0 auto;
+      // Fill the tray height (via the tray's align-items: stretch) instead of the fixed button
+      // height, so tray padding does not add on top of a full-height button.
+      height: auto;
       // Allow the button to shrink below its content width so the label can ellipsis-truncate
       // (flex items default to min-width: auto, which forces overflow / hard clipping instead).
       min-width: 0;

@@ -34,11 +34,17 @@
 
 ### ✨ Styles
 
-* Applied the active theme's `color-scheme` onto the document root (`<html>`), so browser chrome and
-  overscroll / safe-area regions match a dark app instead of rendering a light band (most visible in
-  mobile Safari).
-* Added a `theme-color` meta tag matching the active theme's app-bar color. This tints browser
-  chrome to match the app - e.g. Android Chrome's status bar and desktop installed PWAs.
+* Mobile `Button` now defaults to a more touch-friendly height (40px, up from 28px) and rounder
+  corners for buttons in body content. Toolbar buttons derive their height from the toolbar size so
+  a single token drives both, landing slightly taller than before (34px, up from 28px).
+    * `SegmentedControl` adopts the same standard height for a consistent control row.
+    * ⚠️ Mobile buttons outside toolbars are now taller - verify body / form / panel layouts that
+      pair tightly with button dimensions.
+* Mobile tab content (`TabContainer`) now takes the themed app background, so content reads
+  correctly in dark mode rather than showing through to Onsen's light default page background.
+* Applied the active theme's `color-scheme` onto `html` and added a `theme-color` meta tag matching
+  the active theme's app-bar color, so browser chrome and overscroll / safe-area regions might
+  better match the theme.
 
 ### 📚 Libraries
 
