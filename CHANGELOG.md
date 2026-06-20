@@ -24,6 +24,7 @@
   producing a phantom blank entry in the Values list.
 * Fixed an issue where `Grid` column headers could fall out of sync with body content during
   horizontal scrolling when both `enableFullWidthScroll` and `useVirtualColumns` were enabled.
+* Updated `DynamicTabSwitcher` to properly apply `testId` passed down by `TabContainer`.
 * Ensure publication of `router5-plugin-browser` TS module augmentation.
 * Set an explicit `%` unit on the `flex-basis: 0` of `TabContainer`'s flex shorthand to ensure
   that the `0` is not interpreted as a `0px` basis and that the container sizes as expected.
