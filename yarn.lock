@@ -2,35 +2,35 @@
 # yarn lockfile v1
 
 
-"@auth0/auth0-auth-js@1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@auth0/auth0-auth-js/-/auth0-auth-js-1.7.0.tgz#be0870e8a721ad73e4f28d8505528ed69e799724"
-  integrity sha512-SxF5WcPehbLOPwGrM+mqqVhnwZ3ZHEfM2wI/Yc3h0Kn1MM78seegxj7PrKoEMMRIfslDyHG+UNlOuobY8YOcKg==
+"@auth0/auth0-auth-js@1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-auth-js/-/auth0-auth-js-1.9.1.tgz#5d3d0e4569d434887f147ead9cd804d3ebb31421"
+  integrity sha512-YY8/We7NpJyN8aDlYZI0ENRFlPsuFQ5NGETI4dkJa+BEwCibNTRlM1E9O9qc77K4TpOANZsmaADSMde2If+Alg==
   dependencies:
     jose "^6.0.8"
     openid-client "^6.8.0"
 
 "@auth0/auth0-spa-js@~2.21.1":
-  version "2.21.1"
-  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.21.1.tgz#d4aa4e51e61d2990efd428387c0ef650f691514f"
-  integrity sha512-Z4HfUZ/bSJLjobcWvRzh762jsJjXZdqh4Lmu+Ho8qNfldL6B+6RUMw3BJmwRMiWPoeLFvL25eTAMCxaLiULFSQ==
+  version "2.21.2"
+  resolved "https://registry.yarnpkg.com/@auth0/auth0-spa-js/-/auth0-spa-js-2.21.2.tgz#6e3a784716aa341eed19aa3b3a180530e1944f12"
+  integrity sha512-CkIzlTJeae0LbYluXgNRPs7X8+Yd7W8ya/d1Cq/AGZ0d5/gfWwgDdFv9tCQR59KhRqdmvESSJUaIQjcjD0B1aA==
   dependencies:
-    "@auth0/auth0-auth-js" "1.7.0"
+    "@auth0/auth0-auth-js" "1.9.1"
     browser-tabs-lock "1.3.0"
     dpop "2.1.1"
     es-cookie "1.3.2"
 
-"@azure/msal-browser@~5.13.0":
-  version "5.13.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.13.0.tgz#754b0a26e0a50d9df7bafda927a7200f5da212e3"
-  integrity sha512-Ea23x0U8XNFY+qJ9T44zO2BbY+AHdb+WdjmYnx36OhJ/KO+PGU5pmsNHf1DCElYX+6wyVRJz1HFeCPC/cHbRug==
+"@azure/msal-browser@~5.14.0":
+  version "5.14.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-browser/-/msal-browser-5.14.0.tgz#3c68c22b239f6c40fab08f433221f1b587abd8a5"
+  integrity sha512-Dfl7hPZe9/JJwRhFFXHq2z1oHYBuGubmff3kWXOsd1AGgyXlqjNYAWuN/1JL/ZrcZBs8TKMjGSil6Rcc7E8VPQ==
   dependencies:
-    "@azure/msal-common" "16.8.0"
+    "@azure/msal-common" "16.9.0"
 
-"@azure/msal-common@16.8.0":
-  version "16.8.0"
-  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.8.0.tgz#8f077b2439d5dc8013ac2267cd09a99c4b2e442a"
-  integrity sha512-5S4RHOcInL2Nu2U217tDZbWGI6StMfcWCrA7TWvWdJmXQ+cYrrIqr84AsN62fGh2MDBysiBJPt6CfWceJfloEA==
+"@azure/msal-common@16.9.0":
+  version "16.9.0"
+  resolved "https://registry.yarnpkg.com/@azure/msal-common/-/msal-common-16.9.0.tgz#0222b099615ebc70bc61892ee1232341c086fcc6"
+  integrity sha512-1MWGjqgUCRAYgLmVFZKp7fs3Rg1TFvIMgywY8ze2olNVvLlJoRThuoziWSDJuwwyJI5L4rnLb9Tyt5D9GvSLPw==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.29.7":
   version "7.29.7"
@@ -4312,9 +4312,9 @@ domhandler@^4.0.0, domhandler@^4.2.0, domhandler@^4.3.1:
     domelementtype "^2.2.0"
 
 dompurify@~3.4.0:
-  version "3.4.10"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.10.tgz#96704295b4d8aeefcc8c7a90caa579b0ad69e46a"
-  integrity sha512-0xzNv0e7oYC6yyuOGZIABPM4qtg3QxLFniDNPP4ZP90wR8Yq3zgwpRbrNiT4N3IKqDbbYFEJLV+JWEs19aZ//w==
+  version "3.4.11"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.4.11.tgz#29c8ba496475f279ef4015784068452fb14a0680"
+  integrity sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -7089,9 +7089,9 @@ onetime@^7.0.0:
     mimic-function "^5.0.0"
 
 onsenui@~2.12.8:
-  version "2.12.8"
-  resolved "https://registry.yarnpkg.com/onsenui/-/onsenui-2.12.8.tgz#861490e84818881f9521fc000f4f92ac79758745"
-  integrity sha512-ju5c2nP/pW7ZIOALqG2yVmjlIa2S6Men2winRKB8E7qtMkjSpMcHD6aRLMZZ4bGRLIiubpT7psdXWLWOc/lEyA==
+  version "2.12.9"
+  resolved "https://registry.yarnpkg.com/onsenui/-/onsenui-2.12.9.tgz#92daea60a2ab69a92e1f2fb281955bfc8effa09b"
+  integrity sha512-eKaO0emfw56Cugh0P2EV5l7ckAbhU/kULgos08IqkuVSmGNt4LJMls2tBUdgz3mZwbGLDq0hQiuhxIreP3Plug==
 
 open@^10.0.3:
   version "10.2.0"
@@ -8227,9 +8227,9 @@ semver@^6.3.1:
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
 semver@^7.6.2, semver@^7.6.3, semver@^7.7.3, semver@~7.8.0:
-  version "7.8.4"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.4.tgz#c73eceebae0616934be8dff28a7fd70757c8e696"
-  integrity sha512-rUCObTnP32Q08R2uuIrt7r9PlEonuTmtuXYcW6s5kjdlj3xbnwe+21yXptAUYcMAABLkYYTtnmzb3w3EDZfueA==
+  version "7.8.5"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.5.tgz#39b646037dd50c14fb451e7e4cac58ed8b863f69"
+  integrity sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==
 
 send@^1.1.0, send@^1.2.0:
   version "1.2.1"
