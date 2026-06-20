@@ -56,6 +56,19 @@ Inputs:
 - **Delay** — seconds between unpublish calls for rate limiting (default: 1).
 - **Package** — package name (default: `@xh/hoist`).
 
+## Generated Artifacts
+
+### `css-data.json`
+
+A VS Code Custom Data file providing autocomplete and hover documentation for all `--xh-*` CSS
+custom properties. Generated from `styles/vars.scss` by `bin/generate-css-data.mjs` and checked
+into source control so it ships with the npm package.
+
+The `prepack` script regenerates this file before every `npm publish`, and a pre-commit hook
+validates it stays in sync whenever `.scss` files are staged. See
+[`styles/README.md`](../styles/README.md#ide-and-agent-support-css-datajson) for full details
+on usage and the `///` doc comment convention.
+
 ## Dependabot (`dependabot.yml`)
 
 Automated dependency update PRs are configured for both GitHub Actions and npm dependencies, each

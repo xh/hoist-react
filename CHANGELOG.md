@@ -2,6 +2,18 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - CSS variable overrides)
+
+See [`docs/upgrade-notes/v87-upgrade-notes.md`](docs/upgrade-notes/v87-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed the two-tier CSS custom property override system. Applications that customized Hoist's
+  appearance by setting unprefixed CSS variables (e.g. `--grid-bg`, `--pad`, `--font-size`) must
+  now set the `--xh-` prefixed variables directly (e.g. `--xh-grid-bg`, `--xh-pad`,
+  `--xh-font-size`). This is a mechanical find-and-replace for most apps. A small number of
+  unprefixed hook names did not match their `--xh-` counterpart - see the upgrade notes for a
+  complete mapping.
+
 ### 🎁 New Features
 
 * Added a mobile `SegmentedControl` input - the mobile counterpart to the desktop component, with a
@@ -49,6 +61,13 @@
 
 * Fixed a circular import introduced in v86 that caused problems for apps using `@ComputeOnce`.
 * Fixed a regression to favorites icon size for `FilterChooser.`
+
+### ✨ Styles
+
+* Added `css-data.json`, a VS Code Custom Data file providing autocomplete and hover
+  documentation for all ~425 `--xh-*` CSS custom properties. Also serves as a machine-readable
+  index for coding agents and LLMs. Generated from `vars.scss` by `bin/generate-css-data.mjs`
+  and kept in sync via a pre-commit hook.
 
 ### ⚙️ Technical
 

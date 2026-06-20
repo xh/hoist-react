@@ -21,7 +21,8 @@
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
-    "prepack": "tsc --build",
+    "generate:css-data": "node bin/generate-css-data.mjs",
+    "prepack": "node bin/generate-css-data.mjs && tsc --build",
     "prepare": "husky"
   },
   "sideEffects": [
