@@ -128,15 +128,6 @@ body.xh-app {
 }
 ```
 
-### 5. Note on Intent Text Color Hooks (Bug Fix)
-
-In previous versions, the override hooks for `--xh-intent-primary-text-color`,
-`--xh-intent-success-text-color`, and `--xh-intent-warning-text-color` all incorrectly referenced
-`--intent-danger-text-color` due to a copy-paste bug. If your app was setting
-`--intent-danger-text-color` expecting it to affect only the danger intent, be aware that in v87
-these variables are now directly overridable via their `--xh-` names and no longer share a single
-hook.
-
 ## Verification Checklist
 
 After completing all steps:

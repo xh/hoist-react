@@ -31,8 +31,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed copy-paste bug where three intent text-color CSS variables incorrectly referenced the
-  danger intent's fallback. Moot given the override system removal above, but fixed independently.
 * Fixed the "Is blank" / "Is not blank" grid column filters for `tags`-typed fields - empty tag
   arrays now correctly match "Is blank", and such filters are edited on the Custom tab rather than
   producing a phantom blank entry in the Values list.
