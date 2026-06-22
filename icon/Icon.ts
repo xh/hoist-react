@@ -651,6 +651,9 @@ export const Icon = {
     shieldCheck(p?: IconProps) {
         return Icon.icon({...p, iconName: 'shield-check'});
     },
+    shieldHalved(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'shield-halved'});
+    },
     sigma(p?: IconProps) {
         return Icon.icon({...p, iconName: 'sigma'});
     },

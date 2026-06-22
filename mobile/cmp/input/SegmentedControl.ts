@@ -25,6 +25,15 @@ import './SegmentedControl.scss';
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
     /**
+     * True (default) to render all segments at an equal width when {@link fill} is enabled,
+     * dividing the available width into equal parts regardless of label length - the conventional
+     * segmented-control appearance. Set false to instead size each segment to its content and
+     * share only the leftover space, so a longer label yields a wider segment. No effect when
+     * `fill` is false. Either way, a label too wide for its segment truncates with an ellipsis.
+     */
+    equalSegmentWidths?: boolean;
+
+    /**
      * True (default) to stretch the control to fill available width,
      * distributing space equally among options.
      */
@@ -146,6 +155,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         commitOnChange,
         options,
         // Consumed by this component
+        equalSegmentWidths = true,
         fill = true,
         intent,
         outlined,
@@ -186,7 +196,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             className,
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
-            fill && 'xh-segmented-control--fill'
+            fill && 'xh-segmented-control--fill',
+            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths'
         ),
         ref,
         onFocus: model.onFocus,

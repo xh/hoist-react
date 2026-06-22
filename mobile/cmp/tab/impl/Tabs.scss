@@ -25,6 +25,14 @@
   transform: translateX(0);
 }
 
+// Theme the page backdrop. Onsen renders an opaque, light-by-default `.page__background` behind
+// each page's content, and the content itself is forced transparent (so the app background shows
+// through). That leaves the light backdrop visible for tab content that is not itself a panel,
+// rendering themed text unreadable in dark mode - so paint the backdrop with the app background.
+.xh-tab-page .page__background {
+  background-color: var(--xh-bg);
+}
+
 .xh-tab-container {
   // Override Onsen's tabbar height CSS var
   --tabbar-height: var(--xh-tbar-min-size-px);

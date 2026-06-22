@@ -11,6 +11,13 @@
     flex: 1;
   }
 
+  &__left-icon {
+    display: flex;
+    align-items: center;
+    padding-left: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+  }
+
   &__clear-button {
     padding-right: 8px;
     padding-left: 0;
