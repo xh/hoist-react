@@ -34,8 +34,8 @@
 
 ### ⚙️ Technical
 
-* `JsonBlobService` now accepts an optional `CallContextLike` argument on all of its public methods,
-  allowing callers to nest its fetches within an existing trace.
+* `JsonBlobService` and `HoistAuthModel` now accept an optional `CallContextLike` argument on all of
+  their public methods, allowing callers to nest their fetches within an existing trace.
 
 ### ✨ Styles
 
