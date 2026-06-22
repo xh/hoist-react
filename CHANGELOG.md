@@ -32,6 +32,11 @@
       verify that their flex layouts continue to work as expected and add an explicit unit if
       not (e.g. `flex: 1 1 0%` or `flex-basis: 0%`).
 
+### ⚙️ Technical
+
+* `JsonBlobService` now accepts an optional `CallContextLike` argument on all of its public methods,
+  allowing callers to nest its fetches within an existing trace.
+
 ### ✨ Styles
 
 * Mobile `Button` now defaults to a more touch-friendly height (40px, up from 28px) and rounder
