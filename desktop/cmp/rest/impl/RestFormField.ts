@@ -68,7 +68,7 @@ function renderDefaultInput(name: string, model: RestFormModel) {
         case 'number':
             return numberInput();
         case 'json':
-            return jsonInput({enableSearch: true, height: 250});
+            return jsonInput({autoFormat: true, enableSearch: true, height: 250});
         case 'date':
             return dateInput();
         case 'localDate':

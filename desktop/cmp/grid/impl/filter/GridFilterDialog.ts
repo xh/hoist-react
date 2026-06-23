@@ -55,7 +55,7 @@ const filterForm = hoistCmp.factory(({impl}) => {
         fieldDefaults: {label: null, minimal: true},
         item: formField({
             field: 'filter',
-            item: jsonInput()
+            item: jsonInput({autoFormat: true})
         })
     });
 });
@@ -146,8 +146,9 @@ class GridFilterDialogLocalModel extends HoistModel {
 
     loadForm() {
         const filter = this.model.filter?.removeFunctionFilters();
+        // jsonInput `autoFormat` handles pretty-printing for display - just provide valid JSON.
         this.formModel.init({
-            filter: JSON.stringify(filter ?? null, undefined, 2)
+            filter: JSON.stringify(filter ?? null)
         });
     }
 

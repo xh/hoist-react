@@ -19,10 +19,10 @@
   timestamps. Applications using workarounds to provide similar behavior may be able to unwind that
   behavior and rely on Hoist default behavior.
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
-  controlled by a new `autoFormat` prop. Editable inputs format on blur (never mid-edit); the prop
-  defaults to true for `readonly` inputs, removing the need to pre-format values (e.g. JSON) before
-  passing them in. Applications may be able to drop their pre-formatting logic and bind directly to
-  the source value, simplifying call sites substantially.
+  controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
+  (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
+  button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
+  values and drop their pre-formatting logic, simplifying call sites substantially.
 
 ### 🐞 Bug Fixes
 
