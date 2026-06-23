@@ -6,7 +6,7 @@
  */
 
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, zipWith} from 'lodash';
@@ -32,7 +32,7 @@ export class JsonSearchImplModel extends HoistModel {
     @bindable path: string = '';
     @bindable readerContentType: 'document' | 'matches' = 'matches';
     @bindable pathFormat: 'XPath' | 'JSONPath' = 'XPath';
-    @bindable readerContent: string = '';
+    @bindable readerContent: string | PlainObject[] = '';
     @bindable matchingNodeCount: number = 0;
 
     get subjectName(): string {
@@ -162,7 +162,7 @@ export class JsonSearchImplModel extends HoistModel {
                         value
                     };
                 });
-                this.readerContent = JSON.stringify(nodes);
+                this.readerContent = nodes;
             });
     }
 
