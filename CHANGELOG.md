@@ -2,6 +2,13 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
+  grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
+  level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
+  as expand-to targets - previously a too-short array disabled the feature entirely.
+
 ### 🐞 Bug Fixes
 
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
