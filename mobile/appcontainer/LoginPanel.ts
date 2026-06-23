@@ -5,13 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
-import {div, filler, form} from '@xh/hoist/cmp/layout';
+import {box, div, form, viewport} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {textInput} from '@xh/hoist/mobile/cmp/input';
 import {panel} from '@xh/hoist/mobile/cmp/panel';
-import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import './LoginPanel.scss';
 
 /**
@@ -25,59 +24,85 @@ export const loginPanel = hoistCmp.factory({
     model: creates(LoginPanelModel),
 
     render({model}) {
-        const {loginMessage} = XH.appSpec,
-            {isValid, loadObserver, warning, loginInProgress} = model;
+        const {loginMessage, loginPanelIcon, clientAppName} = XH.appSpec,
+            {warning, loginInProgress} = model;
 
-        return panel({
-            className: 'xh-login',
-            testId: 'xh-login',
-            items: [
-                toolbar(filler(), XH.clientAppName, filler()),
-                panel({
-                    className: 'xh-login__body',
-                    mask: loadObserver,
+        return viewport(
+            panel({
+                className: 'xh-login',
+                testId: 'xh-login',
+                item: div({
+                    className: 'xh-login__content',
                     items: [
+                        box({
+                            className: 'xh-login__icon',
+                            item: loginPanelIcon ?? Icon.shieldHalved({prefix: 'fas'})
+                        }),
+                        div({className: 'xh-login__title', item: `Login to ${clientAppName}`}),
+                        div({
+                            className: 'xh-login__subtitle',
+                            item: 'Enter your credentials to continue.'
+                        }),
                         form({
                             className: 'xh-login__fields',
                             items: [
-                                textInput({
-                                    bind: 'username',
-                                    placeholder: 'Username',
-                                    autoComplete: 'username',
-                                    autoCapitalize: 'none',
-                                    commitOnChange: true,
-                                    testId: 'xh-login-username'
+                                field({
+                                    label: 'Username',
+                                    input: textInput({
+                                        bind: 'username',
+                                        leftIcon: Icon.user(),
+                                        autoComplete: 'username',
+                                        autoCapitalize: 'none',
+                                        commitOnChange: true,
+                                        testId: 'xh-login-username'
+                                    })
                                 }),
-                                textInput({
-                                    bind: 'password',
-                                    placeholder: 'Password',
-                                    autoComplete: 'current-password',
-                                    type: 'password',
-                                    commitOnChange: true,
-                                    testId: 'xh-login-password'
+                                field({
+                                    label: 'Password',
+                                    input: textInput({
+                                        bind: 'password',
+                                        leftIcon: Icon.lock(),
+                                        type: 'password',
+                                        autoComplete: 'current-password',
+                                        commitOnChange: true,
+                                        testId: 'xh-login-password'
+                                    })
+                                }),
+                                div({
+                                    className: 'xh-login__message',
+                                    omit: !loginMessage,
+                                    item: loginMessage
+                                }),
+                                div({
+                                    className: 'xh-login__warning',
+                                    omit: !warning,
+                                    item: warning
+                                }),
+                                button({
+                                    className: 'xh-login__submit',
+                                    icon: loginInProgress
+                                        ? Icon.spinner({spin: true})
+                                        : Icon.login(),
+                                    text: loginInProgress ? 'Logging in...' : 'Login',
+                                    intent: 'primary',
+                                    onClick: () => model.submitAsync(),
+                                    testId: 'xh-login-btn'
                                 })
                             ]
-                        }),
-                        div({
-                            className: 'xh-login__message',
-                            omit: !loginMessage,
-                            item: loginMessage
-                        }),
-                        div({
-                            className: 'xh-login__warning',
-                            omit: !warning,
-                            item: warning
-                        }),
-                        button({
-                            icon: Icon.login(),
-                            text: loginInProgress ? 'Please wait...' : 'Login',
-                            disabled: !isValid || loginInProgress,
-                            onClick: () => model.submitAsync(),
-                            testId: 'xh-login-btn'
                         })
                     ]
                 })
-            ]
+            })
+        );
+    }
+});
+
+const field = hoistCmp.factory({
+    model: false,
+    render({label, input}) {
+        return div({
+            className: 'xh-login__field',
+            items: [div({className: 'xh-login__field-label', item: label}), input]
         });
     }
 });

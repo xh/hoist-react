@@ -344,7 +344,12 @@ body {
     --xh-button-active-text-color: var(--button-active-text-color, white);
     --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
     --xh-button-text-color: var(--button-text-color, white);
-    --xh-button-height: var(--button-height, 28px);
+    // Default to a comfortable touch height for buttons in body content - a bit more compact than
+    // the 44px toolbar/touch-target max, which reads as oversized for XH's denser style. Toolbars
+    // derive their own slightly smaller button height from the bar size (see Toolbar.scss).
+    --xh-button-height: var(--button-height, 40px);
+    // Slightly rounder corners to suit the taller mobile button (the desktop default is tighter).
+    --xh-button-border-radius-px: var(--button-border-radius-px, 8px);
     --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
     // Light theme pressed bg for 'minimal' / 'outlined'

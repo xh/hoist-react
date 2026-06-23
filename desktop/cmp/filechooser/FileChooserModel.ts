@@ -96,7 +96,7 @@ export class FileChooserModel extends HoistModel {
     private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
     private readonly rejectToastSpec: Partial<ToastSpec>;
 
-    constructor(config: FileChooserConfig) {
+    constructor(config: FileChooserConfig = {}) {
         super();
         makeObservable(this);
 
