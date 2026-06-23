@@ -50,7 +50,7 @@ import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {logError, logWarn, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
@@ -64,8 +64,9 @@ export interface CodeInputProps extends HoistProps, HoistInputProps, LayoutProps
 
     /**
      * True to automatically format content for display using the configured `formatter`.
-     * Applies only to `readonly` inputs (formatting an editable input would clobber user edits)
-     * and defaults to true when `readonly` - set false to opt out.
+     * Defaults to true for `readonly` inputs - set false to opt out. May also be enabled on
+     * editable inputs, in which case content is formatted on blur (never mid-edit, so user
+     * edits and cursor position are preserved while typing).
      */
     autoFormat?: boolean;
 
@@ -271,12 +272,6 @@ class CodeInputModel extends HoistInputModel {
     }
 
     override onLinked() {
-        const {autoFormat, readonly} = this.componentProps;
-        warnIf(
-            autoFormat && !readonly,
-            '`autoFormat` applies only to `readonly` inputs and will have no effect.'
-        );
-
         this.addReaction(
             {
                 track: () => XH.darkTheme,
@@ -334,10 +329,9 @@ class CodeInputModel extends HoistInputModel {
         this.editor = new EditorView({state, parent: container});
     };
 
-    /** True to auto-format content for display - defaults on for `readonly` inputs. */
     get autoFormat(): boolean {
         const {autoFormat, readonly} = this.componentProps;
-        return !!readonly && withDefault(autoFormat, true);
+        return withDefault(autoFormat, !!readonly);
     }
 
     override toInternal(val: any) {

@@ -18,11 +18,11 @@
   default a `date` source field to `fieldType: 'localDate'`; set `fieldType: 'date'` for exact
   timestamps. Applications using workarounds to provide similar behavior may be able to unwind that
   behavior and rely on Hoist default behavior.
-* `CodeInput` / `JsonInput` now auto-format `readonly` content for display via their configured
-  `formatter`, removing the need to pre-format values (e.g. JSON) before passing them in. Controlled
-  by a new `autoFormat` prop that defaults to true when `readonly`. Applications binding a
-  `JsonInput` to read-only content may be able to drop their pre-formatting logic and bind directly
-  to the source value, simplifying call sites substantially.
+* `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
+  controlled by a new `autoFormat` prop. Editable inputs format on blur (never mid-edit); the prop
+  defaults to true for `readonly` inputs, removing the need to pre-format values (e.g. JSON) before
+  passing them in. Applications may be able to drop their pre-formatting logic and bind directly to
+  the source value, simplifying call sites substantially.
 
 ### 🐞 Bug Fixes
 
