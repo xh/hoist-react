@@ -94,7 +94,7 @@ export class FileChooserModel extends HoistModel {
     private readonly rejectToastMessage: (rejectedFiles: FileRejection[]) => ReactNode;
     private readonly rejectToastSpec: Partial<ToastSpec>;
 
-    constructor(config: FileChooserConfig) {
+    constructor(config: FileChooserConfig = {}) {
         super();
 
         this.accept = isEmpty(config.accept) ? null : sortBy(castArray(config.accept));

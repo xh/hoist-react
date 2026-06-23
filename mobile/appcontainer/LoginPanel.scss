@@ -1,18 +1,59 @@
 .xh-login {
-  .xh-toolbar {
-    font-size: var(--xh-appbar-title-font-size-px);
-    background-color: var(--xh-appbar-bg);
-    color: var(--xh-appbar-title-color);
+  .xh-panel__content {
+    align-items: center;
+    justify-content: center;
   }
 
-  &__body {
-    margin: 40px;
+  &__content {
+    display: flex;
+    flex-direction: column;
+    width: 90vw;
+    max-width: 400px;
+    padding: 0 40px;
   }
 
-  .xh-input {
-    width: 100%;
+  &__icon {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--xh-pad-double-px);
+    font-size: 26px;
+    color: var(--xh-intent-primary);
+    background-color: var(--xh-intent-primary-trans1);
+    border-radius: 10px;
+  }
+
+  &__title {
+    color: var(--xh-text-color);
+    font-size: var(--xh-font-size-large-px);
+    font-weight: 500;
+    text-align: center;
+  }
+
+  &__subtitle {
+    color: var(--xh-text-color-muted);
+    font-size: var(--xh-font-size-small-px);
+    margin: 3px 0 var(--xh-pad-double-px);
+    text-align: center;
+  }
+
+  &__field {
     margin-bottom: var(--xh-pad-px);
-    padding: 4px 8px;
+  }
+
+  &__field-label {
+    margin-bottom: var(--xh-pad-half-px);
+    font-size: var(--xh-font-size-small-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  .xh-text-input {
+    width: 100%;
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius-px);
   }
 
   &__warning,
@@ -32,7 +73,8 @@
     background-color: var(--xh-bg-alt);
   }
 
-  .xh-button {
-    padding: 1.5em 0;
+  &__submit {
+    margin-top: var(--xh-pad-px);
+    padding: var(--xh-pad-double-px) 0;
   }
 }
