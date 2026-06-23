@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
+  `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
+  focused and committed (full-precision) value.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
