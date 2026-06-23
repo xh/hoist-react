@@ -12,7 +12,7 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import './SwitchInput.scss';
 
 export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
-    value?: string;
+    value?: boolean;
 
     /** Onsen modifier string */
     modifier?: string;
