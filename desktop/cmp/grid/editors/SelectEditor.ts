@@ -30,9 +30,8 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
                 onCommit: flushOnCommit
                     ? () => wait().then(() => props.agParams.stopEditing())
                     : null,
-                // Auto-size the menu to its content rather than the (narrow) cell. Windowed mode
-                // handles this itself via a measured menu width - applying width:'auto' here would
-                // override that and collapse the menu back to the cell width (see Select #4325).
+                // Auto-size the menu to content, not the narrow cell. Windowed mode handles this
+                // via a measured width, so skip here to avoid overriding it (see #4325).
                 rsOptions: props.inputProps?.enableWindowed
                     ? undefined
                     : {

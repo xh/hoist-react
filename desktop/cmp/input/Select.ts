@@ -224,8 +224,7 @@ class SelectInputModel extends HoistInputModel {
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
 
-    // Explicit pixel width for the windowed-mode menu, measured from option labels (see
-    // `calcWindowedMenuWidth`). Null when not in windowed mode or labels cannot be measured.
+    // Measured pixel width for the windowed menu; null if not windowed or labels unmeasurable.
     @observable.ref windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
@@ -686,11 +685,9 @@ class SelectInputModel extends HoistInputModel {
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
 
-    // Virtualized (windowed) menus cannot auto-size to their content the way standard menus do:
-    // react-window absolutely-positions its rows at width:100%, so option text never widens the
-    // menu and it collapses to the control width. Measure the widest option label up front and
-    // return an explicit pixel width to apply to the menu. Returns null if there are no
-    // measurable (string) labels, in which case the menu falls back to the control width.
+    // Windowed menus can't auto-size via CSS - react-window absolutely-positions rows at
+    // width:100%, so options never widen the menu. Measure the widest label and return an explicit
+    // width. Null (-> control width) if there are no measurable string labels.
     private _measureCanvas: HTMLCanvasElement;
     private calcWindowedMenuWidth(options): number {
         const labels = [],
@@ -716,8 +713,7 @@ class SelectInputModel extends HoistInputModel {
         return Math.ceil(maxText + pad * 2 + checkIndent + scrollbar);
     }
 
-    // Lazily create a canvas 2d context with a font sampled from a probe rendered in the menu
-    // portal, so measurements match the actual menu font.
+    // Lazily create a canvas context, sampling the menu font from a probe in the portal.
     private getMeasureContext(): CanvasRenderingContext2D {
         if (!this._measureCanvas) {
             const portal = this.getOrCreatePortalDiv(),
@@ -833,8 +829,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    // An explicit menuWidth wins; otherwise windowed menus get a measured width to restore the
-    // content-based auto-sizing that virtualization breaks (see SelectInputModel#windowedMenuWidth).
+    // Explicit menuWidth wins; else windowed menus use the measured width (see windowedMenuWidth).
     const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
     if (menuWidth != null) {
         rsProps.styles = {
