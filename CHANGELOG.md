@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
+  when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
+  `7,100,100` rather than collapsing to `7.10m`).
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
