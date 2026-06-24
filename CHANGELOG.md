@@ -12,7 +12,7 @@
 
 
 ### 🐞 Bug Fixes
-*
+
 * Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
   negative or decimal value), while reliably rejecting other non-numeric keypresses.
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
