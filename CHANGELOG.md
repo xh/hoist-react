@@ -9,7 +9,9 @@
   (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
   button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
   values and drop their pre-formatting logic, simplifying call sites substantially.
-
+* Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
+  dialog sort its entries the same way the underlying grid column sorts them. When not provided,
+  the column's own `sortValue` is used.
 
 ### 🐞 Bug Fixes
 
@@ -18,6 +20,12 @@
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
   `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
   focused and committed (full-precision) value.
+
+### ⚙️ Typescript API Adjustments
+
+* `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
+  rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
+  that a complex column renderer would throw.
 
 ## 86.1.0 - 2026-06-22
 
