@@ -4,9 +4,22 @@
 
 ### 🎁 New Features
 
+* `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
+  controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
+  (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
+  button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
+  values and drop their pre-formatting logic, simplifying call sites substantially.
 * Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
   when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
   `7,100,100` rather than collapsing to `7.10m`).
+
+
+### 🐞 Bug Fixes
+* Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
+  negative or decimal value), while reliably rejecting other non-numeric keypresses.
+* `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
+  `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
+  focused and committed (full-precision) value.
 
 ## 86.1.0 - 2026-06-22
 
@@ -24,11 +37,6 @@
   default a `date` source field to `fieldType: 'localDate'`; set `fieldType: 'date'` for exact
   timestamps. Applications using workarounds to provide similar behavior may be able to unwind that
   behavior and rely on Hoist default behavior.
-* `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
-  controlled by a new `autoFormat` prop. On editable inputs, content is tidied automatically on blur
-  (never mid-edit) - users get clean, consistently-formatted JSON without reaching for the format
-  button. For `readonly` inputs it defaults to true, so applications can bind directly to raw source
-  values and drop their pre-formatting logic, simplifying call sites substantially.
 
 ### 🐞 Bug Fixes
 
