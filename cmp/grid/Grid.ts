@@ -153,8 +153,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
-    // Structural "empty" grid space. A direct hit (not a descendant) is an outside-of-cell click;
-    // cells and portaled editor popovers are always descendants, so never match.
+    // Structural "empty" grid space.
     private static EMPTY_SPACE_SELECTOR =
         '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
 
@@ -853,12 +852,11 @@ export class GridLocalModel extends HoistModel {
 
     // `stopEditingWhenCellsLoseFocus` doesn't fire on clicks in empty grid space (focus stays in
     // the grid), so commit the active edit on those clicks ourselves. Require exact match on empty
-    // space to avoid interfering with any cell portals etc.
+    // space to avoid interfering with cell editors.
     onViewMouseDown = (evt: MouseEvent) => {
         const {model} = this,
             target = evt.target as HTMLElement;
-        if (!model.isEditing) return;
-        if (target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
+        if (model.isEditing && target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
             model.agApi?.stopEditing();
         }
     };
