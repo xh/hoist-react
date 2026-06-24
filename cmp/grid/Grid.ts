@@ -152,10 +152,13 @@ export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
     // Structural ag-Grid elements that constitute clickable "empty" grid space - i.e. the
-    // scrollable viewports and their (column/row-sized) containers. A mousedown landing directly
-    // on one of these (not a descendant) is treated as a click outside any active cell editor.
+    // scrollable viewports, their (column/row-sized) containers, and the rows themselves (a row
+    // spans the full viewport width, so its area to the right of the last cell is the row element).
+    // A mousedown landing directly on one of these (not a descendant) is treated as a click outside
+    // any active cell editor - cells and portaled editor popovers are always descendants, never a
+    // direct match.
     private static EMPTY_SPACE_SELECTOR =
-        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container';
+        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
