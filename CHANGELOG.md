@@ -2,6 +2,10 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
