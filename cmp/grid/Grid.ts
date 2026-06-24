@@ -151,6 +151,12 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
 
+    // Structural ag-Grid elements that constitute clickable "empty" grid space - i.e. the
+    // scrollable viewports and their (column/row-sized) containers. A mousedown landing directly
+    // on one of these (not a descendant) is treated as a click outside any active cell editor.
+    private static EMPTY_SPACE_SELECTOR =
+        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container';
+
     @lookup(GridModel)
     private model: GridModel;
     agOptions: GridOptions;
@@ -190,7 +196,8 @@ export class GridLocalModel extends HoistModel {
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
-            this.dashContainerReaction()
+            this.dashContainerReaction(),
+            this.stopEditingOnEmptyClickReaction()
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
@@ -842,6 +849,34 @@ export class GridLocalModel extends HoistModel {
 
     navigateToNextCell = agParams => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    // ag-Grid's `stopEditingWhenCellsLoseFocus` only fires when focus moves to another focusable
+    // element. Clicking empty grid space (e.g. to the right of the last column or below the last
+    // row) does not move focus out of the grid, leaving the editor open. Catch those clicks here
+    // and commit the active edit.
+    stopEditingOnEmptyClickReaction() {
+        return {
+            track: () => this.viewRef.current,
+            run: (view: HTMLElement, prevView: HTMLElement) => {
+                prevView?.removeEventListener('mousedown', this.onViewMouseDown, true);
+                view?.addEventListener('mousedown', this.onViewMouseDown, true);
+            }
+        };
+    }
+
+    onViewMouseDown = (evt: MouseEvent) => {
+        const {model} = this,
+            target = evt.target as HTMLElement;
+        if (!model.isEditing) return;
+
+        // Only react to clicks landing *directly* on a structural viewport/container background -
+        // i.e. genuine empty space. We deliberately do not match descendants: some inline editors
+        // (e.g. DateEditor's calendar) portal their popovers into the grid viewport, and their
+        // content must not be treated as an outside click. See `desktop/cmp/grid/editors`.
+        if (target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
+            model.agApi?.stopEditing();
+        }
     };
 
     onCellMouseDown = evt => {
