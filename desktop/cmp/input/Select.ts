@@ -224,6 +224,10 @@ class SelectInputModel extends HoistInputModel {
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
 
+    // Explicit pixel width for the windowed-mode menu, measured from option labels (see
+    // `calcWindowedMenuWidth`). Null when not in windowed mode or labels cannot be measured.
+    @observable.ref windowedMenuWidth: number = null;
+
     // Prop-backed convenience getters
     get asyncMode(): boolean {
         return !!this.componentProps.queryFn;
@@ -290,6 +294,7 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
+                if (this.windowedMode) this.windowedMenuWidth = this.calcWindowedMenuWidth(opts);
             },
             fireImmediately: true
         });
@@ -681,6 +686,54 @@ class SelectInputModel extends HoistInputModel {
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
 
+    // Virtualized (windowed) menus cannot auto-size to their content the way standard menus do:
+    // react-window absolutely-positions its rows at width:100%, so option text never widens the
+    // menu and it collapses to the control width. Measure the widest option label up front and
+    // return an explicit pixel width to apply to the menu. Returns null if there are no
+    // measurable (string) labels, in which case the menu falls back to the control width.
+    private _measureCanvas: HTMLCanvasElement;
+    private calcWindowedMenuWidth(options): number {
+        const labels = [],
+            collect = opts =>
+                opts.forEach(o => {
+                    if (o.options) collect(o.options);
+                    else if (typeof o.label === 'string') labels.push(o.label);
+                });
+        collect(options);
+        if (isEmpty(labels)) return null;
+
+        const ctx = this.getMeasureContext();
+        let maxText = 0;
+        labels.forEach(l => (maxText = Math.max(maxText, ctx.measureText(l).width)));
+
+        // Pad for option text padding (both sides), the selection-check indent, and scrollbar.
+        const pad =
+                parseFloat(
+                    window.getComputedStyle(document.body).getPropertyValue('--xh-pad-px')
+                ) || 5,
+            checkIndent = this.hideSelectedOptionCheck ? 0 : 25,
+            scrollbar = 20;
+        return Math.ceil(maxText + pad * 2 + checkIndent + scrollbar);
+    }
+
+    // Lazily create a canvas 2d context with a font sampled from a probe rendered in the menu
+    // portal, so measurements match the actual menu font.
+    private getMeasureContext(): CanvasRenderingContext2D {
+        if (!this._measureCanvas) {
+            const portal = this.getOrCreatePortalDiv(),
+                probe = document.createElement('div');
+            probe.className = 'xh-select__menu';
+            portal.appendChild(probe);
+            const cs = window.getComputedStyle(probe),
+                font = `${cs.fontSize} ${cs.fontFamily}`;
+            portal.removeChild(probe);
+
+            this._measureCanvas = document.createElement('canvas');
+            this._measureCanvas.getContext('2d').font = font;
+        }
+        return this._measureCanvas.getContext('2d');
+    }
+
     getOrCreatePortalDiv() {
         const id = MENU_PORTAL_ID;
         let portal = document.getElementById(id);
@@ -780,9 +833,12 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    if (props.menuWidth) {
+    // An explicit menuWidth wins; otherwise windowed menus get a measured width to restore the
+    // content-based auto-sizing that virtualization breaks (see SelectInputModel#windowedMenuWidth).
+    const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
+    if (menuWidth != null) {
         rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            menu: provided => ({...provided, width: menuWidth, minWidth: '100%'}),
             ...props.rsOptions?.styles
         };
     }

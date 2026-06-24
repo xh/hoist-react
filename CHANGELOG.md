@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed windowed `Select` (and `SelectEditor`) dropdown menus being constrained to the control/cell
+  width - the menu now measures its option labels and auto-sizes to fit content, matching the
+  non-windowed behavior.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
