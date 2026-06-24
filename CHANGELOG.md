@@ -2,6 +2,7 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+
 ### 🎁 New Features
 
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
@@ -24,6 +25,8 @@
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
   `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
   focused and committed (full-precision) value.
+* Fixed inline grid editing not ending when clicking empty grid space to the right of the last
+  column or below the last row - such clicks now commit the active edit.
 
 ### ⚙️ Typescript API Adjustments
 
