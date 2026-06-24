@@ -2,6 +2,11 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed inline grid editing not ending when clicking empty grid space to the right of the last
+  column or below the last row - such clicks now commit the active edit.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
