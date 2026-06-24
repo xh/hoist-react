@@ -2,7 +2,6 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-
 ### 🎁 New Features
 
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
@@ -27,6 +26,7 @@
   focused and committed (full-precision) value.
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
 
 ### ⚙️ Typescript API Adjustments
 
