@@ -61,7 +61,7 @@ export interface NumberInputProps extends HoistProps, LayoutProps, StyleProps, H
     /** Text to display when control is empty. */
     placeholder?: string;
 
-    /** Max decimal precision of the value, defaults to 4. */
+    /** Max decimal precision of the value, defaults to 4. Set to null for full, unrestricted precision. */
     precision?: NumericPrecision;
 
     /** Element to display inline on the right side of the input. */

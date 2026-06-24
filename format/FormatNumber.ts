@@ -78,8 +78,9 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     omitFourDigitComma?: boolean;
 
     /**
-     * Desired number of decimal places, or 'auto' (default) to adjust the displayed precision
-     * automatically based on the scale of the value.
+     * Desired number of decimal places, 'auto' (default) to adjust the displayed precision
+     * automatically based on the scale of the value, or null for full, unrestricted precision
+     * (capped at the max supported precision, with trailing zeros trimmed).
      */
     precision?: Precision;
 
@@ -118,7 +119,7 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
      *
      * e.g. `{precision:4, zeroPad:2}` will format `1.2` → "1.20" and `1.234` → "1.234"
      *
-     * Default is true if a fixed precision is set, false if precision is 'auto'.
+     * Default is true if a fixed precision is set, false if precision is 'auto' or null (full).
      */
     zeroPad?: ZeroPad;
 }
@@ -175,9 +176,16 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     } = opts ?? ({} as NumberFormatOptions);
     if (isInvalidInput(v)) return nullDisplay;
 
-    // Ensure any non-int precision is treated as 'auto', use to default zeroPad.
-    if (!isInteger(precision)) precision = 'auto';
-    if (isNil(zeroPad)) zeroPad = precision != 'auto';
+    // Resolve precision: null means full precision, other non-integers (e.g. undefined) mean 'auto'.
+    const fullPrecision = precision === null;
+    if (fullPrecision) {
+        precision = MAX_NUMERIC_PRECISION;
+    } else if (!isInteger(precision)) {
+        precision = 'auto';
+    }
+
+    // Default zeroPad to pad only for a fixed precision - 'auto' and full precision trim zeros.
+    if (isNil(zeroPad)) zeroPad = precision != 'auto' && !fullPrecision;
 
     formatConfig =
         formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
