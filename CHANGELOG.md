@@ -34,6 +34,11 @@
   rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
   that a complex column renderer would throw.
 
+### ✨ Styles
+
+* Vertical (left/right) `TabContainer` switchers now render a modern rounded-pill treatment by
+  default, customizable via new `--xh-tab-switcher-vertical-*` CSS variables.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features

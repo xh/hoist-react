@@ -36,9 +36,36 @@
     }
   }
 
+  // Generic tab defaults - orientation-specific blocks below layer on top of these.
+  .bp6-tab {
+    color: var(--xh-tab-text-color);
+
+    &[aria-disabled='true'] {
+      color: var(--xh-tab-disabled-text-color);
+    }
+
+    // Tooltip
+    .bp6-popover-target {
+      width: 100%;
+    }
+  }
+
+  // Active/hover color override
+  .bp6-tab[aria-selected='true'],
+  .bp6-tab:not([aria-disabled='true']):hover {
+    .xh-tab-switcher__tab {
+      color: var(--xh-tab-active-text-color);
+    }
+  }
+
   &--top {
     padding-left: var(--xh-pad-px);
     max-width: 100%;
+
+    // Active indicator sits on the bottom edge of the tab, adjacent to the content below.
+    .bp6-tab[aria-selected='true'] {
+      box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
+    }
   }
 
   &--bottom {
@@ -56,6 +83,8 @@
   &--right {
     flex-direction: column;
     max-height: 100%;
+    min-width: var(--xh-tab-switcher-vertical-min-width);
+    padding: var(--xh-tab-switcher-vertical-padding);
 
     // Make overflow button full width
     .bp6-popover-target {
@@ -65,6 +94,49 @@
         width: 100%;
       }
     }
+
+    // Modern vertical rail: rounded, padded items with a muted resting color, a clear hover
+    // affordance, and a filled active "pill". Fully driven off the --xh-tab-switcher-vertical-*
+    // tokens so it stays light/dark-theme safe and is easily customized or disabled per-app.
+    .bp6-tab {
+      margin-bottom: var(--xh-tab-switcher-vertical-item-gap);
+      padding: var(--xh-tab-switcher-vertical-item-padding);
+      border-radius: var(--xh-tab-switcher-vertical-item-border-radius);
+      color: var(--xh-tab-switcher-vertical-item-text-color);
+      font-weight: var(--xh-tab-switcher-vertical-item-font-weight);
+      transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    .bp6-tab:not([aria-disabled='true']):hover {
+      background-color: var(--xh-tab-switcher-vertical-item-hover-bg);
+    }
+
+    .bp6-tab[aria-selected='true'] {
+      background-color: var(--xh-tab-switcher-vertical-item-active-bg);
+      font-weight: var(--xh-tab-switcher-vertical-item-active-font-weight);
+    }
+
+    // Hover + active labels take the active/intent text color, re-applied to both the tab and its
+    // inner label so it overrides the muted resting color set on the item above.
+    .bp6-tab[aria-selected='true'],
+    .bp6-tab:not([aria-disabled='true']):hover {
+      color: var(--xh-tab-switcher-vertical-item-active-text-color);
+
+      .xh-tab-switcher__tab {
+        color: var(--xh-tab-switcher-vertical-item-active-text-color);
+      }
+    }
+  }
+
+  &--left {
+    border-right: var(--xh-tab-switcher-vertical-border);
+  }
+
+  &--right {
+    border-left: var(--xh-tab-switcher-vertical-border);
   }
 
   &__tab {
@@ -103,30 +175,5 @@
       min-width: 20px !important;
       min-height: 20px !important;
     }
-  }
-
-  .bp6-tab {
-    color: var(--xh-tab-text-color);
-
-    &[aria-disabled='true'] {
-      color: var(--xh-tab-disabled-text-color);
-    }
-
-    // Tooltip
-    .bp6-popover-target {
-      width: 100%;
-    }
-  }
-
-  // Active/hover color override
-  .bp6-tab[aria-selected='true'],
-  .bp6-tab:not([aria-disabled='true']):hover {
-    .xh-tab-switcher__tab {
-      color: var(--xh-tab-active-text-color);
-    }
-  }
-
-  .bp6-tab[aria-selected='true'] {
-    box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
   }
 }
