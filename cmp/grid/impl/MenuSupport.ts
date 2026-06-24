@@ -280,15 +280,13 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
     return new RecordAction({
         text: 'Expand to...',
         displayFn: () => {
-            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+            const {maxDepth, resolvedLevelLabels} = gridModel;
 
             // Don't show for flat grid models or if we don't have labels
             if (!maxDepth || !resolvedLevelLabels) return {hidden: true};
 
             const items = resolvedLevelLabels.map((label, idx) => {
-                const isCurrLevel =
-                    expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
+                const isCurrLevel = gridModel.isCurrentExpandLevel(idx);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : null,

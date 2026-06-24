@@ -12,6 +12,10 @@
 * Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
   dialog sort its entries the same way the underlying grid column sorts them. When not provided,
   the column's own `sortValue` is used.
+* `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
+  grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
+  level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
+  as expand-to targets - previously a too-short array disabled the feature entirely.
 
 ### 🐞 Bug Fixes
 
