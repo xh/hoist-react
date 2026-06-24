@@ -27,6 +27,7 @@
   focused and committed (full-precision) value.
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
+* Fixed `Icon.placeholder()` to render with the correct width.
 
 ### ⚙️ Typescript API Adjustments
 
