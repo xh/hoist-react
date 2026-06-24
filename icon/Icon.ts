@@ -15,6 +15,7 @@ import {ReactElement} from 'react';
 import {iconCmp} from './impl/IconCmp';
 import {enhanceFaClasses, iconHtml} from './impl/IconHtml';
 import {SetRequired} from 'type-fest';
+import './Icon.scss';
 
 export interface IconProps extends HoistProps, Partial<Omit<FontAwesomeIconProps, 'ref'>> {
     /** Name of the icon in FontAwesome. */

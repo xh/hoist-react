@@ -1,0 +1,12 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// .fa-fw sets --fa-width, but only svg elements created by FA v7 consume it via .svg-inline--fa
+// The placeholder icon is a div, so the variable is consumed here.
+.xh-icon--placeholder {
+  width: var(--fa-width, 1.25em);
+}
