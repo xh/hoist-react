@@ -301,7 +301,7 @@ export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
         lessB = absV < BILLION,
         targetPrecision = opts.precision ?? (lessM ? 0 : 2);
 
-    // Compute scaling if any. Lossless flag may preclude.
+    // Compute scaling, if any (Lossless flag may preclude).
     let scale = !lessB && opts.useBillions ? BILLION : !lessM && opts.useMillions ? MILLION : null;
     if (scale && opts.lossless) {
         const precision = parsePrecision(absV / scale, targetPrecision),
@@ -311,13 +311,7 @@ export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
 
     // Resolve render precision (unless the caller set one).
     if (isUndefined(opts.precision)) {
-        if (opts.lossless) {
-            // Full precision - replace with `precision: null` once that PR lands.
-            opts.precision = MAX_NUMERIC_PRECISION;
-            opts.zeroPad = false;
-        } else {
-            opts.precision = targetPrecision;
-        }
+        opts.precision = opts.lossless ? null : targetPrecision;
     }
 
     switch (scale) {
