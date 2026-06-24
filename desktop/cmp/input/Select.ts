@@ -224,8 +224,7 @@ class SelectInputModel extends HoistInputModel {
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
 
-    // Measured pixel width for the windowed menu; null if not windowed or labels unmeasurable.
-    @observable.ref windowedMenuWidth: number = null;
+    @observable windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -829,7 +828,6 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    // Explicit menuWidth wins; else windowed menus use the measured width (see windowedMenuWidth).
     const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
     if (menuWidth != null) {
         rsProps.styles = {
