@@ -27,12 +27,20 @@
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
   `'auto'`, aligning a `NumberInput` with `precision: null` so its blurred display matches its
   focused and committed (full-precision) value.
+* Fixed inline grid editing not ending when clicking empty grid space to the right of the last
+  column or below the last row - such clicks now commit the active edit.
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
 
 ### ⚙️ Typescript API Adjustments
 
 * `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
   rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
   that a complex column renderer would throw.
+
+### ✨ Styles
+
+* Vertical (left/right) `TabContainer` switchers now render a modern rounded-pill treatment by
+  default, customizable via new `--xh-tab-switcher-vertical-*` CSS variables.
 
 ## 86.1.0 - 2026-06-22
 
