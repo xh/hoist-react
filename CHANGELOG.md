@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
+  dialog sort its entries the same way the underlying grid column sorts them. When not provided,
+  the column's own `sortValue` is used.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
