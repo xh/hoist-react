@@ -2,6 +2,11 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
+  negative or decimal value), while reliably rejecting other non-numeric keypresses.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features
