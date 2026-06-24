@@ -126,10 +126,10 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
 }
 
 export interface QuantityFormatOptions extends NumberFormatOptions {
-    /** True to compact values >= 1 million into units of millions (m). Default true. */
+    /** True to compact values \>= 1 million into units of millions (m). Default true. */
     useMillions?: boolean;
 
-    /** True to compact values >= 1 billion into units of billions (b). Default true. */
+    /** True to compact values \>= 1 billion into units of billions (b). Default true. */
     useBillions?: boolean;
 
     /**
