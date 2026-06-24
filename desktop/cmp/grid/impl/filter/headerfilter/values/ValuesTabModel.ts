@@ -282,7 +282,8 @@ export class ValuesTabModel extends HoistModel {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel,
-            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? column.renderer : null);
+            renderer = fieldSpec.renderer ?? (fieldType !== 'tags' ? column.renderer : null),
+            sortValue = fieldSpec.sortValue ?? column.sortValue;
 
         return new GridModel({
             store: {
@@ -334,6 +335,7 @@ export class ValuesTabModel extends HoistModel {
                     field: 'value',
                     align: 'left',
                     tooltip: true,
+                    sortValue,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_PLACEHOLDER) return 1 * mul;

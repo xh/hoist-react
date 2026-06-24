@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {ColumnRenderer, ColumnSortValueFn} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
 import {
@@ -32,6 +32,12 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
     renderer?: ColumnRenderer;
 
     /**
+     * Alternate field name to reference or function to call when producing a value for this column
+     * to be sorted by. If not provided, the Column's sortValue will be used.
+     */
+    sortValue?: ColumnRenderer;
+
+    /**
      * Props to pass through to the HoistInput components used on the custom filter tab.
      * Note that the HoistInput component used is decided by fieldType.
      */
@@ -48,6 +54,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     filterModel: GridFilterModel;
     renderer: ColumnRenderer;
+    sortValue: string | ColumnSortValueFn;
     inputProps: PlainObject;
     defaultOp: FieldFilterOperator;
 
@@ -57,6 +64,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     constructor({
         filterModel,
         renderer,
+        sortValue,
         inputProps,
         defaultOp,
         ...rest
@@ -65,6 +73,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
         this.filterModel = filterModel;
         this.renderer = renderer;
+        this.sortValue = sortValue;
         this.inputProps = inputProps;
         this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
     }
