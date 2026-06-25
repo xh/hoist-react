@@ -16,6 +16,7 @@ import {
     GridAutosizeMode,
     GridFilterModelConfig,
     GridGroupSortFn,
+    IColChooserModel,
     isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
@@ -505,7 +506,7 @@ export class GridModel<
     store: Store<T, Id>;
     selModel: StoreSelectionModel<T, Id>;
     treeMode: boolean;
-    colChooserModel: HoistModel;
+    colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
@@ -1266,7 +1267,7 @@ export class GridModel<
     }
 
     showColChooser() {
-        (this.colChooserModel as any)?.open();
+        this.colChooserModel?.open();
     }
 
     noteAgColumnStateChanged(agColState: AgColumnState[]) {
@@ -1993,7 +1994,7 @@ export class GridModel<
         };
     }
 
-    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): HoistModel {
+    private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
         const modelClass = XH.isMobileApp ? MobileColChooserModel : DesktopColChooserModel;
