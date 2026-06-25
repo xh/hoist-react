@@ -15,6 +15,33 @@
     margin: 7px 4px;
     align-self: start;
   }
+
+  // Popover mode - collapsed trigger expands into an overlaid popover.
+  &--popover > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+  }
+
+  &__trigger {
+    .xh-select__value-container--is-multi {
+      overflow-y: hidden !important;
+    }
+  }
+
+  // Extra class names required to override the default styles of the popover.
+  &__popover.bp6-popover.bp6-minimal {
+    margin-top: -15px !important;
+    box-shadow: none;
+
+    .bp6-popover-content {
+      background: transparent;
+    }
+
+    .xh-select__value-container--is-multi {
+      height: unset;
+      line-height: unset;
+    }
+  }
 }
 
 .xh-filter-chooser-option {

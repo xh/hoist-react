@@ -6,19 +6,35 @@
  */
 import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    HoistProps,
+    LayoutProps,
+    lookup,
+    useLocalModel,
+    uses
+} from '@xh/hoist/core';
+import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {withDefault} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {elemWithin, withDefault} from '@xh/hoist/utils/js';
+import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty, sortBy} from 'lodash';
+import {isEmpty, isObject, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
 import {cloneElement, ReactElement} from 'react';
 import './FilterChooser.scss';
+
+export interface FilterChooserPopoverOptions {
+    /** Side of the trigger on which to expand the popover. Defaults to 'bottom'. */
+    position?: 'bottom' | 'top';
+    /** Width in pixels of the expanded popover - defaults to matching the trigger width. */
+    width?: number;
+}
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
     /** True to focus the control on render. */
@@ -41,6 +57,13 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
     placeholder?: string;
     /** Icon clicked to launch favorites menu. (Defaults to Icon.favorite()) */
     favoritesIcon?: ReactElement;
+    /**
+     * True (or an options object) to render the control collapsed in-place, expanding into a
+     * popover when opened. Useful within height-constrained containers such as toolbars, where
+     * the chooser can then grow vertically without disrupting surrounding layout. The collapsed
+     * trigger still supports single-click clearing and favorites access.
+     */
+    popover?: boolean | FilterChooserPopoverOptions;
 }
 
 /**
@@ -50,6 +73,30 @@ export interface FilterChooserProps extends HoistProps<FilterChooserModel>, Layo
 export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooserProps>({
     model: uses(FilterChooserModel),
     className: 'xh-filter-chooser',
+    render({model, className, ...props}, ref) {
+        return props.popover
+            ? popoverFilterChooser({model, className, ...props, ref})
+            : filterChooserControl({model, className, ...props, ref});
+    }
+});
+
+//------------------
+// Implementation
+//------------------
+interface FilterChooserControlProps extends FilterChooserProps {
+    /** Internal - false to render a non-interactive display (the collapsed popover trigger). */
+    xhInteractive?: boolean;
+    /** Internal - override for the favorites menu open state. */
+    xhFavoritesOpen?: boolean;
+}
+
+/**
+ * The Select-based control shared by the inline FilterChooser and both faces (collapsed trigger and
+ * expanded content) of the popover variant. Only the interactive instance binds `model.inputRef`,
+ * so the popover can mount trigger and content simultaneously without contention.
+ */
+const filterChooserControl = hoistCmp.factory<FilterChooserControlProps>({
+    model: uses(FilterChooserModel),
     render({model, className, ...props}, ref) {
         const [layoutProps, chooserProps] = splitLayoutProps(props),
             {
@@ -68,7 +115,9 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                 maxMenuHeight,
                 menuPlacement,
                 menuWidth,
-                favoritesIcon
+                favoritesIcon,
+                xhInteractive = true,
+                xhFavoritesOpen
             } = chooserProps,
             disabled = unsupportedFilter || chooserProps.disabled,
             placeholder = unsupportedFilter
@@ -90,7 +139,8 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                         flex: 1,
                         height: layoutProps?.height,
                         bind: 'selectValue',
-                        ref: inputRef,
+                        // Only the interactive instance owns the shared inputRef.
+                        ref: xhInteractive ? inputRef : undefined,
 
                         autoFocus,
                         disabled,
@@ -119,12 +169,15 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
                             },
                             components: {
                                 DropdownIndicator: () => favoritesIconCmp(model, favoritesIcon)
-                            }
+                            },
+                            // Display-only trigger: suppress menu + typing, but leave clear and
+                            // favorites affordances live for single-click access.
+                            ...(xhInteractive ? {} : {menuIsOpen: false, isSearchable: false})
                         }
                     })
                 ),
                 content: favoritesMenu(),
-                isOpen: favoritesIsOpen,
+                isOpen: xhFavoritesOpen ?? favoritesIsOpen,
                 position: 'bottom-right',
                 minimal: true,
                 onInteraction: willOpen => {
@@ -135,6 +188,104 @@ export const [FilterChooser, filterChooser] = hoistCmp.withFactory<FilterChooser
         });
     }
 });
+
+/**
+ * Wraps a FilterChooser so it renders collapsed in-place and expands into a popover when opened,
+ * allowing it to grow vertically beyond the height of a toolbar. The collapsed trigger always
+ * occupies its space (so surrounding layout never shifts) and routes single clicks on its clear
+ * and favorites controls directly, rather than first opening the popover.
+ */
+const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
+    model: uses(FilterChooserModel),
+    render({model, className, ...props}, ref) {
+        const impl = useLocalModel(FilterChooserLocalModel),
+            {popoverIsOpen} = impl,
+            {popover: popoverSpec, ...rest} = props,
+            opts = isObject(popoverSpec) ? popoverSpec : {},
+            layoutProps = getLayoutProps(rest);
+
+        return box({
+            ref,
+            className: classNames(className, 'xh-filter-chooser--popover'),
+            ...layoutProps,
+            item: popover({
+                isOpen: popoverIsOpen,
+                popoverClassName: 'xh-filter-chooser__popover',
+                matchTargetWidth: true,
+                minimal: true,
+                position: opts.position ?? 'bottom',
+                item: filterChooserControl({
+                    model,
+                    flex: 1,
+                    className: 'xh-filter-chooser__trigger',
+                    ...rest,
+                    displayCount: true,
+                    xhInteractive: false,
+                    // Trigger hosts the favorites menu only while collapsed; once open, the
+                    // expanded content takes over.
+                    xhFavoritesOpen: model.favoritesIsOpen && !popoverIsOpen
+                }),
+                content: filterChooserControl({
+                    model,
+                    flex: 1,
+                    width: opts.width,
+                    className: 'xh-filter-chooser__content',
+                    ...rest,
+                    displayCount: true
+                }),
+                onInteraction: (willOpen, e) => {
+                    if (willOpen) {
+                        // Let clicks on the inline clear / favorites controls act directly.
+                        const target = e?.target as HTMLElement;
+                        if (
+                            target &&
+                            (elemWithin(target, 'xh-select__clear-indicator') ||
+                                elemWithin(target, 'xh-filter-chooser-favorite-icon'))
+                        ) {
+                            return;
+                        }
+                        impl.open();
+                    } else {
+                        impl.close();
+                    }
+                }
+            })
+        });
+    }
+});
+
+class FilterChooserLocalModel extends HoistModel {
+    override xhImpl = true;
+
+    @lookup(FilterChooserModel)
+    model: FilterChooserModel;
+
+    @bindable
+    popoverIsOpen: boolean = false;
+
+    constructor() {
+        super();
+        makeObservable(this);
+    }
+
+    open() {
+        this.popoverIsOpen = true;
+
+        // Focus the (now-mounted) interactive input and open its menu once available.
+        this.addReaction({
+            when: () => !!this.model.inputRef.current,
+            run: () => {
+                const inputRef = this.model.inputRef.current;
+                inputRef.focus();
+                (inputRef as any).reactSelectRef.current?.openMenu('first');
+            }
+        });
+    }
+
+    close() {
+        this.popoverIsOpen = false;
+    }
+}
 
 //-----------------
 // Options

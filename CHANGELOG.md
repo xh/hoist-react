@@ -19,9 +19,17 @@
 * Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
   when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
   `7,100,100` rather than collapsing to `7.10m`).
+* `FilterChooser` now supports a `popover` mode (`filterChooser({popover: true})`) that renders the
+  control collapsed in-place and expands it into a popover when opened - ideal for toolbars, where
+  it can grow vertically without disrupting surrounding layout. This supersedes the now-deprecated
+  `PopoverFilterChooser` component, which remains as a thin alias.
 
 ### 🐞 Bug Fixes
 
+* Fixed `FilterChooser` popover mode (formerly `PopoverFilterChooser`) so its collapsed control no
+  longer disappears when opened - it now always occupies its place in the layout, so surrounding
+  elements no longer shift. Its clear and favorites controls also respond to a single click rather
+  than requiring the popover to be opened first.
 * Fixed grid `NumberEditor` to allow starting an edit by typing `-`, `+`, or `.` (e.g. to enter a
   negative or decimal value), while reliably rejecting other non-numeric keypresses.
 * `fmtNumber` now treats a `precision` of `null` as full, unrestricted precision rather than
