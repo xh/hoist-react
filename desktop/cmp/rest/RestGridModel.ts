@@ -28,10 +28,10 @@ import {RestFormModel} from './impl/RestFormModel';
  * @see RestGrid
  */
 export interface RestGridConfig<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends GridConfig {
-    store?: RestStore<T, Id> | RestStoreConfig;
+    store?: RestStore<TData, TId> | RestStoreConfig;
 
     /** Prevent users from creating, updating, or destroying a record. Defaults to false. */
     readonly?: boolean;
@@ -107,8 +107,8 @@ export interface RestGridModelDefaults {
  * context menu actions, and its backing {@link RestStore} for server-side CRUD operations.
  */
 export class RestGridModel<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends HoistModel {
     /** App-level defaults for RestGridModel. Instance config takes precedence. */
     static defaults: RestGridModelDefaults = {
@@ -116,7 +116,7 @@ export class RestGridModel<
         unit: 'record'
     };
 
-    declare config: RestGridConfig<T, Id>;
+    declare config: RestGridConfig<TData, TId>;
 
     //----------------
     // Properties
@@ -138,19 +138,19 @@ export class RestGridModel<
             `Are you sure you want to delete ${pluralize(`selected ${this.unit}`, recs.length, true)}?`
     };
 
-    @managed gridModel: GridModel<T, Id> = null;
+    @managed gridModel: GridModel<TData, TId> = null;
     @managed formModel: RestFormModel = null;
 
-    get store(): RestStore<T, Id> {
-        return this.gridModel.store as RestStore<T, Id>;
+    get store(): RestStore<TData, TId> {
+        return this.gridModel.store as RestStore<TData, TId>;
     }
     get selModel() {
         return this.gridModel.selModel;
     }
-    get selectedRecords(): StoreRecord<T, Id>[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.gridModel.selectedRecords;
     }
-    get selectedRecord(): StoreRecord<T, Id> {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.gridModel.selectedRecord;
     }
 
@@ -169,7 +169,7 @@ export class RestGridModel<
         store,
         appData,
         ...rest
-    }: RestGridConfig<T, Id>) {
+    }: RestGridConfig<TData, TId>) {
         super();
         this.readonly = readonly;
         this.editors = editors;
@@ -191,7 +191,7 @@ export class RestGridModel<
             this.readonly ? this.formModel.openView(row.data) : this.formModel.openEdit(row.data);
         });
 
-        this.gridModel = new GridModel<T, Id>({
+        this.gridModel = new GridModel<TData, TId>({
             contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
@@ -280,7 +280,9 @@ export class RestGridModel<
     //-----------------
     // Implementation
     //-----------------
-    private parseStore(store: RestStore<T, Id> | RestStoreConfig): RestStore<T, Id> {
-        return store instanceof RestStore ? store : this.markManaged(new RestStore<T, Id>(store));
+    private parseStore(store: RestStore<TData, TId> | RestStoreConfig): RestStore<TData, TId> {
+        return store instanceof RestStore
+            ? store
+            : this.markManaged(new RestStore<TData, TId>(store));
     }
 }

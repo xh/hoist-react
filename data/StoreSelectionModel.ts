@@ -18,10 +18,10 @@ import {RecordId, StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreReco
  * @see StoreSelectionModel
  */
 export interface StoreSelectionConfig<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > {
-    store?: Store<T, Id>;
+    store?: Store<TData, TId>;
     mode?: 'single' | 'multiple' | 'disabled';
     /** @internal */
     xhImpl?: boolean;
@@ -43,10 +43,10 @@ export interface StoreSelectionConfig<
  * @mcpHint selection state manager for Store, used by grids
  */
 export class StoreSelectionModel<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends HoistModel {
-    readonly store: Store<T, Id>;
+    readonly store: Store<TData, TId>;
     mode: 'single' | 'multiple' | 'disabled';
 
     @observable.ref
@@ -56,7 +56,7 @@ export class StoreSelectionModel<
         return this.mode !== 'disabled';
     }
 
-    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig<T, Id>) {
+    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig<TData, TId>) {
         super();
         makeObservable(this);
 
@@ -67,12 +67,12 @@ export class StoreSelectionModel<
     }
 
     @computed.struct
-    get selectedRecords(): StoreRecord<T, Id>[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
     @computed.struct
-    get selectedIds(): Id[] {
+    get selectedIds(): TId[] {
         return this.selectedRecords.map(it => it.id);
     }
 
@@ -83,7 +83,7 @@ export class StoreSelectionModel<
      * due to store loading or editing.  Applications only interested in the *identity*
      * of the selection should use {@link selectedId} instead.
      */
-    get selectedRecord(): StoreRecord<T, Id> {
+    get selectedRecord(): StoreRecord<TData, TId> {
         const {selectedRecords} = this;
         return selectedRecords.length === 1 ? selectedRecords[0] : null;
     }
@@ -95,7 +95,7 @@ export class StoreSelectionModel<
      * due to store loading or editing.  Applications also interested in the *contents* of the
      * selection should use the {@link selectedRecord} getter instead.
      */
-    get selectedId(): Id {
+    get selectedId(): TId {
         const {selectedIds} = this;
         return selectedIds.length === 1 ? selectedIds[0] : null;
     }

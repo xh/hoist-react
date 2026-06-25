@@ -242,7 +242,10 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  *
  * @mcpHint in-memory data store used by grids and other data components
  */
-export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId = RecordId<T>>
+export class Store<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+>
     extends HoistBase
     implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
 {
@@ -289,7 +292,7 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
      */
     @observable.ref
-    summaryRecords: StoreRecord<T, Id>[] = null;
+    summaryRecords: StoreRecord<TData, TId>[] = null;
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
     @observable
@@ -399,7 +402,7 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
         this.summaryRecords = rawSummaryData
             ? (castArray(rawSummaryData).map(it =>
                   this.createRecord(it, null, true)
-              ) as StoreRecord<T, Id>[])
+              ) as StoreRecord<TData, TId>[])
             : null;
 
         const records = this.createRecords(rawData, null);
@@ -506,7 +509,7 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs as StoreRecord<T, Id>[];
+            this.summaryRecords = summaryUpdateRecs as StoreRecord<TData, TId>[];
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -702,7 +705,7 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs as StoreRecord<T, Id>[];
+            this.summaryRecords = summaryUpdateRecs as StoreRecord<TData, TId>[];
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -769,37 +772,37 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
     }
 
     /** Records in this store, respecting any filter (if applied).*/
-    get records(): StoreRecord<T, Id>[] {
-        return this._filtered.list as StoreRecord<T, Id>[];
+    get records(): StoreRecord<TData, TId>[] {
+        return this._filtered.list as StoreRecord<TData, TId>[];
     }
 
     /** All records in this store, unfiltered.*/
-    get allRecords(): StoreRecord<T, Id>[] {
-        return this._current.list as StoreRecord<T, Id>[];
+    get allRecords(): StoreRecord<TData, TId>[] {
+        return this._current.list as StoreRecord<TData, TId>[];
     }
 
     /** All records that were originally loaded into this store.*/
-    get committedRecords(): StoreRecord<T, Id>[] {
-        return this._committed.list as StoreRecord<T, Id>[];
+    get committedRecords(): StoreRecord<TData, TId>[] {
+        return this._committed.list as StoreRecord<TData, TId>[];
     }
 
     /** Records added locally which have not been committed.*/
-    get addedRecords(): StoreRecord<T, Id>[] {
+    get addedRecords(): StoreRecord<TData, TId>[] {
         return this.allRecords.filter(it => it.isAdd);
     }
 
     /** Records removed locally which have not been committed.*/
-    get removedRecords(): StoreRecord<T, Id>[] {
+    get removedRecords(): StoreRecord<TData, TId>[] {
         return differenceBy(this.committedRecords, this.allRecords, 'id');
     }
 
     /** Records modified locally since they were last loaded. */
-    get dirtyRecords(): StoreRecord<T, Id>[] {
+    get dirtyRecords(): StoreRecord<TData, TId>[] {
         return this.allRecords.filter(it => it.isDirty);
     }
 
     /** Alias for {@link Store.dirtyRecords} */
-    get modifiedRecords(): StoreRecord<T, Id>[] {
+    get modifiedRecords(): StoreRecord<TData, TId>[] {
         return this.dirtyRecords;
     }
 
@@ -807,23 +810,23 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      * Root records in this store, respecting any filter (if applied).
      * If this store is not hierarchical, this will be identical to 'records'.
      */
-    get rootRecords(): StoreRecord<T, Id>[] {
-        return this._filtered.rootList as StoreRecord<T, Id>[];
+    get rootRecords(): StoreRecord<TData, TId>[] {
+        return this._filtered.rootList as StoreRecord<TData, TId>[];
     }
 
     /**
      * Root records in this store, unfiltered.
      * If this store is not hierarchical, this will be identical to 'allRecords'.
      */
-    get allRootRecords(): StoreRecord<T, Id>[] {
-        return this._current.rootList as StoreRecord<T, Id>[];
+    get allRootRecords(): StoreRecord<TData, TId>[] {
+        return this._current.rootList as StoreRecord<TData, TId>[];
     }
 
     /**
      * Single summary data record, if only one (or null if none). Maintained for convenience and
      * for backwards compat with app code predating support for multiple {@link summaryRecords}.
      */
-    get summaryRecord(): StoreRecord<T, Id> {
+    get summaryRecord(): StoreRecord<TData, TId> {
         if (isNull(this.summaryRecords)) return null;
         throwIf(
             this.summaryRecords.length > 1,
@@ -987,12 +990,12 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      *      active filter is excluding it from the primary `records` collection. True to restrict
      *      matches to this Store's post-filter StoreRecord collection only.
      */
-    getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id> {
+    getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<TData, TId> {
         if (isNil(id)) return null;
         const summaryRecord = this.summaryRecords?.find(it => it.id === id);
         if (summaryRecord) return summaryRecord;
         const rs = respectFilter ? this._filtered : this._current;
-        return rs.getById(id) as StoreRecord<T, Id>;
+        return rs.getById(id) as StoreRecord<TData, TId>;
     }
 
     /**
@@ -1004,10 +1007,10 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getChildrenById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id>[] {
+    getChildrenById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<TData, TId>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
-        return (ret ? ret : []) as StoreRecord<T, Id>[];
+        return (ret ? ret : []) as StoreRecord<TData, TId>[];
     }
 
     /**
@@ -1019,10 +1022,10 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getDescendantsById(id: StoreRecordId, respectFilter = false): StoreRecord<T, Id>[] {
+    getDescendantsById(id: StoreRecordId, respectFilter = false): StoreRecord<TData, TId>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
-        return (ret ? ret : []) as StoreRecord<T, Id>[];
+        return (ret ? ret : []) as StoreRecord<TData, TId>[];
     }
 
     /**
@@ -1034,10 +1037,10 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getAncestorsById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id>[] {
+    getAncestorsById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<TData, TId>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
-        return (ret ? ret : []) as StoreRecord<T, Id>[];
+        return (ret ? ret : []) as StoreRecord<TData, TId>[];
     }
 
     /** True if the store is confirmed to be Valid. */
@@ -1289,7 +1292,7 @@ export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId
             });
             ret.finalize();
             return ret;
-        }) as StoreRecord<T, Id>[];
+        }) as StoreRecord<TData, TId>[];
     }
 }
 

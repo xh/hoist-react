@@ -5,7 +5,7 @@
 ### ⚙️ Typescript API Adjustments
 
 * `Store`, `StoreRecord`, `StoreSelectionModel`, `GridModel`, `DataViewModel`, `ZoneGridModel`,
-  `RestGridModel`, and `RestStore` now accept optional generic type parameters `<T, Id>` describing
+  `RestGridModel`, and `RestStore` now accept optional generic type parameters `<TData, TId>` describing
   a record's data shape and id type. Specify a shape (e.g. `new GridModel<MyRow>({...})`) to get
   fully-typed `store.records`, `selectedRecord.data`, and `record.id`. Fully opt-in - untyped
   usage is unchanged.

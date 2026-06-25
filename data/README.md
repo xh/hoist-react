@@ -278,7 +278,7 @@ record.isValidationPending; // Async validation in progress?
 
 ### Typing Records
 
-`Store` and `StoreRecord` accept optional generic parameters `<T, Id>` to give `record.data` and
+`Store` and `StoreRecord` accept optional generic parameters `<TData, TId>` to give `record.data` and
 `record.id` precise TypeScript types.
 
 **Define an interface** for the record's field shape, then pass it as a type argument:
@@ -296,11 +296,11 @@ const gridModel = new GridModel<Person>({store});
 const rec = store.records[0];
 rec.data.name;          // string
 rec.data.age;           // number
-rec.id;                 // number  (derived from Person.id via RecordId<T>)
+rec.id;                 // number  (derived from Person.id via RecordId<TData>)
 rec.getValues();        // Person & {id: number}
 ```
 
-**Id derivation** - if your interface declares an `id` property, `RecordId<T>` infers the id type
+**Id derivation** - if your interface declares an `id` property, `RecordId<TData>` infers the id type
 automatically. If the interface omits `id` (e.g. when the id comes from a different field), pass
 `Id` explicitly as the second type argument:
 

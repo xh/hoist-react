@@ -41,11 +41,11 @@ import {ReactNode} from 'react';
  * @see DataViewModel
  */
 export interface DataViewConfig<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > {
     /** A Store instance, or a config to create one. */
-    store?: Store<T, Id> | StoreConfig;
+    store?: Store<TData, TId> | StoreConfig;
 
     /** Renderer to use for each data row. */
     renderer?: ColumnRenderer;
@@ -154,14 +154,14 @@ export type ItemHeightFn = (params: {
  * @see DataViewConfig
  */
 export class DataViewModel<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends HoistModel {
-    @managed gridModel: GridModel<T, Id>;
+    @managed gridModel: GridModel<TData, TId>;
     @bindable.ref itemHeight: number | ItemHeightFn;
     @bindable groupRowHeight: number;
 
-    constructor(config: DataViewConfig<T, Id>) {
+    constructor(config: DataViewConfig<TData, TId>) {
         super();
         makeObservable(this);
         const {
@@ -210,7 +210,7 @@ export class DataViewModel<
             rendererIsComplex: true
         });
 
-        this.gridModel = new GridModel<T, Id>({
+        this.gridModel = new GridModel<TData, TId>({
             store,
             sortBy,
             selModel,
@@ -234,25 +234,25 @@ export class DataViewModel<
     }
 
     // Getters and methods trampolined from GridModel.
-    get store(): Store<T, Id> {
+    get store(): Store<TData, TId> {
         return this.gridModel.store;
     }
     get empty() {
         return this.gridModel.empty;
     }
-    get selModel(): StoreSelectionModel<T, Id> {
+    get selModel(): StoreSelectionModel<TData, TId> {
         return this.gridModel.selModel;
     }
     get hasSelection() {
         return this.gridModel.hasSelection;
     }
-    get selectedRecords(): StoreRecord<T, Id>[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.gridModel.selectedRecords;
     }
-    get selectedRecord(): StoreRecord<T, Id> {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.gridModel.selectedRecord;
     }
-    get selectedId(): Id {
+    get selectedId(): TId {
         return this.gridModel.selectedId;
     }
     get groupBy() {

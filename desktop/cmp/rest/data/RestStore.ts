@@ -23,9 +23,9 @@ export interface RestStoreConfig extends UrlStoreConfig {
  * Provides support for lookups, and CRUD operations on records.
  */
 export class RestStore<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
-> extends UrlStore<T, Id> {
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> extends UrlStore<TData, TId> {
     override telemetryPrefix = 'xh.client.restStore';
 
     declare fields: RestField[];

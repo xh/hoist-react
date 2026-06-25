@@ -30,8 +30,11 @@ export interface UrlStoreConfig extends StoreConfig {
 /**
  * A store with built-in support for loading data from a URL.
  */
-export class UrlStore<T extends PlainObject = PlainObject, Id extends StoreRecordId = RecordId<T>>
-    extends Store<T, Id>
+export class UrlStore<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+>
+    extends Store<TData, TId>
     implements Loadable
 {
     url: string;

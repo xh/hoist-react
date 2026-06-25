@@ -73,8 +73,8 @@ import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types
  * @see ZoneMapperConfig
  */
 export interface ZoneGridConfig<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > {
     /**
      * Available columns for this grid. Columns with an omit property evaluating to true will be
@@ -116,7 +116,7 @@ export interface ZoneGridConfig<
      * A Store instance, or a config with which to create a Store.
      * If not supplied, store fields will be inferred from columns config.
      */
-    store?: Store<T, Id> | StoreConfig;
+    store?: Store<TData, TId> | StoreConfig;
 
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
@@ -327,11 +327,11 @@ export interface ZoneGridConfig<
  * @see ZoneGridConfig
  */
 export class ZoneGridModel<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends HoistModel {
     @managed
-    gridModel: GridModel<T, Id>;
+    gridModel: GridModel<TData, TId>;
 
     @managed
     mapperModel: ZoneMapperModel;
@@ -355,7 +355,7 @@ export class ZoneGridModel<
 
     private _defaultState; // initial state provided to ctor - powers restoreDefaults().
 
-    constructor(config: ZoneGridConfig<T, Id>) {
+    constructor(config: ZoneGridConfig<TData, TId>) {
         super();
         makeObservable(this);
 
@@ -502,7 +502,7 @@ export class ZoneGridModel<
         return this.gridModel.setSortBy(sorter);
     }
 
-    get store(): Store<T, Id> {
+    get store(): Store<TData, TId> {
         return this.gridModel.store;
     }
 
@@ -510,7 +510,7 @@ export class ZoneGridModel<
         return this.gridModel.empty;
     }
 
-    get selModel(): StoreSelectionModel<T, Id> {
+    get selModel(): StoreSelectionModel<TData, TId> {
         return this.gridModel.selModel;
     }
 
@@ -518,15 +518,15 @@ export class ZoneGridModel<
         return this.gridModel.hasSelection;
     }
 
-    get selectedRecords(): StoreRecord<T, Id>[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.gridModel.selectedRecords;
     }
 
-    get selectedRecord(): StoreRecord<T, Id> {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.gridModel.selectedRecord;
     }
 
-    get selectedId(): Id {
+    get selectedId(): TId {
         return this.gridModel.selectedId;
     }
 
@@ -576,8 +576,8 @@ export class ZoneGridModel<
     //-----------------------
     // Implementation
     //-----------------------
-    private createGridModel(config: GridConfig): GridModel<T, Id> {
-        return new GridModel<T, Id>({
+    private createGridModel(config: GridConfig): GridModel<TData, TId> {
+        return new GridModel<TData, TId>({
             ...config,
             xhImpl: true,
             contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),

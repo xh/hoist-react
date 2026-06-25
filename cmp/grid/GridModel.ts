@@ -132,8 +132,8 @@ import {
  * @see ColumnSpec
  */
 export interface GridConfig<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
@@ -145,7 +145,7 @@ export interface GridConfig<
      * A Store instance, or a config with which to create a Store. If not supplied,
      * store fields will be inferred from columns config.
      */
-    store?: Store<T, Id> | StoreConfig;
+    store?: Store<TData, TId> | StoreConfig;
 
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
@@ -451,8 +451,8 @@ export interface GridModelDefaults {
  * @mcpHint model backing all grid components
  */
 export class GridModel<
-    T extends PlainObject = PlainObject,
-    Id extends StoreRecordId = RecordId<T>
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
 > extends HoistModel {
     /** App-level defaults for GridModel. Instance config takes precedence. */
     static defaults: GridModelDefaults = {
@@ -503,8 +503,8 @@ export class GridModel<
     //------------------------
     // Immutable public properties
     //------------------------
-    store: Store<T, Id>;
-    selModel: StoreSelectionModel<T, Id>;
+    store: Store<TData, TId>;
+    selModel: StoreSelectionModel<TData, TId>;
     treeMode: boolean;
     colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
@@ -606,7 +606,7 @@ export class GridModel<
     /** Tracks execution of autosize operations. */
     @managed autosizeTask = TaskObserver.trackAll();
 
-    constructor(config: GridConfig<T, Id>) {
+    constructor(config: GridConfig<TData, TId>) {
         super();
         makeObservable(this);
         let {
@@ -665,7 +665,7 @@ export class GridModel<
             appData,
             xhImpl,
             ...rest
-        }: GridConfig<T, Id> = config;
+        }: GridConfig<TData, TId> = config;
 
         this.xhImpl = xhImpl;
 
@@ -998,12 +998,12 @@ export class GridModel<
     }
 
     /** Currently selected records. */
-    get selectedRecords(): StoreRecord<T, Id>[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.selModel.selectedRecords;
     }
 
     /** IDs of currently selected records. */
-    get selectedIds(): Id[] {
+    get selectedIds(): TId[] {
         return this.selModel.selectedIds;
     }
 
@@ -1014,7 +1014,7 @@ export class GridModel<
      * due to store loading or editing.  Applications only interested in the identity
      * of the selection should use {@link selectedId} instead.
      */
-    get selectedRecord(): StoreRecord<T, Id> {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.selModel.selectedRecord;
     }
 
@@ -1025,7 +1025,7 @@ export class GridModel<
      * due to store loading or editing.  Applications also interested in the contents of the
      * selection should use the {@link selectedRecord} getter instead.
      */
-    get selectedId(): Id {
+    get selectedId(): TId {
         return this.selModel.selectedId;
     }
 
@@ -1759,7 +1759,7 @@ export class GridModel<
     // in this case GridModel should work out the required Store fields from column definitions.
     private parseAndSetColumnsAndStore(
         colConfigs: ColumnOrGroupSpec[],
-        storeOrConfig: Store<T, Id> | StoreConfig = {}
+        storeOrConfig: Store<TData, TId> | StoreConfig = {}
     ) {
         // Enhance colConfigs with field-level metadata provided by store, if any.
         colConfigs = this.enhanceColConfigsFromStore(colConfigs, storeOrConfig);
@@ -1768,12 +1768,12 @@ export class GridModel<
         this.setColumns(colConfigs);
 
         // Set or create Store as needed.
-        let store: Store<T, Id>;
+        let store: Store<TData, TId>;
         if (storeOrConfig instanceof Store) {
             store = storeOrConfig;
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
-            store = new Store<T, Id>({loadTreeData: this.treeMode, ...storeOrConfig});
+            store = new Store<TData, TId>({loadTreeData: this.treeMode, ...storeOrConfig});
             store.xhImpl = this.xhImpl;
             this.markManaged(store);
         }
@@ -1957,10 +1957,12 @@ export class GridModel<
         return sizingMode;
     }
 
-    private parseSelModel(selModel: GridConfig<T, Id>['selModel']): StoreSelectionModel<T, Id> {
+    private parseSelModel(
+        selModel: GridConfig<TData, TId>['selModel']
+    ): StoreSelectionModel<TData, TId> {
         // Return actual instance directly.
         if (selModel instanceof StoreSelectionModel) {
-            return selModel as StoreSelectionModel<T, Id>;
+            return selModel as StoreSelectionModel<TData, TId>;
         }
 
         // Default unspecified based on platform, treat explicit null as disabled.
