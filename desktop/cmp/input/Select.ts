@@ -31,7 +31,7 @@ import {debouncePromise, wait} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject} from 'lodash';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
@@ -483,9 +483,8 @@ class SelectInputModel extends HoistInputModel {
 
         // Search lookupCache only once and only if recursive search above does not find the value.
         if (options === this.internalOptions) {
-            for (const option of this._lookupCache) {
-                if (isEqual(option.value, value)) return option;
-            }
+            const cached = this._lookupCache.find(opt => isEqual(opt.value, value));
+            if (cached) return cached;
         }
 
         return createIfNotFound ? this.valueToOption(value) : null;
@@ -552,13 +551,9 @@ class SelectInputModel extends HoistInputModel {
 
         // Carry forward and add to any existing internalOpts to allow our value
         // converters to continue all selected values in multiMode.
-        const newOpts = [...matchOpts];
-        this.internalOptions.forEach(currOpt => {
-            if (!matchOpts.some(matchOpt => isEqual(matchOpt.value, currOpt.value))) {
-                newOpts.push(currOpt);
-            }
-        });
-        this.internalOptions = newOpts;
+        this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
+            isEqual(a.value, b.value)
+        );
 
         // But only return the matching options back to the combo.
         return matchOpts;

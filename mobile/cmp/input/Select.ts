@@ -28,7 +28,7 @@ import {action, bindable, makeObservable, observable, override} from '@xh/hoist/
 import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import {escapeRegExp, isEqual, isNil, isPlainObject} from 'lodash';
+import {escapeRegExp, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
@@ -425,9 +425,8 @@ class SelectInputModel extends HoistInputModel {
 
         // Search lookup cache when searching primary options
         if (options === this.internalOptions) {
-            for (const option of this._lookupCache) {
-                if (isEqual(option.value, value)) return option;
-            }
+            const cached = this._lookupCache.find(opt => isEqual(opt.value, value));
+            if (cached) return cached;
         }
 
         return createIfNotFound ? this.valueToOption(value) : null;
@@ -490,14 +489,9 @@ class SelectInputModel extends HoistInputModel {
 
                 // Carry forward and add to any existing internalOpts to allow our value
                 // converters to continue all selected values in multiMode.
-                const newOpts = [...matchOpts];
-                this.internalOptions.forEach(currOpt => {
-                    if (!matchOpts.some(matchOpt => isEqual(matchOpt.value, currOpt.value))) {
-                        newOpts.push(currOpt);
-                    }
-                });
-
-                this.internalOptions = newOpts;
+                this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
+                    isEqual(a.value, b.value)
+                );
 
                 // But only return the matching options back to the combo.
                 return matchOpts;
