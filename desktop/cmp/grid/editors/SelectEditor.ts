@@ -33,7 +33,7 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
                 // Auto-size the menu to content, not the narrow cell. Windowed mode handles this
                 // via a measured width, so skip here to avoid overriding it (see #4325).
                 rsOptions: props.inputProps?.enableWindowed
-                    ? undefined
+                    ? {}
                     : {
                           styles: {
                               menu: styles => ({

@@ -34,6 +34,7 @@ import classNames from 'classnames';
 import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
+import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
 import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -292,7 +293,13 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
-                if (this.windowedMode) this.windowedMenuWidth = this.calcWindowedMenuWidth(opts);
+                if (this.windowedMode) {
+                    this.windowedMenuWidth = calcWindowedMenuWidth(
+                        opts,
+                        o => this.formatOptionLabel(o, {context: 'menu'}),
+                        this.getOrCreatePortalDiv()
+                    );
+                }
             },
             fireImmediately: true
         });
@@ -683,51 +690,6 @@ class SelectInputModel extends HoistInputModel {
         const {createMessageFn} = this.componentProps;
         return createMessageFn ? createMessageFn(q) : `Create "${q}"`;
     };
-
-    // Windowed menus can't auto-size via CSS - react-window absolutely-positions rows at
-    // width:100%, so options never widen the menu. Measure the widest label and return an explicit
-    // width. Null (-> control width) if there are no measurable string labels.
-    private _measureCanvas: HTMLCanvasElement;
-    private calcWindowedMenuWidth(options): number {
-        const labels = [],
-            collect = opts =>
-                opts.forEach(o => {
-                    if (o.options) collect(o.options);
-                    else if (typeof o.label === 'string') labels.push(o.label);
-                });
-        collect(options);
-        if (isEmpty(labels)) return null;
-
-        const ctx = this.getMeasureContext();
-        let maxText = 0;
-        labels.forEach(l => (maxText = Math.max(maxText, ctx.measureText(l).width)));
-
-        // Pad for option text padding (both sides), the selection-check indent, and scrollbar.
-        const pad =
-                parseFloat(
-                    window.getComputedStyle(document.body).getPropertyValue('--xh-pad-px')
-                ) || 5,
-            checkIndent = this.hideSelectedOptionCheck ? 0 : 25,
-            scrollbar = 20;
-        return Math.ceil(maxText + pad * 2 + checkIndent + scrollbar);
-    }
-
-    // Lazily create a canvas context, sampling the menu font from a probe in the portal.
-    private getMeasureContext(): CanvasRenderingContext2D {
-        if (!this._measureCanvas) {
-            const portal = this.getOrCreatePortalDiv(),
-                probe = document.createElement('div');
-            probe.className = 'xh-select__menu';
-            portal.appendChild(probe);
-            const cs = window.getComputedStyle(probe),
-                font = `${cs.fontSize} ${cs.fontFamily}`;
-            portal.removeChild(probe);
-
-            this._measureCanvas = document.createElement('canvas');
-            this._measureCanvas.getContext('2d').font = font;
-        }
-        return this._measureCanvas.getContext('2d');
-    }
 
     getOrCreatePortalDiv() {
         const id = MENU_PORTAL_ID;
