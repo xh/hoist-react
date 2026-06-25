@@ -31,14 +31,16 @@ const _bad: string = rec.data.age;
 // @ts-expect-error - `nope` is not a field on Person
 const _missing = rec.data.nope;
 
-// --- Convention interface (no id), id stays broad unless declared ---
+// --- Convention interface (no id): data is exactly the declared fields ---
+// `id` is a top-level StoreRecord property, not a data field, so it is NOT on `data`.
 interface Trade {
     sym: string;
 }
 const tradeStore = new Store<Trade, string>({fields: ['sym']});
 const _sym: string = tradeStore.records[0].data.sym;
-const _tradeId: string = tradeStore.records[0].id;
-const _tradeDataId: string | undefined = tradeStore.records[0].data.id; // id extension present (optional) despite Trade omitting it
+const _tradeId: string = tradeStore.records[0].id; // explicit Id generic -> typed
+// @ts-expect-error - `id` is not a field on Trade; use record.id instead
+const _tradeDataId = tradeStore.records[0].data.id;
 
 // --- Untyped store: data is `any`, id is StoreRecordId (NOT any) ---
 const loose = new Store({fields: ['x']});
