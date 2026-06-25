@@ -221,7 +221,9 @@ store.lastLoaded           // Timestamp of last loadData call
 
 **File**: `StoreRecord.ts`
 
-Wrapper around each data element providing state tracking, validation, and tree navigation.
+Wrapper around each data element providing state tracking, validation, and tree navigation. See
+[Typing Records](#typing-records) below to type `record.data` and `record.id` against a data-shape
+interface.
 
 ### Record State
 

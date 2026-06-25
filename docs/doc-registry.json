@@ -51,7 +51,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Observable data layer with Store, Field, filtering, validation, and tree data.",
-            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData"]
+            "keywords": ["Store", "StoreRecord", "Field", "Filter", "FilterChooserModel", "FilterFieldSpec", "tree data", "loadData", "processRawData", "generics", "typed records", "RecordId"]
         },
         {
             "id": "data/cube/README.md",
@@ -85,7 +85,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
-            "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+            "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu", "generics", "typed records"]
         },
         {
             "id": "cmp/form/README.md",
