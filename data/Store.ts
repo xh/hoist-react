@@ -15,6 +15,7 @@ import {
     FilterLike,
     FilterValueSource,
     parseFilter,
+    RecordId,
     StoreRecord,
     StoreRecordId,
     StoreRecordOrId,
@@ -241,7 +242,7 @@ export type StoreRecordIdSpec = string | ((data: PlainObject) => StoreRecordId);
  *
  * @mcpHint in-memory data store used by grids and other data components
  */
-export class Store
+export class Store<T extends PlainObject = PlainObject, Id extends StoreRecordId = RecordId<T>>
     extends HoistBase
     implements FilterBindTarget, FilterValueSource, GridFilterBindTarget
 {
@@ -288,7 +289,7 @@ export class Store
      * {@link loadData} or by loading a tree structure with `loadRootAsSummary` set to true.
      */
     @observable.ref
-    summaryRecords: StoreRecord[] = null;
+    summaryRecords: StoreRecord<T, Id>[] = null;
 
     /** @internal - used internally by any StoreFilterField bound to this store. */
     @observable
@@ -396,7 +397,9 @@ export class Store
         }
 
         this.summaryRecords = rawSummaryData
-            ? castArray(rawSummaryData).map(it => this.createRecord(it, null, true))
+            ? (castArray(rawSummaryData).map(it =>
+                  this.createRecord(it, null, true)
+              ) as StoreRecord<T, Id>[])
             : null;
 
         const records = this.createRecords(rawData, null);
@@ -503,7 +506,7 @@ export class Store
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+            this.summaryRecords = summaryUpdateRecs as StoreRecord<T, Id>[];
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -699,7 +702,7 @@ export class Store
         }
 
         if (!isEmpty(summaryUpdateRecs)) {
-            this.summaryRecords = summaryUpdateRecs;
+            this.summaryRecords = summaryUpdateRecs as StoreRecord<T, Id>[];
             changeLog.summaryRecords = this.summaryRecords;
         }
 
@@ -766,37 +769,37 @@ export class Store
     }
 
     /** Records in this store, respecting any filter (if applied).*/
-    get records(): StoreRecord[] {
-        return this._filtered.list;
+    get records(): StoreRecord<T, Id>[] {
+        return this._filtered.list as StoreRecord<T, Id>[];
     }
 
     /** All records in this store, unfiltered.*/
-    get allRecords(): StoreRecord[] {
-        return this._current.list;
+    get allRecords(): StoreRecord<T, Id>[] {
+        return this._current.list as StoreRecord<T, Id>[];
     }
 
     /** All records that were originally loaded into this store.*/
-    get committedRecords(): StoreRecord[] {
-        return this._committed.list;
+    get committedRecords(): StoreRecord<T, Id>[] {
+        return this._committed.list as StoreRecord<T, Id>[];
     }
 
     /** Records added locally which have not been committed.*/
-    get addedRecords(): StoreRecord[] {
+    get addedRecords(): StoreRecord<T, Id>[] {
         return this.allRecords.filter(it => it.isAdd);
     }
 
     /** Records removed locally which have not been committed.*/
-    get removedRecords(): StoreRecord[] {
+    get removedRecords(): StoreRecord<T, Id>[] {
         return differenceBy(this.committedRecords, this.allRecords, 'id');
     }
 
     /** Records modified locally since they were last loaded. */
-    get dirtyRecords(): StoreRecord[] {
+    get dirtyRecords(): StoreRecord<T, Id>[] {
         return this.allRecords.filter(it => it.isDirty);
     }
 
     /** Alias for {@link Store.dirtyRecords} */
-    get modifiedRecords(): StoreRecord[] {
+    get modifiedRecords(): StoreRecord<T, Id>[] {
         return this.dirtyRecords;
     }
 
@@ -804,25 +807,24 @@ export class Store
      * Root records in this store, respecting any filter (if applied).
      * If this store is not hierarchical, this will be identical to 'records'.
      */
-    get rootRecords(): StoreRecord[] {
-        return this._filtered.rootList;
+    get rootRecords(): StoreRecord<T, Id>[] {
+        return this._filtered.rootList as StoreRecord<T, Id>[];
     }
 
     /**
      * Root records in this store, unfiltered.
      * If this store is not hierarchical, this will be identical to 'allRecords'.
      */
-    get allRootRecords(): StoreRecord[] {
-        return this._current.rootList;
+    get allRootRecords(): StoreRecord<T, Id>[] {
+        return this._current.rootList as StoreRecord<T, Id>[];
     }
 
     /**
      * Single summary data record, if only one (or null if none). Maintained for convenience and
      * for backwards compat with app code predating support for multiple {@link summaryRecords}.
      */
-    get summaryRecord(): StoreRecord {
+    get summaryRecord(): StoreRecord<T, Id> {
         if (isNull(this.summaryRecords)) return null;
-
         throwIf(
             this.summaryRecords.length > 1,
             'Store has multiple summary records - must access via Store.summaryRecords.'
@@ -985,13 +987,12 @@ export class Store
      *      active filter is excluding it from the primary `records` collection. True to restrict
      *      matches to this Store's post-filter StoreRecord collection only.
      */
-    getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord {
+    getById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id> {
         if (isNil(id)) return null;
         const summaryRecord = this.summaryRecords?.find(it => it.id === id);
         if (summaryRecord) return summaryRecord;
-
         const rs = respectFilter ? this._filtered : this._current;
-        return rs.getById(id);
+        return rs.getById(id) as StoreRecord<T, Id>;
     }
 
     /**
@@ -1003,10 +1004,10 @@ export class Store
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getChildrenById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord[] {
+    getChildrenById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.childrenMap.get(id);
-        return ret ? ret : [];
+        return (ret ? ret : []) as StoreRecord<T, Id>[];
     }
 
     /**
@@ -1018,10 +1019,10 @@ export class Store
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getDescendantsById(id: StoreRecordId, respectFilter = false): StoreRecord[] {
+    getDescendantsById(id: StoreRecordId, respectFilter = false): StoreRecord<T, Id>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getDescendantsById(id);
-        return ret ? ret : [];
+        return (ret ? ret : []) as StoreRecord<T, Id>[];
     }
 
     /**
@@ -1033,10 +1034,10 @@ export class Store
      * @param id - ID of record to be queried.
      * @param respectFilter - true to skip records excluded by any active filter.
      */
-    getAncestorsById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord[] {
+    getAncestorsById(id: StoreRecordId, respectFilter: boolean = false): StoreRecord<T, Id>[] {
         const rs = respectFilter ? this._filtered : this._current,
             ret = rs.getAncestorsById(id);
-        return ret ? ret : [];
+        return (ret ? ret : []) as StoreRecord<T, Id>[];
     }
 
     /** True if the store is confirmed to be Valid. */
@@ -1288,7 +1289,7 @@ export class Store
             });
             ret.finalize();
             return ret;
-        });
+        }) as StoreRecord<T, Id>[];
     }
 }
 
