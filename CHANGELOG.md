@@ -16,6 +16,9 @@
   grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
   level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
   as expand-to targets - previously a too-short array disabled the feature entirely.
+* Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
+  when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
+  `7,100,100` rather than collapsing to `7.10m`).
 
 ### 🐞 Bug Fixes
 
@@ -26,6 +29,7 @@
   focused and committed (full-precision) value.
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
+* `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
 * Fixed windowed `Select` (and `SelectEditor`) dropdown menus being constrained to the control/cell
   width - the menu now measures its option labels and auto-sizes to fit content, matching the
   non-windowed behavior.
@@ -35,7 +39,12 @@
 * `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
   rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
   that a complex column renderer would throw.
-  
+
+### ✨ Styles
+
+* Vertical (left/right) `TabContainer` switchers now render a modern rounded-pill treatment by
+  default, customizable via new `--xh-tab-switcher-vertical-*` CSS variables.
+
 ## 86.1.0 - 2026-06-22
 
 ### 🎁 New Features

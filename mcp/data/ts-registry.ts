@@ -1432,7 +1432,7 @@ function extractSymbolDetail(entry: SymbolEntry): SymbolDetail | null {
  *
  * `JSDoc.getDescription()` returns the text before the first JSDoc block tag,
  * but the TS parser treats ANY line whose first non-whitespace char is `@` as a
- * tag boundary - even inside a fenced ``` code block. So a canonical-usage
+ * tag boundary - even inside a fenced code block. So a canonical-usage
  * example containing e.g. `@observable.ref` silently truncates the description
  * mid-example, dropping everything after it (further examples, "SEE ALSO"
  * lists, trailing prose). See #4352.
