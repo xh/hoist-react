@@ -2,16 +2,13 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
+### ⚙️ Typescript API Adjustments
 
 * `Store`, `StoreRecord`, `StoreSelectionModel`, `GridModel`, `DataViewModel`, `ZoneGridModel`,
   `RestGridModel`, and `RestStore` now accept optional generic type parameters `<T, Id>` describing
   a record's data shape and id type. Specify a shape (e.g. `new GridModel<MyRow>({...})`) to get
   fully-typed `store.records`, `selectedRecord.data`, and `record.id`. Fully opt-in - untyped
   usage is unchanged.
-
-### ⚙️ Typescript API Adjustments
-
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
