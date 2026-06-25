@@ -49,7 +49,7 @@ export class RoleModel extends HoistModel {
 
     get selectedRole(): HoistRole {
         const selected = this.gridModel.selectedRecord?.data;
-        if (selected && !selected.isGroupRow) return selected as unknown as HoistRole;
+        if (selected && !selected.isGroupRow) return selected as HoistRole;
         return null;
     }
 
@@ -174,7 +174,7 @@ export class RoleModel extends HoistModel {
             displayFn: ({record}) => ({
                 disabled: !record || record.data.isGroupRow
             }),
-            actionFn: ({record}) => this.editAsync(record.data as unknown as HoistRole),
+            actionFn: ({record}) => this.editAsync(record.data as HoistRole),
             recordsRequired: 1
         };
     }
@@ -186,7 +186,7 @@ export class RoleModel extends HoistModel {
             displayFn: ({record}) => ({
                 disabled: !record || record.data.isGroupRow
             }),
-            actionFn: ({record}) => this.createAsync(record.data as unknown as HoistRole),
+            actionFn: ({record}) => this.createAsync(record.data as HoistRole),
             recordsRequired: 1
         };
     }
@@ -200,7 +200,7 @@ export class RoleModel extends HoistModel {
                 disabled: !record || record.data.isGroupRow
             }),
             actionFn: ({record}) =>
-                this.deleteAsync(record.data as unknown as HoistRole)
+                this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
                     .linkTo(this.loadObserver),
             recordsRequired: 1

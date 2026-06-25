@@ -50,7 +50,7 @@ export class StoreRecord<
      *
      * Call {@link getValues} for an object providing an explicit enumeration of all field values.
      */
-    readonly data: T & {id: Id};
+    readonly data: T & {id?: Id};
 
     /**
      * An object containing the fully committed field values for this record.
@@ -58,7 +58,7 @@ export class StoreRecord<
      * This object has the same form as `data`. If this record has not been locally modified, this
      * property will point to the same object as `data`.
      */
-    readonly committedData: T & {id: Id};
+    readonly committedData: T & {id?: Id};
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -242,9 +242,9 @@ export class StoreRecord<
         this.id = id as Id;
         this.agId = 'ag_' + id.toString();
         this.store = store as Store<T, Id>;
-        this.data = data as T & {id: Id};
+        this.data = data as T & {id?: Id};
         this.raw = raw;
-        this.committedData = committedData as T & {id: Id};
+        this.committedData = committedData as T & {id?: Id};
         this.parentId = parent?.id;
         /*
          * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
@@ -317,6 +317,17 @@ export type StoreRecordId = number | string;
  * Used as the default for the second type parameter of {@link StoreRecord} and {@link Store}.
  */
 export type RecordId<T> = T extends {id: infer I extends StoreRecordId} ? I : StoreRecordId;
+
+/**
+ * Resolves the type of {@link StoreRecord.data}. The `id` field is included as an optional
+ * property so that:
+ * - Typed stores whose interface already declares `id` (e.g. `{id: number}`) expose it as
+ *   the declared type via the interface itself.
+ * - Typed stores whose interface omits `id` expose it as `Id | undefined` via the extension.
+ * - Untyped stores (the default `PlainObject`) leave `data` as an open index type, preserving
+ *   existing `record.data as SomeInterface` casts without triggering TS2352.
+ */
+export type RecordData<T extends PlainObject, Id extends StoreRecordId> = T & {id?: Id};
 
 /** A Hoist StoreRecord, or an ID for one. */
 export type StoreRecordOrId = StoreRecordId | StoreRecord;

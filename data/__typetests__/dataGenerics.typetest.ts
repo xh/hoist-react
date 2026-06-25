@@ -38,13 +38,20 @@ interface Trade {
 const tradeStore = new Store<Trade, string>({fields: ['sym']});
 const _sym: string = tradeStore.records[0].data.sym;
 const _tradeId: string = tradeStore.records[0].id;
-const _tradeDataId: string = tradeStore.records[0].data.id; // id extension present despite Trade omitting it
+const _tradeDataId: string | undefined = tradeStore.records[0].data.id; // id extension present (optional) despite Trade omitting it
 
 // --- Untyped store: data is `any`, id is StoreRecordId (NOT any) ---
 const loose = new Store({fields: ['x']});
 const _anything: number = loose.records[0].data.whatever; // any -> ok
 // @ts-expect-error - default id is StoreRecordId (string | number), not assignable to number
 const _looseIdNum: number = loose.records[0].id;
+
+// Zero-breakage: untyped store data remains freely castable (no {id} extension leaks in)
+interface SomeAppType {
+    name: string;
+    count: number;
+}
+const _existingCastStillWorks = loose.records[0].data as SomeAppType;
 
 // --- Covariance: typed store/record assignable to plain base ---
 const _genericStore: Store = store;
