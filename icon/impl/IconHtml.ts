@@ -32,5 +32,5 @@ export function iconHtml({
 }
 
 export function enhanceFaClasses(className: string, size: string) {
-    return classNames(className, 'fa-fw', 'xh-icon', isString(size) ? `fa-${size}` : null);
+    return classNames(className, 'xh-icon', isString(size) ? `fa-${size}` : null);
 }
