@@ -49,6 +49,10 @@ export class StoreRecord<
      * not at their default values - default values will be present via the prototype.
      *
      * Call {@link getValues} for an object providing an explicit enumeration of all field values.
+     *
+     * Note - `id` is always present on the underlying object at runtime (stamped by the
+     * constructor) even though the `data` type reflects only the declared field shape. Use
+     * `record.id` to access the id in a type-safe way.
      */
     readonly data: T;
 

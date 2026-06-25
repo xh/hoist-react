@@ -274,6 +274,53 @@ record.validationResults;   // Map of field → ValidationResult[]
 record.isValidationPending; // Async validation in progress?
 ```
 
+### Typing Records
+
+`Store` and `StoreRecord` accept optional generic parameters `<T, Id>` to give `record.data` and
+`record.id` precise TypeScript types.
+
+**Define an interface** for the record's field shape, then pass it as a type argument:
+
+```typescript
+interface Person {
+    id: number;     // include `id` here to let TypeScript derive the id type automatically
+    name: string;
+    age: number;
+}
+
+const store = new Store<Person>({fields: ['name', 'age']});
+const gridModel = new GridModel<Person>({store});
+
+const rec = store.records[0];
+rec.data.name;          // string
+rec.data.age;           // number
+rec.id;                 // number  (derived from Person.id via RecordId<T>)
+rec.getValues();        // Person & {id: number}
+```
+
+**Id derivation** - if your interface declares an `id` property, `RecordId<T>` infers the id type
+automatically. If the interface omits `id` (e.g. when the id comes from a different field), pass
+`Id` explicitly as the second type argument:
+
+```typescript
+interface Trade {
+    sym: string;
+    // no `id` - the store uses a separate field or an idSpec
+}
+
+const tradeStore = new Store<Trade, string>({fields: ['sym'], idSpec: 'tradeId'});
+tradeStore.records[0].id;   // string
+```
+
+Note that `id` is a top-level property of `StoreRecord`, not a data field - do not include it in
+the `fields` config even when the interface declares it. See [Common Pitfalls](#defining-id-as-a-field).
+
+**Opt-in** - omitting type parameters leaves `store.records[0].data` typed as `any` (the pre-generics
+behavior), so existing untyped code compiles unchanged.
+
+**Current limitation** - column renderer/editor callbacks and `RecordAction` callbacks still
+receive an untyped `StoreRecord` (typed access in those contexts is planned for a future release).
+
 ## Field
 
 **File**: `Field.ts`

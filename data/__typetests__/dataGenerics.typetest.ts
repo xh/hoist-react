@@ -59,5 +59,8 @@ const _existingCastStillWorks = loose.records[0].data as SomeAppType;
 const _genericStore: Store = store;
 const _genericRec: StoreRecord = rec;
 
+// --- getValues() returns T & {id: Id} ---
+const _values: Person & {id: number} = rec.getValues();
+
 // --- Navigation preserves the type parameter ---
 const _child: Person | undefined = rec.children[0]?.data;
