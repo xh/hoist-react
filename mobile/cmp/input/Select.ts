@@ -172,6 +172,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * `options` and `queryFn` props — a SelectOption object, plain object (processed
      * via labelField/valueField), or primitive.
      *
+     * Note that this may include a value of `null`/emptyValue if not present in options.
+     *
      * Useful with queryFn-based selects, readonly forms, or any case where options
      * may not be loaded when a value is set.
      */

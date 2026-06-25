@@ -205,7 +205,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Useful with queryFn-based selects, readonly forms, or any case where options
      * may not be loaded when a value is set.
      */
-    lookupFn?: (value: any | null) => Awaitable<SelectOption | any>;
+    lookupFn?: (value: any) => Awaitable<SelectOption | any>;
 }
 
 /**
