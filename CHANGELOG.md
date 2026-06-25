@@ -2,6 +2,8 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+## 86.2.0 - 2026-06-25
+
 ### 🎁 New Features
 
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
