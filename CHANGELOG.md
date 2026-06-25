@@ -2,6 +2,14 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Store`, `StoreRecord`, `StoreSelectionModel`, `GridModel`, `DataViewModel`, `ZoneGridModel`,
+  `RestGridModel`, and `RestStore` now accept optional generic type parameters `<T, Id>` describing
+  a record's data shape and id type. Specify a shape (e.g. `new GridModel<MyRow>({...})`) to get
+  fully-typed `store.records`, `selectedRecord.data`, and `record.id`. Fully opt-in - untyped
+  usage is unchanged.
+
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
@@ -20,11 +28,6 @@
 * Grid column filter specs now support a `sortValue` config, letting the Values tab of the filter
   dialog sort its entries the same way the underlying grid column sorts them. When not provided,
   the column's own `sortValue` is used.
-* `Store`, `StoreRecord`, `StoreSelectionModel`, `GridModel`, `DataViewModel`, `ZoneGridModel`,
-  `RestGridModel`, and `RestStore` now accept optional generic type parameters `<T, Id>` describing
-  a record's data shape and id type. Specify a shape (e.g. `new GridModel<MyRow>({...})`) to get
-  fully-typed `store.records`, `selectedRecord.data`, and `record.id`. Fully opt-in - untyped
-  usage is unchanged.
 * `GridModel.levelLabels` now accepts a partial array covering only the top levels of a tree or
   grouped grid. The "Expand to..." menu and `ExpandToLevelButton` offer one entry per labelled
   level, so deeper, unlabelled levels (e.g. system-managed) are no longer required and are omitted
