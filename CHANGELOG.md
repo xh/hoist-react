@@ -40,6 +40,8 @@
 * `GridFilterFieldSpec.renderer` is now typed as a pure value transform (`GridFilterRenderer`),
   rather than a `ColumnRenderer`. This more accurately represents the existing run-time limitation
   that a complex column renderer would throw.
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
 ### ✨ Styles
 
