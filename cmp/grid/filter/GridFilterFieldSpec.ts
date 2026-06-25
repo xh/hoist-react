@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
 import {
@@ -19,17 +18,38 @@ import {
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {castArray, compact, flatMap, isDate, isEmpty, uniqBy} from 'lodash';
+import {ReactNode} from 'react';
 import {GridFilterModel} from './GridFilterModel';
+
+/**
+ * Produces the display content for an entry in the Values tab of a column filter. Must be a pure
+ * transform of the value - the values list carries no source record, and there is no column or
+ * grid context to reach for (unlike a Column's `renderer`, which runs against the source grid).
+ */
+export type GridFilterRenderer = (value: any) => ReactNode;
+
+/**
+ * Produces the value to sort by for an entry in the Values tab of a column filter. Must be a pure
+ * transform of the value - the values list carries no source record, and there is no column or
+ * grid context to reach for (unlike a Column's `sortValue`, which runs against the source grid).
+ */
+export type GridFilterSortValueFn = (value: any) => any;
 
 export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /** GridFilterModel instance owning this fieldSpec. */
     filterModel?: GridFilterModel;
 
     /**
-     * Function returning a formatted string for each value in this values filter display.
-     * If not provided, the Column's renderer will be used.
+     * Pure function producing the display content for each entry in the values filter display. If
+     * not provided, the Column's renderer is used where it can be applied to a bare value.
      */
-    renderer?: ColumnRenderer;
+    renderer?: GridFilterRenderer;
+
+    /**
+     * Pure function producing the value to sort each entry of the values filter display by. If not
+     * provided, the Column's sortValue is used where it can be applied to a bare value.
+     */
+    sortValue?: GridFilterSortValueFn;
 
     /**
      * Props to pass through to the HoistInput components used on the custom filter tab.
@@ -47,7 +67,8 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     filterModel: GridFilterModel;
-    renderer: ColumnRenderer;
+    renderer: GridFilterRenderer;
+    sortValue: GridFilterSortValueFn;
     inputProps: PlainObject;
     defaultOp: FieldFilterOperator;
 
@@ -57,6 +78,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     constructor({
         filterModel,
         renderer,
+        sortValue,
         inputProps,
         defaultOp,
         ...rest
@@ -65,6 +87,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
         this.filterModel = filterModel;
         this.renderer = renderer;
+        this.sortValue = sortValue;
         this.inputProps = inputProps;
         this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
     }
