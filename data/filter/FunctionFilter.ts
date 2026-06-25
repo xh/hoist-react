@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
@@ -19,8 +19,8 @@ import {FunctionFilterSpec, FilterTestFn} from './Types';
  * Immutable.
  */
 export class FunctionFilter extends Filter {
-    get isFunctionFilter() {
-        return true;
+    static isFunctionFilter(obj: unknown): obj is FunctionFilter {
+        return obj instanceof FunctionFilter;
     }
 
     readonly key: string;
@@ -55,5 +55,13 @@ export class FunctionFilter extends Filter {
 
     override toJSON(): FunctionFilterSpec {
         throw XH.exception('FunctionFilter.toJSON() not supported.');
+    }
+
+    override removeFieldFilters(field: string = null): Filter {
+        return this;
+    }
+
+    override removeFunctionFilters(key: string = null): Filter {
+        return !key || this.key === key ? null : this;
     }
 }

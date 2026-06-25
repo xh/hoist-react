@@ -2,21 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {clusterTab} from '@xh/hoist/admin/tabs/cluster/ClusterTab';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, XH} from '@xh/hoist/core';
+import {HoistAppModel, InitContext, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {without} from 'lodash';
 import {Route} from 'router5';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
-import {generalTab} from './tabs/general/GeneralTab';
 import {monitorTab} from './tabs/monitor/MonitorTab';
-import {userDataTab} from './tabs/userData/UserDataTab';
+import {instancesTab, metricsPanel, clusterObjectsPanel} from '@xh/hoist/admin/tabs/cluster';
+import {aboutPanel, alertBannerPanel, configPanel} from '@xh/hoist/admin/tabs/general';
+import {
+    jsonBlobPanel,
+    userPreferencePanel,
+    rolePanel,
+    userPanel
+} from '@xh/hoist/admin/tabs/userData';
 
 export class AppModel extends HoistAppModel {
     tabModel: TabContainerModel;
@@ -32,17 +37,16 @@ export class AppModel extends HoistAppModel {
 
         this.tabModel = new TabContainerModel({
             route: 'default',
-            switcher: false,
             tabs: this.createTabs()
         });
 
         // Enable managed autosize mode across Hoist Admin console grids.
-        GridModel.DEFAULT_AUTOSIZE_MODE = 'managed';
+        GridModel.defaults.autosizeMode = 'managed';
     }
 
-    override async initAsync() {
-        await this.initViewManagerModelsAsync();
-        await super.initAsync();
+    override async initAsync(ctx: InitContext) {
+        await this.initViewManagerModelsAsync(ctx);
+        await super.initAsync(ctx);
     }
 
     override getRoutes(): Route[] {
@@ -89,7 +93,8 @@ export class AppModel extends HoistAppModel {
                             {name: 'services', path: '/services'}
                         ]
                     },
-                    {name: 'objects', path: '/objects'}
+                    {name: 'objects', path: '/objects'},
+                    {name: 'metrics', path: '/metrics'}
                 ]
             },
             {
@@ -118,16 +123,30 @@ export class AppModel extends HoistAppModel {
     }
 
     createTabs(): TabConfig[] {
+        const conf = XH.getConf('xhAdminAppConfig', {});
+
         return [
             {
                 id: 'general',
                 icon: Icon.info(),
-                content: generalTab
+                content: {
+                    tabs: [
+                        {id: 'about', icon: Icon.info(), content: aboutPanel},
+                        {id: 'config', icon: Icon.settings(), content: configPanel},
+                        {id: 'alertBanner', icon: Icon.bullhorn(), content: alertBannerPanel}
+                    ]
+                }
             },
             {
                 id: 'servers',
                 icon: Icon.server(),
-                content: clusterTab
+                content: {
+                    tabs: [
+                        {id: 'instances', icon: Icon.server(), content: instancesTab},
+                        {id: 'objects', icon: Icon.boxFull(), content: clusterObjectsPanel},
+                        {id: 'metrics', icon: Icon.gauge(), content: metricsPanel}
+                    ]
+                }
             },
             {
                 id: 'clients',
@@ -142,7 +161,34 @@ export class AppModel extends HoistAppModel {
             {
                 id: 'userData',
                 icon: Icon.users(),
-                content: userDataTab
+                content: {
+                    refreshMode: 'onShowAlways',
+                    tabs: [
+                        {
+                            id: 'users',
+                            icon: Icon.users(),
+                            content: userPanel,
+                            omit: conf['hideUsersTab']
+                        },
+                        {
+                            id: 'roles',
+                            icon: Icon.idBadge(),
+                            content: rolePanel
+                        },
+                        {
+                            id: 'prefs',
+                            title: 'Preferences',
+                            icon: Icon.bookmark(),
+                            content: userPreferencePanel
+                        },
+                        {
+                            id: 'jsonBlobs',
+                            title: 'JSON Blobs',
+                            icon: Icon.json(),
+                            content: jsonBlobPanel
+                        }
+                    ]
+                }
             },
             {
                 id: 'activity',
@@ -164,11 +210,14 @@ export class AppModel extends HoistAppModel {
         return appCodes.find(it => it === 'app') ?? appCodes[0];
     }
 
-    async initViewManagerModelsAsync() {
-        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync({
-            type: 'xhAdminActivityTrackingView',
-            typeDisplayName: 'View',
-            manageGlobal: XH.getUser().isHoistAdmin
-        });
+    async initViewManagerModelsAsync(ctx: InitContext) {
+        this.viewManagerModels.activityTracking = await ViewManagerModel.createAsync(
+            {
+                type: 'xhAdminActivityTrackingView',
+                typeDisplayName: 'View',
+                manageGlobal: XH.getUser().isHoistAdmin
+            },
+            ctx
+        );
     }
 }

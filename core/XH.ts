@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
 import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
@@ -14,6 +14,7 @@ import {
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
+    ClientHealthService,
     ConfigService,
     EnvironmentService,
     FetchOptions,
@@ -25,38 +26,44 @@ import {
     InspectorService,
     JsonBlobService,
     LocalStorageService,
+    MetricsService,
     PrefService,
     SessionStorageService,
     TrackService,
-    WebSocketService,
-    ClientHealthService
+    TraceService,
+    WebSocketService
 } from '@xh/hoist/svc';
+import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
+import ShortUniqueId from 'short-unique-id';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
 import {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
+import {Exception, HoistException} from '../exception';
+
 import {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    Exception,
     ExceptionHandler,
     ExceptionHandlerOptions,
+    CallContextLike,
     HoistAppModel,
-    HoistException,
     HoistService,
     HoistServiceClass,
+    InitContext,
     HoistUser,
     MessageSpec,
     PageState,
     PlainObject,
     ReloadAppOptions,
     SizingMode,
+    Some,
     TaskObserver,
     Theme,
     ToastSpec,
@@ -65,9 +72,8 @@ import {
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import {HoistModel, ModelSelector, RefreshContextModel} from './model';
-import ShortUniqueId from 'short-unique-id';
 
-export const MIN_HOIST_CORE_VERSION = '30.1';
+export const MIN_HOIST_CORE_VERSION = '31.2';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -84,6 +90,8 @@ declare const xhIsDevelopmentMode: boolean;
  * and convenience aliases to the most common framework operations.
  *
  * Available via import as `XH` - also installed as `window.XH` for troubleshooting purposes.
+ *
+ * @mcpHint singleton (XH) providing global framework services
  */
 export class XHApi {
     /** Unique id for this loaded instance of the app.  Unique for every refresh of document. */
@@ -153,9 +161,11 @@ export class XHApi {
     inspectorService: InspectorService;
     jsonBlobService: JsonBlobService;
     localStorageService: LocalStorageService;
+    metricsService: MetricsService;
     prefService: PrefService;
     sessionStorageService: SessionStorageService;
     trackService: TrackService;
+    traceService: TraceService;
     webSocketService: WebSocketService;
 
     //----------------------------
@@ -163,10 +173,10 @@ export class XHApi {
     //----------------------------
     /**
      * Tracks globally loading promises.
-     * Apps should link any async operations that should mask the entire viewport to this model.
+     * Apps should link any async operations that should mask the entire viewport to this observer.
      */
-    get appLoadModel(): TaskObserver {
-        return this.acm.appLoadModel;
+    get appLoadObserver(): TaskObserver {
+        return this.acm.appLoadObserver;
     }
 
     /** Root level application model. */
@@ -269,32 +279,67 @@ export class XHApi {
     }
 
     //----------------------------------------
-    // Delegating methods
+    // Delegating methods - Fetch
     //----------------------------------------
     /**
      * Send a request via the underlying fetch API.
      * @see FetchService.fetch
      */
-    fetch(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetch(opts);
+    fetch(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetch(opts, ctx);
     }
 
     /**
      * Send an HTTP request and decode the response as JSON.
      * @see FetchService.fetchJson
      */
-    fetchJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.fetchJson(opts);
+    fetchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.fetchJson(opts, ctx);
+    }
+
+    /**
+     * Send a GET request and decode the response as JSON.
+     * @see FetchService.getJson
+     */
+    getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.getJson(opts, ctx);
     }
 
     /**
      * Send a POST request with a JSON body and decode the response as JSON.
      * @see FetchService.postJson
      */
-    postJson(opts: FetchOptions): Promise<any> {
-        return this.fetchService.postJson(opts);
+    postJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.postJson(opts, ctx);
     }
 
+    /**
+     * Send a PUT request with a JSON body and decode the response as JSON.
+     * @see FetchService.putJson
+     */
+    putJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.putJson(opts, ctx);
+    }
+
+    /**
+     * Send a PATCH request with a JSON body and decode the response as JSON.
+     * @see FetchService.patchJson
+     */
+    patchJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.patchJson(opts, ctx);
+    }
+
+    /**
+     * Send a DELETE request with optional JSON body and decode the optional response as JSON.
+     * @see FetchService.deleteJson
+     */
+    deleteJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
+        return this.fetchService.deleteJson(opts, ctx);
+    }
+
+    //----------------------------------------
+    // Delegating methods - Config & Preferences
+    //----------------------------------------
     /**
      * Read soft configuration values.
      * @see ConfigService.get
@@ -319,6 +364,9 @@ export class XHApi {
         return this.prefService.set(key, val);
     }
 
+    //----------------------------------------
+    // Delegating methods - Activity Tracking
+    //----------------------------------------
     /**
      * Track user activity.
      * @see TrackService.track
@@ -327,6 +375,9 @@ export class XHApi {
         return this.trackService?.track(opts);
     }
 
+    //----------------------------------------
+    // Delegating methods - Environment
+    //----------------------------------------
     /**
      * Read an environment property.
      * @see EnvironmentService.get
@@ -335,6 +386,9 @@ export class XHApi {
         return this.environmentService?.get(key) ?? null;
     }
 
+    //----------------------------------------
+    // Delegating methods - Identity & Auth
+    //----------------------------------------
     /**
      * @returns the current acting user.
      * @see IdentityService.user
@@ -351,6 +405,11 @@ export class XHApi {
         return this.identityService?.username ?? null;
     }
 
+    /** @returns the current acting user's initials. */
+    getUserInitials(): string {
+        return this.identityService?.userInitials ?? null;
+    }
+
     /**
      * Logout the current user.
      * @see HoistAuthModel.logoutAsync
@@ -358,6 +417,35 @@ export class XHApi {
     async logoutAsync(): Promise<void> {
         await this.authModel?.logoutAsync();
         this.reloadApp();
+    }
+
+    //----------------------------------------
+    // Delegating methods - Logging
+    //----------------------------------------
+    /**
+     * Current minimum severity for Hoist log utils (default 'info').
+     * Messages logged via managed Hoist log utils with lower severity will be ignored.
+     */
+    get logLevel(): LogLevel {
+        return getLogLevel();
+    }
+
+    /**
+     * Set the minimum severity for Hoist log utils.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
+     */
+    setLogLevel(level: LogLevel, persistMins: number = -1) {
+        setLogLevel(level, persistMins);
+    }
+
+    /**
+     * Short cut to enable client-side logging at level `debug`.
+     * Optionally persist this adjustment for up to 1440 minutes in local storage.
+     *
+     * Hint: call this method from the console to show more verbose data while troubleshooting.
+     */
+    enableDebugLogging(persistMins: number = -1) {
+        setLogLevel('debug', persistMins);
     }
 
     //----------------------
@@ -412,7 +500,7 @@ export class XHApi {
      */
     @action
     reloadApp(opts?: ReloadAppOptions | string) {
-        never().linkTo(this.appLoadModel);
+        never().linkTo(this.appLoadObserver);
 
         opts = isString(opts) ? {path: opts} : (opts ?? {});
 
@@ -726,10 +814,16 @@ export class XHApi {
      * Applications must choose a unique name of the form xxxService to avoid naming collisions.
      * If naming collisions are detected, an error will be thrown.
      *
-     * @param serviceClasses - classes extending HoistService
+     * @param serviceClasses - one or more classes extending HoistService.
+     * @param ctx - init context for the current phase (typically the `ctx` passed to
+     *      `AppModel.initAsync()`). Forwarded to each service's `initAsync()` so spans created
+     *      during init nest under this phase's root span.
      */
-    async installServicesAsync(...serviceClasses: HoistServiceClass[]) {
-        return installServicesAsync(serviceClasses);
+    async installServicesAsync(
+        serviceClasses: Some<HoistServiceClass>,
+        ctx: InitContext
+    ): Promise<void> {
+        return installServicesAsync(serviceClasses, ctx);
     }
 
     /**
@@ -772,11 +866,20 @@ export class XHApi {
     }
 
     /**
-     * Reset user preferences and any persistent local application state, then reload the app.
+     * Reset user state and then reload the app.
+     * @see HoistAppModel.restoreDefaultsAsync()
      */
     async restoreDefaultsAsync() {
-        await this.appModel.restoreDefaultsAsync();
-        this.reloadApp();
+        try {
+            await this.appModel.restoreDefaultsAsync();
+            XH.track({category: 'App', message: 'Restored app defaults'});
+            this.reloadApp();
+        } catch (e) {
+            XH.handleException(e, {
+                message: 'Failed to restore app defaults',
+                requireReload: true
+            });
+        }
     }
 
     /**

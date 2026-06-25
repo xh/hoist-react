@@ -1,0 +1,66 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-card {
+  background-color: var(--xh-card-bg);
+  border-color: var(--xh-card-border-color);
+  border-radius: var(--xh-card-border-radius-px);
+  border-style: solid;
+  border-width: var(--xh-border-width-px);
+
+  &--collapsed {
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  &--intent-primary {
+    border-color: var(--xh-card-primary-color);
+  }
+
+  &--intent-success {
+    border-color: var(--xh-card-success-color);
+  }
+
+  &--intent-warning {
+    border-color: var(--xh-card-warning-color);
+  }
+
+  &--intent-danger {
+    border-color: var(--xh-card-danger-color);
+  }
+
+  &__content {
+    flex-direction: column;
+  }
+
+  &__header {
+    align-items: center;
+    color: var(--xh-card-header-text-color);
+    display: flex;
+    font-size: var(--xh-card-header-font-size-px);
+    gap: var(--xh-card-header-gap-px);
+    min-height: var(--xh-card-header-min-height-px);
+    padding: var(--xh-pad-half-px) var(--xh-pad-half-px);
+
+    &--intent-primary {
+      color: var(--xh-card-primary-color);
+    }
+
+    &--intent-success {
+      color: var(--xh-card-success-color);
+    }
+
+    &--intent-warning {
+      color: var(--xh-card-warning-color);
+    }
+
+    &--intent-danger {
+      color: var(--xh-card-danger-color);
+    }
+  }
+}

@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
-import {useOnResize} from '@xh/hoist/utils/react';
+import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';
 import {minBy, isEqual} from 'lodash';
-import composeRefs from '@seznam/compose-react-refs';
 import {Children} from 'react';
 
 import './TileFrame.scss';

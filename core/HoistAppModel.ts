@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel, Thunkable} from './';
+import {AppOptionSpec, HoistModel, InitContext, Thunkable} from './';
 import {Route} from 'router5';
 import {ReactNode} from 'react';
 /**
@@ -26,14 +26,19 @@ import {ReactNode} from 'react';
  * requirements specific to its needs.
  */
 export class HoistAppModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.app';
+
     /**
      * Hoist will call this method after Hoist services have initialized and the application
      * has mounted. Use to trigger initialization of the app and any app-specific services.
      *
      * Applications will typically use this method to install and initialize app-specific
-     * services using one or more phased calls to XH.installServicesAsync().
+     * services using one or more phased calls to XH.installServicesAsync(). Pass `ctx`
+     * along to those calls to nest service init appropriately within the app loading telemetry.
+     *
+     * @param ctx - init context
      */
-    async initAsync() {}
+    async initAsync(ctx: InitContext) {}
 
     /**
      * Should the version bar be shown in this application?.
@@ -88,18 +93,32 @@ export class HoistAppModel extends HoistModel {
     /**
      * Resets user preferences and any persistent local application state.
      *
-     * The default implementation for this method will clear *all* preferences and local storage.
+     * The default implementation for this method will clear all preferences, local + session
+     * storage, and transient {@link ViewManager} state such as last-selected and pinned views.
+     * (Views themselves are preserved.)
      *
-     * Applications may wish to override this method to do a more targeted clearing of state.
-     * This is important for complex applications with smaller sub-applications, and/or device
+     * Applications may wish to override this method to perform a more targeted clearing of state.
+     * This is important for complex applications with smaller sub-applications and/or device
      * specific applications. These applications will typically want to perform a custom clearing
-     * that is more targeted, and includes any additional app-specific state.
+     * that is more targeted and/or clears additional app-specific state.
+     *
+     * Not typically called directly by apps - call {@link XHApi.restoreDefaultsAsync} instead.
      */
     async restoreDefaultsAsync() {
-        const XH = window['XH'];
-        await XH.prefService.clearAllAsync();
-        XH.localStorageService.clear();
-        XH.sessionStorageService.clear();
+        await this.runner()
+            .span('restoreDefaults')
+            .run(async ctx => {
+                const XH = window['XH'];
+                await XH.fetchJson(
+                    {
+                        url: 'xh/clearUserState',
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                );
+                XH.localStorageService.clear();
+                XH.sessionStorageService.clear();
+            });
     }
 }
 

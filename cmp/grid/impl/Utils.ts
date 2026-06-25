@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, ColumnGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
-import {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
+import {Column, ColumnOrGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
+import {logWarn} from '@xh/hoist/utils/js';
 import {castArray, isFunction} from 'lodash';
 
 /** @internal */
@@ -18,7 +19,7 @@ export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
         try {
             return fn.apply(null, arguments);
         } catch (e) {
-            console.warn(`Renderer for '${identifier}' has thrown an error`, e);
+            logWarn([`Renderer for '${identifier}' has thrown an error`, e]);
             return '#ERROR';
         }
     } as unknown as T;
@@ -30,9 +31,7 @@ export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
  *
  *   @internal
  */
-export function getAgHeaderClassFn(
-    column: Column | ColumnGroup
-): (params: HeaderClassParams) => string[] {
+export function getAgHeaderClassFn(column: ColumnOrGroup): (params: HeaderClassParams) => string[] {
     const {headerClass, headerAlign, gridModel} = column;
 
     return agParams => {

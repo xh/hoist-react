@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, XH} from './';
+import {CallContextLike, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
 
 /**
  *  Base class for managing authentication lifecycle.
@@ -20,6 +20,8 @@ import {HoistModel, PlainObject, XH} from './';
  *  {@link XHApi#renderApp}.
  */
 export class HoistAuthModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.auth';
+
     /**
      * Main Entry Point.
      *
@@ -33,36 +35,54 @@ export class HoistAuthModel extends HoistModel {
      * to the server.
      *
      * The default implementation of this method simply checks the auth status on the server, which
-     * may be appropriate for fully SSO (e.g. NTLM) based solutions. Override to consult or
+     * may be appropriate for fully SSO based solutions. Override to consult or
      * initialize third-party client resources such as OAuth.
      *
-     * @returns true if the user has an authenticated session with the server, false if not.
+     * @param ctx - tracing/load context supplied by the framework. Overrides should forward it
+     *      to any fetch calls (or `runner(ctx)`) so auth requests nest under the bootstrap trace.
+     * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async completeAuthAsync(): Promise<boolean> {
-        return this.getAuthStatusFromServerAsync();
+    async completeAuthAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
+        return this.getAuthStatusFromServerAsync(ctx);
     }
 
     /**
-     * @returns true if the user has an authenticated session with the server, false if not.
+     * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async getAuthStatusFromServerAsync(): Promise<boolean> {
-        return XH.fetchJson({url: 'xh/authStatus'})
-            .then(r => r.authenticated)
+    async getAuthStatusFromServerAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
+        return this.runner(ctx)
+            .span('status')
+            .run(async ctx => {
+                const {authenticated, identity} = await XH.fetchJson({url: 'xh/authStatus'}, ctx);
+                return authenticated ? this.parseIdentityInfo(identity) : null;
+            })
             .catch(e => {
-                if (e.httpStatus === 401) return false;
+                if (e.httpStatus === 401) return null;
                 throw e;
             });
     }
 
     /**
      * Process a manual login, submitted by user via form.
-     * @returns true if the user was successfully logged in, false if not.
+     * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
-    async loginWithCredentialsAsync(username: string, password: string): Promise<boolean> {
-        return XH.fetchJson({
-            url: 'xh/login',
-            params: {username, password}
-        }).then(r => r.success);
+    async loginWithCredentialsAsync(
+        username: string,
+        password: string,
+        ctx?: CallContextLike
+    ): Promise<IdentityInfo> {
+        return this.runner(ctx)
+            .span('login')
+            .run(async ctx => {
+                const {success, identity} = await XH.fetchJson(
+                    {
+                        url: 'xh/login',
+                        params: {username, password}
+                    },
+                    ctx
+                );
+                return success ? this.parseIdentityInfo(identity) : null;
+            });
     }
 
     /**
@@ -71,8 +91,8 @@ export class HoistAuthModel extends HoistModel {
      * The default implementation will call the 'logout' endpoint on the Grails server, clearing
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
-    async logoutAsync(): Promise<void> {
-        await XH.fetchJson({url: 'xh/logout'});
+    async logoutAsync(ctx?: CallContextLike): Promise<void> {
+        await this.runner(ctx).span('logout').fetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -80,8 +100,59 @@ export class HoistAuthModel extends HoistModel {
      * whitelisted by Hoist to allow access prior to user authentication. For use in bootstrapping
      * client-side auth solutions that require configs such as OAuth endpoint URLs and client IDs.
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
+     *
+     * @param ctx - tracing/load context. When called from within a `completeAuthAsync` override,
+     *      forward the supplied context so this fetch nests under the bootstrap trace.
      */
-    async loadConfigAsync(): Promise<PlainObject> {
-        return XH.fetchService.getJson({url: 'xh/authConfig'});
+    async loadConfigAsync(ctx?: CallContextLike): Promise<PlainObject> {
+        return this.runner(ctx).span('config').fetchJson({url: 'xh/authConfig'});
+    }
+
+    /**
+     * Create a client-side HoistUser.
+     *
+     * Application subclasses may override this method, but should first call the super
+     * implementation.
+     */
+    protected createUser(rawUser: PlainObject, roles: string[]): HoistUser {
+        if (!rawUser) return null;
+        rawUser.roles = roles;
+        rawUser.hasRole = role => rawUser.roles.includes(role);
+        rawUser.isHoistAdmin = rawUser.hasRole('HOIST_ADMIN');
+        rawUser.isHoistAdminReader = rawUser.hasRole('HOIST_ADMIN_READER');
+        rawUser.isHoistRoleManager = rawUser.hasRole('HOIST_ROLE_MANAGER');
+        rawUser.hasGate = gate => this.hasGate(gate, rawUser);
+        return rawUser as HoistUser;
+    }
+
+    /**
+     * Convert raw identity info as delivered by server into client-side IdentityInfo.
+     */
+    protected parseIdentityInfo(data: PlainObject): IdentityInfo {
+        let authUser, apparentUser: HoistUser;
+        if (data.user) {
+            authUser = apparentUser = this.createUser(data.user, data.roles);
+        } else {
+            authUser = this.createUser(data.authUser, data.authUserRoles);
+            apparentUser = this.createUser(data.apparentUser, data.apparentUserRoles);
+        }
+        return {authUser, apparentUser};
+    }
+
+    //------------------------
+    // Implementation
+    //------------------------
+    private hasGate(gate, user): boolean {
+        const gateUsers = XH.getConf(gate, '').trim(),
+            tokens = gateUsers.split(',').map(it => it.trim()),
+            groupPattern = /\[([\w-]+)\]/;
+
+        if (gateUsers === '*' || tokens.includes(user.username)) return true;
+
+        for (let i = 0; i < tokens.length; i++) {
+            const match = groupPattern.exec(tokens[i]);
+            if (match && this.hasGate(match[1], user)) return true;
+        }
+        return false;
     }
 }

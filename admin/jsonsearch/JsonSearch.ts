@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {errorMessage} from '@xh/hoist/cmp/error';
@@ -105,12 +105,19 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
                                         flex: 1,
                                         width: '100%',
                                         readonly: true,
-                                        showCopyButton: true
+                                        enableSearch: true
                                     })
                                 })
                             ]
                         })
-                    ]
+                    ],
+                    bbar: toolbar(
+                        filler(),
+                        button({
+                            text: 'Close',
+                            onClick: () => model.toggleSearchIsOpen()
+                        })
+                    )
                 })
             })
         });
@@ -120,6 +127,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
 const searchTbar = hoistCmp.factory<JsonSearchImplModel>({
     render({model}) {
         return toolbar(
+            helpButton({model}),
             pathField({model}),
             button({
                 text: `Search ${model.subjectName}`,
@@ -128,8 +136,6 @@ const searchTbar = hoistCmp.factory<JsonSearchImplModel>({
                 disabled: !model.path,
                 onClick: () => model.loadMatchingDocsAsync()
             }),
-            '-',
-            helpButton({model}),
             '-',
             span('Group by:'),
             select({
@@ -290,5 +296,14 @@ const queryExamples = [
     {
         query: '$..grid[?(@.version == 1)]',
         explanation: 'Find all nodes with a key of "grid" and a property "version" equal to 1'
+    },
+    {
+        query: '$.currentView[?(@.desktop == null && @.desktop)]',
+        explanation:
+            'Find all JSON documents with path "currentView.desktop" that is explicitly set to null'
+    },
+    {
+        query: '$.[?(@ == "someString")]',
+        explanation: 'Find all JSON documents with an array that contains the value "someString"'
     }
 ];

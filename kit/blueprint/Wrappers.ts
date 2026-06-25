@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 //--------------------
 // Blueprint Imports
@@ -12,10 +12,11 @@ import {
     Button,
     ButtonGroup,
     Callout,
-    Card,
+    Card as BpCard,
     Checkbox,
     ControlGroup,
-    Dialog,
+    Dialog as BpDialog,
+    type DialogProps,
     Drawer,
     EditableText,
     FileInput,
@@ -34,10 +35,12 @@ import {
     NumericInput,
     OverflowList,
     Overlay2 as Overlay,
-    Popover,
+    Popover as BpPopover,
+    type PopoverProps,
     Radio,
     RadioGroup,
     RangeSlider,
+    SegmentedControl as BpSegmentedControl,
     Slider,
     Switch,
     Tab,
@@ -49,18 +52,28 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker3 as DatePicker} from '@blueprintjs/datetime2';
+import {DatePicker} from '@blueprintjs/datetime';
 import {elementFactory} from '@xh/hoist/core';
+import React, {createElement as reactCreateElement} from 'react';
+
+// Wrap Dialog and Popover to disable fade/scale-in transitions by default.
+// See also popover & overlay related CSS overrides in ./styles.scss.
+const Dialog: React.FC<DialogProps> = props =>
+    reactCreateElement(BpDialog, {transitionDuration: 0, transitionName: 'none', ...props});
+
+const Popover: React.FC<PopoverProps> = props =>
+    reactCreateElement(BpPopover, {transitionDuration: 0, ...props});
 
 //---------------------
 // Re-exports
 //---------------------
 export {
     Alert,
+    BpSegmentedControl,
     Button,
     ButtonGroup,
     Callout,
-    Card,
+    BpCard,
     Checkbox,
     ControlGroup,
     DatePicker,
@@ -103,10 +116,10 @@ export {
 // Primarily leaf Components
 //-----------------------------
 export const alert = elementFactory(Alert),
+    bpSegmentedControl = elementFactory(BpSegmentedControl),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
-    dialog = elementFactory(Dialog),
     datePicker = elementFactory(DatePicker),
     menuDivider = elementFactory(MenuDivider),
     menuItem = elementFactory(MenuItem),
@@ -130,7 +143,7 @@ export const alert = elementFactory(Alert),
 //-----------------------
 export const buttonGroup = elementFactory(ButtonGroup),
     callout = elementFactory(Callout),
-    card = elementFactory(Card),
+    bpCard = elementFactory(BpCard),
     drawer = elementFactory(Drawer),
     editableText = elementFactory(EditableText),
     formGroup = elementFactory(FormGroup),
@@ -147,3 +160,15 @@ export const buttonGroup = elementFactory(ButtonGroup),
     tab = elementFactory(Tab),
     tag = elementFactory(Tag),
     text = elementFactory(Text);
+
+/**
+ * Blueprint Dialog wrapped with transitions disabled. This is the standard way to create
+ * custom modal dialogs in Hoist apps - import from `@xh/hoist/kit/blueprint` rather than
+ * from Blueprint directly.
+ *
+ * Pair with a HoistModel that manages an observable `isOpen` property. The parent component
+ * renders the dialog factory alongside its other children - it shows/hides based on `isOpen`.
+ *
+ * See the desktop package README (`desktop/README.md#dialogs`) for the full usage pattern.
+ */
+export const dialog = elementFactory(Dialog);

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
@@ -16,7 +16,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, StoreRecord} from '@xh/hoist/data';
+import {Cube, CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -25,6 +25,8 @@ import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
+    override telemetryPrefix = 'xh.client.admin.tracking';
+
     /** FormModel for server-side querying controls. */
     @managed formModel: FormModel;
 
@@ -135,7 +137,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             },
             {
                 track: () => this.gridModel.selectedRecords,
-                run: recs => (this.trackLogs = this.getAllLeafRows(recs)),
+                run: recs =>
+                    (this.trackLogs = recs.flatMap(r => (r.raw as ViewRowData).cubeLeaves)),
                 debounce: 100
             }
         );
@@ -145,22 +148,27 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         const {enabled, cube, query} = this;
         if (!enabled) return;
 
-        try {
-            const data: PlainObject[] = await XH.postJson({
-                url: 'trackLogAdmin',
-                body: query,
-                loadSpec
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const data: PlainObject[] = await XH.postJson(
+                    {
+                        url: 'trackLogAdmin',
+                        body: query
+                    },
+                    ctx
+                );
+
+                if (loadSpec.isStale) return;
+
+                data.forEach(it => this.processRawTrackLog(it));
+                await cube.loadDataAsync(data);
+            })
+            .catch(async e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                await cube.clearAsync();
+                XH.handleException(e);
             });
-
-            if (loadSpec.isStale) return;
-
-            data.forEach(it => this.processRawTrackLog(it));
-            await cube.loadDataAsync(data);
-        } catch (e) {
-            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-            await cube.clearAsync();
-            XH.handleException(e);
-        }
     }
 
     @action
@@ -231,27 +239,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             data = cube.executeQuery({
                 dimensions,
                 includeRoot: true,
-                includeLeaves: true
+                provideLeaves: true
             });
 
-        data.forEach(node => this.separateLeafRows(node));
         gridModel.loadData(data);
         await gridModel.preSelectFirstAsync();
-    }
-
-    // Cube emits leaves in "children" collection - rename that collection to "leafRows" so we can
-    // carry the leaves with the record, but deliberately not show them in the tree grid. We only
-    // want the tree grid to show aggregate records.
-    private separateLeafRows(node) {
-        if (isEmpty(node.children)) return;
-
-        const childrenAreLeaves = !node.children[0].children;
-        if (childrenAreLeaves) {
-            node.leafRows = node.children;
-            delete node.children;
-        } else {
-            node.children.forEach(child => this.separateLeafRows(child));
-        }
     }
 
     private cubeLabelComparator(valA, valB, sortDir, abs, {recordA, recordB, defaultComparator}) {
@@ -291,23 +283,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         };
     }
 
-    // Extract all leaf, track-entry-level rows from an aggregate record (at any level).
-    private getAllLeafRows(aggRecs: StoreRecord[], ret = []): PlainObject[] {
-        if (isEmpty(aggRecs)) return [];
-
-        aggRecs.forEach(aggRec => {
-            if (aggRec.children.length) {
-                this.getAllLeafRows(aggRec.children, ret);
-            } else if (aggRec.raw.leafRows) {
-                aggRec.raw.leafRows.forEach(leaf => {
-                    ret.push({...leaf});
-                });
-            }
-        });
-
-        return ret;
-    }
-
     //------------------------
     // Impl - core data models
     //------------------------
@@ -325,6 +300,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.appVersion.field,
             Col.browser.field,
             Col.category.field,
+            Col.clientAppCode.field,
             Col.correlationId.field,
             {name: 'count', type: 'int', aggregator: 'CHILD_COUNT'},
             Col.data.field,
@@ -376,6 +352,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'msg', displayName: 'Message'},
                 {field: 'severity', values: ['DEBUG', 'INFO', 'WARN', 'ERROR']},
                 {field: 'tabId'},
+                {field: 'clientAppCode'},
                 {field: 'userAgent'},
                 {field: 'username', displayName: 'User'},
                 {field: 'url', displayName: 'URL'}
@@ -383,8 +360,10 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         });
 
         // Load lookups - not awaited
-        try {
-            XH.fetchJson({url: 'trackLogAdmin/lookups'}).then(lookups => {
+        this.runner()
+            .span('lookups')
+            .run(async ctx => {
+                const lookups = await XH.fetchJson({url: 'trackLogAdmin/lookups'}, ctx);
                 if (ret !== this.filterChooserModel) return;
                 ret.fieldSpecs.forEach(spec => {
                     const {field} = spec,
@@ -396,10 +375,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                         spec.hasExplicitValues = true;
                     }
                 });
-            });
-        } catch (e) {
-            XH.handleException(e, {title: 'Error loading lookups for filtering'});
-        }
+            })
+            .catchDefault({title: 'Error loading lookups for filtering'});
 
         return ret;
     }
@@ -427,7 +404,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
             exportOptions: {filename: exportFilename('activity-summary')},
-            emptyText: 'No activity reported...',
+            emptyText: 'No activity reported.',
             sortBy: ['cubeLabel'],
             expandLevel: 1,
             levelLabels: () => ['Total', ...this.groupingChooserModel.valueDisplayNames],
@@ -456,6 +433,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {field: 'count', chooserGroup: 'Core Data', hidden},
                 {...Col.appEnvironment, hidden},
                 {...Col.appVersion, hidden},
+                {...Col.clientAppCode, hidden},
                 {...Col.loadId, hidden},
                 {...Col.tabId, hidden},
                 {...Col.url, hidden},

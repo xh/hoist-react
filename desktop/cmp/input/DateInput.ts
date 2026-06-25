@@ -2,11 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
 import {TimePickerProps} from '@blueprintjs/datetime';
-import {ReactDayPickerSingleProps} from '@blueprintjs/datetime2/src/common/reactDayPickerProps';
+import {ReactDayPickerSingleProps} from '@blueprintjs/datetime/src/common/reactDayPickerProps';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
@@ -30,6 +30,9 @@ import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps {
     value?: Date | LocalDate;
+
+    /** True to commit eagerly whenever typed input parses to a new valid date. Default true. */
+    commitOnChange?: boolean;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
     dayPickerProps?: ReactDayPickerSingleProps['dayPickerProps'];
@@ -146,7 +149,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     /**
      * Type of value to publish. Defaults to 'date'. The use of 'localDate' is often a good
      * choice for use cases where there is no time component.
-     * @see LocalDate - the class that will be published when localDate mode.
+     * @see LocalDate
      */
     valueType?: 'date' | 'localDate';
 }
@@ -208,6 +211,10 @@ class DateInputModel extends HoistInputModel {
 
     get strictInputParsing(): boolean {
         return withDefault(this.componentProps.strictInputParsing, false);
+    }
+
+    override get commitOnChange() {
+        return withDefault(this.componentProps.commitOnChange, true);
     }
 
     constructor() {
@@ -290,6 +297,8 @@ class DateInputModel extends HoistInputModel {
     };
 
     onInputChange = value => {
+        // Skip mid-typing parses to avoid reformatting in-progress text via formatDate.
+        if (!this.commitOnChange) return;
         if (!value && !trim(value)) this.onDateChange(null);
         const date = this.parseDate(value, true);
         if (date) this.onDateChange(date);

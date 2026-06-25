@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
@@ -20,6 +20,7 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
         const {dashViewModel} = cfg.persistOptions;
         throwIf(!dashViewModel, `DashViewProvider requires a 'dashViewModel'.`);
         this.dashViewModel = dashViewModel;
+        dashViewModel.registerProvider(this);
     }
 
     //----------------
@@ -32,5 +33,10 @@ export class DashViewProvider<S> extends PersistenceProvider<S> {
 
     override writeRaw(data) {
         this.dashViewModel.viewState = data;
+    }
+
+    override destroy() {
+        this.dashViewModel?.unregisterProvider(this);
+        super.destroy();
     }
 }

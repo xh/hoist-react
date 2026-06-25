@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
 import {action, bindable, makeObservable} from '@xh/hoist/mobx';
@@ -14,6 +14,14 @@ import '@xh/hoist/mobile/register';
 import {PageConfig, PageModel} from './PageModel';
 import {findScrollableParent, isDraggableEl} from './impl/Utils';
 
+/**
+ * Configuration for a {@link NavigatorModel} - the primary stack-based navigation controller
+ * for mobile Hoist apps. Supports swipe-based page transitions, pull-to-refresh, and
+ * configurable render/refresh strategies.
+ *
+ * @see NavigatorModel
+ * @see PageConfig
+ */
 export interface NavigatorConfig {
     /** Configs for PageModels, representing all supported pages within this Navigator/App. */
     pages: PageConfig[];

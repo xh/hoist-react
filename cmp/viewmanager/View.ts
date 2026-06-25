@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PlainObject} from '@xh/hoist/core';
 import {ViewManagerModel} from './ViewManagerModel';
@@ -11,6 +11,8 @@ import {JsonBlob} from '@xh/hoist/svc';
 
 /**
  * A named saved bundle of state for components.
+ *
+ * @mcpHint user-saved state bundle managed by ViewManagerModel
  */
 export class View<T extends PlainObject = PlainObject> {
     /**

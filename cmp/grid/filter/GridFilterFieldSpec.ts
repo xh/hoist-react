@@ -2,28 +2,54 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {HoistInputProps} from '@xh/hoist/cmp/input';
 import {PlainObject} from '@xh/hoist/core';
-import {FieldFilterOperator, parseFilter, StoreRecord, View} from '@xh/hoist/data';
+import {
+    CompoundFilter,
+    FieldFilter,
+    FieldFilterOperator,
+    Filter,
+    parseFilter
+} from '@xh/hoist/data';
 import {
     BaseFilterFieldSpec,
     BaseFilterFieldSpecConfig
 } from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {castArray, compact, flatten, isDate, isEmpty, uniqBy} from 'lodash';
+import {castArray, compact, flatMap, isDate, isEmpty, uniqBy} from 'lodash';
+import {ReactNode} from 'react';
 import {GridFilterModel} from './GridFilterModel';
+
+/**
+ * Produces the display content for an entry in the Values tab of a column filter. Must be a pure
+ * transform of the value - the values list carries no source record, and there is no column or
+ * grid context to reach for (unlike a Column's `renderer`, which runs against the source grid).
+ */
+export type GridFilterRenderer = (value: any) => ReactNode;
+
+/**
+ * Produces the value to sort by for an entry in the Values tab of a column filter. Must be a pure
+ * transform of the value - the values list carries no source record, and there is no column or
+ * grid context to reach for (unlike a Column's `sortValue`, which runs against the source grid).
+ */
+export type GridFilterSortValueFn = (value: any) => any;
 
 export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /** GridFilterModel instance owning this fieldSpec. */
     filterModel?: GridFilterModel;
 
     /**
-     * Function returning a formatted string for each value in this values filter display.
-     * If not provided, the Column's renderer will be used.
+     * Pure function producing the display content for each entry in the values filter display. If
+     * not provided, the Column's renderer is used where it can be applied to a bare value.
      */
-    renderer?: ColumnRenderer;
+    renderer?: GridFilterRenderer;
+
+    /**
+     * Pure function producing the value to sort each entry of the values filter display by. If not
+     * provided, the Column's sortValue is used where it can be applied to a bare value.
+     */
+    sortValue?: GridFilterSortValueFn;
 
     /**
      * Props to pass through to the HoistInput components used on the custom filter tab.
@@ -37,18 +63,22 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 
 /**
  * Apps should NOT instantiate this class directly.
- * Instead, provide a config for this object to the GridModel's `filterModel` config.
+ * Instead, provide a config for this object via {@link GridConfig.filterModel} config.
  */
 export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     filterModel: GridFilterModel;
-    renderer: ColumnRenderer;
+    renderer: GridFilterRenderer;
+    sortValue: GridFilterSortValueFn;
     inputProps: PlainObject;
     defaultOp: FieldFilterOperator;
-    valueCount: number;
+
+    /** Total number of unique values for this field in the source, regardless of other filters. */
+    allValuesCount: number;
 
     constructor({
         filterModel,
         renderer,
+        sortValue,
         inputProps,
         defaultOp,
         ...rest
@@ -57,6 +87,7 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
 
         this.filterModel = filterModel;
         this.renderer = renderer;
+        this.sortValue = sortValue;
         this.inputProps = inputProps;
         this.defaultOp = this.ops.includes(defaultOp) ? defaultOp : this.ops[0];
     }
@@ -71,68 +102,67 @@ export class GridFilterFieldSpec extends BaseFilterFieldSpec {
     //------------------------
     loadValuesFromSource() {
         const {filterModel, field, source, sourceField} = this,
-            columnFilters = filterModel.getColumnFilters(field),
-            sourceStore = source instanceof View ? source.cube.store : source,
-            allRecords = sourceStore.allRecords;
+            columnFilters = filterModel.getColumnFilters(field);
 
-        // Apply external filters *not* pertaining to this field to the sourceStore
-        // to get the filtered set of available values to offer as options.
-        const cleanedFilter = this.cleanFilter(filterModel.filter);
-        let filteredRecords = allRecords;
-        if (cleanedFilter) {
-            const testFn = parseFilter(cleanedFilter).getTestFn(sourceStore);
-            filteredRecords = allRecords.filter(testFn);
-        }
+        // All possible values for this field from our source.
+        const allSrcVals = source.getValuesForFieldFilter(field).map(it => this.toDisplayValue(it));
 
-        // Get values from current column filter
-        const filterValues = [];
-        columnFilters.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => {
-                value = sourceField.parseVal(value);
-                return filterModel.toDisplayValue(value);
-            });
-            filterValues.push(...newValues);
-        });
+        // Values from current column filter. `flatMap` here unwraps the array `parseVal` returns
+        // for `tags`-typed fields, lining those values up with the scalar values produced by
+        // `Store.getValuesForFieldFilter` above. Without this, a filter value like `'foo'` would
+        // survive as `['foo']` and dedupe incorrectly. The `filter` drops the non-selectable null
+        // value carried by a blank `tags` filter.
+        const colFilterVals = flatMap(columnFilters, filter => {
+            return castArray(filter.value).flatMap(val => sourceField.parseVal(val));
+        })
+            .filter(it => sourceField.type !== 'tags' || it != null)
+            .map(it => this.toDisplayValue(it));
 
-        // Combine unique values from record sets and column filters.
-        const allValues = uniqBy(
-            [...flatten(allRecords.map(rec => this.valueFromRecord(rec))), ...filterValues],
-            this.getUniqueValue
-        );
-        let values;
-        if (cleanedFilter) {
-            values = uniqBy(
-                [
-                    ...flatten(filteredRecords.map(rec => this.valueFromRecord(rec))),
-                    ...filterValues
-                ],
-                this.getUniqueValue
-            );
+        // Combine + unique - these are all values that *could* be shown in the filter UI.
+        const allValues = uniqBy([...allSrcVals, ...colFilterVals], this.getUniqueValue);
+
+        // Create a filter with other filters *not* pertaining to this field, if any.
+        // This filter will be used to get the subset of all possible values for this field that
+        // exist in records passing those other filters.
+        const otherFieldsFilter = this.cleanFilter(filterModel.filter);
+
+        let values: any[];
+
+        if (otherFieldsFilter) {
+            // If we have filters on other fields, get values from source that pass that filter.
+            // These will be the set of values shown in the filter UI.
+            const filteredSrcVals = source
+                .getValuesForFieldFilter(field, otherFieldsFilter)
+                .map(it => this.toDisplayValue(it));
+            values = uniqBy([...filteredSrcVals, ...colFilterVals], this.getUniqueValue);
         } else {
+            // Otherwise, all possible values are shown.
             values = allValues;
         }
 
         this.values = values.sort();
-        this.valueCount = allValues.length;
+
+        // Note count of all possible values for this field - allows ValuesTabModel
+        // to indicate to the user if some values are hidden due to other active filters.
+        this.allValuesCount = allValues.length;
     }
 
     // Recursively modify a Filter|CompoundFilter to remove all FieldFilters referencing this column
-    private cleanFilter(filter) {
-        if (!filter) return filter;
-
-        const {field, filters, op} = filter;
-        if (filters) {
+    private cleanFilter(filter: Filter): Filter {
+        if (CompoundFilter.isCompoundFilter(filter)) {
+            const {filters, op} = filter;
             const ret = compact(filters.map(it => this.cleanFilter(it)));
-            return !isEmpty(ret) ? {op, filters: ret} : null;
-        } else if (field === this.field) {
+            return !isEmpty(ret) ? parseFilter({op, filters: ret}) : null;
+        }
+
+        if (FieldFilter.isFieldFilter(filter) && filter.field === this.field) {
             return null;
         }
 
         return filter;
     }
 
-    private valueFromRecord(record: StoreRecord) {
-        const {filterModel, field} = this;
-        return filterModel.toDisplayValue(record.get(field));
+    private toDisplayValue(val: any): any {
+        return this.filterModel.toDisplayValue(val);
     }
 }

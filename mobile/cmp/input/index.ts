@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 export * from './Label';
 export * from './ButtonGroupInput';
@@ -11,6 +11,7 @@ export * from './CheckboxButton';
 export * from './DateInput';
 export * from './NumberInput';
 export * from './SearchInput';
+export * from './SegmentedControl';
 export * from './Select';
 export * from './SwitchInput';
 export * from './TextInput';

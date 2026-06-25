@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
@@ -130,7 +130,7 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(xhId);
 
         if (!instance) {
-            console.warn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
+            this.logWarn(`Instance with xhId ${xhId} no longer alive - cannot be logged`);
         } else {
             console.log(`[${xhId}]`, instance);
             XH.toast({
@@ -147,7 +147,7 @@ export class InstancesModel extends HoistModel {
             instance = this.getInstance(instanceXhId);
 
         if (!instance) {
-            console.warn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
+            this.logWarn(`Instance ${instanceDisplayName} no longer alive - cannot be logged`);
         } else {
             console.log(`[${instanceDisplayName}].${property}`, instance[property]);
             XH.toast({

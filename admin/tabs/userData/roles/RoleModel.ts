@@ -2,25 +2,26 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import {fragment, p} from '@xh/hoist/cmp/layout';
+import {CallContext, HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
-import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, mapValues} from 'lodash';
-import moment from 'moment/moment';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import {HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.roles';
+
     static PERSIST_WITH = {localStorageKey: 'xhAdminRolesState'};
 
     static fmtDirectoryGroup(name: string): string {
@@ -70,23 +71,26 @@ export class RoleModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            await this.ensureInitializedAsync();
-            if (!this.moduleConfig.enabled) return;
+        return this.runner({loadSpec})
+            .span('list')
+            .run(async ctx => {
+                await this.ensureInitializedAsync(ctx);
+                if (!this.moduleConfig.enabled) return;
 
-            const {data} = await XH.fetchJson({url: 'roleAdmin/list', loadSpec});
-            if (loadSpec.isStale) return;
+                const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
+                if (loadSpec.isStale) return;
 
-            runInAction(() => {
-                this.allRoles = this.processRolesFromServer(data);
+                runInAction(() => {
+                    this.allRoles = this.processRolesFromServer(data);
+                });
+                this.displayRoles(loadSpec.isRefresh);
+                await this.gridModel.preSelectFirstAsync();
+            })
+            .catch(e => {
+                if (loadSpec.isStale) return;
+                XH.handleException(e);
+                this.clear();
             });
-            this.displayRoles(loadSpec.isRefresh);
-            await this.gridModel.preSelectFirstAsync();
-        } catch (e) {
-            if (loadSpec.isStale) return;
-            XH.handleException(e);
-            this.clear();
-        }
     }
 
     async selectRoleAsync(name: string) {
@@ -125,19 +129,26 @@ export class RoleModel extends HoistModel {
         if (this.readonly) return false;
 
         const confirm = await XH.confirm({
-            message: `Are you sure you want to delete "${role.name}"? This may affect access to this application.`,
+            message: fragment(
+                p(`Are you sure you want to delete the ${role.name} role?`),
+                p(`This may impact access to this application.`)
+            ),
+            extraConfirmText: role.name,
             confirmProps: {
-                text: 'Yes, delete role',
+                text: 'Delete role',
                 intent: 'danger',
+                outlined: true,
                 autoFocus: false
             }
         });
         if (!confirm) return false;
 
-        await XH.fetchService.deleteJson({
-            url: `roleAdmin/delete`,
-            body: {name: role.name}
-        });
+        await this.runner()
+            .span('delete')
+            .deleteJson({
+                url: `roleAdmin/delete`,
+                body: {name: role.name}
+            });
         await this.refreshAsync();
         return true;
     }
@@ -191,7 +202,7 @@ export class RoleModel extends HoistModel {
             actionFn: ({record}) =>
                 this.deleteAsync(record.data as HoistRole)
                     .catchDefault()
-                    .linkTo(this.loadModel),
+                    .linkTo(this.loadObserver),
             recordsRequired: 1
         };
     }
@@ -222,17 +233,17 @@ export class RoleModel extends HoistModel {
         gridModel.autosizeAsync({includeCollapsedChildren: true});
     }
 
-    private async ensureInitializedAsync() {
-        if (!this.moduleConfig) {
-            const config = await XH.fetchJson({url: 'roleAdmin/config'});
-            runInAction(() => {
-                this.moduleConfig = config;
-                if (config.enabled) {
-                    this.gridModel = this.createGridModel();
-                    this.filterChooserModel = this.createFilterChooserModel();
-                }
-            });
-        }
+    private async ensureInitializedAsync(ctx: CallContext) {
+        if (this.moduleConfig) return;
+
+        const config = await this.runner(ctx).fetchJson({url: 'roleAdmin/config'});
+        runInAction(() => {
+            this.moduleConfig = config;
+            if (config.enabled) {
+                this.gridModel = this.createGridModel();
+                this.filterChooserModel = this.createFilterChooserModel();
+            }
+        });
     }
 
     private processRolesFromServer(roles: Partial<HoistRole>[]): HoistRole[] {
@@ -354,7 +365,7 @@ export class RoleModel extends HoistModel {
 
     private getContextMenuItems() {
         return this.readonly
-            ? [this.groupByAction(), '-', ...GridModel.defaultContextMenu]
+            ? [this.groupByAction(), '-', ...GridModel.defaults.contextMenu]
             : [
                   this.addAction(),
                   this.editAction(),
@@ -365,7 +376,7 @@ export class RoleModel extends HoistModel {
                   '-',
                   this.groupByAction(),
                   '-',
-                  ...GridModel.defaultContextMenu
+                  ...GridModel.defaults.contextMenu
               ];
     }
 
@@ -384,23 +395,7 @@ export class RoleModel extends HoistModel {
                 config.directoryGroupsSupported && 'effectiveDirectoryGroupNames',
                 'effectiveRoleNames',
                 'lastUpdatedBy',
-                {
-                    field: 'lastUpdated',
-                    example: 'YYYY-MM-DD',
-                    valueParser: (v, op) => {
-                        let ret = moment(v, ['YYYY-MM-DD', 'YYYYMMDD'], true);
-                        if (!ret.isValid()) return null;
-
-                        // Note special handling for '>' & '<=' queries.
-                        if (['>', '<='].includes(op)) {
-                            ret = moment(ret).endOf('day');
-                        }
-
-                        return ret.toDate();
-                    },
-                    valueRenderer: v => fmtDate(v),
-                    ops: ['>', '>=', '<', '<=']
-                }
+                'lastUpdated'
             ]),
             persistWith: {...RoleModel.PERSIST_WITH, path: 'mainFilterChooser'}
         });

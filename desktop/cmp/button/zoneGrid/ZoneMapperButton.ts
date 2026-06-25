@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -54,7 +54,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
         const isOpen = mapperModel?.isPopoverOpen;
         return popover({
             isOpen,
-            popoverClassName: 'xh-zone-mapper-popover xh-popup--framed',
+            popoverClassName: 'xh-zone-mapper-popover',
             position: withDefault(popoverPosition, 'auto'),
             item: button({
                 icon: withDefault(icon, Icon.gridLarge()),

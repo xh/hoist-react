@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 export * from './AlertBannerService';
 export * from './AutoRefreshService';
@@ -16,8 +16,10 @@ export * from './IdentityService';
 export * from './IdleService';
 export * from './InspectorService';
 export * from './JsonBlobService';
+export * from './MetricsService';
 export * from './PrefService';
 export * from './TrackService';
+export * from './TraceService';
 export * from './WebSocketService';
 export * from './ClientHealthService';
 export * from './storage/LocalStorageService';

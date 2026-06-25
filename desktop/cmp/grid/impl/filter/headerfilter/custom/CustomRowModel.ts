@@ -2,13 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
 import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {HeaderFilterModel} from '../HeaderFilterModel';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {isArray, isNil} from 'lodash';
+import {isArray, isEmpty, isNil} from 'lodash';
 import {CustomTabModel} from './CustomTabModel';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
@@ -39,7 +39,7 @@ export class CustomRowModel extends HoistModel {
         } else if (op === 'not blank') {
             op = '!=';
             value = null;
-        } else if (isNil(value)) {
+        } else if (isNil(value) || (isArray(value) && isEmpty(value))) {
             return null;
         }
 

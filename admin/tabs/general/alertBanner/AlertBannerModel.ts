@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
@@ -15,6 +15,8 @@ import {AlertBannerIconName, AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.alertBanner';
+
     savedValue: AlertBannerSpec;
     @bindable.ref savedPresets: PlainObject[] = [];
 
@@ -95,18 +97,22 @@ export class AlertBannerModel extends HoistModel {
         const {formModel} = this;
         if (formModel.isDirty && loadSpec.isAutoRefresh) return;
 
-        const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}),
-            initialValues = {
-                ...value,
-                expires: value.expires ? new Date(value.expires) : null
-            };
+        await this.runner({loadSpec})
+            .span('loadSpec')
+            .run(async ctx => {
+                const value = await XH.fetchJson({url: 'alertBannerAdmin/alertSpec'}, ctx),
+                    initialValues = {
+                        ...value,
+                        expires: value.expires ? new Date(value.expires) : null
+                    };
 
-        this.savedValue = value;
-        formModel.init(initialValues);
+                this.savedValue = value;
+                formModel.init(initialValues);
+            });
     }
 
     async saveAsync() {
-        return this.saveInternalAsync().linkTo(this.loadModel).catchDefault();
+        return this.saveInternalAsync().linkTo(this.loadObserver).catchDefault();
     }
 
     resetForm() {
@@ -135,7 +141,7 @@ export class AlertBannerModel extends HoistModel {
     @action
     removePreset(preset: PlainObject) {
         XH.confirm({
-            message: 'Are you sure you wish to delete this preset?',
+            message: 'Are you sure you want to delete this preset?',
             confirmProps: {
                 text: 'Remove',
                 intent: 'danger',
@@ -169,22 +175,27 @@ export class AlertBannerModel extends HoistModel {
     }
 
     async loadPresetsAsync() {
-        try {
-            this.savedPresets = await XH.fetchJson({url: 'alertBannerAdmin/alertPresets'});
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.runner()
+            .span('loadPresets')
+            .run(async ctx => {
+                this.savedPresets = await XH.fetchJson(
+                    {
+                        url: 'alertBannerAdmin/alertPresets'
+                    },
+                    ctx
+                );
+            })
+            .catchDefault();
     }
 
     async savePresetsAsync() {
-        try {
-            await XH.fetchService.postJson({
+        await this.runner()
+            .span('savePresets')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertPresets',
                 body: this.savedPresets
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .catchDefault();
     }
 
     //----------------
@@ -252,7 +263,7 @@ export class AlertBannerModel extends HoistModel {
             const finalConfirm = await XH.confirm({
                 message: fragment(
                     p('This change will modify a live banner for all users of this application.'),
-                    p('Are you sure you wish to do this?')
+                    p('Are you sure you want to do this?')
                 ),
                 confirmProps: {
                     text: 'Yes, modify the banner',
@@ -286,8 +297,9 @@ export class AlertBannerModel extends HoistModel {
 
     private async saveBannerSpecAsync(spec: AlertBannerSpec) {
         const {active, message, intent, iconName, enableClose, clientApps} = spec;
-        try {
-            await XH.fetchService.postJson({
+        await this.runner()
+            .span('saveSpec')
+            .postJson({
                 url: 'alertBannerAdmin/setAlertSpec',
                 body: spec,
                 track: {
@@ -296,9 +308,7 @@ export class AlertBannerModel extends HoistModel {
                     data: {active, message, intent, iconName, enableClose, clientApps},
                     logData: ['active']
                 }
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .catchDefault();
     }
 }

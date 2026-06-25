@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Some} from '@xh/hoist/core';
 import {CompoundFilter, FunctionFilter} from '@xh/hoist/data';
-import {castArray, flatMap, groupBy, isArray, isFunction} from 'lodash';
+import {logError} from '@xh/hoist/utils/js';
+import {compact, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
 import {FieldFilterSpec, FilterLike} from './Types';
@@ -55,69 +55,32 @@ export function parseFilter(spec: FilterLike): Filter {
         }
     }
 
-    console.error('Unable to identify filter type:', s);
+    logError(['Unable to identify filter type:', s]);
     return null;
 }
 
 /**
- * Replace filters in `filter` with `newFilter` by field.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add.
- * @param field - StoreRecord Field name used to identify filters for replacement
+ * Combine a `source` filter with one or more `additions` via AND.
+ *
+ * If `source` is already an AND CompoundFilter, additions are appended to its children
+ * (flattened) rather than nesting AND(AND(...), new). Null/empty values on either side are
+ * handled gracefully.
+ *
+ * @param source - existing filter to build on, or null.
+ * @param additions - one or more filters to append.
+ * @returns the combined filter, or null if all inputs are null/empty.
  */
-export function withFilterByField(
-    filter: FilterLike,
-    newFilter: FilterLike,
-    field: string
-): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.field !== field) as FilterLike[];
+export function appendFilter(source: Filter, ...additions: FilterLike[]): Filter {
+    const parsed = compact(additions.map(parseFilter));
+    if (!source && parsed.length === 0) return null;
+    if (!source && parsed.length === 1) return parsed[0];
 
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
-}
+    const sourceFilters =
+        source instanceof CompoundFilter && source.op === 'AND'
+            ? source.filters
+            : compact([source]);
 
-/**
- * Replace filters in `filter` with `newFilter` by key.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add
- * @param key - FunctionFilter key used to identify filters for replacement
- */
-export function withFilterByKey(filter: FilterLike, newFilter: FilterLike, key: string): Filter {
-    const isCompound = filter && 'filters' in filter,
-        currFilters = isCompound ? filter.filters : [filter],
-        ret = currFilters.filter((it: any) => it && it.key !== key) as FilterLike[];
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
-}
-
-/**
- * Replace filters in `filter` with `newFilter` by filter types.
- * @param filter - Existing Filter to modify.
- * @param newFilter - New filter(s) to add.
- * @param types - Filter type(s) used to identify filters for replacement
- */
-export function withFilterByTypes(
-    filter: Filter,
-    newFilter: FilterLike,
-    types: Some<string>
-): Filter {
-    const isCompound = filter instanceof CompoundFilter,
-        currFilters = isCompound ? filter.filters : ([filter] as FilterLike[]);
-
-    const ret = currFilters.filter(it => {
-        for (const type of castArray(types)) {
-            if (type === 'CompoundFilter' && it instanceof CompoundFilter) return false;
-            if (type === 'FieldFilter' && it instanceof FieldFilter) return false;
-            if (type === 'FunctionFilter' && it instanceof FunctionFilter) return false;
-        }
-        return true;
-    });
-
-    ret.push(...castArray(newFilter));
-    return isCompound ? parseFilter({filters: ret, op: filter.op}) : parseFilter(ret);
+    return parseFilter({filters: [...sourceFilters, ...parsed], op: 'AND'});
 }
 
 /**

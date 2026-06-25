@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -17,6 +17,8 @@ import {groupBy, isEmpty, mapValues, size} from 'lodash';
 import {createRef} from 'react';
 
 export class ClusterObjectsModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.clusterObjects';
+
     viewRef = createRef<HTMLElement>();
 
     @observable.ref startTimestamp: Date = null;
@@ -89,7 +91,7 @@ export class ClusterObjectsModel extends HoistModel {
             {field: 'name', headerName: 'Full Name', hidden: true},
             {field: 'parentName', hidden: true}
         ],
-        contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaultContextMenu]
+        contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaults.contextMenu]
     });
 
     get selectedRecord(): StoreRecord {
@@ -143,19 +145,20 @@ export class ClusterObjectsModel extends HoistModel {
 
         if (!confirmed) return;
 
-        try {
-            await XH.postJson({
+        await this.runner()
+            .span('clearHibernateCachesByName')
+            .postJson({
                 url: 'clusterObjectsAdmin/clearHibernateCaches',
                 body: {
                     names: cacheRecords.map(it => it.id)
                 }
-            }).linkTo(this.loadModel);
-
-            await this.refreshAsync();
-            XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast(`${pluralize('Hibernate Cache', count, true)} cleared.`);
+            })
+            .catchDefault();
     }
 
     async clearAllHibernateCachesAsync() {
@@ -176,41 +179,44 @@ export class ClusterObjectsModel extends HoistModel {
         });
         if (!confirmed) return;
 
-        try {
-            await XH.fetchJson({
-                url: 'clusterObjectsAdmin/clearAllHibernateCaches'
-            }).linkTo(this.loadModel);
-
-            await this.refreshAsync();
-            XH.successToast('All Hibernate Caches cleared.');
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.runner()
+            .span('clearHibernateCaches')
+            .fetchJson({url: 'clusterObjectsAdmin/clearAllHibernateCaches'})
+            .linkTo(this.loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('All Hibernate Caches cleared.');
+            })
+            .catchDefault();
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            const report = await XH.fetchJson({
-                url: 'clusterObjectsAdmin/getClusterObjectsReport'
-            });
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const report = await XH.fetchJson(
+                    {
+                        url: 'clusterObjectsAdmin/getClusterObjectsReport'
+                    },
+                    ctx
+                );
 
-            this.gridModel.loadData(this.processReport(report));
-            runInAction(() => {
-                this.startTimestamp = report.startTimestamp
-                    ? new Date(report.startTimestamp)
-                    : null;
-                this.runDurationMs =
-                    report.endTimestamp && report.startTimestamp
-                        ? report.endTimestamp - report.startTimestamp
+                this.gridModel.loadData(this.processReport(report));
+                runInAction(() => {
+                    this.startTimestamp = report.startTimestamp
+                        ? new Date(report.startTimestamp)
                         : null;
-            });
-        } catch (e) {
-            XH.handleException(e, {
+                    this.runDurationMs =
+                        report.endTimestamp && report.startTimestamp
+                            ? report.endTimestamp - report.startTimestamp
+                            : null;
+                });
+            })
+            .catchDefault({
                 alertType: 'toast',
                 showAlert: this.isVisible && !loadSpec.isAutoRefresh,
                 logOnServer: this.isVisible && !loadSpec.isAutoRefresh
             });
-        }
     }
 
     get isVisible() {

@@ -2,10 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {XH, managed, LoadSupport, LoadSpec, Loadable, PlainObject} from '@xh/hoist/core';
+import {
+    Loadable,
+    LoadSpec,
+    LoadSpecConfig,
+    LoadSupport,
+    managed,
+    PlainObject,
+    TaskObserver,
+    XH
+} from '@xh/hoist/core';
 
 import {Store, StoreConfig} from './Store';
 
@@ -33,8 +42,8 @@ export class UrlStore extends Store implements Loadable {
         this.dataRoot = dataRoot;
     }
 
-    get loadModel() {
-        return this.loadSupport.loadModel;
+    get loadObserver(): TaskObserver {
+        return this.loadSupport.loadObserver;
     }
     get lastLoadRequested() {
         return this.loadSupport.lastLoadRequested;
@@ -51,14 +60,14 @@ export class UrlStore extends Store implements Loadable {
     async autoRefreshAsync(meta?: PlainObject) {
         return this.loadSupport.autoRefreshAsync(meta);
     }
-    async loadAsync(loadSpec?: LoadSpec | Partial<LoadSpec>) {
+    async loadAsync(loadSpec?: LoadSpecConfig) {
         return this.loadSupport.loadAsync(loadSpec);
     }
 
     /** @internal - call loadAsync() instead. */
     async doLoadAsync(loadSpec: LoadSpec): Promise<void> {
         const {url, dataRoot} = this;
-        let data = await XH.fetchJson({url, loadSpec});
+        let data = await XH.fetchJson({url}, {loadSpec});
         if (dataRoot) data = data[dataRoot];
         this.loadData(data);
     }

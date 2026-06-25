@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty, isNil, isString} from 'lodash';
+import {terminationSafePostJson} from './impl/Fetch';
 
 /**
  * Primary service for tracking any activity that an application's admins want to track.
@@ -16,13 +17,21 @@ import {isEmpty, isNil, isString} from 'lodash';
  * Client metadata is set automatically by the server's parsing of request headers.
  */
 export class TrackService extends HoistService {
+    override telemetryPrefix = 'xh.client.track';
+
     static instance: TrackService;
 
     private oncePerSessionSent = new Map();
     private pending: PlainObject[] = [];
 
     override async initAsync() {
-        window.addEventListener('beforeunload', () => this.pushPendingAsync());
+        // Flush on page teardown while the page is still alive
+        this.addReaction({
+            track: () => XH.pageState,
+            run: () => {
+                if (!XH.pageIsVisible) this.pushPendingAsync();
+            }
+        });
     }
 
     get conf(): ActivityTrackingConfig {
@@ -92,18 +101,29 @@ export class TrackService extends HoistService {
 
     /**
      * Flush the queue of pending activity tracking messages to the server.
-     * @internal - apps should generally allow this service to manage w/its internal debounce.
+     *
+     * Not typically called by applications.  Called automatically by the framework via a
+     * debounce and when the page is hidden/terminated.
      */
     async pushPendingAsync() {
         const {pending} = this;
         if (isEmpty(pending)) return;
 
+        // Clear synchronously with the capture, so overlapping flushes cannot post twice.
         this.pending = [];
-        await XH.fetchService.postJson({
-            url: 'xh/track',
-            body: {entries: pending},
-            params: {clientUsername: XH.getUsername()}
-        });
+
+        await this.runner()
+            .span('push')
+            .run(ctx =>
+                terminationSafePostJson(
+                    {
+                        url: 'xh/track',
+                        body: {entries: pending},
+                        params: {clientUsername: XH.getUsername()}
+                    },
+                    ctx
+                )
+            );
     }
 
     //------------------
@@ -111,7 +131,7 @@ export class TrackService extends HoistService {
     //------------------
     @debounced(10 * SECONDS)
     private pushPendingBuffered() {
-        this.pushPendingAsync();
+        void this.pushPendingAsync();
     }
 
     private toServerJson(options: TrackOptions): PlainObject {
@@ -119,6 +139,7 @@ export class TrackService extends HoistService {
             msg: stripTags(options.message),
             clientUsername: XH.getUsername(),
             appVersion: XH.getEnv('clientVersion'),
+            clientAppCode: XH.clientAppCode,
             loadId: XH.loadId,
             tabId: XH.tabId,
             url: window.location.href,

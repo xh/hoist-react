@@ -2,26 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridFilterFieldSpec, GridFilterModelConfig} from '@xh/hoist/cmp/grid';
+import {
+    GridFilterBindTarget,
+    GridFilterFieldSpec,
+    GridFilterFieldSpecConfig,
+    GridFilterModelConfig
+} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {
+    appendFilter,
     CompoundFilter,
     FieldFilter,
     Filter,
     FilterLike,
-    flattenFilter,
-    Store,
-    View,
-    withFilterByField,
-    withFilterByTypes
+    flattenFilter
 } from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
+import {ReactElement} from 'react';
 import {GridModel} from '../GridModel';
+
+export interface GridFilterModelDefaults {
+    activeFilterIcon?: ReactElement;
+}
 
 /**
  * Model for managing a Grid's column filters.
@@ -30,10 +38,16 @@ import {GridModel} from '../GridModel';
 export class GridFilterModel extends HoistModel {
     override xhImpl = true;
 
+    /** App-level defaults for GridFilterModel. Instance config takes precedence. */
+    static defaults: GridFilterModelDefaults = {
+        activeFilterIcon: Icon.filter()
+    };
+
     gridModel: GridModel;
-    bind: Store | View;
+    bind: GridFilterBindTarget;
     @bindable commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
+    activeFilterIcon: ReactElement;
 
     get filter(): Filter {
         return this.bind.filter;
@@ -46,7 +60,13 @@ export class GridFilterModel extends HoistModel {
     static BLANK_PLACEHOLDER = '[blank]';
 
     constructor(
-        {bind, commitOnChange = false, fieldSpecs, fieldSpecDefaults}: GridFilterModelConfig,
+        {
+            bind,
+            commitOnChange = false,
+            fieldSpecs,
+            fieldSpecDefaults,
+            activeFilterIcon
+        }: GridFilterModelConfig,
         gridModel: GridModel
     ) {
         super();
@@ -54,6 +74,7 @@ export class GridFilterModel extends HoistModel {
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;
+        this.activeFilterIcon = activeFilterIcon ?? GridFilterModel.defaults.activeFilterIcon;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
     }
 
@@ -64,14 +85,7 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     setColumnFilters(field: string, filter: FilterLike) {
-        // If current bound filter is a CompoundFilter for a single column, wrap it
-        // in an 'AND' CompoundFilter so new columns get 'ANDed' alongside it.
-        let currFilter = this.filter as any;
-        if (currFilter instanceof CompoundFilter && currFilter.field) {
-            currFilter = {filters: [currFilter], op: 'AND'};
-        }
-
-        const ret = withFilterByField(currFilter, filter, field);
+        const ret = appendFilter(this.filter?.removeFieldFilters(field), filter);
         this.setFilter(ret);
     }
 
@@ -98,8 +112,7 @@ export class GridFilterModel extends HoistModel {
 
     @action
     clear() {
-        const ret = withFilterByTypes(this.filter, null, ['FieldFilter', 'CompoundFilter']);
-        this.setFilter(ret);
+        this.setFilter(this.filter?.removeFieldFilters());
     }
 
     getColumnFilters(field: string): FieldFilter[] {
@@ -117,11 +130,11 @@ export class GridFilterModel extends HoistModel {
         return this.fieldSpecs.find(it => it.field === field);
     }
 
-    toDisplayValue(value) {
+    toDisplayValue(value: any): any {
         return isNil(value) || value === '' ? GridFilterModel.BLANK_PLACEHOLDER : value;
     }
 
-    fromDisplayValue(value) {
+    fromDisplayValue(value: any): any {
         return value === GridFilterModel.BLANK_PLACEHOLDER ? null : value;
     }
 
@@ -135,7 +148,7 @@ export class GridFilterModel extends HoistModel {
         this.dialogOpen = false;
     }
 
-    setFilter(filter) {
+    setFilter(filter: FilterLike) {
         wait()
             .then(() => this.bind.setFilter(filter))
             .linkTo(this.gridModel.filterTask);
@@ -144,7 +157,10 @@ export class GridFilterModel extends HoistModel {
     //--------------------------------
     // Implementation
     //--------------------------------
-    private parseFieldSpecs(specs, fieldSpecDefaults) {
+    private parseFieldSpecs(
+        specs: Array<string | GridFilterFieldSpecConfig>,
+        fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>
+    ) {
         const {bind} = this;
 
         // If no specs provided, include all source fields.
@@ -161,11 +177,10 @@ export class GridFilterModel extends HoistModel {
         });
     }
 
-    private getOuterCompoundFilter(filter, field) {
-        if (!filter?.isCompoundFilter) return null;
+    private getOuterCompoundFilter(filter: Filter, field: string) {
+        if (!CompoundFilter.isCompoundFilter(filter)) return null;
 
-        // This is the outer compound filter if all its children
-        // are FieldFilters on the matching field.
+        // This is the outer compound filter if all children are FieldFilters on the matching field.
         if (every(filter.filters, {field})) {
             return filter;
         }

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {div, vspacer} from '@xh/hoist/cmp/layout';
@@ -39,6 +39,7 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     button({
                         icon: Icon.logout(),
                         text: 'Logout',
+                        testId: 'xh-lockout-logout-btn',
                         omit: !appSpec.enableLogout,
                         onClick: () => XH.logoutAsync()
                     }),
@@ -46,6 +47,7 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     button({
                         icon: Icon.impersonate(),
                         text: 'End Impersonation',
+                        testId: 'xh-lockout-end-impersonation-btn',
                         omit: !identityService.isImpersonating,
                         onClick: () => identityService.endImpersonateAsync()
                     })

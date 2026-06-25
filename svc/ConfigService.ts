@@ -2,9 +2,9 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, XH} from '@xh/hoist/core';
+import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {deepFreeze, throwIf} from '@xh/hoist/utils/js';
 import {keys} from 'lodash';
 
@@ -24,13 +24,19 @@ import {keys} from 'lodash';
  * application has loaded. A refresh of the application is required to load new entries.
  */
 export class ConfigService extends HoistService {
+    override telemetryPrefix = 'xh.client.config';
+
     static instance: ConfigService;
 
     private _data = {};
 
-    override async initAsync() {
-        this._data = await XH.fetchJson({url: 'xh/getConfig'});
-        deepFreeze(this._data);
+    override async initAsync(ctx: InitContext) {
+        await this.runner(ctx)
+            .span('init')
+            .run(async ctx => {
+                this._data = await XH.fetchJson({url: 'xh/getConfig'}, ctx);
+                deepFreeze(this._data);
+            });
     }
 
     /**

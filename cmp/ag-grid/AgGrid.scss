@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 @mixin group-border($side) {
@@ -41,6 +41,9 @@
 // or modified for use with that component.
 *:not(.xh-data-view) > .ag-theme-balham.xh-ag-grid,
 *:not(.xh-data-view) > .ag-theme-balham-dark.xh-ag-grid {
+  // Bind ag-grid's base bg to Hoist's grid bg - prevents balham-dark default bleeding through.
+  --ag-background-color: var(--xh-grid-bg);
+
   color: var(--xh-grid-text-color);
   font-family: var(--xh-grid-font-family);
   font-size: var(--xh-grid-font-size-px);
@@ -446,7 +449,7 @@
   }
 
   // Set Blueprint controls - specifically checkboxes - to match grid size.
-  .bp5-control .bp5-control-indicator {
+  .bp6-control .bp6-control-indicator {
     font-size: 1em;
   }
 }

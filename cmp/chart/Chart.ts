@@ -2,9 +2,8 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div} from '@xh/hoist/cmp/layout';
 import {
     hoistCmp,
@@ -23,6 +22,7 @@ import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {logError, mergeDeep} from '@xh/hoist/utils/js';
 import {
+    composeRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -40,7 +40,8 @@ import {LightTheme} from './theme/Light';
 installZoomoutGesture(Highcharts);
 installCopyToClipboard(Highcharts);
 
-export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSupportProps {
+export interface ChartProps<M extends ChartModel = ChartModel>
+    extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Ratio of width-to-height of displayed chart.  If defined and greater than 0, the chart will
      * respect this ratio within the available space.  Otherwise, the chart will stretch on both
@@ -51,8 +52,8 @@ export interface ChartProps extends HoistProps<ChartModel>, LayoutProps, TestSup
 
 /**
  * Wrapper Component for a Highcharts chart. Provides basic rendering / lifecycle management
- * as well as configuration and theme defaults. The chart's core configuration should be sourced
- * from a ChartModel prop passed to this component.
+ * as well as configuration and theme defaults. Sourced from a {@link ChartModel}, either
+ * passed directly via the `model` prop or resolved from context.
  */
 export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
     displayName: 'Chart',

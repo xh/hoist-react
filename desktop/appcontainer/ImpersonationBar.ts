@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ImpersonationBarModel} from '@xh/hoist/appcontainer/ImpersonationBarModel';
 import {a, filler, fragment, h3, hspacer, li, p, span, ul} from '@xh/hoist/cmp/layout';
@@ -31,13 +31,17 @@ export const impersonationBar = hoistCmp.factory({
 
         const {targets} = model;
 
-        let msg = `Logged in as ${authUsername}`;
+        let msg = `Logged in as ${authUsername}`,
+            placeholder = 'Select a user...';
+
         if (isImpersonating) {
             msg += ` › impersonating ${username}`;
+            placeholder = `Impersonating ${username}`;
         }
 
         return toolbar({
             className: 'xh-impersonation-bar',
+            testId: 'xh-impersonation-bar',
             items: [
                 Icon.impersonate(),
                 span(msg),
@@ -46,6 +50,7 @@ export const impersonationBar = hoistCmp.factory({
                     text: 'Important Reminders',
                     icon: Icon.warning(),
                     outlined: true,
+                    testId: 'xh-impersonation-reminders-btn',
                     onClick: showUseResponsiblyAlert
                 }),
                 hspacer(),
@@ -53,14 +58,22 @@ export const impersonationBar = hoistCmp.factory({
                     bind: 'pendingTarget',
                     options: targets,
                     enableCreate: true,
-                    placeholder: 'Select User...',
-                    width: 250,
-                    menuWidth: 300,
-                    onCommit: model.onCommit
+                    // Autofocus when shown to begin impersonation
+                    autoFocus: !isImpersonating,
+                    placeholder,
+                    createMessageFn: q => `Impersonate new user "${q}"`,
+                    minWidth: 150,
+                    maxWidth: 350,
+                    menuWidth: 350,
+                    flex: 1,
+                    testId: 'xh-impersonation-target',
+                    onCommit: model.onCommit,
+                    ref: model.inputRef
                 }),
                 button({
                     text: isImpersonating ? 'Exit Impersonation' : 'Cancel',
                     outlined: true,
+                    testId: 'xh-impersonation-exit-btn',
                     onClick: model.onClose
                 })
             ]
@@ -71,6 +84,7 @@ export const impersonationBar = hoistCmp.factory({
 const showUseResponsiblyAlert = () => {
     XH.alert({
         title: 'Important Reminders',
+        icon: Icon.warning(),
         message: fragment(
             h3('With great power comes great responsibility.'),
             ul(
@@ -94,7 +108,8 @@ const showUseResponsiblyAlert = () => {
             )
         ),
         confirmProps: {
-            text: 'I understand and will be careful'
+            text: 'I understand and will be careful',
+            autoFocus: false
         }
     });
 };

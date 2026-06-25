@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
@@ -28,6 +28,8 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {ReactNode} from 'react';
 
 export class InstancesTabModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.instances';
+
     override persistWith = {localStorageKey: 'xhAdminClusterTabState'};
 
     @lookup(TabModel) private tabModel: TabModel;
@@ -55,23 +57,32 @@ export class InstancesTabModel extends HoistModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
-        let data = await XH.fetchJson({
-            url: 'clusterAdmin/allInstances',
-            // Tighter default timeout for background auto-refresh, to ensure we report connectivity
-            // issues promptly. This call should be quick, but still allow full default timeout for
-            // a manual refresh.
-            timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined,
-            loadSpec
-        });
+        await this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                let data = await XH.fetchJson(
+                    {
+                        url: 'clusterAdmin/allInstances',
+                        // Tighter default timeout for background auto-refresh, to ensure we report connectivity
+                        // issues promptly. This call should be quick, but still allow full default timeout for
+                        // a manual refresh.
+                        timeout: loadSpec.isAutoRefresh ? this.autoRefreshTimeout : undefined
+                    },
+                    ctx
+                );
 
-        data = data.map(row => ({
-            ...row,
-            isLocal: row.name == XH.environmentService.serverInstance,
-            usedHeapMb: row.memory?.usedHeapMb,
-            usedPctMax: row.memory?.usedPctMax
-        }));
-        gridModel.loadData(data);
-        await gridModel.preSelectFirstAsync();
+                data = data.map(row => ({
+                    ...row,
+                    isLocal: row.name == XH.environmentService.serverInstance,
+                    usedHeapMb: row.memory?.usedHeapMb,
+                    usedPctMax: row.memory?.usedPctMax
+                }));
+                gridModel.loadData(data);
+                if (!gridModel.hasSelection) {
+                    const primary = gridModel.store.records.find(r => r.data.isPrimary);
+                    await (primary ? gridModel.selectAsync(primary) : gridModel.selectFirstAsync());
+                }
+            });
     }
 
     constructor() {
@@ -155,9 +166,12 @@ export class InstancesTabModel extends HoistModel {
                     headerName: 'Heap (% Max)'
                 },
                 {
-                    field: 'wsConnections',
+                    field: {
+                        name: 'wsConnections',
+                        type: 'int',
+                        description: 'Active Websocket Connections'
+                    },
                     headerName: Icon.bolt(),
-                    headerTooltip: 'Active Websocket Connections',
                     ...numberCol
                 },
                 {
@@ -186,14 +200,13 @@ export class InstancesTabModel extends HoistModel {
                 recordsRequired: 1
             },
             '-',
-            ...GridModel.defaultContextMenu
+            ...GridModel.defaults.contextMenu
         ];
     }
 
     private createTabContainerModel() {
         return new TabContainerModel({
             route: 'default.servers.instances',
-            switcher: false,
             tabs: [
                 {id: 'logs', icon: Icon.fileText(), content: logViewer},
                 {id: 'memory', icon: Icon.memory(), content: memoryMonitorPanel},
@@ -212,7 +225,8 @@ export class InstancesTabModel extends HoistModel {
     private async shutdownInstanceAsync(instance: PlainObject) {
         if (
             !(await XH.confirm({
-                message: `Are you sure you wish to immediately terminate instance ${instance.name}?`,
+                message: `Are you sure you want to immediately terminate instance ${instance.name}?`,
+                extraConfirmText: instance.name,
                 confirmProps: {
                     icon: Icon.skull(),
                     text: 'Yes, kill the instance',
@@ -224,12 +238,14 @@ export class InstancesTabModel extends HoistModel {
         )
             return;
 
-        await XH.fetchJson({
-            url: 'clusterAdmin/shutdownInstance',
-            params: {instance: instance.name}
-        })
+        await this.runner()
+            .span('shutdown')
+            .fetchJson({
+                url: 'clusterAdmin/shutdownInstance',
+                params: {instance: instance.name}
+            })
             .finally(() => this.loadAsync())
-            .linkTo({observer: this.loadModel, message: 'Attempting instance shutdown'})
+            .linkTo({observer: this.loadObserver, message: 'Attempting instance shutdown'})
             .catchDefault();
     }
 

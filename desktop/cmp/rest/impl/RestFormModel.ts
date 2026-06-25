@@ -2,10 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
@@ -52,8 +52,9 @@ export class RestFormModel extends HoistModel {
     get store() {
         return this.parent.store;
     }
-    override get loadModel() {
-        return this.store.loadSupport.loadModel;
+
+    override get loadObserver(): TaskObserver {
+        return this.store.loadSupport.loadObserver;
     }
 
     constructor(parent: RestGridModel) {
@@ -65,6 +66,7 @@ export class RestFormModel extends HoistModel {
     getStoreField(field: string) {
         return this.store.getField(field) as RestField;
     }
+
     getFormFieldModel(field: string) {
         return this.formModel.getField(field);
     }
@@ -169,7 +171,7 @@ export class RestFormModel extends HoistModel {
 
         return saveFn()
             .then(() => this.close())
-            .linkTo(this.loadModel)
+            .linkTo(this.loadObserver)
             .catchDefault();
     }
 

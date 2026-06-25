@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {LoginPanelModel} from '@xh/hoist/appcontainer/login/LoginPanelModel';
 import {div, filler, form, viewport, vspacer} from '@xh/hoist/cmp/layout';
@@ -24,8 +24,8 @@ export const loginPanel = hoistCmp.factory({
     model: creates(LoginPanelModel),
 
     render({model}) {
-        const {loginMessage} = XH.appSpec,
-            {loadModel, warning, isValid, loginInProgress} = model;
+        const {loginMessage, loginPanelIcon} = XH.appSpec,
+            {loadObserver, warning, isValid, loginInProgress} = model;
 
         const onKeyDown = ev => {
             if (ev.key === 'Enter') model.submitAsync();
@@ -36,31 +36,36 @@ export const loginPanel = hoistCmp.factory({
             justifyContent: 'center',
             flexDirection: 'column',
             item: panel({
-                title: XH.clientAppName,
-                icon: Icon.login(),
+                title: `Login to ${XH.clientAppName}`,
+                icon: loginPanelIcon ?? Icon.shieldHalved({prefix: 'fas'}),
                 className: 'xh-login',
+                testId: 'xh-login',
                 width: 300,
-                mask: loadModel,
+                mask: loadObserver,
                 items: [
                     vspacer(10),
                     form(
                         textInput({
                             bind: 'username',
+                            leftIcon: Icon.user(),
                             placeholder: 'Username',
                             autoComplete: 'username',
                             autoFocus: true,
                             commitOnChange: true,
                             onKeyDown,
-                            width: null
+                            width: null,
+                            testId: 'xh-login-username'
                         }),
                         textInput({
                             bind: 'password',
+                            leftIcon: Icon.lock(),
                             placeholder: 'Password...',
                             autoComplete: 'current-password',
                             type: 'password',
                             commitOnChange: true,
                             onKeyDown,
-                            width: null
+                            width: null,
+                            testId: 'xh-login-password'
                         })
                     ),
                     div({
@@ -81,7 +86,8 @@ export const loginPanel = hoistCmp.factory({
                         intent: 'primary',
                         icon: Icon.login(),
                         disabled: !isValid || loginInProgress,
-                        onClick: () => model.submitAsync()
+                        onClick: () => model.submitAsync(),
+                        testId: 'xh-login-btn'
                     })
                 ]
             })

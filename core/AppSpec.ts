@@ -2,12 +2,12 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ElementFactory, HoistAppModel, HoistAuthModel, HoistProps, XH} from '@xh/hoist/core';
-import {apiDeprecated, throwIf} from '@xh/hoist/utils/js';
-import {isFunction, isNil, isString, isUndefined} from 'lodash';
-import {Component, ComponentClass, FunctionComponent} from 'react';
+import {throwIf} from '@xh/hoist/utils/js';
+import {isFunction, isNil, isString} from 'lodash';
+import {Component, ComponentClass, FunctionComponent, ReactElement} from 'react';
 
 /**
  * Spec for a client-side Hoist application. A config matching this class's shape is provided
@@ -71,12 +71,19 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     disableWebSockets?: boolean;
 
     /**
-     * True to disable Field-level XSS protection by default across all Stores/Fields in the app.
-     * For use with secure, internal apps that do not display arbitrary/external user input and
-     * have tight performance tolerances and/or load very large record sets.
-     * @see FieldSpec.disableXssProtection
+     * True to enable Field-level XSS protection by default across all Stores/Fields in the app.
+     * Available as an extra precaution for use with apps that might display arbitrary input from
+     * untrusted or external users. This feature does exact a minor performance penalty during data
+     * parsing, which can be significant in aggregate for very large stores containing records with
+     * many `string` fields.
+     *
+     * Note: this flag and its default behavior was changed as of Hoist v77 to be `false`, i.e.
+     * Store-level XSS protection *disabled* by default, in keeping with Hoist's primary use-case:
+     * building secured internal apps with large datasets and tight performance tolerances.
+     *
+     * @see FieldSpec.enableXssProtection
      */
-    disableXssProtection?: boolean;
+    enableXssProtection?: boolean;
 
     /**
      * True to show a login form on initialization when not authenticated. Default is `false` as
@@ -111,6 +118,12 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
     /** Optional message to show users when denied access to app. */
     lockoutMessage?: string;
 
+    /**
+     * Icon to display on the form-based login page, if active via `enableLoginForm: true`.
+     * Defaults to `Icon.shieldHalved()`.
+     */
+    loginPanelIcon?: ReactElement;
+
     /** Optional message to show on login form, if `showLoginForm: true`. */
     loginMessage?: string;
 
@@ -133,9 +146,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
      */
     trackAppLoad?: boolean;
 
-    /** @deprecated - use {@link AppSpec.disableWebSockets} instead. */
-    webSocketsEnabled?: boolean;
-
     constructor({
         authModelClass = HoistAuthModel,
         checkAccess,
@@ -144,7 +154,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         componentClass,
         containerClass,
         disableWebSockets = false,
-        disableXssProtection = false,
+        enableXssProtection = false,
         enableLoginForm = false,
         enableLogout = false,
         idlePanel = null,
@@ -152,10 +162,10 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         lockoutMessage = null,
         lockoutPanel = null,
         loginMessage = null,
+        loginPanelIcon = null,
         modelClass,
         showBrowserContextMenu = false,
-        trackAppLoad = true,
-        webSocketsEnabled
+        trackAppLoad = true
     }) {
         throwIf(!componentClass, 'A Hoist App must define a componentClass');
 
@@ -173,17 +183,6 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
             'A Hoist App must specify a required role string or a function for checkAccess.'
         );
 
-        if (!isUndefined(webSocketsEnabled)) {
-            let msg: string;
-            if (webSocketsEnabled === false) {
-                disableWebSockets = true;
-                msg = `Specify disableWebSockets: true to continue actively disabling WebSockets if required.`;
-            } else {
-                msg = `WebSockets are now enabled by default - this property can be safely removed from your appSpec.`;
-            }
-            apiDeprecated('webSocketsEnabled', {msg, v: 'v78'});
-        }
-
         this.authModelClass = authModelClass;
         this.checkAccess = checkAccess;
         this.clientAppCode = clientAppCode;
@@ -191,7 +190,7 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.componentClass = componentClass;
         this.containerClass = containerClass;
         this.disableWebSockets = disableWebSockets;
-        this.disableXssProtection = disableXssProtection;
+        this.enableXssProtection = enableXssProtection;
         this.enableLoginForm = enableLoginForm;
         this.enableLogout = enableLogout;
         this.idlePanel = idlePanel;
@@ -199,9 +198,9 @@ export class AppSpec<T extends HoistAppModel = HoistAppModel> {
         this.lockoutMessage = lockoutMessage;
         this.lockoutPanel = lockoutPanel;
         this.loginMessage = loginMessage;
+        this.loginPanelIcon = loginPanelIcon;
         this.modelClass = modelClass;
         this.showBrowserContextMenu = showBrowserContextMenu;
         this.trackAppLoad = trackAppLoad;
-        this.webSocketsEnabled = !disableWebSockets;
     }
 }

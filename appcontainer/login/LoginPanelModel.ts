@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
@@ -34,21 +34,25 @@ export class LoginPanelModel extends HoistModel {
     // Debounce to defend against double-click fast enough to get through masking + button disable.
     @debounced(300)
     async submitAsync() {
-        const {username, password, loginTask, isValid} = this;
-        if (!isValid) return;
+        const {username, password, loginTask, isValid, loginInProgress} = this;
+        if (loginInProgress) return;
+        if (!isValid) {
+            this.warning = 'Please enter a username and password.';
+            return;
+        }
 
         try {
             this.loginInProgress = true;
-            const success = await XH.authModel
+            const identity = await XH.authModel
                 .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
                     hideParams: ['password']
                 });
 
-            if (success) {
+            if (identity) {
                 this.warning = '';
-                await XH.appContainerModel.completeInitAsync();
+                XH.appContainerModel.completeInteractiveLogin(identity);
             } else {
                 this.warning = 'Login incorrect.';
             }

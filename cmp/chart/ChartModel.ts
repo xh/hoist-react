@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {type MouseEvent} from 'react';
 import type {ChartContextMenuSpec, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
 import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, cloneDeep, isFunction, isNil} from 'lodash';
+import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';
 
 interface ChartConfig {
@@ -28,10 +28,38 @@ interface ChartConfig {
     xhImpl?: boolean;
 }
 
+export interface ChartModelDefaults {
+    contextMenu?: ChartMenuToken[];
+}
+
 /**
- * Model to hold and maintain the configuration and data series for a Highcharts chart.
+ * Model for a Highcharts-based {@link Chart} component. Holds the Highcharts configuration
+ * object and data series, providing observable state that drives chart rendering.
+ *
+ * Set `highchartsConfig` for chart-level options (chart type, axes, legend, etc.) and
+ * `series` for the data to display. Both are observable and can be updated at any time
+ * via their setters to trigger a re-render.
+ *
+ * The underlying Highcharts instance is available via the `highchart` property for
+ * read-only access - mutations should go through `setHighchartsConfig` or `setSeries`.
+ *
+ * @see Chart
  */
 export class ChartModel extends HoistModel {
+    /** App-level defaults for ChartModel. Instance config takes precedence. */
+    static defaults: ChartModelDefaults = {
+        contextMenu: [
+            'viewFullscreen',
+            '-',
+            'copyToClipboard',
+            'printChart',
+            '-',
+            'downloadPNG',
+            'downloadSVG',
+            'downloadCSV'
+        ]
+    };
+
     @observable.ref
     highchartsConfig: PlainObject = {};
 
@@ -40,17 +68,6 @@ export class ChartModel extends HoistModel {
 
     contextMenu: ChartContextMenuSpec;
 
-    static defaultContextMenu: ChartMenuToken[] = [
-        'viewFullscreen',
-        '-',
-        'copyToClipboard',
-        'printChart',
-        '-',
-        'downloadPNG',
-        'downloadSVG',
-        'downloadCSV'
-    ];
-
     /**
      * The HighCharts instance currently being displayed. This may be used for reading
      * information about the chart, but any mutations to the chart should
@@ -58,6 +75,12 @@ export class ChartModel extends HoistModel {
      */
     @observable.ref
     highchart: any;
+
+    /** True if this chart has no series to display */
+    @computed
+    get empty(): boolean {
+        return isEmpty(this.series);
+    }
 
     constructor(config?: ChartConfig) {
         super();
@@ -109,7 +132,7 @@ export class ChartModel extends HoistModel {
 
     private parseContextMenu(spec: ChartContextMenuSpec): ChartContextMenuSpec {
         if (spec === false || !XH.isDesktop) return null;
-        if (isNil(spec) || spec === true) spec = ChartModel.defaultContextMenu;
+        if (isNil(spec) || spec === true) spec = ChartModel.defaults.contextMenu;
 
         return (e: MouseEvent | PointerEvent) => {
             // Convert hoverpoints to points for use in actionFn.

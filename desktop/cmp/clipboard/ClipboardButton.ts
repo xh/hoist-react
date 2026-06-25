@@ -2,14 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {withDefault} from '@xh/hoist/utils/js';
-import copy from 'clipboard-copy';
+import {copyToClipboard, withDefault} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 export interface ClipboardButtonProps extends ButtonProps {
@@ -45,7 +44,7 @@ export const [ClipboardButton, clipboardButton] = hoistCmp.withFactory<Clipboard
             onClick = async () => {
                 try {
                     const copyText = await getCopyText();
-                    await copy(copyText);
+                    await copyToClipboard(copyText);
                     if (successMsg) {
                         successMsg = isString(successMsg) ? successMsg : 'Copied to clipboard';
                         XH.toast({

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
@@ -62,8 +62,7 @@ export const instancesPanel = hoistCmp.factory({
                     item: grid({
                         model: model.instancesGridModel,
                         agOptions: {
-                            suppressRowGroupHidesColumns: true,
-                            suppressMakeColumnVisibleAfterUnGroup: true
+                            suppressGroupChangesColumnVisibility: true
                         }
                     }),
                     bbar: instanceGridBar(),

@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
 import {Options} from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
-import {PluggableList} from 'unified/lib';
+import type {PluggableList} from 'unified';
 
 interface MarkdownProps extends HoistProps {
     /** Markdown formatted string to render. */

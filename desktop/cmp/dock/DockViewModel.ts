@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     Content,
@@ -22,6 +22,13 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DockContainerModel} from './DockContainerModel';
 
+/**
+ * Configuration for a {@link DockViewModel} - a dockable view within a
+ * {@link DockContainerModel}.
+ *
+ * @see DockViewModel
+ * @see DockContainerModel
+ */
 export interface DockViewConfig {
     /** Unique identifier for this DockViewModel. */
     id: string;

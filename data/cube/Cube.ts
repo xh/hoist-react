@@ -2,23 +2,34 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistBase, managed, PlainObject} from '@xh/hoist/core';
+import {HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
-import {CubeField, CubeFieldSpec} from './CubeField';
-import {Query, QueryConfig} from './Query';
-import {View} from './View';
+import {defaultsDeep, isEmpty} from 'lodash';
 import {Store, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {StoreRecord} from '../StoreRecord';
-import {AggregateRow} from './row/AggregateRow';
-import {BucketRow} from './row/BucketRow';
-import {BaseRow} from './row/BaseRow';
 import {BucketSpec} from './BucketSpec';
-import {defaultsDeep, isEmpty} from 'lodash';
+import {CubeField, CubeFieldSpec} from './CubeField';
+import {Query, QueryConfig} from './Query';
+import {AggregateRow} from './row/AggregateRow';
+import {BaseRow} from './row/BaseRow';
+import {BucketRow} from './row/BucketRow';
+import {View} from './View';
+import {ViewRowData} from './ViewRowData';
 
+/**
+ * Configuration for a {@link Cube}. Provide `fields` (including at least one dimension
+ * and one or more measures with aggregators) and load data via `data` or
+ * `Cube.loadDataAsync()`.
+ *
+ * See the Cube package README (`data/cube/README.md`) for aggregator options and usage patterns.
+ *
+ * @see Cube
+ * @see CubeFieldSpec
+ */
 export interface CubeConfig {
     fields: CubeField[] | CubeFieldSpec[];
 
@@ -57,13 +68,54 @@ export interface CubeConfig {
 }
 
 /**
- * A data store that supports grouping, aggregating, and filtering data on multiple dimensions.
+ * Function to be called for each node to aggregate to determine if it should be "locked",
+ * preventing drilldown into its children. If true returned for a node, no drilldown will be
+ * allowed, and the row will be marked with a boolean "locked" property.
+ */
+export type LockFn = (row: AggregateRow | BucketRow) => boolean;
+
+/**
+ * Function to be called for each node during row generation to determine if it should be
+ * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Note that skipping in this way has no effect on aggregations -- all children of this node are
+ * simply promoted to their parent node.
+ */
+export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
+
+/**
+ * Function to be called for rows making up an aggregated dimension to determine if the children of
+ * that dimension should be dynamically bucketed into additional sub-groupings.
  *
- * This object is a wrapper around a "flat" Store containing leaf-level facts. It supports creating
- * Views on that data via structured Queries that can filter, group, and aggregate the flat source
- * data and produce a hierarchical result ready for use in (e.g.) tree grids and maps. Views can
- * be transiently created to run a Query once, on demand, or can be retained to provide efficient,
- * auto-updating results in response to updates to the underlying data.
+ * An example use case would be a grouped collection of portfolio positions, where any closed
+ * positions are identified as such by this function and bucketed into a "Closed" sub-grouping,
+ * without having to add something like an "openClosed" dimension that would apply to all
+ * aggregations and create an unwanted "Open" grouping.
+ *
+ * @param rows - the rows being checked for bucketing
+ * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
+ */
+export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
+
+/**
+ * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.
+ *
+ * A Cube wraps a flat {@link Store} of leaf-level records and supports creating {@link View}s
+ * via structured {@link Query} objects. Each View filters, groups, and aggregates the source
+ * data into a hierarchical result for use in tree grids, treemaps, and other visualizations.
+ *
+ * Fields are defined as {@link CubeField}s - each marked as either a dimension (groupable)
+ * or a measure with an {@link Aggregator} (e.g. SUM, AVG, MIN, MAX). Views can be transient
+ * (run a query once) or connected for efficient, auto-updating results as source data changes.
+ *
+ * See the Cube package README (`data/cube/README.md`) for full documentation including
+ * aggregator options, querying patterns, and View integration with Store/GridModel.
+ *
+ * @see CubeConfig
+ * @see CubeField
+ * @see View
+ * @see Query
+ *
+ * @mcpHint multi-dimensional data store with aggregation and views
  */
 export class Cube extends HoistBase {
     static RECORD_ID_DELIMITER = '>>';
@@ -94,7 +146,7 @@ export class Cube extends HoistBase {
         this.store = new Store({
             fields: this.parseFields(fields, fieldDefaults),
             idSpec,
-            processRawData: processRawData as any,
+            processRawData: processRawData,
             freezeData: false,
             idEncodesTreePath: true
         });
@@ -125,9 +177,18 @@ export class Cube extends HoistBase {
         return this.store.empty;
     }
 
+    /** Timestamp (ms) of when the Cube data was last updated */
+    get lastUpdated(): number {
+        return this.store.lastUpdated;
+    }
+
     /** Count of currently connected, auto-updating Views. */
     get connectedViewCount(): number {
         return this._connectedViews.size;
+    }
+
+    getField(name: string): CubeField {
+        return this.store.getField(name) as CubeField;
     }
 
     //------------------
@@ -143,9 +204,9 @@ export class Cube extends HoistBase {
      * @param query - Config for query defining the shape of the view.
      * @returns data containing the results of the query as a hierarchical set of rows.
      */
-    executeQuery(query: QueryConfig): any {
-        const q = new Query({...query, cube: this});
-        const view = new View({query: q}),
+    executeQuery(query: QueryConfig): ViewRowData[] {
+        const q = new Query({...query, cube: this}),
+            view = new View({query: q}),
             rows = view.result.rows;
 
         view.destroy();
@@ -153,19 +214,19 @@ export class Cube extends HoistBase {
     }
 
     /**
-     * Create a View on this data.
+     * Create a dynamic {@link View} of the cube data based on a query. Unlike the static snapshot
+     * returned by {@link Cube.executeQuery}, a View created with this method can be configured
+     * with `connect:true` to automatically update as the underlying data in the Cube changes.
      *
-     * Creates a dynamic View of the cube data, based on a query.  Useful for binding to grids a
-     * and efficiently displaying changing results in the Cube.
+     * Provide one or more `stores` to automatically populate them with the aggregated data returned
+     * by the query, or read the returned {@link View.result} directly.
      *
-     * Note: Applications should call {@link View.disconnect} or {@link View.destroy} on the View
-     * created by this method when appropriate to avoid unnecessary processing.
+     * When the returned View is no longer needed, call {@link View.destroy} (or save a reference
+     * via an `@managed` model property) to avoid unnecessary processing.
      *
      * @param query - query to be used to construct this view.
-     * @param stores - Stores to be loaded/reloaded with data from this view.
-     *      To receive data only, use the 'results' property of the returned View instead.
-     * @param connect - true to update View automatically when data in
-     *      the underlying cube is changed. Default false.
+     * @param stores - Stores to be automatically loaded/reloaded with View results.
+     * @param connect - true to update View automatically when data in the underlying Cube changes.
      */
     createView({
         query,
@@ -183,16 +244,26 @@ export class Cube extends HoistBase {
         });
     }
 
-    /**
-     * True if the provided view is connected to this Cube for live updates.
-     */
+    /** True if the provided view is connected to this Cube for live updates. */
     viewIsConnected(view: View): boolean {
         return this._connectedViews.has(view);
     }
 
-    /** @param view - view to disconnect from live updates. */
+    /** Cease pushing further updates to this Cube's data into a previously connected View. */
     disconnectView(view: View) {
         this._connectedViews.delete(view);
+    }
+
+    /** Connect a View to this Cube for live updates. */
+    connectView(view: View) {
+        if (this.viewIsConnected(view)) return;
+
+        this._connectedViews.add(view);
+
+        // If the view is not up-to-date with the current cube data, then reload the view
+        if (view.cubeUpdated !== this.lastUpdated) {
+            view.noteCubeLoaded();
+        }
     }
 
     //-------------------
@@ -200,12 +271,10 @@ export class Cube extends HoistBase {
     //-------------------
     /**
      * Populate this cube with a new dataset.
+     * This method largely delegates to {@link Store.loadData} - see that method for more info.
      *
-     * This method largely delegates to Store.loadData().  See that method for more
-     * information.
-     *
-     * Note that this method will update its views asynchronously, in order to avoid locking
-     * up the browser when attached to multiple expensive views.
+     * Note that this method will update its views asynchronously in order to avoid locking up the
+     * browser when attached to multiple expensive views.
      *
      * @param rawData - flat array of lowest/leaf level data rows.
      * @param info - optional metadata to associate with this cube/dataset.
@@ -240,6 +309,26 @@ export class Cube extends HoistBase {
 
         // 3) Notify connected views
         if (changeLog || hasInfoUpdates) {
+            await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
+        }
+    }
+
+    /**
+     * Similar to `updateDataAsync`, but intended for modifying individual field values in a local
+     * uncommitted state - i.e. when updating via an inline grid editor or similar control. Like
+     * `updateDataAsync`, this method will update its views asynchronously.
+     *
+     * This method largely delegates to {@link Store.modifyRecords} - see that method for more info.
+     *
+     * @param modifications - field-level modifications to apply to existing
+     *      Records in this Cube. Each object in the list must have an `id` property identifying
+     *      the StoreRecord to modify, plus any other properties with updated field values to apply,
+     *      e.g. `{id: 4, quantity: 100}, {id: 5, quantity: 99, customer: 'bob'}`.
+     */
+    async modifyRecordsAsync(modifications: Some<PlainObject>): Promise<void> {
+        const changeLog = this.store.modifyRecords(modifications);
+
+        if (changeLog) {
             await forEachAsync(this._connectedViews, v => v.noteCubeUpdated(changeLog));
         }
     }
@@ -283,28 +372,3 @@ export class Cube extends HoistBase {
         super.destroy();
     }
 }
-
-/**
- * Function to be called for each node to aggregate to determine if it should be "locked",
- * preventing drilldown into its children. If true returned for a node, no drilldown will be
- * allowed, and the row will be marked with a boolean "locked" property.
- */
-export type LockFn = (row: AggregateRow | BucketRow) => boolean;
-
-/**
- * Function to be called for each node during row generation to determine if it should be
- * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
- * Note that skipping in this way has no effect on aggregations -- all children of this node are
- * simply promoted to their parent node.
- */
-export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
-
-/**
- * Function to be called for each dimension to determine if children of said dimension should be
- * bucketed into additional dynamic dimensions.
- *
- * @param rows - the rows being checked for bucketing
- * @returns a BucketSpec for configuring the bucket to place child rows into, or null to perform
- *          no bucketing
- */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;

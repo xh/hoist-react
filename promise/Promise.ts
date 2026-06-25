@@ -2,19 +2,19 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
     Thunkable,
-    Exception,
     ExceptionHandlerOptions,
     TaskObserver,
     TrackOptions,
     XH,
     Some,
-    Awaitable,
-    TimeoutExceptionConfig
+    Awaitable
 } from '@xh/hoist/core';
+import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
+
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
 import {castArray, isFunction, isNumber, isString} from 'lodash';
@@ -132,15 +132,15 @@ export function waitFor(
     condition: () => boolean,
     {interval = 50, timeout = 5 * SECONDS}: {interval?: number; timeout?: number} = {}
 ): Promise<void> {
-    if (!isNumber(interval) || interval <= 0) throw new Error('Invalid interval');
-    if (!isNumber(timeout) || timeout <= 0) throw new Error('Invalid timeout');
+    if (interval <= 0) throw new Error('Invalid interval');
+    if (timeout != null && timeout <= 0) throw new Error('Invalid timeout');
 
     const startTime = Date.now();
     return new Promise((resolve, reject) => {
         const resolveOnMet = () => {
             if (condition()) {
                 resolve();
-            } else if (olderThan(startTime, timeout)) {
+            } else if (timeout != null && olderThan(startTime, timeout)) {
                 reject(Exception.timeout({interval: Date.now() - startTime}));
             } else {
                 setTimeout(resolveOnMet, interval);
@@ -148,6 +148,54 @@ export function waitFor(
         };
         resolveOnMet();
     });
+}
+
+/**
+ * Wrap a promise-returning function with trailing-edge debounce semantics. Calls made within
+ * `wait` ms of each other share a single pending Promise; when the quiet period elapses, the
+ * underlying function is invoked once with the args from the most recent call, and the shared
+ * Promise resolves (or rejects) with that result.
+ *
+ * Useful for search-as-you-type inputs and similar flows where only the latest call's result
+ * matters and intermediate calls can be coalesced.
+ *
+ * Adapted from the (unmaintained) `debounce-promise` package by Bjorn Tipling,
+ * https://github.com/bjoerge/debounce-promise - MIT licensed.
+ */
+export function debouncePromise<A extends any[], R>(
+    fn: (...args: A) => R | Promise<R>,
+    wait: number
+): (...args: A) => Promise<R> {
+    let timer: ReturnType<typeof setTimeout> = null,
+        pending: {resolve: (r: R) => void; reject: (e: unknown) => void; promise: Promise<R>} =
+            null,
+        lastArgs: A = null;
+
+    return function (this: any, ...args: A): Promise<R> {
+        lastArgs = args;
+        if (!pending) {
+            let resolve: (r: R) => void, reject: (e: unknown) => void;
+            const promise = new Promise<R>((res, rej) => {
+                resolve = res;
+                reject = rej;
+            });
+            pending = {resolve, reject, promise};
+        }
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(() => {
+            const {resolve, reject} = pending,
+                args = lastArgs;
+            timer = null;
+            pending = null;
+            lastArgs = null;
+            try {
+                Promise.resolve(fn.apply(this, args)).then(resolve, reject);
+            } catch (e) {
+                reject(e);
+            }
+        }, wait);
+        return pending.promise;
+    };
 }
 
 /**
@@ -305,16 +353,3 @@ const enhancePromise = promisePrototype => {
 
 // Enhance canonical Promises.
 enhancePromise(Promise.prototype);
-
-// MS Edge returns a "native Promise" from async functions that won't get the enhancements above.
-// Check to see if we're in such an environment and enhance that prototype as well.
-// @see https://github.com/xh/hoist-react/issues/1411
-const asyncFnReturn = (async () => {})();
-if (!(asyncFnReturn instanceof Promise)) {
-    console.debug(
-        '"Native" Promise return detected as return from async function - enhancing prototype'
-    );
-
-    // @ts-ignore
-    enhancePromise(asyncFnReturn.__proto__);
-}

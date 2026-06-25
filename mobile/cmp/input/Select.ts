@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
@@ -18,10 +18,9 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
@@ -324,9 +323,9 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Use of windowedMode, creatable and async variants will create levels of nesting we must
-        // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
+        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
@@ -663,6 +662,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 item: box({
                     item: factory(rsProps),
                     className,
+                    testId: props.testId,
                     ref
                 })
             }),
@@ -674,6 +674,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             className,
             ...layoutProps,
             width: withDefault(width, null),
+            testId: props.testId,
             ref
         });
     }

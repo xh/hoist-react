@@ -2,11 +2,10 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, Thunkable} from '@xh/hoist/core';
-import {Exception} from '@xh/hoist/core/exception/Exception';
-import {LogSource, logWarn} from '@xh/hoist/utils/js/LogUtils';
+import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {
     flatMap,
     forOwn,
@@ -15,6 +14,7 @@ import {
     isFunction,
     isObject,
     isPlainObject,
+    isString,
     isUndefined,
     mergeWith,
     mixin,
@@ -122,25 +122,7 @@ export function isJSON(obj: any): boolean {
  */
 export function throwIf(condition: any, message: unknown) {
     if (condition) {
-        throw Exception.create(message);
-    }
-}
-
-/**
- * Log a warning to the console if a condition evaluates as truthy.
- */
-export function warnIf(condition: any, message: any) {
-    if (condition) {
-        console.warn(message);
-    }
-}
-
-/**
- * Log an error to the console if a condition evaluates as truthy.
- */
-export function errorIf(condition: any, message: any) {
-    if (condition) {
-        console.error(message);
+        throw Exception.create(message); // low-level exception api for low-level package
     }
 }
 
@@ -155,52 +137,6 @@ export function errorIf(condition: any, message: any) {
  */
 export function createSingleton<T>(clazz: new () => T): T {
     return (clazz['instance'] = new clazz());
-}
-
-export interface APIWarnOptions {
-    /**
-     * If provided and undefined, this method will be a no-op.
-     * Useful for testing if a parameter has been provided in caller.
-     */
-    test?: any;
-
-    /** Version when this API will no longer be supported or this warning should be removed. */
-    v?: string;
-
-    /** An additional message. Can contain suggestions for alternatives. */
-    msg?: string;
-
-    /** Source of message for labelling log message.  */
-    source?: LogSource;
-}
-
-/**
- * Document and prevent usage of a removed parameter.
- */
-export function apiRemoved(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const src = opts.source ? `[${opts.source}] ` : '',
-        msg = opts.msg ? ` ${opts.msg}.` : '';
-    throw Exception.create(`${src}The use of '${name}' is no longer supported.${msg}`);
-}
-
-/**
- * Document and warn on usage of a deprecated API
- *
- * @param name - the name of the deprecated parameter
- */
-const _seenWarnings = {};
-export function apiDeprecated(name: string, opts: APIWarnOptions = {}) {
-    if ('test' in opts && isUndefined(opts.test)) return;
-
-    const v = opts.v ?? 'a future release',
-        msg = opts.msg ?? '',
-        warn = `The use of '${name}' has been deprecated and will be removed in ${v}. ${msg}`;
-    if (!_seenWarnings[warn]) {
-        logWarn(warn, opts.source);
-        _seenWarnings[warn] = true;
-    }
 }
 
 /**
@@ -343,4 +279,19 @@ export function mergeDeep(target: PlainObject, ...sources: PlainObject[]): Plain
     return mergeWith(target, ...sources, (tgtVal, srcVal) =>
         isArray(srcVal) ? srcVal : undefined
     );
+}
+
+/**
+ * A string, or an object from which a name can be derived - via `displayName` (e.g. React
+ * components) or `constructor.name` (e.g. class instances). Used for logging and tracing.
+ */
+export type NameSource = string | {displayName: string} | {constructor: {name: string}};
+
+/** Resolve a {@link NameSource} to a string, or null if unresolvable. */
+export function parseNameSource(source: NameSource): string {
+    if (!source) return null;
+    if (isString(source)) return source;
+    if (source['displayName']) return source['displayName'];
+    if (source.constructor) return source.constructor.name;
+    return null;
 }
