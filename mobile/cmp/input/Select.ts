@@ -404,7 +404,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // (Exception for a null value, which is never synthesized - accepted only if provided via
+    // options or resolved by lookupFn.)
     override toInternal(external) {
         return this.findOption(external, !isNil(external));
     }
@@ -520,15 +521,22 @@ class SelectInputModel extends HoistInputModel {
         const {lookupFn} = this.componentProps;
         if (!lookupFn) return;
 
+        // Resolve the selected value if not already matched by options or the lookup cache -
+        // including null, which apps may legitimately wish to assign a label.
         const ext = this.externalValue;
-        if (isNil(ext)) return;
-
         if (this.findOption(ext, false)) return;
 
         try {
             const raw = await lookupFn(ext);
-            const resolved = !isNil(raw) ? this.toOption(raw, 0) : this.valueToOption(ext);
-            this.setLookupCache([...this._lookupCache, resolved]);
+            let resolved: SelectOption;
+            if (!isNil(raw)) {
+                resolved = this.toOption(raw, 0);
+            } else if (!isNil(ext)) {
+                // Unresolved - preserve a non-null value via its raw label, but leave a null
+                // value unlabeled so it renders as the empty/placeholder state.
+                resolved = this.valueToOption(ext);
+            }
+            if (resolved) this.setLookupCache([...this._lookupCache, resolved]);
         } catch (e) {
             this.logError(e);
         }
@@ -543,9 +551,7 @@ class SelectInputModel extends HoistInputModel {
     private cleanLookupCache() {
         if (this._lookupCache.length === 0) return;
         const ext = this.externalValue;
-        this._lookupCache = isNil(ext)
-            ? []
-            : this._lookupCache.filter(opt => isEqual(opt.value, ext));
+        this._lookupCache = this._lookupCache.filter(opt => isEqual(opt.value, ext));
     }
 
     //----------------------
