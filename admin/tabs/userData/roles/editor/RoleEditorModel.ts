@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -12,6 +12,8 @@ import {HoistRole} from '../Types';
 import {RoleFormModel} from './form/RoleFormModel';
 
 export class RoleEditorModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.roles';
+
     readonly roleModel: RoleModel;
     readonly savingTask = TaskObserver.trackLast({message: 'Saving Role'});
     readonly deletingTask = TaskObserver.trackLast({message: 'Deleting Role'});
@@ -48,20 +50,21 @@ export class RoleEditorModel extends HoistModel {
         const isValid = this.roleFormModel.validateAsync();
         if (!isValid) return;
 
-        try {
-            const method = this.role ? 'update' : 'create',
-                {data} = await XH.fetchService
-                    .postJson({
+        const method = this.role ? 'update' : 'create';
+        return this.runner()
+            .span(method)
+            .run(async ctx => {
+                const {data} = await XH.postJson(
+                    {
                         body: this.roleFormModel.getData(),
                         url: `roleAdmin/${method}`
-                    })
-                    .linkTo(this.savingTask);
-
-            this.resolve(data);
-            this.close();
-        } catch (e) {
-            XH.handleException(e);
-        }
+                    },
+                    ctx
+                ).linkTo(this.savingTask);
+                this.resolve(data);
+                this.close();
+            })
+            .catchDefault();
     }
 
     async deleteAsync(): Promise<void> {

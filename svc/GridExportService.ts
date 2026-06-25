@@ -2,15 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {HoistService, TrackOptions, XH} from '@xh/hoist/core';
+import {CallContext, HoistService, TrackOptions, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {withDefault} from '@xh/hoist/utils/js';
-import download from 'downloadjs';
+import {downloadBlob, withDefault} from '@xh/hoist/utils/js';
 import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
@@ -38,6 +37,8 @@ import {StoreRecord} from '@xh/hoist/data';
  * See the Column API for options to control exported values and formats.
  */
 export class GridExportService extends HoistService {
+    override telemetryPrefix = 'xh.client';
+
     override xhImpl = true;
 
     static instance: GridExportService;
@@ -45,7 +46,13 @@ export class GridExportService extends HoistService {
     /**
      * Export the data within a GridModel to a file. Typically called via `GridModel.exportAsync()`.
      */
-    async exportAsync(
+    async exportAsync(gridModel: GridModel, opts: ExportOptions = {}) {
+        return this.runner()
+            .span('gridExport')
+            .run(ctx => this.doExportAsync(gridModel, opts, ctx));
+    }
+
+    private async doExportAsync(
         gridModel: GridModel,
         {
             filename = 'export',
@@ -53,7 +60,8 @@ export class GridExportService extends HoistService {
             columns = 'VISIBLE',
             track = false,
             timeout = 30 * SECONDS
-        }: ExportOptions = {}
+        }: ExportOptions,
+        ctx: CallContext
     ) {
         if (isFunction(filename)) filename = filename(gridModel);
 
@@ -116,23 +124,25 @@ export class GridExportService extends HoistService {
         formData.append('params', JSON.stringify(params));
 
         try {
-            const response = await XH.fetch({
-                url: 'xh/export',
-                method: 'POST',
-                body: formData,
-                // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
-                // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
-                headers: {
-                    'Content-Type': null
+            const response = await XH.fetch(
+                {
+                    url: 'xh/export',
+                    method: 'POST',
+                    body: formData,
+                    // Note: We must explicitly unset Content-Type headers to allow the browser to set its own multipart/form-data boundary.
+                    // See https://stanko.github.io/uploading-files-using-fetch-multipart-form-data/ for further explanation.
+                    headers: {
+                        'Content-Type': null
+                    },
+                    timeout
                 },
-                timeout
-            });
+                ctx
+            );
 
             const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
-                fileExt = this.getFileExtension(type),
-                contentType = this.getContentType(type);
+                fileExt = this.getFileExtension(type);
 
-            download(blob, `${filename}${fileExt}`, contentType);
+            if (blob) downloadBlob(blob, `${filename}${fileExt}`);
             await dismissStartToast();
             XH.successToast('Export complete.');
 
@@ -382,16 +392,6 @@ export class GridExportService extends HoistService {
                 return this.getExportableValueForCell({gridModel, record, column, node, forExcel});
             });
         return {data, depth};
-    }
-
-    private getContentType(type) {
-        switch (type) {
-            case 'excelTable':
-            case 'excel':
-                return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-            case 'csv':
-                return 'text/csv';
-        }
     }
 
     private getFileExtension(type) {

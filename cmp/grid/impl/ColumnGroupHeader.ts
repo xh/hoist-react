@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ColumnGroup, GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -13,11 +13,10 @@ import classNames from 'classnames';
 import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
 
-import type {AgColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
+import type {AgProvidedColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
 
 export interface ColumnGroupHeaderProps
-    extends HoistProps<ColumnGroupHeaderModel>,
-        IHeaderGroupParams {
+    extends HoistProps<ColumnGroupHeaderModel>, IHeaderGroupParams {
     gridModel: GridModel;
     xhColumnGroup: ColumnGroup;
 }
@@ -80,7 +79,7 @@ class ColumnGroupHeaderModel extends HoistModel {
         return this.agColumnGroup.isExpandable();
     }
 
-    get agColumnGroup(): AgColumnGroup {
+    get agColumnGroup(): AgProvidedColumnGroup {
         return this.componentProps.columnGroup.providedColumnGroup;
     }
 
@@ -99,5 +98,7 @@ class ColumnGroupHeaderModel extends HoistModel {
         super.destroy();
     }
 
-    syncIsExpanded = () => (this.isExpanded = this.agColumnGroup.isExpanded());
+    syncIsExpanded = () => {
+        this.isExpanded = this.agColumnGroup.isExpanded();
+    };
 }

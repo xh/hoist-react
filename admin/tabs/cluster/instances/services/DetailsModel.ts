@@ -2,13 +2,15 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 
 export class DetailsModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.services';
+
     @lookup(ServiceModel)
     parent: ServiceModel;
 
@@ -45,13 +47,19 @@ export class DetailsModel extends HoistModel {
 
         if (!selected) return;
 
-        const resp = await XH.fetchJson({
-            url: 'serviceManagerAdmin/getStats',
-            params: {instance: parent.instanceName, name: selected.name},
-            autoAbortKey: 'serviceDetails',
-            loadSpec
-        });
-        if (loadSpec.isStale) return;
-        this.stats = resp;
+        await this.runner({loadSpec})
+            .span('getStats')
+            .run(async ctx => {
+                const resp = await XH.fetchJson(
+                    {
+                        url: 'serviceManagerAdmin/getStats',
+                        params: {instance: parent.instanceName, name: selected.name},
+                        autoAbortKey: 'serviceDetails'
+                    },
+                    ctx
+                );
+                if (loadSpec.isStale) return;
+                this.stats = resp;
+            });
     }
 }

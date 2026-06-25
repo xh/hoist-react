@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
 import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
@@ -12,6 +12,8 @@ import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';
 
 export class RecategorizeDialogModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.admin.roles';
+
     private parent: RoleModel;
     selectedRecords: StoreRecord[];
 
@@ -50,26 +52,31 @@ export class RecategorizeDialogModel extends HoistModel {
 
     async saveAsync() {
         if (this.parent.readonly) return;
-        const roleSpec = filter(
-            this.selectedRecords.map(it => it.data),
-            it => !it.isGroupRow
-        );
-        const roles: string[] = map(roleSpec, it => it.name);
-        try {
-            await XH.fetchService
-                .postJson({
-                    url: 'roleAdmin/bulkCategoryUpdate',
-                    body: {
-                        roles,
-                        category: this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
-                    }
-                })
-                .linkTo(this.savingTask);
-            this.close();
-            await this.parent.refreshAsync();
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.runner()
+            .span('bulkCategoryUpdate')
+            .run(async ctx => {
+                const roleSpec = filter(
+                        this.selectedRecords.map(it => it.data),
+                        it => !it.isGroupRow
+                    ),
+                    roles: string[] = map(roleSpec, it => it.name);
+                await XH.postJson(
+                    {
+                        url: 'roleAdmin/bulkCategoryUpdate',
+                        body: {
+                            roles,
+                            category:
+                                this.categoryName === '_CLEAR_ROLES_' ? null : this.categoryName
+                        }
+                    },
+                    ctx
+                ).linkTo(this.savingTask);
+            })
+            .then(() => {
+                this.close();
+                return this.parent.refreshAsync();
+            })
+            .catchDefault();
     }
 
     //-----------------

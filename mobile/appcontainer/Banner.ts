@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {XH, uses, hoistCmp} from '@xh/hoist/core';
@@ -61,6 +61,7 @@ const actionButton = hoistCmp.factory<BannerModel>(({model}) => {
     return button({
         className: 'xh-banner__action-button',
         outlined: true,
+        testId: `xh-banner-${model.category}-action-btn`,
         ...actionButtonProps
     });
 });
@@ -73,6 +74,7 @@ const dismissButton = hoistCmp.factory<BannerModel>(({model}) => {
         icon: Icon.close(),
         minimal: true,
         className: 'xh-banner__dismiss-button',
+        testId: `xh-banner-${category}-dismiss-btn`,
         onClick: () => {
             XH.hideBanner(category);
             if (isFunction(onClose)) onClose(model);

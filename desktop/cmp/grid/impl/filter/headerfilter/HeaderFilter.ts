@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {filler} from '@xh/hoist/cmp/layout';
@@ -31,7 +31,7 @@ export const headerFilter = hoistCmp.factory({
             onClick: stopPropagation,
             onDoubleClick: stopPropagation,
             headerItems: [switcher()],
-            item: tabContainer(),
+            item: tabContainer({switcher: false}),
             bbar: bbar(),
             hotkeys: [
                 {
@@ -54,7 +54,6 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
         const {commitOnChange, hasFilter, isDirty} = model;
         return toolbar({
-            compact: true,
             items: [
                 button({
                     icon: Icon.delete(),
@@ -102,6 +101,6 @@ const switcherButton = hoistCmp.factory<HeaderFilterModel>(({model, id, title}) 
         text: title,
         active: activeTabId === id,
         outlined: true,
-        onClick: () => tabContainerModel.activateTab(id)
+        onClick: () => tabContainerModel.setActiveTabId(id)
     });
 });

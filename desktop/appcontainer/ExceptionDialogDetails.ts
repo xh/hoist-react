@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
@@ -34,7 +34,8 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
         tbody(
             row('Name', exception.name),
             row('Message', truncate(exception.msg || exception.message || 'N/A', {length: 300})),
-            row('App Version', XH.appVersion)
+            row('App Version', XH.appVersion),
+            exception.traceId ? row('Trace ID', exception.traceId) : null
         )
     );
 
@@ -61,6 +62,7 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
                         placeholder: 'Add message here...',
                         width: '100%',
                         height: 120,
+                        testId: 'xh-exception-details-message',
                         omit: !clientUserKnown
                     })
                 ]
@@ -70,13 +72,15 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
                 button({
                     icon: Icon.envelope(),
                     text: 'Send',
+                    testId: 'xh-exception-details-send-btn',
                     disabled: !model.userMessage,
                     onClick: () => model.sendReportAsync(),
                     omit: !clientUserKnown
                 }),
                 clipboardButton({
                     getCopyText: () => errorStr,
-                    successMessage: 'Error details copied to clipboard.'
+                    successMessage: 'Error details copied to clipboard.',
+                    testId: 'xh-exception-details-copy-btn'
                 }),
                 dismissButton()
             ])

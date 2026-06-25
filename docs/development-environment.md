@@ -1,7 +1,7 @@
-# 💻 Hoist Development Environment Setup
+# Development Environment Setup
 
 The information below applies to Hoist development generally and covers the setup of a local
-development environment for both a [Hoist Core](https://github.com/xh/toolbox) server and a Hoist
+development environment for both a [Hoist Core](https://github.com/xh/hoist-core) server and a Hoist
 React client application.
 
 [Toolbox](https://github.com/xh/toolbox) is our reference app for Hoist development and can be a
@@ -9,12 +9,12 @@ useful project to check out and run locally to explore Hoist development. Please
 to [that project's README](https://github.com/xh/toolbox/blob/develop/README.md) for additional,
 Toolbox-specific setup info.
 
-## tldr;
+## Prerequisites
 
 Development of Hoist applications requires:
 
 * Git
-* JDK 17
+* A Java JDK (version set by your application - see [Server-side prerequisites](#server-side-prerequisites) below)
 * Node (LTS or other recent) + `npm` (bundled with Node) or `yarn` (installable via `npm`)
 
 ## Git
@@ -29,12 +29,23 @@ Hoist Core is the server-side plugin powering Hoist React applications.
 See [that project's README](https://github.com/xh/hoist-core/blob/develop/README.md) for more
 detailed information about the configuration and use of Hoist's Grails server.
 
-### Java 17 JDK
+### Java JDK
 
-The one common pre-requisite for running the server-side of a Hoist project is a Java 17 JDK. Any
-common OpenJDK distribution should work. XH typically uses the JetBrains distro, which has
-improved support for hot reloading, helpful for Hoist projects with a significant amount of server-
-side development.
+Running the server-side of a Hoist project requires a Java JDK. Hoist Core supports a range of recent
+JDKs (e.g. 17, 21, 25), so the target version is set by the **application**, not by Hoist Core or
+Hoist React. By convention each Hoist app pins its version in a `majorJavaVersion` property in
+`gradle.properties`, which the Gradle Java toolchain in `build.gradle` consumes.
+
+Check your project's `gradle.properties` for the version it targets and install a matching JDK. (Note
+the daemon running Gradle itself may use a different, newer JDK than this compile/runtime target.) Any
+common OpenJDK distribution should work; XH's GitHub Actions build runners use
+[Eclipse Temurin](https://adoptium.net/).
+
+The JDK version surfaces in the production runtime too: Hoist apps deploy on XH's `xhio/xh-tomcat`
+base image, whose tag pins both the Tomcat and JDK versions - e.g. the `jdk21` in
+`xhio/xh-tomcat:latest-tc10-jdk21` - in your project's `docker/tomcat/Dockerfile`. These should all
+agree: your locally installed JDK, the `majorJavaVersion` in `gradle.properties`, and the JDK baked
+into the Tomcat container image should target the same major version.
 
 If using IntelliJ (see below), consider having the IDE download and update a JDK for you:
 
@@ -42,12 +53,12 @@ If using IntelliJ (see below), consider having the IDE download and update a JDK
   existing project open, you can also select "File > Project Structure" to modify that project.
 - Select the "SDKs" option in the navigation tree.
 - Click the + button and select "Download JDK..."
-- Select version 17 and a distro of your choice (JetBrains Runtime is a good default).
+- Select the version matching your project's `majorJavaVersion` and a distro of your choice.
 
 ### Server-side instance configuration
 
 Before starting the server-side of a project for the first time, ensure you have copied the
-project's `template.env` to `.env` and filled in any missing instance configuration values required
+project's `.env.template` to `.env` and filled in any missing instance configuration values required
 to provide environment-specific database connection and service account details.
 
 Note that some older projects might use a YAML config file in place of `.env` - if you don't see a
@@ -76,7 +87,7 @@ thing is to decide on one or the other for your project and ensure all developer
 When using `yarn`, we typically include an updated, portable version of yarn bundled within each
 project, but a local yarn install is still required to detect and run the portable copy:
 
-- The easiest way to install yarn is with npm (🤯): `npm i -g yarn`
+- The easiest way to install yarn is with npm: `npm i -g yarn`
 - Once installed, verify it can be run globally with `yarn --version`
 - Within the `client-app` directory of a Hoist app such as Toolbox, run `yarn` to download, install,
   and build all client-side dependencies. (Note that `yarn` is a shortcut for `yarn install` - they
@@ -100,7 +111,7 @@ IDE at the `build.gradle` file within your project's root directory. This should
 detect the Gradle project as a Grails web application, download and index the server-side
 dependencies, and setup a ready-to-go "run configuration" to start the project.
 
-👉 For Toolbox / Hoist development, XH uses a "wrapper" project setup to allow for development of
+For Toolbox / Hoist development, XH uses a "wrapper" project setup to allow for development of
 both the Hoist libraries and the Toolbox app from a single IntelliJ project. For client projects
 where we are _not_ doing Hoist development, the configuration can be simpler and this wrapper
 structure is _not_ required. See the Toolbox README for more information.
@@ -133,8 +144,3 @@ From within the IDE's general preferences / settings dialog:
   "Update method: Rebase" to avoid unnecessary merge commits when updating your local repo.
     - The GitToolBox plugin is a useful add-on to IntelliJ, with several useful enhancements to
       version control support.
-
-------------------------------------------
-
-📫☎️🌎 info@xh.io | https://xh.io/contact
-Copyright © 2025 Extremely Heavy Industries Inc. - all rights reserved

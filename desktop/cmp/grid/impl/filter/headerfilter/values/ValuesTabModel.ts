@@ -2,31 +2,47 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
+import {
+    GridFilterModel,
+    GridFilterRenderer,
+    GridFilterSortValueFn,
+    GridModel
+} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {FieldFilterSpec} from '@xh/hoist/data';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
+import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {castArray, difference, flatten, isEmpty, map, partition, uniq, without} from 'lodash';
+import {
+    castArray,
+    difference,
+    flatten,
+    isEmpty,
+    isFunction,
+    map,
+    partition,
+    uniq,
+    without
+} from 'lodash';
+import {HeaderFilterModel} from '../HeaderFilterModel';
 
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
 
     headerFilterModel: HeaderFilterModel;
 
-    /** Checkbox grid to display enumerated set of values */
-    @managed @observable.ref gridModel: GridModel;
+    /** Checkbox grid to display enumerated set of values. */
+    @managed gridModel: GridModel;
 
-    /** List of currently checked values in the list*/
+    /** List of currently checked values. */
     @observable.ref pendingValues: any[] = [];
 
-    /** Bound search term for `StoreFilterField` */
+    /** Bound search term for `StoreFilterField`. */
     @bindable filterText: string = null;
 
-    /*
+    /**
      * Merge current filter with pendingValues on commit.
      * Used when commitOnChange is false.
      */
@@ -72,12 +88,25 @@ export class ValuesTabModel extends HoistModel {
         return this.fieldSpec.values;
     }
 
-    get valueCount() {
-        return this.fieldSpec.valueCount;
+    get allValuesCount() {
+        return this.fieldSpec.allValuesCount;
     }
 
     get hasHiddenValues() {
-        return this.values.length < this.valueCount;
+        return this.values.length < this.allValuesCount;
+    }
+
+    get sortIcon() {
+        const {sort, abs} = this.gridModel.sortBy[0];
+        if (sort === 'asc') {
+            if (abs) return Icon.sortAbsAsc();
+            return Icon.sortAsc();
+        }
+        if (sort === 'desc') {
+            if (abs) return Icon.sortAbsDesc();
+            return Icon.sortDesc();
+        }
+        return null;
     }
 
     constructor(headerFilterModel: HeaderFilterModel) {
@@ -86,6 +115,7 @@ export class ValuesTabModel extends HoistModel {
 
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
+        this.initGridSortBy();
 
         this.addReaction(
             {
@@ -123,6 +153,13 @@ export class ValuesTabModel extends HoistModel {
         this.pendingValues = isChecked
             ? uniq([...this.pendingValues, ...values])
             : without(this.pendingValues, ...values);
+    }
+
+    @action
+    toggleSort() {
+        const {colId, sort, abs} = this.gridModel.sortBy.find(it => it.colId === 'value'),
+            newSort = sort === 'asc' ? 'desc' : 'asc';
+        this.gridModel.setSortBy({colId, sort: newSort, abs});
     }
 
     toggleAllRecsChecked() {
@@ -171,24 +208,24 @@ export class ValuesTabModel extends HoistModel {
         );
     }
 
-    private getFilter() {
-        const {gridFilterModel, pendingValues, values, valueCount, field} = this,
+    private getFilter(): FieldFilterSpec {
+        const {gridFilterModel, pendingValues, values, allValuesCount, field} = this,
             included = pendingValues.map(it => gridFilterModel.fromDisplayValue(it)),
             excluded = difference(values, pendingValues).map(it =>
                 gridFilterModel.fromDisplayValue(it)
             );
 
-        if (included.length === valueCount || excluded.length === valueCount) {
+        if (included.length === allValuesCount || excluded.length === allValuesCount) {
             return null;
         }
 
         const {fieldType} = this.headerFilterModel;
-        let arr, op;
+        let arr: any[], op: FieldFilterOperator;
         if (fieldType === 'tags') {
             arr = included;
             op = 'includes';
         } else {
-            const weight = valueCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
+            const weight = allValuesCount <= 10 ? 2.5 : 1; // Prefer '=' for short lists
             op = included.length > excluded.length * weight ? '!=' : '=';
             arr = op === '=' ? included : excluded;
         }
@@ -219,11 +256,12 @@ export class ValuesTabModel extends HoistModel {
             filterValues = [];
 
         arr.forEach(filter => {
-            const newValues = castArray(filter.value).map(value => {
-                value = fieldSpec.sourceField.parseVal(value);
-                return gridFilterModel.toDisplayValue(value);
-            });
-            filterValues.push(...newValues); // Todo: Is this safe?
+            // `flatMap` unwraps the array `parseVal` returns for `tags`-typed fields, so
+            // `pendingValues` lines up with the scalar values shown in the values list.
+            const newValues = castArray(filter.value)
+                .flatMap(value => fieldSpec.sourceField.parseVal(value))
+                .map(v => gridFilterModel.toDisplayValue(v));
+            filterValues.push(...newValues);
         });
 
         if (!filterValues.length) return;
@@ -244,13 +282,32 @@ export class ValuesTabModel extends HoistModel {
         this.gridModel.loadData(data);
     }
 
+    private initGridSortBy() {
+        const {gridModel: srcGridModel, column} = this.headerFilterModel,
+            srcColGridSorter = srcGridModel.sortBy.find(it => it.colId === column.colId);
+
+        this.gridModel.setSortBy({
+            colId: 'value',
+            sort: srcColGridSorter?.sort ?? 'asc',
+            abs: srcColGridSorter?.abs ?? false
+        });
+    }
+
     private createGridModel() {
         const {BLANK_PLACEHOLDER} = GridFilterModel,
             {headerFilterModel, fieldSpec} = this,
-            {fieldType} = headerFilterModel,
-            renderer =
+            {fieldType, column} = headerFilterModel;
+
+        // Default to the column's renderer/sortValue, but only where they apply to a bare value -
+        // we call them with the value alone (see below), so treat them as pure value transforms.
+        const renderer =
                 fieldSpec.renderer ??
-                (fieldType !== 'tags' ? this.headerFilterModel.parent.column.renderer : null);
+                (fieldType !== 'tags' ? (column.renderer as GridFilterRenderer) : null),
+            sortValue =
+                fieldSpec.sortValue ??
+                (fieldType !== 'tags' && isFunction(column.sortValue)
+                    ? (column.sortValue as GridFilterSortValueFn)
+                    : null);
 
         return new GridModel({
             store: {
@@ -301,15 +358,30 @@ export class ValuesTabModel extends HoistModel {
                 {
                     field: 'value',
                     align: 'left',
+                    tooltip: true,
                     comparator: (v1, v2, sortDir, abs, {defaultComparator}) => {
                         const mul = sortDir === 'desc' ? -1 : 1;
                         if (v1 === BLANK_PLACEHOLDER) return 1 * mul;
                         if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
-                    renderer: (value, context) => {
-                        if (value === BLANK_PLACEHOLDER) return value;
-                        return renderer ? renderer(value, context) : value;
+                    // Apply renderer/sortValue as pure value transforms - pass no context, skip the
+                    // blank placeholder, and fall back to the raw value if either throws.
+                    sortValue: v => {
+                        if (v === BLANK_PLACEHOLDER || !sortValue) return v;
+                        try {
+                            return sortValue(v);
+                        } catch {
+                            return v;
+                        }
+                    },
+                    renderer: v => {
+                        if (v === BLANK_PLACEHOLDER || !renderer) return v;
+                        try {
+                            return renderer(v);
+                        } catch {
+                            return v;
+                        }
                     }
                 }
             ],

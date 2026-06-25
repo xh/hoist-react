@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PersistableState, PersistenceProvider} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
+import {runInAction} from 'mobx';
 import {GridModel} from '../GridModel';
 import {ColumnState, GridModelPersistOptions} from '../Types';
 
@@ -25,32 +26,37 @@ export function initPersist(
     }: GridModelPersistOptions
 ) {
     if (persistColumns) {
-        const persistWith = isObject(persistColumns)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistColumns)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.columns`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.columns`},
+                rootPersistWith,
+                isObject(persistColumns) ? persistColumns : null
+            ),
             target: {
                 getPersistableState: () =>
                     new PersistableColumnState(gridModel.persistableColumnState),
-                setPersistableState: ({value}) => gridModel.setColumnState(value)
+                setPersistableState: ({value}) =>
+                    runInAction(() => {
+                        gridModel.setColumnState(value);
+                        if (gridModel.autosizeOptions.mode === 'managed') {
+                            const columns = gridModel.columnState
+                                .filter(it => !it.manuallySized)
+                                .map(it => it.colId);
+                            gridModel.autosizeAsync({columns});
+                        }
+                    })
             },
             owner: gridModel
         });
     }
 
     if (persistSort) {
-        const persistWith = isObject(persistSort)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistSort)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.sortBy`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.sortBy`},
+                rootPersistWith,
+                isObject(persistSort) ? persistSort : null
+            ),
             target: {
                 getPersistableState: () =>
                     new PersistableState(gridModel.sortBy.map(it => it.toString())),
@@ -61,14 +67,12 @@ export function initPersist(
     }
 
     if (persistGrouping) {
-        const persistWith = isObject(persistGrouping)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistGrouping)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.groupBy`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.groupBy`},
+                rootPersistWith,
+                isObject(persistGrouping) ? persistGrouping : null
+            ),
             target: {
                 getPersistableState: () => new PersistableState(gridModel.groupBy),
                 setPersistableState: ({value}) => gridModel.setGroupBy(value)
@@ -78,14 +82,12 @@ export function initPersist(
     }
 
     if (persistExpandToLevel) {
-        const persistWith = isObject(persistExpandToLevel)
-            ? PersistenceProvider.mergePersistOptions(rootPersistWith, persistExpandToLevel)
-            : rootPersistWith;
         PersistenceProvider.create({
-            persistOptions: {
-                path: `${path}.expandLevel`,
-                ...persistWith
-            },
+            persistOptions: persistOptions(
+                {path: `${path}.expandLevel`},
+                rootPersistWith,
+                isObject(persistExpandToLevel) ? persistExpandToLevel : null
+            ),
             target: {
                 getPersistableState: () => new PersistableState(gridModel.expandLevel),
                 setPersistableState: ({value}) => gridModel.expandToLevel(value)

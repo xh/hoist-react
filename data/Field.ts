@@ -2,13 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {XH} from '@xh/hoist/core';
+import {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
-import {Rule, RuleLike} from './validation/Rule';
+import {Rule} from './validation/Rule';
 import equal from 'fast-deep-equal';
 import {isDate, isString, toNumber, isFinite, startCase, isFunction, castArray} from 'lodash';
 import DOMPurify from 'dompurify';
@@ -29,25 +30,44 @@ export interface FieldSpec {
      */
     displayName?: string;
 
+    /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
+    description?: string;
+
     /** Value to be used for records with a null, or non-existent value. */
     defaultValue?: any;
+
+    /** True if this field is intended to be used for grouping.  Defaults to false. */
+    isDimension?: boolean;
 
     /** Rules to apply to this field. */
     rules?: RuleLike[];
 
     /**
-     * True to disable built-in XSS (cross-site scripting) protection, applied by default to all
-     * incoming String values using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
+     * True to enable built-in XSS (cross-site scripting) protection to all incoming String values
+     * using {@link https://github.com/cure53/DOMPurify | DOMPurify}.
      *
      * DOMPurify provides fast escaping of dangerous HTML, scripting, and other content that can be
      * used to execute XSS attacks, while allowing common and expected HTML and style tags.
      *
-     * Please contact XH if you find yourself needing to disable this protection!
+     * This feature does exact a minor performance penalty during data parsing, which can be
+     * significant in aggregate for very large stores containing records with many `string` fields.
+     *
+     * For extra safety, apps which are open to potentially-untrusted users or display other
+     * potentially dangerous string content can opt into this setting app-wide via
+     * {@link AppSpec.enableXssProtection}. Field-level setting will override any app-level default.
+     *
+     * Note: this flag and its default behavior was changed as of Hoist v77 to be `false`, i.e.
+     * Store-level XSS protection *disabled* by default, in keeping with Hoist's primary use-case:
+     * building secured internal apps with large datasets and tight performance tolerances.
      */
-    disableXssProtection?: boolean;
+    enableXssProtection?: boolean;
 }
 
-/** Metadata for an individual data field within a {@link StoreRecord}. */
+/**
+ * Metadata for an individual data field within a {@link StoreRecord}.
+ *
+ * @mcpHint metadata for a data field within a Store or Cube
+ */
 export class Field {
     get isField() {
         return true;
@@ -56,29 +76,35 @@ export class Field {
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
+    readonly description: string;
     readonly defaultValue: any;
+    readonly isDimension: boolean;
     readonly rules: Rule[];
-    readonly disableXssProtection: boolean;
+    readonly enableXssProtection: boolean;
 
     constructor({
         name,
         type = 'auto',
         displayName,
+        description,
         defaultValue = null,
+        isDimension = false,
         rules = [],
-        disableXssProtection = XH.appSpec.disableXssProtection
+        enableXssProtection = XH.appSpec.enableXssProtection
     }: FieldSpec) {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
+        this.description = description;
         this.defaultValue = defaultValue;
+        this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
-        this.disableXssProtection = disableXssProtection;
+        this.enableXssProtection = enableXssProtection;
     }
 
     parseVal(val: any): any {
-        const {type, defaultValue, disableXssProtection} = this;
-        return parseFieldValue(val, type, defaultValue, disableXssProtection);
+        const {type, defaultValue, enableXssProtection} = this;
+        return parseFieldValue(val, type, defaultValue, enableXssProtection);
     }
 
     isEqual(val1: any, val2: any): boolean {
@@ -102,35 +128,30 @@ export class Field {
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
  * @param defaultValue - typed value to return if `val` undefined or null.
- * @param disableXssProtection - true to disable XSS (cross-site scripting) protection.
- *      @see {@link FieldConfig} docs for additional details.
+ * @param enableXssProtection - true to enable XSS (cross-site scripting) protection.
+ *      See {@link FieldSpec.enableXssProtection} for additional details.
  * @returns resulting value, potentially parsed or cast as per type.
  */
 export function parseFieldValue(
     val: any,
     type: FieldType,
     defaultValue: any = null,
-    disableXssProtection = XH.appSpec.disableXssProtection
+    enableXssProtection: boolean = XH.appSpec.enableXssProtection
 ): any {
     if (val === undefined || val === null) val = defaultValue;
     if (val === null) return val;
-
-    const sanitizeValue = v => {
-        if (disableXssProtection || !isString(v)) return v;
-        return DOMPurify.sanitize(v);
-    };
 
     switch (type) {
         case 'tags':
             val = castArray(val);
             val = val.map(v => {
-                v = sanitizeValue(v);
+                v = !enableXssProtection || !isString(v) ? v : DOMPurify.sanitize(v);
                 return v.toString();
             });
             return val;
         case 'auto':
         case 'json':
-            return sanitizeValue(val);
+            return !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
         case 'int':
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
@@ -140,12 +161,14 @@ export function parseFieldValue(
             return !!val;
         case 'pwd':
         case 'string':
-            val = sanitizeValue(val);
+            val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
             return val.toString();
         case 'date':
-            return isDate(val) ? val : new Date(val);
+            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
         case 'localDate':
-            return isLocalDate(val) ? val : LocalDate.get(val);
+            if (isLocalDate(val)) return val;
+            // `get` parses strict 'YYYYMMDD'/'YYYY-MM-DD' strings; `from` coerces Date/number/moment.
+            return isString(val) ? LocalDate.get(val) : LocalDate.from(val);
     }
 
     throw XH.exception(`Unknown field type '${type}'`);
@@ -175,4 +198,9 @@ export type FieldType = (typeof FieldType)[keyof typeof FieldType];
 export function genDisplayName(fieldName: string): string {
     // Handle common cases of "id" -> "ID" and "foo_id" -> "Foo ID" (vs "Foo Id")
     return startCase(fieldName).replace(/(^| )Id\b/g, '$1ID');
+}
+
+/** Convenience function to return the name of a field from one of several common inputs. */
+export function getFieldName(field: string | Field | FieldSpec): string {
+    return field ? (isString(field) ? field : field.name) : null;
 }

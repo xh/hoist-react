@@ -2,9 +2,17 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 .xh-toolbar {
+  // Toolbars are the compact-button special case: keep buttons short and tight-cornered so they
+  // fit dense bars, overriding the taller / rounder defaults used for buttons in body content
+  // (see vars.scss). Derive the button height from the bar size so a single token
+  // (--xh-tbar-min-size) drives both - subtracting the bar's vertical padding so buttons fit a
+  // horizontal bar. The same height is reused for vertical bars to keep buttons consistent.
+  --xh-button-height: calc(var(--xh-tbar-min-size-px) - 2 * var(--xh-pad-half-px));
+  --xh-button-border-radius-px: var(--xh-border-radius-px);
+
   padding: var(--xh-pad-half-px) var(--xh-pad-px);
   color: var(--xh-tbar-text-color);
   background-color: var(--xh-tbar-bg);

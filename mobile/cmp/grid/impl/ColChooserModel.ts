@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, HSide, XH} from '@xh/hoist/core';
@@ -132,7 +132,7 @@ export class ColChooserModel extends HoistModel {
             return {colId, hidden, pinned};
         });
 
-        gridModel.applyColumnStateChanges(colChanges);
+        gridModel.updateColumnState(colChanges);
         if (autosizeOnCommit) gridModel.autosizeAsync({showMask: true});
     }
 

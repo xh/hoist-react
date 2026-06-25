@@ -2,14 +2,14 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-admin-activity-panel {
   .xh-toolbar .xh-form-field {
     margin: 0 0 0 var(--xh-tbar-item-pad-px);
 
-    .xh-form-field-label {
+    .xh-form-field__label {
       min-width: 0 !important;
       margin-right: 6px;
     }
@@ -60,18 +60,18 @@
       margin: 0;
       padding: 2px var(--xh-pad-px);
 
-      &.xh-form-field-readonly .xh-form-field-readonly-display {
+      &__label {
+        font-size: var(--xh-font-size-small-px);
+        padding: 0;
+      }
+
+      &__readonly-display {
         padding: var(--xh-pad-half-px);
       }
 
       &:nth-child(odd) {
         background-color: var(--xh-grid-bg-odd);
       }
-    }
-
-    .xh-form-field-label {
-      font-size: var(--xh-font-size-small-px);
-      padding: 0;
     }
   }
 

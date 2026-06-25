@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 /**
@@ -15,6 +15,9 @@
 .xh-data-view {
   .ag-theme-balham.xh-ag-grid,
   .ag-theme-balham-dark.xh-ag-grid {
+    // Bind ag-grid's base bg to the DataView bg - prevents balham-dark default bleeding through.
+    --ag-background-color: var(--xh-bg);
+
     // Standard app font family/sizing applied by default.
     font-family: var(--xh-font-family);
     font-size: var(--xh-font-size-px);

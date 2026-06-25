@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {
@@ -16,12 +16,22 @@ import {
     StoreRecord
 } from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
-import {find, isEqual} from 'lodash';
+import {find, isEqual, uniq} from 'lodash';
 import {Cube} from './Cube';
 import {CubeField} from './CubeField';
 
 /**
  * Queries determine what data is extracted, grouped, and aggregated from a {@link Cube}.
+ * Passed via the `query` property of {@link ViewConfig} when creating a View.
+ *
+ * Key options beyond `dimensions` and `filter`: `includeRoot` adds a grand-total row,
+ * `includeLeaves` exposes source records as tree children, and `provideLeaves` makes them
+ * accessible programmatically without rendering in the tree.
+ *
+ * See the Cube package README (`data/cube/README.md#querying-with-views`) for query patterns.
+ *
+ * @see Cube
+ * @see View
  */
 export interface QueryConfig {
     /**
@@ -39,8 +49,6 @@ export interface QueryConfig {
     /**
      * Fields or field names on which data should be grouped and aggregated. These are the ordered
      * grouping levels in the resulting hierarchy - e.g. ['Country', 'State', 'City'].
-     *
-     * Any fields provided here must also be included in the `fields` array, if specified.
      *
      * If not provided or empty, the resulting data will not be grouped. Specify 'includeRoot' or
      * 'includeLeaves' in that case, otherwise no data will be returned.
@@ -109,7 +117,7 @@ export interface QueryConfig {
      *
      * This can be used to break selected aggregations into sub-groups dynamically, without having
      * to define another dimension in the Cube and have it apply to all aggregations. See the
-     * {@link BucketSpec} interface for additional information.
+     * {@link BucketSpecFn} type and {@link BucketSpec} interface for additional information.
      *
      * Defaults to {@link Cube.bucketSpecFn}.
      */
@@ -122,11 +130,16 @@ export interface QueryConfig {
     omitFn?: OmitFn;
 }
 
-/** {@inheritDoc QueryConfig} */
+/**
+ * {@inheritDoc QueryConfig}
+ *
+ * @mcpHint query spec against a Cube, produced by executeQuery / createView
+ */
 export class Query {
     readonly fields: CubeField[];
     readonly dimensions: CubeField[];
     readonly filter: Filter;
+    readonly hasFilter: boolean;
     readonly includeRoot: boolean;
     readonly includeLeaves: boolean;
     readonly provideLeaves: boolean;
@@ -152,8 +165,8 @@ export class Query {
         omitFn = cube.omitFn
     }: QueryConfig) {
         this.cube = cube;
-        this.fields = this.parseFields(fields);
         this.dimensions = this.parseDimensions(dimensions);
+        this.fields = uniq([...this.parseFields(fields), ...(this.dimensions ?? [])]);
         this.includeRoot = includeRoot;
         this.includeLeaves = includeLeaves;
         this.provideLeaves = provideLeaves;
@@ -164,6 +177,7 @@ export class Query {
         this.omitFn = omitFn;
 
         this._testFn = this.filter?.getTestFn(this.cube.store) ?? null;
+        this.hasFilter = this._testFn != null;
     }
 
     clone(overrides: Partial<QueryConfig>) {
@@ -232,7 +246,7 @@ export class Query {
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
         if (raw[0] instanceof CubeField) return raw as CubeField[];
-        const {fields} = this;
+        const {fields} = this.cube;
         return raw.map(name => {
             const field = find(fields, {name});
             throwIf(

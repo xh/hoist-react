@@ -1,3 +1,17 @@
+.xh-exception-dialog {
+  .xh-dialog__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .xh-exception-dialog__trace-id {
+    width: 100%;
+    padding-top: var(--xh-pad-px);
+    font-size: var(--xh-font-size-small-px);
+    background-color: var(--xh-bg);
+    color: var(--xh-text-color-muted);
+  }
+}
+
 .xh-exception-dialog-details {
   .dialog {
     width: 90%;

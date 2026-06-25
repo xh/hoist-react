@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExceptionDialogModel} from '@xh/hoist/appcontainer/ExceptionDialogModel';
 import {filler, fragment, pre, table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
@@ -35,7 +35,8 @@ export const exceptionDialogDetails = hoistCmp.factory({
             tbody(
                 row('Name', exception.name),
                 row('Message', exception.msg || exception.message || 'N/A'),
-                row('App Version', XH.appVersion)
+                row('App Version', XH.appVersion),
+                exception.traceId ? row('Trace ID', exception.traceId) : null
             )
         );
 
@@ -50,6 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                 button({
                     icon: Icon.envelope(),
                     text: 'Send Message',
+                    testId: 'xh-exception-details-send-btn',
                     onClick: () => {
                         XH.prompt<string>({
                             title: 'Send Message',

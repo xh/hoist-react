@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
@@ -17,8 +17,8 @@ import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types'
  * Immutable.
  */
 export class CompoundFilter extends Filter {
-    get isCompoundFilter() {
-        return true;
+    static isCompoundFilter(obj: unknown): obj is CompoundFilter {
+        return obj instanceof CompoundFilter;
     }
 
     readonly filters: Filter[];
@@ -63,7 +63,7 @@ export class CompoundFilter extends Filter {
             other instanceof CompoundFilter &&
             other.op === this.op &&
             isEqualWith(other.filters, this.filters, (a, b) =>
-                a.isFilter && b.isFilter ? a.equals(b) : undefined
+                Filter.isFilter(a) && Filter.isFilter(b) ? a.equals(b) : undefined
             )
         );
     }
@@ -73,5 +73,32 @@ export class CompoundFilter extends Filter {
             filters: this.filters.map(f => f.toJSON()),
             op: this.op
         };
+    }
+
+    override removeFieldFilters(field: string = null): Filter {
+        return this.applyRemove(f => f.removeFieldFilters(field));
+    }
+
+    override removeFunctionFilters(key: string = null): Filter {
+        return this.applyRemove(f => f.removeFunctionFilters(key));
+    }
+
+    //-----------------
+    // Implementation
+    //-----------------
+    /**
+     * Apply a remove function to each child, compacting out nulls.
+     * Returns same instance if nothing changed, single child if one remains, or null if empty.
+     */
+    private applyRemove(removeFn: (f: Filter) => Filter | null): Filter {
+        const {filters, op} = this,
+            result = compact(filters.map(removeFn));
+
+        if (result.length === filters.length && result.every((f, i) => f === filters[i])) {
+            return this;
+        }
+        if (result.length === 0) return null;
+        if (result.length === 1) return result[0];
+        return new CompoundFilter({filters: result, op});
     }
 }

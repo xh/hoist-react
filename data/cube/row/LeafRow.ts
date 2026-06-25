@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 import {PlainObject} from '@xh/hoist/core';
@@ -33,8 +33,8 @@ export class LeafRow extends BaseRow {
 
     constructor(view: View, id: string, rawRecord: StoreRecord) {
         super(view, id);
-
         this.cubeRecordId = rawRecord.id;
+        this.data.cubeRowType = 'leaf';
         this.data.cubeLabel = rawRecord.id.toString();
         this.data.cubeDimension = null;
 

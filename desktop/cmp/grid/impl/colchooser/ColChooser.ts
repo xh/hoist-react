@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
@@ -32,14 +32,14 @@ export const colChooser = hoistCmp.factory<ColChooserProps>({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {commitOnChange, showRestoreDefaults, width, height} = model;
+        const {commitOnChange, showRestoreDefaults, width, height, filterMatchMode} = model;
 
         return panel({
             className,
             items: [
                 leftRightChooser({width, height}),
                 toolbar(
-                    leftRightChooserFilter(),
+                    leftRightChooserFilter({matchMode: filterMatchMode}),
                     filler(),
                     button({
                         omit: !showRestoreDefaults,

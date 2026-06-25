@@ -2,10 +2,11 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistBase, isHoistException, managed, XH} from '@xh/hoist/core';
+import {isHoistException} from '@xh/hoist/exception';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, makeObservable} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
@@ -19,6 +20,15 @@ import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
+/**
+ * Base configuration shared by all OAuth client implementations. Extended by
+ * {@link MsalClientConfig} and {@link AuthZeroClientConfig} with provider-specific options.
+ *
+ * See the security package README (`security/README.md`) for authentication architecture
+ * and setup guidance.
+ *
+ * @see BaseOAuthClient
+ */
 export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
@@ -113,7 +123,7 @@ export abstract class BaseOAuthClient<
     /** ID Scopes */
     protected idScopes: string[];
 
-    /** Specification for Access Tokens **/
+    /** Specification for Access Tokens */
     protected accessSpecs: Record<string, S>;
 
     @managed private timer: Timer;
@@ -179,8 +189,8 @@ export abstract class BaseOAuthClient<
      * Request a full logout from the underlying OAuth provider.
      */
     async logoutAsync(): Promise<void> {
-        await this.doLogoutAsync();
         this.setSelectedUsername(null);
+        await this.doLogoutAsync();
     }
 
     /**
@@ -270,7 +280,7 @@ export abstract class BaseOAuthClient<
     }
 
     protected popupBlockerErrorMessage: String =
-        'Login popup window blocked. Please check your browser for a blocked popup notification ' +
+        'Login popup window may have been blocked. Please check your browser for a blocked popup notification ' +
         '(typically within the URL bar). Allow all popups from this site, then refresh this page ' +
         'in your browser to try again.';
 
@@ -378,7 +388,10 @@ export abstract class BaseOAuthClient<
     }
 
     protected setLocalStorage(key: string, value: any) {
-        if (value == null) window.localStorage.removeItem(value);
+        if (value == null) {
+            window.localStorage.removeItem(key);
+            return;
+        }
         if (isObject(value)) value = JSON.stringify(value);
         window.localStorage.setItem(key, value);
     }

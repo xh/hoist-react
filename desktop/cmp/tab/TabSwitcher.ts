@@ -2,19 +2,22 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
+import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
+import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
     menuItem,
     popover,
+    showContextMenu,
     tab as bpTab,
     tabs as bpTabs,
     tooltip as bpTooltip
@@ -22,6 +25,7 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
+    composeRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -67,7 +71,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
             'Unsupported value for orientation.'
         );
 
-        const {tabs, activeTabId} = model,
+        const {tabs, activeTabId, switcherConfig} = model,
             layoutProps = getLayoutProps(props),
             vertical = ['left', 'right'].includes(orientation),
             impl = useLocalModel(() => new TabSwitcherLocalModel(model, enableOverflow, vertical));
@@ -119,7 +123,18 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                             })
                         ]
                     })
-                })
+                }),
+                onContextMenu: e => {
+                    const domRect = e.currentTarget.getBoundingClientRect(),
+                        menuItems = (switcherConfig.extraMenuItems ?? []).map(it =>
+                            getContextMenuItem(it, {contextMenuEvent: e, tab})
+                        );
+                    if (isEmpty(menuItems)) return;
+                    showContextMenu(contextMenu({menuItems}), {
+                        left: orientation === 'left' ? domRect.right : domRect.left,
+                        top: orientation === 'top' ? domRect.bottom : domRect.top
+                    });
+                }
             });
         });
 
@@ -141,7 +156,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId as string)
+                        onChange: tabId => model.setActiveTabId(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
@@ -167,7 +182,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 icon,
                 text,
                 disabled,
-                onClick: () => model.activateTab(id),
+                onClick: () => model.setActiveTabId(id),
                 labelElement: button({
                     omit: !showRemoveAction,
                     icon: Icon.x(),
@@ -297,7 +312,7 @@ class TabSwitcherLocalModel extends HoistModel {
 
     get tabEls() {
         if (!this.el) return [];
-        return Array.from(this.el.querySelectorAll('.bp5-tab'));
+        return Array.from(this.el.querySelectorAll('.bp6-tab'));
     }
 
     getTabDimensions(tab) {

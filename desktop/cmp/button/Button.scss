@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 //-----------------------------------------------
@@ -11,8 +11,8 @@
 //-----------------------------------------------
 .xh-app,
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp5-dark {
-  .xh-button.bp5-button {
+.xh-app.xh-dark.bp6-dark {
+  .xh-button.bp6-button {
     border-radius: var(--xh-button-border-radius-px);
     font-family: var(--xh-button-font-family);
     font-size: var(--xh-button-font-size-px);
@@ -48,7 +48,7 @@
   // Button group (input)
   //------------------------
   .xh-button-group {
-    .xh-button.bp5-button {
+    .xh-button.bp6-button {
       &.xh-button--minimal,
       &.xh-button--outlined {
         // Ensures outlined buttons in button-groups appear seamlessly adjacent to each other in dark mode.
@@ -74,8 +74,8 @@
     }
 
     // Horizontal mode only styles
-    &:not(.bp5-vertical) {
-      .xh-button.bp5-button {
+    &:not(.bp6-vertical) {
+      .xh-button.bp6-button {
         // Standard and outlined have borders - remove standard radius in between adjacent buttons so
         // they seamlessly combine their inner borders.
         border-radius: 0;
@@ -98,8 +98,8 @@
     }
 
     // Vertical mode only styles
-    &.bp5-vertical {
-      .xh-button.bp5-button {
+    &.bp6-vertical {
+      .xh-button.bp6-button {
         // Standard and outlined have borders - remove standard radius in between adjacent buttons so
         // they seamlessly combine their inner borders.
         border-radius: 0;
@@ -127,7 +127,7 @@
 // Default/light theme colors
 //---------------------------
 .xh-app {
-  .xh-button.bp5-button {
+  .xh-button.bp6-button {
     // Shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--active {
@@ -320,8 +320,8 @@
 // Dark theme colors
 //---------------------------
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp5-dark {
-  .xh-button.bp5-button {
+.xh-app.xh-dark.bp6-dark {
+  .xh-button.bp6-button {
     // Dark - shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--intent-none {
@@ -507,7 +507,7 @@
   .xh-panel-header__items,
   .xh-panel-header--right,
   .xh-panel-header--left {
-    .xh-button.bp5-button.xh-button--minimal {
+    .xh-button.bp6-button.xh-button--minimal {
       &.xh-button--intent-none {
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active) {

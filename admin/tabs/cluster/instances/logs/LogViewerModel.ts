@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -13,14 +13,15 @@ import {RecordActionSpec} from '@xh/hoist/data';
 import {compactDateRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, makeObservable, observable} from '@xh/hoist/mobx';
-import {pluralize} from '@xh/hoist/utils/js';
-import download from 'downloadjs';
+import {downloadBlob, pluralize} from '@xh/hoist/utils/js';
 import {LogDisplayModel} from './LogDisplayModel';
 
 /**
  * @internal
  */
 export class LogViewerModel extends BaseInstanceModel {
+    override telemetryPrefix = 'xh.client.admin.log';
+
     @observable file: string = null;
 
     @managed
@@ -86,88 +87,98 @@ export class LogViewerModel extends BaseInstanceModel {
         const store = filesGridModel.store,
             selModel = filesGridModel.selModel;
 
-        try {
-            const data = await XH.fetchJson({
-                url: 'logViewerAdmin/listFiles',
-                params: {instance: instanceName},
-                loadSpec
-            });
-
-            const files = instanceOnly
-                ? data.files.filter(f => f.filename.includes(instanceName))
-                : data.files;
-
-            this.logDisplayModel.logRootPath = data.logRootPath;
-
-            store.loadData(files);
-            if (selModel.isEmpty) {
-                const latestAppLog = store.records.find(
-                    rec => rec.data.filename === `${XH.appCode}-${instanceName}-app.log`
+        return this.runner({loadSpec})
+            .span('listFiles')
+            .run(async ctx => {
+                const data = await XH.fetchJson(
+                    {
+                        url: 'logViewerAdmin/listFiles',
+                        params: {instance: instanceName}
+                    },
+                    ctx
                 );
-                if (latestAppLog) {
-                    selModel.select(latestAppLog);
+
+                const files = instanceOnly
+                    ? data.files.filter(f => f.filename.includes(instanceName))
+                    : data.files;
+
+                this.logDisplayModel.logRootPath = data.logRootPath;
+
+                store.loadData(files);
+                if (selModel.isEmpty) {
+                    const latestAppLog = store.records.find(
+                        rec => rec.data.filename === `${XH.appCode}-${instanceName}-app.log`
+                    );
+                    if (latestAppLog) {
+                        selModel.select(latestAppLog);
+                    }
                 }
-            }
-        } catch (e) {
-            this.handleLoadException(e, loadSpec);
-        }
+            })
+            .catch(e => this.handleLoadException(e, loadSpec));
     }
 
     async deleteSelectedAsync() {
-        try {
-            const recs = this.filesGridModel.selectedRecords,
-                count = recs.length;
-            if (!count) return;
+        const recs = this.filesGridModel.selectedRecords,
+            count = recs.length;
+        if (!count) return;
 
-            const confirmed = await XH.confirm({
-                message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
-                confirmProps: {
-                    text: `Yes, delete the ${pluralize('file', count)}`,
-                    intent: 'danger',
-                    outlined: true,
-                    autoFocus: false
-                }
-            });
-            if (!confirmed) return;
+        const confirmed = await XH.confirm({
+            message: `Are you sure you want to delete ${pluralize('log file', count, true)}? This cannot be undone.`,
+            confirmProps: {
+                text: `Yes, delete the ${pluralize('file', count)}`,
+                intent: 'danger',
+                outlined: true,
+                autoFocus: false
+            }
+        });
+        if (!confirmed) return;
 
-            const filenames = recs.map(r => r.data.filename);
-            await XH.fetch({
-                url: 'logViewerAdmin/deleteFiles',
-                params: {
-                    filenames,
-                    instance: this.instanceName
-                }
-            });
-            await this.refreshAsync();
-        } catch (e) {
-            XH.handleException(e);
-        }
+        await this.runner()
+            .span('deleteFiles')
+            .linkTo({observer: this.loadObserver, message: 'Deleting files'})
+            .run(async ctx => {
+                const filenames = recs.map(r => r.data.filename);
+                await XH.postJson(
+                    {
+                        url: 'logViewerAdmin/deleteFiles',
+                        body: filenames,
+                        params: {filenames, instance: this.instanceName}
+                    },
+                    ctx
+                );
+            })
+            .then(() => this.refreshAsync())
+            .catchDefault();
     }
 
     async downloadSelectedAsync() {
-        try {
-            const {selectedRecord} = this;
-            if (!selectedRecord) return;
+        const {selectedRecord} = this;
+        if (!selectedRecord) return;
 
-            const {filename} = selectedRecord.data,
-                response = await XH.fetch({
-                    url: 'logViewerAdmin/download',
-                    params: {
-                        filename,
-                        instance: this.instanceName
-                    }
+        const {filename} = selectedRecord.data;
+        return this.runner()
+            .span('download')
+            .run(async ctx => {
+                const response = await XH.fetch(
+                    {
+                        url: 'logViewerAdmin/download',
+                        params: {
+                            filename,
+                            instance: this.instanceName
+                        }
+                    },
+                    ctx
+                );
+
+                const blob = await response.blob();
+                downloadBlob(blob, filename);
+
+                XH.toast({
+                    icon: Icon.download(),
+                    message: 'Download complete.'
                 });
-
-            const blob = await response.blob();
-            download(blob, filename);
-
-            XH.toast({
-                icon: Icon.download(),
-                message: 'Download complete.'
-            });
-        } catch (e) {
-            XH.handleException(e);
-        }
+            })
+            .catchDefault();
     }
 
     //---------------------------------
@@ -205,7 +216,7 @@ export class LogViewerModel extends BaseInstanceModel {
                 this.downloadFileAction,
                 this.deleteFileAction,
                 '-',
-                ...GridModel.defaultContextMenu
+                ...GridModel.defaults.contextMenu
             ]
         });
     }

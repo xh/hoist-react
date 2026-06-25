@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
 import {
@@ -68,6 +68,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
 
 class ClockLocalModel extends HoistModel {
     override xhImpl = true;
+    override telemetryPrefix = 'xh.client.clock';
 
     offset;
     offsetException;
@@ -96,26 +97,32 @@ class ClockLocalModel extends HoistModel {
     async loadTimezoneOffsetAsync() {
         const {timezone} = this.componentProps;
 
-        try {
-            if (!timezone) {
-                this.offset = null;
-                this.offsetException = null;
-                return;
-            }
-
-            const offsetResp = await XH.fetchJson({
-                url: 'xh/getTimeZoneOffset',
-                params: {timeZoneId: timezone}
-            });
-            this.offset = offsetResp.offset;
-            this.offsetException = null;
-        } catch (e) {
-            XH.handleException(e, {showAlert: false, logOnServer: false});
+        if (!timezone) {
             this.offset = null;
-            this.offsetException = e;
-        } finally {
+            this.offsetException = null;
             this.refreshDisplay();
+            return;
         }
+
+        await this.runner()
+            .span('getTimeZoneOffset')
+            .run(async ctx => {
+                const offsetResp = await XH.fetchJson(
+                    {
+                        url: 'xh/getTimeZoneOffset',
+                        params: {timeZoneId: timezone}
+                    },
+                    ctx
+                );
+                this.offset = offsetResp.offset;
+                this.offsetException = null;
+            })
+            .catch(e => {
+                XH.handleException(e, {showAlert: false, logOnServer: false});
+                this.offset = null;
+                this.offsetException = e;
+            })
+            .finally(() => this.refreshDisplay());
     }
 
     @action

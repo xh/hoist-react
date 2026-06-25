@@ -2,12 +2,13 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-idle-panel {
   flex: 0 0 auto !important;
   border: var(--xh-border-solid);
+  max-width: 320px;
 
   img {
     display: block;

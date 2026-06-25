@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -23,7 +23,7 @@ export class ViewInfo {
     /** User-supplied descriptive name. */
     readonly name: string;
 
-    /** Description of the view. **/
+    /** Description of the view. */
     readonly description: string;
 
     /** User owning this view. Null if the view is global.*/
@@ -40,13 +40,6 @@ export class ViewInfo {
 
     /** Optional group name used for bucketing this view in display. */
     readonly group: string;
-
-    /**
-     * True if this view should be pinned by default to all users' menus, where it will appear
-     * unless the user has explicitly unpinned it. Only applicable for global views, can be enabled
-     * by view managers to promote especially important global views and ensure users see them.
-     */
-    readonly isDefaultPinned: boolean;
 
     /**
      * Original meta-data on views associated JsonBlob.
@@ -73,7 +66,6 @@ export class ViewInfo {
         this.isGlobal = !this.owner;
 
         this.group = this.meta.group ?? null;
-        this.isDefaultPinned = !!(this.isGlobal && this.meta.isDefaultPinned);
         this.isShared = !!(!this.isGlobal && this.meta.isShared);
 
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423
@@ -98,11 +90,13 @@ export class ViewInfo {
     /**
      * True if this view should appear on the users easy access menu.
      *
-     * This value is computed with the user persisted state along with the View's
-     * `defaultPinned` property.
+     * This value is computed with the user persisted state for the view.
+     *
+     * If the user has not set pinning state for the view, global views and
+     * owned views are pinned by default.
      */
     get isPinned(): boolean {
-        return this.isUserPinned ?? this.isDefaultPinned;
+        return this.isUserPinned ?? (this.isGlobal || this.isOwned);
     }
 
     /**

@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
@@ -21,6 +21,8 @@ import {isEmpty} from 'lodash';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class ClientsModel extends BaseAdminTabModel {
+    override telemetryPrefix = 'xh.client.admin.clients';
+
     @observable
     lastRefresh: number;
 
@@ -75,24 +77,23 @@ export class ClientsModel extends BaseAdminTabModel {
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {gridModel} = this;
 
-        try {
-            const data = await XH.fetchJson({
-                url: 'clientAdmin/allClients',
-                loadSpec
-            });
-            if (loadSpec.isStale) return;
+        return this.runner({loadSpec})
+            .span('load')
+            .run(async ctx => {
+                const data = await XH.fetchJson({url: 'clientAdmin/allClients'}, ctx);
+                if (loadSpec.isStale) return;
 
-            gridModel.loadData(data);
-            gridModel.preSelectFirstAsync();
-            runInAction(() => {
-                this.lastRefresh = Date.now();
+                gridModel.loadData(data);
+                gridModel.preSelectFirstAsync();
+                runInAction(() => {
+                    this.lastRefresh = Date.now();
+                });
+            })
+            .catch(e => {
+                if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
+                gridModel.clear();
+                XH.handleException(e, {alertType: 'toast'});
             });
-        } catch (e) {
-            if (loadSpec.isStale || loadSpec.isAutoRefresh) return;
-
-            gridModel.clear();
-            XH.handleException(e, {alertType: 'toast'});
-        }
     }
 
     async forceSuspendAsync(toRecs: StoreRecord[]) {
@@ -158,7 +159,7 @@ export class ClientsModel extends BaseAdminTabModel {
                 this.forceSuspendAction,
                 this.reqHealthReportAction,
                 '-',
-                ...GridModel.defaultContextMenu
+                ...GridModel.defaults.contextMenu
             ],
             store: {
                 idSpec: 'key',
@@ -197,7 +198,7 @@ export class ClientsModel extends BaseAdminTabModel {
                 {
                     headerName: 'Client App',
                     headerAlign: 'center',
-                    children: [Col.appVersion, Col.appBuild]
+                    children: [Col.clientAppCode, Col.appVersion, {...Col.appBuild, hidden}]
                 },
                 {
                     headerName: 'Send/Receive',
@@ -226,24 +227,31 @@ export class ClientsModel extends BaseAdminTabModel {
     }) {
         if (isEmpty(toRecs)) return;
 
-        const tasks = toRecs.map(rec =>
-            XH.fetchJson({
-                url: 'clientAdmin/pushToClient',
-                params: {
-                    channelKey: rec.data.key,
-                    instance: rec.data.instance,
-                    topic,
-                    message
-                }
+        await this.runner()
+            .span('bulkPush')
+            .track({
+                category: 'Audit',
+                message: trackMessage,
+                data: {users: toRecs.map(it => it.data.user).sort()},
+                omit: !trackMessage
             })
-        );
-
-        await Promise.allSettled(tasks).track({
-            category: 'Audit',
-            message: trackMessage,
-            data: {users: toRecs.map(it => it.data.user).sort()},
-            omit: !trackMessage
-        });
+            .run(ctx => {
+                const tasks = toRecs.map(rec =>
+                    XH.fetchJson(
+                        {
+                            url: 'clientAdmin/pushToClient',
+                            params: {
+                                channelKey: rec.data.key,
+                                instance: rec.data.instance,
+                                topic,
+                                message
+                            }
+                        },
+                        ctx
+                    )
+                );
+                return Promise.allSettled(tasks);
+            });
     }
 
     private applyGroupBy() {

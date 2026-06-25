@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
 .xh-grouping-chooser {
@@ -21,16 +21,30 @@
       & > .xh-icon {
         color: var(--xh-text-color-muted);
       }
+
+      // Preserve input-style box-shadow and add subtle surface highlight on hover/active —
+      // Blueprint's minimal button rules set `box-shadow: none` on these states, hiding the
+      // input outline in dark mode.
+      &:hover {
+        background-color: color-mix(in srgb, var(--xh-input-bg) 94%, gray) !important;
+        box-shadow: var(--xh-form-field-box-shadow) !important;
+      }
+
+      &:active,
+      &.bp6-active {
+        background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
+        box-shadow: var(--xh-form-field-box-shadow) !important;
+      }
     }
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
-  .bp5-popover-target,
+  .bp6-popover-target,
   .xh-grouping-chooser-button {
     width: 100%;
   }
 
-  .bp5-popover-target span {
+  .bp6-popover-target span {
     position: relative;
   }
 
@@ -148,7 +162,7 @@
 
     --xh-menu-border: none;
 
-    .bp5-menu {
+    .bp6-menu {
       padding: 0;
     }
 

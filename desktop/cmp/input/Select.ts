@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
@@ -27,14 +27,14 @@ import {
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {debouncePromise, wait} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import debouncePromise from 'debounce-promise';
 import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
+import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
 import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -225,6 +225,8 @@ class SelectInputModel extends HoistInputModel {
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
 
+    @observable windowedMenuWidth: number = null;
+
     // Prop-backed convenience getters
     get asyncMode(): boolean {
         return !!this.componentProps.queryFn;
@@ -291,6 +293,13 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
+                if (this.windowedMode) {
+                    this.windowedMenuWidth = calcWindowedMenuWidth(
+                        opts,
+                        o => this.formatOptionLabel(o, {context: 'menu'}),
+                        this.getOrCreatePortalDiv()
+                    );
+                }
             },
             fireImmediately: true
         });
@@ -374,11 +383,8 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // TODO - after update to react-select v5 in HR v59, could not identify any cases that
-        //  still required the while loop below. Had been required due to nested layers of
-        //  components when using enableWindowed, enableCreate, and/or queryFn. Leaving in place to
-        //  avoid breaking some edge-case we're not finding, but could review/simplify once update
-        //  is baked in a bit more.
+        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
+        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
         let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
@@ -528,8 +534,6 @@ class SelectInputModel extends HoistInputModel {
     };
 
     loadingMessageFn = params => {
-        // workaround for https://github.com/jacobworrel/react-windowed-select/issues/19
-        if (!params) return '';
         const {loadingMessageFn} = this.componentProps,
             q = params.inputValue;
 
@@ -589,6 +593,26 @@ class SelectInputModel extends HoistInputModel {
         }
 
         return this._valueContainerCmp;
+    }
+
+    // Let Home/End move the caret when there's text to navigate. See #3930.
+    _inputCmp = null;
+    getInputCmp() {
+        if (!this._inputCmp) {
+            this._inputCmp = props =>
+                createElement(components.Input, {
+                    ...props,
+                    onKeyDown: e => {
+                        if (
+                            (e.key === 'Home' || e.key === 'End') &&
+                            (e.currentTarget as HTMLInputElement).value
+                        ) {
+                            e.stopPropagation();
+                        }
+                    }
+                });
+        }
+        return this._inputCmp;
     }
 
     _menuCmp = null;
@@ -654,8 +678,6 @@ class SelectInputModel extends HoistInputModel {
     }
 
     noOptionsMessageFn = params => {
-        // account for bug in react-windowed-select https://github.com/jacobworrel/react-windowed-select/issues/19
-        if (!params) return '';
         const {noOptionsMessageFn} = this.componentProps,
             q = params.inputValue;
 
@@ -717,6 +739,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
                 ClearIndicator: model.getClearIndicatorCmp(),
+                Input: model.getInputCmp(),
                 Menu: model.getMenuCmp(),
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
@@ -767,9 +790,10 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    if (props.menuWidth) {
+    const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
+    if (menuWidth != null) {
         rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            menu: provided => ({...provided, width: menuWidth, minWidth: '100%'}),
             ...props.rsOptions?.styles
         };
     }
@@ -783,9 +807,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         onKeyDown: e => {
             // Esc. and Enter can be listened for by parents -- stop the keydown event
             // propagation only if react-select already likely to have used for menu management.
-            // note: menuIsOpen will be undefined on AsyncSelect due to a react-select bug.
-            const menuIsOpen = model.reactSelect?.state?.menuIsOpen;
-            if (menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
+            if (model.reactSelect?.props?.menuIsOpen && (e.key === 'Escape' || e.key === 'Enter')) {
                 e.stopPropagation();
             }
         },
@@ -794,7 +816,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             // fire 'mousedown' events. These can bubble and inadvertently close Popovers that
             // contain Selects.
             const target = e?.target as HTMLElement;
-            if (target && elemWithin(target, 'bp5-popover')) {
+            if (target && elemWithin(target, 'bp6-popover')) {
                 e.stopPropagation();
             }
         },

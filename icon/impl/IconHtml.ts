@@ -2,7 +2,7 @@
  * This file belongs to Hoist, an application development toolkit
  * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
  *
- * Copyright © 2025 Extremely Heavy Industries Inc.
+ * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {findIconDefinition, icon, IconName, IconPrefix} from '@fortawesome/fontawesome-svg-core';
 import classNames from 'classnames';
@@ -32,5 +32,5 @@ export function iconHtml({
 }
 
 export function enhanceFaClasses(className: string, size: string) {
-    return classNames(className, 'fa-fw', 'xh-icon', isString(size) ? `fa-${size}` : null);
+    return classNames(className, 'xh-icon', isString(size) ? `fa-${size}` : null);
 }

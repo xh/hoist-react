@@ -9,25 +9,17 @@
     &__form {
       padding: var(--xh-pad-px);
 
-      .xh-form-field.xh-form-field-readonly {
-        &:not(.xh-form-field-inline) {
-          .xh-form-field-label {
-            border-bottom: var(--xh-border-solid);
+      .xh-form-field {
+        &--readonly {
+          &:not(.xh-form-field--inline) {
+            .xh-form-field__label {
+              border-bottom: var(--xh-border-solid);
+            }
           }
         }
 
-        .xh-form-field-readonly-display {
+        &__readonly-display {
           padding: 0;
-        }
-      }
-
-      .xh-form-field .xh-form-field-info {
-        line-height: 1.5em;
-        margin-top: var(--xh-pad-half-px);
-        white-space: unset;
-
-        .xh-icon {
-          margin-right: 2px;
         }
       }
     }
