@@ -30,6 +30,9 @@
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
 * `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
+* Fixed windowed `Select` (and `SelectEditor`) dropdown menus being constrained to the control/cell
+  width - the menu now measures its option labels and auto-sizes to fit content, matching the
+  non-windowed behavior.
 
 ### ⚙️ Typescript API Adjustments
 

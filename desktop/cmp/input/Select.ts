@@ -34,6 +34,7 @@ import classNames from 'classnames';
 import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, keyBy} from 'lodash';
 import {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
+import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
 import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -224,6 +225,8 @@ class SelectInputModel extends HoistInputModel {
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
 
+    @observable windowedMenuWidth: number = null;
+
     // Prop-backed convenience getters
     get asyncMode(): boolean {
         return !!this.componentProps.queryFn;
@@ -290,6 +293,13 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
+                if (this.windowedMode) {
+                    this.windowedMenuWidth = calcWindowedMenuWidth(
+                        opts,
+                        o => this.formatOptionLabel(o, {context: 'menu'}),
+                        this.getOrCreatePortalDiv()
+                    );
+                }
             },
             fireImmediately: true
         });
@@ -780,9 +790,10 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.formatCreateLabel = model.createMessageFn;
     }
 
-    if (props.menuWidth) {
+    const menuWidth = props.menuWidth ?? (model.windowedMode ? model.windowedMenuWidth : null);
+    if (menuWidth != null) {
         rsProps.styles = {
-            menu: provided => ({...provided, width: `${props.menuWidth}px`}),
+            menu: provided => ({...provided, width: menuWidth, minWidth: '100%'}),
             ...props.rsOptions?.styles
         };
     }
