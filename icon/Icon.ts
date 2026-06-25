@@ -933,9 +933,9 @@ export const Icon = {
     },
 
     /**
-     * Returns an empty div with FA sizing classes applied. Can be used to take up room in a layout
-     * where an icon might otherwise go - e.g. to align a series of menu items, where some items do
-     * not have an icon but others do.
+     * Returns an empty div sized to occupy the width of a standard icon. Can be used to take up
+     * room in a layout where an icon might otherwise go - e.g. to align a series of menu items,
+     * where some items do not have an icon but others do.
      */
     placeholder(opts?: IconProps): any {
         const {size, asHtml = false} = opts ?? {},
