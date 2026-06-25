@@ -937,6 +937,12 @@ export class Store
         return this._current.rootCount;
     }
 
+    /** The count of the filtered leaf records (those with no children) in the store. */
+    @computed
+    get leafCount(): number {
+        return this._filtered.list.reduce((count, rec) => count + (rec.isLeaf ? 1 : 0), 0);
+    }
+
     /** True if the store is empty after filters have been applied */
     @computed
     get empty(): boolean {

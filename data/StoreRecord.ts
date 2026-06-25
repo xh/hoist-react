@@ -116,6 +116,11 @@ export class StoreRecord {
         return this.store.getChildrenById(this.id, false);
     }
 
+    /** True if this record has no children, respecting any active filter. */
+    get isLeaf(): boolean {
+        return !this.children.length;
+    }
+
     /** Descendants of this record, respecting any filter (if applied). */
     get descendants(): StoreRecord[] {
         return this.store.getDescendantsById(this.id, true);

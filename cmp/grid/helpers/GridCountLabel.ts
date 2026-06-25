@@ -8,24 +8,22 @@ import {box} from '@xh/hoist/cmp/layout';
 import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
+import {CountMode, resolveCountLabelValue} from '@xh/hoist/cmp/store/impl/CountLabelSupport';
 import {GridModel} from '../GridModel';
 
 export interface GridCountLabelProps extends HoistProps, BoxProps {
     /** GridModel to which this component should bind. */
     gridModel?: GridModel;
 
+    /** Which records to count: 'roots' (default), 'all', or 'leaves' (exclude parents). */
+    includeMode?: CountMode;
+
     /**
      * True to count nested child records.
      * If false (default) only root records will be included in count.
+     * @deprecated use `includeMode` instead ('all' for true, 'roots' for false).
      */
     includeChildren?: boolean;
-
-    /**
-     * True to exclude parent records from the count.
-     * If false (default) parent records will be included in count.
-     * Ignored if `includeChildren` is false.
-     */
-    excludeParents?: boolean;
 
     /**
      * Control display of selection count after overall records count: auto (default) to display
@@ -48,8 +46,8 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
     render({
         gridModel,
-        includeChildren = false,
-        excludeParents = false,
+        includeMode,
+        includeChildren,
         showSelectionCount = 'auto',
         unit = 'record',
         ...props
@@ -68,11 +66,13 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         const fmtCount = count => fmtNumber(count, {precision: 0, asHtml: true}),
             recCountString = () => {
-                let count = includeChildren ? store.count : store.rootCount;
-                if (excludeParents && includeChildren) {
-                    count = store.records.filter(it => !it.children.length).length;
-                }
-                const unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
+                const count = resolveCountLabelValue(
+                        store,
+                        includeMode,
+                        includeChildren,
+                        GridCountLabel
+                    ),
+                    unitLabel = count === 1 ? singularize(unit) : pluralize(unit);
 
                 return `${fmtCount(count)} ${unitLabel}`;
             },
