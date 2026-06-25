@@ -1,5 +1,19 @@
 # Dashboard
 
+| Section | Description |
+|---------|-------------|
+| [Overview](#overview) | Dashboard system intro, DashContainer vs DashCanvas comparison |
+| [Architecture](#architecture) | Model hierarchy, ViewSpec/ViewModel lifecycle |
+| [DashContainer](#dashcontainer) | Space-filling tabbed/tiled layout via GoldenLayout |
+| [DashCanvas](#dashcanvas) | Scrollable grid-based widget layout via react-grid-layout |
+| [DashCanvasWidgetChooser](#dashcanvaswidgetchooser) | UI for adding widgets to a DashCanvas |
+| [Common Features](#common-features) | ViewSpecs, state persistence, publishing, refresh |
+| [Widget Content Patterns](#widget-content-patterns) | Implementing widget views and their models |
+| [Common Patterns](#common-patterns) | Initialization, programmatic layout, view management |
+| [Common Pitfalls](#common-pitfalls) | Frequent issues and how to avoid them |
+| [Key Source Files](#key-source-files) | Primary source files for the dash package |
+| [Related Packages](#related-packages) | Links to related hoist-react packages |
+
 ## Overview
 
 The `/desktop/cmp/dash/` package provides Hoist's dashboard system — configurable layouts where
@@ -129,6 +143,9 @@ dashContainer({model: dashModel})
 | `addViewButtonText` | `string` | Button label in empty overlay. Default `'Add View'`. |
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
 | `goldenLayoutSettings` | `PlainObject` | Passthrough config for the GoldenLayout instance. |
+
+`DashContainerModel.defaults` exposes `margin` and `showMenuButton` for app-wide override — see
+`DashContainerModelDefaults` for details.
 
 ### State Structure
 
@@ -268,6 +285,10 @@ dashCanvas({model: canvasModel})
 | `emptyText` | `string` | Placeholder text when empty. Default `'No widgets have been added.'` |
 | `addViewButtonText` | `string` | Button label in empty overlay. Default `'Add Widget'`. |
 | `extraMenuItems` | `MenuItemLike[]` | Additional context menu items shown below the 'Add' action. |
+
+`DashCanvasModel.defaults` exposes layout properties (`columns`, `rowHeight`, `margin`,
+`containerPadding`, `maxRows`, `showGridBackground`) for app-wide override — see
+`DashCanvasModelDefaults` for details.
 
 ### State Structure
 

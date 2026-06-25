@@ -32,6 +32,15 @@ import {
     compact
 } from 'lodash';
 
+/**
+ * Configuration for a {@link DashCanvasModel} - a grid-based dashboard layout with
+ * drag-and-drop positioning and resizing of views.
+ *
+ * See the dash package README (`desktop/cmp/dash/README.md`) for architecture and usage.
+ *
+ * @see DashCanvasModel
+ * @see DashCanvasViewSpec
+ */
 export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCanvasItemState> {
     /**
      * Total number of columns (x coordinates for views correspond with column numbers).
@@ -46,7 +55,7 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
     rowHeight?: number;
 
     /**
-     * Compaction strategy for condensing empty space. Use `'wrap'` with caution — it only
+     * Compaction strategy for condensing empty space. Use `'wrap'` with caution - it only
      * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
@@ -78,6 +87,15 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
 
     /** Show an Add View button overlay when the canvas is empty. Default `true`. */
     showAddViewButtonWhenEmpty?: boolean;
+}
+
+export interface DashCanvasModelDefaults {
+    columns?: number;
+    containerPadding?: [number, number] | null;
+    margin?: [number, number];
+    maxRows?: number;
+    rowHeight?: number;
+    showGridBackground?: boolean;
 }
 
 /** Serializable state for a single widget on a DashCanvas, including its layout and view config. */
@@ -115,6 +133,16 @@ export class DashCanvasModel
     extends DashModel<DashCanvasViewSpec, DashCanvasItemState, DashCanvasViewModel>
     implements Persistable<{state: DashCanvasItemState[]}>
 {
+    /** App-level defaults for DashCanvasModel. Instance config takes precedence. */
+    static defaults: DashCanvasModelDefaults = {
+        columns: 12,
+        containerPadding: null,
+        margin: [10, 10],
+        maxRows: Infinity,
+        rowHeight: 50,
+        showGridBackground: false
+    };
+
     //-----------------------------
     // Settable State
     //------------------------------
@@ -189,14 +217,14 @@ export class DashCanvasModel
         persistWith = null,
         emptyText = 'No widgets have been added.',
         addViewButtonText = 'Add Widget',
-        columns = 12,
-        rowHeight = 50,
+        columns = DashCanvasModel.defaults.columns,
+        rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
-        margin = [10, 10],
-        maxRows = Infinity,
-        containerPadding = margin,
+        margin = DashCanvasModel.defaults.margin,
+        maxRows = DashCanvasModel.defaults.maxRows,
+        containerPadding = DashCanvasModel.defaults.containerPadding ?? margin,
         extraMenuItems,
-        showGridBackground = false,
+        showGridBackground = DashCanvasModel.defaults.showGridBackground,
         showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,
@@ -254,6 +282,9 @@ export class DashCanvasModel
         this._onDropDragOverFn = onDropDragOver;
 
         this.loadState(initialState);
+        // Initialize `state` directly - when initialState is empty, loadState above is a no-op
+        // (setLayout early-returns) and the viewState reaction below does not yet exist, but the
+        // PersistenceProvider must capture a well-formed (not undefined) default state on create.
         this.state = this.buildState();
 
         if (persistWith) {
@@ -317,7 +348,7 @@ export class DashCanvasModel
      * Add a view to the canvas.
      * @param specId - ID of the DashCanvasViewSpec to add.
      * @param opts - optional title, state, dimensions, and position. `position` accepts a view
-     *      ID in addition to the enumerated values — the new view will take that view's position.
+     *      ID in addition to the enumerated values - the new view will take that view's position.
      */
     @action
     addView(
@@ -392,7 +423,7 @@ export class DashCanvasModel
 
     /**
      * Handle a completed drop from react-grid-layout. Creates the new view from `draggedInView`
-     * and places it at the drop location. Called by the DashCanvas component — not typically
+     * and places it at the drop location. Called by the DashCanvas component - not typically
      * called directly by application code.
      */
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
@@ -460,6 +491,10 @@ export class DashCanvasModel
      * Load the given state array into the canvas, replacing the current set of views and layout.
      * Applications can call this directly when they already hold a `DashCanvasItemState[]` and
      * want to avoid constructing a `PersistableState` wrapper.
+     *
+     * Note this applies full replace (not patch) semantics, at both levels: views not present in
+     * the given state are removed, and entries fully replace each matched view's state - omitted
+     * properties (e.g. `title`, `state`) reset to their defaults.
      */
     @action
     loadState(state: DashCanvasItemState[]) {
@@ -478,8 +513,12 @@ export class DashCanvasModel
             stateWithIds.map(it => {
                 const existingViewModel = existingViewModelsById[it.id];
                 if (existingViewModel) {
+                    // Loading state over an existing view applies replace semantics - omitted
+                    // values reset to their defaults (required by e.g. restoreDefaults). For
+                    // viewState the default is nullish (widget defaults), but title must reset
+                    // to the spec title rather than wipe, matching DashViewModel construction.
                     existingViewModel.setViewState(it.state);
-                    existingViewModel.title = it.title;
+                    existingViewModel.title = it.title ?? existingViewModel.viewSpec.title;
                     return existingViewModel;
                 }
 
@@ -501,10 +540,7 @@ export class DashCanvasModel
             })
         );
 
-        this.setLayout(
-            stateWithIds.map(it => ({i: it.id, ...it.layout})),
-            false
-        );
+        this.setLayout(stateWithIds.map(it => ({i: it.id, ...it.layout})));
     }
 
     //------------------------
@@ -567,7 +603,7 @@ export class DashCanvasModel
                 id,
                 viewSpec,
                 viewState: state,
-                title: title ?? viewSpec.title,
+                title,
                 containerModel: this
             }),
             prevLayout = previousViewId ? this.getViewLayout(previousViewId) : null,
@@ -593,13 +629,12 @@ export class DashCanvasModel
     }
 
     @action
-    private setLayout(layout: LayoutItem[], buildAndSetState = true) {
+    private setLayout(layout: LayoutItem[]) {
         layout = sortBy(layout, 'i');
-        const layoutChanged = !isEqual(layout, this.layout);
-        if (!layoutChanged) return;
+        if (isEqual(layout, this.layout)) return;
 
         this.layout = layout;
-        if (buildAndSetState) this.state = this.buildState();
+        this.state = this.buildState();
     }
 
     private buildState(): DashCanvasItemState[] {

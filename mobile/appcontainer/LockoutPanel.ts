@@ -39,6 +39,7 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     button({
                         icon: Icon.logout(),
                         text: 'Logout',
+                        testId: 'xh-lockout-logout-btn',
                         omit: !appSpec.enableLogout,
                         onClick: () => XH.logoutAsync()
                     }),
@@ -46,6 +47,7 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     button({
                         icon: Icon.impersonate(),
                         text: 'End Impersonation',
+                        testId: 'xh-lockout-end-impersonation-btn',
                         omit: !identityService.isImpersonating,
                         onClick: () => identityService.endImpersonateAsync()
                     })

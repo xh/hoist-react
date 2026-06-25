@@ -34,8 +34,12 @@ export class LoginPanelModel extends HoistModel {
     // Debounce to defend against double-click fast enough to get through masking + button disable.
     @debounced(300)
     async submitAsync() {
-        const {username, password, loginTask, isValid} = this;
-        if (!isValid) return;
+        const {username, password, loginTask, isValid, loginInProgress} = this;
+        if (loginInProgress) return;
+        if (!isValid) {
+            this.warning = 'Please enter a username and password.';
+            return;
+        }
 
         try {
             this.loginInProgress = true;
@@ -48,7 +52,7 @@ export class LoginPanelModel extends HoistModel {
 
             if (identity) {
                 this.warning = '';
-                await XH.appContainerModel.completeInitAsync(identity);
+                XH.appContainerModel.completeInteractiveLogin(identity);
             } else {
                 this.warning = 'Login incorrect.';
             }

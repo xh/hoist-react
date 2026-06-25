@@ -24,7 +24,7 @@ export const loginPanel = hoistCmp.factory({
     model: creates(LoginPanelModel),
 
     render({model}) {
-        const {loginMessage} = XH.appSpec,
+        const {loginMessage, loginPanelIcon} = XH.appSpec,
             {loadObserver, warning, isValid, loginInProgress} = model;
 
         const onKeyDown = ev => {
@@ -36,9 +36,10 @@ export const loginPanel = hoistCmp.factory({
             justifyContent: 'center',
             flexDirection: 'column',
             item: panel({
-                title: XH.clientAppName,
-                icon: Icon.login(),
+                title: `Login to ${XH.clientAppName}`,
+                icon: loginPanelIcon ?? Icon.shieldHalved({prefix: 'fas'}),
                 className: 'xh-login',
+                testId: 'xh-login',
                 width: 300,
                 mask: loadObserver,
                 items: [
@@ -46,21 +47,25 @@ export const loginPanel = hoistCmp.factory({
                     form(
                         textInput({
                             bind: 'username',
+                            leftIcon: Icon.user(),
                             placeholder: 'Username',
                             autoComplete: 'username',
                             autoFocus: true,
                             commitOnChange: true,
                             onKeyDown,
-                            width: null
+                            width: null,
+                            testId: 'xh-login-username'
                         }),
                         textInput({
                             bind: 'password',
+                            leftIcon: Icon.lock(),
                             placeholder: 'Password...',
                             autoComplete: 'current-password',
                             type: 'password',
                             commitOnChange: true,
                             onKeyDown,
-                            width: null
+                            width: null,
+                            testId: 'xh-login-password'
                         })
                     ),
                     div({
@@ -81,7 +86,8 @@ export const loginPanel = hoistCmp.factory({
                         intent: 'primary',
                         icon: Icon.login(),
                         disabled: !isValid || loginInProgress,
-                        onClick: () => model.submitAsync()
+                        onClick: () => model.submitAsync(),
+                        testId: 'xh-login-btn'
                     })
                 ]
             })

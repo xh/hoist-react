@@ -25,10 +25,9 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {wait} from '@xh/hoist/promise';
+import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
-import debouncePromise from 'debounce-promise';
 import {escapeRegExp, isEqual, isNil, isPlainObject} from 'lodash';
 import {Children, ReactNode, ReactPortal} from 'react';
 import ReactDom from 'react-dom';
@@ -351,9 +350,9 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Use of windowedMode, creatable and async variants will create levels of nesting we must
-        // traverse to get to the underlying Select comp and its inputRef.
-        let selectComp = reactSelect.select;
+        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
+        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
+        let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }

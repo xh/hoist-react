@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
+import {CallContextLike, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
 
 /**
  *  Base class for managing authentication lifecycle.
@@ -20,6 +20,8 @@ import {HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
  *  {@link XHApi#renderApp}.
  */
 export class HoistAuthModel extends HoistModel {
+    override telemetryPrefix = 'xh.client.auth';
+
     /**
      * Main Entry Point.
      *
@@ -36,35 +38,51 @@ export class HoistAuthModel extends HoistModel {
      * may be appropriate for fully SSO based solutions. Override to consult or
      * initialize third-party client resources such as OAuth.
      *
+     * @param ctx - tracing/load context supplied by the framework. Overrides should forward it
+     *      to any fetch calls (or `runner(ctx)`) so auth requests nest under the bootstrap trace.
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async completeAuthAsync(): Promise<IdentityInfo> {
-        return this.getAuthStatusFromServerAsync();
+    async completeAuthAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
+        return this.getAuthStatusFromServerAsync(ctx);
     }
 
     /**
      * @returns identity of the user authenticated with the server; null if not authenticated.
      */
-    async getAuthStatusFromServerAsync(): Promise<IdentityInfo> {
-        try {
-            const {authenticated, identity} = await XH.fetchJson({url: 'xh/authStatus'});
-            return authenticated ? this.parseIdentityInfo(identity) : null;
-        } catch (e) {
-            if (e.httpStatus === 401) return null;
-            throw e;
-        }
+    async getAuthStatusFromServerAsync(ctx?: CallContextLike): Promise<IdentityInfo> {
+        return this.runner(ctx)
+            .span('status')
+            .run(async ctx => {
+                const {authenticated, identity} = await XH.fetchJson({url: 'xh/authStatus'}, ctx);
+                return authenticated ? this.parseIdentityInfo(identity) : null;
+            })
+            .catch(e => {
+                if (e.httpStatus === 401) return null;
+                throw e;
+            });
     }
 
     /**
      * Process a manual login, submitted by user via form.
      * @returns identity of the user authenticated with the server; null if not yet authenticated.
      */
-    async loginWithCredentialsAsync(username: string, password: string): Promise<IdentityInfo> {
-        const {success, identity} = await XH.fetchJson({
-            url: 'xh/login',
-            params: {username, password}
-        });
-        return success ? this.parseIdentityInfo(identity) : null;
+    async loginWithCredentialsAsync(
+        username: string,
+        password: string,
+        ctx?: CallContextLike
+    ): Promise<IdentityInfo> {
+        return this.runner(ctx)
+            .span('login')
+            .run(async ctx => {
+                const {success, identity} = await XH.fetchJson(
+                    {
+                        url: 'xh/login',
+                        params: {username, password}
+                    },
+                    ctx
+                );
+                return success ? this.parseIdentityInfo(identity) : null;
+            });
     }
 
     /**
@@ -73,8 +91,8 @@ export class HoistAuthModel extends HoistModel {
      * The default implementation will call the 'logout' endpoint on the Grails server, clearing
      * any server-side session state there. Override to manage any client-side or third-party state.
      */
-    async logoutAsync(): Promise<void> {
-        await XH.fetchJson({url: 'xh/logout'});
+    async logoutAsync(ctx?: CallContextLike): Promise<void> {
+        await this.runner(ctx).span('logout').fetchJson({url: 'xh/logout'});
     }
 
     /**
@@ -82,9 +100,12 @@ export class HoistAuthModel extends HoistModel {
      * whitelisted by Hoist to allow access prior to user authentication. For use in bootstrapping
      * client-side auth solutions that require configs such as OAuth endpoint URLs and client IDs.
      * See `BaseAuthenticationService.getClientConfig()` in hoist-core.
+     *
+     * @param ctx - tracing/load context. When called from within a `completeAuthAsync` override,
+     *      forward the supplied context so this fetch nests under the bootstrap trace.
      */
-    async loadConfigAsync(): Promise<PlainObject> {
-        return XH.fetchService.getJson({url: 'xh/authConfig'});
+    async loadConfigAsync(ctx?: CallContextLike): Promise<PlainObject> {
+        return this.runner(ctx).span('config').fetchJson({url: 'xh/authConfig'});
     }
 
     /**

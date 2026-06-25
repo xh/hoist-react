@@ -257,17 +257,19 @@ this.logDebug('Filter applied:', filter);
 both sync and async functions, logging elapsed time on completion:
 
 ```typescript
-// Time an async load — returns the result of the function
-const data = await this.withInfo('Loading positions', () => {
-    return XH.fetchService.fetchJson({url: 'api/positions'});
-});
-// → [PortfolioModel] | Loading positions | 342ms
+// Time an async operation — returns the awaited result
+const summary = await this.withInfo('Computing summary', () => this.computeSummaryAsync());
+// → [PortfolioModel] | Computing summary | 342ms
 
-// withDebug for lower-priority timing — no logging overhead at default level
+// withDebug for lower-priority sync timing — no logging overhead at default level
 this.withDebug('Filtering records', () => {
     this.applyFilters();
 });
 ```
+
+For fetch calls or async work you are already composing, prefer the `Runner` chain's `logInfo()` /
+`logDebug()` (e.g. `runner().logInfo('Loading positions').fetchJson({url})`) over wrapping the call
+in `withInfo()` — it reads more fluently and integrates with spanning and tracking.
 
 #### Log Levels
 
@@ -442,7 +444,7 @@ Both hooks can be composed together via `composeRefs` when a component needs to 
 both resize and visibility:
 
 ```typescript
-import composeRefs from '@seznam/compose-react-refs';
+import {composeRefs} from '@xh/hoist/utils/react';
 
 const ref = composeRefs(
     useOnVisibleChange(v => model.visible = v),
@@ -472,7 +474,6 @@ for the full list of supported props and conversion details.
 
 | Function | Description |
 |----------|-------------|
-| `getClassName(baseName, props, ...extras)` | Combine a base CSS class with `props.className` and additional class names |
 | `createObservableRef()` | Create a ref that works as both a React ref object and callback ref, with a MobX-observable `current` property |
 | `elementFromContent(content, addProps?)` | Create a React element from a `Content` value (element, HoistComponent, or render function) |
 

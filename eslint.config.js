@@ -11,5 +11,13 @@ module.exports = defineConfig([
             'tsdoc/syntax': 'warn'
         }
     },
-    globalIgnores(['build/**/*', '.yarn/**/*', 'node_modules/**/*', 'mcp/**/*', 'bin/**/*'])
+    globalIgnores([
+        'build/**/*',
+        '.yarn/**/*',
+        'node_modules/**/*',
+        'mcp/**/*',
+        'bin/**/*',
+        'kit/golden-layout/impl/**/*',
+        'public/msal-redirect-bridge.min.js'
+    ])
 ]);

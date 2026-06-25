@@ -22,6 +22,13 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
 import {DockContainerModel} from './DockContainerModel';
 
+/**
+ * Configuration for a {@link DockViewModel} - a dockable view within a
+ * {@link DockContainerModel}.
+ *
+ * @see DockViewModel
+ * @see DockContainerModel
+ */
 export interface DockViewConfig {
     /** Unique identifier for this DockViewModel. */
     id: string;

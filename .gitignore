@@ -19,6 +19,9 @@ CLAUDE.local.md
 # GSD project planning (archived to hoist-ai repo)
 .planning/
 
+# Superpowers scratch (transient design/spec artifacts)
+docs/superpowers/
+
 # OS generated files
 .DS_Store
 .DS_Store?

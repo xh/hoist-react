@@ -35,7 +35,8 @@ export const exceptionDialogDetails = hoistCmp.factory({
             tbody(
                 row('Name', exception.name),
                 row('Message', exception.msg || exception.message || 'N/A'),
-                row('App Version', XH.appVersion)
+                row('App Version', XH.appVersion),
+                exception.traceId ? row('Trace ID', exception.traceId) : null
             )
         );
 
@@ -50,6 +51,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
                 button({
                     icon: Icon.envelope(),
                     text: 'Send Message',
+                    testId: 'xh-exception-details-send-btn',
                     onClick: () => {
                         XH.prompt<string>({
                             title: 'Send Message',

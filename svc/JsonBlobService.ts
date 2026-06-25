@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
+import {CallContextLike, HoistService, PlainObject, XH} from '@xh/hoist/core';
 import {pick} from 'lodash';
 
 export interface JsonBlob {
@@ -47,11 +47,13 @@ export interface JsonBlob {
  * persisted back to the database.
  */
 export class JsonBlobService extends HoistService {
+    override telemetryPrefix = 'xh.client.jsonBlob';
+
     static instance: JsonBlobService;
 
     /** Retrieve a single JSONBlob by its unique token. */
-    async getAsync(token: string): Promise<JsonBlob> {
-        return XH.fetchJson({
+    async getAsync(token: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('get').fetchJson({
             url: 'xh/getJsonBlob',
             params: {token}
         });
@@ -61,66 +63,81 @@ export class JsonBlobService extends HoistService {
     async listAsync(spec: {
         type: string;
         includeValue?: boolean;
-        loadSpec?: LoadSpec;
+        ctx?: CallContextLike;
     }): Promise<JsonBlob[]> {
-        const {type, includeValue, loadSpec} = spec;
-        return XH.fetchJson({
-            url: 'xh/listJsonBlobs',
-            params: {type, includeValue},
-            loadSpec
-        });
+        const {type, includeValue, ctx} = spec;
+        return this.runner(ctx)
+            .span('list')
+            .fetchJson({url: 'xh/listJsonBlobs', params: {type, includeValue}});
     }
 
     /** Persist a new JSONBlob back to the server. */
-    async createAsync({
-        acl,
-        description,
-        type,
-        meta,
-        name,
-        value
-    }: Partial<JsonBlob>): Promise<JsonBlob> {
-        return XH.fetchJson({
-            url: 'xh/createJsonBlob',
-            params: {
-                data: JSON.stringify({type, name, acl, value, meta, description})
-            }
-        });
+    async createAsync(
+        {acl, description, type, meta, name, value}: Partial<JsonBlob>,
+        ctx?: CallContextLike
+    ): Promise<JsonBlob> {
+        return this.runner(ctx)
+            .span('create')
+            .fetchJson({
+                url: 'xh/createJsonBlob',
+                params: {
+                    data: JSON.stringify({type, name, acl, value, meta, description})
+                }
+            });
     }
 
     /** Modify mutable properties of an existing JSONBlob, as identified by its unique token. */
-    async updateAsync(token: string, update: Partial<JsonBlob>): Promise<JsonBlob> {
-        update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
-        return XH.fetchJson({
-            url: 'xh/updateJsonBlob',
-            params: {token, update: JSON.stringify(update)}
-        });
+    async updateAsync(
+        token: string,
+        update: Partial<JsonBlob>,
+        ctx?: CallContextLike
+    ): Promise<JsonBlob> {
+        return this.runner(ctx)
+            .span('update')
+            .run(async ctx => {
+                update = pick(update, ['acl', 'description', 'meta', 'name', 'owner', 'value']);
+                return XH.fetchJson(
+                    {
+                        url: 'xh/updateJsonBlob',
+                        params: {token, update: JSON.stringify(update)}
+                    },
+                    ctx
+                );
+            });
     }
 
     /** Create or update a blob for a user with the existing type and name. */
     async createOrUpdateAsync(
         type: string,
         name: string,
-        data: Partial<JsonBlob>
+        data: Partial<JsonBlob>,
+        ctx?: CallContextLike
     ): Promise<JsonBlob> {
-        const update = pick(data, ['acl', 'description', 'meta', 'value']);
-        return XH.fetchJson({
-            url: 'xh/createOrUpdateJsonBlob',
-            params: {type, name, update: JSON.stringify(update)}
-        });
+        return this.runner(ctx)
+            .span('createOrUpdate')
+            .run(async ctx => {
+                const update = pick(data, ['acl', 'description', 'meta', 'value']);
+                return XH.fetchJson(
+                    {
+                        url: 'xh/createOrUpdateJsonBlob',
+                        params: {type, name, update: JSON.stringify(update)}
+                    },
+                    ctx
+                );
+            });
     }
 
     /** Find a blob owned by this user with a specific type and name.  If none exists, return null.  */
-    async findAsync(type: string, name: string): Promise<JsonBlob> {
-        return XH.fetchJson({
+    async findAsync(type: string, name: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('find').fetchJson({
             url: 'xh/findJsonBlob',
             params: {type, name}
         });
     }
 
     /** Archive (soft-delete) an existing JSONBlob, as identified by its unique token. */
-    async archiveAsync(token: string): Promise<JsonBlob> {
-        return XH.fetchJson({
+    async archiveAsync(token: string, ctx?: CallContextLike): Promise<JsonBlob> {
+        return this.runner(ctx).span('archive').fetchJson({
             url: 'xh/archiveJsonBlob',
             params: {token}
         });

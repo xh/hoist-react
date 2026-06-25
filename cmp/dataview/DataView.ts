@@ -39,8 +39,10 @@ export interface DataViewProps<M extends DataViewModel = DataViewModel>
 }
 
 /**
- * A DataView is a specialized version of the Grid component. It displays its data within a
- * single column, using a configured component for rendering each item.
+ * A DataView is a specialized version of the {@link Grid} component. It displays its data within
+ * a single column, using a configured component for rendering each item.
+ *
+ * @see DataViewModel
  */
 export const [DataView, dataView] = hoistCmp.withFactory<DataViewProps>({
     displayName: 'DataView',

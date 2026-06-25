@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
@@ -25,8 +24,8 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
+import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
 import {computed} from 'mobx';
@@ -42,13 +41,14 @@ export const [DynamicTabSwitcher, dynamicTabSwitcher] = hoistCmp.withFactory<Tab
     className: 'xh-dynamic-tab-switcher',
     displayName: 'DynamicTabSwitcher',
     model: uses(TabContainerModel),
-    render({className, orientation, ...props}) {
+    render({className, orientation, testId, ...props}) {
         const impl = useLocalModel(DynamicTabSwitcherLocalModel);
         return scroller({
             className: classNames(className, impl.isVertical && `${className}--vertical`),
             content: tabs,
             contentProps: {localModel: impl},
             orientation: ['left', 'right'].includes(orientation) ? 'vertical' : 'horizontal',
+            testId,
             ...getLayoutProps(props)
         });
     }
@@ -128,7 +128,8 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         {disabled, icon, tooltip} = tab,
         isFavorite = model.isTabFavorite(tab.id),
         {isVertical, props} = localModel,
-        {tabWidth, tabMinWidth, tabMaxWidth} = props;
+        {tabWidth, tabMinWidth, tabMaxWidth} = props,
+        tabTestId = getTestId(props, tab.id);
 
     // Handle tab sizing props
     const tabStyle: CSSProperties = {};
@@ -173,6 +174,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     );
                 },
                 ref: composeRefs(provided.innerRef, tabRef),
+                testId: tabTestId,
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
                 style: getStyles(isVertical, provided.draggableProps.style),
@@ -200,6 +202,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                                     button({
                                         className:
                                             'xh-dynamic-tab-switcher__tabs__tab__close-button',
+                                        testId: getTestId(tabTestId, 'remove-btn'),
                                         icon: Icon.x({size: 'sm'}),
                                         title: 'Remove Tab',
                                         minimal: true,

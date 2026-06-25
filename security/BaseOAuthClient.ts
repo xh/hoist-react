@@ -20,6 +20,15 @@ import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
+/**
+ * Base configuration shared by all OAuth client implementations. Extended by
+ * {@link MsalClientConfig} and {@link AuthZeroClientConfig} with provider-specific options.
+ *
+ * See the security package README (`security/README.md`) for authentication architecture
+ * and setup guidance.
+ *
+ * @see BaseOAuthClient
+ */
 export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     /** Client ID (GUID) of your app registered with your Oauth provider. */
     clientId: string;
@@ -114,7 +123,7 @@ export abstract class BaseOAuthClient<
     /** ID Scopes */
     protected idScopes: string[];
 
-    /** Specification for Access Tokens **/
+    /** Specification for Access Tokens */
     protected accessSpecs: Record<string, S>;
 
     @managed private timer: Timer;
@@ -271,7 +280,7 @@ export abstract class BaseOAuthClient<
     }
 
     protected popupBlockerErrorMessage: String =
-        'Login popup window blocked. Please check your browser for a blocked popup notification ' +
+        'Login popup window may have been blocked. Please check your browser for a blocked popup notification ' +
         '(typically within the URL bar). Allow all popups from this site, then refresh this page ' +
         'in your browser to try again.';
 

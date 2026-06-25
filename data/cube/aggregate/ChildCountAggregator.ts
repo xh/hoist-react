@@ -7,6 +7,7 @@
 
 import {Aggregator} from './Aggregator';
 
+/** Returns the count of direct child rows. */
 export class ChildCountAggregator extends Aggregator {
     override aggregate(rows, fieldName) {
         return rows.length;

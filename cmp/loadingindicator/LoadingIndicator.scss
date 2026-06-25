@@ -68,8 +68,12 @@
 
   .xh-hbox {
     flex: none;
-    align-items: start;
+    align-items: center;
     flex-wrap: nowrap;
+  }
+
+  .xh-spinner {
+    color: var(--xh-loading-indicator-spinner-color);
   }
 
   &__message {

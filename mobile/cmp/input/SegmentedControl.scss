@@ -1,0 +1,126 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Scoped under .xh-app to win specificity over the .xh-app-scoped mobile Button styles.
+.xh-app {
+  .xh-segmented-control {
+    // The tray - a recessed container the selected option rises out of.
+    display: flex;
+    align-items: stretch;
+    // Size the whole control (tray padding included) to one standard control height, so it matches
+    // a button / input rather than standing taller. Options stretch to fill the tray (below) rather
+    // than each taking the full button height, which - plus the tray padding - would overshoot.
+    box-sizing: border-box;
+    height: var(--xh-button-height);
+    background-color: var(--xh-segmented-control-bg);
+    border-radius: var(--xh-segmented-control-border-radius-px);
+    padding: var(--xh-segmented-control-pad-px);
+    gap: var(--xh-segmented-control-pad-px);
+
+    // Options - buttons receding into the tray by default. Override the minimal Button base so
+    // the tray background shows through and our segmented text color applies.
+    .xh-button.xh-segmented-control-option {
+      flex: 0 0 auto;
+      // Fill the tray height (via the tray's align-items: stretch) instead of the fixed button
+      // height, so tray padding does not add on top of a full-height button.
+      height: auto;
+      // Allow the button to shrink below its content width so the label can ellipsis-truncate
+      // (flex items default to min-width: auto, which forces overflow / hard clipping instead).
+      min-width: 0;
+      border-radius: var(--xh-segmented-control-border-radius-px);
+      background-color: transparent;
+      color: var(--xh-segmented-control-text-color);
+
+      // Keep icons at full size - only the label gives way when space is tight.
+      > svg {
+        flex: 0 0 auto;
+      }
+    }
+
+    // Label - truncate with an ellipsis when its segment is too narrow to fit the full text.
+    .xh-segmented-control-option__label {
+      overflow: hidden;
+      min-width: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // Selected option - a solid tile standing out from the tray.
+    .xh-button.xh-segmented-control-option--selected {
+      background-color: var(--xh-segmented-control-selected-bg);
+      color: var(--xh-segmented-control-selected-text-color);
+    }
+
+    // Per-option intents - keyed off the className applied to each button. Renders the selected
+    // option as a solid fill in the intent color, and tints unselected options' text so an intent
+    // (e.g. danger) reads as such even before it is chosen.
+    @each $intent in (primary, success, warning, danger) {
+      .xh-button.xh-segmented-control-option--#{$intent} {
+        color: var(--xh-intent-#{$intent}-text-color);
+      }
+
+      .xh-button.xh-segmented-control-option--#{$intent}.xh-segmented-control-option--selected {
+        background-color: var(--xh-intent-#{$intent});
+        color: var(--xh-white);
+      }
+    }
+
+    // Fill mode (default) - options grow to fill the available width. The basis set here is `auto`
+    // (content), so without `equalSegmentWidths` each option keeps its content width and only the
+    // leftover space is shared out - a wider label yields a wider segment. The equal-widths rule
+    // below (the default) overrides this basis. Options still shrink + ellipsis (see above) when
+    // the set genuinely cannot fit.
+    &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
+      flex: 1 1 auto;
+    }
+
+    // Equal-width segments (default, via the `equalSegmentWidths` prop) - a 0 flex-basis divides
+    // the row into equal parts regardless of label length, the conventional segmented-control
+    // appearance. Higher specificity than the content-basis rule above, so it wins when applied.
+    &.xh-segmented-control--fill.xh-segmented-control--equal-widths
+      .xh-button.xh-segmented-control-option {
+      flex-basis: 0;
+    }
+
+    // Outlined mode - border around the tray with no inner background fill.
+    &.xh-segmented-control--outlined {
+      background-color: transparent;
+      border: 1px solid var(--xh-border-color);
+
+      // Reserve border space on every option so selecting one does not shift the row. The
+      // transparent tray offers no recessed backdrop to set a filled tile against, so indicate
+      // selection with a ring instead - currentColor keeps it in step with the option's
+      // text / intent color.
+      .xh-button.xh-segmented-control-option {
+        border: 1px solid transparent;
+      }
+
+      .xh-button.xh-segmented-control-option--selected {
+        border-color: currentColor;
+      }
+    }
+
+    @each $intent in (primary, success, warning, danger) {
+      &.xh-segmented-control--outlined.xh-segmented-control--#{$intent} {
+        border-color: var(--xh-intent-#{$intent});
+      }
+    }
+
+    // Validation borders
+    &.xh-input--invalid {
+      border: var(--xh-form-field-invalid-border);
+    }
+
+    &.xh-input--warning {
+      border: var(--xh-form-field-warning-border);
+    }
+
+    &.xh-input--info {
+      border: var(--xh-form-field-info-border);
+    }
+  }
+}

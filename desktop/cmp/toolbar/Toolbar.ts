@@ -45,22 +45,29 @@ export interface ToolbarProps extends HoistProps, BoxProps {
     minVisibleItems?: number;
 }
 
+export interface ToolbarDefaults {
+    compact?: boolean;
+}
+
 /**
  * A toolbar with built-in styling and padding.
  * In horizontal toolbars, items which overflow can be collapsed into a drop-down menu.
  */
-export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
+export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps, ToolbarDefaults>({
     displayName: 'Toolbar',
     model: false,
     memo: false,
     observer: false,
     className: 'xh-toolbar',
+    defaults: {
+        compact: false
+    },
 
     render(
         {
             children,
             className,
-            compact = false,
+            compact = Toolbar.defaults.compact,
             vertical = false,
             enableOverflowMenu = false,
             collapseFrom = 'end',

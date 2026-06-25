@@ -10,6 +10,19 @@ import {BaseRow} from '../row/BaseRow';
 import {LeafRow} from '../row/LeafRow';
 import {RowUpdate} from '../row/RowUpdate';
 
+/**
+ * Abstract base class for Cube field aggregation functions.
+ *
+ * Subclasses implement {@link aggregate} to compute a summary value for a set of rows, and
+ * may optionally override {@link replace} to efficiently update the aggregation when a single
+ * child row changes (the default re-aggregates from scratch).
+ *
+ * Standard implementations are provided for common operations: sum, average, min, max,
+ * unique, count, and null. Custom aggregators can extend this class for application-specific
+ * aggregation logic.
+ *
+ * @see CubeField.aggregator
+ */
 export abstract class Aggregator {
     /**
      * Does this aggregator depend only on leaf nodes contained by the node being aggregated?

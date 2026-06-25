@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import copy from 'clipboard-copy';
+import {copyToClipboard} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
@@ -102,7 +102,7 @@ function buildMenuItems(
     return ret.filter(filterConsecutiveMenuSeparators());
 }
 
-/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. **/
+/** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
 function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
     switch (token) {
         case '-':
@@ -129,7 +129,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                                 column,
                                 node
                             });
-                        copy(value);
+                        copyToClipboard(value);
                     }
                 }
             });
@@ -280,15 +280,13 @@ function levelExpandAction(gridModel: GridModel): RecordAction {
     return new RecordAction({
         text: 'Expand to...',
         displayFn: () => {
-            const {maxDepth, expandLevel, resolvedLevelLabels} = gridModel;
+            const {maxDepth, resolvedLevelLabels} = gridModel;
 
             // Don't show for flat grid models or if we don't have labels
             if (!maxDepth || !resolvedLevelLabels) return {hidden: true};
 
             const items = resolvedLevelLabels.map((label, idx) => {
-                const isCurrLevel =
-                    expandLevel === idx ||
-                    (expandLevel > maxDepth && idx === resolvedLevelLabels.length - 1);
+                const isCurrLevel = gridModel.isCurrentExpandLevel(idx);
 
                 return {
                     icon: isCurrLevel ? Icon.check() : null,

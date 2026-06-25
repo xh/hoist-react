@@ -14,6 +14,14 @@ import '@xh/hoist/mobile/register';
 import {PageConfig, PageModel} from './PageModel';
 import {findScrollableParent, isDraggableEl} from './impl/Utils';
 
+/**
+ * Configuration for a {@link NavigatorModel} - the primary stack-based navigation controller
+ * for mobile Hoist apps. Supports swipe-based page transitions, pull-to-refresh, and
+ * configurable render/refresh strategies.
+ *
+ * @see NavigatorModel
+ * @see PageConfig
+ */
 export interface NavigatorConfig {
     /** Configs for PageModels, representing all supported pages within this Navigator/App. */
     pages: PageConfig[];

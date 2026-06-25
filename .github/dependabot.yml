@@ -1,4 +1,12 @@
 version: 2
+# Auth for the private Font Awesome registry. The token lives in Dependabot
+# secrets (separate from Actions secrets) so the updater can resolve
+# @fortawesome/* packages from npm.fontawesome.com.
+registries:
+  fontawesome:
+    type: npm-registry
+    url: https://npm.fontawesome.com
+    token: ${{secrets.FONTAWESOME_PACKAGE_TOKEN}}
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -6,6 +14,21 @@ updates:
       interval: "weekly"
   - package-ecosystem: "npm"
     directory: "/"
+    registries:
+      - fontawesome
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
+    # Group routine version bumps to keep the PR volume manageable. Major
+    # bumps are excluded so they always surface as their own PR for review.
+    groups:
+      production-minor-and-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-minor-and-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"

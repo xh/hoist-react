@@ -135,10 +135,10 @@ the load:
 
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({
-        url: 'api/orders',
-        loadSpec  // Pass to FetchService for auto-refresh awareness
-    });
+    const data = await XH.fetchJson(
+        {url: 'api/orders'},
+        {loadSpec} // Pass to FetchService for auto-refresh awareness
+    );
     if (loadSpec.isStale) return;  // A newer load was triggered — discard results
 
     this.gridModel.loadData(data);
@@ -255,7 +255,7 @@ class PricingService extends HoistService {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const data = await XH.fetchJson({url: 'pricing/latest', loadSpec});
+        const data = await XH.fetchJson({url: 'pricing/latest'}, {loadSpec});
         this.prices = new Map(data.map(it => [it.symbol, it.price]));
     }
 }
@@ -315,7 +315,7 @@ Every call to `doLoadAsync()` receives a `LoadSpec` with these properties:
 
 ```typescript
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const rawData = await XH.fetchJson({url: 'api/positions', loadSpec});
+    const rawData = await XH.fetchJson({url: 'api/positions'}, {loadSpec});
     if (loadSpec.isStale) return;  // A newer load is already in progress
 
     const enriched = await this.enrichDataAsync(rawData);
@@ -462,7 +462,7 @@ class OrderListModel extends HoistModel {
 
     override async doLoadAsync(loadSpec: LoadSpec) {
         try {
-            const orders = await XH.fetchJson({url: 'orders', loadSpec});
+            const orders = await XH.fetchJson({url: 'orders'}, {loadSpec});
             if (loadSpec.isStale) return;
             this.gridModel.loadData(orders);
         } catch (e) {
@@ -540,11 +540,11 @@ class AppModel extends HoistAppModel {
 override async doLoadAsync(loadSpec: LoadSpec) {
     // On auto-refresh, skip expensive reprocessing if the raw data hasn't changed
     if (loadSpec.isAutoRefresh) {
-        const summary = await XH.fetchJson({url: 'positions/summary', loadSpec});
+        const summary = await XH.fetchJson({url: 'positions/summary'}, {loadSpec});
         if (summary.lastModified <= this.lastDataTimestamp) return;
     }
 
-    const data = await XH.fetchJson({url: 'positions/full', loadSpec});
+    const data = await XH.fetchJson({url: 'positions/full'}, {loadSpec});
     if (loadSpec.isStale) return;
 
     this.lastDataTimestamp = data.lastModified;
@@ -633,7 +633,7 @@ clicks the refresh button:
 // ❌ Don't: service has doLoadAsync() but is never wired into the refresh cycle
 class PricingService extends HoistService {
     override async doLoadAsync(loadSpec: LoadSpec) {
-        this.prices = await XH.fetchJson({url: 'pricing/latest', loadSpec});
+        this.prices = await XH.fetchJson({url: 'pricing/latest'}, {loadSpec});
     }
 }
 // AppModel.doLoadAsync() doesn't call XH.pricingService.loadAsync()
@@ -655,13 +655,13 @@ loading). Without staleness checks, out-of-order returns could cause old data to
 ```typescript
 // ❌ Don't: stale data may overwrite fresh data from a newer load
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'positions', loadSpec});
+    const data = await XH.fetchJson({url: 'positions'}, {loadSpec});
     this.gridModel.loadData(data);  // Might be stale!
 }
 
 // ✅ Do: check isStale after each await
 override async doLoadAsync(loadSpec: LoadSpec) {
-    const data = await XH.fetchJson({url: 'positions', loadSpec});
+    const data = await XH.fetchJson({url: 'positions'}, {loadSpec});
     if (loadSpec.isStale) return;
     this.gridModel.loadData(data);
 }

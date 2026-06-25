@@ -6,7 +6,6 @@
  */
 import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
-import composeRefs from '@seznam/compose-react-refs';
 import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
@@ -46,9 +45,10 @@ import type {
 import {computed, observer} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
-import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
+import {type MouseEvent} from 'react';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -136,6 +136,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 ],
                 testId,
                 onKeyDown: impl.onKeyDown,
+                onMouseDown: impl.onViewMouseDown,
                 ref: composeRefs(impl.viewRef, model.viewRef, ref)
             }),
             colChooserModel ? platformColChooser({model: colChooserModel}) : null,
@@ -151,6 +152,10 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 //------------------------
 export class GridLocalModel extends HoistModel {
     override xhImpl = true;
+
+    // Structural "empty" grid space.
+    private static EMPTY_SPACE_SELECTOR =
+        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
 
     @lookup(GridModel)
     private model: GridModel;
@@ -843,6 +848,17 @@ export class GridLocalModel extends HoistModel {
 
     navigateToNextCell = agParams => {
         return this.rowKeyNavSupport?.navigateToNextCell(agParams);
+    };
+
+    // `stopEditingWhenCellsLoseFocus` doesn't fire on clicks in empty grid space (focus stays in
+    // the grid), so commit the active edit on those clicks ourselves. Require exact match on empty
+    // space to avoid interfering with cell editors.
+    onViewMouseDown = (evt: MouseEvent) => {
+        const {model} = this,
+            target = evt.target as HTMLElement;
+        if (model.isEditing && target.matches(GridLocalModel.EMPTY_SPACE_SELECTOR)) {
+            model.agApi?.stopEditing();
+        }
     };
 
     onCellMouseDown = evt => {

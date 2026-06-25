@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import composeRefs from '@seznam/compose-react-refs';
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
@@ -26,6 +25,7 @@ import {
 import {bindable, makeObservable} from '@xh/hoist/mobx';
 import {consumeEvent, debounced, getTestId, isDisplayed, throwIf} from '@xh/hoist/utils/js';
 import {
+    composeRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -156,7 +156,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                         animate,
                         items,
                         selectedTabId: activeTabId,
-                        onChange: tabId => model.activateTab(tabId as string)
+                        onChange: tabId => model.setActiveTabId(tabId as string)
                     }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
@@ -182,7 +182,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 icon,
                 text,
                 disabled,
-                onClick: () => model.activateTab(id),
+                onClick: () => model.setActiveTabId(id),
                 labelElement: button({
                     omit: !showRemoveAction,
                     icon: Icon.x(),

@@ -1,6 +1,10 @@
 # CHANGELOG Entry Format
 
-Reference for writing and reviewing CHANGELOG entries in `CHANGELOG.md`.
+Reference for writing and reviewing CHANGELOG entries in the **hoist-react library** `CHANGELOG.md`.
+
+> **Library vs. Application changelogs:** This guide applies to hoist-react and other Hoist library
+> packages. Hoist *application* changelogs have different formatting requirements — see the
+> [Application Changelogs](#application-changelogs) section at the end of this document.
 
 ## Entry Structure
 
@@ -144,10 +148,30 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
   Concisely note *why* a change is an improvement when not obvious from context (e.g.
   "Improved shutdown handling — ensures full cleanup if the component unmounts unexpectedly").
   Accuracy always takes precedence — bug fixes should be reported clearly as such.
-- **Conciseness**: This is a changelog, not a guide. One bullet = one change, 1-2 lines max.
+- **Conciseness**: This is a changelog, not a guide. One bullet = one change, 1-3 lines max.
+  Upgrade notes provide granular detail when needed; keep changelog entries brief and scannable.
 - **Specificity**: Name classes, methods, and config keys in backticks.
 - **Completeness**: Changes that modify behavior, APIs, or configuration in ways developers need
   to know about should be accounted for. Trivial changes (formatting, internal refactors with no
   behavioral impact, tooling updates) do not need to be included.
 - **No duplication**: Don't repeat the same change across sections. Pick the most relevant section.
+- **Issue/PR links**: Don't add GitHub issue or PR links (e.g. `[#1234]`) to entries by default.
+  Include one only when explicitly requested, or when it points to extensive context that genuinely
+  doesn't fit the changelog's scope. Issue/PR references normally belong in the commit message and
+  PR description, not the changelog.
 - **Punctuation**: End each bullet with a period.
+- **Line wrapping**: Hard-wrap list item text at 100 characters. Use two-space indentation for
+  continuation lines. This keeps the raw Markdown readable in editors and diffs.
+
+## Application Changelogs
+
+Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow different
+formatting rules than the library changelog described above. Application changelogs are parsed at
+runtime by a Hoist release notes feature that displays them within the app UI.
+
+**Do NOT hard-wrap list items in application changelogs.** Each bullet point must be a single
+unwrapped line — the release notes parser treats line breaks within a list item as separate entries.
+Let the viewing tool handle display wrapping.
+
+All other conventions (section headers, voice/tense, backtick-wrapped specificity) apply to both
+library and application changelogs.

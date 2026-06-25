@@ -394,20 +394,13 @@ element factory for functional-style rendering:
 
 ```typescript
 // Library/public component — exports both Component and factory
-export const [MyPanel, myPanel] = hoistCmp.withFactory<MyPanelProps>({
-    displayName: 'MyPanel',
-    model: uses(MyPanelModel),
-    className: 'xh-my-panel',
+export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
+    displayName: 'Grid',
+    model: uses(GridModel),
+    className: 'xh-grid',
 
     render({model, className, ...props}, ref) {
-        return frame({
-            className,
-            ref,
-            item: grid({model: model.gridModel}),
-            bbar: toolbar(
-                button({text: 'Refresh', onClick: () => model.refreshAsync()})
-            )
-        });
+        // ... component render implementation
     }
 });
 ```
@@ -417,16 +410,14 @@ which returns only the element factory. Since these components are rendered via 
 JSX), the PascalCase React component is not needed:
 
 ```typescript
-// App or impl component — only the factory is used
-const myDetail = hoistCmp.factory<MyDetailProps>({
-    displayName: 'MyDetail',
-    model: uses(MyDetailModel),
+// App component — only the factory is used.
+const tradeDetail = hoistCmp.factory<TradeDetailProps>({
+    displayName: 'TradeDetail',
+    model: uses(TradeDetailModel),
+    className: 'myapp-trade-detail',
 
-    render({model}) {
-        return vbox(
-            label(model.title),
-            grid({model: model.gridModel})
-        );
+    render({model, className}) {
+        // ... component render implementation
     }
 });
 ```
@@ -461,6 +452,16 @@ render({model, className, ...rest}, ref) {
 Always set `displayName` on components. It appears in React DevTools and error messages. It should
 match the PascalCase export name.
 
+### `className`
+
+Define a base CSS class in the component spec rather than hardcoding it inside the render function.
+The framework automatically merges the spec's base class with any `className` passed by callers, so
+every component consistently supports CSS class overrides without manual merging in render. The
+merged value is provided to `render()` via props — apply it to the component's root element.
+
+The `xh-` prefix is reserved for Hoist library components; applications should standardize on their
+own app-specific prefix.
+
 ### Element Factories vs JSX
 
 Hoist strongly prefers element factory calls over JSX. Factories are functions that take a config
@@ -485,6 +486,13 @@ Factories also accept children as direct arguments when no other props are neede
 ```typescript
 hbox(leftPanel(), rightPanel())
 ```
+
+**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
+component, the render function receives those values as the standard React `children` prop, not as
+`items`. The canonical container pattern is to destructure `children` from props and pass them on
+to an inner factory as `items`. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
+in the core README for the full explanation.
 
 ## Export Patterns
 
@@ -606,6 +614,29 @@ Public APIs use TSDoc comments (`/** ... */`). TSDoc syntax is checked by ESLint
  */
 loadData(rawData: PlainObject[], rawSummaryData?: PlainObject) { ... }
 ```
+Match the existing comment density and style in the file. Comments should describe intent for a
+future reader who has no knowledge of any particular edit, or the history of the code in question.
+Rarely should comments reference what changed, what was removed, or what's new.
+
+Generally, class- and method-level (TSDoc) comments should focus on the **public API surface** -
+what a caller needs to know to use the component, model, service, or method correctly - rather
+than narrating implementation details. Implementation notes belong in inline code comments next
+to the code they describe.
+
+This is especially important for **Hoist library code itself**, which is consumed by downstream
+applications: the TSDoc on a public type or method is effectively its contract, and should be
+written from the caller's perspective.
+
+### Avoid Em Dashes in Code Comments
+
+Use ` - ` (spaced hyphen) rather than em dashes (`—`) for parenthetical asides in `.ts`
+code comments and JSDoc. Em dashes can cause encoding issues with tooling (e.g. grep, MCP
+tools) and offer no benefit in a monospace code context. Em dashes are fine in prose-style
+`.md` documentation where they render naturally.
+
+Other Unicode characters (arrows like `→`, accented letters, math symbols, etc.) are fine in
+code comments when they aid clarity. The em-dash rule is specifically about the ambiguity
+and tooling friction that character introduces, not a blanket ban on Unicode.
 
 ### Observable Annotation Comments
 

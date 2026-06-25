@@ -28,12 +28,14 @@ export const aboutDialog = hoistCmp.factory({
             icon: Icon.info(),
             title: `About ${XH.appName}`,
             className: 'xh-about-dialog',
+            testId: 'xh-about-dialog',
             item: model.getTable(),
             isOpen: model.isOpen,
             bbar: [
                 button({
                     text: 'Send Client Health Report',
                     icon: Icon.health(),
+                    testId: 'xh-about-health-report-btn',
                     omit: !XH.clientHealthService.enabled,
                     onClick: async () => {
                         try {
@@ -51,6 +53,7 @@ export const aboutDialog = hoistCmp.factory({
                 button({
                     text: 'Close',
                     outlined: true,
+                    testId: 'xh-about-close-btn',
                     onClick: () => model.hide()
                 })
             ]

@@ -77,6 +77,17 @@ import type {
     CellClickedEvent
 } from '@xh/hoist/kit/ag-grid';
 
+/**
+ * Configuration object for defining a {@link Column} within a {@link GridModel}.
+ *
+ * Passed as plain objects in the `columns` array of a {@link GridConfig}. Each spec must
+ * identify its data via `field` (and/or `colId`). All other properties are optional and
+ * have sensible defaults - many are derived from the corresponding {@link Field} definition
+ * on the grid's store when available (e.g. `displayName`, `align`, `sortingOrder`).
+ *
+ * @see Column
+ * @see GridModel
+ */
 export interface ColumnSpec {
     /**
      * Name of data store field to display within the column, or object containing properties
@@ -241,7 +252,20 @@ export interface ColumnSpec {
      */
     pinned?: boolean | HSide;
 
-    /** Function returning a React Element for each cell value in this Column.*/
+    /**
+     * Function returning a React Element for each cell value in this Column.
+     *
+     * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
+     * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
+     * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
+     * `boolCheck` from `@xh/hoist/cmp/grid`) which bundle a renderer with appropriate alignment,
+     * sorting, and export formatting.
+     *
+     * For custom rendering based on record data beyond this column's field, set
+     * `rendererIsComplex: true` to ensure cells refresh on any record change.
+     *
+     * See the grid package README (`cmp/grid/README.md`) for renderer patterns and examples.
+     */
     renderer?: ColumnRenderer;
 
     /**
@@ -406,7 +430,23 @@ export interface ColumnSpec {
 
 /**
  * Cross-platform definition and API for a standardized Grid column.
- * Provided to GridModels as plain configuration objects.
+ *
+ * Columns are defined as plain {@link ColumnSpec} objects within the `columns` array of a
+ * {@link GridConfig} - they are never constructed directly. GridModel also supports
+ * `colDefaults` for shared config applied to all columns, and `GridModel.defaults.colDefaults`
+ * for app-wide column defaults. Columns can be nested within {@link ColumnGroup}s for
+ * multi-level headers.
+ *
+ * Every column must resolve to a unique `colId`, which defaults to `field` when not set.
+ * If two columns reference the same `field`, provide an explicit `colId` on one of them.
+ *
+ * See {@link ColumnSpec} for all available configuration properties, and the grid package
+ * README (`cmp/grid/README.md`) for full configuration guidance, renderer patterns, and pitfalls.
+ *
+ * @see GridModel
+ * @see ColumnGroup
+ *
+ * @mcpHint column configuration for grids
  */
 export class Column {
     static DEFAULT_WIDTH = 60;
@@ -771,14 +811,12 @@ export class Column {
                 suppressKeyboardEvent: ({editing, event}) => {
                     if (!editing) return false;
 
-                    // Avoid stomping on react-select menus in editors
-                    const {gridModel, colId} = this,
-                        editor = gridModel.agApi.getCellEditorInstances({columns: [colId]})[0],
-                        // @ts-ignore -- private
-                        reactSelectState = editor?.componentInstance?.reactSelect?.state;
-                    // menuIsOpen will be undefined on AsyncSelect due to a react-select bug,
-                    // but loadedInputValue should be truthy when the menu is open
-                    if (reactSelectState?.menuIsOpen || reactSelectState?.loadedInputValue) {
+                    // Let the editor's Select handle keys (Enter/Esc/arrows) while its menu
+                    // is open, instead of having ag-grid commit or cancel the edit.
+                    const {colId} = this,
+                        {agApi} = this.gridModel,
+                        editor = agApi.getCellEditorInstances({columns: [colId]})[0] as any;
+                    if (editor?.componentInstance?.reactSelect?.props?.menuIsOpen) {
                         return true;
                     }
 

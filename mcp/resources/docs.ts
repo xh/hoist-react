@@ -8,6 +8,7 @@
 import {McpServer, ResourceTemplate} from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import {buildRegistry, loadDocContent} from '../data/doc-registry.js';
+import {resolveDocId} from '../data/doc-id-resolver.js';
 import {log} from '../util/logger.js';
 import {resolveRepoRoot} from '../util/paths.js';
 
@@ -106,15 +107,29 @@ export function registerDocResources(server: McpServer): void {
         },
         async (uri, variables) => {
             const docId = variables.docId as string;
-            const entry = registry.find(e => e.id === docId);
+            // Tolerant resolution: exact match always wins, then trivial normalization,
+            // alias lookup (auto-generated shortenings like dropped `/README.md`, dropped
+            // `docs/` prefix, and last-segment shortcuts, plus explicit registry aliases),
+            // then suffix completion as a fallback. See mcp/data/doc-id-resolver.ts for the
+            // full tier ordering.
+            const result = resolveDocId(registry, docId);
 
-            if (!entry) {
-                const availableIds = registry.map(e => e.id).join(', ');
-                throw new Error(`Unknown document ID: "${docId}". Available IDs: ${availableIds}`);
+            if (result.kind === 'unknown') {
+                const tail =
+                    result.suggestions.length > 0
+                        ? `Did you mean one of: ${result.suggestions.join(', ')}?`
+                        : 'Use the doc list to discover valid IDs.';
+                throw new Error(`Unknown document ID: "${docId}". ${tail}`);
             }
 
             return {
-                contents: [{uri: uri.href, text: loadDocContent(entry), mimeType: 'text/markdown'}]
+                contents: [
+                    {
+                        uri: uri.href,
+                        text: loadDocContent(result.entry),
+                        mimeType: 'text/markdown'
+                    }
+                ]
             };
         }
     );

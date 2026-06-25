@@ -27,7 +27,6 @@ kit/
 ├── highcharts/           # Highcharts install function with default config
 ├── onsen/                # Onsen UI wrappers with HoistModel prop stripping
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
-├── react-dates/          # Date picker re-export with local CSS fix
 ├── react-dropzone/       # File drop zone re-export
 ├── react-markdown/       # Markdown renderer re-export
 ├── react-select/         # Select variants (async, creatable, windowed)
@@ -144,7 +143,6 @@ with several patches applied directly to GoldenLayout's internal classes:
 | Library | Kit Sub-package | Used By | Purpose |
 |---------|-----------------|---------|---------|
 | react-beautiful-dnd | `react-beautiful-dnd/` | DashCanvas widget reordering | Drag-and-drop with `DragDropContext`, `Droppable`, `Draggable` |
-| react-dates | `react-dates/` | DateInput (desktop) | `SingleDatePicker` with local CSS fix |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |
 | Swiper | `swiper/` | Mobile TabContainer | Touch slider with creative effect for swipeable tabs |
@@ -177,8 +175,14 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/kit/blueprint';
 ```
 
-The exception is if you need a Blueprint or other library component that Hoist does not wrap (e.g.
-`Tree`, `EditableText`).
+The notable exception is **Blueprint's `dialog`** — Hoist does not yet provide its own Dialog
+component wrapper ([#861](https://github.com/xh/hoist-react/issues/861)), so applications import
+`dialog` directly from `@xh/hoist/kit/blueprint` for custom modal dialogs. This is the
+established pattern used throughout the framework and applications. See the
+[Dialogs section](../desktop/README.md#dialogs) of the desktop README for usage guidance.
+
+Other Blueprint or library components that Hoist does not wrap (e.g. `Tree`, `EditableText`)
+can also be imported from Kit when needed.
 
 ## Common Pitfalls
 

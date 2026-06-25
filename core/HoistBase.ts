@@ -14,6 +14,7 @@ import {
     when as mobxWhen
 } from '@xh/hoist/mobx';
 import {
+    apiDeprecated,
     getOrCreate,
     logDebug,
     logError,
@@ -23,6 +24,7 @@ import {
     withDebug,
     withInfo
 } from '@xh/hoist/utils/js';
+import {Runner} from './runner/Runner';
 import {
     debounce as lodashDebounce,
     isFunction,
@@ -34,7 +36,18 @@ import {
 } from 'lodash';
 import {IAutorunOptions, IReactionOptions} from 'mobx/dist/api/autorun';
 import {IEqualsComparer, IReactionDisposer} from 'mobx/dist/internal';
-import {DebounceSpec, PersistableState, PersistenceProvider, PersistOptions, Some, XH} from './';
+import {
+    CallContextLike,
+    DebounceSpec,
+    PersistableState,
+    PersistenceProvider,
+    persistOptions,
+    PersistOptions,
+    FullSpanConfig,
+    Some,
+    Span,
+    XH
+} from './';
 import {wait} from '@xh/hoist/promise';
 
 declare const xhIsDevelopmentMode: boolean;
@@ -53,6 +66,8 @@ export interface HoistBaseClass {
  * @see HoistModel
  * @see HoistService
  * @see Store
+ *
+ * @mcpHint base class for all Hoist objects (models, services, stores)
  */
 export abstract class HoistBase {
     static get isHoistBase(): boolean {
@@ -86,6 +101,12 @@ export abstract class HoistBase {
     /** Default persistence options for this object. */
     persistWith: PersistOptions = null;
 
+    /**
+     * Optional prefix applied to span names produced for this object.
+     * When non-null, the string "[prefix]." is pre-pended to the supplied span name.
+     */
+    telemetryPrefix: string = null;
+
     //--------------------------------------------------
     // Logging Delegates
     //--------------------------------------------------
@@ -111,6 +132,27 @@ export abstract class HoistBase {
 
     withDebug<T>(messages: Some<unknown>, fn: () => T): T {
         return withDebug<T>(messages, fn, this);
+    }
+
+    /** @deprecated - use {@link runner} to start a {@link Runner} chain. */
+    withSpan<T>(config: string | FullSpanConfig, fn: (span: Span) => Promise<T>): Promise<T> {
+        apiDeprecated('HoistBase.withSpan', {
+            v: 'v88',
+            msg: 'Use runner().span() to start a Runner chain instead.',
+            source: this
+        });
+        let cfg = isString(config) ? {name: config} : config,
+            {telemetryPrefix} = this,
+            name = telemetryPrefix ? telemetryPrefix + '.' + cfg.name : cfg.name;
+        cfg = {caller: this, ...cfg, name};
+        return XH.traceService.withSpan(cfg, fn);
+    }
+
+    /**
+     * Create a {@link Runner} with an optional initial call context and this object as the caller.
+     */
+    runner(ctx: CallContextLike = {}): Runner {
+        return Runner.create(ctx, this);
     }
 
     /**
@@ -273,10 +315,7 @@ export abstract class HoistBase {
     markPersist<P extends keyof this & string>(property: P, options: PersistOptions = {}) {
         // Read from and attach to Provider, failing gently
         PersistenceProvider.create({
-            persistOptions: {
-                path: property,
-                ...PersistenceProvider.mergePersistOptions(this.persistWith, options)
-            },
+            persistOptions: persistOptions({path: property}, this.persistWith, options),
             owner: this,
             target: {
                 getPersistableState: () => new PersistableState(this[property]),

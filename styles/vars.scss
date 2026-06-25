@@ -262,11 +262,13 @@ body {
   --xh-bg: var(--bg, white);
   --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-light));
   --xh-bg-highlight: var(--bg-highlight, hsl(205, 85%, 85%));
+  --xh-bg-highlight-alt: var(--bg-highlight-alt, hsl(45, 100%, 70%));
 
   &.xh-dark {
     --xh-bg: var(--bg, var(--xh-black));
     --xh-bg-alt: var(--bg-alt, var(--xh-blue-gray-dark));
     --xh-bg-highlight: var(--bg-highlight, hsl(200, 40%, 20%));
+    --xh-bg-highlight-alt: var(--bg-highlight-alt, hsl(45, 80%, 35%));
   }
 
   //-----------------------------------------
@@ -342,7 +344,12 @@ body {
     --xh-button-active-text-color: var(--button-active-text-color, white);
     --xh-button-bg: var(--button-bg, #{mc('blue-grey', '600')});
     --xh-button-text-color: var(--button-text-color, white);
-    --xh-button-height: var(--button-height, 28px);
+    // Default to a comfortable touch height for buttons in body content - a bit more compact than
+    // the 44px toolbar/touch-target max, which reads as oversized for XH's denser style. Toolbars
+    // derive their own slightly smaller button height from the bar size (see Toolbar.scss).
+    --xh-button-height: var(--button-height, 40px);
+    // Slightly rounder corners to suit the taller mobile button (the desktop default is tighter).
+    --xh-button-border-radius-px: var(--button-border-radius-px, 8px);
     --xh-toolbar-button-bg: var(--toolbar-button-bg, var(--xh-button-bg));
 
     // Light theme pressed bg for 'minimal' / 'outlined'
@@ -575,6 +582,11 @@ body {
   --xh-grid-selected-row-text-color: var(--grid-selected-row-text-color, var(--xh-grid-text-color));
   --xh-grid-summary-row-border-color: var(--grid-summary-row-border-color, var(--xh-grid-border-color));
   --xh-grid-text-color: var(--grid-text-color, var(--xh-text-color));
+  --xh-grid-tooltip-bg: var(--grid-tooltip-bg, var(--xh-bg-alt));
+  --xh-grid-tooltip-border: var(--grid-tooltip-border, var(--xh-border-solid));
+  --xh-grid-tooltip-border-radius: var(--grid-tooltip-border-radius, var(--xh-border-radius-px));
+  --xh-grid-tooltip-max-width: var(--grid-tooltip-max-width, 400px);
+  --xh-grid-tooltip-padding: var(--grid-tooltip-padding, var(--xh-pad-half-px));
   --xh-grid-tree-indent: var(--grid-tree-indent, 1.2em);
   --xh-grid-tree-icon-px: var(--grid-tree-icon-px, 10px);
 
@@ -696,6 +708,7 @@ body {
   --xh-loading-indicator-bg: var(--loading-indicator-bg, #{mc('blue-grey', '100')});
   --xh-loading-indicator-border-color: var(--loading-indicator-border-color, var(--xh-border-color));
   --xh-loading-indicator-color: var(--loading-indicator-color, #{mc('blue-grey', '600')});
+  --xh-loading-indicator-spinner-color: var(--loading-indicator-spinner-color, var(--xh-loading-indicator-color));
 
   &.xh-dark {
     --xh-mask-bg: var(--mask-bg, rgba(0, 0, 0, 0.4));
@@ -811,6 +824,15 @@ body {
 
 
   //------------------------
+  // Spinner
+  //------------------------
+  --xh-spinner-color: var(--spinner-color, #{mc('blue-grey', '400')});
+
+  &.xh-dark {
+    --xh-spinner-color: var(--spinner-color, var(--xh-blue-gray));
+  }
+
+  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
@@ -821,6 +843,21 @@ body {
   --xh-tab-font-family: var(--tab-font-family, var(--xh-font-family));
   --xh-tab-font-size: var(--tab-font-size, var(--xh-font-size));
   --xh-tab-font-size-px: calc(var(--xh-tab-font-size) * 1px);
+
+  // Vertical (left/right) TabSwitcher - the styled "rail" of rounded, hoverable items with a
+  // filled active "pill". All overridable via the unprefixed hooks.
+  --xh-tab-switcher-vertical-min-width: var(--tab-switcher-vertical-min-width, auto);
+  --xh-tab-switcher-vertical-padding: var(--tab-switcher-vertical-padding, var(--xh-pad-half-px));
+  --xh-tab-switcher-vertical-border: var(--tab-switcher-vertical-border, var(--xh-border-solid));
+  --xh-tab-switcher-vertical-item-gap: var(--tab-switcher-vertical-item-gap, 2px);
+  --xh-tab-switcher-vertical-item-padding: var(--tab-switcher-vertical-item-padding, var(--xh-pad-half-px) var(--xh-pad-px));
+  --xh-tab-switcher-vertical-item-border-radius: var(--tab-switcher-vertical-item-border-radius, var(--xh-border-radius-px));
+  --xh-tab-switcher-vertical-item-text-color: var(--tab-switcher-vertical-item-text-color, var(--xh-text-color-muted));
+  --xh-tab-switcher-vertical-item-active-text-color: var(--tab-switcher-vertical-item-active-text-color, var(--xh-tab-active-text-color));
+  --xh-tab-switcher-vertical-item-hover-bg: var(--tab-switcher-vertical-item-hover-bg, var(--xh-bg-alt));
+  --xh-tab-switcher-vertical-item-active-bg: var(--tab-switcher-vertical-item-active-bg, var(--xh-bg-highlight));
+  --xh-tab-switcher-vertical-item-font-weight: var(--tab-switcher-vertical-item-font-weight, 500);
+  --xh-tab-switcher-vertical-item-active-font-weight: var(--tab-switcher-vertical-item-active-font-weight, 600);
 
   &.xh-dark {
     --xh-tab-active-text-color: var(--tab-active-text-color, var(--xh-intent-primary-lighter));

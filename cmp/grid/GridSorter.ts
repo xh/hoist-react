@@ -8,12 +8,26 @@ import {isNil, isNumber, isString} from 'lodash';
 
 export type GridSorterLike = GridSorterSpec | string | GridSorter;
 
+/**
+ * Plain-object form of a {@link GridSorter}, specifying a column sort direction.
+ *
+ * Accepted by {@link GridModel.sortBy} alongside pipe-delimited strings and GridSorter
+ * instances. The framework parses these into immutable GridSorter objects automatically.
+ */
 export interface GridSorterSpec {
     colId: string;
     sort?: 'asc' | 'desc' | 'ASC' | 'DESC';
+    /** True to sort by absolute value, ignoring sign. */
     abs?: boolean;
 }
 
+/**
+ * Immutable value object representing a sort specification for a single grid column.
+ *
+ * Applications typically don't need to construct these directly - pass `GridSorterSpec` objects
+ * or pipe-delimited strings to {@link GridModel.sortBy} and the framework will parse them
+ * automatically.
+ */
 export class GridSorter {
     readonly colId: string;
     readonly sort: 'asc' | 'desc';
