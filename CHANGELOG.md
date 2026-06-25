@@ -1,5 +1,7 @@
 # Changelog
 
+## 87.0.0-SNAPSHOT - unreleased
+
 ## 86.2.0 - 2026-06-25
 
 ### 🎁 New Features
