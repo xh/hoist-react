@@ -2,6 +2,14 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Typescript API Adjustments
+
+* Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
+  replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
+
+
+## 86.2.0 - 2026-06-25
+
 ### 🎁 New Features
 
 * `CodeInput` / `JsonInput` now auto-format content for display via their configured `formatter`,
@@ -29,6 +37,7 @@
   focused and committed (full-precision) value.
 * Fixed inline grid editing not ending when clicking empty grid space to the right of the last
   column or below the last row - such clicks now commit the active edit.
+* Fixed `Icon.placeholder()` to render with the correct width.
 * `CheckboxButton` no longer leaks `HoistInputProps` into underlying HTML `<button>` element.
 * Fixed `Select` (and `SelectEditor`) dropdown menu sizing: windowed menus now auto-size to their
   option labels instead of the control/cell width, and an explicit `menuWidth` is respected rather

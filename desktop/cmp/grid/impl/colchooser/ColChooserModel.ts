@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {ColChooserConfig, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
 import {action, makeObservable, observable} from '@xh/hoist/mobx';
 
@@ -14,7 +14,7 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  * manages column state via its own local model.
  * @internal
  */
-export class ColChooserModel extends HoistModel {
+export class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
     gridModel: GridModel;
