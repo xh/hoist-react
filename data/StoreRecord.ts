@@ -29,10 +29,13 @@ import equal from 'fast-deep-equal';
  *
  * @mcpHint individual record within a Store
  */
-export class StoreRecord {
-    readonly id: StoreRecordId;
+export class StoreRecord<
+    T extends PlainObject = PlainObject,
+    Id extends StoreRecordId = RecordId<T>
+> {
+    readonly id: Id;
     readonly parentId: StoreRecordId;
-    readonly store: Store;
+    readonly store: Store<T, Id>;
     readonly isSummary: boolean;
     readonly treePath: StoreRecordId[];
 
@@ -47,7 +50,7 @@ export class StoreRecord {
      *
      * Call {@link getValues} for an object providing an explicit enumeration of all field values.
      */
-    readonly data: PlainObject;
+    readonly data: T & {id: Id};
 
     /**
      * An object containing the fully committed field values for this record.
@@ -55,7 +58,7 @@ export class StoreRecord {
      * This object has the same form as `data`. If this record has not been locally modified, this
      * property will point to the same object as `data`.
      */
-    readonly committedData: PlainObject;
+    readonly committedData: T & {id: Id};
 
     /**
      * Unique ID for representing record within ag-Grid node API.
@@ -89,7 +92,7 @@ export class StoreRecord {
         return this.committedData === this.data;
     }
 
-    get parent(): StoreRecord {
+    get parent(): StoreRecord<T, Id> {
         return this.parentId != null ? this.store.getById(this.parentId) : null;
     }
 
@@ -107,32 +110,32 @@ export class StoreRecord {
     }
 
     /** Children of this record, respecting any filter (if applied). */
-    get children(): StoreRecord[] {
+    get children(): StoreRecord<T, Id>[] {
         return this.store.getChildrenById(this.id, true);
     }
 
     /** All children of this record, unfiltered. */
-    get allChildren(): StoreRecord[] {
+    get allChildren(): StoreRecord<T, Id>[] {
         return this.store.getChildrenById(this.id, false);
     }
 
     /** Descendants of this record, respecting any filter (if applied). */
-    get descendants(): StoreRecord[] {
+    get descendants(): StoreRecord<T, Id>[] {
         return this.store.getDescendantsById(this.id, true);
     }
 
     /** All descendants of this record, unfiltered. */
-    get allDescendants(): StoreRecord[] {
+    get allDescendants(): StoreRecord<T, Id>[] {
         return this.store.getDescendantsById(this.id, false);
     }
 
     /** Ancestors of this record, respecting any filter (if applied). */
-    get ancestors(): StoreRecord[] {
+    get ancestors(): StoreRecord<T, Id>[] {
         return this.store.getAncestorsById(this.id, true);
     }
 
     /** All ancestors of this record, unfiltered. */
-    get allAncestors(): StoreRecord[] {
+    get allAncestors(): StoreRecord<T, Id>[] {
         return this.store.getAncestorsById(this.id, false);
     }
 
@@ -190,12 +193,12 @@ export class StoreRecord {
      * Unlike 'data', the object returned by this method contains an 'own' property for every
      * Field in the Store. Useful for cloning/iterating over all values (including defaults).
      */
-    getValues(): PlainObject {
+    getValues(): T & {id: Id} {
         const ret = {id: this.id};
         this.fields.forEach(({name}) => {
             ret[name] = this.data[name];
         });
-        return ret;
+        return ret as T & {id: Id};
     }
 
     /**
@@ -236,12 +239,12 @@ export class StoreRecord {
         );
         data.id = id;
 
-        this.id = id;
+        this.id = id as Id;
         this.agId = 'ag_' + id.toString();
-        this.store = store;
-        this.data = data;
+        this.store = store as Store<T, Id>;
+        this.data = data as T & {id: Id};
         this.raw = raw;
-        this.committedData = committedData;
+        this.committedData = committedData as T & {id: Id};
         this.parentId = parent?.id;
         /*
          * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
@@ -257,7 +260,7 @@ export class StoreRecord {
      * @param fn - the function to call.
      * @param fromFiltered - true to skip records excluded by any active filter.
      */
-    forEachChild(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
+    forEachChild(fn: (r: StoreRecord<T, Id>) => void, fromFiltered: boolean = false) {
         this.store.getChildrenById(this.id, fromFiltered).forEach(fn);
     }
 
@@ -266,7 +269,7 @@ export class StoreRecord {
      * @param fn - the function to call.
      * @param fromFiltered - true to skip records excluded by any active filter.
      */
-    forEachDescendant(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
+    forEachDescendant(fn: (r: StoreRecord<T, Id>) => void, fromFiltered: boolean = false) {
         this.store.getDescendantsById(this.id, fromFiltered).forEach(fn);
     }
 
@@ -275,7 +278,7 @@ export class StoreRecord {
      * @param fn - the function to call.
      * @param fromFiltered - true to skip records excluded by any active filter.
      */
-    forEachAncestor(fn: (r: StoreRecord) => void, fromFiltered: boolean = false) {
+    forEachAncestor(fn: (r: StoreRecord<T, Id>) => void, fromFiltered: boolean = false) {
         this.store.getAncestorsById(this.id, fromFiltered).forEach(fn);
     }
 
@@ -307,6 +310,13 @@ export class StoreRecord {
 
 /** Unique identifier for a StoreRecord within a Store. */
 export type StoreRecordId = number | string;
+
+/**
+ * Resolves the id type for a record from its data shape `T`. If `T` declares an `id` property,
+ * that property's type is used (e.g. `number`); otherwise falls back to the broad `StoreRecordId`.
+ * Used as the default for the second type parameter of {@link StoreRecord} and {@link Store}.
+ */
+export type RecordId<T> = T extends {id: infer I extends StoreRecordId} ? I : StoreRecordId;
 
 /** A Hoist StoreRecord, or an ID for one. */
 export type StoreRecordOrId = StoreRecordId | StoreRecord;
