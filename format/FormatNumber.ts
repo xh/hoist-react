@@ -14,6 +14,7 @@ import {
     isNil,
     isNumber,
     isString,
+    isUndefined,
     round
 } from 'lodash';
 import Numbro from 'numbro';
@@ -125,9 +126,17 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
 }
 
 export interface QuantityFormatOptions extends NumberFormatOptions {
+    /** True to compact values \>= 1 million into units of millions (m). Default true. */
     useMillions?: boolean;
 
+    /** True to compact values \>= 1 billion into units of billions (b). Default true. */
     useBillions?: boolean;
+
+    /**
+     * True to compact to m/b units only when no precision is lost, else render the full value.
+     * Default false.
+     */
+    lossless?: boolean;
 }
 
 /** Config for pos/neg/neutral color classes. */
@@ -279,20 +288,40 @@ export function fmtQuantity(v: number, opts?: QuantityFormatOptions) {
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
-    const lessThanM = Math.abs(v) < MILLION,
-        lessThanB = Math.abs(v) < BILLION;
-
     defaults(opts, {
         ledger: true,
         label: true,
-        precision: lessThanM ? 0 : 2,
         useMillions: true,
-        useBillions: true
+        useBillions: true,
+        lossless: false
     });
 
-    if (lessThanM || !opts.useMillions) return fmtNumber(v, opts);
-    if (lessThanB || !opts.useBillions) return fmtMillions(v, opts);
-    return fmtBillions(v, opts);
+    const absV = Math.abs(v),
+        lessM = absV < MILLION,
+        lessB = absV < BILLION,
+        targetPrecision = opts.precision ?? (lessM ? 0 : 2);
+
+    // Compute scaling, if any (Lossless flag may preclude).
+    let scale = !lessB && opts.useBillions ? BILLION : !lessM && opts.useMillions ? MILLION : null;
+    if (scale && opts.lossless) {
+        const precision = parsePrecision(absV / scale, targetPrecision),
+            lossy = v % (scale / 10 ** precision) !== 0;
+        if (lossy) scale = null;
+    }
+
+    // Resolve render precision (unless the caller set one).
+    if (isUndefined(opts.precision)) {
+        opts.precision = opts.lossless ? null : targetPrecision;
+    }
+
+    switch (scale) {
+        case BILLION:
+            return fmtBillions(v, opts);
+        case MILLION:
+            return fmtMillions(v, opts);
+        default:
+            return fmtNumber(v, opts);
+    }
 }
 
 /**
@@ -470,6 +499,23 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
     return !isString(possibleStyles) ? possibleStyles : {};
 }
 
+/**
+ * Resolve a precisionSpec to a concrete number of decimal places. A fixed precision is used as-is
+ * (capped at max), while 'auto' is derived from the scale of the value.
+ */
+function parsePrecision(v: number, precisionSpec: Precision): number {
+    // Fixed precision - use requested, capped at max.
+    if (precisionSpec !== 'auto') return Math.min(precisionSpec, MAX_NUMERIC_PRECISION);
+
+    // 'auto' - derive from the scale of the value.
+    const absVal = Math.abs(v);
+    if (absVal === 0) return 2;
+    if (absVal < 0.01) return 6;
+    if (absVal < 100) return 4;
+    if (absVal < 10000) return 2;
+    return 0;
+}
+
 function buildFormatConfig(
     v: number,
     precisionSpec: Precision,
@@ -480,24 +526,7 @@ function buildFormatConfig(
     const absVal = Math.abs(v),
         config: Numbro.Format = {};
 
-    let precision: number;
-    if (precisionSpec === 'auto') {
-        // Auto-precision - base on scale of number
-        if (absVal === 0) {
-            precision = 2;
-        } else if (absVal < 0.01) {
-            precision = 6;
-        } else if (absVal < 100) {
-            precision = 4;
-        } else if (absVal < 10000) {
-            precision = 2;
-        } else {
-            precision = 0;
-        }
-    } else {
-        // Fixed precision - use requested, capped at max.
-        precision = precisionSpec < MAX_NUMERIC_PRECISION ? precisionSpec : MAX_NUMERIC_PRECISION;
-    }
+    const precision = parsePrecision(v, precisionSpec);
 
     // If zeroPad gte precision, treat as `true` to pad out to (but not beyond) full precision.
     // We don't support applying some precision (rounding) then padding out zeroes after that.
