@@ -9,7 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form';
 import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordAction, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import {RecordAction, RecordActionSpec, RecordId, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -27,8 +27,11 @@ import {RestFormModel} from './impl/RestFormModel';
  * @see RestGridModel
  * @see RestGrid
  */
-export interface RestGridConfig extends GridConfig {
-    store?: RestStore | RestStoreConfig;
+export interface RestGridConfig<
+    T extends PlainObject = PlainObject,
+    Id extends StoreRecordId = RecordId<T>
+> extends GridConfig {
+    store?: RestStore<T, Id> | RestStoreConfig;
 
     /** Prevent users from creating, updating, or destroying a record. Defaults to false. */
     readonly?: boolean;
@@ -103,14 +106,17 @@ export interface RestGridModelDefaults {
  * Core Model for a {@link RestGrid}. Configures the grid's columns, editors, toolbar and
  * context menu actions, and its backing {@link RestStore} for server-side CRUD operations.
  */
-export class RestGridModel extends HoistModel {
+export class RestGridModel<
+    T extends PlainObject = PlainObject,
+    Id extends StoreRecordId = RecordId<T>
+> extends HoistModel {
     /** App-level defaults for RestGridModel. Instance config takes precedence. */
     static defaults: RestGridModelDefaults = {
         showRefreshButton: false,
         unit: 'record'
     };
 
-    declare config: RestGridConfig;
+    declare config: RestGridConfig<T, Id>;
 
     //----------------
     // Properties
@@ -132,19 +138,19 @@ export class RestGridModel extends HoistModel {
             `Are you sure you want to delete ${pluralize(`selected ${this.unit}`, recs.length, true)}?`
     };
 
-    @managed gridModel: GridModel = null;
+    @managed gridModel: GridModel<T, Id> = null;
     @managed formModel: RestFormModel = null;
 
-    get store() {
-        return this.gridModel.store as RestStore;
+    get store(): RestStore<T, Id> {
+        return this.gridModel.store as RestStore<T, Id>;
     }
     get selModel() {
         return this.gridModel.selModel;
     }
-    get selectedRecords() {
+    get selectedRecords(): StoreRecord<T, Id>[] {
         return this.gridModel.selectedRecords;
     }
-    get selectedRecord() {
+    get selectedRecord(): StoreRecord<T, Id> {
         return this.gridModel.selectedRecord;
     }
 
@@ -163,7 +169,7 @@ export class RestGridModel extends HoistModel {
         store,
         appData,
         ...rest
-    }: RestGridConfig) {
+    }: RestGridConfig<T, Id>) {
         super();
         this.readonly = readonly;
         this.editors = editors;
@@ -185,7 +191,7 @@ export class RestGridModel extends HoistModel {
             this.readonly ? this.formModel.openView(row.data) : this.formModel.openEdit(row.data);
         });
 
-        this.gridModel = new GridModel({
+        this.gridModel = new GridModel<T, Id>({
             contextMenu: [...this.menuActions, '-', ...GridModel.defaults.contextMenu],
             exportOptions: {filename: pluralize(unit)},
             store: this.parseStore(store),
@@ -274,7 +280,7 @@ export class RestGridModel extends HoistModel {
     //-----------------
     // Implementation
     //-----------------
-    private parseStore(store: RestStore | RestStoreConfig) {
-        return store instanceof RestStore ? store : this.markManaged(new RestStore(store));
+    private parseStore(store: RestStore<T, Id> | RestStoreConfig): RestStore<T, Id> {
+        return store instanceof RestStore ? store : this.markManaged(new RestStore<T, Id>(store));
     }
 }

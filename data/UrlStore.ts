@@ -16,6 +16,7 @@ import {
     XH
 } from '@xh/hoist/core';
 
+import {RecordId, StoreRecordId} from './StoreRecord';
 import {Store, StoreConfig} from './Store';
 
 export interface UrlStoreConfig extends StoreConfig {
@@ -29,7 +30,10 @@ export interface UrlStoreConfig extends StoreConfig {
 /**
  * A store with built-in support for loading data from a URL.
  */
-export class UrlStore extends Store implements Loadable {
+export class UrlStore<T extends PlainObject = PlainObject, Id extends StoreRecordId = RecordId<T>>
+    extends Store<T, Id>
+    implements Loadable
+{
     url: string;
     dataRoot: string;
 
