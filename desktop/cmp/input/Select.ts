@@ -200,11 +200,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * via labelField/valueField), or primitive.
      *
      * Called once per unresolved value (e.g. multiple times in multi-select mode).
+     * Note that this may include values of `null`/emptyValue if not present in options.
      *
      * Useful with queryFn-based selects, readonly forms, or any case where options
      * may not be loaded when a value is set.
      */
-    lookupFn?: (value: any) => Awaitable<SelectOption | any>;
+    lookupFn?: (value: any | null) => Awaitable<SelectOption | any>;
 }
 
 /**
@@ -459,7 +460,8 @@ class SelectInputModel extends HoistInputModel {
 
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which we will only accept if explicitly present in options.)
+    // (Exception for a null value, which is never synthesized - accepted only if provided via
+    // options or resolved by lookupFn.)
     override toInternal(external) {
         if (this.multiMode) {
             if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
@@ -576,22 +578,23 @@ class SelectInputModel extends HoistInputModel {
         const {lookupFn} = this.componentProps;
         if (!lookupFn) return;
 
-        const ext = this.externalValue;
-        if (isNil(ext) || isEqual(ext, this.emptyValue)) return;
-
-        const values = this.multiMode ? castArray(ext) : [ext];
-        const unresolved = values.filter(v => {
-            if (isNil(v)) return false;
-            return !this.findOption(v, false);
-        });
+        // Resolve any selected value(s) not already matched by options or the lookup cache -
+        // including null / emptyValue, which apps may legitimately wish to assign a label.
+        const ext = this.externalValue,
+            values = this.multiMode ? castArray(ext ?? []) : [ext],
+            unresolved = values.filter(v => !this.findOption(v, false));
 
         if (unresolved.length === 0) return;
 
         try {
             const results = await Promise.all(unresolved.map(v => lookupFn(v)));
-            const resolved = results.map((it, i) =>
-                !isNil(it) ? this.toOption(it, 0) : this.valueToOption(unresolved[i])
-            );
+            const resolved = results.flatMap((it, i) => {
+                if (!isNil(it)) return [this.toOption(it, 0)];
+                // Unresolved - preserve a non-null value via its raw label, but leave a null
+                // value unlabeled so it renders as the empty/placeholder state.
+                const value = unresolved[i];
+                return isNil(value) ? [] : [this.valueToOption(value)];
+            });
             this.setLookupCache([...this._lookupCache, ...resolved]);
         } catch (e) {
             this.logError(e);
@@ -606,8 +609,8 @@ class SelectInputModel extends HoistInputModel {
     @action
     private cleanLookupCache() {
         if (this._lookupCache.length === 0) return;
-        const ext = this.externalValue;
-        const selectedValues = this.multiMode ? castArray(ext ?? []) : isNil(ext) ? [] : [ext];
+        const ext = this.externalValue,
+            selectedValues = this.multiMode ? castArray(ext ?? []) : [ext];
         this._lookupCache = this._lookupCache.filter(opt =>
             selectedValues.some(v => isEqual(v, opt.value))
         );
