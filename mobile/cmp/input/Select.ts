@@ -6,14 +6,7 @@
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {
-    Awaitable,
-    hoistCmp,
-    HoistProps,
-    LayoutProps,
-    PlainObject,
-    SelectOption
-} from '@xh/hoist/core';
+import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -166,18 +159,13 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     valueField?: string;
 
     /**
-     * Function to resolve an option for a value not present in the current options list.
-     * Called when the Select needs to display a selected value but cannot find a
-     * matching option. Returns a single option in the same format as elements of the
-     * `options` and `queryFn` props — a SelectOption object, plain object (processed
-     * via labelField/valueField), or primitive.
+     * Function to generate a `SelectOption` for a (non-null) selected value not present in the
+     * current options list. Return null to fall back to the default value-as-label behavior.
      *
-     * Note that this may include a value of `null`/emptyValue if not present in options.
-     *
-     * Useful with queryFn-based selects, readonly forms, or any case where options
-     * may not be loaded when a value is set.
+     * Useful with queryFn-based selects, readonly forms, or any case where options may not be
+     * loaded when a value is set, ensuring the value renders with its proper label.
      */
-    lookupFn?: (value: any) => Awaitable<SelectOption | any>;
+    generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
@@ -212,7 +200,6 @@ class SelectInputModel extends HoistInputModel {
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
     @bindable.ref internalOptions = [];
-    @observable.ref _lookupCache: SelectOption[] = [];
     @bindable fullscreen = false;
 
     // Prop-backed convenience getters
@@ -260,14 +247,7 @@ class SelectInputModel extends HoistInputModel {
             run: opts => {
                 opts = this.normalizeOptions(opts);
                 this.internalOptions = opts;
-                this.cleanLookupCache();
             },
-            fireImmediately: true
-        });
-
-        this.addReaction({
-            track: () => this.renderValue,
-            run: () => this.triggerLookupIfNeeded(),
             fireImmediately: true
         });
 
@@ -407,7 +387,7 @@ class SelectInputModel extends HoistInputModel {
     // Convert external value into option object(s). Options created if missing - this takes the
     // external value from the model, and we will respect that even if we don't know about it.
     // (Exception for a null value, which is never synthesized - accepted only if provided via
-    // options or resolved by lookupFn.)
+    // options.)
     override toInternal(external) {
         return this.findOption(external, !isNil(external));
     }
@@ -423,13 +403,10 @@ class SelectInputModel extends HoistInputModel {
             }
         }
 
-        // Search lookup cache when searching primary options
-        if (options === this.internalOptions) {
-            const cached = this._lookupCache.find(opt => isEqual(opt.value, value));
-            if (cached) return cached;
-        }
+        if (!createIfNotFound) return null;
 
-        return createIfNotFound ? this.valueToOption(value) : null;
+        // Value not among options - let the app generate an option for it, else synthesize one.
+        return this.componentProps.generateOptionFn?.(value) ?? this.valueToOption(value);
     }
 
     override toExternal(internal) {
@@ -509,46 +486,6 @@ class SelectInputModel extends HoistInputModel {
 
         return loadingMessageFn ? loadingMessageFn(q) : 'Loading...';
     };
-
-    //------------------------
-    // Value Lookup
-    //------------------------
-    private async triggerLookupIfNeeded() {
-        const {lookupFn} = this.componentProps;
-        if (!lookupFn) return;
-
-        // Resolve the selected value if not already matched by options or the lookup cache -
-        // including null, which apps may legitimately wish to assign a label.
-        const ext = this.externalValue;
-        if (this.findOption(ext, false)) return;
-
-        try {
-            const raw = await lookupFn(ext);
-            let resolved: SelectOption;
-            if (!isNil(raw)) {
-                resolved = this.toOption(raw, 0);
-            } else if (!isNil(ext)) {
-                // Unresolved - preserve a non-null value via its raw label, but leave a null
-                // value unlabeled so it renders as the empty/placeholder state.
-                resolved = this.valueToOption(ext);
-            }
-            if (resolved) this.setLookupCache([...this._lookupCache, resolved]);
-        } catch (e) {
-            this.logError(e);
-        }
-    }
-
-    @action
-    private setLookupCache(cache: SelectOption[]) {
-        this._lookupCache = cache;
-    }
-
-    @action
-    private cleanLookupCache() {
-        if (this._lookupCache.length === 0) return;
-        const ext = this.externalValue;
-        this._lookupCache = this._lookupCache.filter(opt => isEqual(opt.value, ext));
-    }
 
     //----------------------
     // Option Rendering
