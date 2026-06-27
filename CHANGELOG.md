@@ -8,6 +8,12 @@
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
 
+### 📚 Libraries
+
+* @azure/msal-browser `5.14 → 5.15`
+* swiper  `12.1.0 -> 14.0.0`,
+
+
 ## 86.2.0 - 2026-06-25
 
 ### 🎁 New Features
