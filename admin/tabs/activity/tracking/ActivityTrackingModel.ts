@@ -15,7 +15,17 @@ import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import {
+    HoistModel,
+    LoadSpec,
+    LocalDateUnit,
+    managed,
+    PersistableState,
+    PersistenceProvider,
+    persistOptions,
+    PlainObject,
+    XH
+} from '@xh/hoist/core';
 import {Cube, CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
@@ -23,6 +33,22 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
+
+/** Quick-select relative intervals offered in the toolbar, ending on the current app day. */
+export const ACTIVITY_INTERVALS: Array<{value: number; unit: LocalDateUnit; label: string}> = [
+    {value: 6, unit: 'months', label: '6m'},
+    {value: 1, unit: 'months', label: '1m'},
+    {value: 7, unit: 'days', label: '7d'},
+    {value: 1, unit: 'days', label: '1d'}
+];
+
+/**
+ * Persisted representation of the selected time period. A `relative` period rolls forward to end on
+ * the current app day each time it is restored; a `custom` period restores its absolute dates as-is.
+ */
+type ActivityTrackingPeriod =
+    | {type: 'relative'; value: number; unit: LocalDateUnit}
+    | {type: 'custom'; startDay: string; endDay: string};
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
     override telemetryPrefix = 'xh.client.admin.tracking';
@@ -115,6 +141,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         this.markPersist('showFilterChooser');
 
         this.formModel = this.createQueryFormModel();
+        this.setupPeriodPersistence();
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
         this.markPersist('dataFields');
@@ -205,15 +232,59 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     // Set the start date by taking the end date and pushing back [value] [units] - then pushing
     // forward one day as the day range query is inclusive.
-    adjustStartDate(value, unit) {
+    adjustStartDate(value: number, unit: LocalDateUnit) {
         this.formModel.setValues({
             startDay: this.endDay.subtract(value, unit).nextDay()
         });
     }
 
-    isInterval(value, unit) {
+    isInterval(value: number, unit: LocalDateUnit) {
         const {startDay, endDay} = this.formModel.values;
         return startDay === endDay.subtract(value, unit).nextDay();
+    }
+
+    // Persist the selected time period as part of the active view, reading from / writing to the
+    // query form. The provider applies persisted state on construction and on each view change.
+    private setupPeriodPersistence() {
+        PersistenceProvider.create<ActivityTrackingPeriod>({
+            persistOptions: persistOptions({path: 'queryPeriod'}, this.persistWith),
+            owner: this,
+            target: {
+                getPersistableState: () => new PersistableState(this.period),
+                setPersistableState: ({value}) => this.applyPeriod(value)
+            }
+        });
+    }
+
+    // The current date range, as a relative interval when it ends today and matches a quick-select
+    // option, otherwise as a custom absolute range. Drives what gets persisted for the period.
+    private get period(): ActivityTrackingPeriod {
+        const {startDay, endDay} = this.formModel.values,
+            interval =
+                endDay === LocalDate.currentAppDay() &&
+                ACTIVITY_INTERVALS.find(({value, unit}) => this.isInterval(value, unit));
+        return interval
+            ? {type: 'relative', value: interval.value, unit: interval.unit}
+            : {type: 'custom', startDay: startDay.toString(), endDay: endDay.toString()};
+    }
+
+    // Push a persisted period into the form - relative intervals roll forward to end on today.
+    @action
+    private applyPeriod(period: ActivityTrackingPeriod) {
+        if (!period) return;
+        const {formModel} = this;
+        if (period.type === 'relative') {
+            const endDay = LocalDate.currentAppDay();
+            formModel.setValues({
+                endDay,
+                startDay: endDay.subtract(period.value, period.unit).nextDay()
+            });
+        } else {
+            formModel.setValues({
+                startDay: LocalDate.get(period.startDay),
+                endDay: LocalDate.get(period.endDay)
+            });
+        }
     }
 
     getDisplayName(fieldName: string) {
