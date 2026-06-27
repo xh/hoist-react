@@ -1363,7 +1363,7 @@
   resolved "https://registry.yarnpkg.com/@csstools/css-parser-algorithms/-/css-parser-algorithms-4.0.0.tgz#e1c65dc09378b42f26a111fca7f7075fc2c26164"
   integrity sha512-+B87qS7fIG3L5h3qwJ/IFbjoVoOe/bpOdh9hAjXbvx0o8ImEmUsGXN0inFOnk2ChCFgqkkGFQ+TpM5rbhkKe4w==
 
-"@csstools/css-syntax-patches-for-csstree@^1.1.4":
+"@csstools/css-syntax-patches-for-csstree@^1.1.4", "@csstools/css-syntax-patches-for-csstree@^1.1.5":
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/@csstools/css-syntax-patches-for-csstree/-/css-syntax-patches-for-csstree-1.1.5.tgz#b8e26e0fe25e9a6ec607d045470cc46d2f62731e"
   integrity sha512-oNjBvzLq2GPZtJphCjLqXow/cHySHSgtxvKZb7OqSZ/xHgw6NWNhfad+6AB9cLeVm6eA9d/qMll3JdEHjy6M+A==
@@ -4034,7 +4034,7 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
-cosmiconfig@^9.0.0, cosmiconfig@^9.0.1:
+cosmiconfig@^9.0.0, cosmiconfig@^9.0.2:
   version "9.0.2"
   resolved "https://registry.yarnpkg.com/cosmiconfig/-/cosmiconfig-9.0.2.tgz#9e5615163becf6a82211fb33d2f68947c25d0c5e"
   integrity sha512-gtTZxTDau1wL7Y7zifc2dd8jHSK/k6BTx/2Xp/BpdlAdnlYWFVt7qhJqgwi7637yRwRQ3qL4ZidbB4I8tA5VOg==
@@ -4703,9 +4703,9 @@ eslint-visitor-keys@^5.0.0, eslint-visitor-keys@^5.0.1:
   integrity sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==
 
 eslint@10.x:
-  version "10.5.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.5.0.tgz#5fca69d6b41fe7e00ba22d4100b2e44efe439ad5"
-  integrity sha512-1y+7C+vi12bUK1IpZeaV3gsH9fHLBmPvYmPx42pvT/E9yG0IC8g3PUZZgp0+JLJl7ZDK0flc2gc+Aw9dpCvIsQ==
+  version "10.6.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.6.0.tgz#e1b4059c582be950c7088c9b55f984738b243c27"
+  integrity sha512-6lVbcqSodALYo+4ELD0heG6lFiFxnLMuLkiMi2qV8LMp54N8tE8FT1GMH+ev4Ti00nFjNze2+Su6DsV5OQW3Dg==
   dependencies:
     "@eslint-community/eslint-utils" "^4.8.0"
     "@eslint-community/regexpp" "^4.12.2"
@@ -6162,9 +6162,9 @@ lines-and-columns@^1.1.6:
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
 lint-staged@17.x:
-  version "17.0.7"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-17.0.7.tgz#2ed5ffb49d283425778125386278bb4d7ce24d22"
-  integrity sha512-JrSobt+tW3rH8IOMi8tDZd3foorM5yPEkLD/V2NxobgHrFfHWGee4MOLVuZeScgxftEwbHrPHIFA/ZL+nUJeuA==
+  version "17.0.8"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-17.0.8.tgz#315b16ff5900fd3f8cc3e4888de7d08e10ca9162"
+  integrity sha512-B2P/d+jVW0UXOQ0MVMLrB/9ydA1P+zz6jYfdrbbEd9ur3S2rcbduFWKiUCC02Sm5hbC8nrm7y24WuYMG54HfxA==
   dependencies:
     listr2 "^10.2.1"
     picomatch "^4.0.4"
@@ -7393,7 +7393,7 @@ postcss-scss@^4.0.9:
   resolved "https://registry.yarnpkg.com/postcss-scss/-/postcss-scss-4.0.9.tgz#a03c773cd4c9623cb04ce142a52afcec74806685"
   integrity sha512-AjKOeiwAitL/MXxQW2DliT28EKukvvbEWx3LBmJIRN8KfBGZbRTxNYW0kSqi1COiTZ57nZ9NW06S6ux//N1c9A==
 
-postcss-selector-parser@^7.0.0, postcss-selector-parser@^7.1.1:
+postcss-selector-parser@^7.0.0, postcss-selector-parser@^7.1.1, postcss-selector-parser@^7.1.4:
   version "7.1.4"
   resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-7.1.4.tgz#69dc7a526517572ff6b150e352b36a016017b485"
   integrity sha512-HeP7D2wyhkR+XaK6v4W8oRF62Dsz4flyuczALJp61GckGm42u1saSSJ/0auvcBqxs3jMRFEcPK34At/0JBKdOg==
@@ -7421,9 +7421,9 @@ prelude-ls@^1.2.1:
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
 prettier@3.x:
-  version "3.8.4"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.8.4.tgz#f334f013ac04a96676f24dabc23c1c4ae1bae411"
-  integrity sha512-N2MylSdi48+5N/6S5j+maeHbUSIzzZ5uOcX5Hm4QpV8Dkb1HFjfAKTKX6yNPJQD9AhcT3ifHNB66tWTTJDi11Q==
+  version "3.8.5"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.8.5.tgz#81cf9de0cf46db973fa85103ff06dfcdb0d9bc39"
+  integrity sha512-zxcTTCedNGJM4R8sj/Cq/F0W/c4iE0afWBcBwMTRtw4WHYP9TWkYjdiH3npPRUYsXQCPR0hTU9yjovOu+E6EQA==
 
 pretty-error@^4.0.0:
   version "4.0.0"
@@ -8774,19 +8774,19 @@ stylelint-scss@^7.0.0:
     postcss-value-parser "^4.2.0"
 
 stylelint@17.x:
-  version "17.13.0"
-  resolved "https://registry.yarnpkg.com/stylelint/-/stylelint-17.13.0.tgz#cc68d0ad83d84e29e5147d5f8a8100ccd26a7346"
-  integrity sha512-G1WYzMerp7ihOaIe9VJCHLt12MoAD2QLf1AFerYP37+BCRBUK5UCpq8e/mN+zCIaJPKQcaxhE4WlPmqdiOx/gw==
+  version "17.14.0"
+  resolved "https://registry.yarnpkg.com/stylelint/-/stylelint-17.14.0.tgz#59a3d4b00b232edcde5acceb440ca15c7ced07e9"
+  integrity sha512-8xkHPpdqYryeIsOgfsYTmr6cIeC4nLYWk5S8BPxpodq8mIuepggkMljsHewWfuAjj/+qpRKou2QerhjMH3iasg==
   dependencies:
     "@csstools/css-calc" "^3.2.1"
     "@csstools/css-parser-algorithms" "^4.0.0"
-    "@csstools/css-syntax-patches-for-csstree" "^1.1.4"
+    "@csstools/css-syntax-patches-for-csstree" "^1.1.5"
     "@csstools/css-tokenizer" "^4.0.0"
     "@csstools/media-query-list-parser" "^5.0.0"
     "@csstools/selector-resolve-nested" "^4.0.0"
     "@csstools/selector-specificity" "^6.0.0"
     colord "^2.9.3"
-    cosmiconfig "^9.0.1"
+    cosmiconfig "^9.0.2"
     css-functions-list "^3.3.3"
     css-tree "^3.2.1"
     debug "^4.4.3"
@@ -8806,7 +8806,7 @@ stylelint@17.x:
     picocolors "^1.1.1"
     postcss "^8.5.15"
     postcss-safe-parser "^7.0.1"
-    postcss-selector-parser "^7.1.1"
+    postcss-selector-parser "^7.1.4"
     postcss-value-parser "^4.2.0"
     string-width "^8.2.1"
     supports-hyperlinks "^4.4.0"
