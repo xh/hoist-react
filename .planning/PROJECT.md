@@ -34,13 +34,23 @@ inventory). These are context for the R&D, not deliverables of this project. -->
 
 - ✓ Store: typed-field records, add/update, dirty tracking, editing model, filtering, single
   inbound-transform hook - existing
-- ✓ Cube: typed fields with aggregators, query (filter + group-by + metrics), efficient incremental
-  re-aggregation, differential update fan-out to many views - existing
-- ✓ View: stable bridge between a cube query and a consuming Store - existing
-- ✓ GridModel: store-bound AG Grid wrapper; store-level filtering; custom column chooser/header
-  filters; store changes translated to AG Grid transactions - existing
-- ✓ MobX reactivity substrate driving views, GridModel, and React rendering - existing
-- ✓ WebSocket-fed incremental updates into a central cube with coalescing - existing
+- ✓ Cube: a distinct class wrapping a `Store` internally; typed fields with `Aggregator`s (built-ins
+  SUM/AVG/MIN/MAX/UNIQUE/LEAF_COUNT/etc.; weighted-average is a custom `Aggregator` subclass, NOT a
+  built-in); query (filter + dimensions + aggregated fields); efficient incremental re-aggregation;
+  imperative differential fan-out to connected views. Supports local edits via `modifyRecordsAsync` -
+  existing
+- ✓ View: stable bridge between a cube query and one OR MORE consuming Stores (`ViewConfig.stores`);
+  results exposed as `ViewResult {rows, leafMap}` - existing
+- ✓ GridModel: store-bound AG Grid wrapper; store-level filtering (`GridFilterModel`/`StoreFilterField`,
+  can bind a Store or a Cube View); custom column chooser (column-state, not store); store changes
+  translated to SYNCHRONOUS AG Grid transactions (`applyTransaction`) by reactions that live in the
+  grid component (`GridLocalModel`, active only while mounted) - existing
+- ✓ MobX reactivity: React rendering driven off MobX observers; the cube->view fan-out is IMPERATIVE
+  push (`noteCubeUpdated`), with MobX observability entering at the `View.result` boundary
+  (`@observable.ref`) - existing
+- ✓ Incremental data delivery: poll-then-diff over HTTP (server returns full snapshot or partial diff
+  via an `isPartial` flag -> `loadDataAsync`/`updateDataAsync`); WebSocket, where used, is only a
+  "refresh ready" notification channel, NOT a data-push transport - existing
 
 ### Active
 
@@ -93,25 +103,39 @@ inventory). These are context for the R&D, not deliverables of this project. -->
 
 - **Store**: container of `StoreRecord`s defined by typed fields; add/update, dirty tracking, editing,
   filtering, single custom inbound-transform hook. Does NOT sort (the grid does).
-- **Cube**: a distinct class that *contains* a Store internally; typed fields carry aggregators;
-  applies filter + grouping + metric selection; accepts updates and efficiently recomputes
-  aggregations; read/aggregate-oriented, not editable. Built for portfolio apps - one cube feeds many
-  widgets, small differential updates fan out efficiently.
-- **View**: stable bridge between a query and a Store; observes the cube, recomputes, pushes results
-  into a consuming Store.
-- **GridModel**: store-bound; observes store records; translates store changes into AG Grid
-  transactions applied to AG Grid's internal structure. We've replaced much AG Grid machinery (column
-  chooser, header filters) operating on the Store, so the Store is a shared, AG-Grid-independent data
-  substrate that charts and toolbars also consume. This shared-store contract is central to Hoist's
-  identity and value - and the source of real tension with "just use AG Grid's features."
+- **Cube**: a distinct class that *contains* a Store internally; typed fields carry `Aggregator`s
+  (built-ins are SUM/AVG/MIN/MAX/UNIQUE/etc.; weighted-average is a custom subclass, not built-in);
+  applies filter + dimensions + aggregated-field selection; accepts updates and efficiently recomputes
+  aggregations; primarily read/aggregate-oriented but supports local edits via `modifyRecordsAsync`.
+  Built for portfolio apps - one cube feeds many widgets (and apps run multiple cubes); small
+  differential updates fan out **imperatively** to connected views.
+- **View**: stable bridge between a query and one or more consuming Stores. The cube pushes changes to
+  the view imperatively (`noteCubeUpdated`); the view recomputes and exposes a `ViewResult` whose
+  reference is MobX-observable (`@observable.ref`); results are loaded into the consuming store(s).
+- **GridModel**: store-bound; reactions (in the mounted grid component, not GridModel itself) observe
+  store records and translate changes into **synchronous** AG Grid transactions (`applyTransaction`)
+  applied to AG Grid's internal structure. We've replaced much AG Grid machinery: the column chooser
+  operates on column-state, while filtering (`GridFilterModel`, `StoreFilterField`) operates on the
+  Store (or a Cube View). The Store is a shared, AG-Grid-independent data substrate that charts and
+  toolbars also consume. This shared-store contract is central to Hoist's identity and value - and the
+  source of real tension with "just use AG Grid's features."
 
 ### Full data flow (complex apps)
 
-Compressed JSON over HTTP -> parsed raw JS object -> Store mints `StoreRecord`s (each keeps a
-reference to the raw object AND a new inner data object) -> central cube holds leaf-level facts in its
-internal store, WebSocket feeds incremental updates -> dashboard grid widget's coordinating model
-creates a View on the cube (filter + group-by) -> View observes cube, results flow into the grid's
-store -> store change generates AG Grid transactions -> AG Grid renders.
+JSON over HTTP (transport-level compression) -> parsed raw JS object -> Store mints `StoreRecord`s
+(each keeps a reference to the raw object AND a new inner data object) -> central cube holds leaf-level
+facts in its internal store; incremental updates arrive via **poll-then-diff over HTTP** (full
+snapshot or `isPartial` diff -> `loadDataAsync`/`updateDataAsync`; a WebSocket, where present, only
+signals "refresh ready") -> a dashboard grid widget's coordinating model wires the cube to the grid's
+store by one of two production patterns: (a) declarative - `cube.createView({connect: true})` +
+`view.setStores([...])`; or (b) manual - a MobX reaction on `cube.records` calls `cube.executeQuery()`
+and feeds `gridModel.loadData()` -> store change generates synchronous AG Grid transactions -> AG Grid
+renders.
+
+> Architecture above was validated against source and real `jobsite`/`veracity-webapp` usage on
+> 2026-06-27. The kickoff brief's original mental model had several inaccuracies (notably the
+> WebSocket-push and built-in-weighted-average claims); see
+> `docs/planning/data2/KICKOFF-VALIDATION.md` for the full correction record.
 
 ### Memory-multiplication problem (central concern)
 
@@ -124,10 +148,13 @@ that). Two explicit unknowns to resolve empirically: (1) exactly when/where data
 
 ### Reactivity substrate
 
-Hoist reactivity runs on **MobX**. Views observe cube state, GridModel observes the store, React
-renders off MobX observers. Any new data engine must either feed MobX observability or provide its own
-reactivity that bridges cleanly to React. A fast engine that can't drive fine-grained reactive updates
-is not a fit.
+Hoist reactivity runs on **MobX**, but the cube->view layer is **imperative push**, not reactive
+observation: the cube calls `view.noteCubeUpdated()` directly. MobX observability begins at the
+`View.result` reference (`@observable.ref`); grid reactions (in the mounted grid component) observe the
+store and React renders off MobX observers. The integration seam for any new engine is therefore the
+**View.result -> Store boundary**, not a cube-level observable. Any new data engine must either feed
+MobX observability at that seam or provide its own reactivity that bridges cleanly to React. A fast
+engine that can't drive fine-grained reactive updates is not a fit.
 
 ### Forcing functions (why now)
 
@@ -140,7 +167,8 @@ is not a fit.
 - **Real-time / latency pressure**: EMC's head of software is pushing for sub-second / near-real-time,
   citing another dev's fast (possibly WASM-based) grid. Calibrated target: live-trading-screen cadence,
   ~500 position updates touching ~20 fields per batch, recompute aggregations and render before the
-  next batch, no jank, bounded memory.
+  next batch, no jank, bounded memory. Note: today's delivery is poll-then-diff over HTTP (validated) -
+  a true streaming push transport is itself a candidate change, not an existing capability.
 - **Scaling / headroom**: want to know where the wall is. Past OOM crashes on older small-heap Chrome
   machines. Measurement is the point.
 
@@ -193,6 +221,7 @@ is not a fit.
 | Track `.planning/` on the `data2` branch (gitignore entry temporarily disabled) | Keep planning portable with the branch; revisit the "archive to hoist-ai" convention before merge | — Pending |
 | Model profile: Quality (Opus for research/roadmap) | Ambitious R&D where analysis depth matters; long-running effort justifies the cost | — Pending |
 | Land the Toolbox demo + baseline early | Highest near-term business value; answers the "where's our limit" question being asked now | — Pending |
+| Kickoff brief validated against source + real app usage before planning (corrections in `docs/planning/data2/KICKOFF-VALIDATION.md`) | The brief was authored without repo access; several claims (WebSocket push, built-in weighted-avg, cube-as-MobX-observable) were inaccurate and would have misdirected the roadmap | ✓ Good |
 
 ---
-*Last updated: 2026-06-27 after initialization*
+*Last updated: 2026-06-27 after initialization + kickoff validation against source*
