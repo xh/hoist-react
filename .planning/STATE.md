@@ -37,6 +37,7 @@ Progress: [█████░░░░░] 50%
 *Updated after each plan completion*
 | Phase 01-current-state-inventory P03 | 2min | 2 tasks | 1 files |
 | Phase 01-current-state-inventory P01 | 2min | 1 tasks | 1 files |
+| Phase 01 P02 | 22min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -57,6 +58,8 @@ Recent decisions affecting current work:
   `StoreRecord.data`, leaf `ViewRowData`, grid `StoreRecord.data`); every Store boundary re-parses
   into a new `data` object via `parseRaw`, while AG Grid references the record by ref. The
   `StoreRecord` -> AG Grid node edge is the Phase 2 heap-attribution boundary (opaque library memory).
+- [Phase 01-current-state-inventory]: Transport inventory: every delivery transport collapses to the invariant two-operation ingest contract (snapshot -> Cube.loadDataAsync, diff -> Cube.updateDataAsync), making transport-agnosticism a clean knob for HARN-02
+- [Phase 01-current-state-inventory]: WebSocket data push (XH.webSocketService) documented as first-class and distinct from WebSocket-as-notification; no Hoist-native SignalR client, so SignalR is bridged at the app/service layer to the same ingest contract
 
 ### Pending Todos
 
@@ -79,5 +82,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-28
-Stopped at: Completed 01-01-PLAN.md (copy-vs-reuse map, INV-02)
+Stopped at: Completed 01-03-PLAN.md (transport/pattern inventory, INV-04)
 Resume file: None
