@@ -20,7 +20,7 @@ everything else is cut.
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Current-State Inventory** - Authoritative architecture doc, copy-vs-reuse map, MobX granularity, and transport inventory
+- [x] **Phase 1: Current-State Inventory** - Authoritative architecture doc, copy-vs-reuse map, MobX granularity, and transport inventory (complete 2026-06-28)
 - [ ] **Phase 2: Measurement Harness** - Reusable, config-driven load/throughput/heap-attribution harness, OTel-instrumented at boundaries
 - [ ] **Phase 3: Baseline Performance Envelope** - The current stack's memory and CPU walls and end-to-end latency, plus adopted quantitative targets
 - [ ] **Phase 4: Toolbox Technology Demo** - A live, shareable portfolio demo proving current-stack capability and limits at scale
@@ -220,7 +220,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Current-State Inventory | 0/4 | Not started | - |
+| 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
 | 2. Measurement Harness | 0/TBD | Not started | - |
 | 3. Baseline Performance Envelope | 0/TBD | Not started | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |

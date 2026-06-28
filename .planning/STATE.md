@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-06-27)
 
 **Core value:** An evidence-based answer - backed by a reusable measurement harness and real
 heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hoist-react`.
-**Current focus:** Phase 1 - Current-State Inventory
+**Current focus:** Phase 2 - Measurement Harness (Phase 1 complete)
 
 ## Current Position
 
-Phase: 1 of 8 (Current-State Inventory)
-Plan: 4 of 4 complete in current phase
-Status: Phase Complete
-Last activity: 2026-06-28 - Completed 01-04 (authoritative architecture doc, INV-01)
+Phase: 2 of 8 (Measurement Harness) - NEXT, not yet planned
+Last completed: Phase 1 - Current-State Inventory (4/4 plans, verified passed 2026-06-28)
+Status: Phase 1 complete and verified; ready to plan Phase 2
+Next action: /gsd:plan-phase 2 (recommend a fresh context window - Phase 2 is a substantial build)
 
-Progress: [██████████] 100%
+Milestone progress: [█░░░░░░░] 1/8 phases complete
 
 ## Performance Metrics
 
@@ -95,5 +95,11 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-28
-Stopped at: Completed 01-04-PLAN.md (INV-01 authoritative architecture doc) - Phase 1 complete
+Stopped at: Phase 1 (Current-State Inventory) complete and verified. Deliverables in
+  docs/planning/data2/: ARCHITECTURE.md, COPY-VS-REUSE.md, MOBX-GRANULARITY.md, TRANSPORT-INVENTORY.md.
+  Paused before Phase 2 (Measurement Harness) - a substantial implementation build best started in a
+  fresh context window.
+Resume: /gsd:plan-phase 2  (then /gsd:execute-phase 2). Note: gsd-tools `state`/`phase complete`
+  parsing does not fully match this project's prose STATE/ROADMAP format - the Phase 1 checkbox,
+  progress table, and next-phase pointer were corrected by hand; expect to do the same at Phase 2 close.
 Resume file: None
