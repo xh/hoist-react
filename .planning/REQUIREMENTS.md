@@ -155,17 +155,59 @@ Deferred - depend on this milestone's recommendation; not in the current roadmap
 
 ## Traceability
 
-Populated during roadmap creation (maps each requirement to a phase).
+Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (pending roadmap) | | |
+| INV-01 | Phase 1 | Pending |
+| INV-02 | Phase 1 | Pending |
+| INV-03 | Phase 1 | Pending |
+| INV-04 | Phase 1 | Pending |
+| HARN-01 | Phase 2 | Pending |
+| HARN-02 | Phase 2 | Pending |
+| HARN-03 | Phase 2 | Pending |
+| HARN-04 | Phase 2 | Pending |
+| HARN-05 | Phase 2 | Pending |
+| HARN-06 | Phase 2 | Pending |
+| BASE-01 | Phase 3 | Pending |
+| BASE-02 | Phase 3 | Pending |
+| BASE-03 | Phase 3 | Pending |
+| BASE-04 | Phase 3 | Pending |
+| DEMO-01 | Phase 4 | Pending |
+| DEMO-02 | Phase 4 | Pending |
+| DEMO-03 | Phase 4 | Pending |
+| SPEC-01 | Phase 5 | Pending |
+| SPEC-02 | Phase 5 | Pending |
+| SPEC-03 | Phase 5 | Pending |
+| SPEC-04 | Phase 5 | Pending |
+| SPEC-05 | Phase 5 | Pending |
+| SPEC-06 | Phase 5 | Pending |
+| SPEC-07 | Phase 5 | Pending |
+| TECH-01 | Phase 6 | Pending |
+| TECH-02 | Phase 6 | Pending |
+| TECH-03 | Phase 6 | Pending |
+| TECH-04 | Phase 6 | Pending |
+| TECH-05 | Phase 6 | Pending |
+| TECH-06 | Phase 6 | Pending |
+| TECH-07 | Phase 6 | Pending |
+| TECH-08 | Phase 6 | Pending |
+| PROTO-01 | Phase 7 | Pending |
+| PROTO-02 | Phase 7 | Pending |
+| PROTO-03 | Phase 7 | Pending |
+| PROTO-04 | Phase 7 | Pending |
+| PROTO-05 | Phase 7 | Pending |
+| STRAT-01 | Phase 8 | Pending |
+| STRAT-02 | Phase 8 | Pending |
+| STRAT-03 | Phase 8 | Pending |
+| STRAT-04 | Phase 8 | Pending |
+| STRAT-05 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 42 total (INV 4, HARN 6, BASE 4, DEMO 3, SPEC 7, TECH 8, PROTO 5, STRAT 5)
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 42 ⚠️
+- Mapped to phases: 42 ✓
+- Unmapped: 0 ✓
+- Orphaned (no requirement) phases: none - every phase carries at least one requirement
 
 ---
 *Requirements defined: 2026-06-27*
-*Last updated: 2026-06-27 after initial definition*
+*Last updated: 2026-06-27 after roadmap creation (traceability populated, 42/42 mapped)*
