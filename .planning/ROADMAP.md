@@ -54,7 +54,11 @@ them, not starts cold.
      ingest adapts to each (INV-04).
   5. The document names the concrete instrumentation points the Phase 2 harness will hook (boundaries
      where heap and timing are attributable).
-**Plans**: TBD
+**Plans**: 4 plans
+- [ ] 01-01-PLAN.md - Copy-vs-reuse map across the data pipeline (INV-02)
+- [ ] 01-02-PLAN.md - MobX reaction-granularity trace of the update path (INV-03)
+- [ ] 01-03-PLAN.md - Transport/pattern inventory and Cube/Store ingest adaptation (INV-04)
+- [ ] 01-04-PLAN.md - Authoritative architecture doc with Mermaid + Phase 2 instrumentation points (INV-01)
 
 ### Phase 2: Measurement Harness
 **Goal**: Build the reusable, configurable, OTel-instrumented harness that is the sole adjudicator of
@@ -216,7 +220,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Current-State Inventory | 0/TBD | Not started | - |
+| 1. Current-State Inventory | 0/4 | Not started | - |
 | 2. Measurement Harness | 0/TBD | Not started | - |
 | 3. Baseline Performance Envelope | 0/TBD | Not started | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
