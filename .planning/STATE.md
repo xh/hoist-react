@@ -11,11 +11,11 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 ## Current Position
 
 Phase: 1 of 8 (Current-State Inventory)
-Plan: 2 of 4 complete in current phase
+Plan: 3 of 4 complete in current phase
 Status: In Progress
-Last activity: 2026-06-28 - Completed 01-01 (copy-vs-reuse map, INV-02)
+Last activity: 2026-06-28 - Completed 01-02 (MobX reaction-granularity trace, INV-03)
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -60,6 +60,12 @@ Recent decisions affecting current work:
   `StoreRecord` -> AG Grid node edge is the Phase 2 heap-attribution boundary (opaque library memory).
 - [Phase 01-current-state-inventory]: Transport inventory: every delivery transport collapses to the invariant two-operation ingest contract (snapshot -> Cube.loadDataAsync, diff -> Cube.updateDataAsync), making transport-agnosticism a clean knob for HARN-02
 - [Phase 01-current-state-inventory]: WebSocket data push (XH.webSocketService) documented as first-class and distinct from WebSocket-as-notification; no Hoist-native SignalR client, so SignalR is bridged at the app/service layer to the same ingest contract
+- INV-03: MobX observation along View.result -> Store -> GridModel -> AG Grid is at whole-reference
+  granularity (new ViewResult ref at `View.result` @observable.ref; new RecordSet ref at
+  `Store._filtered` @observable.ref), while AG Grid updates are a per-record diff applied
+  synchronously via one `agApi.applyTransaction()` call (`Grid.ts:693`) - no async/batching layer,
+  only implicit MobX action coalescing. Cube->view and store-mutation->rebuildFiltered are imperative
+  pushes, not MobX-observed. Reactions are mounted-only (GridLocalModel.onLinked, gated on agApi).
 
 ### Pending Todos
 

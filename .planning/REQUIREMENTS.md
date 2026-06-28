@@ -18,7 +18,7 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
   real app usage. Supersedes/absorbs the validation notes already produced.
 - [x] **INV-02**: A copy-vs-reuse map identifies, at each pipeline transition (raw object -> StoreRecord
   -> ViewResult rows -> grid store records -> AG Grid nodes), where data is copied vs. referenced.
-- [ ] **INV-03**: The MobX reaction-granularity of the `View.result -> Store -> GridModel -> AG Grid`
+- [x] **INV-03**: The MobX reaction-granularity of the `View.result -> Store -> GridModel -> AG Grid`
   path is documented (record-level vs. batch-level), including where synchronous `applyTransaction`
   is driven and the mounted-component reaction lifecycle.
 - [x] **INV-04**: An inventory of update-delivery transports/patterns the layer must support (HTTP
@@ -161,7 +161,7 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 |-------------|-------|--------|
 | INV-01 | Phase 1 | Pending |
 | INV-02 | Phase 1 | Complete |
-| INV-03 | Phase 1 | Pending |
+| INV-03 | Phase 1 | Complete |
 | INV-04 | Phase 1 | Complete |
 | HARN-01 | Phase 2 | Pending |
 | HARN-02 | Phase 2 | Pending |
