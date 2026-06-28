@@ -14,7 +14,7 @@ existing one** and, over time, absorbs high-volume / non-trivial workloads - lea
 structures in place for simpler cases. This phase is **R&D, baseline, and recommendation, not a
 commitment to rewrite.**
 
-The audience is XH's engineering leadership and our largest clients (notably EMC), who are actively
+The audience is XH's engineering leadership and our largest clients (notably the lead client), who are actively
 asking - right now - where our performance ceiling is and why interactions aren't "fully real-time."
 
 ## Core Value
@@ -61,7 +61,7 @@ inventory). These are context for the R&D, not deliverables of this project. -->
 
 - [ ] **Current-state architecture document** - corrected Store/Cube/View/GridModel model, full data
   flow, and copy-vs-reuse map, grounded in `hoist-react` source + real usage in `jobsite` /
-  `veracity-webapp`. Includes Mermaid diagrams.
+  a client app. Includes Mermaid diagrams.
 - [ ] **Memory-attribution report** - heap broken down by layer (cube store records vs. grid store
   records vs. AG Grid internals vs. intermediate view results), with methodology.
 - [ ] **Test harness** - reusable, configurable load/throughput generator parameterizing dataset
@@ -137,7 +137,7 @@ store by one of two production patterns: (a) declarative - `cube.createView({con
 and feeds `gridModel.loadData()` -> store change generates synchronous AG Grid transactions -> AG Grid
 renders.
 
-> Architecture above was validated against source and real `jobsite`/`veracity-webapp` usage on
+> Architecture above was validated against source and real `jobsite`/a client app usage on
 > 2026-06-27 (corrections in `docs/planning/data2/KICKOFF-VALIDATION.md`). **Caveat:** the two local
 > apps are *samples* - they use HTTP poll-then-diff, but that is not representative of all XH apps.
 > WebSocket data push is a first-class, important pattern elsewhere. Do not over-anchor requirements to
@@ -170,7 +170,7 @@ engine that can't drive fine-grained reactive updates is not a fit.
   our Store layer. Deeper competitive frame: **Excel**.
 - **Performance ceiling**: ~30-60k positions x tens of fields, ~10s load when smooth, all client-side
   aggregation, single-threaded main JS. Fits, but the tipping point feels near (memory or CPU).
-- **Real-time / latency pressure**: EMC's head of software is pushing for sub-second / near-real-time,
+- **Real-time / latency pressure**: the lead client's head of software is pushing for sub-second / near-real-time,
   citing another dev's fast (possibly WASM-based) grid. Calibrated target: live-trading-screen cadence,
   ~500 position updates touching ~20 fields per batch, recompute aggregations and render before the
   next batch, no jank, bounded memory. Hoist already supports WebSocket data push (`XH.webSocketService`)
@@ -183,7 +183,7 @@ engine that can't drive fine-grained reactive updates is not a fit.
 
 - `hoist-react` (primary, running inside it), `toolbox` (public demo, deploy target for the tech demo;
   includes a WebSocket portfolio example - `PortfolioService`/`PositionSession`), `jobsite` (internal
-  app using cube/typed-field/aggregation patterns), `veracity-webapp` (client app, same patterns).
+  app using cube/typed-field/aggregation patterns), a client app (client app, same patterns).
   `hoist-core` (Grails/Spring Boot server) available if server-side aggregation/transport questions
   warrant. Read real usage, not just library definitions.
 - **These local apps are SAMPLES, not the full picture.** They are a convenience for grounding, not a
@@ -194,18 +194,24 @@ engine that can't drive fine-grained reactive updates is not a fit.
 ### Documented assumptions (from kickoff §12 - revisit if they block)
 
 - **Quantitative targets**: we will propose defensible targets and let the harness adjudicate; not yet
-  anchored to specific EMC-mandated numbers.
+  anchored to specific client-mandated numbers.
 - **Licensing posture**: assume openness to evaluating third-party deps (Perspective, DuckDB-WASM)
-  during research; deployment/compliance acceptability (esp. EMC) to be confirmed before adoption.
+  during research; deployment/compliance acceptability (esp. the lead client) to be confirmed before adoption.
 - **Transport reality**: assume asymmetric control - we shape our Grails transport; client
   WebSocket/SignalR/HTTP transports are fixed. A per-client transport matrix would sharpen research.
 - **AG Grid Enterprise entitlement**: assume the relevant AG Grid 36 features may carry licensing
   implications across clients; confirm before depending on them.
 - **Coexistence pilot**: no preferred first pilot workload chosen yet; candidates drawn from
-  `jobsite` / `veracity-webapp` / `toolbox`.
+  `jobsite` / a client app / `toolbox`.
 
 ## Constraints
 
+- **OPEN REPOSITORY - no private names (hard rule)**: `hoist-react` is public. NEVER commit private
+  client/customer names or client-app identifiers (fund/firm names, names of apps written for clients).
+  Only XH's own properties may be named: **Hoist, Toolbox, JobSite**. General financial terms,
+  concepts, formulas, and roles are fine ("a client app", "the lead client", "hedge funds", "trading
+  dashboards") - just no names. A local guard enforces this (see Key Decisions); when in doubt,
+  genericize.
 - **Adaptability across client patterns (overarching principle)**: Hoist is a toolkit deployed across
   many clients with differing transports, update cadences, and data shapes. Anything intended for wide
   adoption MUST be adaptable to that variety - it cannot hard-depend on one transport or one ingest
@@ -234,12 +240,13 @@ engine that can't drive fine-grained reactive updates is not a fit.
 |----------|-----------|---------|
 | Data 2.0 may stand *alongside* the current system, not replace in-place | De-risks; lets high-volume cases migrate incrementally while simple cases stay put | — Pending |
 | Treat as spec-driven R&D, not a feature ticket | Deliberately ambitious; success is objectively measurable in this domain | — Pending |
-| Codebase-mapping folded into Phase 1 (current-state inventory) rather than a separate `/gsd:map-codebase` pre-step | Phase 1 maps the data layer more deeply and grounds it in real `jobsite`/`veracity-webapp` usage | — Pending |
+| Codebase-mapping folded into Phase 1 (current-state inventory) rather than a separate `/gsd:map-codebase` pre-step | Phase 1 maps the data layer more deeply and grounds it in real `jobsite`/a client app usage | — Pending |
 | R&D deliverables -> `docs/planning/data2/`; GSD orchestration -> `.planning/` | Deliverables belong in tracked repo docs; GSD metadata stays in its own home, cross-referenced | — Pending |
 | Track `.planning/` on the `data2` branch (gitignore entry temporarily disabled) | Keep planning portable with the branch; revisit the "archive to hoist-ai" convention before merge | — Pending |
 | Model profile: Quality (Opus for research/roadmap) | Ambitious R&D where analysis depth matters; long-running effort justifies the cost | — Pending |
 | Land the Toolbox demo + baseline early | Highest near-term business value; answers the "where's our limit" question being asked now | — Pending |
 | Kickoff brief validated against source + real app usage before planning (corrections in `docs/planning/data2/KICKOFF-VALIDATION.md`) | The brief was authored without repo access; several claims (WebSocket push, built-in weighted-avg, cube-as-MobX-observable) were inaccurate and would have misdirected the roadmap | ✓ Good |
+| Local-only client-name guard (no CI, denylist kept outside the repo) enforces the open-repo no-private-names rule | Open repo must not leak client names; a checked-in denylist would itself leak them. A PreToolUse hook blocks commits with forbidden names. Scanner + denylist live at `~/.claude/projects/-Users-amcclain-dev-hoist-react/client-name-guard/`; run `--all` for a full audit | ✓ Good |
 
 ---
-*Last updated: 2026-06-27 after initialization + kickoff validation against source*
+*Last updated: 2026-06-27 after initialization, kickoff validation, and open-repo guard setup*

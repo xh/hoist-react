@@ -70,7 +70,7 @@ The calculated-columns taxonomy is the feature spec's center of gravity, and it 
 - Aggregation write-back (edit a total, push down to leaves) - semantically fraught for read-oriented financial aggregates; the cube is primarily read/aggregate-oriented.
 - Unbounded eager materialization of user-created calc columns - multiplies leaf-level heap.
 
-**AG Grid 36 parity context:** AG Grid 36.0 (shipped 2026-06-24) lands calculated columns, "show values as," and automatic column generation; 35.2 added aggregation editing; 35 added formula editing. All advanced analytics features (FormulaModule, PivotModule, and by inference calculated columns and "show values as") sit in AG Grid Enterprise. Confirm XH/EMC entitlement before depending on any of them. The strategic tension: AG Grid computed columns are grid-internal and invisible to the shared Store - parity on the feature would cost parity on the shared-data contract.
+**AG Grid 36 parity context:** AG Grid 36.0 (shipped 2026-06-24) lands calculated columns, "show values as," and automatic column generation; 35.2 added aggregation editing; 35 added formula editing. All advanced analytics features (FormulaModule, PivotModule, and by inference calculated columns and "show values as") sit in AG Grid Enterprise. Confirm XH per-client entitlement before depending on any of them. The strategic tension: AG Grid computed columns are grid-internal and invisible to the shared Store - parity on the feature would cost parity on the shared-data contract.
 
 ### Architecture Approach
 
@@ -142,7 +142,7 @@ The architecture dictates a build order that de-risks the seam before committing
 - Gate/factor classification for every requirement (survivor check: if applying all gates leaves zero candidates, surface the conflict as a finding)
 - AG Grid 36 parity map (feature cluster vs. taxonomy, with licensing/entitlement status per feature per client)
 - Dynamic schema scoped as a factor - flag candidates that preclude it, weight rather than eliminate
-- Confirmed AG Grid Enterprise entitlement for calculated columns, "show values as," and FormulaModule per client (esp. EMC) before depending on any
+- Confirmed AG Grid Enterprise entitlement for calculated columns, "show values as," and FormulaModule per client (esp. the lead client) before depending on any
 
 **Addresses:** CC-1/CC-2/CC-3 taxonomy (FEATURES.md), own-it-all vs. lean-on-AG-Grid decision (ARCHITECTURE.md Pattern 4a), shared-store contract test
 **Avoids:** Over-tailored spec that eliminates all candidates (Pitfall 10), naively routing calc through AG Grid's internal model (Pitfall 12)
@@ -221,8 +221,8 @@ The architecture dictates a build order that de-risks the seam before committing
 - **Bridge-cost numbers:** The critical unknowns (transpose tax magnitude, reactivity tax, total-pipeline heap delta vs. baseline) are not resolvable by research alone. Every technology verdict marked MEDIUM should be treated as a hypothesis until the harness speaks.
 - **Copy-vs-reuse map:** Phase 1 must resolve exactly when/where data is copied vs. reused across the raw object -> StoreRecord -> ViewResult -> grid store -> AG Grid node pipeline.
 - **MobX reaction granularity:** Phase 1 must trace the exact reaction granularity (record-level vs. batch-level) in the View.result -> Store -> GridModel -> AG Grid path. This is a concrete baseline-measurement target.
-- **Per-client transport and isolation matrix:** The transport asymmetry and cross-origin-isolation deployability question (gating SharedArrayBuffer and `measureUserAgentSpecificMemory`) need a client-by-client matrix before candidate scoring can be finalized. EMC's deployment constraints should be confirmed early.
-- **AG Grid Enterprise entitlement:** Whether XH's current Enterprise agreement covers calculated columns, "show values as," and FormulaModule across all clients (especially EMC) is an open licensing question. Confirm before the feature spec depends on any of them.
+- **Per-client transport and isolation matrix:** The transport asymmetry and cross-origin-isolation deployability question (gating SharedArrayBuffer and `measureUserAgentSpecificMemory`) need a client-by-client matrix before candidate scoring can be finalized. the lead client's deployment constraints should be confirmed early.
+- **AG Grid Enterprise entitlement:** Whether XH's current Enterprise agreement covers calculated columns, "show values as," and FormulaModule across all clients (especially the lead client) is an open licensing question. Confirm before the feature spec depends on any of them.
 - **Perspective delta granularity under high fan-out breadth:** Maintainer discussions suggest partial updates may propagate full rows rather than field-level deltas when many views are subscribed. Verify in the Phase 4 spike before committing to Perspective headless as the lead prototype.
 - **Transport variety / adaptability:** Hoist already supports WebSocket data push (`XH.webSocketService`) alongside HTTP poll-then-diff, SignalR, and notification-then-fetch, and must stay adaptive to whatever a client presents. The harness must parameterize across these patterns rather than assume one. Phase 5 strategy must keep any transport-specific performance unlock labeled as a conditional optimization, not the default path.
 

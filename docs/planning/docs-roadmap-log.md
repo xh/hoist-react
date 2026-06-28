@@ -74,7 +74,7 @@
 - Completed `/desktop/cmp/panel/README.md` — first desktop sub-package README:
   - Panel layout (vframe structure, flex defaults, padding stripping)
   - Toolbars (tbar/bbar, array auto-wrap, separator shortcut, compact, filler, overflow)
-  - Panel + Grid pattern (most common usage, drawn from Jobsite/Veracity examples)
+  - Panel + Grid pattern (most common usage, drawn from Jobsite/a client app examples)
   - Mask (all forms: 'onLoad', TaskObserver, array, explicit, boolean)
   - Collapsing and resizing (PanelModel config, side, defaultSize, all options table)
   - collapsedTitle/collapsedIcon, compactHeader for visual hierarchy

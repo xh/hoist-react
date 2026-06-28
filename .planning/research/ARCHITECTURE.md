@@ -302,7 +302,7 @@ client-side aggregation - so the architecture must support *both* modes behind o
 **Trade-offs:** Slashes client memory/CPU (the §3.2/§3.4 wins) and is the most robust answer to the
 real-time-latency ask, because the heavy recompute happens server-side and only a small delta crosses
 the wire. Costs: server compute/bandwidth, and it only works on the controllable transport. **This is
-probably the highest-leverage pattern for the EMC real-time ask specifically**, and it is independent
+probably the highest-leverage pattern for the the lead client real-time ask specifically**, and it is independent
 of the columnar-engine choice - the two compose.
 
 ---

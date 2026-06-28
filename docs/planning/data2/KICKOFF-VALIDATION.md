@@ -4,13 +4,13 @@
 **Purpose:** The `KICKOFF-PROMPT.md` brief was authored from memory during a voice conversation
 without repository access. This document records the result of grounding its §2 architectural
 claims against actual `hoist-react` source and real production usage in `jobsite` and
-`veracity-webapp`. Per the brief's own instruction ("verify against source ... the inaccuracies
+a client app. Per the brief's own instruction ("verify against source ... the inaccuracies
 are themselves findings"), deltas are captured here and folded into `PROJECT.md`.
 
 **Detailed backing notes:**
 - [`validation/A-store-cube-view.md`](validation/A-store-cube-view.md) - Store / Cube / View / Field / Aggregator API
 - [`validation/B-grid-mobx.md`](validation/B-grid-mobx.md) - GridModel / AG Grid integration / MobX reactivity
-- [`validation/C-real-usage.md`](validation/C-real-usage.md) - real production usage in `jobsite` + `veracity-webapp`
+- [`validation/C-real-usage.md`](validation/C-real-usage.md) - real production usage in `jobsite` + a client app
 
 This is a focused **terminology + architecture** validation, not the full current-state inventory
 (that remains Phase 1, including the copy-vs-reuse heap map and exhaustive MobX path tracing).
@@ -30,7 +30,7 @@ WebSocket push:
   locally**, and is strategically important - do not write it out of the story.
 - The **local samples** use HTTP **poll-then-diff** instead: the server returns a full snapshot or a
   partial diff (`isPartial` flag), driving `cube.loadDataAsync()` vs. `cube.updateDataAsync()`.
-  `veracity-webapp` additionally uses WebSocket as a **notification** channel ("data ready" -> HTTP
+  a client app additionally uses WebSocket as a **notification** channel ("data ready" -> HTTP
   fetch); `jobsite` has no WebSocket on the cube.
 
 **Correction to the correction:** an earlier draft of this doc overstated the finding as "poll-then-diff,
@@ -38,7 +38,7 @@ NOT WebSocket push." That was an over-read of two sample apps. The accurate find
 pluggable and varies by client; Hoist supports HTTP snapshot/diff, WebSocket push, WebSocket
 notification, SignalR, polling - and must remain adaptive to whatever a client presents.**
 
-**Implication:** The "real-time" question for EMC is about *throughput/latency under load* across these
+**Implication:** The "real-time" question for the lead client is about *throughput/latency under load* across these
 transports, not about whether push exists. Per the adaptability principle, broadly-adopted solutions
 must work across transports; transport-specific optimizations are fine but must be labeled conditional.
 
@@ -58,7 +58,7 @@ finding that the integration seam belongs at View -> Store.
 Built-in `AggregatorToken`s: `SUM, AVG, MIN, MAX, UNIQUE, LEAF_COUNT, CHILD_COUNT, NULL, SINGLE,
 SUM_STRICT, AVG_STRICT`. There is **no** weighted-average built in. Weighted-average requires a
 custom subclass of the abstract `Aggregator` class - and both production apps ship their own
-`WeightedAverageAggregator` (veracity adds a `BAL_WA` shorthand defaulting the weight field, plus
+`WeightedAverageAggregator` (the client app adds a `BAL_WA` shorthand defaulting the weight field, plus
 `ProportionAggregator`, `DedupedSumAggregator`, `FieldAverageAggregator`).
 
 **Implication:** The §4.1 CC-2 ("aggregation variants, incl. weighted-average-by-another-field")
@@ -86,7 +86,7 @@ main thread inside a mounted component. This is a concrete baseline-measurement 
 | View is a bridge to *a* Store | A View can feed **multiple** stores: `ViewConfig.stores?: Store[] \| Store`. |
 | Column chooser operates "on the store" | The chooser (`ColChooserModel`) operates on **column state** (`gridModel.columnState`), not the store. Store-level operation applies to **filters** (`GridFilterModel`, `StoreFilterField`). |
 | Filtering is store-level | Confirmed, and `GridFilterModel.bind` (`GridFilterBindTarget`) can target a **Store or a Cube View** - the explicit shared-dataset mechanism. |
-| One cube feeds many widgets | Confirmed (10+ widget types per cube in both apps). Also: **multiple cubes per app** is real (veracity has a separate validation cube alongside the loan cube). |
+| One cube feeds many widgets | Confirmed (10+ widget types per cube in both apps). Also: **multiple cubes per app** is real (the client app has a separate validation cube alongside the loan cube). |
 | View wiring | **Two** production patterns exist: (a) declarative - `cube.createView({connect: true})` + `view.setStores([...])`; (b) manual - a MobX reaction on `cube.records` calls `cube.executeQuery()` and feeds `gridModel.loadData()`. The brief described only (a). |
 
 ## Confirmed accurate

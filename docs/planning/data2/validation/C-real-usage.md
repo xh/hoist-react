@@ -2,7 +2,7 @@
 
 Validates five claims about Hoist's data layer (Cube, View, Store, aggregators, WebSocket/streaming)
 against two production apps: **Jobsite** (`/Users/amcclain/dev/jobsite/client-app/src`) and
-**Veracity** (`/Users/amcclain/dev/veracity-webapp/client-app/src`).
+**a client app** (`/Users/amcclain/dev/a client app/client-app/src`).
 
 ---
 
@@ -12,9 +12,9 @@ against two production apps: **Jobsite** (`/Users/amcclain/dev/jobsite/client-ap
 |---|-------|---------|-------------|
 | 1 | Central Cube holds leaf facts; a View queries it; View results wire into a GridModel's Store | **CONFIRMED** - with nuance | Two distinct patterns in use (see §2) |
 | 2 | App loads a large JSON blob over HTTP, parses to raw JS, loads into Cube via `loadDataAsync` | **CONFIRMED** | `TimeEntryService.doLoadAsync` [TimeEntryService.ts:359-433]; `LoanService.doLoadAsync` [LoanService.ts:428-531] |
-| 3 | WebSocket listener feeds incremental cube updates | **PARTIALLY CONFIRMED - significant divergence** | WS is used in veracity, but for *refresh triggers*, not direct cube pushes; the actual cube data path is HTTP polling. Details in §3. |
-| 4 | One cube feeds many widgets, each with different query/filter | **CONFIRMED** | 10+ widgets query `XH.timeEntryService.cube` in jobsite; veracity dashboard has 10+ widget types all drawing from `XH.loanService.cube` |
-| 5 | Weighted average aggregator keyed on a second field | **CONFIRMED** | Both apps ship their own `WeightedAverageAggregator`; veracity also has `BAL_WA` shorthand wired to `current_principal_balance` as weight |
+| 3 | WebSocket listener feeds incremental cube updates | **PARTIALLY CONFIRMED - significant divergence** | WS is used in the client app, but for *refresh triggers*, not direct cube pushes; the actual cube data path is HTTP polling. Details in §3. |
+| 4 | One cube feeds many widgets, each with different query/filter | **CONFIRMED** | 10+ widgets query `XH.timeEntryService.cube` in jobsite; the client app dashboard has 10+ widget types all drawing from `XH.loanService.cube` |
+| 5 | Weighted average aggregator keyed on a second field | **CONFIRMED** | Both apps ship their own `WeightedAverageAggregator`; the client app also has `BAL_WA` shorthand wired to `current_principal_balance` as weight |
 
 ---
 
@@ -80,9 +80,9 @@ Every dashboard widget uses the same pattern - observe `cube.records`, re-execut
 - `SingleMetricWidgetModel.ts:208-212` (runs two queries - current and prior period)
 - `ChangeReportWidgetModel.ts:198-205` (runs two queries - two periods, side-by-side diff)
 
-### 2c. Pattern 2 - createView with connect:true and setStores (used in Veracity)
+### 2c. Pattern 2 - createView with connect:true and setStores (used in a client app)
 
-Veracity uses the fully wired-up View pattern. The View is created with `connect: true` and
+a client app uses the fully wired-up View pattern. The View is created with `connect: true` and
 explicitly handed the grid's Store via `setStores()`. From that point on the View pushes data
 automatically whenever the cube changes or the View's query/filter changes.
 
@@ -139,9 +139,9 @@ this.addReaction({
 });
 ```
 
-### 2d. Incremental cube update (Veracity `LoanService`)
+### 2d. Incremental cube update (a client app `LoanService`)
 
-Veracity's loan data uses a poll-then-diff approach. Each load sends the previous `lastRefreshed`
+the client app's loan data uses a poll-then-diff approach. Each load sends the previous `lastRefreshed`
 timestamp; the server returns either a full snapshot or a partial diff. The full/partial choice
 drives `loadDataAsync` vs `updateDataAsync`:
 
@@ -197,7 +197,7 @@ rather than data payloads.
 // ...14 total dimension fields, ~10 metric fields
 ```
 
-Veracity uses a `BAL_WA` shorthand in `BaseFieldService` that expands to `WeightedAverageAggregator`:
+a client app uses a `BAL_WA` shorthand in `BaseFieldService` that expands to `WeightedAverageAggregator`:
 
 ```typescript
 // BaseFieldService.ts:971-975
@@ -215,11 +215,11 @@ case 'BAL_WA':
 
 | Mental Model Assumption | Reality |
 |------------------------|---------|
-| "WebSocket listener feeds incremental updates into the cube" | **False for both apps.** Neither app feeds raw cube data over WebSocket. Jobsite has no WebSocket usage at all on the time entry cube. Veracity uses WebSocket only to deliver lightweight *notifications* (a message like "refresh ready") that trigger an HTTP fetch. The HTTP response is what actually flows into `cube.loadDataAsync` / `cube.updateDataAsync`. |
-| "A View is created... View's results are connected into a grid's Store... the store change drives the grid" | **True in Veracity, different in Jobsite.** Jobsite uses `cube.executeQuery()` manually inside a MobX reaction and calls `gridModel.loadData(data)` directly. There is no standing View object connected to the store in most Jobsite grids. The `createView` / `connect: true` / `setStores` pattern appears in Veracity and in one place in Jobsite (the invoice report's filter-value source view) but is not the dominant Jobsite pattern. |
+| "WebSocket listener feeds incremental updates into the cube" | **False for both apps.** Neither app feeds raw cube data over WebSocket. Jobsite has no WebSocket usage at all on the time entry cube. a client app uses WebSocket only to deliver lightweight *notifications* (a message like "refresh ready") that trigger an HTTP fetch. The HTTP response is what actually flows into `cube.loadDataAsync` / `cube.updateDataAsync`. |
+| "A View is created... View's results are connected into a grid's Store... the store change drives the grid" | **True in a client app, different in Jobsite.** Jobsite uses `cube.executeQuery()` manually inside a MobX reaction and calls `gridModel.loadData(data)` directly. There is no standing View object connected to the store in most Jobsite grids. The `createView` / `connect: true` / `setStores` pattern appears in a client app and in one place in Jobsite (the invoice report's filter-value source view) but is not the dominant Jobsite pattern. |
 | "Initial load: large compressed JSON blob over HTTP" | **JSON over HTTP confirmed, but no explicit compression at the client layer.** The fetch uses standard `XH.fetchJson`; HTTP-level gzip negotiation may occur at the server/transport level, but the client code sees plain JSON objects - there is no explicit decompression step in the client code. |
-| "One cube per domain" | **Confirmed.** Both apps have exactly one cube per domain type (one time-entry cube in `TimeEntryService`, one loan cube in `LoanService`). The cube lives in a singleton service. However, Veracity's `ValidationResultsModel` also creates its *own* separate cube for validation results, not derived from the loan cube. Multiple independent cubes in one app is a real pattern. |
-| "Weighted average by another field" | **Confirmed and well-established.** Both apps define a custom `WeightedAverageAggregator` that extends `Aggregator`, iterates leaves, and computes `sum(val * weight) / sum(weight)`. The implementations are nearly identical. Veracity additionally defines custom aggregator types: `DedupedSumAggregator`, `ProportionAggregator` (percent of total/row/parent), `FieldAverageAggregator`, `LoanAverageAggregator`. |
+| "One cube per domain" | **Confirmed.** Both apps have exactly one cube per domain type (one time-entry cube in `TimeEntryService`, one loan cube in `LoanService`). The cube lives in a singleton service. However, the client app's `ValidationResultsModel` also creates its *own* separate cube for validation results, not derived from the loan cube. Multiple independent cubes in one app is a real pattern. |
+| "Weighted average by another field" | **Confirmed and well-established.** Both apps define a custom `WeightedAverageAggregator` that extends `Aggregator`, iterates leaves, and computes `sum(val * weight) / sum(weight)`. The implementations are nearly identical. a client app additionally defines custom aggregator types: `DedupedSumAggregator`, `ProportionAggregator` (percent of total/row/parent), `FieldAverageAggregator`, `LoanAverageAggregator`. |
 
 ---
 
@@ -238,7 +238,7 @@ case 'BAL_WA':
 - **Field definitions**: Hard-coded in `TimeEntryService.getCubeFields()`, role-gated (some fields
   only included for users with specific roles).
 
-### Veracity (LoanService / BaseFieldService)
+### a client app (LoanService / BaseFieldService)
 
 - **Fields**: Loaded dynamically from server via `CoreFieldService.initAsync()` calling `GET /fields`.
   Field definitions are server-side, tagged with metadata. `BaseFieldService.genCubeFieldConfigs()`
@@ -258,22 +258,22 @@ case 'BAL_WA':
 ## 5. Open Questions for Phase 1
 
 1. **Two View patterns - which to document?** Jobsite's `executeQuery-in-reaction` pattern and
-   Veracity's `createView + connect + setStores` pattern are both in heavy production use. Docs
-   should explain both, including when to prefer each. The Veracity pattern is more declarative
+   the client app's `createView + connect + setStores` pattern are both in heavy production use. Docs
+   should explain both, including when to prefer each. The a client app pattern is more declarative
    and avoids re-running the query on every reaction; the Jobsite pattern gives more control
    over when/how data is fetched and processed.
 
 2. **WebSocket pattern role**: The WS-as-notification pattern is clearly intentional (used in 4
-   places in veracity, none of which push raw data). The brief's assumption of "WS feeds incremental
+   places in the client app, none of which push raw data). The brief's assumption of "WS feeds incremental
    cube updates" appears to be aspirational or mischaracterized. Is there any Hoist facility for
    direct WS data push into a cube/store, or is the notify-then-HTTP-fetch pattern the canonical
    approach?
 
-3. **Multiple cubes per app**: Veracity's `ValidationResultsModel` creates its own cube entirely
+3. **Multiple cubes per app**: the client app's `ValidationResultsModel` creates its own cube entirely
    separate from the loan cube. Should docs address the "per-domain single cube" pattern and when
    it is appropriate to create additional cubes?
 
-4. **Field definition source**: Jobsite defines fields in code (role-gated TS); Veracity fetches
+4. **Field definition source**: Jobsite defines fields in code (role-gated TS); a client app fetches
    field definitions from the server at startup (server-driven field library). Both are valid.
    Which pattern should be presented as primary in docs?
 
