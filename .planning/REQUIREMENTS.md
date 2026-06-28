@@ -13,7 +13,7 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ### Current-State Inventory (INV)
 
-- [ ] **INV-01**: A corrected current-state architecture document covers Store / Cube / View /
+- [x] **INV-01**: A corrected current-state architecture document covers Store / Cube / View /
   GridModel and the end-to-end data flow, with Mermaid diagrams, grounded in `hoist-react` source and
   real app usage. Supersedes/absorbs the validation notes already produced.
 - [x] **INV-02**: A copy-vs-reuse map identifies, at each pipeline transition (raw object -> StoreRecord
@@ -159,7 +159,7 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INV-01 | Phase 1 | Pending |
+| INV-01 | Phase 1 | Complete |
 | INV-02 | Phase 1 | Complete |
 | INV-03 | Phase 1 | Complete |
 | INV-04 | Phase 1 | Complete |

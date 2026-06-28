@@ -11,11 +11,11 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 ## Current Position
 
 Phase: 1 of 8 (Current-State Inventory)
-Plan: 3 of 4 complete in current phase
-Status: In Progress
-Last activity: 2026-06-28 - Completed 01-02 (MobX reaction-granularity trace, INV-03)
+Plan: 4 of 4 complete in current phase
+Status: Phase Complete
+Last activity: 2026-06-28 - Completed 01-04 (authoritative architecture doc, INV-01)
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [████████░░] 75%
 | Phase 01-current-state-inventory P03 | 2min | 2 tasks | 1 files |
 | Phase 01-current-state-inventory P01 | 2min | 1 tasks | 1 files |
 | Phase 01 P02 | 22min | 1 tasks | 1 files |
+| Phase 01-current-state-inventory P04 | 5min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,12 @@ Recent decisions affecting current work:
   synchronously via one `agApi.applyTransaction()` call (`Grid.ts:693`) - no async/batching layer,
   only implicit MobX action coalescing. Cube->view and store-mutation->rebuildFiltered are imperative
   pushes, not MobX-observed. Reactions are mounted-only (GridLocalModel.onLinked, gated on agApi).
+- INV-01: ARCHITECTURE.md is the single authoritative current-state doc (supersedes the validation
+  notes, integrates INV-02/03/04). It names six attributable Phase 2 instrumentation boundaries -
+  cube ingest (loadDataAsync/updateDataAsync), noteCubeUpdated re-aggregation, the View.result
+  @observable.ref write, Store/_filtered rebuild, the dataReaction->genTransaction->applyTransaction
+  bridge, and the heap-attribution layers - each mapped to HARN-03 (boundary timing), HARN-04 (heap
+  attribution by layer), and HARN-05 (compute-vs-bridge split). This is the Phase 2 bridge.
 
 ### Pending Todos
 
@@ -88,5 +95,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-28
-Stopped at: Completed 01-03-PLAN.md (transport/pattern inventory, INV-04)
+Stopped at: Completed 01-04-PLAN.md (INV-01 authoritative architecture doc) - Phase 1 complete
 Resume file: None
