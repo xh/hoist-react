@@ -11,11 +11,11 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 ## Current Position
 
 Phase: 1 of 8 (Current-State Inventory)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-06-27 - Roadmap created (8 phases, 42/42 requirements mapped)
+Plan: 2 of 4 complete in current phase
+Status: In Progress
+Last activity: 2026-06-28 - Completed 01-01 (copy-vs-reuse map, INV-02)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -35,6 +35,8 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-current-state-inventory P03 | 2min | 2 tasks | 1 files |
+| Phase 01-current-state-inventory P01 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -51,6 +53,10 @@ Recent decisions affecting current work:
   design requirement).
 - Validation: transport is pluggable/transport-agnostic; weighted-avg is a custom Aggregator; MobX
   observability enters at the `View.result` boundary (not a cube-level observable).
+- INV-02: a single leaf datum has 4+ concurrent parsed/record representations (raw, cube
+  `StoreRecord.data`, leaf `ViewRowData`, grid `StoreRecord.data`); every Store boundary re-parses
+  into a new `data` object via `parseRaw`, while AG Grid references the record by ref. The
+  `StoreRecord` -> AG Grid node edge is the Phase 2 heap-attribution boundary (opaque library memory).
 
 ### Pending Todos
 
@@ -72,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-27
-Stopped at: ROADMAP.md and STATE.md written; REQUIREMENTS.md traceability populated.
+Last session: 2026-06-28
+Stopped at: Completed 01-01-PLAN.md (copy-vs-reuse map, INV-02)
 Resume file: None

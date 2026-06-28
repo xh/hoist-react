@@ -16,7 +16,7 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 - [ ] **INV-01**: A corrected current-state architecture document covers Store / Cube / View /
   GridModel and the end-to-end data flow, with Mermaid diagrams, grounded in `hoist-react` source and
   real app usage. Supersedes/absorbs the validation notes already produced.
-- [ ] **INV-02**: A copy-vs-reuse map identifies, at each pipeline transition (raw object -> StoreRecord
+- [x] **INV-02**: A copy-vs-reuse map identifies, at each pipeline transition (raw object -> StoreRecord
   -> ViewResult rows -> grid store records -> AG Grid nodes), where data is copied vs. referenced.
 - [ ] **INV-03**: The MobX reaction-granularity of the `View.result -> Store -> GridModel -> AG Grid`
   path is documented (record-level vs. batch-level), including where synchronous `applyTransaction`
@@ -160,7 +160,7 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INV-01 | Phase 1 | Pending |
-| INV-02 | Phase 1 | Pending |
+| INV-02 | Phase 1 | Complete |
 | INV-03 | Phase 1 | Pending |
 | INV-04 | Phase 1 | Pending |
 | HARN-01 | Phase 2 | Pending |
