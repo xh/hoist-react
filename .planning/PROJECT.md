@@ -48,9 +48,12 @@ inventory). These are context for the R&D, not deliverables of this project. -->
 - ✓ MobX reactivity: React rendering driven off MobX observers; the cube->view fan-out is IMPERATIVE
   push (`noteCubeUpdated`), with MobX observability entering at the `View.result` boundary
   (`@observable.ref`) - existing
-- ✓ Incremental data delivery: poll-then-diff over HTTP (server returns full snapshot or partial diff
-  via an `isPartial` flag -> `loadDataAsync`/`updateDataAsync`); WebSocket, where used, is only a
-  "refresh ready" notification channel, NOT a data-push transport - existing
+- ✓ Transport-agnostic incremental delivery (multiple patterns, all existing): (a) poll-then-diff over
+  HTTP (full snapshot or `isPartial` diff -> `loadDataAsync`/`updateDataAsync`); (b) **WebSocket data
+  push** via a first-class `XH.webSocketService` (`WebSocketSubscription`/`WebSocketMessage`),
+  demonstrated in Toolbox's portfolio example (`PortfolioService`/`PositionSession`) and used heavily
+  in client apps not checked out locally; (c) WebSocket-as-notification ("refresh ready" -> HTTP
+  fetch). The data layer must remain transport-agnostic and support all of these
 
 ### Active
 
@@ -124,18 +127,21 @@ inventory). These are context for the R&D, not deliverables of this project. -->
 
 JSON over HTTP (transport-level compression) -> parsed raw JS object -> Store mints `StoreRecord`s
 (each keeps a reference to the raw object AND a new inner data object) -> central cube holds leaf-level
-facts in its internal store; incremental updates arrive via **poll-then-diff over HTTP** (full
-snapshot or `isPartial` diff -> `loadDataAsync`/`updateDataAsync`; a WebSocket, where present, only
-signals "refresh ready") -> a dashboard grid widget's coordinating model wires the cube to the grid's
+facts in its internal store; incremental updates arrive via whichever transport an app uses - **HTTP
+poll-then-diff** (full snapshot or `isPartial` diff -> `loadDataAsync`/`updateDataAsync`), **WebSocket
+data push** (`XH.webSocketService` subscriptions feeding `updateDataAsync`), SignalR, or
+WebSocket-as-notification - the layer is transport-agnostic -> a dashboard grid widget's coordinating
+model wires the cube to the grid's
 store by one of two production patterns: (a) declarative - `cube.createView({connect: true})` +
 `view.setStores([...])`; or (b) manual - a MobX reaction on `cube.records` calls `cube.executeQuery()`
 and feeds `gridModel.loadData()` -> store change generates synchronous AG Grid transactions -> AG Grid
 renders.
 
 > Architecture above was validated against source and real `jobsite`/`veracity-webapp` usage on
-> 2026-06-27. The kickoff brief's original mental model had several inaccuracies (notably the
-> WebSocket-push and built-in-weighted-average claims); see
-> `docs/planning/data2/KICKOFF-VALIDATION.md` for the full correction record.
+> 2026-06-27 (corrections in `docs/planning/data2/KICKOFF-VALIDATION.md`). **Caveat:** the two local
+> apps are *samples* - they use HTTP poll-then-diff, but that is not representative of all XH apps.
+> WebSocket data push is a first-class, important pattern elsewhere. Do not over-anchor requirements to
+> what the local samples do or don't do.
 
 ### Memory-multiplication problem (central concern)
 
@@ -167,17 +173,23 @@ engine that can't drive fine-grained reactive updates is not a fit.
 - **Real-time / latency pressure**: EMC's head of software is pushing for sub-second / near-real-time,
   citing another dev's fast (possibly WASM-based) grid. Calibrated target: live-trading-screen cadence,
   ~500 position updates touching ~20 fields per batch, recompute aggregations and render before the
-  next batch, no jank, bounded memory. Note: today's delivery is poll-then-diff over HTTP (validated) -
-  a true streaming push transport is itself a candidate change, not an existing capability.
+  next batch, no jank, bounded memory. Hoist already supports WebSocket data push (`XH.webSocketService`)
+  alongside HTTP poll-then-diff; the open question is throughput/latency under load, not whether push
+  exists. Transport-agnostic, multi-pattern support is a requirement.
 - **Scaling / headroom**: want to know where the wall is. Past OOM crashes on older small-heap Chrome
   machines. Measurement is the point.
 
 ### Primary sources available locally (siblings of hoist-react)
 
-- `hoist-react` (primary, running inside it), `toolbox` (public demo, deploy target for the tech demo),
-  `jobsite` (internal app using cube/typed-field/aggregation patterns), `veracity-webapp` (client app,
-  same patterns). `hoist-core` (Grails/Spring Boot server) available if server-side
-  aggregation/transport questions warrant. Read real usage, not just library definitions.
+- `hoist-react` (primary, running inside it), `toolbox` (public demo, deploy target for the tech demo;
+  includes a WebSocket portfolio example - `PortfolioService`/`PositionSession`), `jobsite` (internal
+  app using cube/typed-field/aggregation patterns), `veracity-webapp` (client app, same patterns).
+  `hoist-core` (Grails/Spring Boot server) available if server-side aggregation/transport questions
+  warrant. Read real usage, not just library definitions.
+- **These local apps are SAMPLES, not the full picture.** They are a convenience for grounding, not a
+  definition of requirements. XH encounters a wide variety of client patterns (transports, update
+  cadences, data shapes) that are not represented here. Do not narrow scope to only what these apps
+  happen to do.
 
 ### Documented assumptions (from kickoff §12 - revisit if they block)
 
@@ -194,6 +206,12 @@ engine that can't drive fine-grained reactive updates is not a fit.
 
 ## Constraints
 
+- **Adaptability across client patterns (overarching principle)**: Hoist is a toolkit deployed across
+  many clients with differing transports, update cadences, and data shapes. Anything intended for wide
+  adoption MUST be adaptable to that variety - it cannot hard-depend on one transport or one ingest
+  pattern. Targeted, conditional optimizations are still valuable to surface ("if you did exactly X,
+  you could achieve Y") and may suit a specific high-value client/workload, but they must be labeled as
+  conditional, not baked in as the default path. Adaptability beats a single fast-but-rigid answer.
 - **Platform**: Chromium / Edge-first, desktop-first - Firefox/Safari/mobile far secondary. A
   Chromium-optimized strategy is acceptable if it unlocks gains.
 - **Reactivity**: MobX/React fine-grained reactivity must be served or bridged cleanly.

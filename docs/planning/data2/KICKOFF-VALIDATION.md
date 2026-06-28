@@ -19,19 +19,28 @@ This is a focused **terminology + architecture** validation, not the full curren
 
 ## Material corrections (change the mental model)
 
-### 1. The real-time update mechanism is poll-then-diff over HTTP, NOT WebSocket data push
-The brief (§2.6, §3.3) describes "a WebSocket listener feeds incremental updates into the cube."
-In both production apps this is **incorrect**:
-- WebSocket (where present, in `veracity-webapp`) is used **only as a notification channel** - the
-  message signals "new data ready," and the client then performs a normal **HTTP fetch**.
-- `jobsite` has **no** WebSocket feeding the cube at all.
-- The actual incremental-update path is **poll-then-diff**: the server returns either a full
-  snapshot or a partial diff (an `isPartial` flag), driving `cube.loadDataAsync()` vs.
-  `cube.updateDataAsync()`.
+### 1. Update transport varies by app - the layer is transport-agnostic (WebSocket push is first-class)
+The brief (§2.6, §3.3) describes "a WebSocket listener feeds incremental updates into the cube" as
+*the* mechanism. The reality is **multiple patterns**, and the two local sample apps happen not to use
+WebSocket push:
+- **WebSocket data push IS a first-class Hoist capability** - `XH.webSocketService` with
+  `WebSocketSubscription` / `WebSocketMessage` (`@xh/hoist/svc`). Toolbox demonstrates it in a
+  portfolio example (`core/svc/PortfolioService.ts` + `core/positions/PositionSession.ts`, which
+  `subscribe`s to live position updates). It is used heavily in client apps **not checked out
+  locally**, and is strategically important - do not write it out of the story.
+- The **local samples** use HTTP **poll-then-diff** instead: the server returns a full snapshot or a
+  partial diff (`isPartial` flag), driving `cube.loadDataAsync()` vs. `cube.updateDataAsync()`.
+  `veracity-webapp` additionally uses WebSocket as a **notification** channel ("data ready" -> HTTP
+  fetch); `jobsite` has no WebSocket on the cube.
 
-**Implication:** The "real-time" framing for EMC must reckon with the fact that today's delivery is
-poll-then-diff over HTTP, not a streaming socket. A genuine push transport is itself a candidate
-change, not an existing capability. This sharpens the §3.3 latency question.
+**Correction to the correction:** an earlier draft of this doc overstated the finding as "poll-then-diff,
+NOT WebSocket push." That was an over-read of two sample apps. The accurate finding: **transport is
+pluggable and varies by client; Hoist supports HTTP snapshot/diff, WebSocket push, WebSocket
+notification, SignalR, polling - and must remain adaptive to whatever a client presents.**
+
+**Implication:** The "real-time" question for EMC is about *throughput/latency under load* across these
+transports, not about whether push exists. Per the adaptability principle, broadly-adopted solutions
+must work across transports; transport-specific optimizations are fine but must be labeled conditional.
 
 ### 2. Cube -> View propagation is imperative push; MobX enters only at the result boundary
 The brief implies a reactive chain ("the cube observes its data; ... the view observes the cube").
@@ -111,5 +120,6 @@ main thread inside a mounted component. This is a concrete baseline-measurement 
   (record-level vs. batch-level) - determines real-time recompute cost.
 - The precise **copy-vs-reuse** map across raw object -> StoreRecord (raw ref + inner data) ->
   ViewResult rows -> grid store records -> AG Grid nodes (a Phase 1/2 heap deliverable).
-- Whether the poll-then-diff `isPartial` path is universal or app-specific, and what a true push
-  transport would require.
+- The full range of update transports/patterns across XH's client base (the local samples show only a
+  slice) and how `Cube`/`Store` ingest adapts to each - to keep the harness and any Data 2.0 path
+  transport-agnostic rather than tuned to one pattern.
