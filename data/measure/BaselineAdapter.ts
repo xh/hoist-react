@@ -142,6 +142,26 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
         this.prevRecords = [];
     }
 
+    /**
+     * Empty the LIVE pipeline to a true-empty state WITHOUT nulling it - the one true-empty path the
+     * harness uses to capture a clean post-GC empty-pipeline heap baseline (02-08) and to leave no
+     * residual heap after each calibration cycle.
+     *
+     * Unlike {@link disposeAsync} (which destroys + nulls cube/view/gridModel, losing the mounted
+     * grid the bridge measurement needs), this keeps every pipeline instance ALIVE and only clears
+     * the DATA: `Cube.clearAsync()` clears all data/info from the cube and re-aggregates its connected
+     * Views asynchronously, so the connected View re-materializes to empty and the grid store clears.
+     * `prevRecords` is reset so the next `genTransaction` diff baseline is clean.
+     *
+     * This is the ONLY true-empty path: the injected `clearAsync`/`loadNRowsAsync` callbacks both call
+     * `loadSnapshotAsync` (a reload/replace) and never reach empty, so they cannot serve as the empty
+     * baseline source.
+     */
+    async clearPipelineAsync(): Promise<void> {
+        if (this.cube) await this.cube.clearAsync();
+        this.prevRecords = [];
+    }
+
     //--------------------------------------------------------------------------------------------
     // Grid-sync seam the harness needs for measureGridSync (Boundary 5)
     //--------------------------------------------------------------------------------------------

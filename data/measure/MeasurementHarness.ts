@@ -17,6 +17,7 @@ import {
 import {
     attributeHeap,
     calibratePerRecordBytesAsync,
+    captureEmptyBaselineHeapAsync,
     detectHeapMethod,
     forceGcAndSettleAsync,
     heapNow
@@ -56,6 +57,13 @@ export interface HarnessDataProvider {
     loadNRowsAsync: (n: number) => Promise<void>;
     /** Tears the calibration rows back down so calibration leaves no residual heap. */
     clearAsync: () => Promise<void>;
+    /**
+     * Restores the snapshot the harness intentionally cleared to capture the empty-pipeline heap
+     * baseline (02-08). The caller already holds the fetched `snapshotRows` and binds this to
+     * `() => adapter.loadSnapshotAsync(snapshotRows)`. Called once, after the empty-baseline capture
+     * and before calibration + the measured protocol, so the pipeline is back to its loaded state.
+     */
+    reloadSnapshotAsync: () => Promise<void>;
 }
 
 /** Args for {@link MeasurementHarness.runScenarioAsync}. */
@@ -103,9 +111,15 @@ export class MeasurementHarness extends HoistModel {
      *   1. Capture {@link EnvMetadata} up front (userAgent, crossOriginIsolated, gc/precise-memory
      *      heuristics, heap method, timestamp).
      *   2. Verify the caller pre-loaded the snapshot (`adapter.getResultRowCount() > 0`) - throws a
-     *      clear error if the adapter is empty so a mis-wired caller fails loudly. Then calibrate
-     *      per-record bytes for each owned layer via `calibratePerRecordBytesAsync` (02-04), using the
-     *      injected `loadNRowsAsync`/`clearAsync` callbacks (incl. an object-valued-field variant).
+     *      clear error if the adapter is empty so a mis-wired caller fails loudly.
+     *   2b. EMPTY-BASELINE FIRST (02-08): clear the live pipeline to TRULY EMPTY via the baseline's
+     *      `clearPipelineAsync` (Cube.clearAsync, pipeline kept alive), capture a FIXED clean post-GC
+     *      empty-pipeline heap baseline (`captureEmptyBaselineHeapAsync`), then RELOAD the snapshot via
+     *      the injected `reloadSnapshotAsync`. Every iteration's total heap is differenced against this
+     *      fixed baseline, so the reported total is positive retained heap (not the old inverted
+     *      within-iteration pre/post-GC delta). Then calibrate per-record bytes via
+     *      `calibratePerRecordBytesAsync` (median-of-5 over N=50000, 02-08) using the injected
+     *      `loadNRowsAsync`/`clearAsync` callbacks.
      *   3. Run the warmup-discard / forced-GC-between / median+p95 protocol (02-05 Task 1). Each
      *      measured iteration pulls the next batch via the injected `nextBatchAsync()`, then times the
      *      REAL cube-ingest + connected-View re-aggregation pipeline (Boundaries 1-4) as the PRIMARY
@@ -120,13 +134,14 @@ export class MeasurementHarness extends HoistModel {
      * @returns the complete RunResult for this scenario + adapter.
      */
     async runScenarioAsync(args: RunScenarioArgs): Promise<RunResult> {
-        const {scenario, adapter, nextBatchAsync, loadNRowsAsync, clearAsync} = args,
+        const {scenario, adapter, nextBatchAsync, loadNRowsAsync, clearAsync, reloadSnapshotAsync} =
+                args,
             {protocol} = scenario;
 
         // 1. Environment metadata - stamped on every run so saved scorecards compare meaningfully.
         const env = this.captureEnvMetadata();
 
-        // 2. Verify the caller pre-loaded the snapshot; calibrate per-record byte cost per layer.
+        // 2. Verify the caller pre-loaded the snapshot.
         if (adapter.getResultRowCount() <= 0) {
             throw XH.exception(
                 'MeasurementHarness.runScenarioAsync: adapter is empty. The caller must pre-load ' +
@@ -135,6 +150,16 @@ export class MeasurementHarness extends HoistModel {
             );
         }
 
+        // 2b. EMPTY-BASELINE FIRST (02-08): truly empty the live pipeline (cube.clearAsync, pipeline
+        //     kept alive), capture the FIXED clean post-GC empty-pipeline heap baseline, then reload
+        //     the snapshot. A candidate adapter without the true-empty hook falls back to no clear
+        //     (documented limitation - the baseline always has it).
+        const gridSeam = adapter as Partial<BaselineAdapter>;
+        await gridSeam.clearPipelineAsync?.();
+        const emptyBaselineHeap = await captureEmptyBaselineHeapAsync(protocol.gcSettleMs);
+        await reloadSnapshotAsync();
+
+        // Calibrate per-record byte cost per layer (median-of-5 over N=50000, 02-08).
         const calibration = await this.calibrateAsync({
             loadNRowsAsync,
             clearAsync,
@@ -150,7 +175,13 @@ export class MeasurementHarness extends HoistModel {
                 // measure a cold remount full-replace (Pitfall 6).
             },
             runIterationAsync: () =>
-                this.runIterationAsync({adapter, nextBatchAsync, calibration, env}),
+                this.runIterationAsync({
+                    adapter,
+                    nextBatchAsync,
+                    calibration,
+                    env,
+                    emptyBaselineHeap
+                }),
             betweenIterationsAsync: () => forceGcAndSettleAsync(protocol.gcSettleMs)
         });
 
@@ -201,13 +232,16 @@ export class MeasurementHarness extends HoistModel {
     }): Promise<{cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number}> {
         const {loadNRowsAsync, clearAsync, settleMs} = args,
             // Calibrate once over a representative N; the same per-record figure is applied to each
-            // owned layer (cube store record, grid store record, view-result row). A larger N dampens
-            // ~100KB heap quantization noise.
-            calN = 1000,
+            // owned layer (cube store record, grid store record, view-result row). N=50000 (10x the
+            // default 5000-leaf scenario) makes the calibration load move a tens-of-MB delta that
+            // clears the GC/heap noise floor, and median-of-5 rejects a single mistimed GC (02-08).
+            calN = 50000,
+            calRepeats = 5,
             perRecordBytes = await calibratePerRecordBytesAsync({
                 loadNRowsAsync,
                 clearAsync,
                 n: calN,
+                repeats: calRepeats,
                 settleMs
             });
 
@@ -226,15 +260,17 @@ export class MeasurementHarness extends HoistModel {
      *   2. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
      *      1-4) via `measurePipeline` as the PRIMARY compute, with a cheap defensive settle hook.
      *   3. Time the grid-sync compute/bridge/render split (Boundary 5) via `measureGridSync`.
-     *   4. Settle + `attributeHeap` for the steady-state heap sample.
+     *   4. Settle + `attributeHeap`, differencing the post-GC heap against the FIXED empty-pipeline
+     *      baseline captured up front (02-08), for the steady-state heap sample.
      */
     private async runIterationAsync(args: {
         adapter: CandidateAdapter;
         nextBatchAsync: () => Promise<PlainObject[]>;
         calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
         env: EnvMetadata;
+        emptyBaselineHeap: number;
     }): Promise<IterationSample> {
-        const {adapter, nextBatchAsync, calibration, env} = args,
+        const {adapter, nextBatchAsync, calibration, env, emptyBaselineHeap} = args,
             gridSeam = adapter as Partial<BaselineAdapter>;
 
         // 1. Pull the next pre-fetched batch from the caller.
@@ -258,16 +294,17 @@ export class MeasurementHarness extends HoistModel {
             rowCount: adapter.getResultRowCount()
         });
 
-        // 4. Steady-state heap sample: settle, then pure attribute. Baseline reads live cube/grid
-        //    counts; for a generic adapter we fall back to the result row count for all owned layers.
-        const baselineHeap = heapNow() ?? 0,
-            cubeRecordCount = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
+        // 4. Steady-state heap sample: settle, then pure attribute. The total is differenced against
+        //    the FIXED empty-pipeline baseline captured up front (02-08), NOT a within-iteration
+        //    pre-GC read. Counts come from the 02-07 full-hierarchy accessors (cube store records,
+        //    grid store allCount, result rows); a generic adapter falls back to the result row count.
+        const cubeRecordCount = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
             gridRecordCount = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount(),
             viewRowCount = adapter.getResultRowCount();
 
         await forceGcAndSettleAsync(0);
         const heap = attributeHeap({
-            baselineHeap,
+            emptyBaselineHeap,
             cubeRecordCount,
             gridRecordCount,
             viewRowCount,

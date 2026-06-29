@@ -6,6 +6,7 @@
  */
 
 import {wait} from '@xh/hoist/promise';
+import {median} from './MeasurementProtocol';
 import {HeapAttribution, HeapMethod} from './types';
 
 /**
@@ -73,6 +74,25 @@ export async function forceGcAndSettleAsync(settleMs: number): Promise<void> {
 }
 
 /**
+ * Capture the clean post-GC EMPTY-pipeline baseline heap reading the harness differences every
+ * iteration's total against.
+ *
+ * The caller MUST have emptied the live pipeline to a true-empty state (e.g. via
+ * `BaselineAdapter.clearPipelineAsync` -> `Cube.clearAsync`, which re-aggregates the connected View
+ * to empty and clears the grid store) BEFORE calling this. This forces a GC + settle so the reading
+ * is post-GC steady state, then returns `heapNow()`. That FIXED reference is then passed to every
+ * {@link attributeHeap} call so the reported total is positive retained heap, not the inverted
+ * within-iteration pre/post-GC delta (which read -28.2 MB before this fix).
+ *
+ * @param settleMs - the forced-GC settle delay (ms) applied before the baseline heap read.
+ * @returns the post-GC empty-pipeline `heapNow()` reading (0 when `performance.memory` is absent).
+ */
+export async function captureEmptyBaselineHeapAsync(settleMs: number): Promise<number> {
+    await forceGcAndSettleAsync(settleMs);
+    return heapNow() ?? 0;
+}
+
+/**
  * Detect the heap-attribution method in use. This plan implements ONLY the no-COI default, so it
  * always reports `performanceMemory`. The COI `measureUserAgentSpecificMemory` path is intentionally
  * not implemented here (deferred per CONTEXT; it requires cross-origin isolation and does not yield a
@@ -95,44 +115,71 @@ export function detectHeapMethod(): HeapMethod {
  *
  * The `args` object carries the calibration callbacks and counts: `loadNRowsAsync` loads exactly
  * `n` rows of the layer being calibrated; `clearAsync` tears those rows back down so the run leaves
- * no residual heap; `n` is the number of rows in the sample (a larger `n` dampens quantization
- * noise); and `settleMs` is the forced-GC settle delay (ms) applied before each heap read.
+ * no residual heap; `n` is the number of rows in the sample; `repeats` is how many load-N/clear
+ * cycles to run before taking the MEDIAN per-record figure; and `settleMs` is the forced-GC settle
+ * delay (ms) applied before each heap read.
  *
- * The result is floored at 0: a per-record byte cost cannot be negative, so a negative raw delta
- * (the post-load heap reading lower than the baseline) is measurement noise - a GC firing mid-load,
- * or `performance.memory` quantization without `--enable-precise-memory-info` - not a real negative
- * footprint. Returning 0 there keeps the downstream `count x perRecordBytes` layer figures
- * non-negative (the prior behavior multiplied a negative cost by thousands of rows, surfacing
- * impossible results like a -89 MB layer and a correspondingly inflated AG Grid remainder).
+ * LARGER-N + MEDIAN-OF-REPEATS RATIONALE (defaults `n = 50000`, `repeats = 5`): a single small
+ * 1000-row diff is sub-noise against the documented tens-of-MB GC/heap variance on a ~366 MB live
+ * heap, so it read 0 even under the flags. 50000 rows is 10x the default 5000-leaf scenario, so the
+ * calibration load itself moves a clearly tens-of-MB delta that CLEARS that variance, and the median
+ * over 5 repeats rejects a single mistimed GC. These are deliberately NOT a "sane larger N": the
+ * committed per-sample floor-at-0 below means an under-resolved load silently reads 0 again - the
+ * exact failure this closes - so the load must be measurably large.
  *
- * @returns per-record byte cost `max(0, (afterHeap - beforeHeap) / n)` for this field-shape.
+ * Each per-cycle sample is floored at 0: a per-record byte cost cannot be negative, so a negative raw
+ * delta (the post-load heap reading lower than the baseline) is measurement noise - a GC firing
+ * mid-load, or `performance.memory` quantization without `--enable-precise-memory-info` - not a real
+ * negative footprint. Flooring keeps the downstream `count x perRecordBytes` layer figures
+ * non-negative; the MEDIAN is then taken over the floored samples.
+ *
+ * @returns the median over `repeats` cycles of `max(0, (afterHeap - beforeHeap) / n)`.
  */
 export async function calibratePerRecordBytesAsync(args: {
     loadNRowsAsync: (n: number) => Promise<void>;
     clearAsync: () => Promise<void>;
-    n: number;
+    n?: number;
+    repeats?: number;
     settleMs: number;
 }): Promise<number> {
-    const {loadNRowsAsync, clearAsync, n, settleMs} = args;
+    const {loadNRowsAsync, clearAsync, settleMs} = args,
+        n = args.n ?? 50000,
+        repeats = args.repeats ?? 5;
 
-    await forceGcAndSettleAsync(settleMs);
-    const before = heapNow() ?? 0;
+    if (n <= 0 || repeats <= 0) return 0;
 
-    await loadNRowsAsync(n);
-    await forceGcAndSettleAsync(settleMs);
-    const after = heapNow() ?? 0;
+    const samples: number[] = [];
+    for (let i = 0; i < repeats; i++) {
+        await forceGcAndSettleAsync(settleMs);
+        const before = heapNow() ?? 0;
 
-    // Clean up so the calibration leaves no residual heap for subsequent runs.
-    await clearAsync();
+        await loadNRowsAsync(n);
+        await forceGcAndSettleAsync(settleMs);
+        const after = heapNow() ?? 0;
 
-    return n > 0 ? Math.max(0, (after - before) / n) : 0;
+        // Clean up so each cycle leaves no residual heap for the next repeat.
+        await clearAsync();
+
+        samples.push(Math.max(0, (after - before) / n));
+    }
+
+    // Median over the repeats rejects a single mistimed GC; reuse the protocol's median (not a dupe).
+    return median(samples);
 }
 
 /**
  * Attribute the current whole-heap delta to the owned Hoist layers, with AG Grid internals as the
  * opaque remainder. Pure and synchronous: it reads `heapNow()` and computes - the CALLER is
  * responsible for calling {@link forceGcAndSettleAsync} immediately before invoking this, so the
- * heap read is stable. Keeping the read-and-compute pure makes it deterministic and testable.
+ * current heap read is post-GC steady state. Keeping the read-and-compute pure makes it
+ * deterministic and testable.
+ *
+ * TOTAL = RETAINED HEAP vs. THE FIXED EMPTY BASELINE. `totalHeapDelta` is the current post-GC heap
+ * minus `emptyBaselineHeap` - the clean post-GC reading captured on the EMPTY pipeline before any
+ * data was loaded (see {@link captureEmptyBaselineHeapAsync}). Because both ends are post-GC and the
+ * baseline is the truly-empty floor, the total is POSITIVE retained heap. This fixes the observed
+ * -28.2 MB inversion, which came from differencing the post-GC current read against a within-iteration
+ * PRE-GC `baselineHeap` (so the "total" measured how much the forced GC freed and went negative).
  *
  * Each owned layer = its live row count x its calibrated per-record bytes. `agGridInternals` is the
  * OPAQUE REMAINDER: `max(0, totalDelta - sumOfOwnedLayers)`. AG Grid's internal node/cell sizes are
@@ -143,15 +190,16 @@ export async function calibratePerRecordBytesAsync(args: {
  * @returns a {@link HeapAttribution} (the 02-01 type) with all four layers, total delta, unit, method.
  */
 export function attributeHeap(ctx: {
-    baselineHeap: number;
+    emptyBaselineHeap: number;
     cubeRecordCount: number;
     gridRecordCount: number;
     viewRowCount: number;
     calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
     method: HeapMethod;
 }): HeapAttribution {
-    const {baselineHeap, cubeRecordCount, gridRecordCount, viewRowCount, calibration, method} = ctx,
-        totalHeapDelta = (heapNow() ?? baselineHeap) - baselineHeap,
+    const {emptyBaselineHeap, cubeRecordCount, gridRecordCount, viewRowCount, calibration, method} =
+            ctx,
+        totalHeapDelta = (heapNow() ?? emptyBaselineHeap) - emptyBaselineHeap,
         cubeStoreRecords = cubeRecordCount * calibration.cubeRecordBytes,
         gridStoreRecords = gridRecordCount * calibration.gridRecordBytes,
         viewResultRows = viewRowCount * calibration.viewRowBytes,
