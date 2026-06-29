@@ -10,12 +10,12 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ## Current Position
 
-Phase: 2 of 8 (Measurement Harness) - COMPLETE (6/6 plans complete)
-Last completed: Phase 2 Plan 06 - Data Lab Toolbox harness UI: scenario picker + run controls (HTTP/WS) + scorecard + comparison, ViewManager-persisted, standalone /datalab/ app, plus data/measure/README.md (HARN-06; 2 auto tasks + auto-approved verify checkpoint, 2026-06-29) [wave 4]
-Status: Phase 2 complete - the measurement harness is built, runnable, and documented end-to-end
-Next action: /gsd:execute-phase 3 (begin Phase 3 - Baseline Measurement)
+Phase: 2 of 8 (Measurement Harness) - 7/8 plans complete (gap-closure 02-08 remaining)
+Last completed: Phase 2 Plan 07 (gap closure) - time the real cube+view pipeline (Boundaries 1-4) as the PRIMARY compute metric via measurePipeline() + Scorecard.pipeline, and rebuild BaselineAdapter as a real treeMode large-leaf-plus-aggregate tree (includeLeaves:true). Live-verified in flagged Chrome: tree renders with leaves (5000/5587/5587 and 50000/50587/50587 row counts), pipeline median 60.3 ms / 627 ms at 5k/50k leaves vs the ~1-4 ms relay it previously mislabeled as compute (HARN-01/03/05; 3 auto tasks + APPROVED human-verify checkpoint, 2026-06-29)
+Status: Gaps 1-2 closed; one gap-closure plan (02-08, heap protocol) remains before Phase 2 is fully closed
+Next action: /gsd:execute-phase 02 (execute remaining gap-closure plan 02-08 - heap protocol: fixed empty-pipeline baseline + median-of-repeats calibration)
 
-Milestone progress: [██░░░░░░] 2/8 phases complete
+Milestone progress: [██░░░░░░] 2/8 phases complete (Phase 2 gap-closure 7/8 plans)
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Milestone progress: [██░░░░░░] 2/8 phases complete
 | Phase 02-measurement-harness P04 | 3min | 2 tasks | 2 files |
 | Phase 02-measurement-harness P05 | 7min | 2 tasks | 4 files |
 | Phase 02-measurement-harness P06 | 31min | 3 tasks | 10 files |
+| Phase 02-measurement-harness P07 | 10min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,7 @@ Recent decisions affecting current work:
 - [Phase 02-measurement-harness]: Plan 02-03: boundary instrumentation - spans for structure (runner().span() into OTel), performance.now() for the number; Boundary-5 split into compute/bridge/deferred-render (requestPostAnimationFrame); genTransaction/applyTransaction injected to decouple from GridModel
 - [Phase 02-measurement-harness]: Plan 02-04: heap attribution is no-COI by design - performance.memory.usedJSHeapSize whole-heap deltas (Hoist InspectorService precedent), per-field-shape load-N-divide calibration, owned layers by count x calibrated bytes, AG Grid internals as the floored opaque remainder (never read from source); COI measureUserAgentSpecificMemory deferred (no Hoist-layer breakdown)
 - [Phase 02-measurement-harness]: Plan 02-05: measurement engine assembled - runProtocolAsync (warmup-discard + forced-GC-between + median/p95, HARN-05), BaselineAdapter implementing CandidateAdapter over the live Cube/View/Store/GridModel two-op ingest, and MeasurementHarness.runScenarioAsync composing protocol+measureGridSync+attributeHeap into a RunResult. Transport/endpoint-agnostic: caller pre-loads the snapshot and injects nextBatchAsync/loadNRowsAsync/clearAsync. One protocol runs baseline and any candidate (HARN-06). genTransaction re-implemented on the adapter (GridLocalModel.genTransaction is impl-only); applyTransaction is a documented no-op until 02-06 mounts a live grid with agApi.
+- [Phase 02-measurement-harness]: Plan 02-07 (gap closure): the harness's PRIMARY compute number is now the cube-ingest + connected-View re-aggregation pipeline (Boundaries 1-4), captured by bracketing the awaited adapter.applyDiffAsync in performance.now() inside measurePipeline() (source-confirmed: Cube.updateDataAsync awaits noteCubeUpdated which synchronously runs generateRows->loadStores->updateResults->View.result write within that one await). Grid-sync (genTransaction/applyTransaction, Boundary 5) is now reported as the FINAL stage, not the whole compute story - it had been mislabeled as compute while the engine work ran untimed. Live: pipeline median 60.3 ms (p95 63.2) at 5000 leaves and 627 ms (p95 691) at 50000 leaves, vs ~0.7-4.1 ms relay. BaselineAdapter rebuilt as a real treeMode large-leaf-plus-aggregate tree (treeMode gated on dimensions + one isTreeColumn + includeLeaves:true unconditional), confirmed live with leaves under the deepest aggregate (5000/5587/5587 and 50000/50587/50587 row counts). Deferred to 02-08: surface the pipeline field in the Toolbox scorecard UI (data captured, display lags); consider a Page Visibility guard for the deferred-render rAF metric (a backgrounded-tab rAF suspension produced a 44706 ms outlier - diagnosed as a tab-visibility artifact, not a harness bug; visible-tab re-run gave 0.9-1.4 ms across 20 samples).
 - [Phase 02-measurement-harness]: Plan 02-06: Data Lab Toolbox example app drives the endpoint-agnostic harness end-to-end - scenario picker (ViewManager-persisted configs), run controls over HTTP + WebSocket against the 02-02 Grails API, on-screen scorecard (compute/bridge median+p95, heap-by-layer, env), and side-by-side run comparison. The UI pre-fetches + pre-loads the snapshot and injects nextBatchAsync; it mounts the live grid on adapter.gridModel so the bridge (applyTransaction) measures the real JS-to-AG-Grid crossing. Registered as a standalone routable app (/datalab/) like Portfolio. HARN-06 complete; data/measure/README.md documents the harness, Chrome flags, protocol, and candidate reuse.
 
 ### Pending Todos
@@ -107,7 +109,22 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-29
-Stopped at: Phase 2 COMPLETE - plan 02-06 (Data Lab harness UI) done; the measurement harness is
+Stopped at: Plan 02-07 (gap closure) COMPLETE and closed out. The harness now times the real
+  cube+view pipeline (Boundaries 1-4) as the PRIMARY compute via measurePipeline() (a5b03bad2,
+  BoundaryInstrumentation.ts + types.ts Scorecard.pipeline), wired into runIterationAsync /
+  reduceScorecard so pipeline is measured first and grid-sync second as the final stage (f2e50aff8,
+  MeasurementHarness.ts), and BaselineAdapter builds a real treeMode large-leaf-plus-aggregate tree
+  with includeLeaves:true + full-hierarchy row-count accessors (bf09c4031, BaselineAdapter.ts). All
+  three were pre-committed on branch data2 before the human-verify checkpoint. The checkpoint was
+  APPROVED on live flagged-Chrome evidence (yarn startWithHoist + Grails test API): expandable tree
+  with leaves (5000/5587/5587 and 50000/50587/50587 counts, was a flat ~9 rows), pipeline median
+  60.3 ms / 627 ms at 5k/50k leaves vs ~0.7-4.1 ms relay, ~linear scaling. npx tsc --noEmit clean.
+  Two items deferred to 02-08: (1) surface the new pipeline field in the Toolbox scorecard UI
+  (DataLabPanel.ts timings table - data captured, display lags); (2) consider a Page Visibility guard
+  for the deferred-render rAF metric (a backgrounded-tab rAF suspension produced a 44706 ms p95
+  outlier - diagnosed as a tab-visibility artifact, NOT a harness bug nor overlapping runs; a
+  visible-tab re-run at 5000 leaves gave 0.9-1.4 ms across all 20 samples). HARN-01/03/05 remain
+  complete. Earlier this phase: Phase 2 COMPLETE - plan 02-06 (Data Lab harness UI) done; the measurement harness is
   built, runnable, and documented end-to-end. Toolbox example app `datalab` (branch `data2-research`):
   two thin client ingest adapters (`HttpIngestAdapter` polls `dataLab/snapshot`+`dataLab/diff`;
   `WebSocketIngestAdapter` subscribes to the `xhDataLab/updates` push topic + drives
@@ -130,7 +147,9 @@ Stopped at: Phase 2 COMPLETE - plan 02-06 (Data Lab harness UI) done; the measur
   local hoist-react via a temp tsconfig paths mapping + eslint + prettier. Auto-mode auto-approved the
   human-verify checkpoint; live flag-launched-Chrome + Grails smoke test is a recommended manual
   follow-up (could not run in a non-interactive env). HARN-01..06 all complete.
-Resume: /gsd:execute-phase 3 (begin Phase 3 - Baseline Measurement). Note: gsd-tools `state advance-plan`,
+Resume: /gsd:execute-phase 02 to run the remaining gap-closure plan 02-08 (heap protocol: fixed
+  empty-pipeline baseline + median-of-repeats calibration, plus the two 02-07 deferrals above), then
+  Phase 2 is fully closed and Phase 3 (Baseline Measurement) can begin. Note: gsd-tools `state advance-plan`,
   `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
   prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
   maintained by hand; the metric table, decision log, and requirements checkboxes update via gsd-tools.
