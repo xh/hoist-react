@@ -2,6 +2,12 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Hardened the grid column filter's Custom tab against filters it previously mishandled - multi-value
+  clauses are now expanded into editable rows and recombined on commit, and filters it cannot
+  represent are left untouched rather than corrupted.
+
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
