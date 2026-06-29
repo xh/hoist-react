@@ -37,6 +37,15 @@ import {HoistBase} from '@xh/hoist/core';
 const PREFIX = 'xhDataLab';
 
 /**
+ * Cap (ms) on how long the deferred-render frame await may run before the sample is flagged
+ * {@link GridSyncTiming.renderSuspect}. Chrome SUSPENDS requestAnimationFrame / post-animation-frame
+ * callbacks for hidden/backgrounded tabs, so an await spanning a hidden window can otherwise inflate
+ * one render sample to many seconds (a 44.7 s p95 artifact was observed). 1000 ms is generous versus
+ * the observed single-digit-ms clean foreground renders, yet tight versus that multi-second artifact.
+ */
+const RENDER_FRAME_TIMEOUT_MS = 1000;
+
+/**
  * Generic boundary timing helper (HARN-03).
  *
  * Wraps `fn` in a `runner().span()` for trace structure / correlation (this is where the
@@ -156,6 +165,14 @@ export interface GridSyncTiming {
     bridgeCallMs: number;
     /** Deferred render/paint landing in a later frame, after the sync bridge call returned. */
     renderMs: number;
+    /**
+     * True when the deferred render frame could NOT be measured cleanly - the tab was hidden
+     * (`document.visibilityState === 'hidden'` around the await) or the frame await exceeded the
+     * {@link RENDER_FRAME_TIMEOUT_MS} cap (rAF suspended for a backgrounded tab). When set, `renderMs`
+     * is a suspended-tab artifact, not a real paint cost, so the sample is flagged rather than
+     * silently trusted (HARN-05). A clean foregrounded run leaves this `false` for every sample.
+     */
+    renderSuspect: boolean;
 }
 
 /**
@@ -200,10 +217,10 @@ export async function measureGridSync(
             applyTransaction(txn); // synchronous JS-to-AG-Grid BRIDGE call
             const t2 = performance.now();
 
-            // Render is deferred to a later frame, so we await one frame to capture it. Prefer
-            // requestPostAnimationFrame (fires AFTER layout/paint of the frame) when available;
-            // fall back to requestAnimationFrame otherwise.
-            await nextRenderFrameAsync();
+            // Render is deferred to a later frame, so we await one frame to capture it. The await is
+            // hardened against backgrounded-tab rAF suspension (visibilityState + timeout cap): a
+            // suspect sample is flagged so it is not silently trusted as a real multi-second paint.
+            const {suspect} = await nextRenderFrameAsync();
             const t3 = performance.now();
 
             const computeMs = t1 - t0;
@@ -214,10 +231,11 @@ export async function measureGridSync(
                 [`${PREFIX}.computeMs`]: computeMs,
                 [`${PREFIX}.bridgeCallMs`]: bridgeCallMs,
                 [`${PREFIX}.renderMs`]: renderMs,
+                [`${PREFIX}.renderSuspect`]: suspect,
                 [`${PREFIX}.rowCount`]: rowCount
             });
 
-            return {computeMs, bridgeCallMs, renderMs};
+            return {computeMs, bridgeCallMs, renderMs, renderSuspect: suspect};
         });
 }
 
@@ -250,16 +268,44 @@ export async function measureOverhead(host: HoistBase, iterations: number): Prom
 //------------------------------------------------------------------------------------------------
 
 /**
- * Resolve after the next render frame. Prefers `requestPostAnimationFrame` (resolves AFTER the
+ * Resolve after the next render frame, returning `{suspect}` so the caller can flag a render sample
+ * that could not be measured cleanly. Prefers `requestPostAnimationFrame` (resolves AFTER the
  * frame's layout/paint, so deferred render is fully captured); falls back to
  * `requestAnimationFrame` where the post-frame callback is unavailable.
+ *
+ * Hardened against backgrounded-tab rAF suspension (HARN-05). Suspect is detected two ways,
+ * OR-combined:
+ *   1. The tab is hidden (`document.visibilityState === 'hidden'`) immediately BEFORE or AFTER the
+ *      await - Chrome suspends rAF for hidden tabs, so the frame would land late (or not at all).
+ *   2. The frame await exceeds {@link RENDER_FRAME_TIMEOUT_MS} (the timeout wins the race), i.e. rAF
+ *      was suspended and never fired within the cap - we resolve anyway and mark suspect.
+ *
+ * In the normal foreground case the frame fires in ~1 ms and the timeout is cleared, so this adds
+ * only the visibilityState reads and one timer registration - no measurable cost (HARN-05).
  */
-function nextRenderFrameAsync(): Promise<void> {
-    const postRaf = (window as any).requestPostAnimationFrame;
-    if (typeof postRaf === 'function') {
-        return new Promise<void>(res => postRaf(() => res()));
-    }
-    return new Promise<void>(res => window.requestAnimationFrame(() => res()));
+function nextRenderFrameAsync(): Promise<{suspect: boolean}> {
+    const hiddenBefore = document.visibilityState === 'hidden';
+
+    const frameAwait = new Promise<boolean>(res => {
+        const postRaf = (window as any).requestPostAnimationFrame;
+        const onFrame = () => res(false); // false = the timeout did NOT win
+        if (typeof postRaf === 'function') {
+            postRaf(onFrame);
+        } else {
+            window.requestAnimationFrame(onFrame);
+        }
+    });
+
+    let timer: ReturnType<typeof setTimeout>;
+    const timeout = new Promise<boolean>(res => {
+        timer = setTimeout(() => res(true), RENDER_FRAME_TIMEOUT_MS); // true = the timeout won
+    });
+
+    return Promise.race([frameAwait, timeout]).then(timedOut => {
+        clearTimeout(timer);
+        const hiddenAfter = document.visibilityState === 'hidden';
+        return {suspect: timedOut || hiddenBefore || hiddenAfter};
+    });
 }
 
 /** Simple median (sort + middle / mean-of-two-middle), no library. */
