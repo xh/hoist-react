@@ -21,7 +21,7 @@ everything else is cut.
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Current-State Inventory** - Authoritative architecture doc, copy-vs-reuse map, MobX granularity, and transport inventory (complete 2026-06-28)
-- [ ] **Phase 2: Measurement Harness** - Reusable, config-driven load/throughput/heap-attribution harness, OTel-instrumented at boundaries
+- [x] **Phase 2: Measurement Harness** - Reusable, config-driven load/throughput/heap-attribution harness, OTel-instrumented at boundaries (complete 2026-06-29)
 - [ ] **Phase 3: Baseline Performance Envelope** - The current stack's memory and CPU walls and end-to-end latency, plus adopted quantitative targets
 - [ ] **Phase 4: Toolbox Technology Demo** - A live, shareable portfolio demo proving current-stack capability and limits at scale
 - [ ] **Phase 5: Feature Spec & AG Grid 36 Parity** - CC-1/CC-2/CC-3 + dynamic-schema spec, gate-vs-factor classification, and AG Grid 36 parity/entitlement map
@@ -86,7 +86,7 @@ This is durable infrastructure, not throwaway scaffolding, and must exist before
 - [x] 02-03-PLAN.md - Boundary instrumentation via runner().span() + performance.now(); compute/bridge/render split + overhead probe (HARN-03/05)
 - [x] 02-04-PLAN.md - No-COI heap attribution: performance.memory + per-record calibration + AG Grid remainder (HARN-04)
 - [x] 02-05-PLAN.md - MeasurementHarness orchestrator + BaselineAdapter + forced-GC/median+p95 protocol (HARN-05/06)
-- [ ] 02-06-PLAN.md - Toolbox harness UI: ViewManager-persisted scenarios/runs, scorecard, comparison + README (HARN-06)
+- [x] 02-06-PLAN.md - Toolbox harness UI: ViewManager-persisted scenarios/runs, scorecard, comparison + README (HARN-06)
 
 ### Phase 3: Baseline Performance Envelope
 **Goal**: Run the current stack through the harness to map exactly where its walls are - on memory,
@@ -227,7 +227,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
-| 2. Measurement Harness | 5/6 | In Progress | - |
+| 2. Measurement Harness | 6/6 | Complete | 2026-06-29 |
 | 3. Baseline Performance Envelope | 0/TBD | Not started | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
 | 5. Feature Spec & AG Grid 36 Parity | 0/TBD | Not started | - |
