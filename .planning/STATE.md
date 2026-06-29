@@ -109,8 +109,15 @@ Stopped at: Phase 2 wave-2 plans complete. Plan 02-03 (boundary instrumentation)
   split via requestPostAnimationFrame, HARN-05), measureOverhead() (null-scenario median overhead
   probe). genTransaction/applyTransaction are injected callables - orchestrator 02-05 wires the
   live grid's transaction builder + agApi.applyTransaction. Commits 6ca2ccd61, df20f7a47.
-  Requirements HARN-03/HARN-05 marked complete. Plan 02-04 (heap attribution) ran concurrently in
-  the same wave. 2 plans remain in Phase 2 (02-05 orchestrator, 02-06).
+  Requirements HARN-03/HARN-05 marked complete. Plan 02-04 (heap attribution, HARN-04) ran
+  concurrently in the same wave: added `data/measure/HeapAttribution.ts` - no-COI heap layer with
+  `heapNow()` (performance.memory.usedJSHeapSize, Hoist InspectorService precedent),
+  `forceGcAndSettleAsync()` (best-effort window.gc() + settle), `calibratePerRecordBytesAsync()`
+  (per-field-shape load-N-and-divide), and pure `attributeHeap()` returning the 02-01
+  HeapAttribution with cube/grid/view owned layers and AG Grid internals as the floored opaque
+  remainder. 02-04 Task 1 = `c74afe83b`; Task 2 was folded into the concurrent 02-03 commit
+  `6ca2ccd61` (overlapping pre-commit hooks) - code is correct and the barrel safely carries both
+  plans' exports. HARN-04 marked complete. 2 plans remain in Phase 2 (02-05 orchestrator, 02-06).
 Resume: /gsd:execute-phase 2 (continue with the next plan). Note: gsd-tools `state advance-plan`,
   `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
   prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
