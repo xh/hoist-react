@@ -72,6 +72,80 @@ export async function measureBoundary<T>(
 }
 
 /**
+ * Result of {@link measurePipeline}: the cube-ingest + view-re-aggregation cost (Boundaries 1-4),
+ * the PRIMARY measured compute, all in ms, all timed with `performance.now()`.
+ */
+export interface PipelineTiming {
+    /**
+     * The awaited `applyDiffAsync` cost: `Cube.updateDataAsync` -> connected View re-aggregation
+     * (`noteCubeUpdated` -> `generateRows` -> `loadStores`) -> `View.result` write -> Store rebuild.
+     * Per the confirmed source, all of this settles within the single awaited ingest call.
+     */
+    ingestMs: number;
+    /** Optional defensive settle/flush after ingest (any trailing reaction); 0 when no hook given. */
+    settleMs: number;
+    /** Total primary pipeline cost: `ingestMs + settleMs`. */
+    totalMs: number;
+}
+
+/**
+ * Primary pipeline timing (Boundaries 1-4) - the load-bearing HARN-03 / HARN-05 measurement.
+ *
+ * Times the REAL engine work that `adapter.applyDiffAsync` performs: cube ingest
+ * (`Cube.updateDataAsync`), the connected View re-aggregation it awaits, the `View.result`
+ * `@observable.ref` write, and the backing Store rebuild. Per the confirmed source,
+ * `Cube.updateDataAsync` does `await forEachAsync(connectedViews, v => v.noteCubeUpdated(...))`, and
+ * `noteCubeUpdated` synchronously runs `generateRows()` -> `loadStores()` -> `updateResults()`
+ * within that await - so bracketing the awaited `applyDiffAsync` with `performance.now()` captures
+ * the full Boundaries-1-4 cost. This is the PRIMARY compute number; {@link measureGridSync} times
+ * the FINAL grid-sync stage (Boundary 5).
+ *
+ * Follows the module rule: a `runner().span()` for trace STRUCTURE, `performance.now()` for the
+ * NUMBER. The span's own `Date.now()` duration is never read for the result.
+ *
+ * @param host - the `HoistBase` whose `runner()` opens the span.
+ * @param args - injected `applyDiffAsync` (the awaited cube+view work to time), an optional
+ *               `settleAsync` defensive flush, and `rowCount` for span tagging.
+ * @returns the {@link PipelineTiming} split in ms.
+ */
+export async function measurePipeline(
+    host: HoistBase,
+    args: {
+        applyDiffAsync: () => Promise<void>;
+        settleAsync?: () => Promise<void>;
+        rowCount: number;
+    }
+): Promise<PipelineTiming> {
+    const {applyDiffAsync, settleAsync, rowCount} = args;
+
+    return host
+        .runner()
+        .span(`${PREFIX}.pipeline`)
+        .run(async ctx => {
+            // PRIMARY: the awaited cube-ingest + connected-View re-aggregation (Boundaries 1-4).
+            const t0 = performance.now();
+            await applyDiffAsync();
+            const t1 = performance.now();
+
+            // Optional defensive settle so any residual async work is captured, not dropped.
+            if (settleAsync) await settleAsync();
+            const t2 = performance.now();
+
+            const ingestMs = t1 - t0,
+                settleMs = settleAsync ? t2 - t1 : 0,
+                totalMs = ingestMs + settleMs;
+
+            ctx.span?.setTags({
+                [`${PREFIX}.ingestMs`]: ingestMs,
+                [`${PREFIX}.settleMs`]: settleMs,
+                [`${PREFIX}.rowCount`]: rowCount
+            });
+
+            return {ingestMs, settleMs, totalMs};
+        });
+}
+
+/**
  * Result of {@link measureGridSync}: the Boundary-5 compute / bridge / render split, all in ms,
  * all timed with `performance.now()`.
  */

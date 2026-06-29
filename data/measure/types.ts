@@ -180,17 +180,27 @@ export interface HeapAttribution {
 /**
  * The full per-run scorecard (HARN-04 / HARN-05).
  *
- * Compute-vs-bridge split: `compute` is Hoist-side JS (`genTransaction`) timed directly with
- * `performance.now()`; `bridgeCall` is the opaque synchronous cost of crossing into AG Grid
- * (`applyTransaction`) timed directly; `render` captures the deferred layout/paint that lands in a
- * later animation frame (so bridge cost is not undercounted).
+ * Stage ordering (read the timing fields in this order):
+ *   1. `pipeline`   - PRIMARY compute: cube ingest + connected-View re-aggregation (Boundaries 1-4),
+ *                     timed around the awaited `applyDiffAsync`. This is the real engine work.
+ *   2. `compute`    - FINAL grid-sync stage, Hoist-side: `genTransaction` building the AG Grid txn.
+ *   3. `bridgeCall` - FINAL grid-sync stage, the synchronous JS-to-AG-Grid crossing (`applyTransaction`).
+ *   4. `render`     - FINAL grid-sync stage, the deferred layout/paint landing in a later frame.
+ *
+ * `pipeline` is the headline compute number; `compute`/`bridgeCall`/`render` are the Boundary-5
+ * grid-sync split that follows it (the cost of diffing + applying the re-aggregated rows to AG Grid).
  */
 export interface Scorecard {
-    /** Hoist-side compute (genTransaction), timed directly in JS. */
+    /**
+     * PRIMARY compute: cube ingest + connected-View re-aggregation (Boundaries 1-4), timed around
+     * the awaited `applyDiffAsync`. The headline engine cost; grid-sync below is the final stage.
+     */
+    pipeline: TimingStat;
+    /** FINAL grid-sync stage: Hoist-side compute (genTransaction), timed directly in JS. */
     compute: TimingStat;
-    /** Synchronous JS-to-AG-Grid bridge call (applyTransaction), timed directly. */
+    /** FINAL grid-sync stage: synchronous JS-to-AG-Grid bridge call (applyTransaction), timed directly. */
     bridgeCall: TimingStat;
-    /** Deferred render/paint after the sync bridge call returns (captured via animation frame). */
+    /** FINAL grid-sync stage: deferred render/paint after the bridge call (captured via animation frame). */
     render: TimingStat;
     heap: HeapAttribution;
     rowCounts: {
