@@ -6,7 +6,14 @@
  */
 
 import {HoistModel, PlainObject, XH} from '@xh/hoist/core';
-import {measureGridSync, measureOverhead, GridSyncTiming} from './BoundaryInstrumentation';
+import {wait} from '@xh/hoist/promise';
+import {
+    measureGridSync,
+    measureOverhead,
+    measurePipeline,
+    GridSyncTiming,
+    PipelineTiming
+} from './BoundaryInstrumentation';
 import {
     attributeHeap,
     calibratePerRecordBytesAsync,
@@ -20,11 +27,13 @@ import {runProtocolAsync, toTimingStat} from './MeasurementProtocol';
 import {EnvMetadata, HeapAttribution, RunResult, ScenarioConfig, Scorecard} from './types';
 
 /**
- * One per-iteration measured sample collected inside the protocol loop: the Boundary-5 timing split
- * plus a steady-state heap snapshot. The protocol collects these; the harness reduces them into the
- * {@link Scorecard}.
+ * One per-iteration measured sample collected inside the protocol loop: the PRIMARY pipeline timing
+ * (cube ingest + connected-View re-aggregation, Boundaries 1-4), the FINAL grid-sync split
+ * (Boundary 5), and a steady-state heap snapshot. The protocol collects these; the harness reduces
+ * them into the {@link Scorecard}.
  */
 interface IterationSample {
+    pipeline: PipelineTiming;
     timing: GridSyncTiming;
     heap: HeapAttribution;
 }
@@ -98,11 +107,14 @@ export class MeasurementHarness extends HoistModel {
      *      per-record bytes for each owned layer via `calibratePerRecordBytesAsync` (02-04), using the
      *      injected `loadNRowsAsync`/`clearAsync` callbacks (incl. an object-valued-field variant).
      *   3. Run the warmup-discard / forced-GC-between / median+p95 protocol (02-05 Task 1). Each
-     *      measured iteration pulls the next batch via the injected `nextBatchAsync()`, applies it via
-     *      `adapter.applyDiffAsync`, times the grid sync via `measureGridSync` (02-03), then settles +
-     *      `attributeHeap` (02-04) for the steady-state heap sample.
-     *   4. Reduce samples into a {@link Scorecard}: compute/bridgeCall/render as `TimingStat`
-     *      (median + p95); heap as the final steady-state attribution; row counts from the adapter.
+     *      measured iteration pulls the next batch via the injected `nextBatchAsync()`, then times the
+     *      REAL cube-ingest + connected-View re-aggregation pipeline (Boundaries 1-4) as the PRIMARY
+     *      compute by wrapping the awaited `adapter.applyDiffAsync` in `measurePipeline` (02-03/02-07);
+     *      then times the FINAL grid-sync stage (Boundary 5) via `measureGridSync` (02-03); then
+     *      settles + `attributeHeap` (02-04) for the steady-state heap sample.
+     *   4. Reduce samples into a {@link Scorecard}: `pipeline` as the primary compute `TimingStat`,
+     *      compute/bridgeCall/render as the grid-sync `TimingStat` split (median + p95); heap as the
+     *      final steady-state attribution; row counts from the adapter.
      *   5. Measure instrumentation overhead via `measureOverhead` (02-03) for `RunResult.overheadMs`.
      *
      * @returns the complete RunResult for this scenario + adapter.
@@ -207,8 +219,14 @@ export class MeasurementHarness extends HoistModel {
     }
 
     /**
-     * One measured iteration: pull the next diff batch from the injected provider, apply it through
-     * the adapter, time the grid sync (compute/bridge/render), then settle + attribute the heap.
+     * One measured iteration. Stage order matters: time the PRIMARY pipeline first (it produces the
+     * new `View.result` + grid store records), then the FINAL grid-sync stage (it diffs and applies
+     * those records to AG Grid), then settle + attribute the heap.
+     *   1. Pull the next pre-fetched diff batch from the injected provider (the harness fetches nothing).
+     *   2. Time the awaited `applyDiffAsync` (cube ingest + connected-View re-aggregation, Boundaries
+     *      1-4) via `measurePipeline` as the PRIMARY compute, with a cheap defensive settle hook.
+     *   3. Time the grid-sync compute/bridge/render split (Boundary 5) via `measureGridSync`.
+     *   4. Settle + `attributeHeap` for the steady-state heap sample.
      */
     private async runIterationAsync(args: {
         adapter: CandidateAdapter;
@@ -216,23 +234,32 @@ export class MeasurementHarness extends HoistModel {
         calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
         env: EnvMetadata;
     }): Promise<IterationSample> {
-        const {adapter, nextBatchAsync, calibration, env} = args;
+        const {adapter, nextBatchAsync, calibration, env} = args,
+            gridSeam = adapter as Partial<BaselineAdapter>;
 
-        // Pull the next pre-fetched batch from the caller and apply it (the harness fetches nothing).
+        // 1. Pull the next pre-fetched batch from the caller.
         const batch = await nextBatchAsync();
-        await adapter.applyDiffAsync(batch);
 
-        // Boundary-5 compute/bridge/render split via the injected grid-sync callables. The baseline
-        // adapter exposes genTransaction/applyTransaction; a candidate adapter must expose equivalents.
-        const gridSeam = adapter as Partial<BaselineAdapter>,
-            timing = await measureGridSync(this, {
-                genTransaction: gridSeam.genTransaction ?? (() => ({})),
-                applyTransaction: gridSeam.applyTransaction ?? (() => undefined),
-                rowCount: adapter.getResultRowCount()
-            });
+        // 2. PRIMARY: time the awaited cube-ingest + connected-View re-aggregation pipeline. The
+        //    source confirms the await already settles the View; the settle hook is a cheap
+        //    defensive flush (one macrotask) so any trailing reaction is captured, not dropped.
+        const pipeline = await measurePipeline(this, {
+            applyDiffAsync: () => adapter.applyDiffAsync(batch),
+            settleAsync: () => wait(0),
+            rowCount: adapter.getResultRowCount()
+        });
 
-        // Steady-state heap sample: settle, then pure attribute. Baseline reads live cube/grid counts;
-        // for a generic adapter we fall back to the result row count for all owned layers.
+        // 3. FINAL stage - Boundary-5 compute/bridge/render split via the injected grid-sync
+        //    callables. The baseline adapter exposes genTransaction/applyTransaction; a candidate
+        //    adapter must expose equivalents.
+        const timing = await measureGridSync(this, {
+            genTransaction: gridSeam.genTransaction ?? (() => ({})),
+            applyTransaction: gridSeam.applyTransaction ?? (() => undefined),
+            rowCount: adapter.getResultRowCount()
+        });
+
+        // 4. Steady-state heap sample: settle, then pure attribute. Baseline reads live cube/grid
+        //    counts; for a generic adapter we fall back to the result row count for all owned layers.
         const baselineHeap = heapNow() ?? 0,
             cubeRecordCount = gridSeam.getCubeRecordCount?.() ?? adapter.getResultRowCount(),
             gridRecordCount = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount(),
@@ -248,12 +275,13 @@ export class MeasurementHarness extends HoistModel {
             method: env.heapMethod
         });
 
-        return {timing, heap};
+        return {pipeline, timing, heap};
     }
 
     /** Reduce the per-iteration samples into the final {@link Scorecard} (median + p95 timing). */
     private reduceScorecard(samples: IterationSample[], adapter: CandidateAdapter): Scorecard {
-        const compute = toTimingStat(samples.map(s => s.timing.computeMs)),
+        const pipeline = toTimingStat(samples.map(s => s.pipeline.totalMs)),
+            compute = toTimingStat(samples.map(s => s.timing.computeMs)),
             bridgeCall = toTimingStat(samples.map(s => s.timing.bridgeCallMs)),
             render = toTimingStat(samples.map(s => s.timing.renderMs)),
             // Heap is reported as the final steady-state attribution (the last measured iteration).
@@ -263,6 +291,7 @@ export class MeasurementHarness extends HoistModel {
             gridRows = gridSeam.getGridRecordCount?.() ?? adapter.getResultRowCount();
 
         return {
+            pipeline,
             compute,
             bridgeCall,
             render,
