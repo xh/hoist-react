@@ -4,10 +4,14 @@
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
+  "model_overrides": {
+    "gsd-plan-checker": "opus",
+    "gsd-verifier": "opus"
+  },
   "workflow": {
     "research": true,
     "plan_check": true,
     "verifier": true,
-    "auto_advance": true
+    "auto_advance": false
   }
 }
