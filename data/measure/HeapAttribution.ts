@@ -98,7 +98,14 @@ export function detectHeapMethod(): HeapMethod {
  * no residual heap; `n` is the number of rows in the sample (a larger `n` dampens quantization
  * noise); and `settleMs` is the forced-GC settle delay (ms) applied before each heap read.
  *
- * @returns per-record byte cost `(afterHeap - beforeHeap) / n` for this field-shape.
+ * The result is floored at 0: a per-record byte cost cannot be negative, so a negative raw delta
+ * (the post-load heap reading lower than the baseline) is measurement noise - a GC firing mid-load,
+ * or `performance.memory` quantization without `--enable-precise-memory-info` - not a real negative
+ * footprint. Returning 0 there keeps the downstream `count x perRecordBytes` layer figures
+ * non-negative (the prior behavior multiplied a negative cost by thousands of rows, surfacing
+ * impossible results like a -89 MB layer and a correspondingly inflated AG Grid remainder).
+ *
+ * @returns per-record byte cost `max(0, (afterHeap - beforeHeap) / n)` for this field-shape.
  */
 export async function calibratePerRecordBytesAsync(args: {
     loadNRowsAsync: (n: number) => Promise<void>;
@@ -118,7 +125,7 @@ export async function calibratePerRecordBytesAsync(args: {
     // Clean up so the calibration leaves no residual heap for subsequent runs.
     await clearAsync();
 
-    return n > 0 ? (after - before) / n : 0;
+    return n > 0 ? Math.max(0, (after - before) / n) : 0;
 }
 
 /**
