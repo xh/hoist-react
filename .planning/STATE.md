@@ -10,9 +10,9 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ## Current Position
 
-Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (2/6 plans complete)
-Last completed: Phase 2 Plan 02 - Server-side DataLab test-data API in Toolbox Grails (HARN-01/02; 3 tasks, 2026-06-29)
-Status: Phase 2 planned and executing; plans 01-02 of 6 complete
+Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (4/6 plans complete)
+Last completed: Phase 2 Plan 03 - Boundary instrumentation layer (HARN-03/05; 2 tasks, 2026-06-29) [wave 2 with 02-04]
+Status: Phase 2 planned and executing; plans 01-04 of 6 complete
 Next action: /gsd:execute-phase 2 (continue with the next plan)
 
 Milestone progress: [█░░░░░░░] 1/8 phases complete
@@ -41,6 +41,8 @@ Milestone progress: [█░░░░░░░] 1/8 phases complete
 | Phase 01-current-state-inventory P04 | 5min | 2 tasks | 1 files |
 | Phase 02-measurement-harness P01 | 3min | 2 tasks | 4 files |
 | Phase 02-measurement-harness P02 | 18min | 3 tasks | 3 files |
+| Phase 02-measurement-harness P03 | 4min | 2 tasks | 2 files |
+| Phase 02-measurement-harness P04 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -77,6 +79,8 @@ Recent decisions affecting current work:
   attribution by layer), and HARN-05 (compute-vs-bridge split). This is the Phase 2 bridge.
 - [Phase 02-measurement-harness]: HARN type foundation: ScenarioConfig knob schema + RunResult/Scorecard output + CandidateAdapter seam, all serializable JSON exported from data/index.ts
 - [Phase 02-measurement-harness]: Plan 02-02: Toolbox datalab namespace adds a seeded server-side test-data API (HARN-01/02) - generator + HTTP snapshot/diff + WebSocket push, all emitting an identical batch shape so the client ingest adapter resolves any transport to the one two-op contract
+- [Phase 02-measurement-harness]: Plan 02-03: boundary instrumentation - spans for structure (runner().span() into OTel), performance.now() for the number; Boundary-5 split into compute/bridge/deferred-render (requestPostAnimationFrame); genTransaction/applyTransaction injected to decouple from GridModel
+- [Phase 02-measurement-harness]: Plan 02-04: heap attribution is no-COI by design - performance.memory.usedJSHeapSize whole-heap deltas (Hoist InspectorService precedent), per-field-shape load-N-divide calibration, owned layers by count x calibrated bytes, AG Grid internals as the floored opaque remainder (never read from source); COI measureUserAgentSpecificMemory deferred (no Hoist-layer breakdown)
 
 ### Pending Todos
 
@@ -99,12 +103,14 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-29
-Stopped at: Phase 2 Plan 02 (server-side DataLab test-data API) complete. New Toolbox `datalab`
-  namespace: DataLabService (seeded shape generator, HARN-01), DataLabController (HTTP snapshot/diff
-  + WS streamStart/streamStop), DataLabPushService (WebSocket push of update batches, HARN-02). HTTP
-  and WS emit an identical batch shape -> one client ingest contract. Code committed in the Toolbox
-  repo (branch data2-research: 16073bbf, 667cab3a, 68c19c81); plan/doc changes in hoist-react.
-  Requirements HARN-01/HARN-02 marked complete. 4 plans remain in Phase 2 (02-03..02-06).
+Stopped at: Phase 2 wave-2 plans complete. Plan 02-03 (boundary instrumentation) added
+  `data/measure/BoundaryInstrumentation.ts`: measureBoundary() (runner().span() OTel structure +
+  performance.now() number, HARN-03), measureGridSync() (Boundary-5 compute/bridge/deferred-render
+  split via requestPostAnimationFrame, HARN-05), measureOverhead() (null-scenario median overhead
+  probe). genTransaction/applyTransaction are injected callables - orchestrator 02-05 wires the
+  live grid's transaction builder + agApi.applyTransaction. Commits 6ca2ccd61, df20f7a47.
+  Requirements HARN-03/HARN-05 marked complete. Plan 02-04 (heap attribution) ran concurrently in
+  the same wave. 2 plans remain in Phase 2 (02-05 orchestrator, 02-06).
 Resume: /gsd:execute-phase 2 (continue with the next plan). Note: gsd-tools `state advance-plan`,
   `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
   prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
