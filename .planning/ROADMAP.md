@@ -81,11 +81,11 @@ This is durable infrastructure, not throwaway scaffolding, and must exist before
   5. The harness is config-driven, documented, and demonstrably reusable for BOTH baseline measurement
      and candidate evaluation (HARN-06).
 **Plans**: 6 plans
-- [ ] 02-01-PLAN.md - Measurement-core type schema: ScenarioConfig knobs + Scorecard/RunResult + CandidateAdapter seam (HARN-01/02/06)
-- [ ] 02-02-PLAN.md - Toolbox Grails test-data API: seeded shape generator + HTTP snapshot/diff + WebSocket push (HARN-01/02)
-- [ ] 02-03-PLAN.md - Boundary instrumentation via runner().span() + performance.now(); compute/bridge/render split + overhead probe (HARN-03/05)
-- [ ] 02-04-PLAN.md - No-COI heap attribution: performance.memory + per-record calibration + AG Grid remainder (HARN-04)
-- [ ] 02-05-PLAN.md - MeasurementHarness orchestrator + BaselineAdapter + forced-GC/median+p95 protocol (HARN-05/06)
+- [x] 02-01-PLAN.md - Measurement-core type schema: ScenarioConfig knobs + Scorecard/RunResult + CandidateAdapter seam (HARN-01/02/06)
+- [x] 02-02-PLAN.md - Toolbox Grails test-data API: seeded shape generator + HTTP snapshot/diff + WebSocket push (HARN-01/02)
+- [x] 02-03-PLAN.md - Boundary instrumentation via runner().span() + performance.now(); compute/bridge/render split + overhead probe (HARN-03/05)
+- [x] 02-04-PLAN.md - No-COI heap attribution: performance.memory + per-record calibration + AG Grid remainder (HARN-04)
+- [x] 02-05-PLAN.md - MeasurementHarness orchestrator + BaselineAdapter + forced-GC/median+p95 protocol (HARN-05/06)
 - [ ] 02-06-PLAN.md - Toolbox harness UI: ViewManager-persisted scenarios/runs, scorecard, comparison + README (HARN-06)
 
 ### Phase 3: Baseline Performance Envelope
@@ -227,7 +227,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
-| 2. Measurement Harness | 2/6 | In Progress | - |
+| 2. Measurement Harness | 5/6 | In Progress | - |
 | 3. Baseline Performance Envelope | 0/TBD | Not started | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
 | 5. Feature Spec & AG Grid 36 Parity | 0/TBD | Not started | - |

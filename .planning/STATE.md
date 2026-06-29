@@ -10,10 +10,10 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ## Current Position
 
-Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (4/6 plans complete)
-Last completed: Phase 2 Plan 03 - Boundary instrumentation layer (HARN-03/05; 2 tasks, 2026-06-29) [wave 2 with 02-04]
-Status: Phase 2 planned and executing; plans 01-04 of 6 complete
-Next action: /gsd:execute-phase 2 (continue with the next plan)
+Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (5/6 plans complete)
+Last completed: Phase 2 Plan 05 - Measurement harness assembly: protocol + BaselineAdapter + orchestrator (HARN-05/06; 2 tasks, 2026-06-29) [wave 3]
+Status: Phase 2 planned and executing; plans 01-05 of 6 complete
+Next action: /gsd:execute-phase 2 (execute the final plan, 02-06)
 
 Milestone progress: [█░░░░░░░] 1/8 phases complete
 
@@ -43,6 +43,7 @@ Milestone progress: [█░░░░░░░] 1/8 phases complete
 | Phase 02-measurement-harness P02 | 18min | 3 tasks | 3 files |
 | Phase 02-measurement-harness P03 | 4min | 2 tasks | 2 files |
 | Phase 02-measurement-harness P04 | 3min | 2 tasks | 2 files |
+| Phase 02-measurement-harness P05 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase 02-measurement-harness]: Plan 02-02: Toolbox datalab namespace adds a seeded server-side test-data API (HARN-01/02) - generator + HTTP snapshot/diff + WebSocket push, all emitting an identical batch shape so the client ingest adapter resolves any transport to the one two-op contract
 - [Phase 02-measurement-harness]: Plan 02-03: boundary instrumentation - spans for structure (runner().span() into OTel), performance.now() for the number; Boundary-5 split into compute/bridge/deferred-render (requestPostAnimationFrame); genTransaction/applyTransaction injected to decouple from GridModel
 - [Phase 02-measurement-harness]: Plan 02-04: heap attribution is no-COI by design - performance.memory.usedJSHeapSize whole-heap deltas (Hoist InspectorService precedent), per-field-shape load-N-divide calibration, owned layers by count x calibrated bytes, AG Grid internals as the floored opaque remainder (never read from source); COI measureUserAgentSpecificMemory deferred (no Hoist-layer breakdown)
+- [Phase 02-measurement-harness]: Plan 02-05: measurement engine assembled - runProtocolAsync (warmup-discard + forced-GC-between + median/p95, HARN-05), BaselineAdapter implementing CandidateAdapter over the live Cube/View/Store/GridModel two-op ingest, and MeasurementHarness.runScenarioAsync composing protocol+measureGridSync+attributeHeap into a RunResult. Transport/endpoint-agnostic: caller pre-loads the snapshot and injects nextBatchAsync/loadNRowsAsync/clearAsync. One protocol runs baseline and any candidate (HARN-06). genTransaction re-implemented on the adapter (GridLocalModel.genTransaction is impl-only); applyTransaction is a documented no-op until 02-06 mounts a live grid with agApi.
 
 ### Pending Todos
 
@@ -103,22 +105,28 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-29
-Stopped at: Phase 2 wave-2 plans complete. Plan 02-03 (boundary instrumentation) added
-  `data/measure/BoundaryInstrumentation.ts`: measureBoundary() (runner().span() OTel structure +
-  performance.now() number, HARN-03), measureGridSync() (Boundary-5 compute/bridge/deferred-render
-  split via requestPostAnimationFrame, HARN-05), measureOverhead() (null-scenario median overhead
-  probe). genTransaction/applyTransaction are injected callables - orchestrator 02-05 wires the
-  live grid's transaction builder + agApi.applyTransaction. Commits 6ca2ccd61, df20f7a47.
-  Requirements HARN-03/HARN-05 marked complete. Plan 02-04 (heap attribution, HARN-04) ran
-  concurrently in the same wave: added `data/measure/HeapAttribution.ts` - no-COI heap layer with
-  `heapNow()` (performance.memory.usedJSHeapSize, Hoist InspectorService precedent),
-  `forceGcAndSettleAsync()` (best-effort window.gc() + settle), `calibratePerRecordBytesAsync()`
-  (per-field-shape load-N-and-divide), and pure `attributeHeap()` returning the 02-01
-  HeapAttribution with cube/grid/view owned layers and AG Grid internals as the floored opaque
-  remainder. 02-04 Task 1 = `c74afe83b`; Task 2 was folded into the concurrent 02-03 commit
-  `6ca2ccd61` (overlapping pre-commit hooks) - code is correct and the barrel safely carries both
-  plans' exports. HARN-04 marked complete. 2 plans remain in Phase 2 (02-05 orchestrator, 02-06).
-Resume: /gsd:execute-phase 2 (continue with the next plan). Note: gsd-tools `state advance-plan`,
+Stopped at: Phase 2 wave-3 plan 02-05 complete - the measurement engine is assembled. Added three
+  files to `data/measure/` plus the barrel. `MeasurementProtocol.ts`: `runProtocolAsync<S>`
+  (setupAsync once, warmup-discard iterations, then N measured each preceded by a forced-GC+settle
+  hook, returning samples) + pure `median`/`p95`(nearest-rank)/`toTimingStat` (HARN-05).
+  `BaselineAdapter.ts`: `class BaselineAdapter extends HoistModel implements CandidateAdapter` over
+  the live Cube/View/Store/GridModel pipeline - snapshot to `Cube.loadDataAsync`, diff to
+  `Cube.updateDataAsync` (invariant two-op ingest), caller-supplied data only; builds the pipeline
+  lazily (infers cube dimension/SUM-measure fields from the first row; `includeLeaves:true` when no
+  dimensions); exposes `genTransaction`/`applyTransaction` + `getCubeRecordCount`/`getGridRecordCount`.
+  SEAM LIMITATION: `GridLocalModel.genTransaction` is impl-only/unreachable from a programmatic
+  GridModel, so the adapter re-implements the diff faithfully over the live grid store;
+  `applyTransaction` is a documented no-op until 02-06 mounts a live grid with a populated `agApi`.
+  `MeasurementHarness.ts`: `runScenarioAsync({scenario, adapter, nextBatchAsync, loadNRowsAsync,
+  clearAsync}) -> RunResult` composing protocol + `measureGridSync` (02-03) + `attributeHeap` (02-04),
+  capturing `EnvMetadata` up front, throwing if the adapter is not pre-loaded. TRANSPORT/ENDPOINT-
+  AGNOSTIC: the harness fetches nothing; the caller pre-loads the snapshot and injects the data
+  callbacks. One protocol runs baseline (BaselineAdapter) AND any candidate (HARN-06). Commits
+  `e8eb38485` (Task 1), `69919d092` (Task 2). HARN-05/HARN-06 marked complete. 1 plan remains in
+  Phase 2: 02-06 (Toolbox harness UI) - which pre-fetches/pre-loads the snapshot, supplies
+  nextBatchAsync, optionally mounts a live grid to make `bridgeCall` non-trivial, and calls
+  runScenarioAsync.
+Resume: /gsd:execute-phase 2 (execute the final plan, 02-06). Note: gsd-tools `state advance-plan`,
   `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
   prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
   maintained by hand; the metric table, decision log, roadmap progress, and requirements checkboxes
