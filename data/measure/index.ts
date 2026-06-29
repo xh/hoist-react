@@ -8,3 +8,4 @@
 export * from './types';
 export * from './CandidateAdapter';
 export * from './HeapAttribution';
+export * from './BoundaryInstrumentation';
