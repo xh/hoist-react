@@ -2,6 +2,18 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
+  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
+  ensuring such values render with their proper label rather than falling back to the raw value.
+
+### 🐞 Bug Fixes
+
+* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
+  async query de-duplication now use deep equality, so object values no longer render as
+  `[object Object]` or collide with one another.
+
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
@@ -33,9 +45,6 @@
 * Added a `lossless` option to `fmtQuantity` to compact values to millions / billions units only
   when doing so loses no precision, rendering the full value otherwise (e.g. `7,100,100` stays
   `7,100,100` rather than collapsing to `7.10m`).
-* `Select` now accepts a `generateOptionFn` prop to resolve an option for a selected value that is
-  not present in the current options list (e.g. with `queryFn`-based selects or readonly forms),
-  ensuring such values render with their proper label rather than falling back to the raw value.
 
 ### 🐞 Bug Fixes
 
@@ -51,9 +60,6 @@
 * Fixed `Select` (and `SelectEditor`) dropdown menu sizing: windowed menus now auto-size to their
   option labels instead of the control/cell width, and an explicit `menuWidth` is respected rather
   than overridden by content auto-sizing.
-* Fixed `Select` to correctly handle non-primitive (object) values: selected-option matching and
-  async query de-duplication now use deep equality, so object values no longer render as
-  `[object Object]` or collide with one another.
 
 ### ⚙️ Typescript API Adjustments
 
