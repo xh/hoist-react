@@ -7,8 +7,8 @@
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
-
-### 📚 Libraries
+### ⚙️ Technical
+* Misc. improvements to persistence in the Admin client.
 
 * @azure/msal-browser `5.14 → 5.15`
 * swiper  `12.1.0 -> 14.0.0`,
