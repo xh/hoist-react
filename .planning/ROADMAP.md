@@ -227,7 +227,7 @@ harness and may run in parallel with Phases 2-3 (parallelization enabled).
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Current-State Inventory | 4/4 | Complete | 2026-06-28 |
-| 2. Measurement Harness | 0/6 | Planned | - |
+| 2. Measurement Harness | 2/6 | In Progress | - |
 | 3. Baseline Performance Envelope | 0/TBD | Not started | - |
 | 4. Toolbox Technology Demo | 0/TBD | Not started | - |
 | 5. Feature Spec & AG Grid 36 Parity | 0/TBD | Not started | - |

@@ -10,10 +10,10 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ## Current Position
 
-Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (1/6 plans complete)
-Last completed: Phase 2 Plan 01 - Measurement core type foundation (2 tasks, 2026-06-29)
-Status: Phase 2 planned and executing; plan 01 of 6 complete
-Next action: /gsd:execute-phase 2 (continue with plan 02-02)
+Phase: 2 of 8 (Measurement Harness) - IN PROGRESS (2/6 plans complete)
+Last completed: Phase 2 Plan 02 - Server-side DataLab test-data API in Toolbox Grails (HARN-01/02; 3 tasks, 2026-06-29)
+Status: Phase 2 planned and executing; plans 01-02 of 6 complete
+Next action: /gsd:execute-phase 2 (continue with the next plan)
 
 Milestone progress: [█░░░░░░░] 1/8 phases complete
 
@@ -40,6 +40,7 @@ Milestone progress: [█░░░░░░░] 1/8 phases complete
 | Phase 01 P02 | 22min | 1 tasks | 1 files |
 | Phase 01-current-state-inventory P04 | 5min | 2 tasks | 1 files |
 | Phase 02-measurement-harness P01 | 3min | 2 tasks | 4 files |
+| Phase 02-measurement-harness P02 | 18min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ Recent decisions affecting current work:
   bridge, and the heap-attribution layers - each mapped to HARN-03 (boundary timing), HARN-04 (heap
   attribution by layer), and HARN-05 (compute-vs-bridge split). This is the Phase 2 bridge.
 - [Phase 02-measurement-harness]: HARN type foundation: ScenarioConfig knob schema + RunResult/Scorecard output + CandidateAdapter seam, all serializable JSON exported from data/index.ts
+- [Phase 02-measurement-harness]: Plan 02-02: Toolbox datalab namespace adds a seeded server-side test-data API (HARN-01/02) - generator + HTTP snapshot/diff + WebSocket push, all emitting an identical batch shape so the client ingest adapter resolves any transport to the one two-op contract
 
 ### Pending Todos
 
@@ -97,12 +99,15 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-06-29
-Stopped at: Phase 2 Plan 01 (measurement core type foundation) complete. New framework module
-  data/measure/ with types.ts (ScenarioConfig knob schema + RunResult/Scorecard output schema),
-  CandidateAdapter.ts (HARN-06 plug-in seam), and index.ts barrel, re-exported from data/index.ts.
-  Requirements HARN-01/HARN-02/HARN-06 marked complete. 5 plans remain in Phase 2 (02-02..02-06).
-Resume: /gsd:execute-phase 2 (continue with plan 02-02). Note: gsd-tools `state advance-plan`,
-  `record-session`, and `phase complete` parsing does not match this project's prose STATE/ROADMAP
-  format - Current Position, Session Continuity, and the progress bar are maintained by hand; the
-  metric table, decision log, roadmap progress, and requirements checkboxes update via gsd-tools.
+Stopped at: Phase 2 Plan 02 (server-side DataLab test-data API) complete. New Toolbox `datalab`
+  namespace: DataLabService (seeded shape generator, HARN-01), DataLabController (HTTP snapshot/diff
+  + WS streamStart/streamStop), DataLabPushService (WebSocket push of update batches, HARN-02). HTTP
+  and WS emit an identical batch shape -> one client ingest contract. Code committed in the Toolbox
+  repo (branch data2-research: 16073bbf, 667cab3a, 68c19c81); plan/doc changes in hoist-react.
+  Requirements HARN-01/HARN-02 marked complete. 4 plans remain in Phase 2 (02-03..02-06).
+Resume: /gsd:execute-phase 2 (continue with the next plan). Note: gsd-tools `state advance-plan`,
+  `record-session`, `update-progress`, and `phase complete` parsing does not match this project's
+  prose STATE/ROADMAP format - Current Position, Session Continuity, and the progress bar are
+  maintained by hand; the metric table, decision log, roadmap progress, and requirements checkboxes
+  update via gsd-tools.
 Resume file: None
