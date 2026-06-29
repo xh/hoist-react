@@ -27,9 +27,9 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
 
 ### Test Harness (HARN)
 
-- [ ] **HARN-01**: A configurable dataset generator parameterizes result shape (leaf-row count,
+- [x] **HARN-01**: A configurable dataset generator parameterizes result shape (leaf-row count,
   aggregate-row count, field count) to reproduce realistic large-leaf-plus-aggregate shapes.
-- [ ] **HARN-02**: A configurable update generator parameterizes update pattern, breadth (fields per
+- [x] **HARN-02**: A configurable update generator parameterizes update pattern, breadth (fields per
   record), throughput (batch size and rate), and the change-delivery transport.
 - [ ] **HARN-03**: Instrumentation bubbles into Hoist's existing OTel tooling, measured at boundaries
   (not per-micro-op), with documented and bounded overhead.
@@ -38,7 +38,7 @@ heap/throughput numbers - to whether and how to build a Data 2.0 layer for `hois
   cross-origin isolation.
 - [ ] **HARN-05**: The harness separates compute cost from JS<->engine bridge cost and reports
   median + p95 with a forced-GC / steady-state protocol to control noise.
-- [ ] **HARN-06**: The harness is reusable, config-driven, documented infrastructure usable for BOTH
+- [x] **HARN-06**: The harness is reusable, config-driven, documented infrastructure usable for BOTH
   baseline measurement and candidate evaluation (not throwaway scaffolding).
 
 ### Baseline Envelope (BASE)
@@ -163,12 +163,12 @@ Each v1 requirement maps to exactly one phase (see `.planning/ROADMAP.md`).
 | INV-02 | Phase 1 | Complete |
 | INV-03 | Phase 1 | Complete |
 | INV-04 | Phase 1 | Complete |
-| HARN-01 | Phase 2 | Pending |
-| HARN-02 | Phase 2 | Pending |
+| HARN-01 | Phase 2 | Complete |
+| HARN-02 | Phase 2 | Complete |
 | HARN-03 | Phase 2 | Pending |
 | HARN-04 | Phase 2 | Pending |
 | HARN-05 | Phase 2 | Pending |
-| HARN-06 | Phase 2 | Pending |
+| HARN-06 | Phase 2 | Complete |
 | BASE-01 | Phase 3 | Pending |
 | BASE-02 | Phase 3 | Pending |
 | BASE-03 | Phase 3 | Pending |
