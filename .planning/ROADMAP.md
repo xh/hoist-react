@@ -80,13 +80,15 @@ This is durable infrastructure, not throwaway scaffolding, and must exist before
      (not per-micro-op) with bounded, documented overhead (HARN-03, HARN-05).
   5. The harness is config-driven, documented, and demonstrably reusable for BOTH baseline measurement
      and candidate evaluation (HARN-06).
-**Plans**: 6 plans
+**Plans**: 8 plans (6 original + 2 gap-closure from 02-VERIFICATION.md)
 - [x] 02-01-PLAN.md - Measurement-core type schema: ScenarioConfig knobs + Scorecard/RunResult + CandidateAdapter seam (HARN-01/02/06)
 - [x] 02-02-PLAN.md - Toolbox Grails test-data API: seeded shape generator + HTTP snapshot/diff + WebSocket push (HARN-01/02)
 - [x] 02-03-PLAN.md - Boundary instrumentation via runner().span() + performance.now(); compute/bridge/render split + overhead probe (HARN-03/05)
 - [x] 02-04-PLAN.md - No-COI heap attribution: performance.memory + per-record calibration + AG Grid remainder (HARN-04)
 - [x] 02-05-PLAN.md - MeasurementHarness orchestrator + BaselineAdapter + forced-GC/median+p95 protocol (HARN-05/06)
 - [x] 02-06-PLAN.md - Toolbox harness UI: ViewManager-persisted scenarios/runs, scorecard, comparison + README (HARN-06)
+- [ ] 02-07-PLAN.md - GAP: time the real cube+view pipeline (Boundaries 1-4) as primary compute + treeMode/includeLeaves large-leaf-plus-aggregate shape (HARN-01/03/05)
+- [ ] 02-08-PLAN.md - GAP: heap protocol - fixed empty-pipeline baseline + median-of-repeats calibration so total is positive and layers are plausible (HARN-04/05)
 
 ### Phase 3: Baseline Performance Envelope
 **Goal**: Run the current stack through the harness to map exactly where its walls are - on memory,
