@@ -39,7 +39,7 @@ import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
 
-export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
+export interface SelectProps<T = {}> extends HoistProps, HoistInputProps, LayoutProps {
     /** True to focus the control on render. */
     autoFocus?: boolean;
 
@@ -99,7 +99,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Provided function should take an option and a query value and return a boolean.
      * Defaults to a case-insensitive match on word starts.
      */
-    filterFn?: (opt: SelectOption, inputVal: string) => boolean;
+    filterFn?: (opt: SelectOption<T>, inputVal: string) => boolean;
 
     /**
      * True to hide the dropdown indicator, i.e. the down-facing arrow at the right of the Select.
@@ -145,7 +145,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * will contain at minimum a value and label field, as well as any other fields present in
      * the source objects).
      */
-    optionRenderer?: (opt: SelectOption) => ReactNode;
+    optionRenderer?: (opt: SelectOption<T>) => ReactNode;
 
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
@@ -159,7 +159,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * See also `queryFn` to  supply options via an async query (i.e. from the server) instead
      * of up-front in this prop.
      */
-    options?: Array<SelectOption | any>;
+    options?: Array<SelectOption<T> | any>;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -177,7 +177,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * confused with `filterFn`, which should be used to filter through local options when
      * not in async mode.
      */
-    queryFn?: (query: string) => Awaitable<Array<SelectOption | any>>;
+    queryFn?: (query: string) => Awaitable<Array<SelectOption<T> | any>>;
 
     /**
      * Escape-hatch props passed directly to react-select. Use with care - not all props
@@ -199,7 +199,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
      * Useful with queryFn-based selects, readonly forms, or any case where options may not be
      * loaded when a value is set, ensuring the value renders with its proper label.
      */
-    generateOptionFn?: (value: any) => SelectOption;
+    generateOptionFn?: (value: any) => SelectOption<T>;
 }
 
 /**

@@ -31,14 +31,14 @@ import './Picker.scss';
 
 const reactWindowList = elementFactory(List);
 
-export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface PickerProps<T = {}> extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
     /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
      * Primitives will be displayed via toString().
      * Objects must have a `label` property for display and a `value` property.
      * The `labelField` and `valueField` props can customize which fields are used.
      */
-    options?: Array<SelectOption | any>;
+    options?: Array<SelectOption<T> | any>;
 
     /** Field on provided options for sourcing each option's display text (default `label`). */
     labelField?: string;
@@ -175,8 +175,8 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
      * itself - use `buttonProps` to customize the button's icon, intent, or other properties.
      */
     buttonTextRenderer?: (
-        selectedOpts: SelectOption[],
-        allOpts: SelectOption[],
+        selectedOpts: SelectOption<T>[],
+        allOpts: SelectOption<T>[],
         displayNoun: string
     ) => ReactNode;
 
@@ -185,7 +185,7 @@ export interface PickerProps extends HoistProps, HoistInputProps, LayoutProps, S
      * Receives the option object and whether it is currently selected.
      * Should return a ReactNode.
      */
-    optionRenderer?: (opt: SelectOption, isSelected: boolean) => ReactNode;
+    optionRenderer?: (opt: SelectOption<T>, isSelected: boolean) => ReactNode;
 }
 
 /** App-wide overridable defaults for {@link Picker} - settable via `Picker.defaults`. */

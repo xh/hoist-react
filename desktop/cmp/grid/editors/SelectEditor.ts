@@ -12,7 +12,7 @@ import {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 
-export type SelectEditorProps = EditorProps<SelectProps>;
+export type SelectEditorProps<T = {}> = EditorProps<SelectProps<T>>;
 
 /** Dropdown select inline cell editor for choice fields in a Grid. */
 export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorProps>({
