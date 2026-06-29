@@ -39,6 +39,8 @@ export * from './cube/Query';
 export * from './cube/View';
 export * from './cube/ViewRowData';
 
+export * from './measure';
+
 export * from './validation/constraints';
 export * from './validation/Rule';
 export * from './validation/ValidationState';
