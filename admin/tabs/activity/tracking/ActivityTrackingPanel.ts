@@ -20,7 +20,7 @@ import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {viewManager} from '@xh/hoist/desktop/cmp/viewmanager';
 import {Icon} from '@xh/hoist/icon';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ACTIVITY_INTERVALS, ActivityTrackingModel} from './ActivityTrackingModel';
+import {INTERVALS, ActivityTrackingModel} from './ActivityTrackingModel';
 import {aggChartPanel} from '@xh/hoist/admin/tabs/activity/tracking/chart/AggChartPanel';
 import {activityDetailView} from './detail/ActivityDetailView';
 import './ActivityTracking.scss';
@@ -75,11 +75,11 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     disabled: model.endDay >= LocalDate.currentAppDay()
                 }),
                 buttonGroup({
-                    items: ACTIVITY_INTERVALS.map(({value, unit, label}) =>
+                    items: INTERVALS.map(interval =>
                         button({
-                            text: label,
-                            onClick: () => model.adjustStartDate(value, unit),
-                            active: model.isInterval(value, unit),
+                            text: `${interval.value}${interval.unit[0]}`,
+                            onClick: () => model.adjustStartDate(interval),
+                            active: model.isInterval(interval),
                             ...dateBtn
                         })
                     )

@@ -2,19 +2,13 @@
 
 ## 87.0.0-SNAPSHOT - unreleased
 
-### 🎁 New Features
-
-* The Admin Console Activity Tracking tab now persists its selected time period as part of the
-  active view. Quick-select intervals (e.g. `7d`, `1m`) are stored as relative ranges and roll
-  forward to end on the current day when restored, while custom date ranges persist as-is.
-
 ### ⚙️ Typescript API Adjustments
 
 * Retyped `GridModel.colChooserModel` as the new cross-platform `IColChooserModel` interface,
   replacing the bare `HoistModel` type and exposing `isOpen`, `open()`, and `close()` directly.
 
-
-### 📚 Libraries
+### ⚙️ Technical
+* Misc. improvements to persistence in the Admin client.
 
 * @azure/msal-browser `5.14 → 5.15`
 * swiper  `12.1.0 -> 14.0.0`,
