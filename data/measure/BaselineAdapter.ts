@@ -46,6 +46,14 @@ export interface BaselineAdapterConfig {
  * result is loaded into the backing `GridModel`'s store. From then on, each `applyDiffAsync` flows
  * through `Cube.updateDataAsync` and re-materializes the View result into the grid store.
  *
+ * TREE SHAPE (HARN-01): the backing `GridModel` is `treeMode: true` with exactly one
+ * `isTreeColumn: true` column (the first dimension), and the connected View query sets
+ * `includeLeaves: true` UNCONDITIONALLY - so leaf facts sit under the deepest aggregate level. The
+ * result is a real large-leaf-plus-aggregate TREE (expandable aggregate group rows drilling down to
+ * leaf children), not a flat top-level-only aggregate. With no dimensions configured, the flat
+ * leaves still surface so the no-dimension case keeps working. The row-count accessors reflect the
+ * FULL hierarchy (aggregate nodes + leaves) - these counts feed 02-08 heap attribution.
+ *
  * INVARIANT, CALLER-OWNED DATA: `loadSnapshotAsync(rawRows)` and `applyDiffAsync(diff)` ALWAYS take
  * caller-supplied data (per the 02-01 `CandidateAdapter` contract). The adapter NEVER fetches or
  * generates rows - the harness caller (Toolbox) owns all transport/endpoint knowledge.
@@ -109,9 +117,15 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
         this.captureGridSnapshot();
     }
 
-    /** Current materialized result row count, read from `View.result.rows`. */
+    /**
+     * Current materialized result row count over the FULL hierarchy (aggregate nodes + leaves).
+     * `View.result.rows` is only the TOP-level array, so we use the connected grid store's
+     * `allCount` - the View loads the entire hierarchical tree (every aggregate node and every
+     * leaf, via `includeLeaves: true`) into that store as unfiltered records, so `allCount` is the
+     * full-tree count. (`store.allCount` is unfiltered; `store.count` would be the filtered subset.)
+     */
     getResultRowCount(): number {
-        return this.view?.result?.rows?.length ?? 0;
+        return this.gridModel?.store?.allCount ?? 0;
     }
 
     /** Current materialized result rows (engine-specific `ViewRowData` - harness only counts/sizes). */
@@ -186,9 +200,14 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
         this.captureGridSnapshot();
     };
 
-    /** Current grid record count - for heap attribution `gridRecordCount`. */
+    /**
+     * Current grid record count over the FULL loaded tree - for heap attribution `gridRecordCount`.
+     * Uses `store.allCount` (all loaded records, every aggregate node + leaf) rather than
+     * `store.records.length` (the filtered/visible subset), so heap attribution sees every record
+     * the grid store actually holds.
+     */
     getGridRecordCount(): number {
-        return this.gridModel?.store?.records?.length ?? 0;
+        return this.gridModel?.store?.allCount ?? 0;
     }
 
     /** Current cube (leaf) record count - for heap attribution `cubeRecordCount`. */
@@ -221,20 +240,28 @@ export class BaselineAdapter extends HoistModel implements CandidateAdapter {
 
         const cube = new Cube({fields});
 
+        // treeMode grid with exactly one tree column (the first dimension is the natural tree
+        // column) so the hierarchical ViewRowData the connected View loads renders as expandable
+        // group rows drilling down to leaf children. With no dimensions, no tree column is set and
+        // the grid is a flat list of the surfaced leaves.
         const gridModel = new GridModel({
             store: {idSpec: 'id'},
-            columns: [...dimensions.map(field => ({field})), ...measureKeys.map(field => ({field}))]
+            treeMode: !isEmpty(dimensions),
+            columns: [
+                ...dimensions.map((field, i) => ({field, isTreeColumn: i === 0})),
+                ...measureKeys.map(field => ({field}))
+            ]
         });
 
-        // Connected View loads its result rows directly into the grid store, so the full
-        // Cube -> View.result -> Store pipeline runs on every ingest op. When dimensions are
-        // configured the View yields aggregate rows; with none, `includeLeaves` surfaces the flat
-        // leaf facts so the grid store is still populated (otherwise an ungrouped query returns
-        // nothing).
+        // Connected View loads its hierarchical result rows directly into the grid store, so the
+        // full Cube -> View.result -> Store pipeline runs on every ingest op. `includeLeaves: true`
+        // UNCONDITIONALLY surfaces leaf facts as children of the deepest aggregate level (a real
+        // large-leaf-plus-aggregate tree, HARN-01); with no dimensions it surfaces the flat leaves
+        // so the no-dimension case keeps working.
         const view = cube.createView({
             query: {
                 dimensions,
-                includeLeaves: isEmpty(dimensions)
+                includeLeaves: true
             },
             stores: gridModel.store,
             connect: true
