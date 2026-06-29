@@ -6,7 +6,7 @@
  */
 
 import {wait} from '@xh/hoist/promise';
-import {HeapMethod} from './types';
+import {HeapAttribution, HeapMethod} from './types';
 
 /**
  * Heap-attribution layer for the measurement harness (HARN-04).
@@ -80,4 +80,84 @@ export async function forceGcAndSettleAsync(settleMs: number): Promise<void> {
  */
 export function detectHeapMethod(): HeapMethod {
     return 'performanceMemory';
+}
+
+/**
+ * Calibrate the per-record byte cost of a single layer by a dedicated load-N-and-divide run:
+ * settle the heap, read a baseline, load `n` rows, settle again, read the heap, and return the
+ * delta divided by `n`.
+ *
+ * Calibration MUST be run once per distinct field-shape. Object-valued-field shapes get their own
+ * calibration run because a shared object referenced by many records makes a naive
+ * `count x per-record-bytes` double-count the shared bytes (RESEARCH Open Question 1). The harness
+ * reports which calibration produced each per-record figure in the scorecard so the accounting is
+ * auditable.
+ *
+ * The `args` object carries the calibration callbacks and counts: `loadNRowsAsync` loads exactly
+ * `n` rows of the layer being calibrated; `clearAsync` tears those rows back down so the run leaves
+ * no residual heap; `n` is the number of rows in the sample (a larger `n` dampens quantization
+ * noise); and `settleMs` is the forced-GC settle delay (ms) applied before each heap read.
+ *
+ * @returns per-record byte cost `(afterHeap - beforeHeap) / n` for this field-shape.
+ */
+export async function calibratePerRecordBytesAsync(args: {
+    loadNRowsAsync: (n: number) => Promise<void>;
+    clearAsync: () => Promise<void>;
+    n: number;
+    settleMs: number;
+}): Promise<number> {
+    const {loadNRowsAsync, clearAsync, n, settleMs} = args;
+
+    await forceGcAndSettleAsync(settleMs);
+    const before = heapNow() ?? 0;
+
+    await loadNRowsAsync(n);
+    await forceGcAndSettleAsync(settleMs);
+    const after = heapNow() ?? 0;
+
+    // Clean up so the calibration leaves no residual heap for subsequent runs.
+    await clearAsync();
+
+    return n > 0 ? (after - before) / n : 0;
+}
+
+/**
+ * Attribute the current whole-heap delta to the owned Hoist layers, with AG Grid internals as the
+ * opaque remainder. Pure and synchronous: it reads `heapNow()` and computes - the CALLER is
+ * responsible for calling {@link forceGcAndSettleAsync} immediately before invoking this, so the
+ * heap read is stable. Keeping the read-and-compute pure makes it deterministic and testable.
+ *
+ * Each owned layer = its live row count x its calibrated per-record bytes. `agGridInternals` is the
+ * OPAQUE REMAINDER: `max(0, totalDelta - sumOfOwnedLayers)`. AG Grid's internal node/cell sizes are
+ * library-owned and opaque (Phase-1) and are measured ONLY as this remainder - they are NEVER read
+ * from AG Grid source, which is the documented anti-pattern. The remainder is floored at 0 because
+ * heap quantization/noise can make the owned sum momentarily exceed the measured delta.
+ *
+ * @returns a {@link HeapAttribution} (the 02-01 type) with all four layers, total delta, unit, method.
+ */
+export function attributeHeap(ctx: {
+    baselineHeap: number;
+    cubeRecordCount: number;
+    gridRecordCount: number;
+    viewRowCount: number;
+    calibration: {cubeRecordBytes: number; gridRecordBytes: number; viewRowBytes: number};
+    method: HeapMethod;
+}): HeapAttribution {
+    const {baselineHeap, cubeRecordCount, gridRecordCount, viewRowCount, calibration, method} = ctx,
+        totalHeapDelta = (heapNow() ?? baselineHeap) - baselineHeap,
+        cubeStoreRecords = cubeRecordCount * calibration.cubeRecordBytes,
+        gridStoreRecords = gridRecordCount * calibration.gridRecordBytes,
+        viewResultRows = viewRowCount * calibration.viewRowBytes,
+        ownedSum = cubeStoreRecords + gridStoreRecords + viewResultRows,
+        agGridInternals = Math.max(0, totalHeapDelta - ownedSum);
+
+    return {
+        cubeStoreRecords,
+        gridStoreRecords,
+        viewResultRows,
+        agGridInternals,
+        totalHeapDelta,
+        unit: 'bytes',
+        method
+    };
 }
