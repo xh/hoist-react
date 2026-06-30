@@ -157,6 +157,27 @@ Recent decisions affecting current work:
   all holder vars -> `sizing`, toolbox `calHttp` -> `sizingHttp`, and every "calibration" comment ->
   "per-record sizing". Field names (`cubeRecordBytes` etc.) were already clear and kept. Pure rename - no
   behavior change; both repos tsc + lint clean.
+- [Phase 02-measurement-harness, post-close refinements]: Broader measure-vocabulary pass to lock the
+  language before later phases build on it (the measure code is brand new, so nothing was sacred). Four
+  decided renames plus a README sync; all pure renames, no behavior change. (1) SEAM: the `CandidateAdapter`
+  interface -> `DataLayerAdapter` (file `CandidateAdapter.ts` -> `DataLayerAdapter.ts`) - the baseline
+  implementing an interface named for candidates read backwards; "candidate" stays a concept in prose, and
+  "data layer" is the project's own domain term (Data Lab / Data Layer 2.0). (2) HEADLINE METRIC:
+  `Scorecard.pipeline`/`PipelineTiming`/`measurePipeline` -> `engine`/`EngineTiming`/`measureEngineAsync`
+  (the cube-ingest + view-re-aggregation cost = the data-layer engine's work). This also RESOLVES the prior
+  overload: "pipeline" now means only the Cube->View->Store->Grid wiring (`buildPipeline`,
+  `clearPipelineAsync`, empty-pipeline baseline), "engine" means the measured core-stage cost. (3)
+  GRID-SYNC METRIC: `Scorecard.compute`/`GridSyncTiming.computeMs` -> `genTxn`/`genTxnMs` (it times
+  `genTransaction`, the AG Grid transaction build) - frees the word "compute", which had also described the
+  pipeline. UI label "Compute (genTransaction, grid relay)" -> "Build txn (genTransaction)", headline ->
+  "Engine (cube + view)". So the four-stage sequence now reads cleanly: engine -> genTxn -> bridgeCall ->
+  render. (4) ASYNC SUFFIX: `measureBoundary`/`measurePipeline`/`measureGridSync`/`measureOverhead` ->
+  `*Async` to match Hoist convention and the other `measure*Async` fns. (5) CHANGE-SET WORDING standardized
+  on "diff": provider `nextBatchAsync` -> `nextDiffAsync` (harness + toolbox WS adapter, which also renamed
+  its internal batch->diff buffer/handler), local `batch` var -> `diff`; `applyDiffAsync` unchanged. Span/tag
+  names updated (`xhDataLab.pipeline` -> `.engine`, `.computeMs` -> `.genTxnMs`). README synced for all of the
+  above plus the earlier calibration->sizing leftover. Both repos tsc + lint clean; live-verified the renamed
+  scorecard renders end-to-end (Engine 62.35 ms / Build txn 0.5 ms / heap 103.6 MB / 5000-5587 rows).
 
 ### Pending Todos
 
